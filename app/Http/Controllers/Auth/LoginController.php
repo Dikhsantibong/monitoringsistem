@@ -5,24 +5,36 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class LoginController extends Controller
 {
-    public function showLoginForm()
-    {
-        return view('auth.login');
-    }
-
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('dashboard');
+            // Cek role user
+            if (Auth::user()->role === 'admin') {
+                session()->flash('success', 'Login berhasil sebagai Admin!');
+                return redirect()->route('admin.dashboard');
+            } else {
+                session()->flash('success', 'Login berhasil!');
+                return redirect()->route('user.dashboard');
+            }
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ]);
+        return $this->sendFailedLoginResponse($request);
+    }
+
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        Alert::error('Login Gagal', 'Email atau password salah!');
+        return back()->withInput($request->only('email'));
     }
 } 

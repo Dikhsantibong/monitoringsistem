@@ -81,8 +81,7 @@
     body {
         background-image: url('/background/backgorund.jpg');
         background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
+        background-position: fixed;
         margin: 0;
     }
 
@@ -139,4 +138,46 @@
         background-color: #1e5ecc;
     }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Gagal',
+                text: '{{ session("error") }}',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Coba Lagi',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '{{ session("success") }}',
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'OK',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Gagal',
+                text: 'Email atau password yang Anda masukkan salah!',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Coba Lagi',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+    });
+</script>
 @endsection
