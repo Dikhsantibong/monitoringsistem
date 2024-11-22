@@ -79,7 +79,10 @@
 @section('styles')
 <style>
     body {
-        background: #f4f6f9;
+        background-image: url('/background/backgorund.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         margin: 0;
     }
 
