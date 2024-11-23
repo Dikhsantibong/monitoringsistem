@@ -39,7 +39,7 @@
                 <h1 class="text-2xl font-semibold text-gray-800">Dashboard</h1>
                 <div class="flex items-center">
                     <div class="relative">
-                        <button class="flex items-center">
+                        <button class="flex items-center" onclick="showLogoutConfirmation()">
                             <img src="{{ Auth::user()->avatar ?? asset('images/default-avatar.png') }}" 
                                  class="w-8 h-8 rounded-full mr-2">
                             <span class="text-gray-700">{{ Auth::user()->name }}</span>
@@ -100,6 +100,45 @@
 
 @push('scripts')
 <script>
-    // Inisialisasi calendar dan fungsi lainnya bisa ditambahkan di sini
+    // Fungsi untuk konfirmasi logout
+    function showLogoutConfirmation() {
+        Swal.fire({
+            title: 'Apakah Anda yakin ingin keluar?',
+            text: "Anda akan keluar dari sistem",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Keluar!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{{ route('logout') }}";
+            }
+        });
+    }
+
+    // Notifikasi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session("success") }}',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '{{ session("error") }}',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+    });
 </script>
 @endpush
