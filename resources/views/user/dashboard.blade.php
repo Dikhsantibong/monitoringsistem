@@ -8,23 +8,23 @@
             <h2 class="text-xl font-bold text-blue-600">Pantera</h2>
         </div>
         <nav class="mt-4">
-            <a href="#" class="flex items-center px-4 py-3 bg-blue-50 text-blue-700">
+            <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 bg-blue-50 text-blue-700">
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
+            <a href="{{ route('daily.meeting') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
                 <i class="fas fa-users mr-3"></i>
                 <span>Daily Meeting</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
+            <a href="{{ route('monitoring') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
                 <i class="fas fa-chart-line mr-3"></i>
                 <span>Monitoring</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
+            <a href="{{ route('documentation') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
                 <i class="fas fa-book mr-3"></i>
                 <span>Documentation</span>
             </a>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
+            <a href="{{ route('support') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
                 <i class="fas fa-headset mr-3"></i>
                 <span>Support</span>
             </a>
