@@ -8,19 +8,23 @@
             <h2 class="text-xl font-bold text-blue-600">Machine Monitor</h2>
         </div>
         <nav class="mt-4">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
+            <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-cogs mr-3"></i>
                 <span>Machine Monitor</span>
             </a>
-            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50">
+            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-users mr-3"></i>
-                <span>Users</span>
+                <span>User Management</span>
             </a>
-            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 bg-blue-50 text-blue-700">
+            <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-chart-bar mr-3"></i>
+                <span>Meeting Reports</span>
+            </a>
+            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-cog mr-3"></i>
                 <span>Settings</span>
             </a>

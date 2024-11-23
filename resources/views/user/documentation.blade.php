@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">Pantera</h2>
+            <h2 class="text-xl font-bold text-blue-600">PLN NUSANTARA POWER KENDARI</h2>
         </div>
         <nav class="mt-4">
             <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('user.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
@@ -34,25 +34,18 @@
     <!-- Main Content -->
     <div class="flex-1 p-6">
         <h1 class="text-2xl font-bold">Dokumentasi</h1>
-        <p>Berikut adalah link ke dokumentasi yang relevan:</p>
+        <p>Berikut adalah galeri foto dokumentasi:</p>
         
-        <ul class="mt-4">
-            <li>
-                <a href="https://laravel.com/docs" class="text-blue-500 hover:underline">Dokumentasi Laravel</a>
-            </li>
-            <li>
-                <a href="https://laracasts.com" class="text-blue-500 hover:underline">Laracasts</a>
-            </li>
-            <li>
-                <a href="https://laravel-news.com" class="text-blue-500 hover:underline">Berita Laravel</a>
-            </li>
-            <li>
-                <a href="https://github.com/laravel/laravel" class="text-blue-500 hover:underline">Repository Laravel di GitHub</a>
-            </li>
-            <li>
-                <a href="https://laravel.com/docs/8.x/installation" class="text-blue-500 hover:underline">Panduan Instalasi Laravel</a>
-            </li>
-        </ul>
+        <div class="mt-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {{-- @foreach($photos as $photo)
+                <div class="bg-white shadow-md p-4 rounded-lg">
+                    <img src="{{ asset('storage/' . $photo->path) }}" class="w-full h-auto mb-4">
+                    <p class="text-gray-700">{{ $photo->description }}</p>
+                </div>
+                @endforeach --}}
+            </div>
+        </div>
     </div>
 </div>
 @endsection

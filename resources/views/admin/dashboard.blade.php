@@ -53,34 +53,34 @@
         <main class="p-6">
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-blue-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <i class="fas fa-users text-blue-500 text-xl mr-3"></i>
                         <div>
-                            <h3 class="text-gray-600 text-sm font-medium">Total Users</h3>
-                            <p class="text-2xl font-bold text-gray-800 mt-1" id="total-users">
+                            <h3 class="text-white text-sm font-medium">Total Users</h3>
+                            <p class="text-2xl font-bold text-white mt-1" id="total-users">
                                 {{ $totalUsers }}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-green-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <i class="fas fa-calendar text-yellow-500 text-xl mr-3"></i>
+                        <i class="fas fa-calendar text-green-500 text-xl mr-3"></i>
                         <div>
-                            <h3 class="text-gray-600 text-sm font-medium">Today's Meetings</h3>
-                            <p class="text-2xl font-bold text-gray-800 mt-1" id="today-meetings">
+                            <h3 class="text-white text-sm font-medium">Today's Meetings</h3>
+                            <p class="text-2xl font-bold text-white mt-1" id="today-meetings">
                                 {{ $todayMeetings }}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-yellow-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <i class="fas fa-users text-green-500 text-xl mr-3"></i>
+                        <i class="fas fa-users text-yellow-500 text-xl mr-3"></i>
                         <div>
-                            <h3 class="text-gray-600 text-sm font-medium">Registered Users</h3>
-                            <p class="text-2xl font-bold text-gray-800 mt-1" id="active-users">
+                            <h3 class="text-white text-sm font-medium">Registered Users</h3>
+                            <p class="text-2xl font-bold text-white mt-1" id="active-users">
                                 {{ $activeUsers }}
                             </p>
                         </div>

@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Meeting;
 use App\Models\Activity;
 use Carbon\Carbon;
+use App\Models\Machine;
+use App\Models\MachineIssue;
 
 class DashboardController extends Controller
 {
@@ -19,6 +21,14 @@ class DashboardController extends Controller
             'recentActivities' => Activity::with('user')->latest()->take(10)->get(),
             'activityChartData' => $this->getActivityChartData(),
             'meetingChartData' => $this->getMeetingChartData(),
+            'totalMachines' => Machine::count(),
+            'activeMachines' => Machine::where('status', 'START')->count(),
+            'inactiveMachines' => Machine::where('status', 'STOP')->count(),
+            'machinesInMaintenance' => Machine::where('status', 'PARALLEL')->count(),
+            'recentIssues' => MachineIssue::with('machine')
+                                ->latest()
+                                ->take(5)
+                                ->get(),
         ];
 
         return view('admin.dashboard', $data);

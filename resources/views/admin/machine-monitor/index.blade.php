@@ -5,35 +5,38 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">Machine Monitor</h2>
+            <h2 class="text-xl font-bold text-blue-600">MONITOR MESIN </h2>
         </div>
         <nav class="mt-4">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}" style="text-decoration: none;">
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}" style="text-decoration: none;">
                 <i class="fas fa-cogs mr-3"></i>
                 <span>Machine Monitor</span>
             </a>
-            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}" style="text-decoration: none;">
                 <i class="fas fa-users mr-3"></i>
                 <span>User Management</span>
             </a>
-            <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}" style="text-decoration: none;">
                 <i class="fas fa-chart-bar mr-3"></i>
                 <span>Meeting Reports</span>
             </a>
-            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}" style="text-decoration: none;">
                 <i class="fas fa-cog mr-3"></i>
                 <span>Settings</span>
             </a>
         </nav>
+        
     </aside>
 
-    <!-- Main Content -->
-    <div class="flex-1 overflow-auto">
-        <header class="bg-white shadow-sm">
+
+    <!-- Main Content Area - Fixed position -->
+    <div class="fixed top-0 left-64 right-0 h-full overflow-hidden">
+        <!-- Header -->
+        <header class="absolute top-0 left-0 right-0 bg-white shadow-sm z-20">
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Machine Monitoring Dashboard</h1>
                 <div class="flex items-center space-x-4">
@@ -47,178 +50,215 @@
             </div>
         </header>
 
-        <main class="p-6">
-            <!-- Performance Indicators -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-gray-500 text-sm font-medium">Corrective Actions</h3>
-                            <p class="text-3xl font-bold text-gray-800 mt-1">
-                                {{ $machines->sum(function($machine) {
-                                    return $machine->issues->where('status', 'closed')->count();
-                                }) }}
-                            </p>
-                        </div>
-                        <div class="bg-green-100 p-3 rounded-full">
-                            <i class="fas fa-wrench text-green-500 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-gray-500 text-sm font-medium">Work Accuracy</h3>
-                            <p class="text-3xl font-bold text-gray-800 mt-1">
-                                {{ number_format($machines->flatMap->metrics->avg('achievement_percentage'), 1) }}%
-                            </p>
-                        </div>
-                        <div class="bg-blue-100 p-3 rounded-full">
-                            <i class="fas fa-chart-line text-blue-500 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-gray-500 text-sm font-medium">Active Issues</h3>
-                            <p class="text-3xl font-bold text-gray-800 mt-1">
-                                {{ $machines->sum(function($machine) {
-                                    return $machine->issues->where('status', 'open')->count();
-                                }) }}
-                            </p>
-                        </div>
-                        <div class="bg-red-100 p-3 rounded-full">
-                            <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Machine Health Map -->
-            <div class="bg-white rounded-lg shadow mb-6">
-                <div class="p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Machine Health Categories</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        @foreach($healthCategories as $category)
-                        <div class="border rounded-lg p-4 {{ $category->open_issues > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200' }}">
-                            <h3 class="font-medium text-gray-800">{{ ucfirst($category->name) }}</h3>
-                            <p class="text-sm text-gray-500 mt-1">
-                                Active Issues: {{ $category->open_issues }}
-                            </p>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            <!-- Issues Chart and Machine Status -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Monthly Issues Chart -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Monthly Issues</h2>
-                        <canvas id="monthlyIssuesChart" height="200"></canvas>
-                    </div>
-                </div>
-
-                <!-- Machine Status -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg font-semibold text-gray-800">Machine Status</h2>
-                            <div class="flex space-x-2">
-                                <button onclick="refreshMachineStatus()" class="text-blue-500 hover:text-blue-700">
-                                    <i class="fas fa-sync-alt"></i>
-                                </button>
+        <!-- Main Content -->
+        <main class="h-full pt-16 overflow-y-auto scrollbar-hide">
+            <div class="p-6">
+                <!-- Performance Indicators -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-medium">Corrective Actions</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">
+                                    {{ $machines->sum(function($machine) {
+                                        return $machine->issues->where('status', 'closed')->count();
+                                    }) }}
+                                </p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-wrench text-green-500 text-xl"></i>
                             </div>
                         </div>
-                        <div class="space-y-4">
-                            @foreach($machines as $machine)
-                            <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                                <div class="flex-1">
-                                    <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
-                                    <p class="text-sm text-gray-500">Code: {{ $machine->code }}</p>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <!-- Status Badge -->
-                                    <span class="px-3 py-1 rounded-full text-sm font-medium
-                                        {{ $machine->status === 'START' ? 'bg-green-100 text-green-800' : 
-                                           ($machine->status === 'STOP' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                        {{ $machine->status }}
-                                    </span>
-                                    
-                                    <!-- Action Buttons -->
-                                    <div class="flex space-x-2">
-                                        <button onclick="updateMachineStatus({{ $machine->id }}, 'START')" 
-                                                class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">
-                                            Start
-                                        </button>
-                                        <button onclick="updateMachineStatus({{ $machine->id }}, 'STOP')" 
-                                                class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">
-                                            Stop
-                                        </button>
-                                        <button onclick="editMachine({{ $machine->id }})" 
-                                                class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                                            Edit
-                                        </button>
-                                        <button onclick="deleteMachine({{ $machine->id }})" 
-                                                class="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-medium">Work Accuracy</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">
+                                    {{ number_format($machines->flatMap->metrics->avg('achievement_percentage'), 1) }}%
+                                </p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-chart-line text-blue-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-medium">Active Issues</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">
+                                    {{ $machines->sum(function($machine) {
+                                        return $machine->issues->where('status', 'open')->count();
+                                    }) }}
+                                </p>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-full">
+                                <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Machine Health Map -->
+                <div class="bg-white rounded-lg shadow mb-6">
+                    <div class="p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Machine Health Categories</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            @foreach($healthCategories as $category)
+                            <div class="border rounded-lg p-4 {{ $category->open_issues > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200' }}">
+                                <h3 class="font-medium text-gray-800">{{ ucfirst($category->name) }}</h3>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    Active Issues: {{ $category->open_issues }}
+                                </p>
                             </div>
                             @endforeach
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Recent Issues Table -->
-            <div class="bg-white rounded-lg shadow">
-                <div class="p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Recent Issues</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Machine</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @foreach($recentIssues as $issue)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $issue->created_at->format('M d, Y H:i') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $issue->machine->name }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $issue->category->name }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">
-                                        {{ $issue->description }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $issue->status === 'open' ? 'bg-red-100 text-red-800' : 
-                                               ($issue->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
-                                            {{ ucfirst($issue->status) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                <!-- Issues Chart and Machine Status -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Monthly Issues Chart -->
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4">Monthly Issues</h2>
+                            <canvas id="monthlyIssuesChart" height="200"></canvas>
+                        </div>
                     </div>
+
+                    <!-- Machine Status -->
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-semibold text-gray-800">Machine Status</h2>
+                                <div class="flex space-x-2">
+                                    <button onclick="refreshMachineStatus()" class="text-blue-500 hover:text-blue-700">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                @foreach($machines as $machine)
+                                <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                                    <div class="flex-1">
+                                        <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
+                                        <p class="text-sm text-gray-500">Code: {{ $machine->code }}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <!-- Status Badge -->
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium
+                                            {{ $machine->status === 'START' ? 'bg-green-100 text-green-800' : 
+                                               ($machine->status === 'STOP' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                            {{ $machine->status }}
+                                        </span>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="flex space-x-2">
+                                            <button onclick="updateMachineStatus({{ $machine->id }}, 'START')" 
+                                                    class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">
+                                                Start
+                                            </button>
+                                            <button onclick="updateMachineStatus({{ $machine->id }}, 'STOP')" 
+                                                    class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">
+                                                Stop
+                                            </button>
+                                            <button onclick="editMachine({{ $machine->id }})" 
+                                                    class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
+                                                Edit
+                                            </button>
+                                            <button onclick="deleteMachine({{ $machine->id }})" 
+                                                    class="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Issues Table -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Recent Issues</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Machine</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach($recentIssues as $issue)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $issue->created_at->format('M d, Y H:i') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ $issue->machine->name }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ $issue->category->name }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            {{ $issue->description }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                {{ $issue->status === 'open' ? 'bg-red-100 text-red-800' : 
+                                                   ($issue->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
+                                                {{ ucfirst($issue->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monitoring and Statistics -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Monitoring dan Statistik</h2>
+
+                <!-- Monitoring Status Mesin -->
+                <div class="bg-white rounded-lg shadow mb-6 p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Monitoring Status Mesin</h3>
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Machine</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durasi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Error</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach($machines as $machine)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $machine->name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $machine->status }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $machine->status === 'START' ? 'Aktif' : 'Mati' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $machine->issues->where('status', 'open')->count() }} Error</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Statistik Uptime/Downtime -->
+                <div class="bg-white rounded-lg shadow mb-6 p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Statistik Uptime/Downtime</h3>
+                    <canvas id="uptimeChart" height="200"></canvas>
                 </div>
             </div>
         </main>
@@ -418,5 +458,60 @@ function updateMachineStatus(machineId, status) {
 function refreshMachineStatus() {
     location.reload();
 }
+
+// Chart untuk Uptime/Downtime
+const ctx = document.getElementById('uptimeChart').getContext('2d');
+const uptimeData = @json($uptime);
+const labels = uptimeData.map(machine => machine.name);
+const uptimeValues = uptimeData.map(machine => machine.uptime);
+const downtimeValues = uptimeData.map(machine => machine.downtime);
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Uptime',
+                data: uptimeValues,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            },
+            {
+                label: 'Downtime',
+                data: downtimeValues,
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
 </script>
 @endpush
+
+<style>
+/* Sembunyikan scrollbar tapi tetap bisa scroll */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Pastikan scrollbar selalu ada untuk mencegah layout shift */
+html {
+    overflow-y: scroll;
+}
+
+/* Mencegah bounce effect pada macOS */
+body {
+    overflow: hidden;
+}
+</style>

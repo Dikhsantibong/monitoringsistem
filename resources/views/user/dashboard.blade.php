@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">Pantera</h2>
+            <h2 class="text-xl font-bold text-blue-600">PLN NUSANTARA POWER KENDARI</h2>
         </div>
         <nav class="mt-4">
             <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 bg-blue-50 text-blue-700">
@@ -52,18 +52,18 @@
         <!-- Dashboard Content -->
         <main class="p-6">
             <!-- Overview Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-gray-600 text-sm font-medium">Progress Harian</h3>
-                    <p class="text-2xl font-bold text-gray-800 mt-2">85%</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-blue-500 rounded-lg shadow p-6">
+                    <h3 class="text-white text-sm font-medium">Progress Harian</h3>
+                    <p class="text-2xl font-bold text-white mt-2">85%</p>
                 </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-gray-600 text-sm font-medium">Status Aktivitas</h3>
-                    <p class="text-2xl font-bold text-green-500 mt-2">Aktif</p>
+                <div class="bg-green-500 rounded-lg shadow p-6">
+                    <h3 class="text-white text-sm font-medium">Status Aktivitas</h3>
+                    <p class="text-2xl font-bold text-white mt-2">Aktif</p>
                 </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-gray-600 text-sm font-medium">Notifikasi</h3>
-                    <p class="text-2xl font-bold text-blue-500 mt-2">3 Baru</p>
+                <div class="bg-yellow-500 rounded-lg shadow p-6">
+                    <h3 class="text-white text-sm font-medium">Notifikasi</h3>
+                    <p class="text-2xl font-bold text-white mt-2">3 Baru</p>
                 </div>
             </div>
 

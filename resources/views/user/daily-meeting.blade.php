@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">Pantera</h2>
+            <h2 class="text-xl font-bold text-blue-600">PLN NUSANTARA POWER KENDARI</h2>
         </div>
         <nav class="mt-4">
             <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('user.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">

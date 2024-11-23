@@ -1,4 +1,9 @@
 
+
+@extends('layouts.app')
+
+@section('content')
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -6,6 +11,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>Laravel - Home</title>
+       
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -100,6 +106,7 @@
                 <p>Laravel v{{ Illuminate\Foundation\Application::VERSION }} (PHP v{{ PHP_VERSION }})</p>
             </footer>
         </div>
+        @yield('style')
     </body>
 </html>
 ````
