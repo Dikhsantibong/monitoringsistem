@@ -27,11 +27,34 @@
 </head>
 <body>
     @include('sweetalert::alert')
-    @yield('content')
-
-    <!-- SweetAlert2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    @stack('scripts')
+    <!-- Tambahkan form logout tersembunyi -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+        @csrf
+    </form>
+    
+    @yield('content')
+    
+    <!-- Scripts -->
+    <script>
+    function showLogoutConfirmation() {
+        Swal.fire({
+            title: 'Apakah Anda yakin ingin keluar?',
+            text: "Anda akan keluar dari sistem",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Keluar!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+    </script>
+    
+    @yield('scripts')
 </body>
 </html>

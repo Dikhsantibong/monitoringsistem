@@ -8,7 +8,7 @@
             <h2 class="text-xl font-bold text-blue-600">PLN NUSANTARA POWER KENDARI</h2>
         </div>
         <nav class="mt-4">
-            <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 bg-yellow-500 text-blue-700">
+            <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
@@ -28,7 +28,7 @@
                 <i class="fas fa-headset mr-3"></i>
                 <span>Support</span>
             </a>
-            <a href="{{ route('user.machine.monitor') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
+            <a href="{{ route('user.machine.monitor') }}" class="flex items-center px-4 py-3 bg-yellow-500 text-blue-700">
                 <i class="fas fa-cogs mr-3"></i>
                 <span>Machine Monitor</span>
             </a>
@@ -40,7 +40,7 @@
         <!-- Header -->
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
-                <h1 class="text-2xl font-semibold text-gray-800">Dashboard</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">Machine Monitor</h1>
                 <div class="flex items-center">
                     <div class="relative">
                         <button class="flex items-center" onclick="toggleDropdown()">
@@ -57,65 +57,32 @@
             </div>
         </header>
 
-        <!-- Dashboard Content -->
+        <!-- Machine Monitor Content -->
         <main class="p-6">
-            <!-- Overview Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-yellow-500 rounded-lg shadow p-6">
-                    <h3 class="text-white text-sm font-medium">Progress Harian</h3>
-                    <p class="text-2xl font-bold text-white mt-2">85%</p>
-                </div>
-                <div class="bg-green-500 rounded-lg shadow p-6">
-                    <h3 class="text-white text-sm font-medium">Status Aktivitas</h3>
-                    <p class="text-2xl font-bold text-white mt-2">Aktif</p>
-                </div>
-                <div class="bg-blue-500 rounded-lg shadow p-6">
-                    <h3 class="text-white text-sm font-medium">Notifikasi</h3>
-                    <p class="text-2xl font-bold text-white mt-2">3 Baru</p>
-                </div>
-            </div>
-
-            <!-- Calendar & Tasks -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Jadwal Meeting</h3>
-                    <div id="calendar" class="min-h-[300px]">
-                        <!-- Calendar widget akan dirender di sini -->
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Tugas Saat Ini</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" class="mr-3">
-                            <span class="text-gray-700">Review dokumen project</span>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" class="mr-3">
-                            <span class="text-gray-700">Meeting tim development</span>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" class="mr-3">
-                            <span class="text-gray-700">Update status project</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tema Dashboard -->
-            <section class="mt-6">
-                <h2 class="text-xl font-semibold">Tema Dashboard</h2>
-                <div class="bg-white rounded-lg shadow p-4">
-                    <label for="theme-toggle" class="flex items-center">
-                        <input type="checkbox" id="theme-toggle" class="mr-2">
-                        <span>Mode Gelap</span>
-                    </label>
-                </div>
-            </section>
+            <table class="min-w-full mt-4 bg-white shadow-lg rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-gray-600 uppercase font-bold">Nama Mesin</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-gray-600 uppercase font-bold">Status</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-gray-600 uppercase font-bold">Kesehatan</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-gray-600 uppercase font-bold">Durasi Operasional</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($machines as $machine)
+                    <tr>
+                        <td class="py-2 px-4 border-b border-gray-200">{{ $machine->name }}</td>
+                        <td class="py-2 px-4 border-b border-gray-200">{{ $machine->status }}</td>
+                        <td class="py-2 px-4 border-b border-gray-200">{{ $machine->health_status }}</td>
+                        <td class="py-2 px-4 border-b border-gray-200">{{ $machine->operational_duration }} jam</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </main>
     </div>
 </div>
-@endsection
+@endsection 
 
 @push('scripts')
 <script>

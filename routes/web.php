@@ -36,6 +36,8 @@
         Route::get('/monitoring', [UserController::class, 'monitoring'])->name('monitoring');
         Route::get('/documentation', [UserController::class, 'documentation'])->name('documentation');
         Route::get('/support', [UserController::class, 'support'])->name('support');
+        Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile')->middleware('auth');
+        Route::get('/user/machine-monitor', [UserController::class, 'machineMonitor'])->name('user.machine.monitor')->middleware('auth');
     });
 
     Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

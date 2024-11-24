@@ -37,4 +37,15 @@ class LoginController extends Controller
         Alert::error('Login Gagal', 'Email atau password salah!');
         return back()->withInput($request->only('email'));
     }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        Alert::success('Berhasil Logout', 'Anda telah berhasil keluar dari sistem');
+        return redirect('/login');
+    }
 } 
