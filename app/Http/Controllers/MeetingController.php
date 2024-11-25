@@ -10,4 +10,14 @@ class MeetingController extends Controller
     {
         return view('user.daily-meeting'); // Ganti dengan view yang sesuai
     }
+
+    public function create()
+    {
+        return view('admin.meetings.create');
+    }
+
+    public function store(Request $request)
+    {
+        // Validasi dan simpan meeting baru
+    }
 }

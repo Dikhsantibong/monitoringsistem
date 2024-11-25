@@ -36,4 +36,19 @@ class MachineMonitorController extends Controller
             'recentIssues' => MachineIssue::with('machine', 'category')->latest()->take(5)->get(),
         ]);
     }
+
+    public function create()
+    {
+
+    }
+
+    public function store()
+    {
+
+    }
+
+    
+
+
+    
 } 

@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Machine;
 use App\Models\MachineIssue;
 use App\Models\MachineHealthCategory;
+use App\Models\MachineCategory;
 use Illuminate\Http\Request;
+use RealRashid\SweetAlert\Facades\Alert;
 use Carbon\Carbon;
 
 class MachineMonitorController extends Controller
@@ -68,6 +70,7 @@ class MachineMonitorController extends Controller
 
         // Simpan issue baru (gunakan session untuk testing)
         session()->flash('success', 'Issue reported successfully');
+        Alert::success('Berhasil', 'Masalah berhasil dilaporkan');
         return redirect()->back();
     }
 
@@ -93,39 +96,135 @@ class MachineMonitorController extends Controller
 
     public function storeMachine(Request $request)
     {
+        try {
+            // Debug: tampilkan data yang diterima
+            \Log::info('Received data:', $request->all());
+
+            // Validasi input
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'code' => 'required|string|max:50|unique:machines',
+                'category_id' => 'required|exists:machine_categories,id',
+                'location' => 'required|string|max:255',
+                'status' => 'required|in:START,STOP,PARALLEL',
+                'description' => 'nullable|string'
+            ]);
+
+            // Debug: tampilkan data yang divalidasi
+            \Log::info('Validated data:', $validated);
+
+            // Buat array data yang akan disimpan
+            $machineData = [
+                'name' => $validated['name'],
+                'code' => $validated['code'],
+                'category_id' => $validated['category_id'],
+                'location' => $validated['location'],
+                'status' => $validated['status'],
+                'description' => $validated['description'] ?? null
+            ];
+
+            // Debug: tampilkan data yang akan disimpan
+            \Log::info('Data to be saved:', $machineData);
+
+            // Simpan data
+            $machine = Machine::create($machineData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mesin berhasil ditambahkan',
+                'data' => $machine
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating machine:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan mesin: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:machines,code',
-            'status' => 'required|in:START,STOP,PARALLEL'
+            'machine_id' => 'required|exists:machines,id',
+            'category_id' => 'required|exists:machine_health_categories,id',
+            'description' => 'required|string'
         ]);
 
-        Machine::create($validated);
-
-        return redirect()->route('admin.machine-monitor')
-            ->with('success', 'Machine added successfully');
+        try {
+            MachineIssue::create($validated);
+            
+            Alert::success('Berhasil', 'Masalah berhasil dilaporkan');
+            return response()->json([
+                'success' => true,
+                'message' => 'Masalah berhasil dilaporkan'
+            ]);
+        } catch (\Exception $e) {
+            Alert::error('Gagal', 'Gagal melaporkan masalah');
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal melaporkan masalah'
+            ], 500);
+        }
     }
 
     public function showMachine(Machine $machine)
     {
-        return response()->json($machine);
+        $machine->load(['metrics', 'issues']);
+        return view('admin.machine-monitor.show', compact('machine'));
     }
 
     public function updateMachine(Request $request, Machine $machine)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:machines,code,' . $machine->id,
+            'code' => 'required|string|max:50|unique:machines,code,' . $machine->id,
             'status' => 'required|in:START,STOP,PARALLEL'
         ]);
 
-        $machine->update($validated);
-
-        return response()->json(['success' => true]);
+        try {
+            $machine->update($validated);
+            Alert::success('Berhasil', 'Mesin berhasil diperbarui');
+            return response()->json([
+                'success' => true,
+                'message' => 'Mesin berhasil diperbarui'
+            ]);
+        } catch (\Exception $e) {
+            Alert::error('Gagal', 'Gagal memperbarui mesin: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui mesin: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroyMachine(Machine $machine)
     {
-        $machine->delete();
-        return response()->json(['success' => true]);
+        try {
+            $machine->delete();
+            Alert::success('Berhasil', 'Mesin berhasil dihapus');
+            return response()->json([
+                'success' => true,
+                'message' => 'Mesin berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            Alert::error('Gagal', 'Gagal menghapus mesin: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus mesin: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function create()
+    {
+        // Ambil semua kategori untuk dropdown
+        $categories = MachineCategory::all();
+        return view('admin.machine-monitor.create', compact('categories'));
     }
 } 

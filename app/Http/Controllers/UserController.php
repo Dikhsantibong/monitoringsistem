@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Machine;
+use App\Models\Meeting;
 
 class UserController extends Controller
 {
@@ -41,5 +42,11 @@ class UserController extends Controller
         // Ambil data mesin dari model atau sumber data lainnya
         $machines = Machine::all(); // Ganti dengan logika yang sesuai untuk mendapatkan data mesin
         return view('user.machine-monitor', compact('machines'));
+    }
+
+    public function meetings()
+    {
+        $meetings = Meeting::all(); // Ambil semua jadwal meeting
+        return view('user.meetings', compact('meetings'));
     }
 }

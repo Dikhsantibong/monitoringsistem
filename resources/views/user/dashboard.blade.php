@@ -12,6 +12,10 @@
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
+            <a href="{{ route('user.machine.monitor') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
+                <i class="fas fa-cogs mr-3"></i>
+                <span>Machine Monitor</span>
+            </a>
             <a href="{{ route('daily.meeting') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
                 <i class="fas fa-users mr-3"></i>
                 <span>Daily Meeting</span>
@@ -28,10 +32,7 @@
                 <i class="fas fa-headset mr-3"></i>
                 <span>Support</span>
             </a>
-            <a href="{{ route('user.machine.monitor') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
-                <i class="fas fa-cogs mr-3"></i>
-                <span>Machine Monitor</span>
-            </a>
+            
         </nav>
     </aside>
 

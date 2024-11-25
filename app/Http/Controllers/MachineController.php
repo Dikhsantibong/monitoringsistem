@@ -29,7 +29,19 @@ class MachineController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:255',
+            'status' => 'required|string|in:START,STOP,PARALLEL',
+        ]);
+
+        Machine::create([
+            'name' => $request->name,
+            'code' => $request->code,
+            'status' => $request->status,
+        ]);
+
+        return redirect()->route('admin.machine-monitor')->with('success', 'Machine added successfully.');
     }
 
     /**

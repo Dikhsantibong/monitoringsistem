@@ -44,37 +44,40 @@
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
         
-        Route::get('/machine-monitor', [MachineMonitorController::class, 'index'])->name('machine-monitor');
-        Route::post('/machine-monitor/issues', [MachineMonitorController::class, 'storeIssue'])->name('machine-monitor.store-issue');
-        Route::put('/machine-monitor/machines/{machine}/status', [MachineMonitorController::class, 'updateMachineStatus'])->name('machine-monitor.update-status');
-        Route::put('/machine-monitor/machines/{machine}/metrics', [MachineMonitorController::class, 'updateMetrics'])->name('machine-monitor.update-metrics');
+        Route::prefix('machine-monitor')->group(function () {
+            Route::get('/', [MachineMonitorController::class, 'index'])->name('machine-monitor');
+            Route::get('/create', [MachineMonitorController::class, 'create'])->name('machine-monitor.create');
+            Route::post('/store', [MachineMonitorController::class, 'storeMachine'])->name('machine-monitor.store');
+            Route::get('/{machine}', [MachineMonitorController::class, 'showMachine'])->name('machine-monitor.show');
+            Route::put('/{machine}', [MachineMonitorController::class, 'updateMachine'])->name('machine-monitor.update');
+            Route::delete('/{machine}', [MachineMonitorController::class, 'destroyMachine'])->name('machine-monitor.destroy');
+        });
         
-        Route::get('/users', [AdminUserController::class, 'index'])->name('users');
-        Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
-        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-        Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::prefix('users')->group(function () {
+            Route::get('/', [AdminUserController::class, 'index'])->name('users');
+            Route::get('/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
+            Route::put('/{user}', [AdminUserController::class, 'update'])->name('users.update');
+            Route::delete('/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+            Route::get('/create', [AdminUserController::class, 'create'])->name('users.create');
+            Route::post('/store', [AdminUserController::class, 'store'])->name('users.store');
+            Route::get('/{user}/delete', [AdminUserController::class, 'delete'])->name('users.delete');
+        });
         
-        Route::get('/meetings', [AdminMeetingController::class, 'index'])->name('meetings');
-        Route::get('/meetings/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
-        Route::get('/meetings/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
+        Route::prefix('meetings')->group(function () {
+            Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');
+            Route::get('/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
+            Route::get('/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
+        });
         
-        Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings');
-        Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
-        Route::post('/settings/regenerate-api-key', [AdminSettingController::class, 'regenerateApiKey'])
-            ->name('settings.regenerate-api-key');
+        Route::prefix('activities')->group(function () {
+            Route::get('/export', [ActivityController::class, 'export'])->name('activities.export');
+        });
         
-        Route::get('/activities/export', [ActivityController::class, 'export'])->name('activities.export');
-        
-        Route::post('/machine-monitor/machines', [MachineMonitorController::class, 'storeMachine'])
-            ->name('machine-monitor.store-machine');
-        Route::get('/machine-monitor/machines/{machine}', [MachineMonitorController::class, 'showMachine'])
-            ->name('machine-monitor.show-machine');
-        Route::put('/machine-monitor/machines/{machine}', [MachineMonitorController::class, 'updateMachine'])
-            ->name('machine-monitor.update-machine');
-        Route::delete('/machine-monitor/machines/{machine}', [MachineMonitorController::class, 'destroyMachine'])
-            ->name('machine-monitor.destroy-machine');
+        Route::prefix('settings')->group(function () {
+            Route::get('/', [AdminSettingController::class, 'index'])->name('settings');
+            Route::post('/', [AdminSettingController::class, 'update'])->name('settings.update');
+            Route::post('/regenerate-api-key', [AdminSettingController::class, 'regenerateApiKey'])->name('settings.regenerate-api-key');
+        });
     });
 
     Route::get('/test', function () {

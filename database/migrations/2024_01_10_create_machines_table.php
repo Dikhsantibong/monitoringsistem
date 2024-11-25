@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateMachinesTable extends Migration
 {
     public function up()
     {
@@ -12,8 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
-            $table->enum('status', ['START', 'STOP', 'PARALLEL']);
-            $table->integer('operational_hours')->default(0);
+            $table->foreignId('category_id')->constrained('machine_categories');
+            $table->text('description')->nullable();
+            $table->string('location');
+            $table->enum('status', ['START', 'STOP', 'PARALLEL'])->default('STOP');
             $table->timestamps();
         });
     }
@@ -22,4 +24,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('machines');
     }
-}; 
+} 

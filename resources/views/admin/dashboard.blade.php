@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">Daily Meeting App</h2>
+            <h2 class="text-xl font-bold text-blue-600">Aplikasi Rapat Harian</h2>
         </div>
         <nav class="mt-4">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
@@ -14,19 +14,19 @@
             </a>
             <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-cogs mr-3"></i>
-                <span>Machine Monitor</span>
+                <span>Monitor Mesin</span>
             </a>
             <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-users mr-3"></i>
-                <span>User Management</span>
+                <span>Manajemen Pengguna</span>
             </a>
             <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-chart-bar mr-3"></i>
-                <span>Meeting Reports</span>
+                <span>Laporan Rapat</span>
             </a>
             <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-cog mr-3"></i>
-                <span>Settings</span>
+                <span>Pengaturan</span>
             </a>
         </nav>
     </aside>
@@ -36,14 +36,25 @@
         <!-- Header -->
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
-                <h1 class="text-2xl font-semibold text-gray-800">Admin Dashboard</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">Dashboard Admin</h1>
                 <div class="flex items-center">
                     <div class="relative">
-                        <button class="flex items-center" onclick="showLogoutConfirmation()">
+                        <button class="flex items-center dropdown-toggle" onclick="toggleDropdown()">
                             <img src="{{ Auth::user()->avatar ?? asset('images/default-avatar.png') }}" 
                                  class="w-8 h-8 rounded-full mr-2">
                             <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
                         </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" class="hidden dropdown-menu absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                            <form method="POST" action="{{ route('logout') }}" class="block">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -57,7 +68,7 @@
                     <div class="flex items-center">
                         <i class="fas fa-users text-blue-500 text-xl mr-3"></i>
                         <div>
-                            <h3 class="text-white text-sm font-medium">Total Users</h3>
+                            <h3 class="text-white text-sm font-medium">Total Pengguna</h3>
                             <p class="text-2xl font-bold text-white mt-1" id="total-users">
                                 {{ $totalUsers }}
                             </p>
@@ -68,18 +79,18 @@
                     <div class="flex items-center">
                         <i class="fas fa-calendar text-green-500 text-xl mr-3"></i>
                         <div>
-                            <h3 class="text-white text-sm font-medium">Today's Meetings</h3>
+                            <h3 class="text-white text-sm font-medium">Rapat Hari Ini</h3>
                             <p class="text-2xl font-bold text-white mt-1" id="today-meetings">
                                 {{ $todayMeetings }}
                             </p>
-                        </div>
+                        </div>  
                     </div>
                 </div>
                 <div class="bg-yellow-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <i class="fas fa-users text-yellow-500 text-xl mr-3"></i>
                         <div>
-                            <h3 class="text-white text-sm font-medium">Registered Users</h3>
+                            <h3 class="text-white text-sm font-medium">Pengguna Aktif</h3>
                             <p class="text-2xl font-bold text-white mt-1" id="active-users">
                                 {{ $activeUsers }}
                             </p>
@@ -91,11 +102,11 @@
             <!-- Charts -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">User Activity</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Pengguna</h3>
                     <canvas id="activityChart" class="w-full h-64"></canvas>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Meeting Statistics</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Statistik Rapat</h3>
                     <canvas id="meetingChart" class="w-full h-64"></canvas>
                 </div>
             </div>
@@ -104,18 +115,18 @@
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Recent Activities</h3>
+                        <h3 class="text-lg font-semibold text-gray-800">Aktivitas Terbaru</h3>
                         <button onclick="exportActivities()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                            <i class="fas fa-download mr-2"></i>Export
+                            <i class="fas fa-download mr-2"></i>Ekspor
                         </button>
                     </div>
                     <div class="overflow-x-auto">
                         <table id="activities-table" class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Activity</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktivitas</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengguna</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 </tr>
                             </thead>
@@ -160,7 +171,7 @@ const activityChart = new Chart(activityCtx, {
     data: {
         labels: {!! json_encode($activityChartData['labels']) !!},
         datasets: [{
-            label: 'User Activity',
+            label: 'Aktivitas Pengguna',
             data: {!! json_encode($activityChartData['data']) !!},
             borderColor: 'rgb(59, 130, 246)',
             tension: 0.1
@@ -179,7 +190,7 @@ const meetingChart = new Chart(meetingCtx, {
     data: {
         labels: {!! json_encode($meetingChartData['labels']) !!},
         datasets: [{
-            label: 'Meetings',
+            label: 'Rapat',
             data: {!! json_encode($meetingChartData['data']) !!},
             backgroundColor: 'rgba(59, 130, 246, 0.5)'
         }]
@@ -195,23 +206,20 @@ function exportActivities() {
     window.location.href = '{{ route("admin.activities.export") }}';
 }
 
-// Fungsi untuk konfirmasi logout
-function showLogoutConfirmation() {
-    Swal.fire({
-        title: 'Apakah Anda yakin ingin keluar?',
-        text: "Anda akan keluar dari sistem",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, Keluar!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Kirim permintaan logout ke server
-            window.location.href = '{{ route("logout") }}';
-        }
-    });
+// Fungsi untuk toggle dropdown
+function toggleDropdown() {w
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('hidden');
 }
+
+// Tutup dropdown ketika mengklik di luar
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('userDropdown');
+    const button = event.target.closest('button');
+    
+    if (!button && !dropdown.contains(event.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
 </script>
 @endpush

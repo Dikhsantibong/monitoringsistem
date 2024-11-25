@@ -7,6 +7,7 @@
 
      <!-- Tailwind CSS -->
      <script src="https://cdn.tailwindcss.com"></script>
+     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
     
      <!-- Font Awesome -->
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -33,6 +34,19 @@
         @csrf
     </form>
     
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ session('error') }}</span>
+            
+        </div>
+    @endif
+    
     @yield('content')
     
     <!-- Scripts -->
@@ -53,6 +67,26 @@
             }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Menambahkan event listener untuk dropdown
+        document.querySelectorAll('.dropdown-toggle').forEach(button => {
+            button.addEventListener('click', function() {
+                const dropdown = this.nextElementSibling;
+                dropdown.classList.toggle('hidden');
+            });
+        });
+
+        // Menutup dropdown jika klik di luar
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.contains(event.target) && !event.target.matches('.dropdown-toggle')) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        });
+    });
     </script>
     
     @yield('scripts')

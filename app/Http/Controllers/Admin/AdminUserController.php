@@ -4,75 +4,127 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class AdminUserController extends Controller
 {
     public function index()
     {
-        $users = User::with('department')->paginate(10);
+        $users = User::paginate(10);
         return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
-        $departments = Department::all();
-        return view('admin.users.create', compact('departments'));
+        return view('admin.users.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'department_id' => 'required|exists:departments,id',
-            'role' => 'required|in:admin,user'
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', 'in:admin,user'],
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        try {
+            User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => $validated['role'],
+            ]);
 
-        User::create($validated);
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully');
+            Alert::success('Berhasil', 'Pengguna berhasil ditambahkan');
+            return redirect()
+                ->route('admin.users')
+                ->with('success', 'Pengguna berhasil ditambahkan');
+        } catch (\Exception $e) {
+            Alert::error('Gagal', 'Terjadi kesalahan saat menambahkan pengguna: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menambahkan pengguna: ' . $e->getMessage());
+        }
     }
 
     public function edit(User $user)
     {
-        $departments = Department::all();
-        return view('admin.users.edit', compact('user', 'departments'));
+        return view('admin.users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'department_id' => 'required|exists:departments,id',
-            'role' => 'required|in:admin,user'
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'role' => ['required', 'in:admin,user'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => 'required|string|min:8|confirmed'
-            ]);
-            $validated['password'] = Hash::make($request->password);
+        try {
+            $user->name = $validated['name'];
+            $user->email = $validated['email'];
+            $user->role = $validated['role'];
+            
+            if (!empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
+            }
+
+            $user->save();
+
+            Alert::success('Berhasil', 'Pengguna berhasil diperbarui');
+            return redirect()
+                ->route('admin.users')
+                ->with('success', 'Pengguna berhasil diperbarui');
+        } catch (\Exception $e) {
+            Alert::error('Gagal', 'Terjadi kesalahan saat memperbarui pengguna: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui pengguna: ' . $e->getMessage());
         }
+    }
 
-        $user->update($validated);
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User updated successfully');
+    public function delete(User $user)
+    {
+        // Cek jika user mencoba menghapus dirinya sendiri
+        if ($user->id === auth()->id()) {
+            return redirect()
+                ->route('admin.users')
+                ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri');
+        }
+        
+        return view('admin.users.delete', compact('user'));
     }
 
     public function destroy(User $user)
     {
-        $user->delete();
+        try {
+            // Cek jika user mencoba menghapus dirinya sendiri
+            if ($user->id === auth()->id()) {
+                return redirect()
+                    ->route('admin.users')
+                    ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri');
+            }
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User deleted successfully');
+            $user->delete();
+            
+            return redirect()
+                ->route('admin.users')
+                ->with('success', 'Pengguna berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('admin.users')
+                ->with('error', 'Gagal menghapus pengguna: ' . $e->getMessage());
+        }
     }
 } 

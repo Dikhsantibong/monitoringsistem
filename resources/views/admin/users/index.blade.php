@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">Daily Meeting App</h2>
+            <h2 class="text-xl font-bold text-blue-600">Aplikasi Rapat Harian</h2>
         </div>
         <nav class="mt-4">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
@@ -14,19 +14,19 @@
             </a>
             <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-cogs mr-3"></i>
-                <span>Machine Monitor</span>
+                <span>Monitor Mesin</span>
             </a>
             <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-users mr-3"></i>
-                <span>User Management</span>
+                <span>Manajemen Pengguna</span>
             </a>
             <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-chart-bar mr-3"></i>
-                <span>Meeting Reports</span>
+                <span>Laporan Rapat</span>
             </a>
             <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-cog mr-3"></i>
-                <span>Settings</span>
+                <span>Pengaturan</span>
             </a>
         </nav>
     </aside>
@@ -36,10 +36,10 @@
         <!-- Header -->
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
-                <h1 class="text-2xl font-semibold text-gray-800">User Management</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">Manajemen Pengguna</h1>
                 <div class="flex items-center space-x-4">
                     <a href="{{ route('admin.users.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                        <i class="fas fa-plus mr-2"></i>Add User
+                        <i class="fas fa-plus mr-2"></i>Tambah Pengguna
                     </a>
                 </div>
             </div>
@@ -47,36 +47,36 @@
 
         <!-- Content -->
         <main class="p-6">
-            <!-- Search and Filter -->
+            <!-- Pencarian dan Filter -->
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="p-4">
                     <div class="flex gap-4">
                         <div class="flex-1">
-                            <input type="text" id="search" placeholder="Search users..." 
+                            <input type="text" id="search" placeholder="Cari pengguna..." 
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
                             <select id="role-filter" class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                <option value="">All Roles</option>
+                                <option value="">Semua Peran</option>
                                 <option value="admin">Admin</option>
-                                <option value="user">User</option>
+                                <option value="user">Pengguna</option>
                             </select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Users Table -->
+            <!-- Tabel Pengguna -->
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6">
                     <table id="users-table" class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat Pada</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -106,13 +106,10 @@
                                     <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900 mr-3">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button onclick="confirmDelete({{ $user->id }})" class="text-red-600 hover:text-red-900">
+                                    <a href="{{ route('admin.users.delete', $user->id) }}" 
+                                       class="text-red-600 hover:text-red-900">
                                         <i class="fas fa-trash"></i>
-                                    </button>
-                                    <form id="delete-form-{{ $user->id }}" action="{{ route('admin.users.destroy', $user) }}" method="POST" class="hidden">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
+                                    </a>
                                 </td>
                             </tr>
                             @endforeach
@@ -154,13 +151,13 @@ $(document).ready(function() {
 // Delete confirmation
 function confirmDelete(userId) {
     Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: 'Apakah Anda yakin?',
+        text: "Anda tidak akan bisa mengembalikannya!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Ya, hapus!'
     }).then((result) => {
         if (result.isConfirmed) {
             document.getElementById(`delete-form-${userId}`).submit();
