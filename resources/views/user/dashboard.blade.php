@@ -32,7 +32,6 @@
                 <i class="fas fa-headset mr-3"></i>
                 <span>Support</span>
             </a>
-            
         </nav>
     </aside>
 
@@ -42,17 +41,20 @@
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Dashboard</h1>
-                <div class="flex items-center">
-                    <div class="relative">
-                        <button class="flex items-center" onclick="toggleDropdown()">
-                            <img src="{{ Auth::user()->avatar ?? asset('images/default-avatar.png') }}" 
-                                 class="w-8 h-8 rounded-full mr-2">
-                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                        </button>
-                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
-                            <a href="{{ route('user.profile') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profil</a>
-                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                        </div>
+                <div class="relative">
+                    <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                        <img src="{{ Auth::user()->avatar ?? asset('images/default-avatar.png') }}" 
+                             class="w-8 h-8 rounded-full mr-2">
+                        <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                        <i class="fas fa-caret-down ml-2"></i>
+                    </button>
+                    <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                        <a href="{{ route('user.profile') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
+                        <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                            @csrf
+                        </form>
                     </div>
                 </div>
             </div>
@@ -61,7 +63,7 @@
         <!-- Dashboard Content -->
         <main class="p-6">
             <!-- Overview Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-yellow-500 rounded-lg shadow p-6">
                     <h3 class="text-white text-sm font-medium">Progress Harian</h3>
                     <p class="text-2xl font-bold text-white mt-2">85%</p>
@@ -81,7 +83,7 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Jadwal Meeting</h3>
                     <div id="calendar" class="min-h-[300px]">
-                        <!-- Calendar widget akan dirender di sini -->
+                        <!-- Calendar widget -->
                     </div>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
@@ -125,22 +127,13 @@
         dropdown.classList.toggle('hidden');
     }
 
-    // Menutup dropdown jika klik di luar
-    window.onclick = function(event) {
-        if (!event.target.matches('.flex.items-center')) {
-            const dropdowns = document.getElementsByClassName("absolute");
-            for (let i = 0; i < dropdowns.length; i++) {
-                const openDropdown = dropdowns[i];
-                if (!openDropdown.classList.contains('hidden')) {
-                    openDropdown.classList.add('hidden');
-                }
-            }
-        }
-    }
+    window.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('dropdown');
+        const toggleButton = document.getElementById('dropdownToggle');
 
-    const themeToggle = document.getElementById('theme-toggle');
-    themeToggle.addEventListener('change', () => {
-        document.body.classList.toggle('dark', themeToggle.checked);
+        if (!toggleButton.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
     });
 </script>
 @endpush

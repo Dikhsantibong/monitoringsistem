@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Machine;
 use App\Models\Meeting;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -49,4 +51,37 @@ class UserController extends Controller
         $meetings = Meeting::all(); // Ambil semua jadwal meeting
         return view('user.meetings', compact('meetings'));
     }
+    
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            'username' => 'required|string|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->username = $request->username;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        if ($request->hasFile('avatar')) {
+            $avatarName = time().'.'.$request->avatar->extension();
+            $request->avatar->move(public_path('avatars'), $avatarName);
+            $user->avatar = 'avatars/'.$avatarName;
+        }
+
+        $user->save();
+
+        return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
+    }
+
+
+    
 }

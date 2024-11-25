@@ -30,6 +30,12 @@
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 
+
+    Route::get('/profile', [UserController::class, 'showProfile'])->name('user.profile');
+    Route::post('/profile', [UserController::class, 'updateProfile'])->name('user.profile.update');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');
+
     Route::middleware(['auth', 'user'])->group(function () {
         Route::get('/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
         Route::get('/daily-meeting', [UserController::class, 'dailyMeeting'])->name('daily.meeting');
