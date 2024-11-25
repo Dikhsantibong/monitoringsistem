@@ -153,7 +153,7 @@
 </div>
 @endsection
 
-@push('scripts')
+
 <script>
 // Inisialisasi DataTables
 $(document).ready(function() {
@@ -222,4 +222,5 @@ document.addEventListener('click', function(event) {
     }
 });
 </script>
-@endpush
+@push('scripts')
+
