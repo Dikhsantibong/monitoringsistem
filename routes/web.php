@@ -19,6 +19,7 @@
     use App\Http\Controllers\Admin\AdminMeetingController;
     use App\Http\Controllers\Admin\AdminSettingController;
     use App\Http\Controllers\Admin\MachineMonitorController;
+    use App\Http\Controllers\Admin\UserMachineMonitorController;
 
     Route::get('/', function () {
         return view('welcome');
@@ -30,6 +31,9 @@
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 
+
+    Route::get('/admin/machine-monitor/create', [MachineMonitorController::class, 'create'])->name('admin.machine-monitor.create');
+    Route::get('/user/machine-monitor', [UserMachineMonitorController::class, 'index'])->name('user.machine-monitor');
 
     Route::get('/profile', [UserController::class, 'showProfile'])->name('user.profile');
     Route::post('/profile', [UserController::class, 'updateProfile'])->name('user.profile.update');

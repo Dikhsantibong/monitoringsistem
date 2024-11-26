@@ -33,4 +33,9 @@ class MachineController extends Controller
                 ->with('error', 'Gagal menambahkan mesin: ' . $e->getMessage());
         }
     }
+
+    public function create()
+    {
+        return view('admin.machine-monitor.create');
+    }
 }
