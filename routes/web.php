@@ -31,10 +31,6 @@
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 
-
-    Route::get('/admin/machine-monitor/create', [MachineMonitorController::class, 'create'])->name('admin.machine-monitor.create');
-    Route::get('/user/machine-monitor', [UserMachineMonitorController::class, 'index'])->name('user.machine-monitor');
-
     Route::get('/profile', [UserController::class, 'showProfile'])->name('user.profile');
     Route::post('/profile', [UserController::class, 'updateProfile'])->name('user.profile.update');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -57,10 +53,9 @@
         Route::prefix('machine-monitor')->group(function () {
             Route::get('/', [MachineMonitorController::class, 'index'])->name('machine-monitor');
             Route::get('/create', [MachineMonitorController::class, 'create'])->name('machine-monitor.create');
-            Route::post('/store', [MachineMonitorController::class, 'storeMachine'])->name('machine-monitor.store');
-            Route::get('/{machine}', [MachineMonitorController::class, 'showMachine'])->name('machine-monitor.show');
-            Route::put('/{machine}', [MachineMonitorController::class, 'updateMachine'])->name('machine-monitor.update');
-            Route::delete('/{machine}', [MachineMonitorController::class, 'destroyMachine'])->name('machine-monitor.destroy');
+            Route::post('/store', [MachineMonitorController::class, 'store'])->name('machine-monitor.store');
+            Route::get('/{machine}', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
+            Route::delete('/{machine}', [MachineMonitorController::class, 'destroy'])->name('machine-monitor.destroy');
         });
         
         Route::prefix('users')->group(function () {

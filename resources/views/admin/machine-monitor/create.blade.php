@@ -126,16 +126,11 @@
 </div>
 @endsection
 
-@push('scripts')
+
 <script>
 document.getElementById('createMachineForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Debug: tampilkan data sebelum dikirim
-    console.log('category_id:', document.getElementById('category_id').value);
-    console.log('location:', document.getElementById('location').value);
-    
-    // Ambil data form secara manual untuk memastikan semua field terambil
     const data = {
         _token: '{{ csrf_token() }}',
         name: document.getElementById('name').value,
@@ -146,9 +141,6 @@ document.getElementById('createMachineForm').addEventListener('submit', function
         description: document.getElementById('description').value
     };
 
-    // Debug: tampilkan data yang akan dikirim
-    console.log('Data yang akan dikirim:', data);
-
     fetch(this.action, {
         method: 'POST',
         headers: {
@@ -158,15 +150,8 @@ document.getElementById('createMachineForm').addEventListener('submit', function
         },
         body: JSON.stringify(data)
     })
-    .then(response => {
-        // Debug: tampilkan response mentah
-        console.log('Response status:', response.status);
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        // Debug: tampilkan response data
-        console.log('Response data:', data);
-        
         if (data.success) {
             Swal.fire({
                 title: 'Berhasil!',
@@ -195,4 +180,4 @@ document.getElementById('createMachineForm').addEventListener('submit', function
     });
 });
 </script>
-@endpush
+@push('scripts')

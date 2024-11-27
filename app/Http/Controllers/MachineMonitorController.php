@@ -1,54 +1,40 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Machine;
-use App\Models\MachineIssue;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class MachineMonitorController extends Controller
 {
     public function index()
     {
-        $machines = Machine::with('issues')->get();
-        
-        // Menghitung uptime dan downtime
-        $uptime = $machines->map(function($machine) {
-            return [
-                'name' => $machine->name,
-                'uptime' => $machine->status === 'START' ? 1 : 0, // Contoh sederhana
-                'downtime' => $machine->status === 'STOP' ? 1 : 0,
-            ];
-        });
-
-        // Menghitung monthly issues
-        $monthlyIssues = MachineIssue::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('count')
-            ->toArray();
-
-        return view('admin.machine-monitor.index', [
-            'machines' => $machines,
-            'uptime' => $uptime,
-            'monthlyIssues' => $monthlyIssues,
-            'healthCategories' => [], // Ganti dengan data kategori kesehatan jika ada
-            'recentIssues' => MachineIssue::with('machine', 'category')->latest()->take(5)->get(),
-        ]);
+        $machines = Machine::all();
+        return view('admin.machine-monitor.index', compact('machines'));
     }
 
     public function create()
     {
-
+        $categories = Category::all();
+        return view('admin.machine-monitor.create', compact('categories'));
     }
 
-    public function store()
+    public function store(Request $request)
     {
-
-    }
-
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:255|unique:machines,code',
+            'category_id' => 'required|exists:categories,id',
+            'location' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|in:START,STOP,PARALLEL',
+        ]);
     
-
-
+        Machine::create($validated);
+    
+        return response()->json(['success' => true], 200);
+    }
     
 } 

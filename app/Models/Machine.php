@@ -12,6 +12,8 @@ class Machine extends Model
     protected $fillable = [
         'name',
         'code',
+        'category_id',
+        'location',
         'status'
     ];
 
@@ -23,5 +25,10 @@ class Machine extends Model
     public function metrics()
     {
         return $this->hasMany(MachineMetric::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
     }
 }

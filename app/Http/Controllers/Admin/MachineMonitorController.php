@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Machine;
 use App\Models\MachineIssue;
 use App\Models\MachineHealthCategory;
-use App\Models\MachineCategory;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Carbon\Carbon;
@@ -97,9 +97,6 @@ class MachineMonitorController extends Controller
     public function storeMachine(Request $request)
     {
         try {
-            // Debug: tampilkan data yang diterima
-            \Log::info('Received data:', $request->all());
-
             // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -113,21 +110,8 @@ class MachineMonitorController extends Controller
             // Debug: tampilkan data yang divalidasi
             \Log::info('Validated data:', $validated);
 
-            // Buat array data yang akan disimpan
-            $machineData = [
-                'name' => $validated['name'],
-                'code' => $validated['code'],
-                'category_id' => $validated['category_id'],
-                'location' => $validated['location'],
-                'status' => $validated['status'],
-                'description' => $validated['description'] ?? null
-            ];
-
-            // Debug: tampilkan data yang akan disimpan
-            \Log::info('Data to be saved:', $machineData);
-
-            // Simpan data
-            $machine = Machine::create($machineData);
+            // Buat mesin baru
+            $machine = Machine::create($validated);
 
             return response()->json([
                 'success' => true,
@@ -149,29 +133,22 @@ class MachineMonitorController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'machine_id' => 'required|exists:machines,id',
-            'category_id' => 'required|exists:machine_health_categories,id',
-            'description' => 'required|string'
-        ]);
+{
+    // Validasi input
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'code' => 'required|string|unique:machines,code',
+        'category_id' => 'required|exists:categories,id',
+        'location' => 'required|string|max:255',
+        'status' => 'required|in:START,STOP,PARALLEL',
+    ]);
 
-        try {
-            MachineIssue::create($validated);
-            
-            Alert::success('Berhasil', 'Masalah berhasil dilaporkan');
-            return response()->json([
-                'success' => true,
-                'message' => 'Masalah berhasil dilaporkan'
-            ]);
-        } catch (\Exception $e) {
-            Alert::error('Gagal', 'Gagal melaporkan masalah');
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal melaporkan masalah'
-            ], 500);
-        }
-    }
+    // Simpan ke database
+    Machine::create($validated);
+
+    // Redirect atau kirim respons JSON
+    return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil ditambahkan!');
+}
 
     public function showMachine(Machine $machine)
     {
@@ -222,9 +199,8 @@ class MachineMonitorController extends Controller
     }
 
     public function create()
-    {
-        // Ambil semua kategori untuk dropdown
-        $categories = MachineCategory::all();
-        return view('admin.machine-monitor.create', compact('categories'));
-    }
+{
+    $categories = Category::all(); // Ambil semua kategori mesin
+    return view('admin.machine-monitor.create', compact('categories'));
+}
 } 

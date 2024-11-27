@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Machine;
+use App\Models\MachineCategory;
 use Illuminate\Http\Request;
 
 class MachineController extends Controller
@@ -35,7 +36,8 @@ class MachineController extends Controller
     }
 
     public function create()
-    {
-        return view('admin.machine-monitor.create');
-    }
+{
+    $categories = MachineCategory::all(); // Ambil semua kategori dari tabel machine_categories
+    return view('admin.machine-monitor.create', compact('categories'));
+}
 }
