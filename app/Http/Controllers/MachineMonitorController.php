@@ -12,7 +12,14 @@ class MachineMonitorController extends Controller
     public function index()
     {
         $machines = Machine::all();
-        return view('admin.machine-monitor.index', compact('machines'));
+
+        $uptime = [
+            'START' => $machines->where('status', 'START')->sum('uptime'),
+            'STOP' => $machines->where('status', 'STOP')->sum('uptime'),
+            'PARALLEL' => $machines->where('status', 'PARALLEL')->sum('uptime'),
+        ];
+
+        return view('admin.machine-monitor.index', compact('machines', 'uptime'));
     }
 
     public function create()
@@ -25,16 +32,16 @@ class MachineMonitorController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:machines,code',
+            'code' => 'required|string|max:50|unique:machines',
             'category_id' => 'required|exists:categories,id',
             'location' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'nullable|in:START,STOP,PARALLEL',
+            'status' => 'required|in:START,STOP,PARALLEL',
+            'uptime' => 'required|integer|min:0',
         ]);
-    
-        Machine::create($validated);
-    
-        return response()->json(['success' => true], 200);
+
+        $machine = Machine::create($validated);
+
+        return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil ditambahkan');
     }
     
 } 

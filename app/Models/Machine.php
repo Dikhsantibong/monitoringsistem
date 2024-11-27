@@ -14,7 +14,8 @@ class Machine extends Model
         'code',
         'category_id',
         'location',
-        'status'
+        'status',
+        'uptime'
     ];
 
     public function issues()
