@@ -9,7 +9,63 @@
     <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px;"></div>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+    <script>
+        var map = L.map('map').setView([-3.9875, 122.5156], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+        L.marker([-3.9875, 122.5156]).addTo(map)
+            .bindPopup('Sistem Interkoneksi Kendari<br>Kapasitas: 100 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-4.0272, 122.6025]).addTo(map)
+            .bindPopup('PLTD Poasia<br>Kapasitas: 50 MW<br>Status: Tidak Aktif')
+            .openPopup();
+        L.marker([-4.0486, 122.4851]).addTo(map)
+            .bindPopup('PLTMG Kendari<br>Kapasitas: 20 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-4.0333, 121.5833]).addTo(map)
+            .bindPopup('PLTD Kolaka<br>Kapasitas: 30 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-3.9972, 122.6214]).addTo(map)
+            .bindPopup('PLTD Lanipa Nipa<br>Kapasitas: 40 MW<br>Status: Tidak Aktif')
+            .openPopup();
+        L.marker([-4.0222, 122.6167]).addTo(map)
+            .bindPopup('PLTD Ladumpi<br>Kapasitas: 60 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-4.0342, 122.5217]).addTo(map)
+            .bindPopup('PLTM Sabilambo<br>Kapasitas: 10 MW<br>Status: Tidak Aktif')
+            .openPopup();
+        L.marker([-4.1000, 122.6000]).addTo(map)
+            .bindPopup('PLTM Mikuasi<br>Kapasitas: 25 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-5.4670, 122.6173]).addTo(map)
+            .bindPopup('Sistem Interkoneksi Bau Bau<br>Kapasitas: 150 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-5.4282, 122.6220]).addTo(map)
+            .bindPopup('PLTD Pasarwajo<br>Kapasitas: 75 MW<br>Status: Tidak Aktif')
+            .openPopup();
+        L.marker([-5.4673, 122.6158]).addTo(map)
+            .bindPopup('PLTMG Bau Bau<br>Kapasitas: 35 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-5.4772, 122.6325]).addTo(map)
+            .bindPopup('PLTM Winning<br>Kapasitas: 45 MW<br>Status: Tidak Aktif')
+            .openPopup();
+        L.marker([-5.4833, 122.6500]).addTo(map)
+            .bindPopup('PLTM Rongi<br>Kapasitas: 55 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-4.8610, 122.6536]).addTo(map)
+            .bindPopup('PLTD Raha<br>Kapasitas: 65 MW<br>Status: Tidak Aktif')
+            .openPopup();
+        L.marker([-5.3144, 123.5803]).addTo(map)
+            .bindPopup('PLTD Wangi-Wangi<br>Kapasitas: 80 MW<br>Status: Aktif')
+            .openPopup();
+        L.marker([-4.0178, 122.9178]).addTo(map)
+            .bindPopup('PLTD Langara<br>Kapasitas: 90 MW<br>Status: Tidak Aktif')
+            .openPopup();
+        L.marker([-4.4961, 123.1042]).addTo(map)
+            .bindPopup('PLTD Ereke<br>Kapasitas: 95 MW<br>Status: Aktif')
+            .openPopup();
+    </script>
     
 
     <!-- Highlight Kinerja -->
