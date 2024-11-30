@@ -91,6 +91,12 @@
             });
         });
     });
+
+    // Tambahkan efek smooth saat scroll
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
     </script>
     
     @yield('scripts')

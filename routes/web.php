@@ -63,6 +63,13 @@
             Route::post('/store', [MachineMonitorController::class, 'store'])->name('machine-monitor.store');
             Route::get('/{machine}', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
             Route::delete('/{machine}', [MachineMonitorController::class, 'destroy'])->name('machine-monitor.destroy');
+            Route::get('/admin/pembangkit/ready', [PembangkitController::class, 'ready'])->name('admin.pembangkit.ready');
+            Route::get('/admin/laporan/sr_wo', [LaporanController::class, 'srWo'])->name('admin.laporan.sr_wo');
+            Route::get('/admin/daftar-hadir', [DaftarHadirController::class, 'index'])->name('admin.daftar_hadir.index');
+            Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+            Route::get('/admin/pembangkit/ready', [PowerPlantController::class, 'ready'])->name('admin.pembangkit.ready');
+            Route::get('/admin/daftar_hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
+            Route::post('/admin/meetings/upload', [MeetingController::class, 'upload'])->name('admin.meetings.upload');
         });
         
         Route::prefix('users')->group(function () {
