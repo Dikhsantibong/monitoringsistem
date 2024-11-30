@@ -8,54 +8,61 @@
     <title>Homepage - Peta Mesin</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
         #map {
-            height: 400px; /* Tinggi peta */
-            border-radius: 10px; /* Sudut bulat pada peta */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Bayangan untuk efek 3D */
-            width: 100%; /* Lebar peta */
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between; /* Memisahkan elemen di navbar */
+            align-items: center; /* Vertikal center */
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px; /* Padding untuk navbar */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .navbar .title {
+            font-size: 24px; /* Ukuran font untuk judul */
+            font-weight: bold; /* Bold untuk judul */
+            color: #333; /* Warna teks */
+        }
+        .navbar a {
+            text-decoration: none;
+            color: #333;
+            margin-left: 20px; /* Jarak antara link */
+        }
+        .navbar a:hover {
+            text-decoration: underline;
         }
         .content-section {
-            margin: 20px 0;
-            padding: 20px;
-            background-color: #fff;
+            position: relative;
+            z-index: 1;
+            margin: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .container {
-            display: flex;
-            justify-content: space-between;
-        }
-        .info-table {
-            width: 30%; /* Lebar tabel informasi */
-            margin-left: 20px; /* Jarak antara peta dan tabel */
         }
     </style>
 </head>
 <body>
-    <div class="container mx-auto">
-        <div>
-            <h1 class="text-3xl font-bold text-center my-4">Selamat Datang di Aplikasi Pembangkit Listrik</h1>
-            
-            <div class="content-section">
-                <h2 class="text-xl font-semibold">Peta Lokasi Unit Pembangkit</h2>
-                <div id="map"></div>
-            </div>
-        </div>
-        <div class="info-table">
-            <div class="content-section">
-                <h2 class="text-xl font-semibold">Deskripsi</h2>
-                <p>Aplikasi ini memberikan informasi terkini mengenai unit pembangkit listrik yang tersebar di Sulawesi Tenggara. Anda dapat melihat lokasi, status, dan kategori dari setiap unit pembangkit.</p>
-            </div>
-
-            <div class="content-section">
-                <h2 class="text-xl font-semibold">Statistik Unit Pembangkit</h2>
-                <ul>
-                    <li>Total Unit Pembangkit: {{ $units->count() }}</li>
-                    <li>Total Kapasitas: {{ $units->sum('capacity') }} MW</li>
-                    <li>Status Operasional: {{ $units->where('status', 'START')->count() }} Unit Aktif, {{ $units->where('status', 'STOP')->count() }} Unit Tidak Aktif</li>
-                </ul>
-            </div>
-        </div>
+    <div class="navbar">
+        <div class="title">Selamat Datang di Aplikasi Pembangkit Listrik</div>
+        <a href="{{ route('login') }}">Login</a>
+    </div>
+    <div id="map"></div>
+    <div class="content-section">
+        <h1 class="text-3xl font-bold text-center my-4">Peta Lokasi Unit Pembangkit</h1>
+        <!-- Peta lokasi dihapus sesuai permintaan -->
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
