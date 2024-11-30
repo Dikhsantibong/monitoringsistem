@@ -20,9 +20,12 @@
     use App\Http\Controllers\Admin\AdminSettingController;
     use App\Http\Controllers\Admin\MachineMonitorController;
     use App\Http\Controllers\Admin\UserMachineMonitorController;
+    use App\Http\Controllers\Admin\PembangkitController;
+    use App\Http\Controllers\Admin\LaporanController;
+    use App\Http\Controllers\Admin\DaftarHadirController;
 
     Route::get('/', function () {
-        return view('welcome');
+        return view('homepage');
     });
 
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -88,3 +91,7 @@
     Route::get('/test', function () {
         return 'Test Route';
     });
+
+    Route::get('/admin/pembangkit/ready', [PembangkitController::class, 'ready'])->name('admin.pembangkit.ready');
+    Route::get('/admin/laporan/sr_wo', [LaporanController::class, 'srWo'])->name('admin.laporan.sr_wo');
+    Route::get('/admin/daftar-hadir', [DaftarHadirController::class, 'index'])->name('admin.daftar_hadir.index');
