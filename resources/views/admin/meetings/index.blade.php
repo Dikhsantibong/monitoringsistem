@@ -92,7 +92,42 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Upload Section -->
+            <div class="bg-white rounded-lg shadow mb-6 p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Upload File</h2>
+                <form id="upload-form" enctype="multipart/form-data">
+                    @csrf
+                    <input type="file" name="file" class="mb-4" required>
+                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        <i class="fas fa-upload mr-2"></i>Upload
+                    </button>
+                </form>
+                <div id="upload-message" class="mt-2"></div>
+            </div>
         </main>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.getElementById('upload-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('{{ route("admin.meetings.upload") }}', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('upload-message').innerText = data.message;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('upload-message').innerText = 'Upload failed.';
+        });
+    });
+</script>
+@endpush
 @endsection 

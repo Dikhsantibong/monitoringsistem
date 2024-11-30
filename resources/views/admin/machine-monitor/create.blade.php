@@ -16,6 +16,30 @@
                 <i class="fas fa-cogs mr-3"></i>
                 <span>Monitor Mesin</span>
             </a>
+            <a href="{{ route('admin.daftar_hadir.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-list mr-3"></i>
+                <span>Daftar Hadir</span>
+            </a>
+            <a href="{{ route('admin.pembangkit.ready') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-check mr-3"></i>
+                <span>Kesiapan Pembangkit</span>
+            </a>
+            <a href="{{ route('admin.laporan.sr_wo') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-file-alt mr-3"></i>
+                <span>Laporan SR/WO</span>
+            </a>
+            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-users mr-3"></i>
+                <span>Manajemen Pengguna</span>
+            </a>
+            <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-chart-bar mr-3"></i>
+                <span>Laporan Rapat</span>
+            </a>
+            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-cog mr-3"></i>
+                <span>Pengaturan</span>
+            </a>
         </nav>
     </aside>
 

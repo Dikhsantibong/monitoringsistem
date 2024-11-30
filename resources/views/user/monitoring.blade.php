@@ -89,7 +89,7 @@
     </div>
 </div>
 
-@push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctx2 = document.getElementById('projectStatusChart').getContext('2d');
@@ -115,5 +115,6 @@
         }
     });
 </script>
+@push('scripts')
 @endpush
 @endsection

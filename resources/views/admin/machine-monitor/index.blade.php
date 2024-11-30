@@ -481,6 +481,8 @@ document.getElementById('newMachineModal').addEventListener('click', function(e)
 </script>
 
 @push('script')
+@endpush
+@endsection
 
 <style>
 /* Sembunyikan scrollbar tapi tetap bisa scroll */

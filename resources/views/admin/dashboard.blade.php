@@ -110,11 +110,11 @@
             <!-- Charts -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Pengguna</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Ketepatan Waktu</h3>
                     <canvas id="activityChart" class="w-full h-64"></canvas>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Statistik Rapat</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Kehadiran Rapat</h3>
                     <canvas id="meetingChart" class="w-full h-64"></canvas>
                 </div>
             </div>

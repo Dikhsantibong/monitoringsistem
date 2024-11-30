@@ -95,12 +95,80 @@
                 </table>
             </div>
         </div>
+
+        <!-- QR Code Section -->
+        <div class="bg-white rounded-lg shadow p-4 mt-6">
+            <h2 class="text-lg font-semibold">QR Code Absensi</h2>
+            <div id="qrcode" class="mt-4"></div>
+            <p>Scan QR Code ini untuk melakukan absensi.</p>
+        </div>
+
+        <!-- Input Kehadiran -->
+        <div class="bg-white rounded-lg shadow p-4 mt-6">
+            <h2 class="text-lg font-semibold">Input Kehadiran</h2>
+            <form id="attendance-form">
+                <div class="flex space-x-4">
+                    <input type="text" id="barcode" placeholder="Masukkan Barcode" class="flex-1 px-4 py-2 border rounded-lg" required>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Tambah Kehadiran</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabel Kehadiran -->
+        <div class="bg-white rounded-lg shadow p-4 mt-4">
+            <h2 class="text-lg font-semibold">Daftar Kehadiran</h2>
+            <table id="attendance-table" class="min-w-full mt-2">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Kehadiran</th>
+                    </tr>
+                </thead>
+                <tbody id="attendance-body">
+                    <!-- Data kehadiran akan ditambahkan di sini -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-
-@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 <script>
+    $(document).ready(function() {
+        // Generate QR Code
+        var qrData = 'http://your-domain/attendance/' + Math.random().toString(36).substring(7); // Ganti dengan URL absensi yang sesuai
+        $('#qrcode').qrcode({
+            text: qrData,
+            width: 128,
+            height: 128
+        });
+
+        // Handle attendance form submission
+        $('#attendance-form').on('submit', function(e) {
+            e.preventDefault();
+            const barcode = $('#barcode').val();
+
+            // Simpan data ke database
+            $.ajax({
+                url: '/attendance', // Ganti dengan rute yang sesuai
+                method: 'POST',
+                data: {
+                    name: barcode, // Ganti dengan data yang sesuai
+                    time: new Date().toISOString(),
+                    _token: '{{ csrf_token() }}' // Token CSRF
+                },
+                success: function(response) {
+                    alert('Kehadiran berhasil ditambahkan!');
+                    $('#barcode').val(''); // Reset input
+                },
+                error: function() {
+                    alert('Gagal menambahkan kehadiran.');
+                }
+            });
+        });
+    });
+
     const ctx = document.getElementById('meetingChart').getContext('2d');
     const meetingChart = new Chart(ctx, {
         type: 'bar',
@@ -123,5 +191,8 @@
         }
     });
 </script>
+
+@push('scripts')
+
 @endpush
 @endsection

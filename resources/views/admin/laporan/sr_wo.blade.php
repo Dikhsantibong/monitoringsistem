@@ -55,7 +55,52 @@
             <!-- Konten Laporan SR/WO -->
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Detail Laporan</h2>
-                <!-- Tampilkan data laporan di sini -->
+                
+                <!-- Tabel SR -->
+                <h3 class="text-md font-semibold mb-2">Daftar Service Request (SR)</h3>
+                <table class="min-w-full bg-white border border-gray-300 mb-4">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">ID SR</th>
+                            <th class="py-2 px-4 border-b">Deskripsi</th>
+                            <th class="py-2 px-4 border-b">Status</th>
+                            <th class="py-2 px-4 border-b">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($serviceRequests as $sr)
+                        <tr>
+                            <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
+                            <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
+                            <td class="py-2 px-4 border-b">{{ $sr->status }}</td>
+                            <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <!-- Tabel WO -->
+                <h3 class="text-md font-semibold mb-2">Daftar Work Order (WO)</h3>
+                <table class="min-w-full bg-white border border-gray-300">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">ID WO</th>
+                            <th class="py-2 px-4 border-b">Deskripsi</th>
+                            <th class="py-2 px-4 border-b">Status</th>
+                            <th class="py-2 px-4 border-b">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($workOrders as $wo)
+                        <tr>
+                            <td class="py-2 px-4 border-b">{{ $wo->id }}</td>
+                            <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
+                            <td class="py-2 px-4 border-b">{{ $wo->status }}</td>
+                            <td class="py-2 px-4 border-b">{{ $wo->created_at }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>

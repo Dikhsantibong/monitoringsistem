@@ -43,19 +43,42 @@
         </nav>
     </aside>
 
+    
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Daftar Hadir</h1>
+                <div class="flex items-center">
+                    <button class="text-gray-600 hover:text-blue-600 mr-4">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-print"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
         <main class="p-6">
-            <!-- Konten Daftar Hadir -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Detail Daftar Hadir</h2>
-                <!-- Tampilkan data daftar hadir di sini -->
+            <div class="bg-white rounded-lg shadow p-6 mt-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
+                <table id="attendance-table" class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Kehadiran</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-body">
+                        @foreach($attendances as $attendance)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $attendance->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $attendance->time }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>

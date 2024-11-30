@@ -23,6 +23,9 @@
     use App\Http\Controllers\Admin\PembangkitController;
     use App\Http\Controllers\Admin\LaporanController;
     use App\Http\Controllers\Admin\DaftarHadirController;
+    use App\Http\Controllers\AttendanceController;
+    use App\Http\Controllers\PowerPlantController;
+ 
 
     Route::get('/', function () {
         return view('homepage');
@@ -75,6 +78,7 @@
             Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');
             Route::get('/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
             Route::get('/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
+            Route::post('/upload', [AdminMeetingController::class, 'upload'])->name('admin.meetings.upload');
         });
         
         Route::prefix('activities')->group(function () {
@@ -95,3 +99,7 @@
     Route::get('/admin/pembangkit/ready', [PembangkitController::class, 'ready'])->name('admin.pembangkit.ready');
     Route::get('/admin/laporan/sr_wo', [LaporanController::class, 'srWo'])->name('admin.laporan.sr_wo');
     Route::get('/admin/daftar-hadir', [DaftarHadirController::class, 'index'])->name('admin.daftar_hadir.index');
+    Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::get('/admin/pembangkit/ready', [PowerPlantController::class, 'ready'])->name('admin.pembangkit.ready');
+    Route::get('/admin/daftar_hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
+    Route::post('/admin/meetings/upload', [MeetingController::class, 'upload'])->name('admin.meetings.upload');
