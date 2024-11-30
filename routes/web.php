@@ -25,11 +25,12 @@
     use App\Http\Controllers\Admin\DaftarHadirController;
     use App\Http\Controllers\AttendanceController;
     use App\Http\Controllers\PowerPlantController;
- 
+    use App\Http\Controllers\HomeController;
+    use App\Http\Controllers\NewsController;
+    use App\Http\Controllers\ContactController;
+    use App\Http\Controllers\BlogController;
 
-    Route::get('/', function () {
-        return view('homepage');
-    });
+    Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
@@ -103,3 +104,12 @@
     Route::get('/admin/pembangkit/ready', [PowerPlantController::class, 'ready'])->name('admin.pembangkit.ready');
     Route::get('/admin/daftar_hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
     Route::post('/admin/meetings/upload', [MeetingController::class, 'upload'])->name('admin.meetings.upload');
+
+    // Rute untuk menampilkan detail berita
+    Route::get('/news/{id}', [NewsController::class, 'show'])->name('news.show');
+
+    // Rute untuk mengirim formulir kontak
+    Route::post('/contact/submit', [ContactController::class, 'submit'])->name('contact.submit');
+
+    // Rute untuk menampilkan detail blog
+    Route::get('/blog/{id}', [BlogController::class, 'show'])->name('blog.show');
