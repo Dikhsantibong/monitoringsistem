@@ -52,6 +52,9 @@
                     <button onclick="exportMeetings()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                         <i class="fas fa-download mr-2"></i>Ekspor
                     </button>
+                    <button onclick="uploadMeeting()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        <i class="fas fa-upload mr-2"></i>Upload Rapat
+                    </button>
                 </div>
             </div>
         </header>
@@ -93,23 +96,38 @@
                 </div>
             </div>
 
-            <!-- Upload Section -->
+            <!-- Tabel Hasil Rapat -->
             <div class="bg-white rounded-lg shadow mb-6 p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Upload File</h2>
-                <form id="upload-form" enctype="multipart/form-data">
-                    @csrf
-                    <input type="file" name="file" class="mb-4" required>
-                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                        <i class="fas fa-upload mr-2"></i>Upload
-                    </button>
-                </form>
-                <div id="upload-message" class="mt-2"></div>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Hasil Rapat</h2>
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left font-semibold text-gray-800">Judul</th>
+                            <th class="text-left font-semibold text-gray-800">Tanggal</th>
+                            <th class="text-left font-semibold text-gray-800">Departemen</th>
+                            <th class="text-left font-semibold text-gray-800">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($meetings ?? [] as $meeting)
+                            <tr>
+                                <td>{{ $meeting->title }}</td>
+                                <td>{{ $meeting->scheduled_at->format('F j, Y') }}</td>
+                                <td>{{ $meeting->department->name ?? 'Tidak Ada' }}</td>
+                                <td>{{ $meeting->status }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+
+           
+           
         </main>
     </div>
 </div>
 
-@push('scripts')
+
 <script>
     document.getElementById('upload-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -129,5 +147,7 @@
         });
     });
 </script>
+
+@push('scripts')
 @endpush
 @endsection 
