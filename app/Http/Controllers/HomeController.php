@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Unit;
 use App\Models\News;
+use App\Models\Marker;
 
 class HomeController extends Controller
 {
@@ -32,6 +33,9 @@ class HomeController extends Controller
                 'capacity' => 200
             ],
         ];
+
+        // Ambil data marker dari database
+        $markers = Marker::all()->toArray(); // Mengambil semua data marker
 
         // Statistik (contoh data statis)
         $total_units = count($units); // Hitung total unit
@@ -128,6 +132,6 @@ class HomeController extends Controller
             ],
         ];
 
-        return view('homepage', compact('units', 'total_units', 'total_capacity', 'active_units', 'green_energy_contribution', 'news', 'testimonials', 'csrPrograms', 'photos', 'partners', 'educationalBlogs'));
+        return view('homepage', compact('units', 'markers', 'total_units', 'total_capacity', 'active_units', 'green_energy_contribution', 'news', 'testimonials', 'csrPrograms', 'photos', 'partners', 'educationalBlogs'));
     }
 } 
