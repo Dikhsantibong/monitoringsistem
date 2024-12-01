@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Tailwind CSS -->
@@ -25,6 +26,33 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Styles -->
     @yield('styles')
+    <style>
+        @media (max-width: 768px) {
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            table thead {
+                display: none;
+            }
+            table td {
+                display: block;
+                padding: 10px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            table td::before {
+                content: attr(data-label);
+                display: block;
+                text-align: left;
+                font-weight: bold;
+                color: #333;
+            }
+        }
+   
+    </style>
+
+
 </head>
 <body>
     @include('sweetalert::alert')

@@ -63,24 +63,30 @@
         <main class="p-6">
             <div class="bg-white rounded-lg shadow p-6 mt-4">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
-                <table id="attendance-table" class="min-w-full">
-                    <thead>
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Kehadiran</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendance-body">
-                        @foreach($attendances as $attendance)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $attendance->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $attendance->time }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">
+                                    Nama
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">
+                                    Waktu Kehadiran
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-body" class="divide-y divide-gray-300">
+                            @foreach($attendances as $attendance)
+                            <tr class="hover:bg-gray-100">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $attendance->name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $attendance->time }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </main>
+        </main>        
     </div>
 </div>
 @endsection 

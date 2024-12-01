@@ -120,6 +120,12 @@ class HomeController extends Controller
                 'title' => 'Tips Hemat Listrik',
                 'summary' => 'Beberapa tips untuk menghemat penggunaan listrik.'
             ],
+
+            (object)[
+                'id' => 3,
+                'title' => 'Manfaat Penggunaan Energi Terbarukan',
+                'summary' => 'Penggunaan energi terbarukan dapat mengurangi ketergantungan pada sumber daya alam yang tidak terbarukan.'
+            ],
         ];
 
         return view('homepage', compact('units', 'total_units', 'total_capacity', 'active_units', 'green_energy_contribution', 'news', 'testimonials', 'csrPrograms', 'photos', 'partners', 'educationalBlogs'));

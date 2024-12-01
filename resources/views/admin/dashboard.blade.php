@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-gray-50 overflow-hidden fixed">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white shadow-md">
+    <aside class="w-64 bg-white shadow-md overflow-hidden">
         <div class="p-4">
             <h2 class="text-xl font-bold text-blue-600">Aplikasi Rapat Harian</h2>
         </div>
@@ -44,7 +44,7 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 overflow-auto">
+    <div class="flex-1 overflow-hidden">
         <!-- Header -->
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">

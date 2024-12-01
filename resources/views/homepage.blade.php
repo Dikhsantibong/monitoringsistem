@@ -1,6 +1,9 @@
     @extends('layouts.app')
 
     @section('content')
+    
+
+
     <div class="container my-4" style="background-color: #fff; color: #333;">
         <h1 class="text-center" style="color: #0288d1;">Selamat Datang di Sistem Informasi Pembangkit Listrik Sulawesi Tenggara</h1>
 
@@ -11,7 +14,7 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script>
             var map = L.map('map', {
-                zoomControl: true, // Menambahkan tombol zoom
+                zoomControl: false, // Menambahkan tombol zoom
                 scrollWheelZoom: false, // Menonaktifkan zoom dengan scroll mouse
                 doubleClickZoom: false,
                 center: [-6.200000, 106.816666], // Menonaktifkan zoom dengan klik dua kali
@@ -179,25 +182,25 @@
 
         <!-- Live Data Unit Operasional -->
         <h3 class="mt-4" style="color: #007bff;">Live Data Unit Operasional</h3>
-        <div id="live-data" style="background-color: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 20px;">
+        <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4">
             <table class="table table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th style="text-align: center;">Nama Unit</th>
-                        <th style="text-align: center;">Latitude</th>
-                        <th style="text-align: center;">Longitude</th>
-                        <th style="text-align: center;">Status</th>
-                        <th style="text-align: center;">Kapasitas</th>
+                        <th class="text-center">Nama Unit</th>
+                        <th class="text-center">Latitude</th>
+                        <th class="text-center">Longitude</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Kapasitas</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($units as $unit)
                         <tr>
-                            <td style="text-align: center;">{{ $unit->name }}</td>
-                            <td style="text-align: center;">{{ $unit->latitude }}</td>
-                            <td style="text-align: center;">{{ $unit->longitude }}</td>
-                            <td style="text-align: center;" class="{{ $unit->status == 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit->status }}</td>
-                            <td style="text-align: center;">{{ $unit->capacity }} MW</td>
+                            <td class="text-center">{{ $unit->name }}</td>
+                            <td class="text-center">{{ $unit->latitude }}</td>
+                            <td class="text-center">{{ $unit->longitude }}</td>
+                            <td class="text-center {{ $unit->status == 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit->status }}</td>
+                            <td class="text-center">{{ $unit->capacity }} MW</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -253,14 +256,16 @@
 
         <!-- Blog Edukasi -->
         <h3 class="mt-4 text-primary">Blog Edukasi</h3>
-        <div class="row">
-            @foreach ($educationalBlogs as $blog)
-                <div class="col-md-4">
-                    <div class="card bg-white border border-gray-300 rounded-lg">
+        <div class="row justify-content-center">
+            @foreach (array_slice($educationalBlogs, 0, 3) as $blog)
+                <div class="col-md-4 mb-4">
+                    <div class="card bg-white border border-gray-300 rounded-lg shadow">
                         <div class="card-body">
-                            <h5 class="card-title">{{ $blog->title }}</h5>
-                            <p class="card-text">{{ $blog->summary }}</p>
-                            <a href="{{ route('blog.show', $blog->id) }}" class="btn btn-primary">Baca Selengkapnya</a>
+                            <h5 class="card-title text-center mb-3">{{ $blog->title }}</h5>
+                            <p class="card-text text-center">{{ $blog->summary }}</p>
+                            <div class="text-center">
+                                <a href="{{ route('blog.show', $blog->id) }}" class="btn btn-primary">Baca Selengkapnya</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -292,4 +297,7 @@
             marker.bindPopup(`<strong>${unit.name}</strong><br>Status: ${unit.status}<br>Kapasitas: ${unit.capacity} MW`);
         });
     </script>
+    @push('scripts')
+        
+    @endpush
     @endsection

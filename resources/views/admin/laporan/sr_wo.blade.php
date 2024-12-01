@@ -57,7 +57,7 @@
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Detail Laporan</h2>
                 
                 <!-- Tabel SR -->
-                <h3 class="text-md font-semibold mb-2">Daftar Service Request (SR)</h3>
+                <h3 class="text-md font-">Daftar Service Request (SR)</h3>
                 <table class="min-w-full bg-white border border-gray-300 mb-4">
                     <thead>
                         <tr>
