@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-gray-50 overflow-auto">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
@@ -55,9 +55,9 @@
                     <button onclick="uploadMeeting()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
                         <i class="fas fa-upload mr-2"></i>Upload Rapat
                     </button>
-                        <a href="{{ route('admin.meetings.create') }}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
-                            <i class="fas fa-plus mr-2"></i>Buat Rapat Baru
-                        </a>
+                    <button onclick="openModal()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                        <i class="fas fa-plus mr-2"></i>Buat Rapat Baru
+                    </button>
                 </div>
             </div>
         </header>
@@ -123,13 +123,39 @@
                     </tbody>
                 </table>
             </div>
-
-           
-           
         </main>
     </div>
 </div>
 
+<!-- Modal -->
+<div id="createMeetingModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Buat Rapat Baru</h2>
+        <iframe src="{{ route('admin.meetings.create') }}" class="w-full h-96" frameborder="0"></iframe>
+        <button onclick="closeModal()" class="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Tutup</button>
+    </div>
+</div>
+
+<style>
+    .modal-enter {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+    .modal-enter-active {
+        opacity: 1;
+        transform: scale(1);
+        transition: opacity 0.3s, transform 0.3s;
+    }
+    .modal-leave {
+        opacity: 1;
+        transform: scale(1);
+    }
+    .modal-leave-active {
+        opacity: 0;
+        transform: scale(0.7);
+        transition: opacity 0.3s, transform 0.3s;
+    }
+</style>
 
 <script>
     document.getElementById('upload-form').addEventListener('submit', function(e) {
@@ -149,6 +175,26 @@
             document.getElementById('upload-message').innerText = 'Upload failed.';
         });
     });
+
+    function openModal() {
+        const modal = document.getElementById('createMeetingModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('modal-enter');
+        setTimeout(() => {
+            modal.classList.remove('modal-enter');
+            modal.classList.add('modal-enter-active');
+        }, 10); // Delay untuk memastikan animasi diterapkan
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('createMeetingModal');
+        modal.classList.remove('modal-enter-active');
+        modal.classList.add('modal-leave');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('modal-leave');
+        }, 300); // Delay untuk menunggu animasi selesai
+    }
 </script>
 
 @push('scripts')

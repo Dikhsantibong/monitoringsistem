@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-gray-50 overflow-auto">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
@@ -64,7 +64,7 @@
                 <div class="p-4">
                     <div class="flex gap-4">
                         <div class="flex-1">
-                            <input type="text" id="search" placeholder="Cari pengguna..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <input type="text" id="search" placeholder="Cari pengguna..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" onkeyup="searchUsers()">
                         </div>
                         <div>
                             <select id="role-filter" class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
@@ -90,7 +90,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
+                        <tbody id="users-body" class="divide-y divide-gray-200">
                             @foreach($users as $user)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -106,31 +106,29 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {{ $user->role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                        {{ $user->role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
                                         {{ ucfirst($user->role) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $user->created_at->format('M d, Y') }}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ $user->created_at->format('d M Y') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900 mr-3">
-                                        <i class="fas fa-edit"></i>
+                                    <a href="{{ route('admin.users.edit', $user->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                        <i class="fas fa-edit mr-2"></i>Edit
                                     </a>
-                                    <a href="{{ route('admin.users.delete', $user->id) }}" 
-                                       class="text-red-600 hover:text-red-900">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash-alt mr-2"></i>Hapus
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
-
-                    <!-- Pagination -->
-                    <div class="mt-4">
-                        {{ $users->links() }}
-                    </div>
                 </div>
             </div>
         </main>
@@ -138,42 +136,23 @@
 </div>
 @endsection
 
-@push('scripts')
+
 <script>
-$(document).ready(function() {
-    // Initialize DataTable
-    const table = $('#users-table').DataTable({
-        responsive: true,
-        pageLength: 10,
-        order: [[3, 'desc']]
-    });
+function searchUsers() {
+    const input = document.getElementById('search').value.toLowerCase();
+    const rows = document.querySelectorAll('#users-body tr');
 
-    // Search functionality
-    $('#search').on('keyup', function() {
-        table.search(this.value).draw();
-    });
-
-    // Role filter
-    $('#role-filter').on('change', function() {
-        table.column(2).search(this.value).draw();
-    });
-});
-
-// Delete confirmation
-function confirmDelete(userId) {
-    Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: "Anda tidak akan bisa mengembalikannya!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, hapus!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById(`delete-form-${userId}`).submit();
+    rows.forEach(row => {
+        const name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+        const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        
+        if (name.includes(input) || email.includes(input)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
     });
 }
 </script>
+@push('scripts')
 @endpush

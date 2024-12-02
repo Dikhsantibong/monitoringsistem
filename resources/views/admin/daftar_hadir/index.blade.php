@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-gray-50 overflow-auto">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md">
         <div class="p-4">
@@ -63,6 +63,12 @@
         <main class="p-6">
             <div class="bg-white rounded-lg shadow p-6 mt-4">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
+                
+                <!-- Input Pencarian -->
+                <div class="mb-4">
+                    <input type="text" id="search" placeholder="Cari Nama..." class="border border-gray-300 rounded-lg p-2 w-full">
+                </div>
+
                 <div class="overflow-x-auto">
                     <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
                         <thead class="bg-gray-100">
@@ -89,4 +95,24 @@
         </main>        
     </div>
 </div>
+
+<script>
+    // Fungsi untuk pencarian
+    document.getElementById('search').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#attendance-body tr');
+
+        rows.forEach(row => {
+            const name = row.querySelector('td').textContent.toLowerCase();
+            if (name.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+@push('scripts')
+    
+@endpush
 @endsection 

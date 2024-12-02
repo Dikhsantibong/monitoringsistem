@@ -81,6 +81,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/upload', [AdminMeetingController::class, 'upload'])->name('meetings.upload');
         Route::get('/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
         Route::get('/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
+        Route::get('/user/daily-meeting', [UserController::class, 'dailyMeeting'])->name('user.daily-meeting');
     });
 
     Route::prefix('users')->group(function () {

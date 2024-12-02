@@ -64,17 +64,26 @@
         <main class="p-6">
             <!-- Overview Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-yellow-500 rounded-lg shadow p-6">
-                    <h3 class="text-white text-sm font-medium">Progress Harian</h3>
-                    <p class="text-2xl font-bold text-white mt-2">85%</p>
+                <div class="bg-yellow-500 rounded-lg shadow p-6 flex items-center">
+                    <i class="fas fa-chart-line mr-4 text-white" style="font-size: 24px;"></i>
+                    <div>
+                        <h3 class="text-white text-sm font-medium">Progress Harian</h3>
+                        <p class="text-2xl font-bold text-white mt-2">85%</p>
+                    </div>
                 </div>
-                <div class="bg-green-500 rounded-lg shadow p-6">
-                    <h3 class="text-white text-sm font-medium">Status Aktivitas</h3>
-                    <p class="text-2xl font-bold text-white mt-2">Aktif</p>
+                <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
+                    <i class="fas fa-check-circle mr-4 text-white" style="font-size: 24px;"></i>
+                    <div>
+                        <h3 class="text-white text-sm font-medium">Status Aktivitas</h3>
+                        <p class="text-2xl font-bold text-white mt-2">Aktif</p>
+                    </div>
                 </div>
-                <div class="bg-blue-500 rounded-lg shadow p-6">
-                    <h3 class="text-white text-sm font-medium">Notifikasi</h3>
-                    <p class="text-2xl font-bold text-white mt-2">3 Baru</p>
+                <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
+                    <i class="fas fa-bell mr-4 text-white" style="font-size: 24px;"></i>
+                    <div>
+                        <h3 class="text-white text-sm font-medium">Notifikasi</h3>
+                        <p class="text-2xl font-bold text-white mt-2">3 Baru</p>
+                    </div>
                 </div>
             </div>
 

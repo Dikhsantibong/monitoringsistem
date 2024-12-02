@@ -2,6 +2,7 @@
 
 @section('content')
 
+
 <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
     <aside class="w-64 bg-yellow-500 shadow-lg">
@@ -21,13 +22,7 @@
                 <button class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500" onclick="toggleDailyMeetingDropdown()">
                     <i class="fas fa-users mr-3"></i>
                     <span>Daily Meeting</span>
-                    {{-- <i class="fas fa-caret-down ml-2"></i> --}}
                 </button>
-                {{-- <div id="daily-meeting-dropdown" class="mt-2   hidden z-10">
-                    <a href="{{ route('daily.meeting') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Jadwal Pertemuan</a>
-                    <a href="{{ route('attendance.check') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Cek Absensi</a>
-                    <a href="{{ route('attendance.record') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Rekam Kehadiran</a>
-                </div> --}}
             </div>
             <a href="{{ route('monitoring') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
                 <i class="fas fa-chart-line mr-3"></i>
@@ -93,7 +88,7 @@
                             <tr>
                                 <td>{{ $meeting->scheduled_at }}</td>
                                 <td>{{ $meeting->title }}</td>
-                                <td>{{ $meeting->participants }}</td>
+                                <td>{{ $meeting->participants->pluck('name')->implode(', ') }}</td>
                             </tr>
                             @endforeach
                         </tbody>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-gray-50 overflow-auto">
    <!-- Sidebar -->
    <aside class="w-64 bg-white shadow-md">
     <div class="p-4">

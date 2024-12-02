@@ -4,7 +4,7 @@
 <style>
     
 </style>
-<div class="flex h-screen bg-gray-50 overflow-hidden fixed">
+<div class="flex h-screen bg-gray-50 overflow-auto fixed">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md overflow-hidden">
         <div class="p-4">
@@ -75,9 +75,10 @@
         <main class="p-6">
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Card 1 -->
                 <div class="bg-blue-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <i class="fas fa-users text-blue-500 text-xl mr-3"></i>
+                        <i class="fa-solid fa-users text-white text-3xl mr-3"></i>
                         <div>
                             <h3 class="text-white text-sm font-medium">Total Pengguna</h3>
                             <p class="text-2xl font-bold text-white mt-1" id="total-users">
@@ -86,9 +87,10 @@
                         </div>
                     </div>
                 </div>
+                <!-- Card 2 -->
                 <div class="bg-green-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <i class="fas fa-calendar text-green-500 text-xl mr-3"></i>
+                        <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
                         <div>
                             <h3 class="text-white text-sm font-medium">Rapat Hari Ini</h3>
                             <p class="text-2xl font-bold text-white mt-1" id="today-meetings">
@@ -97,9 +99,10 @@
                         </div>  
                     </div>
                 </div>
+                <!-- Card 3 -->
                 <div class="bg-yellow-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <i class="fas fa-users text-yellow-500 text-xl mr-3"></i>
+                        <i class="fa-solid fa-user-check text-white text-3xl mr-3"></i>
                         <div>
                             <h3 class="text-white text-sm font-medium">Pengguna Aktif</h3>
                             <p class="text-2xl font-bold text-white mt-1" id="active-users">
@@ -109,6 +112,7 @@
                     </div>
                 </div>
             </div>
+            
 
             <!-- Charts -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

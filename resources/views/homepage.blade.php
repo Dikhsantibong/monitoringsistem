@@ -6,28 +6,56 @@
 @endsection
 
 @section('content')
+<style>
+    .logo-left {
+        height: 50px; 
+        margin-right: 15px; 
+        
+    }
 
-<div class="container my-1">
-<nav class="navbar navbar-expand-lg navbar-light ">
-    <a class="navbar-brand" href="{{ url('/') }}">
-        <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" style="height: 60px;">
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+    .navbar {
+        display: flex; /* Menggunakan flexbox untuk mengatur posisi */
+        align-items: center; /* Menyelaraskan item secara vertikal */
+        border-radius: 10px;
+        margin-bottom: 30px
+    }
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('login') }}">Login</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-    <div class="container my-4">
+    .navbar-brand {
+        display: flex; /* Menggunakan flexbox untuk logo */
+        align-items: center; /* Menyelaraskan logo secara vertikal */
+    }
+</style>
+<div class="container my-4">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid">
+            <!-- Logo di kiri -->
+            <a class="navbar-brand" href="{{ url('/') }}">
+                <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="logo-left">
+            </a>
+    
+            <!-- Tombol toggle untuk responsivitas -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <!-- Menu di kanan -->
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <button class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700" type="button" aria-label="Toggle navigation">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+
+
+
+    
     <h1 class="text-center">Selamat Datang di Sistem Informasi Pembangkit Listrik Sulawesi Tenggara</h1>
 
-    <h3 class="mt-4" style="color: #007bff;">Peta Lokasi Unit Pembangkit</h3>
+    <h3 class="mt-4">Peta Lokasi Unit Pembangkit</h3>
     <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px;"></div>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -58,7 +86,7 @@
 
 
     <!-- Highlight Kinerja -->
-    <h3 class="mt-4">Highlight Kinerja</h3>
+    <h3 class="mt-4 mb-4">Highlight Kinerja</h3>
     <div class="row">
         <div class="col-md-4">
             <div class="card text-center">
@@ -143,7 +171,7 @@
     </form>
 
     <!-- Blog Edukasi -->
-    <h3 class="mt-4 text-primary">Blog Edukasi</h3>
+    <h3 class="mt-4 mb-4 text-primary">Blog Edukasi</h3>
     <div class="row justify-content-center">
         @foreach (array_slice($educationalBlogs, 0, 3) as $blog)
             <div class="col-md-4 mb-4">
@@ -159,17 +187,46 @@
             </div>
         @endforeach
     </div>
-
-    <!-- Statistik Pengunjung -->
-    <h3 class="mt-4">Statistik Pengunjung</h3>
-    <div id="visitor-statistics" style="background-color: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);">
-        <!-- Statistik pengunjung akan ditampilkan di sini -->
-    </div>
 </div>
 
+   
 
-
-
-
+<!-- Footer -->
+<footer class="footer w-screen">
+    <div class="content">
+        <div class="column">
+            <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" style="height: 40px; margin-bottom: 10px">
+            <p>PLN Nusantara Power terdepan dan terpercaya dalam bisnis energi berkelanjutan di Asia Tenggara.</p>
+            <p>The foremost and reliable sustainable energy business on SEA.</p>
+            <div class="social-icons">
+                <!-- Tambahkan ikon media sosial -->
+                <a href="#"><i class="fab fa-youtube"></i></a>
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="column">
+            <h4>Kontak/Contact</h4>
+            <p>Jl. Chairil Anwar No. 01, Kendari, Sulawesi tenggara, Indonesia</p>
+            <p>Email: info@plnnusantarapower.co.id</p>
+            <p>Telepon: +62 31 8283180</p>
+        </div>
+        <div class="column">
+            <h4>Strategic Office</h4>
+            <p>18 Office Park, Lt.2 ABCD</p>
+            <p>Jl. TB Simatupang No.18, Jakarta Selatan, Indonesia</p>
+        </div>
+        <div class="column">
+            <h4>Newsletter</h4>
+            <form>
+                <input type="email" placeholder="Email" required />
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright © 2023 <a href="#">PT PLN Nusantara Power</a>. All Rights Reserved.
+    </div>
+</footer>
 
 @endsection

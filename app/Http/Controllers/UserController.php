@@ -21,7 +21,12 @@ class UserController extends Controller
 
     public function dailyMeeting()
     {
-        return view('user.daily-Meeting'); // Pastikan file view ini ada
+        // Ambil semua pertemuan yang dijadwalkan untuk hari ini
+        $meetings = Meeting::with(['department', 'participants'])
+            ->whereDate('scheduled_at', today())
+            ->get(); // Ambil semua pertemuan yang dijadwalkan untuk hari ini
+
+        return view('user.daily-meeting', compact('meetings')); // Kirim data ke tampilan
     }
 
     public function support()
@@ -48,8 +53,8 @@ class UserController extends Controller
 
     public function meetings()
     {
-        $meetings = Meeting::all(); // Ambil semua jadwal meeting
-        return view('user.meetings', compact('meetings'));
+        $meetings = Meeting::with(['department', 'participants'])->get(); // Ambil semua jadwal meeting dengan relasi
+        return view('user.meetings', compact('meetings')); // Kirim data ke tampilan
     }
     
     public function updateProfile(Request $request)
