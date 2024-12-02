@@ -40,13 +40,15 @@
     
             <!-- Menu di kanan -->
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <button class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700" type="button" aria-label="Toggle navigation">
+                <button class="btn btn-link text-secondary d-lg-none" type="button" aria-label="Toggle navigation">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                     </svg>
                 </button>
+    
+                <!-- Tombol Login -->
+                <a href="{{ route('login') }}" class="btn btn-primary ms-3 d-lg-inline d-block">Login</a>
             </div>
-        </div>
     </nav>
     
 

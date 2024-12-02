@@ -39,7 +39,9 @@ html, body {
 }
 
 .card {
-    background-color: #e8f5e9;
+    background-color: rgba(36,35,73,1);
+    color: white;
+    font-family: inherit;
     border: none;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
