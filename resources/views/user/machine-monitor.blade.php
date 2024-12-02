@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-yellow-500 shadow-lg hidden md:block">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">PLN NUSANTARA POWER KENDARI</h2>
+            <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
         </div>
         <nav class="mt-4">
             <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
@@ -44,7 +44,7 @@
                 <h1 class="text-2xl font-semibold text-gray-800">Machine Monitor</h1>
                 <div class="relative">
                     <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                        <img src="{{ Auth::user()->avatar ?? asset('images/default-avatar.png') }}" 
+                        <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin.png') }}" 
                              class="w-8 h-8 rounded-full mr-2">
                         <span class="text-gray-700">{{ Auth::user()->name }}</span>
                         <i class="fas fa-caret-down ml-2"></i>

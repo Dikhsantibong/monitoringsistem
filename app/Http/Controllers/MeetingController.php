@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Meeting;
+
 
 class MeetingController extends Controller
 {
     public function index()
     {
-        return view('user.daily-meeting'); // Ganti dengan view yang sesuai
+        $meetings = Meeting::all(); // Ganti dengan logika untuk mendapatkan data pertemuan
+        return view('user.daily-meeting', compact('meetings')); // Ganti dengan view yang sesuai
     }
 
     public function create()

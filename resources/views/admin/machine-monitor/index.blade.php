@@ -332,7 +332,7 @@
     <!-- Similar structure to Add Machine Modal but with pre-filled values -->
 </div>
 
-@section('styles')
+
 
 
 <script>

@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-yellow-500 shadow-lg">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">PLN NUSANTARA POWER KENDARI</h2>
+            <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
         </div>
         <nav class="mt-4">
             <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 bg-yellow-500 text-blue-700">
@@ -44,7 +44,7 @@
                 <div class="flex items-center">
                     <div class="relative">
                         <button class="flex items-center" onclick="showLogoutConfirmation()">
-                            <img src="{{ Auth::user()->avatar ?? asset('images/default-avatar.png') }}" 
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin.png') }}" 
                                  class="w-8 h-8 rounded-full mr-2">
                             <span class="text-gray-700">{{ Auth::user()->name }}</span>
                         </button>

@@ -55,6 +55,9 @@
                     <button onclick="uploadMeeting()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
                         <i class="fas fa-upload mr-2"></i>Upload Rapat
                     </button>
+                        <a href="{{ route('admin.meetings.create') }}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                            <i class="fas fa-plus mr-2"></i>Buat Rapat Baru
+                        </a>
                 </div>
             </div>
         </header>

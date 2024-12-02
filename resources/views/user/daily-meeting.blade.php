@@ -6,7 +6,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-yellow-500 shadow-lg">
         <div class="p-4">
-            <h2 class="text-xl font-bold text-blue-600">PLN NUSANTARA POWER KENDARI</h2>
+            <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
         </div>
         <nav class="mt-4">
             <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
@@ -21,13 +21,13 @@
                 <button class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500" onclick="toggleDailyMeetingDropdown()">
                     <i class="fas fa-users mr-3"></i>
                     <span>Daily Meeting</span>
-                    <i class="fas fa-caret-down ml-2"></i>
+                    {{-- <i class="fas fa-caret-down ml-2"></i> --}}
                 </button>
-                <div id="daily-meeting-dropdown" class="mt-2   hidden z-10">
+                {{-- <div id="daily-meeting-dropdown" class="mt-2   hidden z-10">
                     <a href="{{ route('daily.meeting') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Jadwal Pertemuan</a>
                     <a href="{{ route('attendance.check') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Cek Absensi</a>
                     <a href="{{ route('attendance.record') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Rekam Kehadiran</a>
-                </div>
+                </div> --}}
             </div>
             <a href="{{ route('monitoring') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
                 <i class="fas fa-chart-line mr-3"></i>
@@ -51,7 +51,7 @@
                 <h1 class="text-2xl font-semibold text-gray-800">Daily Meeting</h1>
                 <div class="relative">
                     <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                        <img src="{{ Auth::user()->avatar ?? asset('images/default-avatar.png') }}" 
+                        <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin.png') }}" 
                              class="w-8 h-8 rounded-full mr-2">
                         <span class="text-gray-700">{{ Auth::user()->name }}</span>
                         <i class="fas fa-caret-down ml-2"></i>
@@ -80,25 +80,22 @@
                 </div>
                 <div class="bg-white rounded-lg shadow p-4">
                     <h2 class="text-lg font-semibold">Jadwal Pertemuan</h2>
-                    <table class="min-w-full mt-2 bg-white border border-gray-300">
+                    <table class="mt-4 w-full">
                         <thead>
                             <tr>
-                                <th class="py-2 px-4 border-b">Waktu</th>
-                                <th class="py-2 px-4 border-b">Agenda</th>
-                                <th class="py-2 px-4 border-b">Peserta</th>
+                                <th>Waktu</th>
+                                <th>Agenda</th>
+                                <th>Peserta</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach($meetings as $meeting)
                             <tr>
-                                <td class="py-2 px-4 border-b">09:00 - 10:00</td>
-                                <td class="py-2 px-4 border-b">Rapat Tim</td>
-                                <td class="py-2 px-4 border-b">Tim Pengembangan</td>
+                                <td>{{ $meeting->scheduled_at }}</td>
+                                <td>{{ $meeting->title }}</td>
+                                <td>{{ $meeting->participants }}</td>
                             </tr>
-                            <tr>
-                                <td class="py-2 px-4 border-b">11:00 - 12:00</td>
-                                <td class="py-2 px-4 border-b">Review Proyek</td>
-                                <td class="py-2 px-4 border-b">Manajer Proyek</td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -160,5 +157,8 @@
         }
     }
 </script>
+@push('scripts')
+    
+@endpush
 
 @endsection
