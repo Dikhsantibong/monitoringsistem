@@ -66,11 +66,11 @@
     <script>
         // Membuat peta tanpa kontrol zoom dan interaksi dengan zoom out sedikit
         var map = L.map('map', {
-                zoomControl: true, // Menonaktifkan tombol zoom
-                scrollWheelZoom: true, // Menonaktifkan zoom dengan scroll mouse
-                doubleClickZoom: true, // Menonaktifkan zoom dengan klik dua kali
-                dragging: true, // Menonaktifkan peta yang bisa digeser
-        }).setView([-3.0125, 122.5156], 7); // Mengatur zoom level menjadi 12 dan menggeser ke bawah sedikit
+                zoomControl: false, // Menonaktifkan tombol zoom
+                scrollWheelZoom: false, // Menonaktifkan zoom dengan scroll mouse
+                doubleClickZoom: false, // Menonaktifkan zoom dengan klik dua kali
+                dragging: false, // Menonaktifkan peta yang bisa digeser
+        }).setView([-3.0125, 120.5156], 7); // Mengatur zoom level menjadi 12 dan menggeser ke bawah sedikit
         // Menambahkan layer peta
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
