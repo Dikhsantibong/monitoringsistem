@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('styles')
@@ -24,6 +23,11 @@
         display: flex; /* Menggunakan flexbox untuk logo */
         align-items: center; /* Menyelaraskan logo secara vertikal */
     }
+    .btn-custom {
+    background-color: #A8D600; /* Ganti dengan warna yang diinginkan */
+    color: white; /* Warna teks */
+    border: none; /* Menghilangkan border */
+}
 </style>
 <div class="container my-4">
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
@@ -45,10 +49,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                     </svg>
                 </button>
-    
-                <!-- Tombol Login -->
-                <a href="{{ route('login') }}" class="btn btn-primary ms-3 d-lg-inline d-block">Login</a>
             </div>
+            <a href="{{ route('login') }}" class="btn btn-custom ms-3 d-lg-inline d-block">Login</a>
     </nav>
     
 
