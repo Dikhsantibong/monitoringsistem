@@ -2,6 +2,29 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/homepage.css') }}">
+    <style>
+        .navbar {
+            background-color: #0095B7; /* Warna navbar */
+        }
+        .navbar-brand img {
+            height: 50px; /* Sesuaikan ukuran logo jika perlu */
+        }
+        .navbar-nav .nav-link {
+            color: white; /* Warna teks menu */
+        }
+        .navbar-nav .nav-link:hover {
+            color: #A8D600; /* Warna saat hover */
+        }
+        .btn-custom {
+            background-color: white; /* Ubah warna tombol login menjadi putih */
+            color: #0095B7; /* Ubah warna teks tombol menjadi warna navbar */
+            border: 1px solid #0095B7; /* Tambahkan border jika diinginkan */
+        }
+        .btn-custom:hover {
+            background-color: #A8D600; /* Warna saat hover */
+            color: white; /* Ubah warna teks saat hover */
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -24,33 +47,26 @@
         align-items: center; /* Menyelaraskan logo secara vertikal */
     }
     .btn-custom {
-    background-color: #A8D600; /* Ganti dengan warna yang diinginkan */
+    background-color: #0095B7; /* Ganti dengan warna yang diinginkan */
     color: white; /* Warna teks */
     border: none; /* Menghilangkan border */
 }
 </style>
 <div class="container my-4">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
+    <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container-fluid">
-            <!-- Logo di kiri -->
             <a class="navbar-brand" href="{{ url('/') }}">
-                <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="logo-left">
+                <img src="{{ asset('logo/pjb-logo (1).png') }}" alt="Logo" class="logo-left">
             </a>
-    
-            <!-- Tombol toggle untuk responsivitas -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-    
-            <!-- Menu di kanan -->
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <button class="btn btn-link text-secondary d-lg-none" type="button" aria-label="Toggle navigation">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                    </svg>
-                </button>
+                
             </div>
             <a href="{{ route('login') }}" class="btn btn-custom ms-3 d-lg-inline d-block">Login</a>
+        </div>
+        
     </nav>
     
 
@@ -156,7 +172,7 @@
     </div>
 
     <!-- Formulir Kontak -->
-    <h3 class="mt-4">Formulir Kontak</h3>
+    {{-- <h3 class="mt-4">Formulir Kontak</h3>
     <form action="{{ route('contact.submit') }}" method="POST">
         @csrf
         <div class="form-group mb-3">
@@ -190,7 +206,7 @@
                 </div>
             </div>
         @endforeach
-    </div>
+    </div> --}}
 </div>
 
    
