@@ -1,29 +1,27 @@
-<?php
+<?php 
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Marker extends Model
+class PowerPlant extends Model
 {
     use HasFactory;
 
     // Tentukan nama tabel jika tidak sesuai dengan konvensi
-    protected $table = 'markers';
+    protected $table = 'power_plants';
 
     // Tentukan kolom yang dapat diisi
     protected $fillable = [
-        'lat',
-        'lng',
         'name',
-        'capacity',
-        'status',
-        'date',
-        'is_active',
-        'DMN',
-        'DMP',
-        'HOP',
-        'Beban',
+        'latitude',
+        'longitude',
     ];
+
+    public function machines()
+    {
+        return $this->hasMany(Machine::class, 'power_plant_id');
+    }
 }
+

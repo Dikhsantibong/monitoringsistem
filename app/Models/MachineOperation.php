@@ -5,25 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Marker extends Model
+class MachineOperation extends Model
 {
     use HasFactory;
 
     // Tentukan nama tabel jika tidak sesuai dengan konvensi
-    protected $table = 'markers';
+    protected $table = 'machine_operations';
 
     // Tentukan kolom yang dapat diisi
     protected $fillable = [
-        'lat',
-        'lng',
-        'name',
-        'capacity',
-        'status',
-        'date',
-        'is_active',
-        'DMN',
-        'DMP',
-        'HOP',
-        'Beban',
+        'machine_id',
+        'dmn',
+        'dmp',
+        'load_value',
+        'hop',
+        'recorded_at',
     ];
 }
+

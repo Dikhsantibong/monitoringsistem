@@ -61,17 +61,23 @@
                 <table class="min-w-full bg-white border border-gray-300">
                     <thead>
                         <tr>
+                            <th class="py-2 px-4 border-b">Mesin</th>
+                            <th class="py-2 px-4 border-b">DMN</th>
+                            <th class="py-2 px-4 border-b">DMP</th>
+                            <th class="py-2 px-4 border-b">Beban</th>
                             <th class="py-2 px-4 border-b">Status</th>
-                            <th class="py-2 px-4 border-b">Kapasitas (MW)</th>
-                            <th class="py-2 px-4 border-b">Ketersediaan</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($unit->machines as $machine) <!-- Asumsi ada relasi machines di PowerPlant -->
                         <tr>
-                            <td class="py-2 px-4 border-b">{{ $unit->status }}</td>
-                            <td class="py-2 px-4 border-b">{{ $unit->capacity }}</td>
-                            <td class="py-2 px-4 border-b">{{ $unit->availability ? 'Tersedia' : 'Tidak Tersedia' }}</td>
+                            <td class="py-2 px-4 border-b">{{ $machine->name }}</td>
+                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->status ?? 'N/A' }}</td>
                         </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

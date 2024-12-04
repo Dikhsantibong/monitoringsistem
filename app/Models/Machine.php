@@ -10,12 +10,10 @@ class Machine extends Model
     use HasFactory;
 
     protected $fillable = [
+        'power_plant_id',
         'name',
-        'code',
-        'category_id',
-        'location',
         'status',
-        'uptime'
+        'capacity'
     ];
 
     public function issues()
@@ -28,8 +26,8 @@ class Machine extends Model
         return $this->hasMany(MachineMetric::class);
     }
 
-    public function category()
+    public function powerPlant()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(PowerPlant::class, 'power_plant_id');
     }
 }
