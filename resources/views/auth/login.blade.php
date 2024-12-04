@@ -7,10 +7,10 @@
             <!-- Kolom kiri -->
             <div class="col-md-6 text-center left-section d-flex align-items-center justify-content-center">
                 <div>
-                    <div class="logo-container mb-3">
-                        <span class="logo">B</span>
+                    <div class="mb-3">
+                        <img src="{{ asset('logo/pjb-logo.png') }}" alt="Logo" class="logo">
                     </div>
-                    <h3 class="welcome-text">Welcome Back!!!</h3>
+
                 </div>
             </div>
             <!-- Kolom kanan -->
