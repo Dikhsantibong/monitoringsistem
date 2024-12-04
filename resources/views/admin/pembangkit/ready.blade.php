@@ -53,31 +53,29 @@
 
         <main class="p-6">
             <!-- Konten Kesiapan Pembangkit -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Status Pembangkit</h2>
+            @foreach($units as $unit)
+            <div class="bg-white rounded-lg shadow p-6 mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
                 
                 <!-- Tabel Status Pembangkit -->
                 <table class="min-w-full bg-white border border-gray-300">
                     <thead>
                         <tr>
-                            <th class="py-2 px-4 border-b">Nama Unit</th>
                             <th class="py-2 px-4 border-b">Status</th>
                             <th class="py-2 px-4 border-b">Kapasitas (MW)</th>
                             <th class="py-2 px-4 border-b">Ketersediaan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($units as $unit)
                         <tr>
-                            <td class="py-2 px-4 border-b">{{ $unit->name }}</td>
                             <td class="py-2 px-4 border-b">{{ $unit->status }}</td>
                             <td class="py-2 px-4 border-b">{{ $unit->capacity }}</td>
                             <td class="py-2 px-4 border-b">{{ $unit->availability ? 'Tersedia' : 'Tidak Tersedia' }}</td>
                         </tr>
-                        @endforeach
                     </tbody>
                 </table>
             </div>
+            @endforeach
         </main>
     </div>
 </div>
