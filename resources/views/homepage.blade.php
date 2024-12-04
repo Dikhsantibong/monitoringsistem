@@ -56,7 +56,7 @@
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url('/') }}">
-                <img src="{{ asset('logo/pjb-logo (1).png') }}" alt="Logo" class="logo-left">
+                <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="logo-left">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -64,7 +64,7 @@
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 
             </div>
-            <a href="{{ route('login') }}" class="btn btn-custom ms-3 d-lg-inline d-block">Login</a>
+            <button><a href="{{ route('login') }}" class="btn btn-custom ms-3 d-lg-inline d-block" style="background-color: #A8D600">Login</a></button>
         </div>
         
     </nav>
