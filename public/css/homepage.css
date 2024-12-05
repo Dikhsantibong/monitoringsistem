@@ -18,6 +18,11 @@ html, body {
     text-align: center;
 }
 
+#line-chart {
+    display: block !important; /* Pastikan elemen terlihat */
+    height: 500px; /* Pastikan tinggi sudah diatur */
+}
+
 
 /* Responsivitas untuk layar kecil */
 @media (max-width: 768px) {

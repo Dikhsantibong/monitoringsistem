@@ -30,4 +30,9 @@ class Machine extends Model
     {
         return $this->belongsTo(PowerPlant::class, 'power_plant_id');
     }
+
+    public function operations()
+    {
+        return $this->hasMany(MachineOperation::class);
+    }
 }

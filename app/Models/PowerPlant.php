@@ -23,5 +23,11 @@ class PowerPlant extends Model
     {
         return $this->hasMany(Machine::class, 'power_plant_id');
     }
+
+    // Tambahkan metode untuk mendapatkan unit berdasarkan nama
+    public function getMachinesByName($name)
+    {
+        return $this->machines()->where('name', $name)->get();
+    }
 }
 
