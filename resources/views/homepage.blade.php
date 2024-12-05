@@ -6,8 +6,18 @@
         <style>
             .navbar {
                 background-color: #0095B7;
-                position: relative;
-                z-index: 1000; /* Menambahkan z-index untuk navbar */
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                transition: transform 5s cubic-bezier(0.4, 0, 0.2, 1), 
+                            opacity 0.2s ease-in-out;
+                opacity: 1;
+            }
+            
+            .navbar.hidden {
+                transform: translateY(-100%);
             }
             
             .navbar-brand img {
@@ -57,7 +67,7 @@
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 padding: 0.5rem 0;
                 min-width: 200px;
-                z-index: 1001; /* Menambahkan z-index lebih tinggi untuk dropdown */
+                z-index: 1001;
             }
 
             .mobile-menu a {
@@ -86,9 +96,13 @@
                 }
             }
 
-            /* Memastikan dropdown tetap di atas konten lain */
+            /* Adjust content padding to prevent overlap with fixed navbar */
+            .container {
+                padding-top: 80px;
+            }
+
             #map {
-                z-index: 1; /* z-index lebih rendah dari navbar dan dropdown */
+                z-index: 1;
                 position: relative;
             }
         </style>
@@ -142,6 +156,24 @@
                 if (!mobileMenu.contains(event.target) && !navbarToggler.contains(event.target)) {
                     mobileMenu.classList.remove('show');
                 }
+            });
+
+            // Scroll handling untuk navbar
+            let lastScrollTop = 0;
+            const navbar = document.querySelector('.navbar');
+            
+            window.addEventListener('scroll', () => {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (scrollTop > lastScrollTop) {
+                    // Scroll ke bawah
+                    navbar.classList.add('hidden');
+                } else {
+                    // Scroll ke atas
+                    navbar.classList.remove('hidden');
+                }
+                
+                lastScrollTop = scrollTop;
             });
         </script>
 
