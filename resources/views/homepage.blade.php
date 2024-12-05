@@ -189,6 +189,48 @@
     </footer>
   
     <script>
+            var options = {
+        series: [
+            {
+                name: 'Total Kapasitas Listrik',
+                data: [{{ implode(',', $total_capacity_data) }}] // Data kapasitas listrik
+            },
+            {
+                name: 'Total Unit Pembangkit',
+                data: [{{ implode(',', $total_units_data) }}] // Data total unit pembangkit
+            },
+            {
+                name: 'Unit Pembangkit Aktif',
+                data: [{{ implode(',', $active_units_data) }}] // Data unit aktif
+            }
+        ],
+        chart: {
+            type: 'line',
+            height: 350
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        xaxis: {
+            categories: ["{{ implode('","', $dates) }}"] // Kategori (tanggal)
+        },
+        title: {
+            text: 'Grafik Kinerja Pembangkit',
+            align: 'center'
+        },
+        colors: ['#0095B7', '#A8D600', '#FF5733'], // Sesuaikan warna
+        tooltip: {
+            enabled: true
+        }
+    };
+
+    // Render grafik
+    var chart = new ApexCharts(document.querySelector("#line-chart"), options);
+    chart.render();
+
         // Membuat peta tanpa kontrol zoom dan interaksi dengan zoom out sedikit
         var map = L.map('map', {
                 zoomControl: false, // Menonaktifkan tombol zoom
