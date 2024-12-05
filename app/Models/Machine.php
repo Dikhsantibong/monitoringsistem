@@ -35,4 +35,9 @@ class Machine extends Model
     {
         return $this->hasMany(MachineOperation::class);
     }
+
+    public function machineOperations()
+    {
+        return $this->hasMany(MachineOperation::class, 'machine_id');
+    }
 }

@@ -55,6 +55,10 @@
             <!-- Konten Laporan SR/WO -->
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Detail Laporan</h2>
+                <div class="mb-4">
+                    <input type="text" id="search" placeholder="Cari..." class="w-full py-2 pl-10 text-sm text-gray-700">
+                    <i class="fas fa-search absolute top-3 left-3 text-gray-400"></i>
+                </div>
                 
                 <!-- Card SR -->
                 <div class="bg-white rounded-lg shadow p-6 mb-4">

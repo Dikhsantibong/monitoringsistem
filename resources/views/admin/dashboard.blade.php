@@ -76,43 +76,36 @@
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <!-- Card 1 -->
-                <div class="bg-blue-500 rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <i class="fa-solid fa-users text-white text-3xl mr-3"></i>
-                        <div>
-                            <h3 class="text-white text-sm font-medium">Total Pengguna</h3>
-                            <p class="text-2xl font-bold text-white mt-1" id="total-users">
-                                {{ $totalUsers }}
-                            </p>
-                        </div>
+                <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
+                    <i class="fa-solid fa-users text-white text-3xl mr-3"></i>
+                    <div class="flex-1">
+                        <h3 class="text-white text-md font-medium">TOTAL PENGGUNA</h3>
                     </div>
+                    <p class="text-2xl font-bold text-white" id="total-users">
+                        {{ $totalUsers }}
+                    </p>
                 </div>
                 <!-- Card 2 -->
-                <div class="bg-green-500 rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
-                        <div>
-                            <h3 class="text-white text-sm font-medium">Rapat Hari Ini</h3>
-                            <p class="text-2xl font-bold text-white mt-1" id="today-meetings">
-                                {{ $todayMeetings }}
-                            </p>
-                        </div>  
+                <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
+                    <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
+                    <div class="flex-1">
+                        <h3 class="text-white text-md font-medium">RAPAT HARI INI</h3>
                     </div>
-                </div>
+                    <p class="text-2xl font-bold text-white" id="today-meetings">
+                        {{ $todayMeetings }}
+                    </p>
+                </div>  
                 <!-- Card 3 -->
-                <div class="bg-yellow-500 rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <i class="fa-solid fa-user-check text-white text-3xl mr-3"></i>
-                        <div>
-                            <h3 class="text-white text-sm font-medium">Pengguna Aktif</h3>
-                            <p class="text-2xl font-bold text-white mt-1" id="active-users">
-                                {{ $activeUsers }}
-                            </p>
-                        </div>
-                    </div>
+                <div class="bg-yellow-500 rounded-lg shadow p-6 flex items-center">
+                    <i class="fa-solid fa-user-check text-white text-3xl mr-3"></i>
+                    <div class="flex-1">
+                        <h3 class="text-white text-md font-medium">PENGGUNA AKTIF</h3>
+                    </div>  
+                    <p class="text-2xl font-bold text-white" id="active-users">
+                        {{ $activeUsers }}
+                    </p>
                 </div>
             </div>
-            
 
             <!-- Charts -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

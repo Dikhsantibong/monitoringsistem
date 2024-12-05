@@ -24,14 +24,7 @@ html, body {
 }
 
 
-/* Responsivitas untuk layar kecil */
-@media (max-width: 768px) {
-    .logo-left {
-        height: 30px; /* Kurangi ukuran logo untuk layar kecil */
-        top: 5px; /* Kurangi jarak atas */
-        left: 10px; /* Kurangi jarak kiri */
-    }
-}
+
 
 
 
