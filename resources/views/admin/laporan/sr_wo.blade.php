@@ -12,6 +12,10 @@
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
+            <a href="{{ route('admin.score-card.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                <span>Score Card Daily</span>
+            </a>
             <a href="{{ route('admin.daftar_hadir.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-list mr-3"></i>
                 <span>Daftar Hadir</span>

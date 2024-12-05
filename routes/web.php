@@ -27,6 +27,7 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Admin\MeetingController;
+use App\Http\Controllers\ScoreCardDailyController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -102,6 +103,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [AdminSettingController::class, 'index'])->name('settings');
         Route::post('/', [AdminSettingController::class, 'update'])->name('settings.update');
         Route::post('/regenerate-api-key', [AdminSettingController::class, 'regenerateApiKey'])->name('settings.regenerate-api-key');
+    });
+
+    Route::prefix('score-card')->group(function () {
+        Route::resource('score-card', ScoreCardDailyController::class);
     });
 });
 
