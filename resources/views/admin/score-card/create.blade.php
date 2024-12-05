@@ -49,50 +49,36 @@
 
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
-        <header class="bg-white shadow-sm">
-            <div class="flex justify-between items-center px-6 py-4">
-                <h1 class="text-2xl font-semibold text-gray-800">Kesiapan Pembangkit</h1>
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Tanggal: {{ \Carbon\Carbon::now()->format('d M Y') }}</span>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                        <i class="fas fa-redo mr-2"></i>Reset
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <main class="p-6">
-            <!-- Konten Kesiapan Pembangkit -->
-            @foreach($units as $unit)
-            <div class="bg-white rounded-lg shadow p-6 mb-4">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6">Tambah Score Card Daily</h2>
                 
-                <!-- Tabel Status Pembangkit -->
-                <table class="min-w-full bg-white border border-gray-300">
-                    <thead>
-                        <tr>
-                            <th class="py-2 px-4 border-b">Mesin</th>
-                            <th class="py-2 px-4 border-b">DMN</th>
-                            <th class="py-2 px-4 border-b">DMP</th>
-                            <th class="py-2 px-4 border-b">Beban</th>
-                            <th class="py-2 px-4 border-b">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($unit->machines as $machine) <!-- Asumsi ada relasi machines di PowerPlant -->
-                        <tr>
-                            <td class="py-2 px-4 border-b">{{ $machine->name }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->status ?? 'N/A' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <form action="{{ route('admin.score-card.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <label for="tanggal" class="block text-gray-700">Tanggal</label>
+                        <input type="date" name="tanggal" id="tanggal" class="w-full border-gray-300 rounded mt-1" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="lokasi" class="block text-gray-700">Lokasi</label>
+                        <input type="text" name="lokasi" id="lokasi" class="w-full border-gray-300 rounded mt-1" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="peserta" class="block text-gray-700">Peserta</label>
+                        <textarea name="peserta" id="peserta" class="w-full border-gray-300 rounded mt-1" required></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="waktu_mulai" class="block text-gray-700">Waktu Mulai</label>
+                        <input type="time" name="waktu_mulai" id="waktu_mulai" class="w-full border-gray-300 rounded mt-1" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="waktu_selesai" class="block text-gray-700">Waktu Selesai</label>
+                        <input type="time" name="waktu_selesai" id="waktu_selesai" class="w-full border-gray-300 rounded mt-1" required>
+                    </div>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan</button>
+                </form>
             </div>
-            @endforeach
-        </main>
+        </div>
     </div>
 </div>
 @endsection 

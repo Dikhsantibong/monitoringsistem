@@ -100,6 +100,15 @@
         background-position: center;
         background-repeat: no-repeat;
         margin: 0;
+        opacity: 0; /* Tidak terlihat saat awal */
+        animation: fadeIn ease 1s;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes fadeIn {
+        0% {opacity:0;}
+        100% {opacity:1;}
     }
 
     .container {

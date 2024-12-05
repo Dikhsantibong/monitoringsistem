@@ -1,10 +1,19 @@
 @extends('layouts.app')
 
-@section('content')
+@push('styles')
+<!-- Tambahkan Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    
+    /* Pastikan konten utama dapat di-scroll */
+    .main-content {
+        overflow-y: auto; /* Izinkan scroll vertikal */
+        height: calc(100vh - 64px); /* Sesuaikan tinggi dengan mengurangi tinggi header */
+    }
 </style>
-<div class="flex h-screen bg-gray-50 overflow-auto fixed">
+@endpush
+
+@section('content')
+<div class="flex h-screen bg-gray-50 overflow-hidden">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md overflow-hidden">
         <div class="p-4">
@@ -14,6 +23,10 @@
             <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
+            </a>
+            <a href="{{ route('admin.score-card.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                <span>Score Card Daily</span>
             </a>
             <a href="{{ route('admin.daftar_hadir.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
                 <i class="fas fa-list mr-3"></i>
@@ -47,7 +60,7 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 overflow-hidden">
+    <div class="flex-1 main-content">
         <!-- Header -->
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
@@ -109,13 +122,48 @@
 
             <!-- Charts -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Ketepatan Waktu</h3>
-                    <canvas id="activityChart" class="w-full h-64"></canvas>
+                <!-- Card Ketepatan Waktu -->
+                <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Ketepatan Waktu</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="toggleChartType('activityChart', 'line')" 
+                                    class="p-2 hover:bg-gray-100 rounded-lg" 
+                                    title="Tampilkan Grafik Garis">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button onclick="toggleChartType('activityChart', 'bar')" 
+                                    class="p-2 hover:bg-gray-100 rounded-lg" 
+                                    title="Tampilkan Grafik Batang">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="height: 300px;">
+                        <canvas id="activityChart"></canvas>
+                    </div>
                 </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Kehadiran Rapat</h3>
-                    <canvas id="meetingChart" class="w-full h-64"></canvas>
+
+                <!-- Card Kehadiran Rapat -->
+                <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Kehadiran Rapat</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="toggleChartType('meetingChart', 'line')" 
+                                    class="p-2 hover:bg-gray-100 rounded-lg" 
+                                    title="Tampilkan Grafik Garis">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button onclick="toggleChartType('meetingChart', 'bar')" 
+                                    class="p-2 hover:bg-gray-100 rounded-lg" 
+                                    title="Tampilkan Grafik Batang">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="height: 300px;">
+                        <canvas id="meetingChart"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -159,7 +207,6 @@
         </main>
     </div>
 </div>
-@endsection
 
 
 <script>
@@ -172,42 +219,153 @@ $(document).ready(function() {
     });
 });
 
-// Chart Aktivitas Pengguna
-const activityCtx = document.getElementById('activityChart').getContext('2d');
-const activityChart = new Chart(activityCtx, {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($activityChartData['labels']) !!},
+let activityChart, meetingChart;
+
+// Inisialisasi charts dengan data sementara
+document.addEventListener('DOMContentLoaded', function() {
+    // Data sementara untuk 7 hari terakhir
+    const sampleData = {
+        dates: [
+            '2024-02-14', '2024-02-15', '2024-02-16', 
+            '2024-02-17', '2024-02-18', '2024-02-19', '2024-02-20'
+        ],
+        scores: [85, 90, 88, 92, 87, 91, 89],
+        attendance: [12, 15, 13, 14, 16, 15, 14]
+    };
+
+    // Format tanggal untuk label
+    const formattedDates = sampleData.dates.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('id-ID', { weekday: 'short', month: 'short', day: 'numeric' });
+    });
+
+    // Data untuk Ketepatan Waktu
+    const activityData = {
+        labels: formattedDates,
         datasets: [{
-            label: 'Aktivitas Pengguna',
-            data: {!! json_encode($activityChartData['data']) !!},
+            label: 'Skor Ketepatan Waktu',
+            data: sampleData.scores,
             borderColor: 'rgb(59, 130, 246)',
-            tension: 0.1
+            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+            tension: 0.1,
+            fill: true
         }]
-    },
-    options: {
+    };
+
+    // Data untuk Kehadiran Rapat
+    const meetingData = {
+        labels: formattedDates,
+        datasets: [{
+            label: 'Jumlah Peserta',
+            data: sampleData.attendance,
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.5)',
+            tension: 0.1,
+            fill: true
+        }]
+    };
+
+    // Konfigurasi umum untuk chart
+    const commonOptions = {
         responsive: true,
-        maintainAspectRatio: false
-    }
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value + (this.chart.config.type === 'activityChart' ? '%' : ' orang');
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index',
+        }
+    };
+
+    // Inisialisasi Chart Aktivitas
+    activityChart = new Chart(document.getElementById('activityChart'), {
+        type: 'line',
+        data: activityData,
+        options: {
+            ...commonOptions,
+            scales: {
+                ...commonOptions.scales,
+                y: {
+                    ...commonOptions.scales.y,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Inisialisasi Chart Meeting
+    meetingChart = new Chart(document.getElementById('meetingChart'), {
+        type: 'line',
+        data: meetingData,
+        options: {
+            ...commonOptions,
+            scales: {
+                ...commonOptions.scales,
+                y: {
+                    ...commonOptions.scales.y,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' orang';
+                        }
+                    }
+                }
+            }
+        }
+    });
 });
 
-// Chart Statistik Meeting
-const meetingCtx = document.getElementById('meetingChart').getContext('2d');
-const meetingChart = new Chart(meetingCtx, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($meetingChartData['labels']) !!},
-        datasets: [{
-            label: 'Rapat',
-            data: {!! json_encode($meetingChartData['data']) !!},
-            backgroundColor: 'rgba(59, 130, 246, 0.5)'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
+// Fungsi untuk mengubah tipe chart
+function toggleChartType(chartId, newType) {
+    const chart = chartId === 'activityChart' ? activityChart : meetingChart;
+    
+    // Simpan data dan options yang ada
+    const currentData = chart.data;
+    const currentOptions = chart.options;
+    
+    // Destroy chart lama
+    chart.destroy();
+    
+    // Buat chart baru dengan tipe yang berbeda
+    const newChart = new Chart(document.getElementById(chartId), {
+        type: newType,
+        data: currentData,
+        options: currentOptions
+    });
+    
+    // Update referensi chart
+    if (chartId === 'activityChart') {
+        activityChart = newChart;
+    } else {
+        meetingChart = newChart;
     }
-});
+}
 
 // Fungsi untuk export aktivitas
 function exportActivities() {
@@ -231,4 +389,6 @@ document.addEventListener('click', function(event) {
 });
 </script>
 @push('scripts')
+@endpush
 
+@endsection
