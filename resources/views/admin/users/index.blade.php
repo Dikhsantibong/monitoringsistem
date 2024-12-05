@@ -134,7 +134,7 @@
         </main>
     </div>
 </div>
-@endsection
+
 
 
 <script>
@@ -156,3 +156,4 @@ function searchUsers() {
 </script>
 @push('scripts')
 @endpush
+@endsection

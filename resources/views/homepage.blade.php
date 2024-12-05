@@ -73,7 +73,7 @@
 
 
         
-        <h1 class="text-center">Selamat Datang di Sistem Informasi Pembangkit Listrik Sulawesi Tenggara</h1>
+        {{-- <h1 class="text-center">Selamat Datang di Sistem Informasi Pembangkit Listrik Sulawesi Tenggara</h1> --}}
 
         <h3 class="mt-4">Peta Lokasi Unit Pembangkit</h3>
         <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px;"></div>
@@ -133,7 +133,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (array_slice($units, 0, 5) as $unit)
+                    @foreach (array_slice($units, 0, 5) as $unit) <!-- Tampilkan hanya 5 unit -->
                         <tr>
                             <td class="text-center">{{ $unit['power_plant']['name'] ?? 'N/A' }}</td>
                             <td class="text-center">{{ $unit['name'] }}</td>
@@ -146,7 +146,7 @@
                     @endforeach
                 </tbody>
             </table>
-            <button id="show-all" class="btn btn-primary mt-3">Tampilkan Semua Data</button>
+            <button id="show-all" class="btn btn-primary mt-3">Tampilkan Semua Data</button> <!-- Tombol untuk menampilkan semua data -->
         </div>
     </div>
 
@@ -235,30 +235,32 @@
             };
             var chart = new ApexCharts(document.querySelector("#line-chart"), options);
             chart.render();
-
+            
         // Anda dapat menambahkan marker lainnya seperti di atas
-
-        document.getElementById('show-all').addEventListener('click', function() {
-            // Mengganti isi tabel dengan semua data
-            const tableBody = document.querySelector('#live-data tbody');
-            tableBody.innerHTML = ''; // Kosongkan tabel
-
-            @foreach ($units as $unit) // Loop untuk menambahkan semua unit
-                const row = `
-                    <tr>
-                        <td class="text-center">{{ $unit['power_plant']['name'] ?? 'N/A' }}</td>
-                        <td class="text-center">{{ $unit['name'] }}</td>
-                        <td class="text-center">{{ $unit['dmn'] ?? 'N/A' }}</td>
-                        <td class="text-center">{{ $unit['dmp'] ?? 'N/A' }}</td>
-                        <td class="text-center">{{ $unit['load'] ?? 'N/A' }}</td>
-                        <td class="text-center {{ $unit['status'] === 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit['status'] }}</td>
-                        <td class="text-center">{{ $unit['capacity'] }} MW</td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row; // Tambahkan baris ke tabel
-            @endforeach
-        });
     </script>
+
+<script>
+    document.getElementById('show-all').addEventListener('click', function() {
+        // Mengganti isi tabel dengan semua data
+        const tableBody = document.querySelector('#live-data tbody');
+        tableBody.innerHTML = ''; // Kosongkan tabel
+
+        @foreach ($units as $unit) // Loop untuk menambahkan semua unit
+            const row = `
+                <tr>
+                    <td class="text-center">{{ $unit['power_plant']['name'] ?? 'N/A' }}</td>
+                    <td class="text-center">{{ $unit['name'] }}</td>
+                    <td class="text-center">{{ $unit['dmn'] ?? 'N/A' }}</td>
+                    <td class="text-center">{{ $unit['dmp'] ?? 'N/A' }}</td>
+                    <td class="text-center">{{ $unit['load'] ?? 'N/A' }}</td>
+                    <td class="text-center {{ $unit['status'] === 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit['status'] }}</td>
+                    <td class="text-center">{{ $unit['capacity'] }} MW</td>
+                </tr>
+            `;
+            tableBody.innerHTML += row; // Tambahkan baris ke tabel
+        @endforeach
+    });
+</script>
     @push('scripts')
     @endpush
         
