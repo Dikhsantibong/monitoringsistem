@@ -2,6 +2,7 @@
 
     @section('styles')
         <link rel="stylesheet" href="{{ asset('css/homepage.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <style>
             .navbar {
                 background-color: #0095B7; /* Warna navbar */
@@ -64,7 +65,11 @@
                 <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                     
                 </div>
-                <button><a href="{{ route('login') }}" class="btn btn-custom ms-3 d-lg-inline d-block" style="background-color: #A8D600">Login</a></button>
+                <button>
+                    <a href="{{ route('login') }}" class="btn btn-custom ms-3 d-lg-inline d-block">
+                        <i class="fas fa-user"></i> Login
+                    </a>
+                </button>
             </div>
             
         </nav>
@@ -133,20 +138,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (array_slice($units, 0, 5) as $unit) <!-- Tampilkan hanya 5 unit -->
+                    @if(count($units) > 0)
+                        @foreach ($units as $unit)
+                            <tr>
+                                <td class="text-center">{{ $unit['power_plant']['name'] ?? 'N/A' }}</td>
+                                <td class="text-center">{{ $unit['name'] }}</td>
+                                <td class="text-center">{{ $unit['dmn'] ?? 'N/A' }}</td>
+                                <td class="text-center">{{ $unit['dmp'] ?? 'N/A' }}</td>
+                                <td class="text-center">{{ $unit['load'] ?? 'N/A' }}</td>
+                                <td class="text-center {{ $unit['status'] === 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit['status'] }}</td>
+                                <td class="text-center">{{ $unit['capacity'] }} MW</td>
+                            </tr>
+                        @endforeach
+                    @else
                         <tr>
-                            <td class="text-center">{{ $unit['power_plant']['name'] ?? 'N/A' }}</td>
-                            <td class="text-center">{{ $unit['name'] }}</td>
-                            <td class="text-center">{{ $unit['dmn'] ?? 'N/A' }}</td>
-                            <td class="text-center">{{ $unit['dmp'] ?? 'N/A' }}</td>
-                            <td class="text-center">{{ $unit['load'] ?? 'N/A' }}</td>
-                            <td class="text-center {{ $unit['status'] === 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit['status'] }}</td>
-                            <td class="text-center">{{ $unit['capacity'] }} MW</td>
+                            <td colspan="7" class="text-center">Tidak ada data unit operasional.</td>
                         </tr>
-                    @endforeach
+                    @endif
                 </tbody>
             </table>
-            <button id="show-all" class="btn btn-primary mt-3">Tampilkan Semua Data</button> <!-- Tombol untuk menampilkan semua data -->
+            <button id="show-all" class="btn btn-primary mt-3">Tampilkan Semua Data</button>
         </div>
     </div>
 
@@ -189,6 +200,9 @@
     </footer>
   
     <script>
+        
+
+
             var options = {
         series: [
             {
@@ -283,7 +297,6 @@
 
 <script>
     document.getElementById('show-all').addEventListener('click', function() {
-        // Mengganti isi tabel dengan semua data
         const tableBody = document.querySelector('#live-data tbody');
         tableBody.innerHTML = ''; // Kosongkan tabel
 
@@ -301,6 +314,9 @@
             `;
             tableBody.innerHTML += row; // Tambahkan baris ke tabel
         @endforeach
+
+        // Sembunyikan tombol setelah data ditampilkan
+        document.getElementById('show-all').style.display = 'none';
     });
 </script>
     @push('scripts')
