@@ -5,159 +5,145 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <style>
             .navbar {
-                background-color: #0095B7; /* Warna navbar */
-            }
-            .navbar-brand img {
-                height: 50px; /* Sesuaikan ukuran logo jika perlu */
-            }
-            .navbar-nav .nav-link {
-                color: white; /* Warna teks menu */
-            }
-            .navbar-nav .nav-link:hover {
-                color: #A8D600; /* Warna saat hover */
-            }
-            .btn-custom {
-                background-color: white; /* Ubah warna tombol login menjadi putih */
-                color: #0095B7; /* Ubah warna teks tombol menjadi warna navbar */
-                border: 1px solid #0095B7; /* Tambahkan border jika diinginkan */
-            }
-            .btn-custom:hover {
-                background-color: #A8D600; /* Warna saat hover */
-                color: white; /* Ubah warna teks saat hover */
-            }
-
-            /* Animasi untuk table row */
-            .table-row {
-                opacity: 0;
-                transform: translateY(20px);
-                transition: all 0.5s ease-out;
-            }
-
-            .table-row.show {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            /* Mengatur delay untuk setiap row */
-            .table-row:nth-child(1) { transition-delay: 0.1s; }
-            .table-row:nth-child(2) { transition-delay: 0.2s; }
-            .table-row:nth-child(3) { transition-delay: 0.3s; }
-            .table-row:nth-child(4) { transition-delay: 0.4s; }
-            .table-row:nth-child(5) { transition-delay: 0.5s; }
-
-            /* Custom navbar styles */
-            .navbar-toggler {
-                border-color: white;
+                background-color: #0095B7;
+                position: relative;
+                z-index: 1000; /* Menambahkan z-index untuk navbar */
             }
             
-            .navbar-toggler-icon {
-                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+            .navbar-brand img {
+                height: 50px;
             }
 
-            .mobile-menu-card {
+            .nav-link {
+                color: white !important;
+            }
+
+            .nav-link:hover {
+                color: #A8D600 !important;
+            }
+
+            /* Desktop menu styles */
+            .desktop-menu {
+                display: flex;
+                align-items: center;
+            }
+
+            .desktop-menu a {
+                color: white;
+                text-decoration: none;
+                margin-left: 20px;
+            }
+
+            /* Mobile menu styles */
+            .navbar-toggler {
+                display: none;
+                border: none;
+                padding: 0.25rem 0.75rem;
+                font-size: 1.25rem;
+                background-color: transparent;
+            }
+
+            .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            }
+
+            .mobile-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                right: 0;
                 background: white;
                 border-radius: 8px;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                margin-top: 10px;
+                padding: 0.5rem 0;
+                min-width: 200px;
+                z-index: 1001; /* Menambahkan z-index lebih tinggi untuk dropdown */
             }
 
-            .mobile-menu-card .nav-link {
-                color: #0095B7 !important;
-                padding: 10px 15px;
+            .mobile-menu a {
+                display: block;
+                padding: 0.5rem 1rem;
+                color: #0095B7;
+                text-decoration: none;
             }
 
-            .mobile-menu-card .nav-link:hover {
+            .mobile-menu a:hover {
                 background-color: #f8f9fa;
             }
 
+            /* Responsive breakpoints */
             @media (max-width: 991px) {
                 .desktop-menu {
-                    display: none !important;
+                    display: none;
                 }
+
+                .navbar-toggler {
+                    display: block;
+                }
+
+                .mobile-menu.show {
+                    display: block;
+                }
+            }
+
+            /* Memastikan dropdown tetap di atas konten lain */
+            #map {
+                z-index: 1; /* z-index lebih rendah dari navbar dan dropdown */
+                position: relative;
             }
         </style>
     @endsection
 
     @section('content')
-    <style>
-        .logo-left {
-            height: 50px; 
-            margin-right: 15px; 
-        }
-
-        .navbar {
-            display: flex;
-            align-items: center;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-        }
-        
-        .btn-custom {
-            background-color: #0095B7;
-            color: white;
-            border: none;
-        }
-
-        .nav-links {
-            margin-left: 0;
-            justify-content: flex-end;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-
-        @media (max-width: 991px) {
-            .mobile-menu-card {
-                position: absolute;
-                right: 0;
-                top: 100%;
-                width: 200px;
-            }
-        }
-    </style>
-
     <div class="container my-4">
-        <nav class="navbar navbar-expand-lg navbar-light">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url('/') }}">
                     <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="logo-left">
                 </a>
 
                 <!-- Desktop Menu -->
-                <div class="nav-links desktop-menu ms-auto">
-                    <a href="{{ route('login') }}" class="text-white">
+                <div class="desktop-menu ms-auto">
+                    <a href="{{ route('login') }}">
                         <i class="fas fa-user"></i> Login
                     </a>
-                    <a href="{{ url('/') }}" class="text-white">
+                    <a href="{{ url('/') }}">
                         <i class="fas fa-home"></i> Beranda
                     </a>
                 </div>
 
-                <!-- Mobile Menu -->
-                <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <!-- Mobile Menu Toggle -->
+                <button class="navbar-toggler ms-auto" type="button" onclick="toggleMobileMenu()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="mobileMenu">
-                    <div class="mobile-menu-card d-lg-none">
-                        <a href="{{ route('login') }}" class="nav-link">
-                            <i class="fas fa-user me-2"></i> Login
-                        </a>
-                        <a href="{{ url('/') }}" class="nav-link">
-                            <i class="fas fa-home me-2"></i> Beranda
-                        </a>
-                    </div>
+                <!-- Mobile Menu -->
+                <div class="mobile-menu" id="mobileMenu">
+                    <a href="{{ route('login') }}">
+                        <i class="fas fa-user me-2"></i> Login
+                    </a>
+                    <a href="{{ url('/') }}">
+                        <i class="fas fa-home me-2"></i> Beranda
+                    </a>
                 </div>
             </div>
         </nav>
+
+        <script>
+            function toggleMobileMenu() {
+                document.getElementById('mobileMenu').classList.toggle('show');
+            }
+
+            // Menutup dropdown saat mengklik di luar
+            document.addEventListener('click', function(event) {
+                const mobileMenu = document.getElementById('mobileMenu');
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                
+                if (!mobileMenu.contains(event.target) && !navbarToggler.contains(event.target)) {
+                    mobileMenu.classList.remove('show');
+                }
+            });
+        </script>
 
         <h3 class="mt-4">Peta Lokasi Unit Pembangkit</h3>
         <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px;"></div>
