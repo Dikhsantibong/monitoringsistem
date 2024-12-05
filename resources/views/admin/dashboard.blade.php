@@ -176,7 +176,7 @@
                             <i class="fas fa-download mr-2"></i>Ekspor
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto border-2 border-gray-200 rounded-lg">
                         <table id="activities-table" class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr>
@@ -346,17 +346,42 @@ function toggleChartType(chartId, newType) {
     const chart = chartId === 'activityChart' ? activityChart : meetingChart;
     
     // Simpan data dan options yang ada
-    const currentData = chart.data;
-    const currentOptions = chart.options;
+    const data = chart.data;
+    const options = chart.options;
     
     // Destroy chart lama
     chart.destroy();
     
+    // Sesuaikan options berdasarkan tipe chart
+    if (newType === 'bar') {
+        // Untuk chart batang, hilangkan tension dan ubah fill
+        data.datasets[0].tension = 0;
+        data.datasets[0].fill = false;
+    } else {
+        // Untuk chart garis, tambahkan tension dan fill
+        data.datasets[0].tension = 0.1;
+        data.datasets[0].fill = true;
+    }
+    
     // Buat chart baru dengan tipe yang berbeda
     const newChart = new Chart(document.getElementById(chartId), {
         type: newType,
-        data: currentData,
-        options: currentOptions
+        data: data,
+        options: {
+            ...options,
+            scales: {
+                ...options.scales,
+                y: {
+                    ...options.scales.y,
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + (chartId === 'activityChart' ? '%' : ' orang');
+                        }
+                    }
+                }
+            }
+        }
     });
     
     // Update referensi chart
