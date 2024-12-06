@@ -188,27 +188,36 @@
         <h3 class="mt-4 mb-4">Highlight Kinerja</h3>
         <div class="row">
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Kapasitas Listrik</h5>
-                        <p class="card-text"><strong>{{ $total_capacity }}</strong> MW</p>
+                <div class="bg-[#0095B7] rounded-lg shadow p-6 flex items-center">
+                    <i class="fas fa-bolt text-white text-3xl mr-3"></i>
+                    <div class="flex-1">
+                        <h3 class="text-white text-md font-medium">TOTAL KAPASITAS LISTRIK</h3>
                     </div>
+                    <p class="text-2xl font-bold text-white">
+                        {{ $total_capacity }} MW
+                    </p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Unit Pembangkit</h5>
-                        <p class="card-text"><strong>{{ $total_units }}</strong> Unit</p>
+                <div class="bg-[#0095B7] rounded-lg shadow p-6 flex items-center">
+                    <i class="fas fa-industry text-white text-3xl mr-3"></i>
+                    <div class="flex-1">
+                        <h3 class="text-white text-md font-medium">TOTAL UNIT PEMBANGKIT</h3>
                     </div>
+                    <p class="text-2xl font-bold text-white">
+                        {{ $total_units }} Unit
+                    </p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Unit Pembangkit Aktif</h5>
-                        <p class="card-text"><strong>{{ $active_units }}</strong> Unit</p>
+                <div class="bg-[#0095B7] rounded-lg shadow p-6 flex items-center">
+                    <i class="fas fa-power-off text-white text-3xl mr-3"></i>
+                    <div class="flex-1">
+                        <h3 class="text-white text-md font-medium">UNIT PEMBANGKIT AKTIF</h3>
                     </div>
+                    <p class="text-2xl font-bold text-white">
+                        {{ $active_units }} Unit
+                    </p>
                 </div>
             </div>
         </div>
@@ -304,6 +313,22 @@
                 {
                     name: 'Unit Pembangkit Aktif',
                     data: [{{ implode(',', $active_units_data) }}]
+                },
+                {
+                    name: 'DMN',
+                    data: [{{ implode(',', $dmn_data) }}]
+                },
+                {
+                    name: 'DMP',
+                    data: [{{ implode(',', $dmp_data) }}]
+                },
+                {
+                    name: 'Beban',
+                    data: [{{ implode(',', $load_value_data) }}]
+                },
+                {
+                    name: 'Kapasitas Unit',
+                    data: [{{ implode(',', $capacity_data) }}]
                 }
             ],
             chart: {
@@ -314,18 +339,58 @@
                 enabled: false
             },
             stroke: {
-                curve: 'smooth'
+                curve: 'smooth',
+                width: [3, 3, 3, 2, 2, 2, 2],
+                dashArray: [0, 0, 0, 0, 0, 0, 0]
             },
             xaxis: {
                 categories: ["{{ implode('","', $dates) }}"]
             },
+            yaxis: [
+                {
+                    title: {
+                        text: 'Nilai'
+                    }
+                }
+            ],
             title: {
                 text: 'Grafik Kinerja Pembangkit',
                 align: 'center'
             },
-            colors: ['#0095B7', '#A8D600', '#FF5733'],
+            colors: [
+                '#FF1E1E',  // Merah untuk Total Kapasitas Listrik
+                '#00B050',  // Hijau untuk Total Unit Pembangkit
+                '#0070C0',  // Biru untuk Unit Pembangkit Aktif
+                '#7030A0',  // Ungu untuk DMN
+                '#FFC000',  // Kuning untuk DMP
+                '#ED7D31',  // Oranye untuk Beban
+                '#4472C4'   // Biru Tua untuk Kapasitas Unit
+            ],
             tooltip: {
-                enabled: true
+                enabled: true,
+                y: {
+                    formatter: function(value, { seriesIndex }) {
+                        if (seriesIndex <= 2) return value + ' Unit';
+                        if (seriesIndex === 6) return value + ' MW';
+                        return value;
+                    }
+                }
+            },
+            legend: {
+                position: 'bottom',
+                horizontalAlign: 'center',
+                markers: {
+                    width: 12,
+                    height: 12,
+                    strokeWidth: 0,
+                    radius: 12,
+                    offsetX: 0,
+                    offsetY: 0
+                },
+                itemMargin: {
+                    horizontal: 15,
+                    vertical: 8
+                }
             }
         };
 
