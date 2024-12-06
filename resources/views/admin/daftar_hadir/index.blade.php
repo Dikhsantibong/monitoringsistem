@@ -53,28 +53,35 @@
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Daftar Hadir</h1>
-                <div class="flex items-center">
-                    <button class="text-gray-600 hover:text-blue-600 mr-4">
-                        <i class="fas fa-download"></i>
-                    </button>
-                    <button class="text-gray-600 hover:text-blue-600">
-                        <i class="fas fa-print"></i>
-                    </button>
-                </div>
             </div>
         </header>
 
         <main class="p-6">
-            <div class="bg-white rounded-lg shadow p-6 mt-4">
+            <div class="bg-white rounded-lg shadow p-6 mb-4">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
                 
                 <!-- Input Pencarian -->
-                <div class="mb-4 flex space-x-4">
-                    <input type="date" id="date-filter" class="border border-gray-300 rounded-lg p-2" 
-                           value="{{ date('Y-m-d') }}" 
-                           onchange="filterByDate(this.value)">
-                    <input type="text" id="search" placeholder="Cari Nama..." 
-                           class="border border-gray-300 rounded-lg p-2 flex-1">
+                <div class="mb-4 flex justify-end space-x-4">
+                    <!-- Filter Tanggal -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-gray-600">Tanggal:</label>
+                        <input type="date" 
+                               id="date-filter"
+                               value="{{ date('Y-m-d') }}" 
+                               onchange="filterByDate(this.value)"
+                               class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="flex">
+                        <input type="text" 
+                               id="search" 
+                               placeholder="Cari..." 
+                               class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
+                        <button class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">

@@ -46,53 +46,98 @@
             </a>
         </nav>
     </aside>
+    
 
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Kesiapan Pembangkit</h1>
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Tanggal: {{ \Carbon\Carbon::now()->format('d M Y') }}</span>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                        <i class="fas fa-redo mr-2"></i>Reset
-                    </button>
-                </div>
             </div>
         </header>
 
         <main class="p-6">
             <!-- Konten Kesiapan Pembangkit -->
-            @foreach($units as $unit)
-            <div class="bg-white rounded-lg shadow p-6 mb-4">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Kesiapan Pembangkit</h2>
+                <div class="mb-4 flex justify-end space-x-4">
+                    <div class="flex space-x-4">
+                        <span class="text-gray-600 self-center">Tanggal: {{ \Carbon\Carbon::now()->format('d M Y') }}</span>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            <i class="fas fa-redo mr-2"></i>Reset
+                        </button>
+                    </div>  
+                    <div class="flex gap-3">
+                        <div class="flex">
+                            <input type="text" id="searchInput" placeholder="Cari mesin..." class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500" onkeyup="searchTables()">
+                            <button class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
                 
-                <!-- Tabel Status Pembangkit -->
-                <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                    <thead>
-                        <tr>
-                            <th class="py-2 px-4 font-medium text-gray-500">Mesin</th>
-                            <th class="py-2 px-4 font-medium text-gray-500">DMN</th>
-                            <th class="py-2 px-4 font-medium text-gray-500">DMP</th>
-                            <th class="py-2 px-4 font-medium text-gray-500">Beban</th>
-                            <th class="py-2 px-4 font-medium text-gray-500">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @foreach($unit->machines as $machine) <!-- Asumsi ada relasi machines di PowerPlant -->
-                        <tr class="odd:bg-white even:bg-gray-100">
-                            <td class="py-2 px-4 border-b">{{ $machine->name }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}</td>
-                            <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->status ?? 'N/A' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                    
+                
+
+                @foreach($units as $unit)
+                <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
+                    
+                    <!-- Tabel Status Pembangkit -->
+                    <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="py-2 px-4 font-medium text-gray-500">Mesin</th>
+                                <th class="py-2 px-4 font-medium text-gray-500">DMN</th>
+                                <th class="py-2 px-4 font-medium text-gray-500">DMP</th>
+                                <th class="py-2 px-4 font-medium text-gray-500">Beban</th>
+                                <th class="py-2 px-4 font-medium text-gray-500">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach($unit->machines as $machine)
+                            <tr class="odd:bg-white even:bg-gray-100 searchable-row">
+                                <td class="py-2 px-4 border-b">{{ $machine->name }}</td>
+                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}</td>
+                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}</td>
+                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}</td>
+                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->status ?? 'N/A' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endforeach
             </div>
-            @endforeach
         </main>
     </div>
 </div>
+</div>
 @endsection 
+
+<script>
+function searchTables() {
+    const searchInput = document.getElementById('searchInput');
+    const filter = searchInput.value.toLowerCase();
+    const unitTables = document.getElementsByClassName('unit-table');
+    
+    Array.from(unitTables).forEach(unitTable => {
+        // Ambil nama unit dari h2
+        const unitName = unitTable.querySelector('h2').textContent.toLowerCase();
+        
+        // Tampilkan/sembunyikan berdasarkan nama unit
+        if (unitName.includes(filter)) {
+            unitTable.style.display = '';
+        } else {
+            unitTable.style.display = 'none';
+        }
+    });
+}
+
+// Event listener untuk real-time search
+document.getElementById('searchInput').addEventListener('keyup', searchTables);
+</script> 
+@push('scripts')
+    
+@endpush

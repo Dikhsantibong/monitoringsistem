@@ -25,7 +25,7 @@ class MachineOperation extends Model
     // Menambahkan relationship dengan Machine
     public function machine()
     {
-        return $this->belongsTo(Machine::class, 'machine_id');
+        return $this->belongsTo(Machine::class);
     }
 }
 

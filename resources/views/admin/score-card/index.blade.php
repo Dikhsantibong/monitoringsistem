@@ -85,9 +85,36 @@
                             <p>Lokasi: Ruang Rapat Rongi</p>
                         </div>
                         <a href="{{ route('admin.score-card.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded">
-                            Tambah Score Card
+                            <i class="fas fa-plus mr-2"></i>Tambah Score Card
                         </a>
                     </div>
+                <!-- Search Bar -->
+                <div class="mb-4 flex justify-end space-x-4">
+                    <!-- Filter Tanggal -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-gray-600">Dari:</label>
+                        <input type="date" 
+                               id="startDate" 
+                               class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        
+                        <label class="text-gray-600">Sampai:</label>
+                        <input type="date" 
+                               id="endDate" 
+                               class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="flex">
+                        <input type="text" 
+                               id="searchInput" 
+                               placeholder="Cari..." 
+                               class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
+                        <button onclick="searchTable()" 
+                                class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
                 </div>
 
                 <table class="min-w-full bg-white border">

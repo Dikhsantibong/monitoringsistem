@@ -252,13 +252,13 @@
         <div class="col-md-4">
             <div class="bg-box">
                 <h3 class="text-title">TOTAL UNIT PEMBANGKIT</h3>
-                <p class="text-value">{{ $total_units }} Unit</p>
+                <p class="text-value">{{ $total_units }} UNIT</p>
             </div>
         </div>
         <div class="col-md-4">
             <div class="bg-box">
                 <h3 class="text-title">UNIT PEMBANGKIT AKTIF</h3>
-                <p class="text-value">{{ $active_units }} Unit</p>
+                <p class="text-value">{{ $active_units }} UNIT</p>
             </div>
         </div>
     </div>

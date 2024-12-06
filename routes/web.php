@@ -129,3 +129,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/record-attendance', [AttendanceController::class, 'recordAttendance'])->name('record.attendance');
     Route::get('/daftar-hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
 });
+
+// Tambahkan route untuk AJAX
+Route::get('/admin/machine-monitor/operations', [MachineMonitorController::class, 'getMachineOperations'])
+    ->name('admin.machine-monitor.operations');

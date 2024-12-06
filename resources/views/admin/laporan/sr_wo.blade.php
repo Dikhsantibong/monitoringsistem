@@ -68,20 +68,43 @@
                 <!-- Konten Laporan SR/WO -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Detail Laporan</h2>
-                    <div class="mb-4 flex justify-end">
+                    <div class="p-4">
+                    <div class="mb-4 flex justify-end space-x-4">
+                        <!-- Filter Tanggal -->
+                        <div class="flex items-center space-x-2">
+                            <label class="text-gray-600">Dari:</label>
+                            <input type="date" 
+                                   id="startDate" 
+                                   class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            
+                            <label class="text-gray-600">Sampai:</label>
+                            <input type="date" 
+                                   id="endDate" 
+                                   class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <!-- Search Input -->
                         <div class="flex">
-                            <input type="text" id="search" placeholder="Cari..."
-                                class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500"
-                                onkeyup="searchUsers()">
-                            <input type="button" value="Search"
-                                class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                            <input type="text" 
+                                   id="searchInput" 
+                                   placeholder="Cari..." 
+                                   class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
+                            <button onclick="searchTables()" 
+                                    class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
                     </div>
 
                     <!-- Card SR -->
                     <div class="bg-white rounded-lg shadow p-6 mb-4">
-                        <h3 class="text-md font-semibold mb-2">Daftar Service Request (SR)</h3>
-                        <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-plus mr-2"></i>Tambah SR
+                            </button>
+                        </div>
+                        <table id="srTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                             <thead>
                                 <tr>
                                     <th class="py-2 px-4 border-b">ID SR</th>
@@ -105,8 +128,13 @@
 
                     <!-- Card WO -->
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-md font-semibold mb-2">Daftar Work Order (WO)</h3>
-                        <table class="min-w-full bg-white border border-gray-300">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-plus mr-2"></i>Tambah WO
+                            </button>
+                        </div>
+                        <table id="woTable" class="min-w-full bg-white border border-gray-300">
                             <thead>
                                 <tr>
                                     <th class="py-2 px-4 border-b">ID WO</th>
@@ -132,3 +160,121 @@
         </div>
     </div>
 @endsection
+
+<script>
+function searchTables() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    // Fungsi untuk mengecek apakah tanggal dalam range
+    function isDateInRange(dateStr) {
+        if (!startDate && !endDate) return true;
+        
+        const date = new Date(dateStr);
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+        
+        if (start && end) {
+            return date >= start && date <= end;
+        } else if (start) {
+            return date >= start;
+        } else if (end) {
+            return date <= end;
+        }
+        return true;
+    }
+    
+    // Cari di tabel SR
+    const srTable = document.getElementById('srTable');
+    const srRows = srTable.getElementsByTagName('tr');
+    
+    for (let i = 1; i < srRows.length; i++) {
+        const row = srRows[i];
+        const cells = row.getElementsByTagName('td');
+        let textFound = false;
+        let dateFound = false;
+        
+        // Cek text di semua kolom
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().includes(searchValue)) {
+                textFound = true;
+            }
+        }
+        
+        // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
+        const dateCell = cells[cells.length - 1];
+        if (dateCell) {
+            dateFound = isDateInRange(dateCell.textContent);
+        }
+        
+        row.style.display = (textFound && dateFound) ? '' : 'none';
+    }
+    
+    // Cari di tabel WO
+    const woTable = document.getElementById('woTable');
+    const woRows = woTable.getElementsByTagName('tr');
+    
+    for (let i = 1; i < woRows.length; i++) {
+        const row = woRows[i];
+        const cells = row.getElementsByTagName('td');
+        let textFound = false;
+        let dateFound = false;
+        
+        // Cek text di semua kolom
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().includes(searchValue)) {
+                textFound = true;
+            }
+        }
+        
+        // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
+        const dateCell = cells[cells.length - 1];
+        if (dateCell) {
+            dateFound = isDateInRange(dateCell.textContent);
+        }
+        
+        row.style.display = (textFound && dateFound) ? '' : 'none';
+    }
+}
+
+// Event listener untuk input tanggal
+document.getElementById('startDate').addEventListener('change', searchTables);
+document.getElementById('endDate').addEventListener('change', searchTables);
+
+// Event listener untuk pencarian teks (kode yang sudah ada)
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        searchTables();
+    } else {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+            searchTables();
+        }, 300);
+    }
+});
+
+// Reset pencarian
+document.getElementById('searchInput').addEventListener('input', function() {
+    if (this.value === '') {
+        searchTables();
+    }
+});
+
+// Set tanggal default
+window.addEventListener('load', function() {
+    // Set tanggal akhir ke hari ini
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('endDate').value = today;
+    
+    // Set tanggal awal ke 30 hari yang lalu
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+    
+    // Jalankan pencarian awal
+    searchTables();
+});
+</script>
+@push('scripts')
+@endpush
