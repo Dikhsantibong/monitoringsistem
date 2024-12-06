@@ -70,6 +70,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::prefix('laporan')->group(function () {
         Route::get('/sr_wo', [LaporanController::class, 'srWo'])->name('laporan.sr_wo');
+        Route::post('/store-sr', [LaporanController::class, 'storeSR'])->name('laporan.store-sr');
+        Route::post('/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
     });
 
     Route::prefix('daftar-hadir')->group(function () {

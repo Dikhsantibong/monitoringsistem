@@ -4,18 +4,43 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\ServiceRequest; // Tambahkan ini untuk mengimport model ServiceRequest
-use App\Models\WorkOrder; // Tambahkan ini untuk mengimport model WorkOrder
+use App\Models\ServiceRequest;
+use App\Models\WorkOrder;
 
 class LaporanController extends Controller
 {
     public function srWo()
     {
-        // Logika untuk menampilkan laporan SR/WO
-        $serviceRequests = ServiceRequest::all(); // Tambahkan ini untuk menginisialisasi variabel $serviceRequests
-        $workOrders = WorkOrder::all(); // Tambahkan ini untuk menginisialisasi variabel $workOrders
+        $serviceRequests = ServiceRequest::all();
+        $workOrders = WorkOrder::all();
         return view('admin.laporan.sr_wo', compact('serviceRequests', 'workOrders'));
     }
 
-    // Tambahkan metode lain sesuai kebutuhan
+    // Tambah method untuk handle SR
+    public function storeSR(Request $request)
+    {
+        $validated = $request->validate([
+            'priority' => 'required',
+            'status' => 'required',
+            'description' => 'required'
+        ]);
+
+        ServiceRequest::create($validated);
+
+        return redirect()->back()->with('success', 'Service Request berhasil ditambahkan');
+    }
+
+    // Tambah method untuk handle WO
+    public function storeWO(Request $request)
+    {
+        $validated = $request->validate([
+            'work_type' => 'required',
+            'status' => 'required',
+            'description' => 'required'
+        ]);
+
+        WorkOrder::create($validated);
+
+        return redirect()->back()->with('success', 'Work Order berhasil ditambahkan');
+    }
 }

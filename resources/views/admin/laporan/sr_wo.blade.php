@@ -91,7 +91,7 @@
                                    class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
                             <button onclick="searchTables()" 
                                     class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
-                                <i class="fas fa-search"></i>
+                                search
                             </button>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                     <div class="bg-white rounded-lg shadow p-6 mb-4">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
-                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            <button onclick="openSRModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
                                 <i class="fas fa-plus mr-2"></i>Tambah SR
                             </button>
                         </div>
@@ -130,7 +130,7 @@
                     <div class="bg-white rounded-lg shadow p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
-                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            <button onclick="openWOModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
                                 <i class="fas fa-plus mr-2"></i>Tambah WO
                             </button>
                         </div>
@@ -159,9 +159,163 @@
             </main>
         </div>
     </div>
+
+    <!-- Modal SR -->
+    <div id="srModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
+        <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
+            <h2 class="text-xl font-bold mb-4">Tambah Service Request (SR)</h2>
+            <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="priority">
+                        Prioritas
+                    </label>
+                    <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="high">Tinggi</option>
+                        <option value="medium">Sedang</option>
+                        <option value="low">Rendah</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
+                        Status
+                    </label>
+                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="open">Terbuka</option>
+                        <option value="in_progress">Dalam Proses</option>
+                        <option value="completed">Selesai</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                        Deskripsi
+                    </label>
+                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeSRModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                        Batal
+                    </button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal WO -->
+    <div id="woModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
+        <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
+            <h2 class="text-xl font-bold mb-4">Tambah Work Order (WO)</h2>
+            <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="work_type">
+                        Tipe Pekerjaan
+                    </label>
+                    <select name="work_type" id="work_type" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="maintenance">Pemeliharaan</option>
+                        <option value="repair">Perbaikan</option>
+                        <option value="installation">Instalasi</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
+                        Status
+                    </label>
+                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="pending">Menunggu</option>
+                        <option value="in_progress">Dalam Proses</option>
+                        <option value="completed">Selesai</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                        Deskripsi
+                    </label>
+                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeWOModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                        Batal
+                    </button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 <script>
+// Fungsi untuk membuka modal SR
+function openSRModal() {
+    const modal = document.getElementById('srModal');
+    const modalContent = modal.querySelector('.bg-white');
+    modal.classList.remove('hidden');
+    modal.classList.remove('scale-0');
+    modal.classList.add('scale-100');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-0');
+        modalContent.classList.add('scale-100');
+    }, 100);
+}
+
+// Fungsi untuk menutup modal SR 
+function closeSRModal() {
+    const modal = document.getElementById('srModal');
+    const modalContent = modal.querySelector('.bg-white');
+    modalContent.classList.remove('scale-100');
+    modalContent.classList.add('scale-0');
+    setTimeout(() => {
+        modal.classList.remove('scale-100');
+        modal.classList.add('scale-0');
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Fungsi untuk membuka modal WO
+function openWOModal() {
+    const modal = document.getElementById('woModal');
+    const modalContent = modal.querySelector('.bg-white');
+    modal.classList.remove('hidden');
+    modal.classList.remove('scale-0');
+    modal.classList.add('scale-100');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-0');
+        modalContent.classList.add('scale-100');
+    }, 100);
+}
+
+// Fungsi untuk menutup modal WO
+function closeWOModal() {
+    const modal = document.getElementById('woModal');
+    const modalContent = modal.querySelector('.bg-white');
+    modalContent.classList.remove('scale-100');
+    modalContent.classList.add('scale-0');
+    setTimeout(() => {
+        modal.classList.remove('scale-100');
+        modal.classList.add('scale-0');
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Fungsi untuk submit form SR
+function submitSR() {
+    const form = document.getElementById('srForm');
+    form.submit();
+    closeSRModal();
+}
+
+// Fungsi untuk submit form WO 
+function submitWO() {
+    const form = document.getElementById('woForm');
+    form.submit();
+    closeWOModal();
+}
+
 function searchTables() {
     const searchValue = document.getElementById('searchInput').value.toLowerCase();
     const startDate = document.getElementById('startDate').value;

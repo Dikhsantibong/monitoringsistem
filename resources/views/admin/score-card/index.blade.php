@@ -53,7 +53,7 @@
         <header class="bg-white shadow">
             <div class="flex justify-between items-center    py-4">
             </button>
-                <h2 class="text-xl font-semibold text-gray-800">Score Card Daily</h2>
+                <h2 class="text-xl font-semibold text-gray-800 ml-4">Score Card Daily</h2>
                 <div class="flex items-center">
                     <div class="relative">
                         <button onclick="toggleDropdown()" class="flex items-center focus:outline-none">
@@ -84,7 +84,7 @@
                             <p>Daily Meeting Hari / Tanggal: {{ now()->format('d F Y') }}</p>
                             <p>Lokasi: Ruang Rapat Rongi</p>
                         </div>
-                        <a href="{{ route('admin.score-card.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded">
+                        <a href="{{ route('admin.score-card.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">
                             <i class="fas fa-plus mr-2"></i>Tambah Score Card
                         </a>
                     </div>
