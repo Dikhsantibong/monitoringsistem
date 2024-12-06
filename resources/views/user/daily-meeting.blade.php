@@ -139,12 +139,25 @@
                     </table>
                 </div>
             </div>
+
+            <!-- QR Code Scanner Section -->
+            <div class="bg-white rounded-lg shadow p-4 mt-6">
+                <h2 class="text-lg font-semibold">Scan QR Code</h2>
+                <div class="mt-4">
+                    <div id="reader" class="mt-4"></div>
+                    <div id="result"></div>
+                    <button id="startButton" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-4">
+                        <i class="fas fa-camera mr-2"></i>Mulai Scan
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
 <script>
     // Inisialisasi Chart.js
@@ -229,6 +242,67 @@
         // Update QR code setiap 5 menit
         setInterval(generateQRCode, 300000);
     });
+
+    let html5QrcodeScanner = null;
+
+    document.getElementById('startButton').addEventListener('click', function() {
+        if (html5QrcodeScanner === null) {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader", { fps: 10, qrbox: 250 }
+            );
+            
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+        }
+    });
+
+    function onScanSuccess(qrCodeMessage) {
+        // Kirim data QR ke server
+        fetch('{{ route("record.attendance") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ qr_code: qrCodeMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Tampilkan pesan sukses
+                document.getElementById('result').innerHTML = `
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-4">
+                        ${data.message}
+                    </div>
+                `;
+                
+                // Hentikan scanner setelah berhasil
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.clear();
+                    html5QrcodeScanner = null;
+                }
+            } else {
+                // Tampilkan pesan error
+                document.getElementById('result').innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
+                        ${data.message}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('result').innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
+                    Terjadi kesalahan saat memproses absensi
+                </div>
+            `;
+        });
+    }
+
+    function onScanError(error) {
+        // Handle scan error
+        console.warn(`QR Code scan error: ${error}`);
+    }
 </script>
 
 @push('scripts')

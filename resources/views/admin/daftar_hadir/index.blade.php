@@ -69,8 +69,12 @@
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
                 
                 <!-- Input Pencarian -->
-                <div class="mb-4">
-                    <input type="text" id="search" placeholder="Cari Nama..." class="border border-gray-300 rounded-lg p-2 w-full">
+                <div class="mb-4 flex space-x-4">
+                    <input type="date" id="date-filter" class="border border-gray-300 rounded-lg p-2" 
+                           value="{{ date('Y-m-d') }}" 
+                           onchange="filterByDate(this.value)">
+                    <input type="text" id="search" placeholder="Cari Nama..." 
+                           class="border border-gray-300 rounded-lg p-2 flex-1">
                 </div>
 
                 <div class="overflow-x-auto">
@@ -89,10 +93,10 @@
                             @foreach($attendances as $attendance)
                             <tr class="hover:bg-gray-100">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                    {{ $attendance->user->name }}
+                                    {{ $attendance->name }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                    {{ $attendance->attended_at->format('d M Y H:i:s') }}
+                                    {{ \Carbon\Carbon::parse($attendance->time)->format('d M Y H:i:s') }}
                                 </td>
                             </tr>
                             @endforeach
@@ -119,6 +123,14 @@
             }
         });
     });
+
+    function filterByDate(date) {
+        fetch(`{{ route('admin.daftar_hadir.index') }}?date=${date}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('attendance-body').innerHTML = html;
+            });
+    }
 </script>
 @push('scripts')
     
