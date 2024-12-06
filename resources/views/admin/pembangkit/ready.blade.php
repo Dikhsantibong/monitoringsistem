@@ -68,19 +68,19 @@
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
                 
                 <!-- Tabel Status Pembangkit -->
-                <table class="min-w-full bg-white border border-gray-300">
+                <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                     <thead>
                         <tr>
-                            <th class="py-2 px-4 border-b">Mesin</th>
-                            <th class="py-2 px-4 border-b">DMN</th>
-                            <th class="py-2 px-4 border-b">DMP</th>
-                            <th class="py-2 px-4 border-b">Beban</th>
-                            <th class="py-2 px-4 border-b">Status</th>
+                            <th class="py-2 px-4 font-medium text-gray-500">Mesin</th>
+                            <th class="py-2 px-4 font-medium text-gray-500">DMN</th>
+                            <th class="py-2 px-4 font-medium text-gray-500">DMP</th>
+                            <th class="py-2 px-4 font-medium text-gray-500">Beban</th>
+                            <th class="py-2 px-4 font-medium text-gray-500">Status</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-200">
                         @foreach($unit->machines as $machine) <!-- Asumsi ada relasi machines di PowerPlant -->
-                        <tr>
+                        <tr class="odd:bg-white even:bg-gray-100">
                             <td class="py-2 px-4 border-b">{{ $machine->name }}</td>
                             <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}</td>
                             <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}</td>

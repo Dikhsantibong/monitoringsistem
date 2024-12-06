@@ -55,25 +55,25 @@
                 
                 <form action="{{ route('admin.score-card.store') }}" method="POST">
                     @csrf
-                    <div class="mb-4">
-                        <label for="tanggal" class="block text-gray-700">Tanggal</label>
-                        <input type="date" name="tanggal" id="tanggal" class="w-full border-gray-300 rounded mt-1" required>
+                    <div class="mb-3">
+                        <label for="tanggal" class="block text-gray-700 mb-2">Tanggal</label>
+                        <input type="date" name="tanggal" id="tanggal" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
                     </div>
-                    <div class="mb-4">
-                        <label for="lokasi" class="block text-gray-700">Lokasi</label>
-                        <input type="text" name="lokasi" id="lokasi" class="w-full border-gray-300 rounded mt-1" required>
+                    <div class="mb-3">
+                        <label for="lokasi" class="block text-gray-700 mb-2">Lokasi</label>
+                        <input type="text" name="lokasi" id="lokasi" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
                     </div>
-                    <div class="mb-4">
-                        <label for="peserta" class="block text-gray-700">Peserta</label>
-                        <textarea name="peserta" id="peserta" class="w-full border-gray-300 rounded mt-1" required></textarea>
+                    <div class="mb-3">
+                        <label for="peserta" class="block text-gray-700 mb-2">Peserta</label>
+                        <textarea name="peserta" id="peserta" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required></textarea>
                     </div>
-                    <div class="mb-4">
-                        <label for="waktu_mulai" class="block text-gray-700">Waktu Mulai</label>
-                        <input type="time" name="waktu_mulai" id="waktu_mulai" class="w-full border-gray-300 rounded mt-1" required>
+                    <div class="mb-3">
+                        <label for="waktu_mulai" class="block text-gray-700 mb-2">Waktu Mulai</label>
+                        <input type="time" name="waktu_mulai" id="waktu_mulai" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
                     </div>
-                    <div class="mb-4">
-                        <label for="waktu_selesai" class="block text-gray-700">Waktu Selesai</label>
-                        <input type="time" name="waktu_selesai" id="waktu_selesai" class="w-full border-gray-300 rounded mt-1" required>
+                    <div class="mb-3">
+                        <label for="waktu_selesai" class="block text-gray-700 mb-2">Waktu Selesai</label>
+                        <input type="time" name="waktu_selesai" id="waktu_selesai" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
                     </div>
                     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan</button>
                 </form>
