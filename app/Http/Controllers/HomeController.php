@@ -8,6 +8,7 @@ use App\Models\Marker;
 use App\Models\Machine;
 use App\Models\PowerPlant;
 use App\Models\MachineOperation;
+use Carbon\Carbon;
 
 class HomeController extends Controller
 {
@@ -43,6 +44,28 @@ class HomeController extends Controller
             return $unit->created_at->format('M Y');
         })->unique()->toArray();
 
+        // Mengambil data untuk grafik dari MachineOperation
+        $machineOperations = MachineOperation::with(['machine.powerPlant'])
+            ->orderBy('recorded_at')
+            ->get()
+            ->groupBy(function($date) {
+                return Carbon::parse($date->recorded_at)->format('Y-m-d');
+            });
+
+        $dmn_data = [];
+        $dmp_data = [];
+        $load_value_data = [];
+        $capacity_data = [];
+        $dates = [];
+
+        foreach ($machineOperations as $date => $operations) {
+            $dates[] = $date;
+            $dmn_data[] = $operations->avg('dmn');
+            $dmp_data[] = $operations->avg('dmp');
+            $load_value_data[] = $operations->avg('load_value');
+            $capacity_data[] = $operations->first()->machine->capacity;
+        }
+
         return view('homepage', compact(
             'units',
             'markers',
@@ -52,7 +75,11 @@ class HomeController extends Controller
             'total_capacity_data',
             'total_units_data',
             'active_units_data',
-            'dates'
+            'dates',
+            'dmn_data',
+            'dmp_data',
+            'load_value_data',
+            'capacity_data'
         ));
     }
 }

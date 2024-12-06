@@ -118,3 +118,11 @@ Route::post('/contact/submit', [ContactController::class, 'submit'])->name('cont
 
 // Rute untuk menampilkan detail blog
 Route::get('/blog/{id}', [BlogController::class, 'show'])->name('blog.show');
+
+// Tambahkan route group untuk profile
+Route::middleware(['auth'])->group(function () {
+    // Profile routes
+    Route::get('/profile', [UserController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [UserController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [UserController::class, 'destroy'])->name('profile.destroy');
+});

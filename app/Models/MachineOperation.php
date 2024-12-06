@@ -21,5 +21,11 @@ class MachineOperation extends Model
         'hop',
         'recorded_at',
     ];
+
+    // Menambahkan relationship dengan Machine
+    public function machine()
+    {
+        return $this->belongsTo(Machine::class, 'machine_id');
+    }
 }
 
