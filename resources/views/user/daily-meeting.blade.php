@@ -2,6 +2,8 @@
 
 @section('content')
 
+@section('styles')
+
 
 <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
@@ -100,7 +102,7 @@
             <div class="bg-white rounded-lg shadow p-4 mt-6">
                 <h2 class="text-lg font-semibold">QR Code Absensi</h2>
                 <div id="qrcode" class="mt-4"></div>
-                <p>Scan QR Code ini untuk melakukan absensi.</p>
+                <p class="mt-2">QR Code ini hanya berlaku untuk hari ini: {{ now()->format('d M Y') }}</p>
             </div>
 
             <!-- Input Kehadiran -->
@@ -152,8 +154,32 @@
         }
     }
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ubah route sesuai dengan yang baru didefinisikan
+        function generateQRCode() {
+            // Bersihkan QR code yang ada
+            document.getElementById("qrcode").innerHTML = '';
+            
+            fetch('{{ route("generate.qrcode") }}')
+                .then(response => response.json())
+                .then(data => {
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: data.code,
+                        width: 200,
+                        height: 200
+                    });
+                });
+        }
+
+        generateQRCode();
+        // Update QR code setiap 5 menit
+        setInterval(generateQRCode, 300000);
+    });
+</script>
 @push('scripts')
-    
 @endpush
 
 @endsection

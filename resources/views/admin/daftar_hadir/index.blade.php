@@ -88,8 +88,12 @@
                         <tbody id="attendance-body" class="divide-y divide-gray-300">
                             @foreach($attendances as $attendance)
                             <tr class="hover:bg-gray-100">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $attendance->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $attendance->time }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    {{ $attendance->user->name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    {{ $attendance->attended_at->format('d M Y H:i:s') }}
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>

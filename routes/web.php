@@ -125,4 +125,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [UserController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [UserController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [UserController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/get-daily-qrcode', [AttendanceController::class, 'generateQrCode'])->name('generate.qrcode');
+    Route::post('/record-attendance', [AttendanceController::class, 'recordAttendance'])->name('record.attendance');
+    Route::get('/daftar-hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
 });

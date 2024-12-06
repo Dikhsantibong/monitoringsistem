@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
 {
-    use HasFactory;
+    protected $fillable = ['user_id', 'daily_qr_code_id', 'attended_at'];
 
-    protected $table = 'attendance';
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-    protected $fillable = [
-        'name', 'time' // Pastikan kolom ini ada di tabel
-    ];
+    public function dailyQrCode()
+    {
+        return $this->belongsTo(DailyQrCode::class);
+    }
 } 
