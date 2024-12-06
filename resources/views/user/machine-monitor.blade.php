@@ -3,43 +3,72 @@
 @section('content')
 <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
-    <aside class="w-64 bg-yellow-500 shadow-lg hidden md:block">
+    <style>
+        /* Sidebar */
+        aside {
+            background-color: #0A749B; /* Warna biru kehijauan */
+            color: white;
+        }
+    
+        /* Link di Sidebar */
+        aside nav a {
+            color: white; /* Teks default putih */
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s; /* Animasi transisi */
+        }
+    
+        /* Link di Sidebar saat Hover */
+        aside nav a:hover {
+            background-color: white; /* Latar belakang putih */
+            color: black; /* Teks berubah menjadi hitam */
+        }
+    
+        /* Aktif Link */
+        aside nav a.bg-yellow-500 {
+            background-color: white;
+            color: #000102;
+        }
+    </style>
+    <!-- Sidebar -->
+    <aside class="w-64 shadow-lg hidden md:block">
         <div class="p-4">
-            <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
+            <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi" class="w-40 h-15">
         </div>
         <nav class="mt-4">
-            <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
+            <a href="{{ route('user.dashboard') }}" >
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{{ route('user.machine.monitor') }}" class="flex items-center px-4 py-3 bg-yellow-500 text-blue-700">
+            <a href="{{ route('user.machine.monitor') }}" class="bg-yellow-500">
                 <i class="fas fa-cogs mr-3"></i>
                 <span>Machine Monitor</span>
-            </a>    
-            <a href="{{ route('daily.meeting') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
+            </a>
+            <a href="{{ route('daily.meeting') }}">
                 <i class="fas fa-users mr-3"></i>
                 <span>Daily Meeting</span>
             </a>
-            <a href="{{ route('monitoring') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
+            <a href="{{ route('monitoring') }}">
                 <i class="fas fa-chart-line mr-3"></i>
                 <span>Monitoring</span>
             </a>
-            <a href="{{ route('documentation') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
+            <a href="{{ route('documentation') }}">
                 <i class="fas fa-book mr-3"></i>
                 <span>Documentation</span>
             </a>
-            <a href="{{ route('support') }}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-yellow-500">
+            <a href="{{ route('support') }}">
                 <i class="fas fa-headset mr-3"></i>
                 <span>Support</span>
             </a>
-            
         </nav>
     </aside>
 
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
         <!-- Header -->
-        <header class="bg-white shadow-sm">
+        <header class="bg-white shadow-sm sticky top-0">
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Machine Monitor</h1>
                 <div class="relative">
