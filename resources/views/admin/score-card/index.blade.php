@@ -51,7 +51,7 @@
     <div class="flex-1 overflow-auto">
         <!-- Header -->
         <header class="bg-white shadow">
-            <div class="flex justify-between items-center px-6 py-4">
+            <div class="flex justify-between items-center    py-4">
             </button>
                 <h2 class="text-xl font-semibold text-gray-800">Score Card Daily</h2>
                 <div class="flex items-center">
