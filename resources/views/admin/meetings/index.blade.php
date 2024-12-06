@@ -3,44 +3,44 @@
 @section('content')
 <div class="flex h-screen bg-gray-50 overflow-auto">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white shadow-md">
+    <aside class="w-64 bg-[#0A749B] shadow-md">
         <div class="p-4">
             <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
         </div>  
         <nav class="mt-4">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-home mr-3"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{{ route('admin.score-card.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.score-card.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-clipboard-list mr-3"></i>
                 <span>Score Card Daily</span>
             </a>
-            <a href="{{ route('admin.daftar_hadir.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.daftar_hadir.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-list mr-3"></i>
                 <span>Daftar Hadir</span>
             </a>
-            <a href="{{ route('admin.pembangkit.ready') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.pembangkit.ready') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-check mr-3"></i>
                 <span>Kesiapan Pembangkit</span>
             </a>
-            <a href="{{ route('admin.laporan.sr_wo') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.laporan.sr_wo') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-file-alt mr-3"></i>
                 <span>Laporan SR/WO</span>
             </a>
-            <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-cogs mr-3"></i>
                 <span>Monitor Mesin</span>
             </a>
-            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-users mr-3"></i>
                 <span>Manajemen Pengguna</span>
             </a>
-            <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-chart-bar mr-3"></i>
                 <span>Laporan Rapat</span>
             </a>
-            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-blue-50' }}">
+            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                 <i class="fas fa-cog mr-3"></i>
                 <span>Pengaturan</span>
             </a>
@@ -106,18 +106,18 @@
             <!-- Tabel Hasil Rapat -->
             <div class="bg-white rounded-lg shadow mb-6 p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Hasil Rapat</h2>
-                <table class="w-full">
+                <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                     <thead>
                         <tr>
-                            <th class="text-left font-semibold text-gray-800">Judul</th>
-                            <th class="text-left font-semibold text-gray-800">Tanggal</th>
-                            <th class="text-left font-semibold text-gray-800">Departemen</th>
-                            <th class="text-left font-semibold text-gray-800">Status</th>
+                            <th class="px-6 py-3 text-center font-medium text-gray-500">Judul</th>
+                            <th class="px-6 py-3 text-center font-medium text-gray-500">Tanggal</th>
+                            <th class="px-6 py-3 text-center font-medium text-gray-500">Departemen</th>
+                            <th class="px-6 py-3 text-center font-medium text-gray-500">Status</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-200">
                         @foreach($meetings ?? [] as $meeting)
-                            <tr>
+                            <tr class="odd:bg-white even:bg-gray-100">
                                 <td>{{ $meeting->title }}</td>
                                 <td>{{ $meeting->scheduled_at->format('F j, Y') }}</td>
                                 <td>{{ $meeting->department->name ?? 'Tidak Ada' }}</td>
