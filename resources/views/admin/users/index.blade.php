@@ -3,16 +3,24 @@
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-64 bg-[#0A749B] shadow-md text-white">
-            <div class="p-4">
+        <aside id="mobile-menu"
+            class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
+            <div class="p-4 flex items-center gap-3">
                 <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
+                <!-- Mobile Menu Toggle -->
+                <button id="menu-toggle-close"
+                    class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                    aria-controls="mobile-menu" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             <nav class="mt-4">
                 <a href="{{ route('admin.dashboard') }}"
                     class="flex items-center px-4 py-3  {{ request()->routeIs('admin.dashboard') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-home mr-3"></i>
                     <span>Dashboard</span>
-                </a>    
+                </a>
                 <a href="{{ route('admin.pembangkit.ready') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-check mr-3"></i>
@@ -24,10 +32,10 @@
                     <span>Laporan SR/WO</span>
                 </a>
                 <a href="{{ route('admin.machine-monitor') }}"
-                class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-cogs mr-3"></i>
-                <span>Monitor Mesin</span>
-            </a>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
+                    <i class="fas fa-cogs mr-3"></i>
+                    <span>Monitor Mesin</span>
+                </a>
                 <a href="{{ route('admin.daftar_hadir.index') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-list mr-3"></i>
@@ -57,15 +65,24 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-auto">
+        <div id="main-content" class="flex-1 overflow-auto">
             <!-- Header -->
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-4">
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-toggle"
+                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
                     <h1 class="text-2xl font-semibold text-gray-800">Manajemen Pengguna</h1>
                 </div>
-                <x-admin-breadcrumb :breadcrumbs="[
-                    ['name' => 'Manajemen Pengguna', 'url' => null]
-                ]" />
+                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Manajemen Pengguna', 'url' => null]]" />
             </header>
 
             <!-- Content -->
@@ -74,7 +91,7 @@
                 <div class="bg-white rounded-lg shadow mb-6">
                     <div class="p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Pengguna</h2>
-                        
+
                         <div class="mb-4 flex justify-end space-x-4">
                             <div class="flex gap-4 justify-end">
                                 <div class="flex gap-3">
@@ -95,26 +112,31 @@
                                                 class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
                                         </div>
                                     </div>
-                                    <a href="{{ route('admin.users.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center">
+                                    <a href="{{ route('admin.users.create') }}"
+                                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center">
                                         <i class="fas fa-plus mr-2"></i>
                                         Tambah Pengguna
                                     </a>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <table id="users-table"
                                 class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead>
                                     <tr>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Email</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Peran</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nama
+                                        </th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Email
+                                        </th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Peran
+                                        </th>
                                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dibuat
                                             Pada
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="users-body" class="divide-y divide-gray-200">
@@ -142,7 +164,8 @@
                                                 </span>
                                             </td>
                                             <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                <div class="text-sm text-gray-900">{{ $user->created_at->format('d M Y') }}
+                                                <div class="text-sm text-gray-900">
+                                                    {{ $user->created_at->format('d M Y') }}
                                                 </div>
                                             </td>
                                             <td class="py-2 whitespace-nowrap flex justify-center gap-2">
@@ -153,11 +176,13 @@
                                                     </a>
                                                 </div>
 
-                                                <form id="delete-form-{{ $user->id }}" action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
+                                                <form id="delete-form-{{ $user->id }}"
+                                                    action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
                                                     class="inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="button" onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
+                                                    <button type="button"
+                                                        onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
                                                         class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
@@ -173,9 +198,9 @@
             </main>
         </div>
     </div>
-</div>
+    </div>
 
-
+    <script src="{{ asset('js/toggle.js') }}"></script>
 
     <script>
         function searchUsers() {
@@ -207,7 +232,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('delete-form-' + userId).submit();
-                    
+
                     // Tampilkan pesan sukses setelah penghapusan
                     Swal.fire(
                         'Terhapus!',
