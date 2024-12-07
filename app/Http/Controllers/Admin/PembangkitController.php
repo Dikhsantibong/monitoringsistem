@@ -31,39 +31,29 @@ class PembangkitController extends Controller
             DB::beginTransaction();
             
             foreach($request->logs as $log) {
-                // Cek apakah sudah ada log untuk mesin dan tanggal tersebut
-                $existingLog = MachineStatusLog::where('machine_id', $log['machine_id'])
-                    ->whereDate('tanggal', $log['tanggal'])
-                    ->first();
-
-                if ($existingLog) {
-                    // Update log yang sudah ada
-                    $existingLog->update([
-                        'status' => $log['status'],
-                        'keterangan' => $log['keterangan']
-                    ]);
-                } else {
-                    // Buat log baru
-                    MachineStatusLog::create([
+                MachineStatusLog::updateOrCreate(
+                    [
                         'machine_id' => $log['machine_id'],
-                        'tanggal' => $log['tanggal'],
+                        'tanggal' => $log['tanggal']
+                    ],
+                    [
                         'status' => $log['status'],
-                        'keterangan' => $log['keterangan']
-                    ]);
-                }
+                        'keterangan' => $log['keterangan'],
+                        'dmn' => $log['dmn'] ?? null,
+                        'dmp' => $log['dmp'] ?? null,
+                        'load_value' => $log['load_value'] ?? null
+                    ]
+                );
             }
             
             DB::commit();
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil disimpan'
-            ]);
+            return response()->json(['success' => true]);
             
         } catch(\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ]);
         }
     }

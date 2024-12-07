@@ -15,7 +15,10 @@ class MachineStatusLog extends Model
         'machine_id',
         'tanggal',
         'status',
-        'keterangan'
+        'keterangan',
+        'dmn',
+        'dmp',
+        'load_value'
     ];
 
     protected $casts = [

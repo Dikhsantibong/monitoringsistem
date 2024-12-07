@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
         <aside id="mobile-menu"
@@ -213,16 +214,22 @@ function saveData() {
     tables.forEach(table => {
         const rows = table.querySelectorAll('tbody tr');
         rows.forEach(row => {
-            const machineId = row.querySelector('td:first-child').getAttribute('data-id');
-            const status = row.querySelector('select').value;
-            const keterangan = row.querySelector('input[type="text"]').value;
+            const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+            const select = row.querySelector('select');
+            const input = row.querySelector('input[type="text"]');
+            const dmn = row.querySelector('td:nth-child(2)').textContent.trim();
+            const dmp = row.querySelector('td:nth-child(3)').textContent.trim();
+            const beban = row.querySelector('td:nth-child(4)').textContent.trim();
             
-            if (status) {
+            if (select.value) {
                 data.push({
                     machine_id: machineId,
                     tanggal: tanggal,
-                    status: status,
-                    keterangan: keterangan
+                    status: select.value,
+                    keterangan: input.value.trim(),
+                    dmn: dmn,
+                    dmp: dmp,
+                    load_value: beban
                 });
             }
         });
@@ -237,63 +244,37 @@ function saveData() {
         return;
     }
 
-    // Konfirmasi sebelum menyimpan
-    Swal.fire({
-        title: 'Konfirmasi',
-        text: 'Apakah Anda yakin ingin menyimpan data?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Simpan',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Tampilkan loading
+    fetch('{{ route("admin.pembangkit.save-status") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ logs: data })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
             Swal.fire({
-                title: 'Menyimpan Data',
-                text: 'Mohon tunggu...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Data berhasil disimpan!',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                loadData();
             });
-
-            // Kirim data ke server
-            fetch('{{ route("admin.pembangkit.save-status") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({ logs: data })
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Data berhasil disimpan!',
-                        timer: 1500
-                    });
-                    loadData();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Gagal menyimpan data: ' + result.message
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan saat menyimpan data!'
-                });
-            });
+        } else {
+            throw new Error(result.message || 'Gagal menyimpan data');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Terjadi kesalahan saat menyimpan data!'
+        });
     });
 }
 
@@ -389,3 +370,4 @@ document.addEventListener('DOMContentLoaded', function() {
 @push('scripts')
 
 @endpush
+
