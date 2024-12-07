@@ -106,7 +106,7 @@
                     <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
                         <i class="fa-solid fa-users text-white text-3xl mr-3"></i>
                         <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">TOTAL PENGGUNA</h3>
+                            <h3 class="text-white text-md font-medium">PRESENTASI KEHADIRAN </h3>
                         </div>
                         <p class="text-2xl font-bold text-white" id="total-users">
                             {{ $totalUsers }}
@@ -116,7 +116,7 @@
                     <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
                         <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
                         <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">RAPAT HARI INI</h3>
+                            <h3 class="text-white text-md font-medium">TOTAL SR/WO CLOSED</h3>
                         </div>
                         <p class="text-2xl font-bold text-white" id="today-meetings">
                             {{ $todayMeetings }}
@@ -124,9 +124,9 @@
                     </div>
                     <!-- Card 3 -->
                     <div class="bg-yellow-500 rounded-lg shadow p-6 flex items-center">
-                        <i class="fa-solid fa-user-check text-white text-3xl mr-3"></i>
+                        <i class="fa-solid fa-cogs text-white text-3xl mr-3"></i>
                         <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">PENGGUNA AKTIF</h3>
+                            <h3 class="text-white text-md font-medium">JUMLAH MESIN GANGGGUAN</h3>
                         </div>
                         <p class="text-2xl font-bold text-white" id="active-users">
                             {{ $activeUsers }}
