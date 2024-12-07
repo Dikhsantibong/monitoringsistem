@@ -89,35 +89,39 @@
                 <!-- Konten Kesiapan Pembangkit -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Kesiapan Pembangkit</h2>
-                    <div class="mb-4 flex justify-end space-x-4">
+                    <div class="mb-4 flex justify-between items-center">
                         <div class="flex space-x-4">
-                            <span class="text-gray-600 self-center"
-                                id="current-time">{{ \Carbon\Carbon::now()->format('d M Y H:i:s') }}</span>
-                            <script>
-                                setInterval(() => {
-                                    document.getElementById('current-time').innerText =
-                                        '{{ \Carbon\Carbon::now()->format('d M Y H:i:s') }}';
-                                }, 1000);
-                            </script>
-                            <button class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
-                                <i class="fas fa-refresh mr-2"></i>Reset
-                            </button>
-                        </div>
-                        <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
-                            <i class="fas fa-save mr-2"></i>Simpan
-                        </button>
-                        <div class="flex gap-3">
-                            <div class="flex">
-                                <input type="text" id="searchInput" placeholder="Cari mesin..."
-                                    class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500"
-                                    onkeyup="searchTables()">
-                                <button
-                                    class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors"><i
-                                        class="fas fa-search"></i></button>
+                            <input type="date" 
+                                   id="filterDate" 
+                                   value="{{ date('Y-m-d') }}"
+                                   class="px-4 py-2 border rounded-lg">
+                                   
+                            <div class="flex items-center">
+                                <div class="relative">
+                                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                    <input type="text" 
+                                           id="searchInput"
+                                           placeholder="Cari mesin..."
+                                           class="pl-10 pr-4 py-2 border rounded-lg mr-2">
+                                </div>
+                                <button onclick="loadData()" 
+                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                    <i class="fas fa-search mr-2"></i>Cari
+                                </button>
                             </div>
                         </div>
-
-
+                        
+                        <div class="flex space-x-4">
+                            <button onclick="resetForm()" 
+                                    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                                <i class="fas fa-refresh mr-2"></i>Reset
+                            </button>
+                                
+                            <button onclick="saveData()" 
+                                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                <i class="fas fa-save mr-2"></i>Simpan
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Search Bar -->
@@ -140,7 +144,7 @@
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($unit->machines as $machine)
                                         <tr class="odd:bg-white even:bg-gray-100 searchable-row">
-                                            <td class="py-2 px-4 border-b">{{ $machine->name }}</td>
+                                            <td class="py-2 px-4 border-b" data-id="{{ $machine->id }}">{{ $machine->name }}</td>
                                             <td class="py-2 px-4 border-b">
                                                 {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
                                             </td>
@@ -150,8 +154,13 @@
                                             <td class="py-2 px-4 border-b">
                                                 {{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}
                                             </td>
-                                            <td class="py-2 px-4 border-b">
-                                                {{ $operations->where('machine_id', $machine->id)->first()->status ?? 'N/A' }}
+                                                <td class="py-2 px-4 border-b">
+                                                <select class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
+                                                    <option value="Operasi" style="background-color: #4CAF50" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Operasi' ? 'selected' : '' }}>Operasi</option>
+                                                    <option value="Standby" style="background-color: #2196F3" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Standby' ? 'selected' : '' }}>Standby</option>
+                                                    <option value="Gangguan" style="background-color: #f44336" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Gangguan' ? 'selected' : '' }}>Gangguan</option>
+                                                    <option value="Pemeliharaan" style="background-color: #FF9800" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
+                                                </select>
                                             </td>
                                             <td class="py-2 px-4 border-b">
                                                 <input type="text"
@@ -194,5 +203,189 @@
     // Event listener untuk real-time search
     document.getElementById('searchInput').addEventListener('keyup', searchTables);
 </script>
+
+<script>
+function saveData() {
+    const data = [];
+    const tables = document.querySelectorAll('.unit-table table');
+    const tanggal = document.getElementById('filterDate').value;
+    
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const machineId = row.querySelector('td:first-child').getAttribute('data-id');
+            const status = row.querySelector('select').value;
+            const keterangan = row.querySelector('input[type="text"]').value;
+            
+            if (status) {
+                data.push({
+                    machine_id: machineId,
+                    tanggal: tanggal,
+                    status: status,
+                    keterangan: keterangan
+                });
+            }
+        });
+    });
+
+    if (data.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Tidak ada data yang akan disimpan!'
+        });
+        return;
+    }
+
+    // Konfirmasi sebelum menyimpan
+    Swal.fire({
+        title: 'Konfirmasi',
+        text: 'Apakah Anda yakin ingin menyimpan data?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Simpan',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Menyimpan Data',
+                text: 'Mohon tunggu...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Kirim data ke server
+            fetch('{{ route("admin.pembangkit.save-status") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ logs: data })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Data berhasil disimpan!',
+                        timer: 1500
+                    });
+                    loadData();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Gagal menyimpan data: ' + result.message
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat menyimpan data!'
+                });
+            });
+        }
+    });
+}
+
+function resetForm() {
+    Swal.fire({
+        title: 'Konfirmasi Reset',
+        text: 'Apakah Anda yakin ingin mereset form? Semua data yang belum disimpan akan hilang.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Reset',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const tables = document.querySelectorAll('.unit-table table');
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const select = row.querySelector('select');
+                    const input = row.querySelector('input[type="text"]');
+                    
+                    select.value = 'Operasi';
+                    select.style.backgroundColor = select.options[select.selectedIndex].style.backgroundColor;
+                    input.value = '';
+                });
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Form Direset',
+                text: 'Form berhasil direset!',
+                timer: 1500
+            });
+        }
+    });
+}
+
+// Fungsi untuk memuat data
+function loadData() {
+    const tanggal = document.getElementById('filterDate').value;
+    
+    fetch(`{{ route("admin.pembangkit.get-status") }}?tanggal=${tanggal}`)
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                updateFormWithData(result.data);
+            } else {
+                resetForm();
+                if (result.message) {
+                    alert(result.message);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengambil data!');
+        });
+}
+
+// Fungsi untuk mengupdate form dengan data
+function updateFormWithData(data) {
+    const tables = document.querySelectorAll('.unit-table table');
+    
+    // Reset form dulu
+    resetForm();
+    
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const machineId = row.querySelector('td:first-child').getAttribute('data-id');
+            const machineData = data.find(d => d.machine_id == machineId);
+            
+            if (machineData) {
+                const select = row.querySelector('select');
+                const input = row.querySelector('input[type="text"]');
+                
+                select.value = machineData.status;
+                select.style.backgroundColor = select.options[select.selectedIndex].style.backgroundColor;
+                input.value = machineData.keterangan || '';
+            }
+        });
+    });
+}
+
+// Event listener untuk tanggal
+document.getElementById('filterDate').addEventListener('change', loadData);
+
+// Load data saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    loadData();
+});
+</script>
 @push('scripts')
+
 @endpush

@@ -66,6 +66,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::prefix('pembangkit')->group(function () {
         Route::get('/ready', [PembangkitController::class, 'ready'])->name('pembangkit.ready');
+        Route::post('/save-status', [PembangkitController::class, 'saveStatus'])->name('pembangkit.save-status');
+        Route::get('/get-status', [PembangkitController::class, 'getStatus'])->name('pembangkit.get-status');
+        Route::get('/status-history', [PembangkitController::class, 'getStatusHistory'])->name('pembangkit.status-history');
     });
 
     Route::prefix('laporan')->group(function () {

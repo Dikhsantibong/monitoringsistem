@@ -40,4 +40,9 @@ class Machine extends Model
     {
         return $this->hasMany(MachineOperation::class, 'machine_id');
     }
+
+    public function statusLogs()
+    {
+        return $this->hasMany(MachineStatusLog::class);
+    }
 }
