@@ -27,7 +27,7 @@
                     <span>Kesiapan Pembangkit</span>
                 </a>
                 <a href="{{ route('admin.laporan.sr_wo') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
+                      class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-file-alt mr-3"></i>
                     <span>Laporan SR/WO</span>
                 </a>
@@ -127,14 +127,14 @@
 
                             <!-- Tabel Status Pembangkit -->
                             <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                <thead>
+                                <thead style="background-color: #0A749B; color: white;">
                                     <tr>
-                                        <th class="py-2 px-4 font-medium text-gray-500">Mesin</th>
-                                        <th class="py-2 px-4 font-medium text-gray-500">DMN</th>
-                                        <th class="py-2 px-4 font-medium text-gray-500">DMP</th>
-                                        <th class="py-2 px-4 font-medium text-gray-500">Beban</th>
-                                        <th class="py-2 px-4 font-medium text-gray-500">Status</th>
-                                        <th class="py-2 px-4 font-medium text-gray-500">Keterangan</th>
+                                        <th class="py-2 px-4 font-medium ">Mesin</th>
+                                        <th class="py-2 px-4 font-medium ">DMN</th>
+                                        <th class="py-2 px-4 font-medium ">DMP</th>
+                                        <th class="py-2 px-4 font-medium ">Beban</th>
+                                        <th class="py-2 px-4 font-medium ">Status</th>
+                                        <th class="py-2 px-4 font-medium ">Keterangan</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">

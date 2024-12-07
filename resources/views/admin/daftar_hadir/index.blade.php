@@ -117,14 +117,14 @@
                 <div class="overflow-x-auto">
                     <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
                         <thead class="bg-gray-100">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">
+                            <tr style="background-color: #0A749B; color: white;">
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                     Nama
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">
+                                <th class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
                                     Tanggal
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                     Waktu Kehadiran
                                 </th>
                             </tr>

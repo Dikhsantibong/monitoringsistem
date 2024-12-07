@@ -128,7 +128,7 @@
                         </div>
                         <table id="srTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                             <thead>
-                                <tr>
+                                <tr style="background-color: #0A749B; color: white;">
                                     <th class="py-2 px-4 border-b">ID SR</th>
                                     <th class="py-2 px-4 border-b">Deskripsi</th>
                                     <th class="py-2 px-4 border-b">Status</th>
@@ -158,7 +158,7 @@
                         </div>
                         <table id="woTable" class="min-w-full bg-white border border-gray-300">
                             <thead>
-                                <tr>
+                                <tr style="background-color: #0A749B; color: white;">
                                     <th class="py-2 px-4 border-b">ID WO</th>
                                     <th class="py-2 px-4 border-b">Deskripsi</th>
                                     <th class="py-2 px-4 border-b">Status</th>
@@ -189,31 +189,27 @@
             <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST">
                 @csrf
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="priority">
-                        Prioritas
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
+                        ID SR
                     </label>
-                    <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-lg">
-                        <option value="high">Tinggi</option>
-                        <option value="medium">Sedang</option>
-                        <option value="low">Rendah</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                        Status
-                    </label>
-                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg">
-                        <option value="open">Terbuka</option>
-                        <option value="in_progress">Dalam Proses</option>
-                        <option value="completed">Selesai</option>
-                    </select>
+                    <input type="text" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg" readonly>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
                         Deskripsi
                     </label>
-                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg"></textarea>
+                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg" required></textarea>
                 </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
+                        Status
+                    </label>
+                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg" required>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                <!-- Tanggal akan otomatis terisi saat penyimpanan -->
                 <div class="flex justify-end space-x-4">
                     <button type="button" onclick="closeSRModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
                         Batal
@@ -233,31 +229,27 @@
             <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST">
                 @csrf
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="work_type">
-                        Tipe Pekerjaan
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_id">
+                        ID WO
                     </label>
-                    <select name="work_type" id="work_type" class="w-full px-3 py-2 border rounded-lg">
-                        <option value="maintenance">Pemeliharaan</option>
-                        <option value="repair">Perbaikan</option>
-                        <option value="installation">Instalasi</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                        Status
-                    </label>
-                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg">
-                        <option value="pending">Menunggu</option>
-                        <option value="in_progress">Dalam Proses</option>
-                        <option value="completed">Selesai</option>
-                    </select>
+                    <input type="text" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-lg" readonly>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
                         Deskripsi
                     </label>
-                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg"></textarea>
+                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg" required></textarea>
                 </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
+                        Status
+                    </label>
+                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg" required>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                <!-- Tanggal akan otomatis terisi saat penyimpanan -->
                 <div class="flex justify-end space-x-4">
                     <button type="button" onclick="closeWOModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
                         Batal

@@ -122,7 +122,7 @@
 
                     <table class="min-w-full bg-white border">
                         <thead>
-                            <tr>
+                            <tr style="background-color: #0A749B; color: white;">
                                 <th class="border p-2">No</th>
                                 <th class="border p-2">Peserta</th>
                                 <th class="border p-2">Awal</th>
