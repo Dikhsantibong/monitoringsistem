@@ -27,16 +27,6 @@
                     <i class="fas fa-home mr-3"></i>
                     <span>Dashboard</span>
                 </a>    
-                <a href="{{ route('admin.score-card.index') }}"
-                    class="flex items-center px-4 py-3  {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-clipboard-list mr-3"></i>
-                    <span>Score Card Daily</span>
-                </a>
-                <a href="{{ route('admin.daftar_hadir.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-list mr-3"></i>
-                    <span>Daftar Hadir</span>
-                </a>
                 <a href="{{ route('admin.pembangkit.ready') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-check mr-3"></i>
@@ -48,9 +38,19 @@
                     <span>Laporan SR/WO</span>
                 </a>
                 <a href="{{ route('admin.machine-monitor') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-cogs mr-3"></i>
-                    <span>Monitor Mesin</span>
+                class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
+                <i class="fas fa-cogs mr-3"></i>
+                <span>Monitor Mesin</span>
+            </a>
+                <a href="{{ route('admin.daftar_hadir.index') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
+                    <i class="fas fa-list mr-3"></i>
+                    <span>Daftar Hadir</span>
+                </a>
+                <a href="{{ route('admin.score-card.index') }}"
+                    class="flex items-center px-4 py-3  {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
+                    <i class="fas fa-clipboard-list mr-3"></i>
+                    <span>Score Card Daily</span>
                 </a>
                 <a href="{{ route('admin.users') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
