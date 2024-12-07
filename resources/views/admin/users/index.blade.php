@@ -125,17 +125,17 @@
                             <table id="users-table"
                                 class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead>
-                                    <tr>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nama
+                                    <tr style="background-color: #0A749B; color: white">
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Nama
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Email
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Email
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Peran
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peran
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dibuat
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Dibuat
                                             Pada
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Aksi
                                         </th>
                                     </tr>
                                 </thead>
