@@ -1,4 +1,4 @@
-header@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-auto">
@@ -116,6 +116,7 @@ header@extends('layouts.app')
                                         class="fas fa-search"></i></button>
                             </div>
                         </div>
+
 
                     </div>
 
