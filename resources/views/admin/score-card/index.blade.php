@@ -51,8 +51,7 @@
     <div class="flex-1 overflow-auto">
         <!-- Header -->
         <header class="bg-white shadow">
-            <div class="flex justify-between items-center    py-4">
-            </button>
+            <div class="flex justify-between items-center py-4">
                 <h2 class="text-xl font-semibold text-gray-800 ml-4">Score Card Daily</h2>
                 <div class="flex items-center">
                     <div class="relative">
@@ -71,6 +70,9 @@
                     </div>
                 </div>
             </div>
+            <x-admin-breadcrumb :breadcrumbs="[
+                ['name' => 'Score Card Daily', 'url' => null]
+            ]" />
         </header>
 
         <!-- Main Content -->

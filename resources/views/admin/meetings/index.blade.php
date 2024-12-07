@@ -52,6 +52,7 @@
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Laporan Rapat</h1>
+                
                 <div class="flex items-center space-x-4">
                     <button onclick="exportMeetings()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                         <i class="fas fa-download mr-2"></i>Ekspor
@@ -63,7 +64,11 @@
                         <i class="fas fa-plus mr-2"></i>Buat Rapat Baru
                     </button>
                 </div>
+                
             </div>
+            <x-admin-breadcrumb :breadcrumbs="[
+                ['name' => 'Laporan Rapat', 'url' => null]
+            ]" />
         </header>
 
         <main class="p-6">

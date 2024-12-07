@@ -8,6 +8,15 @@
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
         <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <div class="flex justify-between items-center px-6 py-4">
+                <h1 class="text-2xl font-semibold text-gray-800">Buat Rapat Baru</h1>
+            </div>
+            <x-admin-breadcrumb :breadcrumbs="[
+                ['name' => 'Laporan Rapat', 'url' => route('admin.meetings')],
+                ['name' => 'Buat Rapat', 'url' => null]
+            ]" />
+        </header>
 
         <!-- Content -->
         <main class="p-6">

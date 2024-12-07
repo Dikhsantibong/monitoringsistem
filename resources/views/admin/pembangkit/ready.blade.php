@@ -54,6 +54,9 @@
             <div class="flex justify-between items-center px-6 py-4">
                 <h1 class="text-2xl font-semibold text-gray-800">Kesiapan Pembangkit</h1>
             </div>
+            <x-admin-breadcrumb :breadcrumbs="[
+                ['name' => 'Kesiapan Pembangkit', 'url' => null]
+            ]" />
         </header>
 
         <main class="p-6">

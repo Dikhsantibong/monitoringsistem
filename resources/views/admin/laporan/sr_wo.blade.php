@@ -62,6 +62,9 @@
                 <div class="flex justify-between items-center px-6 py-4">
                     <h1 class="text-2xl font-semibold text-gray-800">Laporan SR/WO</h1>
                 </div>
+                <x-admin-breadcrumb :breadcrumbs="[
+                    ['name' => 'Laporan SR/WO', 'url' => null]
+                ]" />
             </header>
 
             <main class="p-6">

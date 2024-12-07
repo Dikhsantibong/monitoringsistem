@@ -93,6 +93,9 @@
                         </div>
                     </div>
                 </div>
+                <x-admin-breadcrumb :breadcrumbs="[
+                    ['name' => 'Dashboard', 'url' => null]
+                ]" />
             </header>
 
             <!-- Dashboard Content -->

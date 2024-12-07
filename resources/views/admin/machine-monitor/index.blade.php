@@ -62,6 +62,9 @@
                     </button>
                 </div>
             </div>
+            <x-admin-breadcrumb :breadcrumbs="[
+                ['name' => 'Monitor Mesin', 'url' => null]
+            ]" />
         </header>
 
         <!-- Dashboard Content -->

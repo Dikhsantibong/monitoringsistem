@@ -57,7 +57,15 @@
     <!-- Main Content -->
    <div class="flex-1 overflow-x-hidden overflow-y-auto">
        <div class="container mx-auto px-6 py-8">
-           <h3 class="text-gray-700 text-3xl font-medium">Tambah Pengguna Baru</h3>
+           <header class="bg-white shadow-sm">
+               <div class="flex justify-between items-center px-6 py-4">
+                   <h1 class="text-2xl font-semibold text-gray-800">Tambah Pengguna Baru</h1>
+               </div>
+               <x-admin-breadcrumb :breadcrumbs="[
+                   ['name' => 'Manajemen Pengguna', 'url' => route('admin.users')],
+                   ['name' => 'Tambah Pengguna', 'url' => null]
+               ]" />
+           </header>
             <div class="mt-8">
                <form action="{{ route('admin.users.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                    @csrf

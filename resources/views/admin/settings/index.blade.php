@@ -51,8 +51,11 @@
     <div class="flex-1 overflow-auto">
         <header class="bg-white shadow-sm">
             <div class="flex justify-between items-center px-6 py-4">
-                <h1 class="text-2xl font-semibold text-gray-800">Pengaturan Sistem</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">Pengaturan</h1>
             </div>
+            <x-admin-breadcrumb :breadcrumbs="[
+                ['name' => 'Pengaturan', 'url' => null]
+            ]" />
         </header>
 
         <main class="p-6">
