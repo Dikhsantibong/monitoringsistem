@@ -34,9 +34,17 @@
         
     </style>
     <!-- Sidebar -->
-    <aside class="w-64 shadow-lg hidden md:block">
-        <div class="p-4">
+    <aside id="mobile-menu"
+    class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
+        <div class="p-4 flex items-center gap-3">
             <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi" class="w-40 h-15">
+            <!-- Mobile Menu Toggle -->
+            <button id="menu-toggle-close"
+            class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            aria-controls="mobile-menu" aria-expanded="false">
+            <span class="sr-only">Open main menu</span>
+            <i class="fa-solid fa-xmark"></i>
+        </button>
         </div>
         <nav class="mt-4">
             <a href="{{ route('user.dashboard') }}" >
@@ -66,10 +74,21 @@
         </nav>
     </aside>
     <!-- Main Content -->
-    <div class="flex-1 overflow-auto">
+    <div id="main-content" class="flex-1 overflow-auto">
         <!-- Header -->
         <header class="bg-white shadow-sm sticky top-0">
             <div class="flex justify-between items-center px-6 py-4">
+                <!-- Mobile Menu Toggle -->
+                <button id="mobile-menu-toggle"
+                class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                aria-controls="mobile-menu" aria-expanded="false">
+                <span class="sr-only">Open main menu</span>
+                <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" aria-hidden="true" data-slot="icon">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
                 <h1 class="text-2xl font-semibold text-gray-800">Daily Meeting</h1>
                 <div class="relative">
                     <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
@@ -184,6 +203,7 @@
     </div>
 </div>
 
+<script src="{{ asset('js/toggle.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
