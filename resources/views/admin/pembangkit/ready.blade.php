@@ -1,4 +1,4 @@
-header@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-auto">
@@ -117,6 +117,7 @@ header@extends('layouts.app')
                             </div>
                         </div>
 
+
                     </div>
 
                     <!-- Search Bar -->
@@ -124,64 +125,6 @@ header@extends('layouts.app')
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
                             <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
 
-<<<<<<< HEAD
-                @foreach($units as $unit)
-                <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
-                    
-                    <!-- Tabel Status Pembangkit -->
-                    <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                        <thead>
-                            <tr>
-                                <th class="py-2 px-4 font-medium text-gray-500">Mesin</th>
-                                <th class="py-2 px-4 font-medium text-gray-500">DMN</th>
-                                <th class="py-2 px-4 font-medium text-gray-500">DMP</th>
-                                <th class="py-2 px-4 font-medium text-gray-500">Beban</th>
-                                <th class="py-2 px-4 font-medium text-gray-500">Status</th>
-                                <th class="py-2 px-4 font-medium text-gray-500">Keterangan</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @foreach($unit->machines as $machine)
-                            <tr class="odd:bg-white even:bg-gray-100 searchable-row">
-                                <td class="py-2 px-4 border-b">{{ $machine->name }}</td>
-                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}</td>
-                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}</td>
-                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}</td>
-                                <td class="py-2 px-4 border-b">
-                                    <select 
-                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500 status-select"
-                                        onchange="changeStatusColor(this)"
-                                    >
-                                        <option value="Operasi" class="bg-green-100" 
-                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Operasi' ? 'selected' : '' }}>
-                                            Operasi
-                                        </option>
-                                        <option value="Standby" class="bg-blue-100"
-                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Standby' ? 'selected' : '' }}>
-                                            Standby
-                                        </option>
-                                        <option value="Gangguan" class="bg-red-100"
-                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Gangguan' ? 'selected' : '' }}>
-                                            Gangguan
-                                        </option>
-                                        <option value="Pemeliharaan" class="bg-yellow-100"
-                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Pemeliharaan' ? 'selected' : '' }}>
-                                            Pemeliharaan
-                                        </option>
-                                    </select>
-                                </td>
-                                <td class="py-2 px-4 border-b">
-                                    <input type="text" 
-                                           class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
-                                           value="{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}"
-                                           placeholder="Masukkan keterangan...">
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-=======
                             <!-- Tabel Status Pembangkit -->
                             <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead>
@@ -222,7 +165,6 @@ header@extends('layouts.app')
                             </table>
                         </div>
                     @endforeach
->>>>>>> df405f461b4fa009f45f43588a00058b15285628
                 </div>
             </main>
         </div>
