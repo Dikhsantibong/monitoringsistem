@@ -121,7 +121,7 @@
                                     <tr class="odd:bg-white even:bg-gray-100">
                                         <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
                                         <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $sr->status }}</td>
+                                        <td class="py-2 px-4 border-b {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">{{ $sr->status }}</td>
                                         <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
                                     </tr>
                                 @endforeach

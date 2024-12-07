@@ -124,7 +124,29 @@
                                 <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}</td>
                                 <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}</td>
                                 <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}</td>
-                                <td class="py-2 px-4 border-b">{{ $operations->where('machine_id', $machine->id)->first()->status ?? 'N/A' }}</td>
+                                <td class="py-2 px-4 border-b">
+                                    <select 
+                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500 status-select"
+                                        onchange="changeStatusColor(this)"
+                                    >
+                                        <option value="Operasi" class="bg-green-100" 
+                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Operasi' ? 'selected' : '' }}>
+                                            Operasi
+                                        </option>
+                                        <option value="Standby" class="bg-blue-100"
+                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Standby' ? 'selected' : '' }}>
+                                            Standby
+                                        </option>
+                                        <option value="Gangguan" class="bg-red-100"
+                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Gangguan' ? 'selected' : '' }}>
+                                            Gangguan
+                                        </option>
+                                        <option value="Pemeliharaan" class="bg-yellow-100"
+                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Pemeliharaan' ? 'selected' : '' }}>
+                                            Pemeliharaan
+                                        </option>
+                                    </select>
+                                </td>
                                 <td class="py-2 px-4 border-b">
                                     <input type="text" 
                                            class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
