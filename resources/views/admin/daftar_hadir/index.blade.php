@@ -111,15 +111,15 @@
                         <!-- Tombol Generate QR Code -->
                         <div>
                             <button onclick="generateQRCode()" 
-                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-                                Generate QR Code
+                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center">
+                                <i class="fas fa-qrcode mr-2"></i> Generate QR Code
                             </button>
                             
                             <!-- Modal QR Code -->
                             <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
                                 <div class="bg-white p-8 rounded-lg shadow-lg transform transition-transform duration-300 ease-in-out scale-0">
                                     <div class="flex justify-between items-center mb-4">
-                                        <h3 class="text-xl font-bold">QR Code Absensi</h3>
+                                        <h3 class="text-xl font-bold flex items-center"><i class="fas fa-qrcode mr-2"></i>QR Code Absensi</h3>
                                         <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
                                             <i class="fas fa-times"></i>
                                         </button>
