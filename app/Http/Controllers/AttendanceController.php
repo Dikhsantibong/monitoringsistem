@@ -2,81 +2,70 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendance;
 use Illuminate\Http\Request;
+use App\Models\Attendance;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $date = $request->date ?? now()->format('Y-m-d');
-
-        $attendances = Attendance::query()
-            ->whereDate('created_at', $date)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        if ($request->ajax()) {
-            return view('admin.daftar_hadir._table_body', compact('attendances'));
+        $query = DB::table('attendance');
+        
+        // Filter berdasarkan tanggal jika ada
+        if ($request->has('date')) {
+            $date = $request->date;
+            $query->whereDate('time', $date);
+        } else {
+            // Default tampilkan hari ini
+            $query->whereDate('time', Carbon::today());
         }
 
+        $attendances = $query->orderBy('time', 'desc')->get();
+        
         return view('admin.daftar_hadir.index', compact('attendances'));
     }
 
-    public function recordAttendance(Request $request)
+    public function showScanForm($token)
     {
-        try {
-            $user = auth()->user();
-            $qrCode = $request->qr_code;
-
-            // Validasi format QR code
-            if (!str_starts_with($qrCode, 'attendance_')) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'QR Code tidak valid'
-                ], 400);
-            }
-
-            // Cek apakah QR code masih valid (5 menit)
-            $timestamp = explode('_', $qrCode)[1];
-            if (now()->timestamp - $timestamp > 300) { // 300 detik = 5 menit
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'QR Code sudah kadaluarsa'
-                ], 400);
-            }
-
-            // Cek apakah user sudah absen hari ini
-            $existingAttendance = Attendance::where('user_id', $user->id)
-                ->whereDate('attended_at', now())
-                ->first();
-
-            if ($existingAttendance) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Anda sudah melakukan absensi hari ini'
-                ], 400);
-            }
-
-            // Catat kehadiran baru
-            Attendance::create([
-                'user_id' => $user->id,
-                'qr_code' => $qrCode,
-                'attended_at' => now(),
-                'is_valid' => true
-            ]);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Absensi berhasil dicatat'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan saat mencatat absensi'
-            ], 500);
+        // Validasi token
+        $tokenParts = explode('_', $token);
+        if (count($tokenParts) !== 3 || $tokenParts[0] !== 'attendance') {
+            return redirect()->back()->with('error', 'QR Code tidak valid');
         }
+
+        $date = $tokenParts[1];
+        if ($date !== date('Y-m-d')) {
+            return redirect()->back()->with('error', 'QR Code sudah kadaluarsa');
+        }
+
+        return view('attendance.scan-form', compact('token'));
+    }
+
+    public function submitAttendance(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'division' => 'required|string|max:255',
+            'token' => 'required'
+        ]);
+
+        // Validasi token lagi
+        $tokenParts = explode('_', $request->token);
+        if (count($tokenParts) !== 3 || $tokenParts[0] !== 'attendance' || $tokenParts[1] !== date('Y-m-d')) {
+            return redirect()->back()->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
+        }
+
+        // Simpan attendance menggunakan query builder
+        DB::table('attendance')->insert([
+            'name' => $request->name,
+            'division' => $request->division,
+            'time' => Carbon::now(),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
+
+        return redirect()->back()->with('success', 'Kehadiran berhasil dicatat!');
     }
 } 

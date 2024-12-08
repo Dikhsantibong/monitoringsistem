@@ -79,10 +79,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::prefix('daftar-hadir')->group(function () {
         Route::get('/', [DaftarHadirController::class, 'index'])->name('daftar_hadir.index');
+        Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan');
+Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
     });
 
     Route::prefix('meetings')->group(function () {
-        Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');
+        Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');    
         Route::get('/create', [AdminMeetingController::class, 'create'])->name('meetings.create');
         Route::post('/upload', [AdminMeetingController::class, 'upload'])->name('meetings.upload');
         Route::get('/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
@@ -138,3 +140,4 @@ Route::middleware(['auth'])->group(function () {
 // Tambahkan route untuk AJAX
 Route::get('/admin/machine-monitor/operations', [MachineMonitorController::class, 'getMachineOperations'])
     ->name('admin.machine-monitor.operations');
+

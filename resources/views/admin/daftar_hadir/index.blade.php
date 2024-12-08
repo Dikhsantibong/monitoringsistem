@@ -104,10 +104,33 @@
             </div>
             <main class="px-6">
                 <div class="bg-white rounded-lg shadow p-6 mb-3">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-2">Daftar Kehadiran</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
 
                     <!-- Input Pencarian -->
-                    <div class="mb-4 flex justify-end space-x-4">
+                    <div class="mb-4 flex justify-between">
+                        <!-- Tombol Generate QR Code -->
+                        <div>
+                            <button onclick="generateQRCode()" 
+                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                                Generate QR Code
+                            </button>
+                            
+                            <!-- Modal QR Code -->
+                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+                                <div class="bg-white p-8 rounded-lg shadow-lg transform transition-transform duration-300 ease-in-out scale-0">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-xl font-bold">QR Code Absensi</h3>
+                                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px] animate-fadeIn">
+                                    </div>
+                                    <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Filter Tanggal -->
                         <div class="flex items-center space-x-2">
                             <label class="text-gray-600">Tanggal:</label>
@@ -191,6 +214,71 @@
                     document.getElementById('attendance-body').innerHTML = html;
                 });
         }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        function generateQRCode() {
+            const today = new Date().toISOString().split('T')[0];
+            const token = `attendance_${today}_${Math.random().toString(36).substr(2, 9)}`;
+            const qrData = `${window.location.origin}/attendance/scan/${token}`;
+            
+            localStorage.setItem('attendance_qr_token', token);
+            
+            const modal = document.getElementById('qrModal');
+            const modalContent = modal.querySelector('.bg-white');
+            
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+            modal.classList.add('opacity-100');
+            modalContent.classList.remove('scale-0');
+            modalContent.classList.add('scale-100');
+            
+            const container = document.getElementById('qrcode-container');
+            container.innerHTML = '';
+            
+            const qrDiv = document.createElement('div');
+            container.appendChild(qrDiv);
+            
+            new QRCode(qrDiv, {
+                text: qrData,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('qrModal');
+            const modalContent = modal.querySelector('.bg-white');
+            
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-0');
+            modal.classList.remove('opacity-100');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Cek apakah QR Code masih valid
+        function checkQRValidity() {
+            const token = localStorage.getItem('attendance_qr_token');
+            if (token) {
+                const [, date] = token.split('_');
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (date !== today) {
+                    localStorage.removeItem('attendance_qr_token');
+                }
+            }
+        }
+
+        // Jalankan pengecekan saat halaman dimuat
+        checkQRValidity();
     </script>
     @push('scripts')
     @endpush
