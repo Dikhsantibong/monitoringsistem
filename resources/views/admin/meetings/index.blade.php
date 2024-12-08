@@ -67,7 +67,7 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
             <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex justify-between items-center px-6 py-2">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -79,27 +79,44 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">Laporan Rapat</h1>
+                    <h1 class="text-xl font-semibold text-gray-800">Laporan Rapat</h1>
+                    <div class="relative">
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-7 h-7 rounded-full mr-2">
+                            <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2 text-gray-600"></i>
+                        </button>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
 
-                    <div class="flex items-center space-x-4">
-                        <button onclick="exportMeetings()"
-                            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                            <i class="fas fa-download mr-2"></i>Ekspor
-                        </button>
-                        <button onclick="uploadMeeting()"
-                            class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                            <i class="fas fa-upload mr-2"></i>Upload Rapat
-                        </button>
-                        <button onclick="openModal()"
-                            class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
-                            <i class="fas fa-plus mr-2"></i>Buat Rapat Baru
-                        </button>
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                        </div>
                     </div>
 
-                </div>
-                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan Rapat', 'url' => null]]" />
-            </header>
 
+                </div>
+
+            </header>
+            <div class="flex justify-between items-center pt-2">
+                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan Rapat', 'url' => null]]" />
+                <div class="flex items-center space-x-4">
+                    <button onclick="exportMeetings()"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-download mr-2"></i>Ekspor
+                    </button>
+                    <button onclick="uploadMeeting()"
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        <i class="fas fa-upload mr-2"></i>Upload Rapat
+                    </button>
+                    <button onclick="openModal()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                        <i class="fas fa-plus mr-2"></i>Buat Rapat Baru
+                    </button>
+                </div>
+            </div>
             <main class="p-6">
                 <!-- Filter Section -->
                 <div class="bg-white rounded-lg shadow mb-6">

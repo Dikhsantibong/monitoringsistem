@@ -1,5 +1,19 @@
 @extends('layouts.app')
 
+@push('styles')
+    <!-- Tambahkan Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Pastikan konten utama dapat di-scroll */
+        .main-content {
+            overflow-y: auto;
+            /* Izinkan scroll vertikal */
+            height: calc(100vh - 64px);
+            /* Sesuaikan tinggi dengan mengurangi tinggi header */
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
@@ -21,16 +35,6 @@
                     <i class="fas fa-home mr-3"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="{{ route('admin.daftar_hadir.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-list mr-3"></i>
-                    <span>Daftar Hadir</span>
-                </a>
-                <a href="{{ route('admin.score-card.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3] hover:text-black' }}">
-                    <i class="fas fa-clipboard-list mr-3"></i>
-                    <span>Score Card Daily</span>
-                </a>
                 <a href="{{ route('admin.pembangkit.ready') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-check mr-3"></i>
@@ -45,6 +49,16 @@
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-cogs mr-3"></i>
                     <span>Monitor Mesin</span>
+                </a>
+                <a href="{{ route('admin.daftar_hadir.index') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
+                    <i class="fas fa-list mr-3"></i>
+                    <span>Daftar Hadir</span>
+                </a>
+                <a href="{{ route('admin.score-card.index') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3] hover:text-black' }}">
+                    <i class="fas fa-clipboard-list mr-3"></i>
+                    <span>Score Card Daily</span>
                 </a>
                 <a href="{{ route('admin.users') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
@@ -65,10 +79,10 @@
         </aside>
 
         <!-- Main Content -->
-        <div id="main-content" class="flex-1 overflow-auto">
+        <div id="main-content" class="flex-1 main-content">
             <!-- Header -->
-            <header class="bg-white shadow">
-                <div class="flex justify-between items-center px-6 py-4">
+            <header class="bg-white shadow-sm">
+                <div class="flex justify-between items-center px-6 py-2">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -83,10 +97,11 @@
                     <h2 class="text-xl font-semibold text-gray-800">Score Card Daily</h2>
                     <div class="flex items-center">
                         <div class="relative">
-                            <button onclick="toggleDropdown()" class="flex items-center focus:outline-none">
-                                <img src="{{ asset('logo/user.png') }}" alt="Profile" class="w-8 h-8 rounded-full mr-2">
-                                <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                                <i class="fas fa-chevron-down ml-2"></i>
+                            <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                                <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                    class="w-7 h-7 rounded-full mr-2">
+                                <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                                <i class="fas fa-caret-down ml-2 text-gray-600"></i>
                             </button>
                             <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden">
                                 <a href="{{ route('profile.edit') }}"
@@ -101,11 +116,13 @@
                     </div>
                 </div>
             </header>
-
+            <div class="flex items-center pt-2">
+                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Score Card Daily', 'url' => null]]" />
+            </div>
             <!-- Main Content -->
-            <div class="container mx-auto px-4 py-8">
+            <div class="container mx-auto px-4">
                 <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-2xl font-bold mb-6">SCORE CARD DAILY</h2>
+                    <h2 class="text-xl font-bold mb-6">SCORE CARD DAILY</h2>
 
                     <div class="mb-4">
                         <div class="flex justify-between items-center">
@@ -122,7 +139,7 @@
 
                     <table class="min-w-full bg-white border">
                         <thead>
-                            <tr style="background-color: #0A749B; color: white;">
+                            <tr style="background-color: #0A749B; color: white;" class="text-center">
                                 <th class="border p-2">No</th>
                                 <th class="border p-2">Peserta</th>
                                 <th class="border p-2">Awal</th>

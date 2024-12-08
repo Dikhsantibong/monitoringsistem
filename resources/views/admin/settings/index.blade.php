@@ -67,7 +67,7 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
             <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex justify-between items-center px-6 py-2">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -79,12 +79,29 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">Pengaturan</h1>
-                </div>
-                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Pengaturan', 'url' => null]]" />
-            </header>
+                    <h1 class="text-xl font-semibold text-gray-800">Pengaturan</h1>
+                    <div class="relative">
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-7 h-7 rounded-full mr-2">
+                            <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2 text-gray-600"></i>
+                        </button>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
 
-            <main class="p-6">
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="flex items-center pt-2">
+                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Pengaturan', 'url' => null]]" />
+            </div>
+            <main class="px-6">
                 <!-- Pengaturan Umum -->
                 <div class="bg-white rounded-lg shadow mb-6">
                     <div class="p-6">

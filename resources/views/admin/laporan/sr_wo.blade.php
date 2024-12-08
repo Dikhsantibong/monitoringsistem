@@ -4,7 +4,7 @@
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
         <aside id="mobile-menu"
-        class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
+            class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
             <div class="p-4 flex items-center gap-3">
                 <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
                 <!-- Mobile Menu Toggle -->
@@ -20,7 +20,7 @@
                     class="flex items-center px-4 py-3  {{ request()->routeIs('admin.dashboard') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-home mr-3"></i>
                     <span>Dashboard</span>
-                </a>    
+                </a>
                 <a href="{{ route('admin.pembangkit.ready') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-check mr-3"></i>
@@ -32,10 +32,10 @@
                     <span>Laporan SR/WO</span>
                 </a>
                 <a href="{{ route('admin.machine-monitor') }}"
-                class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-cogs mr-3"></i>
-                <span>Monitor Mesin</span>
-            </a>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
+                    <i class="fas fa-cogs mr-3"></i>
+                    <span>Monitor Mesin</span>
+                </a>
                 <a href="{{ route('admin.daftar_hadir.index') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-list mr-3"></i>
@@ -65,9 +65,9 @@
         </aside>
 
         <!-- Main Content -->
-        <div id="main-content" class="flex-1 overflow-auto">
+        <div id="main-content" class="flex-1 main-content">
             <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex justify-between items-center px-6 py-2">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -79,111 +79,128 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">Laporan SR/WO</h1>
-                </div>
-                <x-admin-breadcrumb :breadcrumbs="[
-                    ['name' => 'Laporan SR/WO', 'url' => null]
-                ]" />
-            </header>
+                    <h1 class="text-xl font-semibold text-gray-800">Laporan SR/WO</h1>
+                    <div class="relative">
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-7 h-7 rounded-full mr-2">
+                            <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2 text-gray-600"></i>
+                        </button>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
 
-            <main class="p-6">
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="pt-2">
+                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan SR/WO', 'url' => null]]" />
+            </div>
+            
+            <main class="px-6">
                 <!-- Konten Laporan SR/WO -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Detail Laporan</h2>
+                    <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
                     <div class="p-4">
-                    <div class="mb-4 flex justify-end space-x-4">
-                        <!-- Filter Tanggal -->
-                        <div class="flex items-center space-x-2">
-                            <label class="text-gray-600">Dari:</label>
-                            <input type="date" 
-                                   id="startDate" 
-                                   class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                            
-                            <label class="text-gray-600">Sampai:</label>
-                            <input type="date" 
-                                   id="endDate" 
-                                   class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                        </div>
+                        <div class="mb-4 flex justify-end space-x-4">
+                            <!-- Filter Tanggal -->
+                            <div class="flex items-center space-x-2">
+                                <label class="text-gray-600">Dari:</label>
+                                <input type="date" id="startDate"
+                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                <label class="text-gray-600">Sampai:</label>
+                                <input type="date" id="endDate"
+                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            </div>
 
-                        <!-- Search Input -->
-                        <div class="flex">
-                            <input type="text" 
-                                   id="searchInput" 
-                                   placeholder="Cari..." 
-                                   class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
-                            <button onclick="searchTables()" 
+                            <!-- Search Input -->
+                            <div class="flex">
+                                <input type="text" id="searchInput" placeholder="Cari..."
+                                    class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
+                                <button onclick="searchTables()"
                                     class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
-                                search
-                            </button>
+                                    search
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Card SR -->
-                    <div class="bg-white rounded-lg shadow p-6 mb-4">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
-                            <button onclick="openSRModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                                <i class="fas fa-plus mr-2"></i>Tambah SR
-                            </button>
-                        </div>
-                        <table id="srTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                            <thead>
-                                <tr style="background-color: #0A749B; color: white;">
-                                    <th class="py-2 px-4 border-b">ID SR</th>
-                                    <th class="py-2 px-4 border-b">Deskripsi</th>
-                                    <th class="py-2 px-4 border-b">Status</th>
-                                    <th class="py-2 px-4 border-b">Tanggal</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @foreach ($serviceRequests as $sr)
-                                    <tr class="odd:bg-white even:bg-gray-100">
-                                        <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
-                                        <td class="py-2 px-4 border-b {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">{{ $sr->status }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
+                        <!-- Card SR -->
+                        <div class="bg-white rounded-lg shadow p-6 mb-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
+                                <button onclick="openSRModal()"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                    <i class="fas fa-plus mr-2"></i>Tambah SR
+                                </button>
+                            </div>
+                            <table id="srTable"
+                                class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                                <thead>
+                                    <tr style="background-color: #0A749B; color: white;">
+                                        <th class="py-2 px-4 border-b">ID SR</th>
+                                        <th class="py-2 px-4 border-b">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">Status</th>
+                                        <th class="py-2 px-4 border-b">Tanggal</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach ($serviceRequests as $sr)
+                                        <tr class="odd:bg-white even:bg-gray-100">
+                                            <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
+                                            <td
+                                                class="py-2 px-4 border-b {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">
+                                                {{ $sr->status }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <!-- Card WO -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
-                            <button onclick="openWOModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                                <i class="fas fa-plus mr-2"></i>Tambah WO
-                            </button>
-                        </div>
-                        <table id="woTable" class="min-w-full bg-white border border-gray-300">
-                            <thead>
-                                <tr style="background-color: #0A749B; color: white;">
-                                    <th class="py-2 px-4 border-b">ID WO</th>
-                                    <th class="py-2 px-4 border-b">Deskripsi</th>
-                                    <th class="py-2 px-4 border-b">Status</th>
-                                    <th class="py-2 px-4 border-b">Tanggal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($workOrders as $wo)
-                                    <tr>
-                                        <td class="py-2 px-4 border-b">{{ $wo->id }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $wo->status }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $wo->created_at }}</td>
+                        <!-- Card WO -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
+                                <button onclick="openWOModal()"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                    <i class="fas fa-plus mr-2"></i>Tambah WO
+                                </button>
+                            </div>
+                            <table id="woTable" class="min-w-full bg-white border border-gray-300">
+                                <thead>
+                                    <tr style="background-color: #0A749B; color: white;">
+                                        <th class="py-2 px-4 border-b">ID WO</th>
+                                        <th class="py-2 px-4 border-b">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">Status</th>
+                                        <th class="py-2 px-4 border-b">Tanggal</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach ($workOrders as $wo)
+                                        <tr>
+                                            <td class="py-2 px-4 border-b">{{ $wo->id }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $wo->status }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $wo->created_at }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
             </main>
         </div>
     </div>
 
     <!-- Modal SR -->
-    <div id="srModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
+    <div id="srModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
         <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
             <h2 class="text-xl font-bold mb-4">Tambah Service Request (SR)</h2>
             <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST">
@@ -192,7 +209,8 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
                         ID SR
                     </label>
-                    <input type="text" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg" readonly>
+                    <input type="text" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg"
+                        readonly>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
@@ -211,7 +229,8 @@
                 </div>
                 <!-- Tanggal akan otomatis terisi saat penyimpanan -->
                 <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeSRModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    <button type="button" onclick="closeSRModal()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
                         Batal
                     </button>
                     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
@@ -223,7 +242,8 @@
     </div>
 
     <!-- Modal WO -->
-    <div id="woModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
+    <div id="woModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
         <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
             <h2 class="text-xl font-bold mb-4">Tambah Work Order (WO)</h2>
             <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST">
@@ -232,7 +252,8 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_id">
                         ID WO
                     </label>
-                    <input type="text" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-lg" readonly>
+                    <input type="text" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-lg"
+                        readonly>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
@@ -251,7 +272,8 @@
                 </div>
                 <!-- Tanggal akan otomatis terisi saat penyimpanan -->
                 <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeWOModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    <button type="button" onclick="closeWOModal()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
                         Batal
                     </button>
                     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
@@ -264,185 +286,185 @@
 @endsection
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script>
-// Fungsi untuk membuka modal SR
-function openSRModal() {
-    const modal = document.getElementById('srModal');
-    const modalContent = modal.querySelector('.bg-white');
-    modal.classList.remove('hidden');
-    modal.classList.remove('scale-0');
-    modal.classList.add('scale-100');
-    setTimeout(() => {
-        modalContent.classList.remove('scale-0');
-        modalContent.classList.add('scale-100');
-    }, 100);
-}
-
-// Fungsi untuk menutup modal SR 
-function closeSRModal() {
-    const modal = document.getElementById('srModal');
-    const modalContent = modal.querySelector('.bg-white');
-    modalContent.classList.remove('scale-100');
-    modalContent.classList.add('scale-0');
-    setTimeout(() => {
-        modal.classList.remove('scale-100');
-        modal.classList.add('scale-0');
-        modal.classList.add('hidden');
-    }, 300);
-}
-
-// Fungsi untuk membuka modal WO
-function openWOModal() {
-    const modal = document.getElementById('woModal');
-    const modalContent = modal.querySelector('.bg-white');
-    modal.classList.remove('hidden');
-    modal.classList.remove('scale-0');
-    modal.classList.add('scale-100');
-    setTimeout(() => {
-        modalContent.classList.remove('scale-0');
-        modalContent.classList.add('scale-100');
-    }, 100);
-}
-
-// Fungsi untuk menutup modal WO
-function closeWOModal() {
-    const modal = document.getElementById('woModal');
-    const modalContent = modal.querySelector('.bg-white');
-    modalContent.classList.remove('scale-100');
-    modalContent.classList.add('scale-0');
-    setTimeout(() => {
-        modal.classList.remove('scale-100');
-        modal.classList.add('scale-0');
-        modal.classList.add('hidden');
-    }, 300);
-}
-
-// Fungsi untuk submit form SR
-function submitSR() {
-    const form = document.getElementById('srForm');
-    form.submit();
-    closeSRModal();
-}
-
-// Fungsi untuk submit form WO 
-function submitWO() {
-    const form = document.getElementById('woForm');
-    form.submit();
-    closeWOModal();
-}
-
-function searchTables() {
-    const searchValue = document.getElementById('searchInput').value.toLowerCase();
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    
-    // Fungsi untuk mengecek apakah tanggal dalam range
-    function isDateInRange(dateStr) {
-        if (!startDate && !endDate) return true;
-        
-        const date = new Date(dateStr);
-        const start = startDate ? new Date(startDate) : null;
-        const end = endDate ? new Date(endDate) : null;
-        
-        if (start && end) {
-            return date >= start && date <= end;
-        } else if (start) {
-            return date >= start;
-        } else if (end) {
-            return date <= end;
-        }
-        return true;
+    // Fungsi untuk membuka modal SR
+    function openSRModal() {
+        const modal = document.getElementById('srModal');
+        const modalContent = modal.querySelector('.bg-white');
+        modal.classList.remove('hidden');
+        modal.classList.remove('scale-0');
+        modal.classList.add('scale-100');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-0');
+            modalContent.classList.add('scale-100');
+        }, 100);
     }
-    
-    // Cari di tabel SR
-    const srTable = document.getElementById('srTable');
-    const srRows = srTable.getElementsByTagName('tr');
-    
-    for (let i = 1; i < srRows.length; i++) {
-        const row = srRows[i];
-        const cells = row.getElementsByTagName('td');
-        let textFound = false;
-        let dateFound = false;
-        
-        // Cek text di semua kolom
-        for (let cell of cells) {
-            if (cell.textContent.toLowerCase().includes(searchValue)) {
-                textFound = true;
-            }
-        }
-        
-        // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
-        const dateCell = cells[cells.length - 1];
-        if (dateCell) {
-            dateFound = isDateInRange(dateCell.textContent);
-        }
-        
-        row.style.display = (textFound && dateFound) ? '' : 'none';
-    }
-    
-    // Cari di tabel WO
-    const woTable = document.getElementById('woTable');
-    const woRows = woTable.getElementsByTagName('tr');
-    
-    for (let i = 1; i < woRows.length; i++) {
-        const row = woRows[i];
-        const cells = row.getElementsByTagName('td');
-        let textFound = false;
-        let dateFound = false;
-        
-        // Cek text di semua kolom
-        for (let cell of cells) {
-            if (cell.textContent.toLowerCase().includes(searchValue)) {
-                textFound = true;
-            }
-        }
-        
-        // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
-        const dateCell = cells[cells.length - 1];
-        if (dateCell) {
-            dateFound = isDateInRange(dateCell.textContent);
-        }
-        
-        row.style.display = (textFound && dateFound) ? '' : 'none';
-    }
-}
 
-// Event listener untuk input tanggal
-document.getElementById('startDate').addEventListener('change', searchTables);
-document.getElementById('endDate').addEventListener('change', searchTables);
-
-// Event listener untuk pencarian teks (kode yang sudah ada)
-document.getElementById('searchInput').addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') {
-        searchTables();
-    } else {
-        clearTimeout(this.searchTimeout);
-        this.searchTimeout = setTimeout(() => {
-            searchTables();
+    // Fungsi untuk menutup modal SR 
+    function closeSRModal() {
+        const modal = document.getElementById('srModal');
+        const modalContent = modal.querySelector('.bg-white');
+        modalContent.classList.remove('scale-100');
+        modalContent.classList.add('scale-0');
+        setTimeout(() => {
+            modal.classList.remove('scale-100');
+            modal.classList.add('scale-0');
+            modal.classList.add('hidden');
         }, 300);
     }
-});
 
-// Reset pencarian
-document.getElementById('searchInput').addEventListener('input', function() {
-    if (this.value === '') {
-        searchTables();
+    // Fungsi untuk membuka modal WO
+    function openWOModal() {
+        const modal = document.getElementById('woModal');
+        const modalContent = modal.querySelector('.bg-white');
+        modal.classList.remove('hidden');
+        modal.classList.remove('scale-0');
+        modal.classList.add('scale-100');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-0');
+            modalContent.classList.add('scale-100');
+        }, 100);
     }
-});
 
-// Set tanggal default
-window.addEventListener('load', function() {
-    // Set tanggal akhir ke hari ini
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('endDate').value = today;
-    
-    // Set tanggal awal ke 30 hari yang lalu
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
-    
-    // Jalankan pencarian awal
-    searchTables();
-});
+    // Fungsi untuk menutup modal WO
+    function closeWOModal() {
+        const modal = document.getElementById('woModal');
+        const modalContent = modal.querySelector('.bg-white');
+        modalContent.classList.remove('scale-100');
+        modalContent.classList.add('scale-0');
+        setTimeout(() => {
+            modal.classList.remove('scale-100');
+            modal.classList.add('scale-0');
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    // Fungsi untuk submit form SR
+    function submitSR() {
+        const form = document.getElementById('srForm');
+        form.submit();
+        closeSRModal();
+    }
+
+    // Fungsi untuk submit form WO 
+    function submitWO() {
+        const form = document.getElementById('woForm');
+        form.submit();
+        closeWOModal();
+    }
+
+    function searchTables() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        // Fungsi untuk mengecek apakah tanggal dalam range
+        function isDateInRange(dateStr) {
+            if (!startDate && !endDate) return true;
+
+            const date = new Date(dateStr);
+            const start = startDate ? new Date(startDate) : null;
+            const end = endDate ? new Date(endDate) : null;
+
+            if (start && end) {
+                return date >= start && date <= end;
+            } else if (start) {
+                return date >= start;
+            } else if (end) {
+                return date <= end;
+            }
+            return true;
+        }
+
+        // Cari di tabel SR
+        const srTable = document.getElementById('srTable');
+        const srRows = srTable.getElementsByTagName('tr');
+
+        for (let i = 1; i < srRows.length; i++) {
+            const row = srRows[i];
+            const cells = row.getElementsByTagName('td');
+            let textFound = false;
+            let dateFound = false;
+
+            // Cek text di semua kolom
+            for (let cell of cells) {
+                if (cell.textContent.toLowerCase().includes(searchValue)) {
+                    textFound = true;
+                }
+            }
+
+            // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
+            const dateCell = cells[cells.length - 1];
+            if (dateCell) {
+                dateFound = isDateInRange(dateCell.textContent);
+            }
+
+            row.style.display = (textFound && dateFound) ? '' : 'none';
+        }
+
+        // Cari di tabel WO
+        const woTable = document.getElementById('woTable');
+        const woRows = woTable.getElementsByTagName('tr');
+
+        for (let i = 1; i < woRows.length; i++) {
+            const row = woRows[i];
+            const cells = row.getElementsByTagName('td');
+            let textFound = false;
+            let dateFound = false;
+
+            // Cek text di semua kolom
+            for (let cell of cells) {
+                if (cell.textContent.toLowerCase().includes(searchValue)) {
+                    textFound = true;
+                }
+            }
+
+            // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
+            const dateCell = cells[cells.length - 1];
+            if (dateCell) {
+                dateFound = isDateInRange(dateCell.textContent);
+            }
+
+            row.style.display = (textFound && dateFound) ? '' : 'none';
+        }
+    }
+
+    // Event listener untuk input tanggal
+    document.getElementById('startDate').addEventListener('change', searchTables);
+    document.getElementById('endDate').addEventListener('change', searchTables);
+
+    // Event listener untuk pencarian teks (kode yang sudah ada)
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            searchTables();
+        } else {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => {
+                searchTables();
+            }, 300);
+        }
+    });
+
+    // Reset pencarian
+    document.getElementById('searchInput').addEventListener('input', function() {
+        if (this.value === '') {
+            searchTables();
+        }
+    });
+
+    // Set tanggal default
+    window.addEventListener('load', function() {
+        // Set tanggal akhir ke hari ini
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('endDate').value = today;
+
+        // Set tanggal awal ke 30 hari yang lalu
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+
+        // Jalankan pencarian awal
+        searchTables();
+    });
 </script>
 @push('scripts')
 @endpush

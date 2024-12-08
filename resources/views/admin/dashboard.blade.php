@@ -17,8 +17,7 @@
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
-        <aside id="mobile-menu"
-            class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
+        <aside id="mobile-menu" class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
             <div class="p-4 flex items-center gap-3">
                 <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
                 <!-- Mobile Menu Toggle -->
@@ -82,7 +81,7 @@
         <div id="main-content" class="flex-1 main-content">
             <!-- Header -->
             <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex justify-between items-center px-6 py-2">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -94,13 +93,13 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">Dashboard Admin</h1>
+                    <h1 class="text-xl font-semibold text-gray-800">Dashboard Admin</h1>
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin.png') }}"
-                                class="w-8 h-8 rounded-full mr-2">
-                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-caret-down ml-2"></i>
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-7 h-7 rounded-full mr-2">
+                            <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2 text-gray-600"></i>
                         </button>
                         <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
 
@@ -112,11 +111,13 @@
                         </div>
                     </div>
                 </div>
-                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Dashboard', 'url' => null]]" />
             </header>
+            <div class="flex items-center pt-2">
+                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Dashboard', 'url' => null]]" />
+            </div>
 
             <!-- Dashboard Content -->
-            <main class="p-6">
+            <main class="px-6">
                 <!-- Statistics Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <!-- Card 1 -->
