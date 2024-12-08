@@ -82,7 +82,7 @@
         <div id="main-content" class="flex-1 overflow-auto">
             <!-- Header -->
             <header class="bg-white shadow-sm sticky top-0">
-                <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex justify-between items-center px-6 py-3">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -94,10 +94,10 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">Machine Monitor</h1>
+                    <h1 class="text-xl font-semibold text-gray-800">Machine Monitor</h1>
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin.png') }}"
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
                                 class="w-8 h-8 rounded-full mr-2">
                             <span class="text-gray-700">{{ Auth::user()->name }}</span>
                             <i class="fas fa-caret-down ml-2"></i>
@@ -116,11 +116,11 @@
             </header>
 
             <!-- Machine Monitor Content -->
-            <main class="p-6">
+            <main class="px-6">
                 @include('layouts.breadcrumbs', ['breadcrumbs' => [
                     ['title' => 'Machine Monitor']
                 ]])
-                <table class="min-w-full mt-4 bg-white shadow-lg rounded-lg overflow-hidden">
+                <table class="min-w-full bg-white shadow-lg rounded-lg overflow-hidden divide-y divide-gray-200 border-collapse border border-gray-200">
                     <thead>
                         <tr>
                             <th
@@ -137,9 +137,9 @@
                                 Durasi Operasional</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-200">
                         @foreach ($machines as $machine)
-                            <tr>
+                            <tr class="odd:bg-white even:bg-gray-100">
                                 <td class="py-2 px-4 border-b border-gray-200">{{ $machine->name }}</td>
                                 <td class="py-2 px-4 border-b border-gray-200">{{ $machine->status }}</td>
                                 <td class="py-2 px-4 border-b border-gray-200">{{ $machine->health_status }}</td>

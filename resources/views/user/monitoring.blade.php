@@ -77,7 +77,7 @@
      <div id="main-content" class="flex-1 overflow-auto">
         <!-- Header -->
         <header class="bg-white shadow-sm sticky top-0">
-            <div class="flex justify-between items-center px-6 py-4">
+            <div class="flex justify-between items-center px-6 py-3">
                 <!-- Mobile Menu Toggle -->
                 <button id="mobile-menu-toggle"
                 class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -89,10 +89,10 @@
                         d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
             </button>
-                <h1 class="text-2xl font-semibold text-gray-800">Monitoring</h1>
+                <h1 class="text-xl font-semibold text-gray-800">Monitoring</h1>
                 <div class="relative">
                     <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                        <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin.png') }}" 
+                        <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}" 
                              class="w-8 h-8 rounded-full mr-2">
                         <span class="text-gray-700">{{ Auth::user()->name }}</span>
                         <i class="fas fa-caret-down ml-2"></i>
@@ -110,8 +110,11 @@
         </header>
 
     <!-- Main Content -->
-    <div class="flex-1 p-6">
-        <h1 class="text-2xl font-bold">Monitoring Proyek</h1>
+    <div class="flex-1 px-6">
+        @include('layouts.breadcrumbs', ['breadcrumbs' => [
+                    ['title' => 'Dashboard']
+                ]])
+        <h1 class="text-2xl font-semibold">Monitoring Proyek</h1>
         <p>Berikut adalah status proyek yang sedang berjalan:</p>
 
         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
