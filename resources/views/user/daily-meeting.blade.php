@@ -111,6 +111,9 @@
 
         <!-- Main Content -->
         <div class="flex-1 p-6">
+            @include('layouts.breadcrumbs', ['breadcrumbs' => [
+                ['title' => 'Daily Meeting']
+            ]])
             <h1 class="text-2xl font-bold mb-4">Jadwal Pertemuan Harian</h1>
             <p class="text-gray-600 mb-6">Berikut adalah jadwal pertemuan harian Anda:</p>
 

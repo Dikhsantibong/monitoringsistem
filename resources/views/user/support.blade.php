@@ -117,6 +117,9 @@
 
             <!-- Main Content -->
             <div class="flex-1 p-6">
+                @include('layouts.breadcrumbs', ['breadcrumbs' => [
+                    ['title' => 'Support']
+                ]])
                 <h1 class="text-2xl font-bold text-gray-800 mb-4">Dukungan</h1>
                 <p class="text-gray-700 mb-6">Jika Anda memerlukan bantuan, silakan hubungi tim dukungan kami:</p>
 

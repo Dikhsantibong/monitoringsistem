@@ -2,6 +2,10 @@
 
 @section('content')
 <div class="container mx-auto p-6">
+    @include('layouts.breadcrumbs', ['breadcrumbs' => [
+        ['title' => 'Dashboard', 'url' => route('user.dashboard')],
+        ['title' => 'Profile']
+    ]])
     <div class="flex justify-between items-center mb-6">
         <a href="{{ route('user.dashboard') }}" class="text-yellow-500 hover:text-yellow-700 flex items-center">
             <i class="fas fa-arrow-left mr-2"></i> Kembali

@@ -117,6 +117,9 @@
 
             <!-- Machine Monitor Content -->
             <main class="p-6">
+                @include('layouts.breadcrumbs', ['breadcrumbs' => [
+                    ['title' => 'Machine Monitor']
+                ]])
                 <table class="min-w-full mt-4 bg-white shadow-lg rounded-lg overflow-hidden">
                     <thead>
                         <tr>

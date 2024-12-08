@@ -107,9 +107,11 @@
                 </div>
             </header>
 
-
             <!-- Main Content -->
             <div class="flex-1 p-6">
+                @include('layouts.breadcrumbs', ['breadcrumbs' => [
+                    ['title' => 'Documentation']
+                ]])
                 <h1 class="text-2xl font-bold">Dokumentasi</h1>
                 <p>Berikut adalah galeri foto dokumentasi:</p>
 

@@ -118,6 +118,9 @@
 
             <!-- Dashboard Content -->
             <main class="p-6">
+                @include('layouts.breadcrumbs', ['breadcrumbs' => [
+                    ['title' => 'Dashboard']
+                ]])
                 <!-- Overview Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-yellow-500 rounded-lg shadow p-6 flex items-center">
