@@ -171,7 +171,10 @@
                                                 {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                             </td>
                                             <td class="py-2 px-4 border-b">
-                                                {{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}
+                                                <input type="number" 
+                                                       class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
+                                                       value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '' }}"
+                                                       placeholder="Masukkan beban...">
                                             </td>
                                                 <td class="py-2 px-4 border-b">
                                                 <select class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
@@ -313,10 +316,12 @@ function resetForm() {
                 rows.forEach(row => {
                     const select = row.querySelector('select');
                     const input = row.querySelector('input[type="text"]');
+                    const bebanInput = row.querySelector('input[type="number"]');
                     
-                    select.value = 'Operasi';
-                    select.style.backgroundColor = select.options[select.selectedIndex].style.backgroundColor;
+                    select.value = '';
+                    select.style.backgroundColor = '';
                     input.value = '';
+                    if (bebanInput) bebanInput.value = '';
                 });
             });
 
