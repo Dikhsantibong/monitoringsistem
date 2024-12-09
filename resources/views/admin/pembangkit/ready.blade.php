@@ -207,36 +207,37 @@
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script>
     function searchTables() {
-        const searchInput = document.getElementById('searchInput');
-        const filter = searchInput.value.toLowerCase();
-        const rows = document.querySelectorAll('.searchable-row');
-
-        rows.forEach(row => {
-            const machineName = row.querySelector('td:first-child').textContent.toLowerCase();
-            const status = row.querySelector('select').value.toLowerCase();
-            const keterangan = row.querySelector('input[type="text"]').value.toLowerCase();
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const unitTables = document.querySelectorAll('.unit-table');
+        
+        unitTables.forEach(unitTable => {
+            // Ambil nama unit dari heading
+            const unitName = unitTable.querySelector('h2').textContent.toLowerCase();
+            let unitHasMatch = false;
             
-            // Mencari berdasarkan nama mesin, status, atau keterangan
-            if (machineName.includes(filter) || 
-                status.includes(filter) || 
-                keterangan.includes(filter)) {
-                // Tampilkan parent unit-table dan row yang sesuai
-                row.style.display = '';
-                let unitTable = row.closest('.unit-table');
-                if (unitTable) {
-                    unitTable.style.display = '';
+            // Cari di dalam rows mesin
+            const rows = unitTable.querySelectorAll('.searchable-row');
+            rows.forEach(row => {
+                const machineName = row.querySelector('td:first-child').textContent.toLowerCase();
+                const status = row.querySelector('select').value.toLowerCase();
+                const dmn = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const dmp = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                
+                // Cek apakah ada yang cocok dengan kriteria pencarian
+                if (unitName.includes(searchInput) || 
+                    machineName.includes(searchInput) || 
+                    status.includes(searchInput) || 
+                    dmn.includes(searchInput) || 
+                    dmp.includes(searchInput)) {
+                    row.style.display = '';
+                    unitHasMatch = true;
+                } else {
+                    row.style.display = 'none';
                 }
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Sembunyikan unit-table yang tidak memiliki row yang ditampilkan
-        document.querySelectorAll('.unit-table').forEach(table => {
-            const visibleRows = table.querySelectorAll('.searchable-row[style="display: "]');
-            if (visibleRows.length === 0) {
-                table.style.display = 'none';
-            }
+            });
+            
+            // Tampilkan/sembunyikan unit table berdasarkan hasil pencarian
+            unitTable.style.display = unitHasMatch ? '' : 'none';
         });
     }
 
@@ -369,13 +370,20 @@ function loadData() {
     const tanggal = document.getElementById('filterDate').value;
     const searchQuery = document.getElementById('searchInput').value;
     
+    // Tampilkan loading state jika diperlukan
+    document.querySelectorAll('.unit-table').forEach(table => {
+        table.style.opacity = '0.5';
+    });
+    
     fetch(`{{ route("admin.pembangkit.get-status") }}?tanggal=${tanggal}&search=${searchQuery}`)
         .then(response => response.json())
         .then(result => {
             if (result.success) {
                 updateFormWithData(result.data);
-                // Terapkan filter pencarian setelah data dimuat
-                searchTables();
+                // Reset opacity setelah data dimuat
+                document.querySelectorAll('.unit-table').forEach(table => {
+                    table.style.opacity = '1';
+                });
             } else {
                 console.error('Error:', result.message);
             }
@@ -390,28 +398,41 @@ function loadData() {
         });
 }
 
-// Tambahkan event listener untuk tombol cari
+// Event listener untuk perubahan tanggal
+document.getElementById('filterDate').addEventListener('change', function() {
+    loadData();
+});
+
+// Event listener untuk tombol cari
 document.querySelector('button[onclick="loadData()"]').addEventListener('click', function(e) {
     e.preventDefault();
     loadData();
 });
 
+// Load data saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    // Set tanggal default ke hari ini jika belum diset
+    const filterDate = document.getElementById('filterDate');
+    if (!filterDate.value) {
+        filterDate.value = new Date().toISOString().split('T')[0];
+    }
+    loadData();
+});
+
 function updateFormWithData(data) {
-    const tables = document.querySelectorAll('.unit-table table');
-    
-    // Reset tampilan semua rows
-    document.querySelectorAll('.searchable-row').forEach(row => {
-        row.style.display = '';
-    });
-    document.querySelectorAll('.unit-table').forEach(table => {
-        table.style.display = '';
-    });
+    const tables = document.querySelectorAll('.unit-table');
     
     tables.forEach(table => {
+        const unitName = table.querySelector('h2').textContent;
         const rows = table.querySelectorAll('tbody tr');
+        let unitHasData = false;
+        
         rows.forEach(row => {
             const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-            const machineData = data.find(d => d.machine_id == machineId);
+            const machineData = data.find(d => 
+                d.machine_id == machineId && 
+                d.machine.power_plant.name === unitName
+            );
             
             if (machineData) {
                 const bebanInput = row.querySelector('input[type="number"]');
@@ -424,18 +445,18 @@ function updateFormWithData(data) {
                     select.style.backgroundColor = select.options[select.selectedIndex].style.backgroundColor;
                 }
                 keteranganInput.value = machineData.keterangan || '';
+                
+                row.style.display = '';
+                unitHasData = true;
+            } else {
+                row.style.display = 'none';
             }
         });
+        
+        // Tampilkan/sembunyikan unit table berdasarkan ada tidaknya data
+        table.style.display = unitHasData ? '' : 'none';
     });
 }
-
-// Event listener untuk tanggal
-document.getElementById('filterDate').addEventListener('change', loadData);
-
-// Load data saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    loadData();
-});
 </script>
 @push('scripts')
 

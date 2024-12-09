@@ -50,15 +50,23 @@ public function getStatus(Request $request)
         $tanggal = $request->tanggal;
         $search = $request->search;
         
-        $query = MachineStatusLog::with(['machine', 'powerPlant'])
+        $query = MachineStatusLog::with(['machine.powerPlant', 'machine.operations'])
             ->whereDate('tanggal', $tanggal);
             
         if ($search) {
-            $query->whereHas('machine', function($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%");
-            })
-            ->orWhere('status', 'LIKE', "%{$search}%")
-            ->orWhere('keterangan', 'LIKE', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->whereHas('machine.powerPlant', function($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%");
+                })
+                ->orWhereHas('machine', function($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%");
+                })
+                ->orWhereHas('machine.operations', function($q) use ($search) {
+                    $q->where('status', 'LIKE', "%{$search}%")
+                      ->orWhere('dmn', 'LIKE', "%{$search}%")
+                      ->orWhere('dmp', 'LIKE', "%{$search}%");
+                });
+            });
         }
         
         $logs = $query->get();
