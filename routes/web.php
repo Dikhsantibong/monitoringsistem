@@ -149,4 +149,3 @@ Route::prefix('attendance')->group(function () {
     Route::get('/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan-form');
     Route::post('/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
 });
-

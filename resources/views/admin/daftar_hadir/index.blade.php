@@ -224,17 +224,11 @@
         function generateQRCode() {
             console.log('Generate QR Code clicked');
             
-            const timestamp = new Date().getTime();
-            const token = `attendance_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
+            const today = new Date().toISOString().split('T')[0];
+            const token = `attendance_${today}_${Math.random().toString(36).substr(2, 9)}`;
             
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             
-            // Pastikan menggunakan HTTPS
-            const baseUrl = 'https://7948-36-85-242-7.ngrok-free.app';
-            // const baseUrl = 'http://localhost';
-            
-            
-            // Gunakan URL HTTPS untuk store token
             fetch(`${baseUrl}/admin/daftar-hadir/store-token`, {
                 method: 'POST',
                 headers: {
@@ -245,14 +239,12 @@
                 body: JSON.stringify({ 
                     token: token,
                     _token: csrfToken
-                })
+                }),
+                credentials: 'include'
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.text().then(text => {
-                        console.error('Error response:', text);
-                        throw new Error('Network response was not ok');
-                    });
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
@@ -262,21 +254,17 @@
                 const modal = document.getElementById('qrModal');
                 const modalContent = modal.querySelector('.bg-white');
                 
+                const container = document.getElementById('qrcode-container');
+                container.innerHTML = '';
+                
                 modal.classList.remove('hidden');
                 modalContent.classList.remove('scale-0');
                 modalContent.classList.add('scale-100');
                 
-                const container = document.getElementById('qrcode-container');
-                container.innerHTML = '';
-                
-                const qrDiv = document.createElement('div');
-                container.appendChild(qrDiv);
-                
-                // Gunakan URL HTTPS untuk QR code
                 const qrData = `${baseUrl}/attendance/scan/${token}`;
                 console.log('QR Data URL:', qrData);
                 
-                new QRCode(qrDiv, {
+                new QRCode(container, {
                     text: qrData,
                     width: 256,
                     height: 256,
@@ -288,8 +276,8 @@
                 localStorage.setItem('attendance_qr_token', token);
             })
             .catch(error => {
-                console.error('Detailed error:', error);
-                alert('Terjadi kesalahan saat membuat QR Code. Silakan coba lagi.');
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat membuat QR Code: ' + error.message);
             });
         }
 
