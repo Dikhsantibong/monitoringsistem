@@ -67,7 +67,7 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
-            <header class="bg-white shadow-sm">
+            <header class="bg-white shadow-sm sticky z-10">
                 <div class="flex justify-between items-center px-6 py-2">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
@@ -107,11 +107,11 @@
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
 
                     <!-- Input Pencarian -->
-                    <div class="mb-4 flex justify-between">
+                    <div class="mb-4 flex justify-between items-center">
                         <!-- Tombol Generate QR Code -->
-                        <div>
+                        <div class="flex items-center">
                             <button onclick="generateQRCode()" 
-                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center">
+                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center mr-2">
                                 <i class="fas fa-qrcode mr-2"></i> Generate QR Code
                             </button>
                             
@@ -131,16 +131,12 @@
                             </div>
                         </div>
 
-                        <!-- Filter Tanggal -->
+                        <!-- Filter Tanggal and Search Input -->
                         <div class="flex items-center space-x-2">
                             <label class="text-gray-600">Tanggal:</label>
                             <input type="date" id="date-filter" value="{{ date('Y-m-d') }}"
                                 onchange="filterByDate(this.value)"
-                                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                        </div>
-
-                        <!-- Search Input -->
-                        <div class="flex">
+                                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2">
                             <input type="text" id="search" placeholder="Cari..."
                                 class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
                             <button

@@ -66,7 +66,7 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
-            <header class="bg-white shadow-sm">
+            <header class="bg-white shadow-sm sticky top-0 z-10">
                 <div class="flex justify-between items-center px-6 py-2">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"

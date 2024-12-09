@@ -19,7 +19,15 @@ class MachineMonitorController extends Controller
             'PARALLEL' => $machines->where('status', 'PARALLEL')->sum('uptime'),
         ];
 
-        return view('admin.machine-monitor.index', compact('machines', 'uptime'));
+        // Data tambahan
+        $monthlyIssues = [
+            ['date' => '2023-02-14', 'count' => 5],
+            ['date' => '2023-02-15', 'count' => 3],
+            ['date' => '2023-02-16', 'count' => 8],
+            // Tambahkan data sesuai kebutuhan
+        ];
+
+        return view('admin.machine-monitor.index', compact('machines', 'uptime', 'monthlyIssues'));
     }
 
     public function create()
@@ -43,5 +51,4 @@ class MachineMonitorController extends Controller
 
         return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil ditambahkan');
     }
-    
-} 
+}
