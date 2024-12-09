@@ -74,10 +74,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">1. MANAGER UP</label>
                                 <div>
-                                    <input type="number" name="peserta[manager_up][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[manager_up][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[manager_up][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[manager_up][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[manager_up][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -88,10 +94,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">2. ASMAN OPERASI</label>
                                 <div>
-                                    <input type="number" name="peserta[asman_operasi][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[asman_operasi][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[asman_operasi][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[asman_operasi][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[asman_operasi][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -102,10 +114,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">3. ASMAN PEMELIHARAAN</label>
                                 <div>
-                                    <input type="number" name="peserta[asman_pemeliharaan][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[asman_pemeliharaan][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[asman_pemeliharaan][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[asman_pemeliharaan][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[asman_pemeliharaan][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -116,10 +134,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">4. ASMAN ENJINIRING</label>
                                 <div>
-                                    <input type="number" name="peserta[asman_enjiniring][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[asman_enjiniring][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[asman_enjiniring][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[asman_enjiniring][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[asman_enjiniring][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -130,10 +154,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">5. TL RENDAL HAR</label>
                                 <div>
-                                    <input type="number" name="peserta[tl_rendal_har][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[tl_rendal_har][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_rendal_har][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[tl_rendal_har][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[tl_rendal_har][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -144,10 +174,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">6. TL ICC</label>
                                 <div>
-                                    <input type="number" name="peserta[tl_icc][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[tl_icc][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_icc][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[tl_icc][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[tl_icc][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -158,10 +194,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">7. TL OUTAGE MANAGEMENT</label>
                                 <div>
-                                    <input type="number" name="peserta[tl_outage][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[tl_outage][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_outage][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[tl_outage][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[tl_outage][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -172,10 +214,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">8. TL K3 DAN KAM</label>
                                 <div>
-                                    <input type="number" name="peserta[tl_k3][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[tl_k3][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_k3][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[tl_k3][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[tl_k3][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -186,10 +234,16 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">9. TL LINGKUNGAN</label>
                                 <div>
-                                    <input type="number" name="peserta[tl_lingkungan][awal]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Awal">
+                                    <select name="peserta[tl_lingkungan][awal]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_lingkungan][akhir]" min="0" max="1" class="w-20 border rounded text-center" placeholder="Akhir">
+                                    <select name="peserta[tl_lingkungan][akhir]" class="w-20 border rounded text-center">
+                                        <option value="1">✓</option>
+                                        <option value="0">✗</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <input type="number" name="peserta[tl_lingkungan][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
@@ -337,4 +391,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
