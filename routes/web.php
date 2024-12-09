@@ -50,6 +50,10 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/user/machine-monitor', [UserController::class, 'machineMonitor'])->name('user.machine.monitor');
     Route::get('/attendance/check', [AttendanceController::class, 'check'])->name('attendance.check');
     Route::get('/attendance/record', [AttendanceController::class, 'record'])->name('attendance.record');
+    Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])
+        ->name('attendance.scan-form');
+    Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])
+        ->name('attendance.submit');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -77,10 +81,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
     });
 
-    Route::prefix('daftar-hadir')->group(function () {
-        Route::get('/', [DaftarHadirController::class, 'index'])->name('daftar_hadir.index');
-        Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan');
-Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
+    Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
+        Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
+        Route::post('/store-token', [DaftarHadirController::class, 'storeToken'])->name('store-token');
     });
 
     Route::prefix('meetings')->group(function () {
@@ -140,4 +143,10 @@ Route::middleware(['auth'])->group(function () {
 // Tambahkan route untuk AJAX
 Route::get('/admin/machine-monitor/operations', [MachineMonitorController::class, 'getMachineOperations'])
     ->name('admin.machine-monitor.operations');
+
+// Route untuk attendance
+Route::prefix('attendance')->group(function () {
+    Route::get('/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan-form');
+    Route::post('/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
+});
 

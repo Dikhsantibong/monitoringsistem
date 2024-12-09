@@ -6,24 +6,35 @@ use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
 {
-    // Tentukan nama tabel yang benar
     protected $table = 'attendance';
-
+    
     protected $fillable = [
-        'user_id',
-        'qr_code',
-        'attended_at',
-        'is_valid'
+        'name',
+        'division',
+        'position',
+        'time',
+        'token'
     ];
 
     protected $dates = [
-        'attended_at',
+        'time',
         'created_at',
         'updated_at'
     ];
 
-    public function user()
+    // Tambahkan mutator untuk memastikan data tersimpan dengan benar
+    public function setNameAttribute($value)
     {
-        return $this->belongsTo(User::class);
+        $this->attributes['name'] = strip_tags(trim($value));
+    }
+
+    public function setDivisionAttribute($value)
+    {
+        $this->attributes['division'] = strip_tags(trim($value));
+    }
+
+    public function setPositionAttribute($value)
+    {
+        $this->attributes['position'] = strip_tags(trim($value));
     }
 }

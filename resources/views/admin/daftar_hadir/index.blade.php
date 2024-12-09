@@ -159,6 +159,10 @@
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
+                                        Divisi
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
                                         Tanggal
                                     </th>
                                     <th
@@ -172,6 +176,9 @@
                                     <tr class="hover:bg-gray-100">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ $attendance->name }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                            {{ $attendance->division }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ \Carbon\Carbon::parse($attendance->time)->format('d M Y') }}
@@ -219,45 +226,84 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         function generateQRCode() {
-            const today = new Date().toISOString().split('T')[0];
-            const token = `attendance_${today}_${Math.random().toString(36).substr(2, 9)}`;
-            const qrData = `${window.location.origin}/attendance/scan/${token}`;
+            console.log('Generate QR Code clicked');
             
-            localStorage.setItem('attendance_qr_token', token);
+            const timestamp = new Date().getTime();
+            const token = `attendance_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
             
-            const modal = document.getElementById('qrModal');
-            const modalContent = modal.querySelector('.bg-white');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             
-            modal.classList.remove('hidden');
-            // Trigger reflow
-            void modal.offsetWidth;
-            modal.classList.add('opacity-100');
-            modalContent.classList.remove('scale-0');
-            modalContent.classList.add('scale-100');
+            // Pastikan menggunakan HTTPS
+            const baseUrl = 'https://7948-36-85-242-7.ngrok-free.app';
+            // const baseUrl = 'http://localhost';
             
-            const container = document.getElementById('qrcode-container');
-            container.innerHTML = '';
             
-            const qrDiv = document.createElement('div');
-            container.appendChild(qrDiv);
-            
-            new QRCode(qrDiv, {
-                text: qrData,
-                width: 256,
-                height: 256,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+            // Gunakan URL HTTPS untuk store token
+            fetch(`${baseUrl}/admin/daftar-hadir/store-token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    token: token,
+                    _token: csrfToken
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Error response:', text);
+                        throw new Error('Network response was not ok');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success response:', data);
+                
+                const modal = document.getElementById('qrModal');
+                const modalContent = modal.querySelector('.bg-white');
+                
+                modal.classList.remove('hidden');
+                modalContent.classList.remove('scale-0');
+                modalContent.classList.add('scale-100');
+                
+                const container = document.getElementById('qrcode-container');
+                container.innerHTML = '';
+                
+                const qrDiv = document.createElement('div');
+                container.appendChild(qrDiv);
+                
+                // Gunakan URL HTTPS untuk QR code
+                const qrData = `${baseUrl}/attendance/scan/${token}`;
+                console.log('QR Data URL:', qrData);
+                
+                new QRCode(qrDiv, {
+                    text: qrData,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                localStorage.setItem('attendance_qr_token', token);
+            })
+            .catch(error => {
+                console.error('Detailed error:', error);
+                alert('Terjadi kesalahan saat membuat QR Code. Silakan coba lagi.');
             });
         }
 
+        // Fungsi untuk menutup modal
         function closeModal() {
             const modal = document.getElementById('qrModal');
             const modalContent = modal.querySelector('.bg-white');
             
             modalContent.classList.remove('scale-100');
             modalContent.classList.add('scale-0');
-            modal.classList.remove('opacity-100');
             
             setTimeout(() => {
                 modal.classList.add('hidden');
