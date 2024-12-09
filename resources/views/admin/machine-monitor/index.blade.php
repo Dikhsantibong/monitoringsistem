@@ -409,7 +409,8 @@
     <div id="editMachineModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
         <!-- Similar structure to Add Machine Modal but with pre-filled values -->
     </div>
-
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ asset('js/toggle.js') }}"></script>
     <script>
         // Chart initialization
@@ -570,7 +571,7 @@
         });
     </script>
 
-    @push('script')
+    @push('scripts')
     @endpush
 @endsection
 
