@@ -131,8 +131,8 @@
                                 <p>Lokasi: Ruang Rapat Rongi</p>
                             </div>
                             <a href="{{ route('admin.score-card.create') }}"
-                                class="bg-blue-500 text-white px-4 py-2 rounded">
-                                Tambah Score Card
+                                class="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
+                                <i class="fas fa-plus mr-2"></i> Tambah Score Card
                             </a>
                         </div>
                     </div>
@@ -149,7 +149,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Isi dengan data dari database -->
+                            @foreach($scoreCards as $index => $card)
+                            <tr>
+                                <td class="border p-2 text-center">{{ $index + 1 }}</td>
+                                <td class="border p-2">{{ $card->peserta }}</td>
+                                <td class="border p-2 text-center">{{ $card->awal }}</td>
+                                <td class="border p-2 text-center">{{ $card->akhir }}</td>
+                                <td class="border p-2 text-center">{{ $card->skor }}</td>
+                                <td class="border p-2">{{ $card->keterangan }}</td>
+                            </tr>
+                            @endforeach
+                            <!-- Tambahkan baris untuk total score -->
+                            <tr>
+                                <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
+                                <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
+                                <td class="border p-2"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
