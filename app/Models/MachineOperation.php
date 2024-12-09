@@ -20,6 +20,17 @@ class MachineOperation extends Model
         'load_value',
         'hop',
         'recorded_at',
+        'status',
+        'keterangan'
+    ];
+
+    // Nilai default untuk kolom tertentu
+    protected $attributes = [
+        'load_value' => null,
+        'status' => null,
+        'keterangan' => null,
+        'dmn' => 0,
+        'dmp' => 0
     ];
 
     // Menambahkan relationship dengan Machine
