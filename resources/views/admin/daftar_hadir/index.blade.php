@@ -116,15 +116,17 @@
                             </button>
                             
                             <!-- Modal QR Code -->
-                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
-                                <div class="bg-white p-8 rounded-lg shadow-lg transform transition-transform duration-300 ease-in-out scale-0">
+                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+                                <div class="bg-white p-8 rounded-lg shadow-lg">
                                     <div class="flex justify-between items-center mb-4">
-                                        <h3 class="text-xl font-bold flex items-center"><i class="fas fa-qrcode mr-2"></i>QR Code Absensi</h3>
+                                        <h3 class="text-xl font-bold flex items-center">
+                                            <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
+                                        </h3>
                                         <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
-                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px] animate-fadeIn">
+                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]">
                                     </div>
                                     <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
                                 </div>
@@ -221,6 +223,14 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pastikan event listener terpasang setelah DOM siap
+            const generateButton = document.querySelector('button[onclick="generateQRCode()"]');
+            if (generateButton) {
+                generateButton.addEventListener('click', generateQRCode);
+            }
+        });
+
         function generateQRCode() {
             console.log('Generate QR Code clicked');
             
@@ -229,7 +239,7 @@
             
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             
-            fetch(`${baseUrl}/admin/daftar-hadir/store-token`, {
+            fetch(`/admin/daftar-hadir/store-token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -239,8 +249,7 @@
                 body: JSON.stringify({ 
                     token: token,
                     _token: csrfToken
-                }),
-                credentials: 'include'
+                })
             })
             .then(response => {
                 if (!response.ok) {
@@ -261,7 +270,7 @@
                 modalContent.classList.remove('scale-0');
                 modalContent.classList.add('scale-100');
                 
-                const qrData = `${baseUrl}/attendance/scan/${token}`;
+                const qrData = `${window.location.origin}/attendance/scan/${token}`;
                 console.log('QR Data URL:', qrData);
                 
                 new QRCode(container, {
@@ -277,7 +286,12 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat membuat QR Code: ' + error.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan',
+                    text: `Gagal membuat QR Code: ${error.message}`,
+                    footer: 'Silakan coba lagi atau hubungi administrator'
+                });
             });
         }
 

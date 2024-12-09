@@ -56,6 +56,10 @@ Route::middleware(['auth', 'user'])->group(function () {
         ->name('attendance.submit');
 });
 
+Route::prefix('attendance')->group(function () {
+    Route::post('/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
+});
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
@@ -149,3 +153,4 @@ Route::prefix('attendance')->group(function () {
     Route::get('/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan-form');
     Route::post('/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
 });
+

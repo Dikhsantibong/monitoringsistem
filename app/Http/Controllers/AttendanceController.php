@@ -7,7 +7,7 @@ use App\Models\AttendanceToken;
 use App\Models\Attendance;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log; // Tambahkan ini untuk menggunakan Log
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -84,21 +84,46 @@ class AttendanceController extends Controller
 
     public function submitAttendance(Request $request)
     {
+        if ($request->method() !== 'POST') {
+            return response()->json([
+                'error' => 'Method not allowed'
+            ], 405);
+        }
         DB::beginTransaction();
         
         try {
             // Debug log
-            \Log::info('Form data received:', $request->all());
+            Log::info('Form data received:', $request->all());
 
-            // Validasi
+            // Validasi token
+            $token = AttendanceToken::where('token', $request->token)
+                ->whereDate('created_at', Carbon::today())
+                ->first();
+            
+            if (!$token) {
+                throw new \Exception('Token tidak valid atau sudah kadaluarsa');
+            }
+
+            // Cek duplikasi attendance
+            $existingAttendance = DB::table('attendance')
+                ->where('token', $request->token)
+                ->where('name', $request->name)
+                ->whereDate('time', Carbon::today())
+                ->first();
+
+            if ($existingAttendance) {
+                throw new \Exception('Anda sudah melakukan absensi hari ini');
+            }
+
+            // Validasi input
             $validated = $request->validate([
-                'name' => 'required|string',
-                'division' => 'required|string',
-                'position' => 'required|string',
+                'name' => 'required|string|max:255',
+                'division' => 'required|string|max:255',
+                'position' => 'required|string|max:255',
                 'token' => 'required|string'
             ]);
 
-            // Simpan langsung menggunakan query builder untuk memastikan
+            // Simpan attendance
             $saved = DB::table('attendance')->insert([
                 'name' => $request->name,
                 'division' => $request->division,
@@ -110,23 +135,39 @@ class AttendanceController extends Controller
             ]);
 
             if (!$saved) {
-                throw new \Exception('Failed to save attendance');
+                throw new \Exception('Gagal menyimpan kehadiran');
             }
 
             DB::commit();
             
-            \Log::info('Attendance saved successfully');
+            Log::info('Attendance saved successfully');
             
-            return back()->with('success', 'Kehadiran berhasil dicatat!');
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Kehadiran berhasil dicatat!'
+                ]);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Kehadiran berhasil dicatat!');
             
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error saving attendance: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error saving attendance: ' . $e->getMessage());
             
-            return back()
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+            
+            return redirect()
+                ->back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan kehadiran.');
+                ->with('error', $e->getMessage());
         }
     }
 } 

@@ -17,71 +17,44 @@
             @endif
             
             @if ($token)
-                <form action="{{ route('attendance.submit') }}" method="POST">
+                <form action="{{ route('attendance.submit') }}" method="POST" onsubmit="return validateForm()">
                     @csrf
                     <input type="hidden" name="token" value="{{ $token }}">
                     
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">
-                            Nama Lengkap
-                        </label>
-                        <div class="mt-1">
-                            <input id="name" 
-                                   name="name" 
-                                   type="text" 
-                                   required
-                                   value="{{ old('name') }}"
-                                   class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    @if(session('success'))
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                            {{ session('success') }}
                         </div>
-                        @error('name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    
-                    <div>
-                        <label for="division" class="block text-sm font-medium text-gray-700">
-                            Divisi
-                        </label>
-                        <div class="mt-1">
-                            <select id="division" 
-                                    name="division" 
-                                    required
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                <option value="">Pilih Divisi</option>
-                                <option value="IT" {{ old('division') == 'IT' ? 'selected' : '' }}>IT</option>
-                                <option value="HR" {{ old('division') == 'HR' ? 'selected' : '' }}>HR</option>
-                                <option value="Finance" {{ old('division') == 'Finance' ? 'selected' : '' }}>Finance</option>
-                                <option value="Operations" {{ old('division') == 'Operations' ? 'selected' : '' }}>Operations</option>
-                            </select>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                            {{ session('error') }}
                         </div>
-                        @error('division')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                    @endif
+
+                    <div class="mb-4">
+                        <label for="name">Nama Lengkap</label>
+                        <input type="text" name="name" id="name" required class="form-input">
                     </div>
-                    
-                    <div>
-                        <label for="position" class="block text-sm font-medium text-gray-700">
-                            Jabatan
-                        </label>
-                        <div class="mt-1">
-                            <input id="position" 
-                                   name="position" 
-                                   type="text" 
-                                   required
-                                   value="{{ old('position') }}"
-                                   class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                        @error('position')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+
+                    <div class="mb-4">
+                        <label for="division">Divisi</label>
+                        <select name="division" id="division" required class="form-select">
+                            <option value="">Pilih Divisi</option>
+                            <option value="IT">IT</option>
+                            <option value="HR">HR</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Operations">Operations</option>
+                        </select>
                     </div>
-                    
-                    <div>
-                        <form action="{{ route('attendance.submit') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit">Submit</button>
-                        </form>
+
+                    <div class="mb-4">
+                        <label for="position">Jabatan</label>
+                        <input type="text" name="position" id="position" required class="form-input">
                     </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
             @else
                 <div class="text-center text-red-600">
@@ -100,10 +73,12 @@ function validateForm() {
     const position = document.getElementById('position').value.trim();
     const token = document.querySelector('input[name="token"]').value;
 
-    console.log('Submitting form with values:', { name, division, position, token });
-
     if (!name || !division || !position || !token) {
-        alert('Mohon lengkapi semua field yang diperlukan');
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Mohon lengkapi semua field yang diperlukan'
+        });
         return false;
     }
 
