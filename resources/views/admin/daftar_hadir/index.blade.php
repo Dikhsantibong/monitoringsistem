@@ -67,8 +67,13 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
+<<<<<<< HEAD
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
+=======
+            <header class="bg-white shadow-sm sticky z-10">
+                <div class="flex justify-between items-center px-6 py-2">
+>>>>>>> f9d09bd9d085e24c3b22c0f14c46802bb36eb221
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -104,20 +109,41 @@
             </div>
             <main class="px-6">
                 <div class="bg-white rounded-lg shadow p-6 mb-3">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-2">Daftar Kehadiran</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
 
                     <!-- Input Pencarian -->
-                    <div class="mb-4 flex justify-end space-x-4">
-                        <!-- Filter Tanggal -->
+                    <div class="mb-4 flex justify-between items-center">
+                        <!-- Tombol Generate QR Code -->
+                        <div class="flex items-center">
+                            <button onclick="generateQRCode()" 
+                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center mr-2">
+                                <i class="fas fa-qrcode mr-2"></i> Generate QR Code
+                            </button>
+                            
+                            <!-- Modal QR Code -->
+                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+                                <div class="bg-white p-8 rounded-lg shadow-lg">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-xl font-bold flex items-center">
+                                            <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
+                                        </h3>
+                                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]">
+                                    </div>
+                                    <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Tanggal and Search Input -->
                         <div class="flex items-center space-x-2">
                             <label class="text-gray-600">Tanggal:</label>
                             <input type="date" id="date-filter" value="{{ date('Y-m-d') }}"
                                 onchange="filterByDate(this.value)"
-                                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                        </div>
-
-                        <!-- Search Input -->
-                        <div class="flex">
+                                class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2">
                             <input type="text" id="search" placeholder="Cari..."
                                 class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
                             <button
@@ -136,6 +162,10 @@
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
+                                        Divisi
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
                                         Tanggal
                                     </th>
                                     <th
@@ -149,6 +179,9 @@
                                     <tr class="hover:bg-gray-100">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ $attendance->name }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                            {{ $attendance->division }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ \Carbon\Carbon::parse($attendance->time)->format('d M Y') }}
@@ -191,6 +224,110 @@
                     document.getElementById('attendance-body').innerHTML = html;
                 });
         }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pastikan event listener terpasang setelah DOM siap
+            const generateButton = document.querySelector('button[onclick="generateQRCode()"]');
+            if (generateButton) {
+                generateButton.addEventListener('click', generateQRCode);
+            }
+        });
+
+        function generateQRCode() {
+            console.log('Generate QR Code clicked');
+            
+            const today = new Date().toISOString().split('T')[0];
+            const token = `attendance_${today}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch(`/admin/daftar-hadir/store-token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    token: token,
+                    _token: csrfToken
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success response:', data);
+                
+                const modal = document.getElementById('qrModal');
+                const modalContent = modal.querySelector('.bg-white');
+                
+                const container = document.getElementById('qrcode-container');
+                container.innerHTML = '';
+                
+                modal.classList.remove('hidden');
+                modalContent.classList.remove('scale-0');
+                modalContent.classList.add('scale-100');
+                
+                const qrData = `${window.location.origin}/attendance/scan/${token}`;
+                console.log('QR Data URL:', qrData);
+                
+                new QRCode(container, {
+                    text: qrData,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                localStorage.setItem('attendance_qr_token', token);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan',
+                    text: `Gagal membuat QR Code: ${error.message}`,
+                    footer: 'Silakan coba lagi atau hubungi administrator'
+                });
+            });
+        }
+
+        // Fungsi untuk menutup modal
+        function closeModal() {
+            const modal = document.getElementById('qrModal');
+            const modalContent = modal.querySelector('.bg-white');
+            
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Cek apakah QR Code masih valid
+        function checkQRValidity() {
+            const token = localStorage.getItem('attendance_qr_token');
+            if (token) {
+                const [, date] = token.split('_');
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (date !== today) {
+                    localStorage.removeItem('attendance_qr_token');
+                }
+            }
+        }
+
+        // Jalankan pengecekan saat halaman dimuat
+        checkQRValidity();
     </script>
     @push('scripts')
     @endpush

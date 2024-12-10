@@ -167,6 +167,29 @@
             font-weight: bold;
             color: #333;
         }
+
+        .accumulation-data {
+            background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent background */
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        .accumulation-data h4 {
+            color: #0095B7;
+            margin-bottom: 10px;
+        }
+
+        .accumulation-data ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .accumulation-data li {
+            margin: 5px 0;
+            color: #333;
+        }
     </style>
 @endsection
 
@@ -234,7 +257,80 @@
     </script>
 
     <h3 class="mt-4">Peta Lokasi Unit Pembangkit</h3>
-    <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px;"></div>
+    <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px; position: relative;">
+        <div class="accumulation-data-container" style="
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 240px;
+  width: 100%;
+  box-sizing: border-box;
+">
+  <h3 style="
+    color: #0095B7;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    border-bottom: 1px solid #0095B7;
+    padding-bottom: 6px;
+  ">Data Akumulasi</h3>
+  <ul style="
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  ">
+    <li style="
+      margin: 6px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+    ">
+      <span style="
+        width: 8px;
+        height: 8px;
+        background-color: #0095B7;
+        border-radius: 50%;
+        margin-right: 8px;
+      "></span>
+      Proxy Assistance: Medium (ID: 172.16.1.40)
+    </li>
+    <li style="
+      margin: 6px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+    ">
+      <span style="
+        width: 8px;
+        height: 8px;
+        background-color: #0095B7;
+        border-radius: 50%;
+        margin-right: 8px;
+      "></span>
+      Proxy Assistance: Medium (ID: 172.16.1.41)
+    </li>
+    <li style="
+      margin: 6px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+    ">
+      <span style="
+        width: 8px;
+        height: 8px;
+        background-color: #0095B7;
+        border-radius: 50%;
+        margin-right: 8px;
+      "></span>
+      Proxy Assistance: Medium (ID: 172.16.1.42)
+    </li>
+  </ul>
+</div>
+    </div>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
@@ -341,6 +437,9 @@
 </footer>
 
 <script>
+    
+
+
     var options = {
         series: [
             {

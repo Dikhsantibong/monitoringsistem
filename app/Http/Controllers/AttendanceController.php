@@ -2,81 +2,172 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendance;
 use Illuminate\Http\Request;
+use App\Models\AttendanceToken;
+use App\Models\Attendance;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $date = $request->date ?? now()->format('Y-m-d');
-
-        $attendances = Attendance::query()
-            ->whereDate('created_at', $date)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        if ($request->ajax()) {
-            return view('admin.daftar_hadir._table_body', compact('attendances'));
+        $query = DB::table('attendance');
+        
+        // Filter berdasarkan tanggal jika ada
+        if ($request->has('date')) {
+            $date = $request->date;
+            $query->whereDate('time', $date);
+        } else {
+            // Default tampilkan hari ini
+            $query->whereDate('time', Carbon::today());
         }
 
+        $attendances = $query->orderBy('time', 'desc')->get();
+        
         return view('admin.daftar_hadir.index', compact('attendances'));
     }
 
-    public function recordAttendance(Request $request)
+    public function showScanForm($token)
     {
         try {
-            $user = auth()->user();
-            $qrCode = $request->qr_code;
+            Log::info('Attempting to validate token: ' . $token); // Perbaikan untuk menggunakan Log
+            
+            // Cek token di database dengan validasi yang lebih longgar
+            $validToken = AttendanceToken::where('token', $token)
+                ->whereDate('created_at', Carbon::today())
+                ->first();
+            
+            if (!$validToken) {
+                Log::warning('Invalid token or token not found: ' . $token); // Perbaikan untuk menggunakan Log
+                return view('attendance.scan-from', ['token' => null])
+                       ->with('error', 'QR Code tidak valid atau sudah kadaluarsa. Silakan scan ulang QR Code yang baru.');
+            }
+            
+            Log::info('Valid token found: ' . $token); // Perbaikan untuk menggunakan Log
+            return view('attendance.scan-from', compact('token'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error validating token: ' . $e->getMessage()); // Perbaikan untuk menggunakan Log
+            return view('attendance.scan-from', ['token' => null])
+                   ->with('error', 'Terjadi kesalahan sistem.');
+        }
+    }
 
-            // Validasi format QR code
-            if (!str_starts_with($qrCode, 'attendance_')) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'QR Code tidak valid'
-                ], 400);
+    public function storeToken(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            
+            // Hapus token lama untuk hari ini
+            AttendanceToken::whereDate('created_at', '<', Carbon::today())->delete();
+            
+            // Buat token baru
+            $token = new AttendanceToken();
+            $token->token = $request->token;
+            $token->expires_at = Carbon::now()->endOfDay();
+            $token->created_at = Carbon::now();
+            $token->save();
+            
+            DB::commit();
+            
+            Log::info('Token stored successfully: ' . $request->token); // Perbaikan untuk menggunakan Log
+            return response()->json(['success' => true]);
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Failed to store token: ' . $e->getMessage()); // Perbaikan untuk menggunakan Log
+            return response()->json(['success' => false], 500);
+        }
+    }
+
+    public function submitAttendance(Request $request)
+    {
+        if ($request->method() !== 'POST') {
+            return response()->json([
+                'error' => 'Method not allowed'
+            ], 405);
+        }
+        DB::beginTransaction();
+        
+        try {
+            // Debug log
+            Log::info('Form data received:', $request->all());
+
+            // Validasi token
+            $token = AttendanceToken::where('token', $request->token)
+                ->whereDate('created_at', Carbon::today())
+                ->first();
+            
+            if (!$token) {
+                throw new \Exception('Token tidak valid atau sudah kadaluarsa');
             }
 
-            // Cek apakah QR code masih valid (5 menit)
-            $timestamp = explode('_', $qrCode)[1];
-            if (now()->timestamp - $timestamp > 300) { // 300 detik = 5 menit
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'QR Code sudah kadaluarsa'
-                ], 400);
-            }
-
-            // Cek apakah user sudah absen hari ini
-            $existingAttendance = Attendance::where('user_id', $user->id)
-                ->whereDate('attended_at', now())
+            // Cek duplikasi attendance
+            $existingAttendance = DB::table('attendance')
+                ->where('token', $request->token)
+                ->where('name', $request->name)
+                ->whereDate('time', Carbon::today())
                 ->first();
 
             if ($existingAttendance) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Anda sudah melakukan absensi hari ini'
-                ], 400);
+                throw new \Exception('Anda sudah melakukan absensi hari ini');
             }
 
-            // Catat kehadiran baru
-            Attendance::create([
-                'user_id' => $user->id,
-                'qr_code' => $qrCode,
-                'attended_at' => now(),
-                'is_valid' => true
+            // Validasi input
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'division' => 'required|string|max:255',
+                'position' => 'required|string|max:255',
+                'token' => 'required|string'
             ]);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Absensi berhasil dicatat'
+            // Simpan attendance
+            $saved = DB::table('attendance')->insert([
+                'name' => $request->name,
+                'division' => $request->division,
+                'position' => $request->position,
+                'token' => $request->token,
+                'time' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
 
+            if (!$saved) {
+                throw new \Exception('Gagal menyimpan kehadiran');
+            }
+
+            DB::commit();
+            
+            Log::info('Attendance saved successfully');
+            
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Kehadiran berhasil dicatat!'
+                ]);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Kehadiran berhasil dicatat!');
+            
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan saat mencatat absensi'
-            ], 500);
+            DB::rollback();
+            Log::error('Error saving attendance: ' . $e->getMessage());
+            
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+            
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         }
     }
 } 

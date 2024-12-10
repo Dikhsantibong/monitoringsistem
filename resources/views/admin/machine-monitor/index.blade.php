@@ -67,8 +67,13 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 main-content">
             <!-- Header -->
+<<<<<<< HEAD
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
+=======
+            <header class="bg-white shadow-sm sticky top-0 z-10">
+                <div class="flex justify-between items-center px-6 py-2">
+>>>>>>> f9d09bd9d085e24c3b22c0f14c46802bb36eb221
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -204,7 +209,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="space-y-4">
+                            <div class="space-y-4 max-h-60 overflow-y-auto">
                                 @foreach ($machines as $machine)
                                     <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                                         <div class="flex-1">
@@ -318,7 +323,7 @@
                     <!-- Ringkasan Kinerja -->
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Ringkasan Kinerja</h3>
-                        <div class="space-y-4">
+                        <div class="space-y-4 max-h-60 overflow-y-auto">
                             @foreach ($machines as $machine)
                                 <div class="border-b pb-3">
                                     <div class="flex justify-between items-center">
@@ -409,21 +414,26 @@
     <div id="editMachineModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
         <!-- Similar structure to Add Machine Modal but with pre-filled values -->
     </div>
-
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ asset('js/toggle.js') }}"></script>
     <script>
         // Chart initialization
+        const monthlyIssuesData = @json($monthlyIssues); // Ambil data dari controller
+
         const ctx = document.getElementById('monthlyIssuesChart').getContext('2d');
         new Chart(ctx, {
-            type: 'bar',
+            type: 'line', // Menggunakan grafik garis
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: monthlyIssuesData.map(issue => issue.date), // Ambil tanggal dari data
                 datasets: [{
-                    label: 'Issues',
-                    data: @json(array_values($monthlyIssues)),
-                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                    borderColor: 'rgb(59, 130, 246)',
-                    borderWidth: 1
+                    label: 'Jumlah Masalah',
+                    data: monthlyIssuesData.map(issue => issue.count), // Ambil jumlah masalah dari data
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3 // Untuk membuat garis lebih halus
                 }]
             },
             options: {
@@ -431,8 +441,15 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
+                        title: {
+                            display: true,
+                            text: 'Jumlah Masalah'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tanggal'
                         }
                     }
                 }
@@ -559,7 +576,7 @@
         });
     </script>
 
-    @push('script')
+    @push('scripts')
     @endpush
 @endsection
 

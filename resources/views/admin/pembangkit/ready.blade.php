@@ -68,8 +68,13 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
+<<<<<<< HEAD
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
+=======
+            <header class="bg-white shadow-sm sticky top-0 z-10">
+                <div class="flex justify-between items-center px-6 py-2">
+>>>>>>> f9d09bd9d085e24c3b22c0f14c46802bb36eb221
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -171,21 +176,26 @@
                                                 {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                             </td>
                                             <td class="py-2 px-4 border-b">
-                                                {{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}
+                                                <input type="number" 
+                                                       class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
+                                                       value=""
+                                                       placeholder="Masukkan beban...">
                                             </td>
-                                                <td class="py-2 px-4 border-b">
-                                                <select class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                    <option value="Operasi" style="background-color: #4CAF50" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Operasi' ? 'selected' : '' }}>Operasi</option>
-                                                    <option value="Standby" style="background-color: #2196F3" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Standby' ? 'selected' : '' }}>Standby</option>
-                                                    <option value="Gangguan" style="background-color: #f44336" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Gangguan' ? 'selected' : '' }}>Gangguan</option>
-                                                    <option value="Pemeliharaan" style="background-color: #FF9800" {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
+                                            <td class="py-2 px-4 border-b">
+                                                <select class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" 
+                                                        onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
+                                                    <option value="" style="background-color: white">Pilih Status</option>
+                                                    <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
+                                                    <option value="Standby" style="background-color: #2196F3">Standby</option>
+                                                    <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
+                                                    <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
                                                 </select>
                                             </td>
                                             <td class="py-2 px-4 border-b">
                                                 <input type="text"
-                                                    class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
-                                                    value="{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}"
-                                                    placeholder="Masukkan keterangan...">
+                                                       class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
+                                                       value=""
+                                                       placeholder="Masukkan keterangan...">
                                             </td>
                                         </tr>
                                     @endforeach
@@ -202,25 +212,42 @@
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script>
     function searchTables() {
-        const searchInput = document.getElementById('searchInput');
-        const filter = searchInput.value.toLowerCase();
-        const unitTables = document.getElementsByClassName('unit-table');
-
-        Array.from(unitTables).forEach(unitTable => {
-            // Ambil nama unit dari h2
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const unitTables = document.querySelectorAll('.unit-table');
+        
+        unitTables.forEach(unitTable => {
+            // Ambil nama unit dari heading
             const unitName = unitTable.querySelector('h2').textContent.toLowerCase();
-
-            // Tampilkan/sembunyikan berdasarkan nama unit
-            if (unitName.includes(filter)) {
-                unitTable.style.display = '';
-            } else {
-                unitTable.style.display = 'none';
-            }
+            let unitHasMatch = false;
+            
+            // Cari di dalam rows mesin
+            const rows = unitTable.querySelectorAll('.searchable-row');
+            rows.forEach(row => {
+                const machineName = row.querySelector('td:first-child').textContent.toLowerCase();
+                const status = row.querySelector('select').value.toLowerCase();
+                const dmn = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const dmp = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                
+                // Cek apakah ada yang cocok dengan kriteria pencarian
+                if (unitName.includes(searchInput) || 
+                    machineName.includes(searchInput) || 
+                    status.includes(searchInput) || 
+                    dmn.includes(searchInput) || 
+                    dmp.includes(searchInput)) {
+                    row.style.display = '';
+                    unitHasMatch = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Tampilkan/sembunyikan unit table berdasarkan hasil pencarian
+            unitTable.style.display = unitHasMatch ? '' : 'none';
         });
     }
 
     // Event listener untuk real-time search
-    document.getElementById('searchInput').addEventListener('keyup', searchTables);
+    document.getElementById('searchInput').addEventListener('input', searchTables);
 </script>
 
 <script>
@@ -233,21 +260,21 @@ function saveData() {
         const rows = table.querySelectorAll('tbody tr');
         rows.forEach(row => {
             const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+            const bebanInput = row.querySelector('input[type="number"]');
             const select = row.querySelector('select');
-            const input = row.querySelector('input[type="text"]');
+            const keteranganInput = row.querySelector('input[type="text"]');
             const dmn = row.querySelector('td:nth-child(2)').textContent.trim();
             const dmp = row.querySelector('td:nth-child(3)').textContent.trim();
-            const beban = row.querySelector('td:nth-child(4)').textContent.trim();
             
-            if (select.value) {
+            if (select.value || bebanInput.value || keteranganInput.value) {
                 data.push({
                     machine_id: machineId,
                     tanggal: tanggal,
                     status: select.value,
-                    keterangan: input.value.trim(),
-                    dmn: dmn,
-                    dmp: dmp,
-                    load_value: beban
+                    keterangan: keteranganInput.value.trim(),
+                    dmn: dmn === 'N/A' ? 0 : dmn,
+                    dmp: dmp === 'N/A' ? 0 : dmp,
+                    load_value: bebanInput.value || null
                 });
             }
         });
@@ -280,7 +307,18 @@ function saveData() {
                 timer: 1500,
                 showConfirmButton: false
             }).then(() => {
-                loadData();
+                // Muat ulang data setelah simpan berhasil
+                const tanggal = document.getElementById('filterDate').value;
+                const searchQuery = document.getElementById('searchInput').value;
+                
+                fetch(`{{ route("admin.pembangkit.get-status") }}?tanggal=${tanggal}&search=${searchQuery}`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            updateFormWithData(result.data);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
             });
         } else {
             throw new Error(result.message || 'Gagal menyimpan data');
@@ -313,10 +351,12 @@ function resetForm() {
                 rows.forEach(row => {
                     const select = row.querySelector('select');
                     const input = row.querySelector('input[type="text"]');
+                    const bebanInput = row.querySelector('input[type="number"]');
                     
-                    select.value = 'Operasi';
-                    select.style.backgroundColor = select.options[select.selectedIndex].style.backgroundColor;
+                    select.value = '';
+                    select.style.backgroundColor = '';
                     input.value = '';
+                    if (bebanInput) bebanInput.value = '';
                 });
             });
 
@@ -333,57 +373,95 @@ function resetForm() {
 // Fungsi untuk memuat data
 function loadData() {
     const tanggal = document.getElementById('filterDate').value;
+    const searchQuery = document.getElementById('searchInput').value;
     
-    fetch(`{{ route("admin.pembangkit.get-status") }}?tanggal=${tanggal}`)
+    // Tampilkan loading state jika diperlukan
+    document.querySelectorAll('.unit-table').forEach(table => {
+        table.style.opacity = '0.5';
+    });
+    
+    fetch(`{{ route("admin.pembangkit.get-status") }}?tanggal=${tanggal}&search=${searchQuery}`)
         .then(response => response.json())
         .then(result => {
             if (result.success) {
                 updateFormWithData(result.data);
+                // Reset opacity setelah data dimuat
+                document.querySelectorAll('.unit-table').forEach(table => {
+                    table.style.opacity = '1';
+                });
             } else {
-                resetForm();
-                if (result.message) {
-                    alert(result.message);
-                }
+                console.error('Error:', result.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat mengambil data!');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan saat mengambil data!'
+            });
         });
 }
 
-// Fungsi untuk mengupdate form dengan data
-function updateFormWithData(data) {
-    const tables = document.querySelectorAll('.unit-table table');
-    
-    // Reset form dulu
-    resetForm();
-    
-    tables.forEach(table => {
-        const rows = table.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            const machineId = row.querySelector('td:first-child').getAttribute('data-id');
-            const machineData = data.find(d => d.machine_id == machineId);
-            
-            if (machineData) {
-                const select = row.querySelector('select');
-                const input = row.querySelector('input[type="text"]');
-                
-                select.value = machineData.status;
-                select.style.backgroundColor = select.options[select.selectedIndex].style.backgroundColor;
-                input.value = machineData.keterangan || '';
-            }
-        });
-    });
-}
+// Event listener untuk perubahan tanggal
+document.getElementById('filterDate').addEventListener('change', function() {
+    loadData();
+});
 
-// Event listener untuk tanggal
-document.getElementById('filterDate').addEventListener('change', loadData);
+// Event listener untuk tombol cari
+document.querySelector('button[onclick="loadData()"]').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadData();
+});
 
 // Load data saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
+    // Set tanggal default ke hari ini jika belum diset
+    const filterDate = document.getElementById('filterDate');
+    if (!filterDate.value) {
+        filterDate.value = new Date().toISOString().split('T')[0];
+    }
     loadData();
 });
+
+function updateFormWithData(data) {
+    const tables = document.querySelectorAll('.unit-table');
+    
+    tables.forEach(table => {
+        const unitName = table.querySelector('h2').textContent;
+        const rows = table.querySelectorAll('tbody tr');
+        let unitHasData = false;
+        
+        rows.forEach(row => {
+            const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+            const machineData = data.find(d => 
+                d.machine_id == machineId && 
+                d.machine.power_plant.name === unitName
+            );
+            
+            if (machineData) {
+                const bebanInput = row.querySelector('input[type="number"]');
+                const select = row.querySelector('select');
+                const keteranganInput = row.querySelector('input[type="text"]');
+                
+                bebanInput.value = machineData.load_value || '';
+                select.value = machineData.status || '';
+                if (select.value) {
+                    select.style.backgroundColor = select.options[select.selectedIndex].style.backgroundColor;
+                }
+                keteranganInput.value = machineData.keterangan || '';
+                
+                row.style.display = '';
+                unitHasData = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Tampilkan/sembunyikan unit table berdasarkan ada tidaknya data
+        table.style.display = unitHasData ? '' : 'none';
+    });
+}
 </script>
 @push('scripts')
 
