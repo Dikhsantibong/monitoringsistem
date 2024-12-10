@@ -67,13 +67,8 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 main-content">
             <!-- Header -->
-<<<<<<< HEAD
-            <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-3">
-=======
             <header class="bg-white shadow-sm sticky top-0 z-10">
-                <div class="flex justify-between items-center px-6 py-2">
->>>>>>> f9d09bd9d085e24c3b22c0f14c46802bb36eb221
+                <div class="flex justify-between items-center px-6 py-3">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -209,7 +204,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="space-y-4 max-h-60 overflow-y-auto">
+                            <div class="space-y-4 max-h-60 overflow-y-auto flex flex-wrap w-full">
                                 @foreach ($machines as $machine)
                                     <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                                         <div class="flex-1">
@@ -263,15 +258,18 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Tanggal
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Mesin
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                             Kategori</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                             Deskripsi</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Status
                                         </th>
                                     </tr>
                                 </thead>
@@ -348,14 +346,19 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Jam
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total
+                                        Jam
                                         Operasi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Efisiensi
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Efisiensi
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Downtime
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Downtime
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Maintenance
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Maintenance
                                     </th>
                                 </tr>
                             </thead>
@@ -364,143 +367,165 @@
                 </div>
             </main>
         </div>
-    </div>
 
-    <!-- Modal Masalah Baru -->
-    <div id="newIssueModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Laporkan Masalah Baru</h3>
-                <form id="newIssueForm">
-                    @csrf
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Mesin</label>
-                        <select name="machine_id"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
-                            @foreach ($machines as $machine)
-                                <option value="{{ $machine->id }}">{{ $machine->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
-                        <select name="category_id"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
-                            @foreach ($healthCategories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi</label>
-                        <textarea name="description" rows="3"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required></textarea>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="button" onclick="closeNewIssueModal()"
-                            class="mr-2 px-4 py-2 text-gray-500 hover:text-gray-700">
-                            Batal
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                            Kirim
-                        </button>
-                    </div>
-                </form>
+        <!-- Modal Masalah Baru -->
+        <div id="newIssueModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Laporkan Masalah Baru</h3>
+                    <form id="newIssueForm">
+                        @csrf
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Mesin</label>
+                            <select name="machine_id"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                                required>
+                                @foreach ($machines as $machine)
+                                    <option value="{{ $machine->id }}">{{ $machine->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
+                            <select name="category_id"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                                required>
+                                @foreach ($healthCategories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi</label>
+                            <textarea name="description" rows="3"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" onclick="closeNewIssueModal()"
+                                class="mr-2 px-4 py-2 text-gray-500 hover:text-gray-700">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                Kirim
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Edit Machine Modal -->
-    <div id="editMachineModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <!-- Similar structure to Add Machine Modal but with pre-filled values -->
-    </div>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ asset('js/toggle.js') }}"></script>
-    <script>
-        // Chart initialization
-        const monthlyIssuesData = @json($monthlyIssues); // Ambil data dari controller
+        <!-- Edit Machine Modal -->
+        <div id="editMachineModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+            <!-- Similar structure to Add Machine Modal but with pre-filled values -->
+        </div>
+        <!-- Chart.js CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="{{ asset('js/toggle.js') }}"></script>
+        <script>
+            // Chart initialization
+            const monthlyIssuesData = @json($monthlyIssues); // Ambil data dari controller
 
-        const ctx = document.getElementById('monthlyIssuesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line', // Menggunakan grafik garis
-            data: {
-                labels: monthlyIssuesData.map(issue => issue.date), // Ambil tanggal dari data
-                datasets: [{
-                    label: 'Jumlah Masalah',
-                    data: monthlyIssuesData.map(issue => issue.count), // Ambil jumlah masalah dari data
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3 // Untuk membuat garis lebih halus
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Jumlah Masalah'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Tanggal'
+            const ctx = document.getElementById('monthlyIssuesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line', // Menggunakan grafik garis
+                data: {
+                    labels: monthlyIssuesData.map(issue => issue.date), // Ambil tanggal dari data
+                    datasets: [{
+                        label: 'Jumlah Masalah',
+                        data: monthlyIssuesData.map(issue => issue.count), // Ambil jumlah masalah dari data
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3 // Untuk membuat garis lebih halus
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Jumlah Masalah'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tanggal'
+                            }
                         }
                     }
                 }
-            }
-        });
-
-        // Modal functions
-        function openNewIssueModal() {
-            document.getElementById('newIssueModal').classList.remove('hidden');
-        }
-
-        function closeNewIssueModal() {
-            document.getElementById('newIssueModal').classList.add('hidden');
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('newIssueModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeNewIssueModal();
-            }
-        });
-
-        // DataTable initialization
-        $(document).ready(function() {
-            $('table').DataTable({
-                responsive: true,
-                pageLength: 10,
-                order: [
-                    [0, 'desc']
-                ]
             });
-        });
 
-        function editMachine(machineId) {
-            // Fetch machine details and open edit modal
-            fetch(`/admin/machine-monitor/machines/${machineId}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Populate edit form with machine data
-                    document.getElementById('editMachineModal').classList.remove('hidden');
+            // Modal functions
+            function openNewIssueModal() {
+                document.getElementById('newIssueModal').classList.remove('hidden');
+            }
+
+            function closeNewIssueModal() {
+                document.getElementById('newIssueModal').classList.add('hidden');
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('newIssueModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeNewIssueModal();
+                }
+            });
+
+            // DataTable initialization
+            $(document).ready(function() {
+                $('table').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    order: [
+                        [0, 'desc']
+                    ]
                 });
-        }
+            });
 
-        function deleteMachine(machineId) {
-            if (confirm('Are you sure you want to delete this machine?')) {
-                fetch(`/admin/machine-monitor/machines/${machineId}`, {
-                        method: 'DELETE',
+            function editMachine(machineId) {
+                // Fetch machine details and open edit modal
+                fetch(`/admin/machine-monitor/machines/${machineId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Populate edit form with machine data
+                        document.getElementById('editMachineModal').classList.remove('hidden');
+                    });
+            }
+
+            function deleteMachine(machineId) {
+                if (confirm('Are you sure you want to delete this machine?')) {
+                    fetch(`/admin/machine-monitor/machines/${machineId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            }
+                        });
+                }
+            }
+
+            function updateMachineStatus(machineId, status) {
+                fetch(`/admin/machine-monitor/machines/${machineId}/status`, {
+                        method: 'PUT',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
                             'Accept': 'application/json'
-                        }
+                        },
+                        body: JSON.stringify({
+                            status: status
+                        })
                     })
                     .then(response => response.json())
                     .then(data => {
@@ -509,86 +534,64 @@
                         }
                     });
             }
-        }
 
-        function updateMachineStatus(machineId, status) {
-            fetch(`/admin/machine-monitor/machines/${machineId}/status`, {
-                    method: 'PUT',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        status: status
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    }
-                });
-        }
+            function refreshMachineStatus() {
+                location.reload();
+            }
 
-        function refreshMachineStatus() {
-            location.reload();
-        }
+            // Chart untuk Uptime/Downtime
+            const ctx = document.getElementById('uptimeChart').getContext('2d');
+            const uptimeData = @json($uptime);
+            const labels = uptimeData.map(machine => machine.name);
+            const uptimeValues = uptimeData.map(machine => machine.uptime);
+            const downtimeValues = uptimeData.map(machine => machine.downtime);
 
-        // Chart untuk Uptime/Downtime
-        const ctx = document.getElementById('uptimeChart').getContext('2d');
-        const uptimeData = @json($uptime);
-        const labels = uptimeData.map(machine => machine.name);
-        const uptimeValues = uptimeData.map(machine => machine.uptime);
-        const downtimeValues = uptimeData.map(machine => machine.downtime);
-
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                        label: 'Uptime',
-                        data: uptimeValues,
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    },
-                    {
-                        label: 'Downtime',
-                        data: downtimeValues,
-                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                            label: 'Uptime',
+                            data: uptimeValues,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        },
+                        {
+                            label: 'Downtime',
+                            data: downtimeValues,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        // Close modal when clicking outside
-        document.getElementById('newMachineModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeNewMachineModal();
-            }
-        });
-    </script>
+            // Close modal when clicking outside
+            document.getElementById('newMachineModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeNewMachineModal();
+                }
+            });
+        </script>
 
-    @push('scripts')
-    @endpush
-@endsection
+        @push('scripts')
+        @endpush
+    @endsection
 
-<style>
-    /* Sembunyikan scrollbar tapi tetap bisa scroll */
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
+    <style>
+        /* Sembunyikan scrollbar tapi tetap bisa scroll */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
 
-    .scrollbar-hide {
-        /* -ms-overflow-style: none; */
-        /* scrollbar-width: none; */
-    }
-
-</style>
+        .scrollbar-hide {
+            /* -ms-overflow-style: none; */
+            /* scrollbar-width: none; */
+        }
+    </style>

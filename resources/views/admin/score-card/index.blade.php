@@ -81,13 +81,8 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 main-content">
             <!-- Header -->
-<<<<<<< HEAD
-            <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-3">
-=======
             <header class="bg-white shadow-sm sticky top-0 z-10">
-                <div class="flex justify-between items-center px-6 py-2">
->>>>>>> f9d09bd9d085e24c3b22c0f14c46802bb36eb221
+                <div class="flex justify-between items-center px-6 py-3">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -154,15 +149,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($scoreCards as $index => $card)
-                            <tr>
-                                <td class="border p-2 text-center">{{ $index + 1 }}</td>
-                                <td class="border p-2">{{ $card->peserta }}</td>
-                                <td class="border p-2 text-center">{{ $card->awal }}</td>
-                                <td class="border p-2 text-center">{{ $card->akhir }}</td>
-                                <td class="border p-2 text-center">{{ $card->skor }}</td>
-                                <td class="border p-2">{{ $card->keterangan }}</td>
-                            </tr>
+                            @foreach ($scoreCards as $index => $card)
+                                <tr>
+                                    <td class="border p-2 text-center">{{ $index + 1 }}</td>
+                                    <td class="border p-2">{{ $card->peserta }}</td>
+                                    <td class="border p-2 text-center">{{ $card->awal }}</td>
+                                    <td class="border p-2 text-center">{{ $card->akhir }}</td>
+                                    <td class="border p-2 text-center">{{ $card->skor }}</td>
+                                    <td class="border p-2">{{ $card->keterangan }}</td>
+                                </tr>
                             @endforeach
                             <!-- Tambahkan baris untuk total score -->
                             <tr>

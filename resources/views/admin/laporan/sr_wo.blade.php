@@ -66,13 +66,8 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 main-content">
-<<<<<<< HEAD
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
-=======
-            <header class="bg-white shadow-sm sticky top-0 z-10">
-                <div class="flex justify-between items-center px-6 py-2">
->>>>>>> f9d09bd9d085e24c3b22c0f14c46802bb36eb221
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -112,9 +107,9 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
                     <div class="p-4">
-                        <div class="mb-4 flex justify-end space-x-4">
+                        <div class="mb-4 flex flex-col lg:flex-row justify-end space-x-4 gap-y-3">
                             <!-- Filter Tanggal -->
-                            <div class="flex items-center space-x-2">
+                            <div class="flex flex-col md:flex-row gap-y-3 items-center space-x-2">
                                 <label class="text-gray-600">Dari:</label>
                                 <input type="date" id="startDate"
                                     class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">

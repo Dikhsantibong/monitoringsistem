@@ -67,13 +67,8 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
             <!-- Header -->
-<<<<<<< HEAD
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
-=======
-            <header class="bg-white shadow-sm sticky top-0 z-10">
-                <div class="flex justify-between items-center px-6 py-2">
->>>>>>> f9d09bd9d085e24c3b22c0f14c46802bb36eb221
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -113,29 +108,28 @@
                 <div class="bg-white rounded-lg shadow mb-6">
                     <div class="p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Pengguna</h2>
-
-                        <div class="mb-4 flex justify-end space-x-4">
-                            <div class="flex gap-4 justify-end">
-                                <div class="flex gap-3">
+                        <div class="mb-4 flex flex-col sm:flex-row gap-3 justify-between space-x-4">
+                            <div class="border">
+                                <select id="role-filter"
+                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 w-full">
+                                    <option value="">Semua Peran</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">Pengguna</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col md:flex-row gap-3 items-center">
+                                <div class="flex-1 flex items-center ">
                                     <div class="flex">
-                                        <select id="role-filter"
-                                            class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                            <option value="">Semua Peran</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="user">Pengguna</option>
-                                        </select>
+                                        <input type="text" id="search" placeholder="Cari pengguna..."
+                                            class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500"
+                                            onkeyup="searchUsers()">
+                                        <input type="button" value="Search"
+                                            class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
                                     </div>
-                                    <div class="flex-1 flex items-center ">
-                                        <div class="flex">
-                                            <input type="text" id="search" placeholder="Cari pengguna..."
-                                                class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500"
-                                                onkeyup="searchUsers()">
-                                            <input type="button" value="Search"
-                                                class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
-                                        </div>
-                                    </div>
+                                </div>
+                                <div>
                                     <a href="{{ route('admin.users.create') }}"
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center">
+                                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors items-center sm:flex">
                                         <i class="fas fa-plus mr-2"></i>
                                         Tambah Pengguna
                                     </a>
@@ -144,76 +138,79 @@
                         </div>
 
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
-                            <table id="users-table"
-                                class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                <thead>
-                                    <tr style="background-color: #0A749B; color: white">
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Nama
-                                        </th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Email
-                                        </th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peran
-                                        </th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Dibuat
-                                            Pada
-                                        </th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Aksi
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody id="users-body" class="divide-y divide-gray-200">
-                                    @foreach ($users as $user)
-                                        <tr class="odd:bg-white even:bg-gray-100">
-                                            <td class="text-center p-2 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <img class="h-8 w-8 rounded-full"
-                                                        src="{{ $user->avatar ?? asset('images/default-avatar.png') }}"
-                                                        alt="">
-                                                    <div class="ml-4">
-                                                        <div class="text-sm font-medium text-gray-900">{{ $user->name }}
+                            <div class="sm:overflow-auto">
+                                <table id="users-table"
+                                    class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200 md:max-w-full">
+                                    <thead>
+                                        <tr style="background-color: #0A749B; color: white">
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Nama
+                                            </th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Email
+                                            </th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peran
+                                            </th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Dibuat
+                                                Pada
+                                            </th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Aksi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-body" class="divide-y divide-gray-200">
+                                        @foreach ($users as $user)
+                                            <tr class="odd:bg-white even:bg-gray-100">
+                                                <td class="text-center p-2 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <img class="h-8 w-8 rounded-full"
+                                                            src="{{ $user->avatar ?? asset('images/default-avatar.png') }}"
+                                                            alt="">
+                                                        <div class="ml-4">
+                                                            <div class="text-sm font-medium text-gray-900">
+                                                                {{ $user->name }}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td class="p-2 whitespace-nowrap border border-gray-300">
-                                                <div class="text-sm text-gray-900">{{ $user->email }}</div>
-                                            </td>
-                                            <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                </td>
+                                                <td class="p-2 whitespace-nowrap border border-gray-300">
+                                                    <div class="text-sm text-gray-900">{{ $user->email }}</div>
+                                                </td>
+                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                    <span
+                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                             {{ $user->role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                                                    {{ ucfirst($user->role) }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                <div class="text-sm text-gray-900">
-                                                    {{ $user->created_at->format('d M Y') }}
-                                                </div>
-                                            </td>
-                                            <td class="py-2 whitespace-nowrap flex justify-center gap-2">
-                                                <div>
-                                                    <a href="{{ route('admin.users.edit', $user->id) }}"
-                                                        class="text-white btn bg-indigo-500 hover:bg-indigo-900 rounded-lg border">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                </div>
+                                                        {{ ucfirst($user->role) }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                    <div class="text-sm text-gray-900">
+                                                        {{ $user->created_at->format('d M Y') }}
+                                                    </div>
+                                                </td>
+                                                <td class="py-2 whitespace-nowrap flex justify-center gap-2">
+                                                    <div>
+                                                        <a href="{{ route('admin.users.edit', $user->id) }}"
+                                                            class="text-white btn bg-indigo-500 hover:bg-indigo-900 rounded-lg border">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    </div>
 
-                                                <form id="delete-form-{{ $user->id }}"
-                                                    action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                                                    class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button"
-                                                        onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
-                                                        class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                                    <form id="delete-form-{{ $user->id }}"
+                                                        action="{{ route('admin.users.destroy', $user->id) }}"
+                                                        method="POST" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button"
+                                                            onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
+                                                            class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
