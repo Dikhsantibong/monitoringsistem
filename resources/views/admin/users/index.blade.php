@@ -68,7 +68,7 @@
         <div id="main-content" class="flex-1 overflow-auto">
             <!-- Header -->
             <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-2">
+                <div class="flex justify-between items-center px-6 py-3">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"

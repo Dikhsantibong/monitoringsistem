@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (
             !mobileMenu.contains(event.target) &&
             !mobileMenuToggle.contains(event.target)
-        ) {
+        ) {s
             mobileMenu.classList.add("hidden");
             mainContent.classList.remove("opacity-25")
         }

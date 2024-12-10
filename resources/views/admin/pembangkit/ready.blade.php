@@ -69,7 +69,7 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
             <header class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-2">
+                <div class="flex justify-between items-center px-6 py-3">
                     <!-- Mobile Menu Toggle -->
                     <button id="mobile-menu-toggle"
                         class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -116,15 +116,15 @@
                                    class="px-4 py-2 border rounded-lg">
                                    
                             <div class="flex items-center">
-                                <div class="relative">
-                                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                {{-- <div class="relative"> --}}
+                                    {{-- <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i> --}}
                                     <input type="text" 
                                            id="searchInput"
                                            placeholder="Cari mesin..."
-                                           class="pl-10 pr-4 py-2 border rounded-lg mr-2">
-                                </div>
+                                           class="pl-5 pr-4 py-2 border rounded-l-lg mr-2">
+                                {{-- </div> --}}
                                 <button onclick="loadData()" 
-                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                        class="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600">
                                     <i class="fas fa-search mr-2"></i>Cari
                                 </button>
                             </div>
