@@ -26,62 +26,74 @@ class PembangkitController extends Controller
     }
 
     public function saveStatus(Request $request)
-{
-    try {
-        foreach ($request->logs as $log) {
-            MachineStatusLog::create($log);
-        }
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Data berhasil disimpan'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal menyimpan data: ' . $e->getMessage()
-        ]);
-    }
-}
-
-public function getStatus(Request $request)
-{
-    try {
-        $tanggal = $request->tanggal;
-        $search = $request->search;
-        
-        $query = MachineStatusLog::with(['machine.powerPlant', 'machine.operations'])
-            ->whereDate('tanggal', $tanggal);
+    {
+        try {
+            DB::beginTransaction();
             
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->whereHas('machine.powerPlant', function($q) use ($search) {
-                    $q->where('name', 'LIKE', "%{$search}%");
-                })
-                ->orWhereHas('machine', function($q) use ($search) {
-                    $q->where('name', 'LIKE', "%{$search}%");
-                })
-                ->orWhereHas('machine.operations', function($q) use ($search) {
-                    $q->where('status', 'LIKE', "%{$search}%")
-                      ->orWhere('dmn', 'LIKE', "%{$search}%")
-                      ->orWhere('dmp', 'LIKE', "%{$search}%");
-                });
-            });
+            foreach ($request->logs as $log) {
+                // Hanya simpan jika ada nilai yang diinputkan
+                if (!empty($log['status']) || !empty($log['keterangan']) || !empty($log['load_value'])) {
+                    MachineStatusLog::create([
+                        'machine_id' => $log['machine_id'],
+                        'tanggal' => $log['tanggal'],
+                        'status' => $log['status'],
+                        'keterangan' => $log['keterangan'],
+                        'load_value' => $log['load_value']
+                    ]);
+                }
+            }
+            
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil disimpan'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+            ]);
         }
-        
-        $logs = $query->get();
-        
-        return response()->json([
-            'success' => true,
-            'data' => $logs
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal mengambil data: ' . $e->getMessage()
-        ]);
     }
-}
+
+    public function getStatus(Request $request)
+    {
+        try {
+            $tanggal = $request->tanggal;
+            $search = $request->search;
+            
+            $query = MachineStatusLog::with(['machine.powerPlant'])
+                ->when($tanggal, function($q) use ($tanggal) {
+                    return $q->whereDate('tanggal', $tanggal);
+                });
+                
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->whereHas('machine.powerPlant', function($q) use ($search) {
+                        $q->where('name', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('machine', function($q) use ($search) {
+                        $q->where('name', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhere('status', 'LIKE', "%{$search}%")
+                    ->orWhere('keterangan', 'LIKE', "%{$search}%");
+                });
+            }
+            
+            $logs = $query->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $logs
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data: ' . $e->getMessage()
+            ]);
+        }
+    }
 
     public function getStatusHistory(Request $request)
     {

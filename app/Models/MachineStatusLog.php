@@ -16,8 +16,6 @@ class MachineStatusLog extends Model
         'tanggal',
         'status',
         'keterangan',
-        'dmn',
-        'dmp',
         'load_value'
     ];
 

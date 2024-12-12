@@ -114,18 +114,19 @@
                                 class="px-4 py-2 border rounded-lg">
 
                             <div class="flex items-center">
-                                <input type="text" id="searchInput" placeholder="Cari mesin..."
-                                    class="pl-5 pr-4 py-2 border rounded-l-lg">
-                                <button onclick="loadData()"
+                                <input type="text" id="searchInput" placeholder="Cari mesin, unit, atau status..."
+                                    class="pl-5 pr-4 py-2 border rounded-l-lg"
+                                    onkeyup="if(event.key === 'Enter') searchTables()">
+                                <button onclick="searchTables()"
                                     class="bg-blue-500 text-white px-3 py-2 rounded-r-lg hover:bg-blue-600">
-                                    Cari
+                                    <i class="fas fa-search"></i>
                                 </button>
                             </div>
                         </div>
 
                         <div class="flex space-x-4">
                             <div class="max-w-full">
-                                <button onclick="resetForm()"
+                                <button onclick="confirmReset()"
                                     class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                                     <i class="fas fa-refresh mr-2"></i>Reset
                                 </button>
@@ -181,19 +182,11 @@
                                                     <select
                                                         class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
                                                         onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                        <option value="" style="background-color: #ffffff">Pilih Status</option>
-                                                        <option value="Operasi" style="background-color: #4CAF50"
-                                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Operasi' ? 'selected' : '' }}>
-                                                            Operasi</option>
-                                                        <option value="Standby" style="background-color: #2196F3"
-                                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Standby' ? 'selected' : '' }}>
-                                                            Standby</option>
-                                                        <option value="Gangguan" style="background-color: #f44336"
-                                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Gangguan' ? 'selected' : '' }}>
-                                                            Gangguan</option>
-                                                        <option value="Pemeliharaan" style="background-color: #FF9800"
-                                                            {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Pemeliharaan' ? 'selected' : '' }}>
-                                                            Pemeliharaan</option>
+                                                        <option value="" style="background-color: #FFFFFF">Pilih Status</option>
+                                                        <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
+                                                        <option value="Standby" style="background-color: #2196F3">Standby</option>
+                                                        <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
+                                                        <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
                                                     </select>
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
@@ -218,33 +211,109 @@
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script>
     function searchTables() {
-        const searchInput = document.getElementById('searchInput');
-        const filter = searchInput.value.toLowerCase();
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const filterDate = document.getElementById('filterDate').value;
+        
+        // Tampilkan loading jika diperlukan
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'loading-indicator';
+        loadingIndicator.className = 'text-center py-4';
+        loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari data...';
+        
+        const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
+        const existingLoading = document.getElementById('loading-indicator');
+        if (existingLoading) existingLoading.remove();
+        mainContent.appendChild(loadingIndicator);
+        
+        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${filterDate}&search=${searchInput}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    updateTablesWithSearchResult(result.data);
+                } else {
+                    throw new Error(result.message || 'Gagal mencari data');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateTablesWithSearchResult([]); // Tampilkan pesan tidak ada data
+            })
+            .finally(() => {
+                // Hapus loading indicator
+                const loadingIndicator = document.getElementById('loading-indicator');
+                if (loadingIndicator) loadingIndicator.remove();
+            });
+    }
+
+    function updateTablesWithSearchResult(data) {
         const unitTables = document.getElementsByClassName('unit-table');
-
+        const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
+        
+        // Hapus pesan "DATA TIDAK TERSEDIA" yang mungkin ada sebelumnya
+        const existingMessage = document.getElementById('no-data-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        // Jika tidak ada data
+        if (!data || data.length === 0) {
+            // Sembunyikan semua tabel
+            Array.from(unitTables).forEach(table => {
+                table.style.display = 'none';
+            });
+            
+            // Tampilkan pesan "DATA TIDAK TERSEDIA"
+            const noDataMessage = document.createElement('div');
+            noDataMessage.id = 'no-data-message';
+            noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
+            noDataMessage.textContent = 'DATA TIDAK TERSEDIA';
+            mainContent.appendChild(noDataMessage);
+            return;
+        }
+        
+        // Reset semua visibility
         Array.from(unitTables).forEach(unitTable => {
-            const unitName = unitTable.querySelector('h2').textContent.toLowerCase();
-            if (unitName.includes(filter)) {
-                unitTable.style.display = '';
-            } else {
-                unitTable.style.display = 'none';
-            }
+            unitTable.style.display = 'none';
+            const rows = unitTable.querySelectorAll('tbody tr');
+            rows.forEach(row => row.style.display = 'none');
         });
-
-        const rows = document.querySelectorAll('.unit-table tbody tr');
-        rows.forEach(row => {
-            const machineName = row.querySelector('td:first-child').textContent.toLowerCase();
-            const status = row.querySelector('select').value.toLowerCase();
-            if (machineName.includes(filter) || status.includes(filter)) {
+        
+        // Tampilkan hanya data yang sesuai dengan pencarian
+        data.forEach(log => {
+            const machineId = log.machine_id;
+            const row = document.querySelector(`td[data-id="${machineId}"]`)?.closest('tr');
+            const unitTable = row?.closest('.unit-table');
+            
+            if (row && unitTable) {
+                unitTable.style.display = '';
                 row.style.display = '';
-            } else {
-                row.style.display = 'none';
+                
+                // Update nilai-nilai di row
+                const select = row.querySelector('select');
+                const inputKeterangan = row.querySelector('input[type="text"]');
+                const inputBeban = row.querySelector('td:nth-child(4) input');
+                
+                if (select) {
+                    select.value = log.status || '';
+                    select.style.backgroundColor = select.options[select.selectedIndex]?.style.backgroundColor || '';
+                }
+                if (inputKeterangan) inputKeterangan.value = log.keterangan || '';
+                if (inputBeban) inputBeban.value = log.load_value || '';
             }
         });
     }
 
-    // Event listener untuk real-time search
-    document.getElementById('searchInput').addEventListener('keyup', searchTables);
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            searchTables();
+        }
+    });
+
+    document.getElementById('filterDate').addEventListener('change', searchTables);
+
+    // Tombol search
+    document.querySelector('button[onclick="loadData()"]').onclick = searchTables;
 </script>
 
 <script>
@@ -258,20 +327,17 @@
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
                 const select = row.querySelector('select');
-                const input = row.querySelector('input[type="text"]');
-                const dmn = row.querySelector('td:nth-child(2)').textContent.trim();
-                const dmp = row.querySelector('td:nth-child(3)').textContent.trim();
-                const beban = row.querySelector('td:nth-child(4) input').value.trim();
+                const inputKeterangan = row.querySelector('input[type="text"]');
+                const inputBeban = row.querySelector('td:nth-child(4) input');
 
-                if (select.value || input.value || beban) {
+                // Hanya tambahkan ke data jika ada nilai yang diinputkan
+                if (select.value || inputKeterangan.value || inputBeban.value) {
                     data.push({
                         machine_id: machineId,
                         tanggal: tanggal,
                         status: select.value,
-                        keterangan: input.value.trim(),
-                        dmn: dmn,
-                        dmp: dmp,
-                        load_value: beban
+                        keterangan: inputKeterangan.value.trim(),
+                        load_value: inputBeban.value
                     });
                 }
             });
@@ -282,73 +348,77 @@
         }
 
         fetch('{{ route('admin.pembangkit.save-status') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    logs: data
-                })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                logs: data
             })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Data berhasil disimpan!',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        loadData();
-                    });
-                } else {
-                    throw new Error(result.message || 'Gagal menyimpan data');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Terjadi kesalahan saat menyimpan data!'
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Data berhasil disimpan!',
+                    timer: 1500,
+                    showConfirmButton: false
                 });
+            } else {
+                throw new Error(result.message || 'Gagal menyimpan data');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Terjadi kesalahan saat menyimpan data!'
             });
+        });
+    }
+
+    function confirmReset() {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data akan direset!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, reset!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                resetForm();
+                Swal.fire(
+                    'Reset!',
+                    'Data telah direset.',
+                    'success'
+                );
+            }
+        });
     }
 
     function resetForm() {
-        Swal.fire({
-            title: 'Konfirmasi Reset',
-            text: 'Apakah Anda yakin ingin mereset form? Semua data yang belum disimpan akan hilang.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Reset',
-            cancelButtonText: 'Batal',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const tables = document.querySelectorAll('.unit-table table');
-                tables.forEach(table => {
-                    const rows = table.querySelectorAll('tbody tr');
-                    rows.forEach(row => {
-                        const select = row.querySelector('select');
-                        const input = row.querySelector('input[type="text"]');
+        const tables = document.querySelectorAll('.unit-table table');
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const select = row.querySelector('select');
+                const inputKeterangan = row.querySelector('input[type="text"]');
+                const inputBeban = row.querySelector('td:nth-child(4) input');
 
-                        select.value = ''; // Set status to empty
-                        select.style.backgroundColor = ''; // Reset background color
-                        input.value = ''; // Clear input field
-                    });
-                });
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Form Direset',
-                    text: 'Form berhasil direset!',
-                    timer: 1500
-                });
-            }
+                // Reset semua input
+                select.value = '';
+                select.style.backgroundColor = '';
+                inputKeterangan.value = '';
+                inputBeban.value = '';
+            });
         });
+        
     }
 
     // Fungsi untuk memuat data
