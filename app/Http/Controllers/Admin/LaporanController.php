@@ -20,9 +20,8 @@ class LaporanController extends Controller
     public function storeSR(Request $request)
     {
         $validated = $request->validate([
-            'priority' => 'required',
-            'status' => 'required',
-            'description' => 'required'
+            'description' => 'required',
+            'status' => 'required'
         ]);
 
         ServiceRequest::create($validated);
@@ -34,9 +33,8 @@ class LaporanController extends Controller
     public function storeWO(Request $request)
     {
         $validated = $request->validate([
-            'work_type' => 'required',
-            'status' => 'required',
-            'description' => 'required'
+            'description' => 'required',
+            'status' => 'required'
         ]);
 
         WorkOrder::create($validated);

@@ -208,7 +208,7 @@
         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
         <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
             <h2 class="text-xl font-bold mb-4">Tambah Service Request (SR)</h2>
-            <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST">
+            <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST" onsubmit="showSuccessAlert(event, 'SR')">
                 @csrf
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
@@ -232,7 +232,6 @@
                         <option value="Closed">Closed</option>
                     </select>
                 </div>
-                <!-- Tanggal akan otomatis terisi saat penyimpanan -->
                 <div class="flex justify-end space-x-4">
                     <button type="button" onclick="closeSRModal()"
                         class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
@@ -251,7 +250,7 @@
         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
         <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
             <h2 class="text-xl font-bold mb-4">Tambah Work Order (WO)</h2>
-            <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST">
+            <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST" onsubmit="showSuccessAlert(event, 'WO')">
                 @csrf
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_id">
@@ -290,6 +289,7 @@
     </div>
 @endsection
 <script src="{{ asset('js/toggle.js') }}"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // Fungsi untuk membuka modal SR
     function openSRModal() {
@@ -343,18 +343,22 @@
         }, 300);
     }
 
-    // Fungsi untuk submit form SR
-    function submitSR() {
-        const form = document.getElementById('srForm');
-        form.submit();
-        closeSRModal();
-    }
-
-    // Fungsi untuk submit form WO 
-    function submitWO() {
-        const form = document.getElementById('woForm');
-        form.submit();
-        closeWOModal();
+    // Fungsi untuk menampilkan alert sukses
+    function showSuccessAlert(event, type) {
+        event.preventDefault(); // Prevent form submission
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        // Simulate form submission (you can replace this with actual AJAX call)
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: `${type} berhasil ditambahkan!`,
+                showConfirmButton: false,
+                timer: 1500
+            });
+            form.submit(); // Submit the form after showing the alert
+        }, 500);
     }
 
     function searchTables() {
