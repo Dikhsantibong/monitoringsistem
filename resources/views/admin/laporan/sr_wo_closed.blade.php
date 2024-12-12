@@ -57,20 +57,38 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($closedReports as $index => $report)
+                        @foreach(App\Models\ServiceRequest::where('status', 'Closed')->get() as $index => $report)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $report['tipe'] === 'SR' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                                    {{ $report['tipe'] }}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    SR
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $report['nomor'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ Carbon\Carbon::parse($report['tanggal'])->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4">{{ $report['deskripsi'] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $report->id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
+                            <td class="px-6 py-4">{{ $report->description }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    {{ $report['status'] }}
+                                    {{ $report->status }}
+                                </span>
+                            </td>
+                        </tr>
+                        @endforeach
+                        @foreach(App\Models\WorkOrder::where('status', 'Closed')->get() as $index => $report)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    WO
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $report->id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
+                            <td class="px-6 py-4">{{ $report->description }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    {{ $report->status }}
                                 </span>
                             </td>
                         </tr>
