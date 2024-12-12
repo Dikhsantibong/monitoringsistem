@@ -98,8 +98,11 @@
                     </div>
                 </div>
             </header>
-            <div class="flex justify-between items-center pt-2">
-                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan Rapat', 'url' => null]]" />
+
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-2">
+                <div class="flex justify-start w-full">
+                    <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan Rapat', 'url' => null]]" />
+                </div>
                 <div class="flex items-center space-x-4 px-6">
                     <button onclick="exportMeetings()"
                         class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
@@ -159,26 +162,28 @@
                 <!-- Tabel Hasil Rapat -->
                 <div class="bg-white rounded-lg shadow mb-6 p-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Hasil Rapat</h2>
-                    <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                        <thead>
-                            <tr>
-                                <th class="px-6 py-3 text-center font-medium text-gray-500">Judul</th>
-                                <th class="px-6 py-3 text-center font-medium text-gray-500">Tanggal</th>
-                                <th class="px-6 py-3 text-center font-medium text-gray-500">Departemen</th>
-                                <th class="px-6 py-3 text-center font-medium text-gray-500">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @foreach ($meetings ?? [] as $meeting)
-                                <tr class="odd:bg-white even:bg-gray-100">
-                                    <td>{{ $meeting->title }}</td>
-                                    <td>{{ $meeting->scheduled_at->format('F j, Y') }}</td>
-                                    <td>{{ $meeting->department->name ?? 'Tidak Ada' }}</td>
-                                    <td>{{ $meeting->status }}</td>
+                    <div class="overflow-auto">
+                        <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Judul</th>
+                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Tanggal</th>
+                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Departemen</th>
+                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Status</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @foreach ($meetings ?? [] as $meeting)
+                                    <tr class="odd:bg-white even:bg-gray-100">
+                                        <td>{{ $meeting->title }}</td>
+                                        <td>{{ $meeting->scheduled_at->format('F j, Y') }}</td>
+                                        <td>{{ $meeting->department->name ?? 'Tidak Ada' }}</td>
+                                        <td>{{ $meeting->status }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
         </div>

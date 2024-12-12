@@ -35,7 +35,7 @@
     <!-- jQuery (jika diperlukan) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -43,15 +43,13 @@
      <!-- ... kode lainnya ... -->
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
      <!-- ... kode lainnya ... -->
-
-     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
      
      <meta name="csrf-token" content="{{ csrf_token() }}">
      
  </head>
     <!-- Custom Styles -->
     @yield('styles')
-    <style>
+    {{-- <style>
         @media (max-width: 768px) {
             table {
                 width: 100%;
@@ -75,8 +73,7 @@
             }
         }
    
-    </style>
-
+    </style> --}}
 
 </head>
 <body>

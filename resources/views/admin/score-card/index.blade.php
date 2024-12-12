@@ -136,37 +136,38 @@
                             </a>
                         </div>
                     </div>
-
-                    <table class="min-w-full bg-white border">
-                        <thead>
-                            <tr style="background-color: #0A749B; color: white;" class="text-center">
-                                <th class="border p-2">No</th>
-                                <th class="border p-2">Peserta</th>
-                                <th class="border p-2">Awal</th>
-                                <th class="border p-2">Akhir</th>
-                                <th class="border p-2">Skor</th>
-                                <th class="border p-2">Keterangan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($scoreCards as $index => $card)
-                                <tr>
-                                    <td class="border p-2 text-center">{{ $index + 1 }}</td>
-                                    <td class="border p-2">{{ $card->peserta }}</td>
-                                    <td class="border p-2 text-center">{{ $card->awal }}</td>
-                                    <td class="border p-2 text-center">{{ $card->akhir }}</td>
-                                    <td class="border p-2 text-center">{{ $card->skor }}</td>
-                                    <td class="border p-2">{{ $card->keterangan }}</td>
+                    <div class="overflow-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead>
+                                <tr style="background-color: #0A749B; color: white;" class="text-center">
+                                    <th class="border p-2">No</th>
+                                    <th class="border p-2">Peserta</th>
+                                    <th class="border p-2">Awal</th>
+                                    <th class="border p-2">Akhir</th>
+                                    <th class="border p-2">Skor</th>
+                                    <th class="border p-2">Keterangan</th>
                                 </tr>
-                            @endforeach
-                            <!-- Tambahkan baris untuk total score -->
-                            <tr>
-                                <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
-                                <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
-                                <td class="border p-2"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach ($scoreCards as $index => $card)
+                                    <tr>
+                                        <td class="border p-2 text-center">{{ $index + 1 }}</td>
+                                        <td class="border p-2">{{ $card->peserta }}</td>
+                                        <td class="border p-2 text-center">{{ $card->awal }}</td>
+                                        <td class="border p-2 text-center">{{ $card->akhir }}</td>
+                                        <td class="border p-2 text-center">{{ $card->skor }}</td>
+                                        <td class="border p-2">{{ $card->keterangan }}</td>
+                                    </tr>
+                                @endforeach
+                                <!-- Tambahkan baris untuk total score -->
+                                <tr>
+                                    <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
+                                    <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
+                                    <td class="border p-2"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

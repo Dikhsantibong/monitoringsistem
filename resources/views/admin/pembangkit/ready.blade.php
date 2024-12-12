@@ -67,7 +67,7 @@
 
 
         <!-- Main Content -->
-        <div id="main-content" class="flex-1 overflow-auto">
+        <div id="main-content" class="flex-1 overflow-auto">{{-- tes --}}
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
                     <!-- Mobile Menu Toggle -->
@@ -100,10 +100,10 @@
                     </div>
                 </div>
             </header>
+
             <div class="flex items-center pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Kesiapan Pembangkit', 'url' => null]]" />
             </div>
-
             <main class="px-6">
                 <!-- Konten Kesiapan Pembangkit -->
                 <div class="bg-white rounded-lg shadow p-6">
@@ -144,11 +144,12 @@
                     <!-- Search Bar -->
                     @foreach ($units as $unit)
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
-                            <div class="sm:overflow-auto">
+                            <div class=" overflow-auto">
                                 <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
 
                                 <!-- Tabel Status Pembangkit -->
-                                <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200 md:max-w-full">
+                                <table
+                                    class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead style="background-color: #0A749B; color: white;">
                                         <tr>
                                             <th class="py-2 px-4 font-medium ">Mesin</th>

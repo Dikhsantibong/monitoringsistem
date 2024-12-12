@@ -366,32 +366,34 @@
     <!-- Live Data Unit Operasional -->
     <h3 class="mt-4">Live Data Unit Operasional</h3>
     <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4">
-        <table class="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th class="text-center">Nama Unit</th>
-                    <th class="text-center">Mesin</th>
-                    <th class="text-center">DMN</th>
-                    <th class="text-center">DMP</th>
-                    <th class="text-center">Beban</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-center">Kapasitas</th>
-                </tr>
-            </thead>
-            <tbody id="unit-table-body">
-                @foreach ($units->take(5) as $unit)
-                    <tr class="table-row">
-                        <td class="text-center">{{ $unit->powerPlant->name ?? 'N/A' }}</td>
-                        <td class="text-center">{{ $unit->name }}</td>
-                        <td class="text-center">{{ $unit->machineOperations->first()->dmn ?? 'N/A' }}</td>
-                        <td class="text-center">{{ $unit->machineOperations->first()->dmp ?? 'N/A' }}</td>
-                        <td class="text-center">{{ $unit->machineOperations->first()->load_value ?? 'N/A' }}</td>
-                        <td class="text-center {{ $unit->status === 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit->status }}</td>
-                        <td class="text-center">{{ $unit->capacity }} MW</td>
+        <div class="overflow-auto">
+            <table class="table table-striped table-bordered min-w-full">
+                <thead>
+                    <tr>
+                        <th class="text-center">Nama Unit</th>
+                        <th class="text-center">Mesin</th>
+                        <th class="text-center">DMN</th>
+                        <th class="text-center">DMP</th>
+                        <th class="text-center">Beban</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Kapasitas</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody id="unit-table-body">
+                    @foreach ($units->take(5) as $unit)
+                        <tr class="table-row">
+                            <td class="text-center">{{ $unit->powerPlant->name ?? 'N/A' }}</td>
+                            <td class="text-center">{{ $unit->name }}</td>
+                            <td class="text-center">{{ $unit->machineOperations->first()->dmn ?? 'N/A' }}</td>
+                            <td class="text-center">{{ $unit->machineOperations->first()->dmp ?? 'N/A' }}</td>
+                            <td class="text-center">{{ $unit->machineOperations->first()->load_value ?? 'N/A' }}</td>
+                            <td class="text-center {{ $unit->status === 'Aktif' ? 'text-success' : 'text-danger' }}">{{ $unit->status }}</td>
+                            <td class="text-center">{{ $unit->capacity }} MW</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
         <div id="toggle-data" class="mt-3 text-center">
             <i class="fas fa-arrow-down fa-2x animate-pulse" style="color: #0095B7; cursor: pointer;"></i>
         </div>

@@ -101,12 +101,12 @@
             <div class="pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan SR/WO', 'url' => null]]" />
             </div>
-            
+
             <main class="px-6">
                 <!-- Konten Laporan SR/WO -->
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-white rounded-lg shadow p-6 sm:p-3">
                     <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
-                    <div class="p-4">
+                    <div class="p-4 md:p-0">
                         <div class="mb-4 flex flex-col lg:flex-row justify-end space-x-4 gap-y-3">
                             <!-- Filter Tanggal -->
                             <div class="flex flex-col md:flex-row gap-y-3 items-center space-x-2">
@@ -131,6 +131,7 @@
 
                         <!-- Card SR -->
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
+
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
                                 <button onclick="openSRModal()"
@@ -138,29 +139,31 @@
                                     <i class="fas fa-plus mr-2"></i>Tambah SR
                                 </button>
                             </div>
-                            <table id="srTable"
-                                class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                <thead>
-                                    <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b">ID SR</th>
-                                        <th class="py-2 px-4 border-b">Deskripsi</th>
-                                        <th class="py-2 px-4 border-b">Status</th>
-                                        <th class="py-2 px-4 border-b">Tanggal</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    @foreach ($serviceRequests as $sr)
-                                        <tr class="odd:bg-white even:bg-gray-100">
-                                            <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
-                                            <td
-                                                class="py-2 px-4 border-b {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">
-                                                {{ $sr->status }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
+                            <div class="overflow-auto">
+                                <table id="srTable"
+                                    class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                                    <thead>
+                                        <tr style="background-color: #0A749B; color: white;">
+                                            <th class="py-2 px-4 border-b">ID SR</th>
+                                            <th class="py-2 px-4 border-b">Deskripsi</th>
+                                            <th class="py-2 px-4 border-b">Status</th>
+                                            <th class="py-2 px-4 border-b">Tanggal</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        @foreach ($serviceRequests as $sr)
+                                            <tr class="odd:bg-white even:bg-gray-100">
+                                                <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
+                                                <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
+                                                <td
+                                                    class="py-2 px-4 border-b {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">
+                                                    {{ $sr->status }}</td>
+                                                <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- Card WO -->
@@ -172,26 +175,28 @@
                                     <i class="fas fa-plus mr-2"></i>Tambah WO
                                 </button>
                             </div>
-                            <table id="woTable" class="min-w-full bg-white border border-gray-300">
-                                <thead>
-                                    <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b">ID WO</th>
-                                        <th class="py-2 px-4 border-b">Deskripsi</th>
-                                        <th class="py-2 px-4 border-b">Status</th>
-                                        <th class="py-2 px-4 border-b">Tanggal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($workOrders as $wo)
-                                        <tr>
-                                            <td class="py-2 px-4 border-b">{{ $wo->id }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $wo->status }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $wo->created_at }}</td>
+                            <div class="overflow-auto">
+                                <table id="woTable" class="min-w-full bg-white border border-gray-300">
+                                    <thead>
+                                        <tr style="background-color: #0A749B; color: white;">
+                                            <th class="py-2 px-4 border-b">ID WO</th>
+                                            <th class="py-2 px-4 border-b">Deskripsi</th>
+                                            <th class="py-2 px-4 border-b">Status</th>
+                                            <th class="py-2 px-4 border-b">Tanggal</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($workOrders as $wo)
+                                            <tr>
+                                                <td class="py-2 px-4 border-b">{{ $wo->id }}</td>
+                                                <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
+                                                <td class="py-2 px-4 border-b">{{ $wo->status }}</td>
+                                                <td class="py-2 px-4 border-b">{{ $wo->created_at }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
             </main>

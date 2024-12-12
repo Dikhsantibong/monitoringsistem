@@ -138,7 +138,7 @@
                         </div>
 
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
-                            <div class="sm:overflow-auto">
+                            <div class="overflow-auto">
                                 <table id="users-table"
                                     class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200 md:max-w-full">
                                     <thead>

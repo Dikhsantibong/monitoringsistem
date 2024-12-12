@@ -107,7 +107,7 @@
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
 
                     <!-- Input Pencarian -->
-                    <div class="mb-4 flex justify-between items-center">
+                    <div class="mb-4 flex flex-col lg:flex-row gap-y-3 justify-between items-center">
                         <!-- Tombol Generate QR Code -->
                         <div class="flex items-center">
                             <button onclick="generateQRCode()"
