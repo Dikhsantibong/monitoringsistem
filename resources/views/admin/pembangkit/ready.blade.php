@@ -172,12 +172,16 @@
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    {{ $operations->where('machine_id', $machine->id)->first()->load_value ?? 'N/A' }}
+                                                    <input type="number" 
+                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
+                                                        value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
+                                                        placeholder="Masukkan beban...">
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
                                                     <select
                                                         class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
                                                         onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
+                                                        <option value="" style="background-color: #ffffff">Pilih Status</option>
                                                         <option value="Operasi" style="background-color: #4CAF50"
                                                             {{ ($operations->where('machine_id', $machine->id)->first()->status ?? '') == 'Operasi' ? 'selected' : '' }}>
                                                             Operasi</option>
@@ -219,14 +223,22 @@
         const unitTables = document.getElementsByClassName('unit-table');
 
         Array.from(unitTables).forEach(unitTable => {
-            // Ambil nama unit dari h2
             const unitName = unitTable.querySelector('h2').textContent.toLowerCase();
-
-            // Tampilkan/sembunyikan berdasarkan nama unit
             if (unitName.includes(filter)) {
                 unitTable.style.display = '';
             } else {
                 unitTable.style.display = 'none';
+            }
+        });
+
+        const rows = document.querySelectorAll('.unit-table tbody tr');
+        rows.forEach(row => {
+            const machineName = row.querySelector('td:first-child').textContent.toLowerCase();
+            const status = row.querySelector('select').value.toLowerCase();
+            if (machineName.includes(filter) || status.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
             }
         });
     }
@@ -249,9 +261,9 @@
                 const input = row.querySelector('input[type="text"]');
                 const dmn = row.querySelector('td:nth-child(2)').textContent.trim();
                 const dmp = row.querySelector('td:nth-child(3)').textContent.trim();
-                const beban = row.querySelector('td:nth-child(4)').textContent.trim();
+                const beban = row.querySelector('td:nth-child(4) input').value.trim();
 
-                if (select.value) {
+                if (select.value || input.value || beban) {
                     data.push({
                         machine_id: machineId,
                         tanggal: tanggal,
@@ -266,11 +278,6 @@
         });
 
         if (data.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Tidak ada data yang akan disimpan!'
-            });
             return;
         }
 
@@ -328,10 +335,9 @@
                         const select = row.querySelector('select');
                         const input = row.querySelector('input[type="text"]');
 
-                        select.value = 'Operasi';
-                        select.style.backgroundColor = select.options[select.selectedIndex]
-                            .style.backgroundColor;
-                        input.value = '';
+                        select.value = ''; // Set status to empty
+                        select.style.backgroundColor = ''; // Reset background color
+                        input.value = ''; // Clear input field
                     });
                 });
 
