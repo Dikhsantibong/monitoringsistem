@@ -54,27 +54,7 @@
             </nav>
         </aside>
 
-        <!-- User Dropdown -->
-        <div class="relative">
-            <button id="user-menu-button" class="flex items-center gap-2 hover:text-gray-600" onclick="toggleUserDropdown()">
-                <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" alt="User Avatar" class="w-8 h-8 rounded-full">
-                <span>{{ Auth::user()->name }}</span>
-                <i class="fas fa-chevron-down text-sm"></i>
-            </button>
-
-            <!-- Dropdown Menu -->
-            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
-                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-user mr-2"></i>Profile
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                    </button>
-                </form>
-            </div>
-        </div>
+      
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
@@ -92,6 +72,27 @@
                         </svg>
                     </button>
                     <h1 class="text-xl font-semibold text-gray-800">Daftar Hadir</h1>
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button id="user-menu-button" class="flex items-center gap-2 hover:text-gray-600" onclick="toggleUserDropdown()">
+                            <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" alt="User Avatar" class="w-8 h-8 rounded-full">
+                            <span>{{ Auth::user()->name }}</span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i>Profile
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </header>
             <div class="flex items-center pt-2">
