@@ -80,16 +80,9 @@ class PembangkitController extends Controller
             $search = $request->search;
             
             $query = MachineStatusLog::with(['machine.powerPlant'])
-                ->select([
-                    'machine_status_logs.*',
-                    'machine_operations.dmn',
-                    'machine_operations.dmp'
-                ])
-                ->leftJoin('machine_operations', function($join) {
-                    $join->on('machine_status_logs.machine_id', '=', 'machine_operations.machine_id')
-                        ->whereRaw('DATE(machine_operations.recorded_at) = DATE(machine_status_logs.tanggal)');
-                })
-                ->whereDate('machine_status_logs.tanggal', $tanggal);
+                ->when($tanggal, function($q) use ($tanggal) {
+                    return $q->whereDate('tanggal', $tanggal);
+                });
                 
             if ($search) {
                 $query->where(function($q) use ($search) {
@@ -100,12 +93,18 @@ class PembangkitController extends Controller
                         $q->where('name', 'LIKE', "%{$search}%");
                     })
                     ->orWhere('status', 'LIKE', "%{$search}%")
-                    ->orWhere('dmn', 'LIKE', "%{$search}%")
-                    ->orWhere('dmp', 'LIKE', "%{$search}%");
+                    ->orWhere('keterangan', 'LIKE', "%{$search}%");
                 });
             }
             
             $logs = $query->get();
+            
+            if ($logs->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
             
             return response()->json([
                 'success' => true,

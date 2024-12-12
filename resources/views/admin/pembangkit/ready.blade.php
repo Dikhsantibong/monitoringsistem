@@ -214,34 +214,42 @@
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
         const filterDate = document.getElementById('filterDate').value;
         
-        // Tampilkan loading jika diperlukan
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.id = 'loading-indicator';
-        loadingIndicator.className = 'text-center py-4';
-        loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari data...';
-        
+        // Tampilkan loading indicator
         const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
-        const existingLoading = document.getElementById('loading-indicator');
-        if (existingLoading) existingLoading.remove();
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'text-center py-4';
+        loadingIndicator.innerHTML = `
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div class="mt-2 text-gray-600">Memuat data...</div>
+        `;
         mainContent.appendChild(loadingIndicator);
         
         fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${filterDate}&search=${searchInput}`)
             .then(response => response.json())
             .then(result => {
+                // Hapus loading indicator
+                loadingIndicator.remove();
+                
                 if (result.success) {
                     updateTablesWithSearchResult(result.data);
                 } else {
-                    throw new Error(result.message || 'Gagal mencari data');
+                    // Sembunyikan semua tabel
+                    const unitTables = document.getElementsByClassName('unit-table');
+                    Array.from(unitTables).forEach(table => {
+                        table.style.display = 'none';
+                    });
+                    
+                    // Tampilkan pesan tidak ada data
+                    const noDataMessage = document.createElement('div');
+                    noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
+                    noDataMessage.textContent = 'DATA TIDAK DITEMUKAN';
+                    mainContent.appendChild(noDataMessage);
                 }
             })
             .catch(error => {
+                // Hapus loading indicator jika terjadi error
+                loadingIndicator.remove();
                 console.error('Error:', error);
-                updateTablesWithSearchResult([]); // Tampilkan pesan tidak ada data
-            })
-            .finally(() => {
-                // Hapus loading indicator
-                const loadingIndicator = document.getElementById('loading-indicator');
-                if (loadingIndicator) loadingIndicator.remove();
             });
     }
 
@@ -249,32 +257,16 @@
         const unitTables = document.getElementsByClassName('unit-table');
         const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
         
-        // Hapus pesan "DATA TIDAK TERSEDIA" yang mungkin ada sebelumnya
-        const existingMessage = document.getElementById('no-data-message');
+        // Hapus pesan "Data tidak ditemukan" jika ada
+        const existingMessage = mainContent.querySelector('.text-center.py-8');
         if (existingMessage) {
             existingMessage.remove();
         }
         
-        // Jika tidak ada data
-        if (!data || data.length === 0) {
-            // Sembunyikan semua tabel
-            Array.from(unitTables).forEach(table => {
-                table.style.display = 'none';
-            });
-            
-            // Tampilkan pesan "DATA TIDAK TERSEDIA"
-            const noDataMessage = document.createElement('div');
-            noDataMessage.id = 'no-data-message';
-            noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
-            noDataMessage.textContent = 'DATA TIDAK TERSEDIA';
-            mainContent.appendChild(noDataMessage);
-            return;
-        }
-        
-        // Reset semua visibility
-        Array.from(unitTables).forEach(unitTable => {
-            unitTable.style.display = 'none';
-            const rows = unitTable.querySelectorAll('tbody tr');
+        // Sembunyikan semua tabel dan baris terlebih dahulu
+        Array.from(unitTables).forEach(table => {
+            table.style.display = 'none';
+            const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => row.style.display = 'none');
         });
         
@@ -295,12 +287,22 @@
                 
                 if (select) {
                     select.value = log.status || '';
-                    select.style.backgroundColor = select.options[select.selectedIndex]?.style.backgroundColor || '';
+                    select.style.backgroundColor = getStatusColor(log.status);
                 }
                 if (inputKeterangan) inputKeterangan.value = log.keterangan || '';
                 if (inputBeban) inputBeban.value = log.load_value || '';
             }
         });
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'Operasi': '#4CAF50',
+            'Standby': '#2196F3',
+            'Gangguan': '#f44336',
+            'Pemeliharaan': '#FF9800'
+        };
+        return colors[status] || '#FFFFFF';
     }
 
     // Event listeners
@@ -311,9 +313,6 @@
     });
 
     document.getElementById('filterDate').addEventListener('change', searchTables);
-
-    // Tombol search
-    document.querySelector('button[onclick="loadData()"]').onclick = searchTables;
 </script>
 
 <script>
