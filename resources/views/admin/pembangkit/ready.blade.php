@@ -317,69 +317,93 @@
 </script>
 
 <script>
-    function saveData() {
-        const data = [];
-        const tables = document.querySelectorAll('.unit-table table');
-        const tanggal = document.getElementById('filterDate').value;
+   function saveData() {
+    const data = [];
+    const tables = document.querySelectorAll('.unit-table table');
+    const tanggal = document.getElementById('filterDate').value;
 
-        tables.forEach(table => {
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-                const select = row.querySelector('select');
-                const inputKeterangan = row.querySelector('input[type="text"]');
-                const inputBeban = row.querySelector('td:nth-child(4) input');
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+            const select = row.querySelector('select');
+            const inputKeterangan = row.querySelector('input[type="text"]');
+            const inputBeban = row.querySelector('td:nth-child(4) input');
+            
+            // Ambil nilai DMN dan DMP dari kolom tabel
+            const dmnValue = row.querySelector('td:nth-child(2)').textContent.trim();
+            const dmpValue = row.querySelector('td:nth-child(3)').textContent.trim();
 
-                // Hanya tambahkan ke data jika ada nilai yang diinputkan
-                if (select.value || inputKeterangan.value || inputBeban.value) {
-                    data.push({
-                        machine_id: machineId,
-                        tanggal: tanggal,
-                        status: select.value,
-                        keterangan: inputKeterangan.value.trim(),
-                        load_value: inputBeban.value
-                    });
-                }
-            });
-        });
-
-        if (data.length === 0) {
-            return;
-        }
-
-        fetch('{{ route('admin.pembangkit.save-status') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                logs: data
-            })
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Data berhasil disimpan!',
-                    timer: 1500,
-                    showConfirmButton: false
+            // Hanya tambahkan ke data jika status tidak kosong
+            if (select.value) {
+                data.push({
+                    machine_id: machineId,
+                    tanggal: tanggal,
+                    status: select.value,
+                    keterangan: inputKeterangan.value.trim() || null,
+                    load_value: inputBeban.value || null,
+                    dmn: dmnValue !== 'N/A' ? parseFloat(dmnValue) : 0,
+                    dmp: dmpValue !== 'N/A' ? parseFloat(dmpValue) : 0
                 });
-            } else {
-                throw new Error(result.message || 'Gagal menyimpan data');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message || 'Terjadi kesalahan saat menyimpan data!'
-            });
         });
+    });
+
+    if (data.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Pilih status terlebih dahulu!'
+        });
+        return;
     }
+
+    // Tampilkan loading indicator
+    Swal.fire({
+        title: 'Menyimpan Data',
+        text: 'Mohon tunggu...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch('{{ route('admin.pembangkit.save-status') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            logs: data
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Data berhasil disimpan!',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                // Refresh data setelah berhasil simpan
+                loadData();
+            });
+        } else {
+            throw new Error(result.message || 'Gagal menyimpan data');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Terjadi kesalahan saat menyimpan data!'
+        });
+    });
+}
 
     function confirmReset() {
         Swal.fire({

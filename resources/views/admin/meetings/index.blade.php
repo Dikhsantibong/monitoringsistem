@@ -159,6 +159,41 @@
                     </div>
                 </div>
 
+                <!-- Setelah Filter Section -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Card Laporan Kesiapan Pembangkit -->
+                    <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'" 
+                         class="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Laporan Kesiapan Pembangkit</h3>
+                            <i class="fas fa-bolt text-2xl text-blue-500"></i>
+                        </div>
+                        <div class="space-y-3">
+                            @php
+                                $latestLogs = \App\Models\MachineStatusLog::with('machine.powerPlant')
+                                    ->whereDate('tanggal', now())
+                                    ->get();
+                                $totalMesin = $latestLogs->count();
+                                $operasi = $latestLogs->where('status', 'Operasi')->count();
+                                $gangguan = $latestLogs->where('status', 'Gangguan')->count();
+                            @endphp
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Total Mesin</span>
+                                <span class="font-semibold">{{ $totalMesin }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Beroperasi</span>
+                                <span class="font-semibold text-green-500">{{ $operasi }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Gangguan</span>
+                                <span class="font-semibold text-red-500">{{ $gangguan }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card lainnya bisa ditambahkan di sini -->
+                </div>
+
                 <!-- Tabel Hasil Rapat -->
                 <div class="bg-white rounded-lg shadow mb-6 p-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Hasil Rapat</h2>

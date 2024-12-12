@@ -10,6 +10,7 @@ use App\Models\MachineOperation;
 use App\Models\MachineStatusLog;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use PDF;
 
 class PembangkitController extends Controller
 {
@@ -33,13 +34,27 @@ class PembangkitController extends Controller
             foreach ($request->logs as $log) {
                 // Hanya simpan jika ada nilai yang diinputkan
                 if (!empty($log['status']) || !empty($log['keterangan']) || !empty($log['load_value'])) {
+                    // Simpan ke machine_status_logs
                     MachineStatusLog::create([
                         'machine_id' => $log['machine_id'],
                         'tanggal' => $log['tanggal'],
                         'status' => $log['status'],
                         'keterangan' => $log['keterangan'],
-                        'load_value' => $log['load_value']
+                        'load_value' => $log['load_value'],
+                        'dmn' => $log['dmn'] ?? 0,
+                        'dmp' => $log['dmp'] ?? 0
                     ]);
+
+                    // Simpan ke machine_operations
+                    // MachineOperation::create([
+                    //     'machine_id' => $log['machine_id'],
+                    //     'dmn' => $log['dmn'] ?? 0,
+                    //     'dmp' => $log['dmp'] ?? 0,
+                    //     'load_value' => $log['load_value'],
+                    //     'recorded_at' => $log['tanggal'],
+                    //     'status' => $log['status'],
+                    //     'keterangan' => $log['keterangan']
+                    // ]);
                 }
             }
             
@@ -50,6 +65,7 @@ class PembangkitController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error saving machine status: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan data: ' . $e->getMessage()
@@ -64,9 +80,16 @@ class PembangkitController extends Controller
             $search = $request->search;
             
             $query = MachineStatusLog::with(['machine.powerPlant'])
-                ->when($tanggal, function($q) use ($tanggal) {
-                    return $q->whereDate('tanggal', $tanggal);
-                });
+                ->select([
+                    'machine_status_logs.*',
+                    'machine_operations.dmn',
+                    'machine_operations.dmp'
+                ])
+                ->leftJoin('machine_operations', function($join) {
+                    $join->on('machine_status_logs.machine_id', '=', 'machine_operations.machine_id')
+                        ->whereRaw('DATE(machine_operations.recorded_at) = DATE(machine_status_logs.tanggal)');
+                })
+                ->whereDate('machine_status_logs.tanggal', $tanggal);
                 
             if ($search) {
                 $query->where(function($q) use ($search) {
@@ -77,7 +100,8 @@ class PembangkitController extends Controller
                         $q->where('name', 'LIKE', "%{$search}%");
                     })
                     ->orWhere('status', 'LIKE', "%{$search}%")
-                    ->orWhere('keterangan', 'LIKE', "%{$search}%");
+                    ->orWhere('dmn', 'LIKE', "%{$search}%")
+                    ->orWhere('dmp', 'LIKE', "%{$search}%");
                 });
             }
             
@@ -132,5 +156,41 @@ class PembangkitController extends Controller
             ]);
         }
     }
-    
+
+    public function report(Request $request)
+    {
+        $query = MachineStatusLog::with(['machine.powerPlant'])
+            ->when($request->date, function($q) use ($request) {
+                return $q->whereDate('tanggal', $request->date);
+            }, function($q) {
+                return $q->whereDate('tanggal', now());
+            });
+
+        $logs = $query->get();
+
+        return view('admin.pembangkit.report', compact('logs'));
+    }
+
+    public function downloadReport(Request $request)
+    {
+        $logs = MachineStatusLog::with(['machine.powerPlant'])
+            ->whereDate('tanggal', $request->date ?? now())
+            ->get();
+
+        $pdf = PDF::loadView('admin.pembangkit.report-pdf', compact('logs'));
+        
+        return $pdf->download('laporan-kesiapan-pembangkit.pdf');
+    }
+
+    public function printReport(Request $request)
+    {
+        $date = $request->get('date', date('Y-m-d'));
+        
+        $logs = MachineStatusLog::with(['machine.powerPlant'])
+            ->whereDate('tanggal', $date)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.pembangkit.report-print', compact('logs'));
+    }
 }

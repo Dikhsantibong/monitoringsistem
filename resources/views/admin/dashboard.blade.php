@@ -141,13 +141,19 @@
                         </p>
                     </div>
                     <!-- Card 3 -->
-                    <div class="bg-yellow-500 rounded-lg shadow p-6 flex items-center">
+                    <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'" 
+                         class="bg-yellow-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors">
                         <i class="fa-solid fa-cogs text-white text-3xl mr-3"></i>
                         <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">JUMLAH MESIN GANGGGUAN</h3>
+                            <h3 class="text-white text-md font-medium">JUMLAH MESIN GANGGUAN</h3>
                         </div>
-                        <p class="text-2xl font-bold text-white" id="active-users">
-                            {{ $activeUsers }}
+                        <p class="text-2xl font-bold text-white" id="machine-issues">
+                            @php
+                                $gangguanCount = \App\Models\MachineStatusLog::where('status', 'Gangguan')
+                                    ->whereDate('tanggal', now())
+                                    ->count();
+                            @endphp
+                            {{ $gangguanCount }}
                         </p>
                     </div>
                 </div>

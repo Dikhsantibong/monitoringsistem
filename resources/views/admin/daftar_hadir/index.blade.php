@@ -21,30 +21,20 @@
                     <i class="fas fa-home mr-3"></i>
                     <span>Dashboard</span>
                 </a>
+                <a href="{{ route('admin.score-card.index') }}"
+                    class="flex items-center px-4 py-3  {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
+                    <i class="fas fa-clipboard-list mr-3"></i>
+                    <span>Score Card Daily</span>
+                </a>
                 <a href="{{ route('admin.pembangkit.ready') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-check mr-3"></i>
+                    <i class="fas fa-bolt mr-3"></i>
                     <span>Kesiapan Pembangkit</span>
-                </a>
-                <a href="{{ route('admin.laporan.sr_wo') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-file-alt mr-3"></i>
-                    <span>Laporan SR/WO</span>
                 </a>
                 <a href="{{ route('admin.machine-monitor') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
                     <i class="fas fa-cogs mr-3"></i>
                     <span>Monitor Mesin</span>
-                </a>
-                <a href="{{ route('admin.daftar_hadir.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-list mr-3"></i>
-                    <span>Daftar Hadir</span>
-                </a>
-                <a href="{{ route('admin.score-card.index') }}"
-                    class="flex items-center px-4 py-3  {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
-                    <i class="fas fa-clipboard-list mr-3"></i>
-                    <span>Score Card Daily</span>
                 </a>
                 <a href="{{ route('admin.users') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
@@ -64,6 +54,27 @@
             </nav>
         </aside>
 
+        <!-- User Dropdown -->
+        <div class="relative">
+            <button id="user-menu-button" class="flex items-center gap-2 hover:text-gray-600" onclick="toggleUserDropdown()">
+                <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" alt="User Avatar" class="w-8 h-8 rounded-full">
+                <span>{{ Auth::user()->name }}</span>
+                <i class="fas fa-chevron-down text-sm"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-user mr-2"></i>Profile
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
@@ -81,22 +92,6 @@
                         </svg>
                     </button>
                     <h1 class="text-xl font-semibold text-gray-800">Daftar Hadir</h1>
-                    <div class="relative">
-                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
-                                class="w-7 h-7 rounded-full mr-2">
-                            <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-caret-down ml-2 text-gray-600"></i>
-                        </button>
-                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
-
-                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                                @csrf
-                            </form>
-                        </div>
-                    </div>
                 </div>
             </header>
             <div class="flex items-center pt-2">
@@ -226,6 +221,20 @@
                         document.getElementById('attendance-body').innerHTML = html;
                     });
             }
+
+            function toggleUserDropdown() {
+                const dropdown = document.getElementById('user-dropdown');
+                dropdown.classList.toggle('hidden');
+            }
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('user-dropdown');
+                const button = document.getElementById('user-menu-button');
+                if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
         </script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

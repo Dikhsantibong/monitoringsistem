@@ -77,6 +77,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/save-status', [PembangkitController::class, 'saveStatus'])->name('pembangkit.save-status');
         Route::get('/get-status', [PembangkitController::class, 'getStatus'])->name('pembangkit.get-status');
         Route::get('/status-history', [PembangkitController::class, 'getStatusHistory'])->name('pembangkit.status-history');
+        Route::get('/report', [PembangkitController::class, 'report'])->name('pembangkit.report');
+        Route::get('/report/download', [PembangkitController::class, 'downloadReport'])->name('pembangkit.report.download');
+        Route::get('/report/print', [PembangkitController::class, 'printReport'])->name('pembangkit.report.print');
     });
 
     Route::prefix('laporan')->group(function () {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class MachineStatusLog extends Model
 {
@@ -16,7 +17,9 @@ class MachineStatusLog extends Model
         'tanggal',
         'status',
         'keterangan',
-        'load_value'
+        'load_value',
+        'dmn',
+        'dmp'
     ];
 
     protected $casts = [
@@ -40,5 +43,11 @@ class MachineStatusLog extends Model
             'machine_id', // Local key di tabel machine_status_logs
             'power_plant_id' // Local key di tabel machines
         );
+    }
+
+    public function machineOperation()
+    {
+        return $this->hasOne(MachineOperation::class, 'machine_id', 'machine_id')
+            ->whereDate('recorded_at', '=', DB::raw('DATE(machine_status_logs.tanggal)'));
     }
 } 
