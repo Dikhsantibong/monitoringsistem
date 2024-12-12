@@ -165,21 +165,28 @@
                     </div>
                 </div>
 
-                <!-- Peta Kesehatan Mesin -->
-                <div class="bg-white rounded-lg shadow mb-6">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Kategori Kesehatan Mesin</h2>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            @foreach ($healthCategories as $category)
-                                <div
-                                    class="border rounded-lg p-4 {{ $category->open_issues > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200' }}">
-                                    <h3 class="font-medium text-gray-800">{{ ucfirst($category->name) }}</h3>
-                                    <p class="text-sm text-gray-500 mt-1">
-                                        Masalah Aktif: {{ $category->open_issues }}
-                                    </p>
-                                </div>
-                            @endforeach
-                        </div>
+                <!-- Tabel Kesehatan Mesin -->
+                <div class="bg-white rounded-lg shadow mb-6 p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Kategori Kesehatan Mesin</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Mesin</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Masalah Aktif</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @foreach ($machineStatusLogs as $log)
+                                    @if ($log->status === 'open')
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ucfirst($log->machine->name) }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->keterangan }}</td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -258,44 +265,22 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Tanggal
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Mesin
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Kategori</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Deskripsi</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Status
-                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($recentIssues as $issue)
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $issue->created_at->format('M d, Y H:i') }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {{ $issue->machine->name }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {{ $issue->category->name }}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm text-gray-900">
-                                                {{ $issue->description }}
-                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $issue->created_at->format('M d, Y H:i') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $issue->machine->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $issue->category->name }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-900">{{ $issue->description }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $issue->status === 'open'
-                                                ? 'bg-red-100 text-red-800'
-                                                : ($issue->status === 'in_progress'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-green-100 text-green-800') }}">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $issue->status === 'open' ? 'bg-red-100 text-red-800' : ($issue->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
                                                     {{ ucfirst($issue->status) }}
                                                 </span>
                                             </td>
@@ -391,7 +376,7 @@
                                 class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                                 required>
                                 @foreach ($healthCategories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    {{-- <option value="{{ $category->id }}">{{ $category->name }}</option> --}}
                                 @endforeach
                             </select>
                         </div>
@@ -422,9 +407,24 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="{{ asset('js/toggle.js') }}"></script>
         <script>
-            // Chart initialization
-            const monthlyIssuesData = @json($monthlyIssues); // Ambil data dari controller
 
+            // Data sementara untuk demonstrasi
+            const monthlyIssuesData = [
+                { date: 'Januari', count: 10 },
+                { date: 'Februari', count: 20 },
+                { date: 'Maret', count: 15 },
+                { date: 'April', count: 25 },
+                { date: 'Mei', count: 30 },
+                { date: 'Juni', count: 35 },
+                { date: 'Juli', count: 40 },
+                { date: 'Agustus', count: 45 },
+                { date: 'September', count: 50 },
+                { date: 'Oktober', count: 55 },
+                { date: 'November', count: 60 },
+                { date: 'Desember', count: 65 }
+            ];
+
+            // Inisialisasi grafik
             const ctx = document.getElementById('monthlyIssuesChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line', // Menggunakan grafik garis
@@ -460,23 +460,24 @@
                 }
             });
 
-            // Modal functions
+            // Fungsi untuk membuka modal laporan masalah baru
             function openNewIssueModal() {
                 document.getElementById('newIssueModal').classList.remove('hidden');
             }
 
+            // Fungsi untuk menutup modal laporan masalah baru
             function closeNewIssueModal() {
                 document.getElementById('newIssueModal').classList.add('hidden');
             }
 
-            // Close modal when clicking outside
+            // Tutup modal saat mengklik di luar
             document.getElementById('newIssueModal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeNewIssueModal();
                 }
             });
 
-            // DataTable initialization
+            // Inisialisasi DataTable
             $(document).ready(function() {
                 $('table').DataTable({
                     responsive: true,
@@ -487,18 +488,20 @@
                 });
             });
 
+            // Fungsi untuk mengedit mesin
             function editMachine(machineId) {
-                // Fetch machine details and open edit modal
+                // Fetch detail mesin dan buka modal edit
                 fetch(`/admin/machine-monitor/machines/${machineId}`)
                     .then(response => response.json())
                     .then(data => {
-                        // Populate edit form with machine data
+                        // Isi form edit dengan data mesin
                         document.getElementById('editMachineModal').classList.remove('hidden');
                     });
             }
 
+            // Fungsi untuk menghapus mesin
             function deleteMachine(machineId) {
-                if (confirm('Are you sure you want to delete this machine?')) {
+                if (confirm('Apakah Anda yakin ingin menghapus mesin ini?')) {
                     fetch(`/admin/machine-monitor/machines/${machineId}`, {
                             method: 'DELETE',
                             headers: {
@@ -513,8 +516,9 @@
                             }
                         });
                 }
-            }
+            }   
 
+            // Fungsi untuk mengupdate status mesin
             function updateMachineStatus(machineId, status) {
                 fetch(`/admin/machine-monitor/machines/${machineId}/status`, {
                         method: 'PUT',
@@ -535,47 +539,51 @@
                     });
             }
 
+            // Fungsi untuk refresh status mesin
             function refreshMachineStatus() {
                 location.reload();
             }
 
-            // Chart untuk Uptime/Downtime
-            const ctx = document.getElementById('uptimeChart').getContext('2d');
-            const uptimeData = @json($uptime);
-            const labels = uptimeData.map(machine => machine.name);
-            const uptimeValues = uptimeData.map(machine => machine.uptime);
-            const downtimeValues = uptimeData.map(machine => machine.downtime);
+            // Data sementara untuk demonstrasi efisiensi mesin
+            const efficiencyData = [
+                { name: 'Mesin 1', efficiency: 80 },
+                { name: 'Mesin 2', efficiency: 75 },
+                { name: 'Mesin 3', efficiency: 90 },
+                { name: 'Mesin 4', efficiency: 85 },
+                { name: 'Mesin 5', efficiency: 95 }
+            ];
 
-            new Chart(ctx, {
-                type: 'bar',
+            // Inisialisasi grafik untuk efisiensi mesin
+            const ctxEfficiency = document.getElementById('efficiencyChart').getContext('2d');
+            new Chart(ctxEfficiency, {
+                type: 'bar', // Grafik batang
                 data: {
-                    labels: labels,
+                    labels: efficiencyData.map(machine => machine.name), // Nama mesin
                     datasets: [{
-                            label: 'Uptime',
-                            data: uptimeValues,
-                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                        },
-                        {
-                            label: 'Downtime',
-                            data: downtimeValues,
-                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                        }
-                    ]
+                        label: 'Efisiensi (%)',
+                        data: efficiencyData.map(machine => machine.efficiency), // Data efisiensi
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
                 },
                 options: {
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Efisiensi (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Nama Mesin'
+                            }
                         }
                     }
-                }
-            });
-
-            // Close modal when clicking outside
-            document.getElementById('newMachineModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeNewMachineModal();
                 }
             });
         </script>
@@ -589,9 +597,11 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
+        
 
         .scrollbar-hide {
             /* -ms-overflow-style: none; */
             /* scrollbar-width: none; */
         }
     </style>
+

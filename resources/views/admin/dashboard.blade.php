@@ -131,15 +131,17 @@
                         </p>
                     </div>
                     <!-- Card 2 -->
-                    <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
-                        <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
-                        <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">TOTAL SR/WO CLOSED</h3>
+                    <a href="{{ route('admin.laporan.sr_wo_closed') }}">
+                        <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
+                            <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
+                            <div class="flex-1">
+                                <h3 class="text-white text-md font-medium">TOTAL SR/WO CLOSED</h3>
+                            </div>
+                            <p class="text-2xl font-bold text-white" id="today-meetings">
+                                {{ $totalClosedSRWO }}
+                            </p>
                         </div>
-                        <p class="text-2xl font-bold text-white" id="today-meetings">
-                            {{ $todayMeetings }}
-                        </p>
-                    </div>
+                    </a>
                     <!-- Card 3 -->
                     <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'" 
                          class="bg-yellow-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors">

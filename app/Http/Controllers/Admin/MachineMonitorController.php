@@ -10,6 +10,9 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Carbon\Carbon;
+use App\Models\MachineStatusLog;
+use App\Models\MachineOperation;
+use App\Models\PowerPlant;
 
 class MachineMonitorController extends Controller
 {
@@ -18,10 +21,26 @@ class MachineMonitorController extends Controller
         // Mengambil data mesin dan relasinya
         $machines = Machine::with(['issues', 'metrics'])->get();
         
+        // Menghitung efisiensi untuk setiap mesin
+        $efficiencyData = $machines->map(function ($machine) {
+            return [
+                'name' => $machine->name,
+                'efficiency' => $machine->metrics->avg('efficiency') ?? 0 // Rata-rata efisiensi
+            ];
+        });
+
         // Menggunakan MachineHealthCategory yang sudah ada
-        $healthCategories = MachineHealthCategory::withCount(['issues as open_issues' => function ($query) {
-            $query->where('status', 'open');
-        }])->get();
+        $healthCategories = Machine::with(['statusLogs', 'operations'])
+            ->get()
+            ->map(function ($machine) {
+                return [
+                    'machine_id' => $machine->id,
+                    'name' => $machine->name,
+                    'open_issues' => $machine->issues()->where('status', 'open')->count(),
+                    'status_logs' => $machine->statusLogs,
+                    'operations' => $machine->operations,
+                ];
+            });
 
         // Menghitung uptime/downtime untuk setiap mesin
         $uptime = $machines->map(function($machine) {
@@ -51,12 +70,17 @@ class MachineMonitorController extends Controller
             $monthlyIssuesData[$month] = $count;
         }
 
+        // Ambil data dari MachineStatusLog
+        $machineStatusLogs = MachineStatusLog::with('machine')->get(); // Ambil data status mesin
+
         return view('admin.machine-monitor.index', compact(
             'machines',
             'healthCategories',
             'monthlyIssues',
             'uptime',
-            'recentIssues'
+            'recentIssues',
+            'machineStatusLogs',
+            'efficiencyData'
         ));
     }
 

@@ -11,23 +11,12 @@ class MachineMonitorController extends Controller
 {
     public function index()
     {
-        $machines = Machine::all();
+        $machines = Machine::with('metrics')->get();
+        $efficiencyData = $machines->map(function ($machine) {
+            return [
+                'name' => $machine->name,
 
-        $uptime = [
-            'START' => $machines->where('status', 'START')->sum('uptime'),
-            'STOP' => $machines->where('status', 'STOP')->sum('uptime'),
-            'PARALLEL' => $machines->where('status', 'PARALLEL')->sum('uptime'),
-        ];
-
-        // Data tambahan
-        $monthlyIssues = [
-            ['date' => '2023-02-14', 'count' => 5],
-            ['date' => '2023-02-15', 'count' => 3],
-            ['date' => '2023-02-16', 'count' => 8],
-            // Tambahkan data sesuai kebutuhan
-        ];
-
-        return view('admin.machine-monitor.index', compact('machines', 'uptime', 'monthlyIssues'));
+        return view('admin.machine-monitor.index', compact('efficiencyData'));
     }
 
     public function create()

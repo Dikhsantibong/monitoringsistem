@@ -131,7 +131,6 @@
 
                         <!-- Card SR -->
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
-
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
                                 <button onclick="openSRModal()"
@@ -139,7 +138,7 @@
                                     <i class="fas fa-plus mr-2"></i>Tambah SR
                                 </button>
                             </div>
-                            <div class="overflow-auto">
+                            <div class="overflow-auto max-h-96">
                                 <table id="srTable"
                                     class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead>
@@ -175,7 +174,7 @@
                                     <i class="fas fa-plus mr-2"></i>Tambah WO
                                 </button>
                             </div>
-                            <div class="overflow-auto">
+                            <div class="overflow-auto max-h-96">
                                 <table id="woTable" class="min-w-full bg-white border border-gray-300">
                                     <thead>
                                         <tr style="background-color: #0A749B; color: white;">

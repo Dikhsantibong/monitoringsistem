@@ -99,11 +99,6 @@
             padding-top: 80px;
         }
 
-        #map {
-            z-index: 1;
-            position: relative;
-        }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -117,78 +112,68 @@
             color: #0095B7;
         }
 
-        /* Responsif untuk peta */
-        #map {
-            width: 100%;
-            height: 400px;
-            border-radius: 10px;
-        }
-
-        /* Responsif untuk konten lainnya */
-        .row {
+        /* Hexagon styles */
+        .hexagon {
+            position: relative;
+            width: 150px;
+            height: 86.6px;
+            background-color: rgba(255, 255, 255, 0.75);
+            margin: 43.3px 0;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-
-        .col-md-4 {
-            flex: 1 1 30%;
-            margin: 10px;
-        }
-
-        @media (max-width: 768px) {
-            .col-md-4 {
-                flex: 1 1 100%;
-            }
-        }
-
-        .bg-box {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            transition: box-shadow 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            border: 1px solid #0095B7;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            transform: rotate(90deg); 
+        }
+        
+        .hexagon:before,
+        .hexagon:after {
+            content: "";
+            position: absolute;
+            width: 0;
+            border-left: 75px solid transparent;
+            border-right: 75px solid transparent;
+        }
+        .hexagon:before {
+            bottom: 100%;
+            border-bottom: 43.3px solid rgba(255, 255, 255, 0.75);
+        }
+        .hexagon:after {
+            top: 100%;
+            width: 0;
+            border-top: 43.3px solid rgba(255, 255, 255, 0.75);
+        }
+        .hexagon-center {
+            width: 200px;
+            height: 115.47px;
+            background-color: #1E3A8A; /* Dark blue glossy background */
+        }
+        .hexagon-center:before,
+        .hexagon-center:after {
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+        }
+        .hexagon-center:before {
+            border-bottom: 57.74px solid #1E3A8A;
+        }
+        .hexagon-center:after {
+            border-top: 57.74px solid #1E3A8A;
+        }
+        .connection-line {
+            position: absolute;
+            width: 2px;
+            background-color: rgba(255, 255, 255, 0.5);
         }
 
-        .bg-box:hover {
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .text-title {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            color: #0095B7;
-        }
-
-        .text-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .accumulation-data {
-            background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent background */
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            width: 100%;
-        }
-
-        .accumulation-data h4 {
-            color: #0095B7;
-            margin-bottom: 10px;
-        }
-
-        .accumulation-data ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .accumulation-data li {
-            margin: 5px 0;
-            color: #333;
+        /* Background for the hexagon section */
+        .hexagon-background {
+            background-image: url('{{ asset('background/backgorund.jpg') }}'); // Ganti dengan path yang benar
+            background-size: cover;
+            background-position: center;
+            padding: 50px 0;
+            margin-top: 80px;
         }
     </style>
 @endsection
@@ -256,81 +241,125 @@
         });
     </script>
 
-    <h3 class="mt-4">Peta Lokasi Unit Pembangkit</h3>
-    <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px; position: relative;">
-        <div class="accumulation-data-container" style="
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 240px;
-  width: 100%;
-  box-sizing: border-box;
-">
-  <h3 style="
-    color: #0095B7;
-    margin-bottom: 10px;
-    font-size: 1rem;
-    border-bottom: 1px solid #0095B7;
-    padding-bottom: 6px;
-  ">Data Akumulasi</h3>
-  <ul style="
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  ">
-    <li style="
-      margin: 6px 0;
-      color: #333;
-      display: flex;
-      align-items: center;
-    ">
-      <span style="
-        width: 8px;
-        height: 8px;
-        background-color: #0095B7;
-        border-radius: 50%;
-        margin-right: 8px;
-      "></span>
-      Proxy Assistance: Medium (ID: 172.16.1.40)
-    </li>
-    <li style="
-      margin: 6px 0;
-      color: #333;
-      display: flex;
-      align-items: center;
-    ">
-      <span style="
-        width: 8px;
-        height: 8px;
-        background-color: #0095B7;
-        border-radius: 50%;
-        margin-right: 8px;
-      "></span>
-      Proxy Assistance: Medium (ID: 172.16.1.41)
-    </li>
-    <li style="
-      margin: 6px 0;
-      color: #333;
-      display: flex;
-      align-items: center;
-    ">
-      <span style="
-        width: 8px;
-        height: 8px;
-        background-color: #0095B7;
-        border-radius: 50%;
-        margin-right: 8px;
-      "></span>
-      Proxy Assistance: Medium (ID: 172.16.1.42)
-    </li>
-  </ul>
-</div>
+    <div class="hexagon-background">
+        
+        <div class="relative flex flex-col items-center justify-center">
+            <div class="relative">
+                <!-- Central Hexagon -->
+                <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg);">
+                    <img alt="PLN logo" class="h-12 mb-2" height="100" src="{{ asset('logo/navlogo.png') }}" width="200" style="transform: rotate(-90deg);"/>
+                </div>
+                <!-- Surrounding Hexagons -->
+                <div class="absolute top-0 left-0 transform -translate-x-32 -translate-y-24">
+                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #FFDDC1;">
+                        <i class="fas fa-handshake text-3xl text-orange-500 mb-2"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Vendor Management</h3>
+                    </div>
+                </div>
+                <div class="absolute top-0 right-0 transform translate-x-32 -translate-y-32">
+                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #CFE2F3;">
+                        <i class="fas fa-chart-line text-3xl text-orange-500 mb-2"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Demand Management</h3>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 transform -translate-x-32 translate-y-32">
+                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #D9EAD3;">
+                        <i class="fas fa-shopping-cart text-3xl text-orange-500 mb-2"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Procurement Management</h3>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 right-0 transform translate-x-32 translate-y-32">
+                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #F9CB9C;">
+                        <i class="fas fa-warehouse text-3xl text-orange-500 mb-2"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Inventory & Warehouse Management</h3>
+                    </div>
+                </div>
+                <!-- Connection Lines -->
+                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(45deg);"></div>
+                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(-45deg);"></div>
+                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(135deg);"></div>
+                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(-135deg);"></div>
+            </div>
+        </div>
     </div>
+    
+    <div id="map" style="height: 500px; border: 1px solid #ddd; border-radius: 10px; position: relative; margin-top: 100px;">
+        
+        <div class="accumulation-data-container" style="
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
+            width: 100%;
+            box-sizing: border-box;
+        ">
+            <h3 style="
+                color: #0095B7;
+                margin-bottom: 10px;
+                font-size: 1rem;
+                border-bottom: 1px solid #0095B7;
+                padding-bottom: 6px;
+            ">Data Akumulasi</h3>
+            <ul style="
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            ">
+                <li style="
+                    margin: 6px 0;
+                    color: #333;
+                    display: flex;
+                    align-items: center;
+                ">
+                    <span style="
+                        width: 8px;
+                        height: 8px;
+                        background-color: #0095B7;
+                        border-radius: 50%;
+                        margin-right: 8px;
+                    "></span>
+                    Proxy Assistance: Medium (ID: 172.16.1.40)
+                </li>
+                <li style="
+                    margin: 6px 0;
+                    color: #333;
+                    display: flex;
+                    align-items: center;
+                ">
+                    <span style="
+                        width: 8px;
+                        height: 8px;
+                        background-color: #0095B7;
+                        border-radius: 50%;
+                        margin-right: 8px;
+                    "></span>
+                    Proxy Assistance: Medium (ID: 172.16.1.41)
+                </li>
+                <li style="
+                    margin: 6px 0;
+                    color: #333;
+                    display: flex;
+                    align-items: center;
+                ">
+                    <span style="
+                        width: 8px;
+                        height: 8px;
+                        background-color: #0095B7;
+                        border-radius: 50%;
+                        margin-right: 8px;
+                    "></span>
+                    Proxy Assistance: Medium (ID: 172.16.1.42)
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
@@ -439,9 +468,6 @@
 </footer>
 
 <script>
-    
-
-
     var options = {
         series: [
             {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
+use App\Models\SRWO;
 
 class LaporanController extends Controller
 {
@@ -40,5 +41,45 @@ class LaporanController extends Controller
         WorkOrder::create($validated);
 
         return redirect()->back()->with('success', 'Work Order berhasil ditambahkan');
+    }
+
+    public function srWoClosed()
+    {
+        // Ambil SR yang closed
+        $closedSR = ServiceRequest::where('status', 'Closed')
+            ->select('id', 'description as deskripsi', 'status', 'created_at as tanggal')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'nomor' => 'SR-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
+                    'tanggal' => $item->tanggal,
+                    'deskripsi' => $item->deskripsi,
+                    'status' => $item->status,
+                    'tipe' => 'SR'
+                ];
+            });
+
+        // Ambil WO yang closed
+        $closedWO = WorkOrder::where('status', 'Closed')
+            ->select('id', 'description as deskripsi', 'status', 'created_at as tanggal')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'nomor' => 'WO-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
+                    'tanggal' => $item->tanggal,
+                    'deskripsi' => $item->deskripsi,
+                    'status' => $item->status,
+                    'tipe' => 'WO'
+                ];
+            });
+
+        // Gabungkan dan urutkan berdasarkan tanggal
+        $closedReports = $closedSR->concat($closedWO)
+            ->sortByDesc('tanggal')
+            ->values();
+
+        return view('admin.laporan.sr_wo_closed', compact('closedReports'));
     }
 }
