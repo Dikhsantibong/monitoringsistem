@@ -76,7 +76,7 @@
     </style> --}}
 
 </head>
-<body>
+<body class="m-0 p-0">
     @include('sweetalert::alert')
     
     <!-- Tambahkan form logout tersembunyi -->
