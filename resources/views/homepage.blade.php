@@ -4,15 +4,6 @@
     <link rel="stylesheet" href="{{ asset('css/homepage.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* .navbar {
-                    background-color: #0095B7;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    z-index: 1000;
-                    transition: background-color 0.3s;
-                } */
         .navbar.hidden {
             transform: translateY(-100%);
         }
@@ -102,94 +93,25 @@
         }
 
         /* Hexagon styles */
-        .hexagon {
-            position: relative;
-            width: 150px;
-            height: 100vh;
-            background-color: rgba(255, 255, 255, 0.75);
-            margin: 30rem 0 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-            transform: rotate(90deg);
-            border: 1px solid;
-        }
-
-        .hexagon:before,
-        .hexagon:after {
-            content: "";
-            position: absolute;
-            width: 0;
-            border-left: 75px solid transparent;
-            border-right: 75px solid transparent;
-        }
-
-        .hexagon:before {
-            bottom: 100%;
-            border-bottom: 43.3px solid rgba(255, 255, 255, 0.75);
-        }
-
-        .hexagon:after {
-            top: 100%;
-            width: 0;
-            border-top: 43.3px solid rgba(255, 255, 255, 0.75);
-        }
-
-        .hexagon-center {
-            width: 200px;
-            height: 115.47px;
-            background-color: #1E3A8A;
-            /* Dark blue glossy background */
-        }
-
-        .hexagon-center:before,
-        .hexagon-center:after {
-            border-left: 100px solid transparent;
-            border-right: 100px solid transparent;
-        }
-
-        .hexagon-center:before {
-            border-bottom: 57.74px solid #1E3A8A;
-        }
-
-        .hexagon-center:after {
-            border-top: 57.74px solid #1E3A8A;
-        }
-
-        .connection-line {
-            position: absolute;
-            width: 2px;
-            background-color: rgba(255, 255, 255, 0.5);
-        }
-
         /* Background for the hexagon section */
         .hexagon-background {
             background-image: url('{{ asset('background/backgorund.jpg') }}');
             background-size: cover;
             background-position: center;
-            /* padding: 50px 0; */
-            /* margin-top: 80px; */
         }
 
-        .hexagonn {
+        .hexagon {
             position: relative;
-            width: 200px;
-            /* aspect-ratio: 1/1; */
-            height: 170px;
-            border: 1px solid;
-            /* Tailwind gray-700 */
+            /* width: 200px;
+                height: 170px; */
             margin: 28.87px 0;
-            /* Half of height for centering */
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
         }
     </style>
 @endsection
 
 @section('content')
-    <div class="container border-black">
+    <div class="w-full">
         <nav class="fixed bg-cyan-600 left-0 top-0 right-0 z-50 py-3 px-6">
             <div class="container-fluid flex justify-between w-full items-center">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -251,86 +173,57 @@
             });
         </script>
 
+        {{-- Hero section --}}
         <div class="bg-gray-100 h-screen flex justify-center items-center hexagon-background">
             <!-- Overlay -->
             <div class="absolute inset-0 bg-white h-screen bg-opacity-50"></div>
-            <div class="grid grid-cols-3">
+            <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
                 <div>
-                    <div class="hexagonn bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100">
-                        <h5 class="text-2xl font-bold text-gray-50">ULPLTD <br> WUA-WUA 
+                    <div
+                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                        {{-- h-44 w-56 --}}
+                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 ">ULPLTD <br> WUA-WUA
                         </h5>
                     </div>
-                    <div class="hexagonn bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100">
-                        <h5 class="text-2xl font-bold text-gray-50">ULPLTD <br>POASIA 
+                    <div
+                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50">ULPLTD <br>POASIA
                         </h5>
                     </div>
                 </div>
-                <div class="flex items-center justify-center border">
-                    <div class="hexagonn flex items-center bg-white">
-                        <div>
-                            <img alt="PLN logo" src="{{ asset('logo/navlog1.png') }}" />
+                <div class="flex items-center justify-center">
+                    <div class="hidden lg:block md:block">
+                        <div class="hexagon flex items-center bg-white h-36 w-40 md:w-56 md:h-44">
+                            <div>
+                                <img alt="PLN logo" src="{{ asset('logo/navlog1.png') }}" />
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <div class="hexagonn bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100">
-                        <h5 class="text-2xl font-bold text-gray-50">ULPLTD <br> KOLAKA 
+                    <div
+                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
+                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50">ULPLTD <br> KOLAKA
                         </h5>
                     </div>
-                    <div class="hexagonn bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100">
-                        <h5 class="text-2xl font-bold text-gray-50">ULPLTD <br> BAU-BAU</h5>
+                    <div
+                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
+                        <h5 class="text-sm lg:text-2xl md:text-xl    font-bold text-gray-50">ULPLTD <br> BAU-BAU</h5>
                     </div>
                 </div>
             </div>
-            {{-- <div class=" flex flex-col items-center justify-center border">
-            <div class="absolute">
-                <!-- Central Hexagon -->
-                <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg);">
-                    <img alt="PLN logo" class="h-12 mb-2" height="100" src="{{ asset('logo/navlogo.png') }}" width="200" style="transform: rotate(-90deg);"/>
-                </div>
-                <!-- Surrounding Hexagons -->
-                <div class="absolute top-0 left-0 transform -translate-x-32 -translate-y-24">
-                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #FFDDC1;">
-                        <i class="fas fa-handshake text-3xl text-orange-500 mb-2"></i>
-                        <h3 class="text-lg font-semibold text-gray-800">Vendor Management</h3>
-                    </div>
-                </div>
-                <div class="absolute top-0 right-0 transform translate-x-32 -translate-y-32">
-                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #CFE2F3;">
-                        <i class="fas fa-chart-line text-3xl text-orange-500 mb-2"></i>
-                        <h3 class="text-lg font-semibold text-gray-800">Demand Management</h3>
-                    </div>
-                </div>
-                <div class="absolute bottom-0 left-0 transform -translate-x-32 translate-y-32">
-                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #D9EAD3;">
-                        <i class="fas fa-shopping-cart text-3xl text-orange-500 mb-2"></i>
-                        <h3 class="text-lg font-semibold text-gray-800">Procurement Management</h3>
-                    </div>
-                </div>
-                <div class="absolute bottom-0 right-0 transform translate-x-32 translate-y-32">
-                    <div class="hexagon hexagon-center flex flex-col items-center justify-center" style="transform: rotate(90deg); background-color: #F9CB9C;">
-                        <i class="fas fa-warehouse text-3xl text-orange-500 mb-2"></i>
-                        <h3 class="text-lg font-semibold text-gray-800">Inventory & Warehouse Management</h3>
-                    </div>
-                </div>
-                <!-- Connection Lines -->
-                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(45deg);"></div>
-                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(-45deg);"></div>
-                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(135deg);"></div>
-                <div class="connection-line" style="top: 50%; left: 50%; height: 100px; transform: translate(-50%, -50%) rotate(-135deg);"></div>
-            </div>
-        </div> --}}
         </div>
 
+        {{-- Map --}}
         <div id="map"
-            style="height: 500px; border: 1px solid #ddd; border-radius: 10px; position: relative; margin-top: 100px;">
+            style="height: 500px; border: 1px solid #ddd; position: relative; margin-top: 100px"
+            class="z-0">
 
             <div class="accumulation-data-container"
                 style="
             position: absolute;
             top: 10px;
             left: 10px;
-            z-index: 1000;
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 8px;
             padding: 12px;
@@ -416,72 +309,72 @@
 
     <!-- Rest of the content remains exactly the same -->
     <!-- Highlight Kinerja -->
-    <h3 class="mt-4 mb-4">Highlight Kinerja</h3>
-    <div class="row">
-        <div class="col-md-4">
-            <div class="bg-box">
-                <h3 class="text-title">TOTAL KAPASITAS LISTRIK</h3>
-                <p class="text-value">{{ $total_capacity }} MW</p>
-            </div>
+    <h3 class="mt-10 mb-4 text-2xl font-semibold">Highlight Kinerja</h3>
+    <div class="flex justify-center gap-5">
+        <div class="bg-box">
+            <h3 class="text-title">TOTAL KAPASITAS LISTRIK</h3>
+            <p class="text-value">{{ $total_capacity }} MW</p>
         </div>
-        <div class="col-md-4">
-            <div class="bg-box">
-                <h3 class="text-title">TOTAL UNIT PEMBANGKIT</h3>
-                <p class="text-value">{{ $total_units }} UNIT</p>
-            </div>
+        <div class="bg-box">
+            <h3 class="text-title">TOTAL UNIT PEMBANGKIT</h3>
+            <p class="text-value">{{ $total_units }} UNIT</p>
         </div>
-        <div class="col-md-4">
-            <div class="bg-box">
-                <h3 class="text-title">UNIT PEMBANGKIT AKTIF</h3>
-                <p class="text-value">{{ $active_units }} UNIT</p>
-            </div>
+        <div class="bg-box">
+            <h3 class="text-title">UNIT PEMBANGKIT AKTIF</h3>
+            <p class="text-value">{{ $active_units }} UNIT</p>
         </div>
     </div>
 
-    <h3 class="mt-4 mb-4">Grafik Line</h3>
-    <div id="line-chart" style="height: 500px; border: 1px solid #ddd; border-radius: 10px;" class="border w-1/2"></div>
+    <div class="w-full flex justify-center flex-col items-center">
+        <h3 class="mt-4 mb-4 text-xl font-semibold">Grafik Line</h3>
+        <div id="line-chart" style="border: 1px solid #ddd; border-radius: 10px;"
+            class="w-4/5 flex justify-center">
+        </div>
+    </div>
 
 
     <!-- Live Data Unit Operasional -->
-    <h3 class="mt-4">Live Data Unit Operasional</h3>
-    <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4">
-        <div class="overflow-auto">
-            <table class="table table-striped table-bordered min-w-full">
-                <thead>
-                    <tr>
-                        <th class="text-center">Nama Unit</th>
-                        <th class="text-center">Mesin</th>
-                        <th class="text-center">DMN</th>
-                        <th class="text-center">DMP</th>
-                        <th class="text-center">Beban</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-center">Kapasitas</th>
-                    </tr>
-                </thead>
-                <tbody id="unit-table-body">
-                    @foreach ($units->take(5) as $unit)
-                        <tr class="table-row">
-                            <td class="text-center">{{ $unit->powerPlant->name ?? 'N/A' }}</td>
-                            <td class="text-center">{{ $unit->name }}</td>
-                            <td class="text-center">{{ $unit->machineOperations->first()->dmn ?? 'N/A' }}</td>
-                            <td class="text-center">{{ $unit->machineOperations->first()->dmp ?? 'N/A' }}</td>
-                            <td class="text-center">{{ $unit->machineOperations->first()->load_value ?? 'N/A' }}</td>
-                            <td class="text-center {{ $unit->status === 'Aktif' ? 'text-success' : 'text-danger' }}">
-                                {{ $unit->status }}</td>
-                            <td class="text-center">{{ $unit->capacity }} MW</td>
+    <h3 class="mt-10 mb-4 text-xl font-semibold">Live Data Unit Operasional</h3>
+    <div class="w-full flex justify-center flex-col items-center mb-5">
+        <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4 w-4/5">
+            <div class="overflow-auto">
+                <table class="table table-striped table-bordered min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Nama Unit</th>
+                            <th class="text-center">Mesin</th>
+                            <th class="text-center">DMN</th>
+                            <th class="text-center">DMP</th>
+                            <th class="text-center">Beban</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Kapasitas</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div id="toggle-data" class="mt-3 text-center">
-            <i class="fas fa-arrow-down fa-2x animate-pulse" style="color: #0095B7; cursor: pointer;"></i>
+                    </thead>
+                    <tbody id="unit-table-body">
+                        @foreach ($units->take(5) as $unit)
+                            <tr class="table-row">
+                                <td class="text-center">{{ $unit->powerPlant->name ?? 'N/A' }}</td>
+                                <td class="text-center">{{ $unit->name }}</td>
+                                <td class="text-center">{{ $unit->machineOperations->first()->dmn ?? 'N/A' }}</td>
+                                <td class="text-center">{{ $unit->machineOperations->first()->dmp ?? 'N/A' }}</td>
+                                <td class="text-center">{{ $unit->machineOperations->first()->load_value ?? 'N/A' }}</td>
+                                <td class="text-center {{ $unit->status === 'Aktif' ? 'text-success' : 'text-danger' }}">
+                                    {{ $unit->status }}</td>
+                                <td class="text-center">{{ $unit->capacity }} MW</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div id="toggle-data" class="mt-3 text-center">
+                <i class="fas fa-arrow-down fa-2x animate-pulse" style="color: #0095B7; cursor: pointer;"></i>
+            </div>
         </div>
     </div>
-    </div>
+    {{-- </div> --}}
 
     <!-- Footer -->
-    <footer class="footer w-screen">
+    <footer class="footer w-full">
         <div class="content">
             <div class="column">
                 <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" style="height: 40px; margin-bottom: 10px">
