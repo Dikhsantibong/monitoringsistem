@@ -5,26 +5,36 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class LoginController extends Controller
 {
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+            'unit' => 'required',
+        ]);
 
-        if (Auth::attempt($credentials)) {
-            // Cek role user
-            if (Auth::user()->role === 'admin') {
-                session()->flash('success', 'Login berhasil sebagai Admin!');
+        // Simpan unit ke sesi
+        $unit = $request->input('unit');
+        session(['unit' => $unit]);
+
+        // Set koneksi database sementara untuk autentikasi
+        Config::set('database.default', $unit);
+
+        // Attempt login
+        if (Auth::attempt($request->only('email', 'password'))) {
+            if (Auth::user()->role == 'admin') {
                 return redirect()->route('admin.dashboard');
             } else {
-                session()->flash('success', 'Login berhasil!');
                 return redirect()->route('user.dashboard');
             }
         }
 
-        return $this->sendFailedLoginResponse($request);
+        return back()->withErrors(['email' => 'Login failed!']);
     }
 
     public function showLoginForm()

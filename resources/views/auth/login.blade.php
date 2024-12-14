@@ -50,6 +50,18 @@
                             </div>
                         </div>
 
+                        <!-- Unit Selection -->
+                        <div class="form-group mt-3">
+                            <label for="unit">Pilih Unit:</label>
+                            <select name="unit" id="unit" required>
+                                <option value="mysql">up_kendari</option>
+                                <option value="mysql_bau_bau">ULPLTD Bau-Bau</option>
+                                <option value="mysql_kolaka">ULPLTD Kolaka</option>
+                                <option value="mysql_poasia">ULPLTD Poasia</option>
+                                <option value="mysql_wua_wua">ULPLTD Wua-Wua</option>
+                            </select>
+                        </div>
+
                         <!-- Remember Me -->
                         <div class="form-check mt-3">
                             <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>

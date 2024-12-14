@@ -50,4 +50,9 @@ class MachineStatusLog extends Model
         return $this->hasOne(MachineOperation::class, 'machine_id', 'machine_id')
             ->whereDate('recorded_at', '=', DB::raw('DATE(machine_status_logs.tanggal)'));
     }
+    public function getConnectionName()
+    {
+        // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
+        return session('unit', 'up_kendari'); // default ke 'up_kendari' jika tidak ada
+    }
 } 

@@ -41,4 +41,9 @@ class Activity extends Model
             'failed' => 'bg-red-100 text-red-800',
         ][$this->status] ?? 'bg-gray-100 text-gray-800';
     }
+    public function getConnectionName()
+    {
+        // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
+        return session('unit', 'up_kendari'); // default ke 'up_kendari' jika tidak ada
+    }
 } 
