@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Unit;
 use App\Models\News;
+use App\Models\MachineStatusLog;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        // Data unit pembangkit listrik
+        // Mengambil data unit pembangkit listrik
         $units = Unit::all();
+
+        // Mengambil data dari MachineStatusLog dengan relasi ke PowerPlant
+        $machineStatusLogs = MachineStatusLog::with('powerPlant')->get();
 
         // Statistik
         $total_units = $units->count();
@@ -20,6 +24,7 @@ class HomeController extends Controller
         // Berita
         $news = News::latest()->take(5)->get();
 
-        return view('homepage', compact('units', 'total_units', 'total_capacity', 'active_units', 'news'));
+        // Mengembalikan tampilan dengan data yang diperlukan
+        return view('homepage', compact('units', 'total_units', 'total_capacity', 'active_units', 'news', 'machineStatusLogs'));
     }
 }

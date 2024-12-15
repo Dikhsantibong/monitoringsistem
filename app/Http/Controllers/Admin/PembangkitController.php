@@ -158,16 +158,32 @@ class PembangkitController extends Controller
 
     public function report(Request $request)
     {
-        $query = MachineStatusLog::with(['machine.powerPlant'])
-            ->when($request->date, function($q) use ($request) {
-                return $q->whereDate('tanggal', $request->date);
-            }, function($q) {
-                return $q->whereDate('tanggal', now());
-            });
+        try {
+            $date = $request->date ?? now()->format('Y-m-d');
+            
+            $logs = MachineStatusLog::with(['machine.powerPlant'])
+                ->whereDate('tanggal', $date)
+                ->get();
 
-        $logs = $query->get();
+            if ($request->ajax()) {
+                $view = view('admin.pembangkit.report-table', compact('logs'))->render();
+                return response()->json([
+                    'success' => true,
+                    'html' => $view
+                ]);
+            }
 
-        return view('admin.pembangkit.report', compact('logs'));
+            return view('admin.pembangkit.report', compact('logs'));
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error: ' . $e->getMessage()
+                ]);
+            }
+            
+            throw $e;
+        }
     }
 
     public function downloadReport(Request $request)

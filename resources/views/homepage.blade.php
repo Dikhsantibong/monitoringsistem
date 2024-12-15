@@ -248,57 +248,14 @@
                 padding: 0;
                 margin: 0;
             ">
-                    <li
-                        style="
-                    margin: 6px 0;
-                    color: #333;
-                    display: flex;
-                    align-items: center;
-                ">
-                        <span
-                            style="
-                        width: 8px;
-                        height: 8px;
-                        background-color: #0095B7;
-                        border-radius: 50%;
-                        margin-right: 8px;
-                    "></span>
-                        Proxy Assistance: Medium (ID: 172.16.1.40)
-                    </li>
-                    <li
-                        style="
-                    margin: 6px 0;
-                    color: #333;
-                    display: flex;
-                    align-items: center;
-                ">
-                        <span
-                            style="
-                        width: 8px;
-                        height: 8px;
-                        background-color: #0095B7;
-                        border-radius: 50%;
-                        margin-right: 8px;
-                    "></span>
-                        Proxy Assistance: Medium (ID: 172.16.1.41)
-                    </li>
-                    <li
-                        style="
-                    margin: 6px 0;
-                    color: #333;
-                    display: flex;
-                    align-items: center;
-                ">
-                        <span
-                            style="
-                        width: 8px;
-                        height: 8px;
-                        background-color: #0095B7;
-                        border-radius: 50%;
-                        margin-right: 8px;
-                    "></span>
-                        Proxy Assistance: Medium (ID: 172.16.1.42)
-                    </li>
+                    @if(isset($machineStatusLogs))
+                        @foreach ($machineStatusLogs as $log)
+                        <li style="margin: 6px 0; color: #333; display: flex; align-items: center;">
+                            <span style="width: 8px; height: 8px; background-color: #0095B7; border-radius: 50%; margin-right: 8px;"></span>
+                            Proxy Assistance: Medium (ID: {{ $log->machine_id }}) - Asal Unit: {{ $log->powerPlant->name ?? 'N/A' }}
+                        </li>
+                        @endforeach
+                    @endif
                 </ul>
             </div>
         </div>

@@ -166,23 +166,55 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
 document.getElementById('filterDate').addEventListener('change', function() {
-        const selectedDate = this.value;
-        fetch(`{{ route('admin.pembangkit.report') }}?date=${selectedDate}`)
-            .then(response => response.text())
-            .then(html => {
-                // Update isi tabel dengan data baru
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newTableBody = doc.getElementById('reportTableBody');
-                document.getElementById('reportTableBody').innerHTML = newTableBody.innerHTML;
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
+    const selectedDate = this.value;
+    
+    // Tambahkan loading indicator (opsional)
+    const tableBody = document.querySelector('tbody');
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="7" class="px-6 py-4 text-center">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </td>
+        </tr>
+    `;
+    
+    // Lakukan fetch request
+    fetch(`{{ route('admin.pembangkit.report') }}?date=${selectedDate}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update seluruh tabel dengan data baru
+            document.querySelector('.overflow-x-auto').innerHTML = data.html;
+        } else {
+            // Tampilkan pesan error jika ada
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-red-500">
+                        ${data.message || 'Terjadi kesalahan saat memuat data'}
+                    </td>
+                </tr>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-6 py-4 text-center text-red-500">
+                    Terjadi kesalahan saat memuat data
+                </td>
+            </tr>
+        `;
     });
+});
 
 function toggleDropdown() {
     const dropdown = document.getElementById('dropdown');
@@ -199,5 +231,7 @@ document.addEventListener('click', function(event) {
     }
 });
 </script>
+
+@push('scripts')
 @endpush
 @endsection
