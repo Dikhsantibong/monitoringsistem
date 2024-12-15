@@ -93,26 +93,21 @@
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-800">Daftar SR/WO Closed</h2>
-                <a href="{{ route('admin.laporan.sr_wo') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    <i class="fas fa-arrow-left mr-2"></i>Kembali
-                </a>
-            </div>
-
-            <div class="flex gap-4">
-                <!-- Tombol Download PDF -->
-                <a href="{{ route('admin.laporan.sr_wo.closed.download') }}" 
-                   class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center">
-                    <i class="fas fa-download mr-2"></i>Download PDF
-                </a>
-                
-                <!-- Tombol Print -->
-                <button onclick="window.open('{{ route('admin.laporan.sr_wo.closed.print') }}', '_blank')"
-                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center">
-                    <i class="fas fa-print mr-2"></i>Print
-                </button>
-                
-                <!-- Tombol Kembali -->
-                
+                <div class="flex gap-4">
+                    <!-- Tombol Kembali -->
+                   
+                    <!-- Tombol Download PDF -->
+                    <a href="{{ route('admin.laporan.sr_wo.closed.download') }}" 
+                       class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center">
+                        <i class="fas fa-download mr-2"></i>Download PDF
+                    </a>
+                    
+                    <!-- Tombol Print -->
+                    <button onclick="window.open('{{ route('admin.laporan.sr_wo.closed.print') }}', '_blank')"
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center">
+                        <i class="fas fa-print mr-2"></i>Print
+                    </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">

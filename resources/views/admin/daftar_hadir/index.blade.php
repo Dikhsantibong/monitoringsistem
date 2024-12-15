@@ -86,7 +86,7 @@
                     <div class="relative">
                         <button id="user-menu-button" class="flex items-center gap-2 hover:text-gray-600"
                             onclick="toggleUserDropdown()">
-                            <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" alt="User Avatar"
+                            <img src="{{ asset('foto_profile/admin1.png' . Auth::user()->avatar) }}" alt="User Avatar"
                                 class="w-8 h-8 rounded-full">
                             <span>{{ Auth::user()->name }}</span>
                             <i class="fas fa-chevron-down text-sm"></i>

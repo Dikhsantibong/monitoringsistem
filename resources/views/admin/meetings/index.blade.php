@@ -103,94 +103,15 @@
                 <div class="flex justify-start w-full">
                     <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan Rapat', 'url' => null]]" />
                 </div>
-                <div class="flex items-center space-x-4 px-6">
-                    <button onclick="exportMeetings()"
-                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                        <i class="fas fa-download mr-2"></i>Ekspor
-                    </button>
-                    <button onclick="uploadMeeting()"
-                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                        <i class="fas fa-upload mr-2"></i>Upload Rapat
-                    </button>
-                    <button onclick="openModal()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
-                        <i class="fas fa-plus mr-2"></i>Buat Rapat Baru
-                    </button>
-                </div>
             </div>
             <main class="p-6">
                 <!-- Filter Section -->
-                <div class="bg-white rounded-lg shadow mb-6">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Filter Rapat</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Rentang Tanggal</label>
-                                <input type="date"
-                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                                    id="date-filter">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Departemen</label>
-                                <select class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                                    id="department-filter">
-                                    <option value="">Semua Departemen</option>
-                                    @foreach ($departments ?? [] as $department)
-                                        <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                <select class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                                    id="status-filter">
-                                    <option value="">Semua Status</option>
-                                    <option value="scheduled">Terjadwal</option>
-                                    <option value="completed">Selesai</option>
-                                    <option value="cancelled">Dibatalkan</option>
-                                </select>
-                            </div>
-                            <div class="flex items-end">
-                                <button onclick="applyFilter()"
-                                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                    <i class="fas fa-filter mr-2"></i>Filter
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <!-- Setelah Filter Section -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <!-- Card Laporan Kesiapan Pembangkit -->
-                    <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'" 
-                         class="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow duration-300">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Laporan Kesiapan Pembangkit</h3>
-                            <i class="fas fa-bolt text-2xl text-blue-500"></i>
-                        </div>
-                        <div class="space-y-3">
-                            @php
-                                $latestLogs = \App\Models\MachineStatusLog::with('machine.powerPlant')
-                                    ->whereDate('tanggal', now())
-                                    ->get();
-                                $totalMesin = $latestLogs->count();
-                                $operasi = $latestLogs->where('status', 'Operasi')->count();
-                                $gangguan = $latestLogs->where('status', 'Gangguan')->count();
-                            @endphp
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Total Mesin</span>
-                                <span class="font-semibold">{{ $totalMesin }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Beroperasi</span>
-                                <span class="font-semibold text-green-500">{{ $operasi }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Gangguan</span>
-                                <span class="font-semibold text-red-500">{{ $gangguan }}</span>
-                            </div>
-                        </div>
-                    </div>
+                  
                     <!-- Card lainnya bisa ditambahkan di sini -->
                 </div>
 
@@ -200,39 +121,45 @@
                     <div class="overflow-auto">
                         <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                             <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Judul</th>
-                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Tanggal</th>
-                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Departemen</th>
-                                    <th class="px-6 py-3 text-center font-medium text-gray-500">Status</th>
+                                <tr style="background-color: #0A749B; color: white;" class="text-center">
+                                    <th class="border p-2">Judul</th>
+                                    <th class="border p-2">Tanggal</th>
+                                    <th class="border p-2">Departemen</th>
+                                    <th class="border p-2">Status</th>
+                                    <th class="border p-2">Skor</th>
+                                    <th class="border p-2">Lokasi</th>
+                                    <th class="border p-2">Peserta</th>
+                                    <th class="border p-2">Kesiapan Panitia</th>
+                                    <th class="border p-2">Kesiapan Bahan</th>
+                                    <th class="border p-2">Aktivitas Luar</th>
+                                    <th class="border p-2">Gangguan Diskusi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200">
+                            <tbody>
                                 @foreach ($meetings ?? [] as $meeting)
                                     <tr class="odd:bg-white even:bg-gray-100">
-                                        <td>{{ $meeting->title }}</td>
-                                        <td>{{ $meeting->scheduled_at->format('F j, Y') }}</td>
-                                        <td>{{ $meeting->department->name ?? 'Tidak Ada' }}</td>
-                                        <td>{{ $meeting->status }}</td>
+                                        <td class="border p-2">{{ $meeting->title }}</td>
+                                        <td class="border p-2">{{ $meeting->scheduled_at->format('F j, Y') }}</td>
+                                        <td class="border p-2">{{ $meeting->department->name ?? 'Tidak Ada' }}</td>
+                                        <td class="border p-2">{{ $meeting->status }}</td>
+                                        <td class="border p-2">
+                                            @php
+                                                $scoreCard = ScoreCardDaily::where('tanggal', $meeting->scheduled_at->format('Y-m-d'))->first();
+                                            @endphp
+                                            {{ $scoreCard->skor ?? 'Tidak Ada' }}
+                                        </td>
+                                        <td class="border p-2">{{ $scoreCard->lokasi ?? 'Tidak Ada' }}</td>
+                                        <td class="border p-2">{{ implode(', ', json_decode($scoreCard->peserta, true) ?? []) }}</td>
+                                        <td class="border p-2">{{ $scoreCard->kesiapan_panitia ?? 'N/A' }}</td>
+                                        <td class="border p-2">{{ $scoreCard->kesiapan_bahan ?? 'N/A' }}</td>
+                                        <td class="border p-2">{{ $scoreCard->aktifitas_luar ?? 'N/A' }}</td>
+                                        <td class="border p-2">{{ $scoreCard->gangguan_diskusi ?? 'N/A' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div id="createMeetingModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Buat Rapat Baru</h2>
-            <iframe src="{{ route('admin.meetings.create') }}" class="w-full h-96" frameborder="0"></iframe>
-            <button onclick="closeModal()"
-                class="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Tutup</button>
-        </div>
-    </div>
 
     <style>
         .modal-enter {

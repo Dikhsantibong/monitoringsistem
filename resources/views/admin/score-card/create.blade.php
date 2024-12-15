@@ -46,6 +46,7 @@
             </a>
         </nav>
     </aside>
+    
 
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
@@ -74,19 +75,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">1. MANAGER UP</label>
                                 <div>
-                                    <select name="peserta[manager_up][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[manager_up][awal]" class="w-20 border rounded text-center peserta-select" data-group="manager_up">
+                                        <option value="1" {{ isset($peserta['manager_up']) && $peserta['manager_up'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['manager_up']) || $peserta['manager_up'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[manager_up][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[manager_up][akhir]" class="w-20 border rounded text-center peserta-select" data-group="manager_up">
+                                        <option value="1" {{ isset($peserta['manager_up']) && $peserta['manager_up'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['manager_up']) || $peserta['manager_up'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[manager_up][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[manager_up][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -94,19 +95,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">2. ASMAN OPERASI</label>
                                 <div>
-                                    <select name="peserta[asman_operasi][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[asman_operasi][awal]" class="w-20 border rounded text-center peserta-select" data-group="asman_operasi">
+                                        <option value="1" {{ isset($peserta['asman_operasi']) && $peserta['asman_operasi'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['asman_operasi']) || $peserta['asman_operasi'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[asman_operasi][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[asman_operasi][akhir]" class="w-20 border rounded text-center peserta-select" data-group="asman_operasi">
+                                        <option value="1" {{ isset($peserta['asman_operasi']) && $peserta['asman_operasi'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['asman_operasi']) || $peserta['asman_operasi'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[asman_operasi][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[asman_operasi][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -114,19 +115,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">3. ASMAN PEMELIHARAAN</label>
                                 <div>
-                                    <select name="peserta[asman_pemeliharaan][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[asman_pemeliharaan][awal]" class="w-20 border rounded text-center peserta-select" data-group="asman_pemeliharaan">
+                                        <option value="1" {{ isset($peserta['asman_pemeliharaan']) && $peserta['asman_pemeliharaan'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['asman_pemeliharaan']) || $peserta['asman_pemeliharaan'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[asman_pemeliharaan][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[asman_pemeliharaan][akhir]" class="w-20 border rounded text-center peserta-select" data-group="asman_pemeliharaan">
+                                        <option value="1" {{ isset($peserta['asman_pemeliharaan']) && $peserta['asman_pemeliharaan'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['asman_pemeliharaan']) || $peserta['asman_pemeliharaan'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[asman_pemeliharaan][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[asman_pemeliharaan][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -134,19 +135,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">4. ASMAN ENJINIRING</label>
                                 <div>
-                                    <select name="peserta[asman_enjiniring][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[asman_enjiniring][awal]" class="w-20 border rounded text-center peserta-select" data-group="asman_enjiniring">
+                                        <option value="1" {{ isset($peserta['asman_enjiniring']) && $peserta['asman_enjiniring'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['asman_enjiniring']) || $peserta['asman_enjiniring'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[asman_enjiniring][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[asman_enjiniring][akhir]" class="w-20 border rounded text-center peserta-select" data-group="asman_enjiniring">
+                                        <option value="1" {{ isset($peserta['asman_enjiniring']) && $peserta['asman_enjiniring'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['asman_enjiniring']) || $peserta['asman_enjiniring'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[asman_enjiniring][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[asman_enjiniring][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -154,19 +155,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">5. TL RENDAL HAR</label>
                                 <div>
-                                    <select name="peserta[tl_rendal_har][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_rendal_har][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_rendal_har">
+                                        <option value="1" {{ isset($peserta['tl_rendal_har']) && $peserta['tl_rendal_har'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_rendal_har']) || $peserta['tl_rendal_har'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[tl_rendal_har][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_rendal_har][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_rendal_har">
+                                        <option value="1" {{ isset($peserta['tl_rendal_har']) && $peserta['tl_rendal_har'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_rendal_har']) || $peserta['tl_rendal_har'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_rendal_har][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[tl_rendal_har][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -174,19 +175,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">6. TL ICC</label>
                                 <div>
-                                    <select name="peserta[tl_icc][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_icc][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_icc">
+                                        <option value="1" {{ isset($peserta['tl_icc']) && $peserta['tl_icc'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_icc']) || $peserta['tl_icc'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[tl_icc][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_icc][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_icc">
+                                        <option value="1" {{ isset($peserta['tl_icc']) && $peserta['tl_icc'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_icc']) || $peserta['tl_icc'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_icc][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[tl_icc][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -194,19 +195,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">7. TL OUTAGE MANAGEMENT</label>
                                 <div>
-                                    <select name="peserta[tl_outage][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_outage][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_outage">
+                                        <option value="1" {{ isset($peserta['tl_outage']) && $peserta['tl_outage'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_outage']) || $peserta['tl_outage'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[tl_outage][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_outage][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_outage">
+                                        <option value="1" {{ isset($peserta['tl_outage']) && $peserta['tl_outage'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_outage']) || $peserta['tl_outage'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_outage][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[tl_outage][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -214,19 +215,19 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">8. TL K3 DAN KAM</label>
                                 <div>
-                                    <select name="peserta[tl_k3][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_k3][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_k3">
+                                        <option value="1" {{ isset($peserta['tl_k3']) && $peserta['tl_k3'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_k3']) || $peserta['tl_k3'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[tl_k3][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_k3][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_k3">
+                                        <option value="1" {{ isset($peserta['tl_k3']) && $peserta['tl_k3'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_k3']) || $peserta['tl_k3'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_k3][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[tl_k3][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
 
@@ -234,23 +235,25 @@
                             <div class="grid grid-cols-4 gap-4 items-center">
                                 <label class="text-sm">9. TL LINGKUNGAN</label>
                                 <div>
-                                    <select name="peserta[tl_lingkungan][awal]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_lingkungan][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_lingkungan">
+                                        <option value="1" {{ isset($peserta['tl_lingkungan']) && $peserta['tl_lingkungan'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_lingkungan']) || $peserta['tl_lingkungan'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <select name="peserta[tl_lingkungan][akhir]" class="w-20 border rounded text-center">
-                                        <option value="1">✓</option>
-                                        <option value="0">✗</option>
+                                    <select name="peserta[tl_lingkungan][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_lingkungan">
+                                        <option value="1" {{ isset($peserta['tl_lingkungan']) && $peserta['tl_lingkungan'] > 0 ? 'selected' : '' }}>✓</option>
+                                        <option value="0" {{ !isset($peserta['tl_lingkungan']) || $peserta['tl_lingkungan'] == 0 ? 'selected' : '' }}>✗</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" name="peserta[tl_lingkungan][skor]" class="w-20 border rounded text-center" placeholder="Skor" readonly>
+                                    <input type="number" name="peserta[tl_lingkungan][skor]" class="w-20 border rounded text-center skor-input" readonly>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+              
 
                     <!-- Setelah bagian peserta meeting, tambahkan section baru -->
                     <div class="border p-4 rounded mt-6">
@@ -265,6 +268,24 @@
                                     100 Jika tidak ada gangguan HP/LAPTOP/Etc. 
                                     Setiap 1 gangguan dari peserta maka skor dikurangi 30.
                                 </p>
+                            </div>
+
+                            <!-- Ketepatan Waktu Memulai Meeting -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Ketepatan Waktu Memulai Meeting</label>
+                                <select name="ketepatan_memulai" class="w-full border rounded px-3 py-2">
+                                    <option value="1">START</option>
+                                    <option value="0">TIDAK START</option>
+                                </select>
+                            </div>
+
+                            <!-- Ketepatan Waktu Mengakhiri Meeting -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Ketepatan Waktu Mengakhiri Meeting</label>
+                                <select name="ketepatan_mengakhiri" class="w-full border rounded px-3 py-2">
+                                    <option value="1">FINISH</option>
+                                    <option value="0">TIDAK FINISH</option>
+                                </select>
                             </div>
 
                             <!-- Gangguan Forum Diskusi -->
@@ -312,53 +333,19 @@
                         </div>
                     </div>
 
-                    <!-- Tambahkan script untuk menghitung total skor -->
-                    <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const skorInputs = document.querySelectorAll('input[type="number"]');
-                        
-                        function hitungTotalSkor() {
-                            let total = 0;
-                            let jumlahKriteria = 0;
-                            
-                            // Hitung skor dari setiap kriteria
-                            skorInputs.forEach(input => {
-                                if (input.name.includes('gangguan') || 
-                                    input.name.includes('aktifitas') || 
-                                    input.name.includes('ketegasan') || 
-                                    input.name.includes('kelengkapan')) {
-                                    const nilai = parseFloat(input.value) || 0;
-                                    total += nilai;
-                                    jumlahKriteria++;
-                                }
-                            });
-                            
-                            // Hitung rata-rata
-                            const skorAkhir = jumlahKriteria > 0 ? (total / jumlahKriteria).toFixed(2) : 0;
-                            
-                            // Tampilkan total skor jika ada elemen untuk menampilkannya
-                            const totalSkorElement = document.getElementById('total_skor');
-                            if (totalSkorElement) {
-                                totalSkorElement.value = skorAkhir;
-                            }
-                        }
-                        
-                        // Update total skor setiap kali ada perubahan nilai
-                        skorInputs.forEach(input => {
-                            input.addEventListener('change', hitungTotalSkor);
-                        });
-                    });
-                    </script>
-
                     <!-- Waktu -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 mb-2">Waktu Mulai</label>
-                            <input type="time" name="waktu_mulai" class="w-full px-3 py-2 border rounded" required>
+                            <input type="time" name="waktu_mulai" 
+                                   value="{{ $waktuMulai ? \Carbon\Carbon::parse($waktuMulai)->format('H:i') : '' }}" 
+                                   class="w-full px-3 py-2 border rounded" required>
                         </div>
                         <div>
                             <label class="block text-gray-700 mb-2">Waktu Selesai</label>
-                            <input type="time" name="waktu_selesai" class="w-full px-3 py-2 border rounded" required>
+                            <input type="time" name="waktu_selesai" 
+                                   value="{{ $waktuSelesai ? \Carbon\Carbon::parse($waktuSelesai)->format('H:i') : '' }}" 
+                                   class="w-full px-3 py-2 border rounded" required>
                         </div>
                     </div>
 
@@ -391,4 +378,45 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to calculate score for a group
+        function calculateScore(group) {
+            const awalSelect = document.querySelector(`select[name="peserta[${group}][awal]"]`);
+            const akhirSelect = document.querySelector(`select[name="peserta[${group}][akhir]"]`);
+            const skorInput = document.querySelector(`input[name="peserta[${group}][skor]"]`);
+            
+            const awalValue = parseInt(awalSelect.value);
+            const akhirValue = parseInt(akhirSelect.value);
+            const totalChecks = awalValue + akhirValue;
+            
+            let score = 0;
+            if (totalChecks === 1) {
+                score = 50;
+            } else if (totalChecks === 2) {
+                score = 100;
+            }
+            
+            skorInput.value = score;
+        }
+
+        // Add event listeners to all select elements
+        document.querySelectorAll('.peserta-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const group = this.getAttribute('data-group');
+                calculateScore(group);
+            });
+        });
+
+        // Initial calculation for all groups
+        document.querySelectorAll('.peserta-select').forEach(select => {
+            const group = select.getAttribute('data-group');
+            calculateScore(group);
+        });
+    });
+    </script>
+    @push('scripts')
+        
+    @endpush
 @endsection

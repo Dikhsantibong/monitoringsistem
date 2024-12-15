@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Meeting;
 use App\Models\Department; // Pastikan model Department di-import
+use App\Models\ScoreCardDaily; // Ambil model ScoreCardDaily
 use Illuminate\Http\Request;
 
 class AdminMeetingController extends Controller
@@ -17,8 +18,9 @@ class AdminMeetingController extends Controller
             ->paginate(10);
         
         $departments = Department::all(); // Ambil semua departemen
+        $scoreCards = ScoreCardDaily::all(); // Ambil semua data ScoreCardDaily
         
-        return view('admin.meetings.index', compact('meetings', 'departments'));
+        return view('admin.meetings.index', compact('meetings', 'departments', 'scoreCards'));
     }
 
     public function create()

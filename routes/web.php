@@ -89,6 +89,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/sr_wo/closed/print', [LaporanController::class, 'printSrWoClosed'])->name('laporan.sr_wo.closed.print');
         Route::post('/store-sr', [LaporanController::class, 'storeSR'])->name('laporan.store-sr');
         Route::post('/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
+        
     });
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
@@ -127,6 +128,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::prefix('score-card')->group(function () {
         Route::resource('score-card', ScoreCardDailyController::class);
+      
     });
 });
 
@@ -161,3 +163,9 @@ Route::prefix('attendance')->group(function () {
     Route::post('/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
 });
 
+// Route untuk create Zoom Meeting
+//  Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createMeeting'])->name('createZoomMeeting');
+
+Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoomMeeting'])
+    ->name('create.zoom.meeting')
+    ->middleware('web');

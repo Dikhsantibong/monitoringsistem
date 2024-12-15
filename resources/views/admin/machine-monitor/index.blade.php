@@ -163,31 +163,7 @@
                     </div>
                 </div>
 
-                <!-- Tabel Kesehatan Mesin -->
-                <div class="bg-white rounded-lg shadow mb-6 p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Kategori Kesehatan Mesin</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Mesin</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Masalah Aktif</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @foreach ($machineStatusLogs as $log)
-                                    @if ($log->status === 'open')
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ucfirst($log->machine->name) }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->keterangan }}</td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
+               
                 <!-- Grafik Masalah dan Status Mesin -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Grafik Masalah Bulanan -->
@@ -253,6 +229,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
@@ -267,6 +244,7 @@
                                                     {{ ucfirst($issue->status) }}
                                                 </span>
                                             </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $issue->machine->powerPlant->name ?? 'N/A' }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

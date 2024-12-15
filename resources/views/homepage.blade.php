@@ -172,47 +172,44 @@
                 lastScrollTop = scrollTop;
             });
         </script>
-
+   
         {{-- Hero section --}}
-        <div class="bg-gray-100 h-screen flex justify-center items-center hexagon-background">
+        <div class="h-screen flex flex-col justify-center items-center hexagon-background">
             <!-- Overlay -->
             <div class="absolute inset-0 bg-white h-screen bg-opacity-50"></div>
+            <!-- Header -->
+            <h2 class="text-4xl font-bold mb-4 text-center" style="color: linear-gradient(135deg, #007bff 0%, #00bfff 100%); text-shadow: 1px 1px 2px #000000;">M<i class="fas fa-helmet-safety"></i>NDAY  <br>MONITORING dayly</h2>
             <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
                 <div>
-                    <div
-                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
                         {{-- h-44 w-56 --}}
-                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 ">ULPLTD <br> WUA-WUA
+                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> WUA-WUA
                         </h5>
                     </div>
-                    <div
-                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
-                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50">ULPLTD <br>POASIA
+                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br>POASIA
                         </h5>
                     </div>
                 </div>
                 <div class="flex items-center justify-center">
                     <div class="hidden lg:block md:block">
-                        <div class="hexagon flex items-center bg-white h-36 w-40 md:w-56 md:h-44">
-                            <div>
-                                <img alt="PLN logo" src="{{ asset('logo/navlog1.png') }}" />
-                            </div>
+                        <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                            <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <div
-                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50">ULPLTD <br> KOLAKA
+                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
+                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> KOLAKA
                         </h5>
                     </div>
-                    <div
-                        class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                        <h5 class="text-sm lg:text-2xl md:text-xl    font-bold text-gray-50">ULPLTD <br> BAU-BAU</h5>
+                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
+                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> BAU-BAU</h5>
                     </div>
                 </div>
             </div>
         </div>
+
 
         {{-- Map --}}
         <div id="map"
@@ -242,7 +239,7 @@
                 padding-bottom: 6px;
             ">
                     Data Akumulasi</h3>
-                <ul
+                <ul 
                     style="
                 list-style-type: none;
                 padding: 0;

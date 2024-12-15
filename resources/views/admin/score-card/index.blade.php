@@ -11,6 +11,14 @@
             height: calc(100vh - 64px);
             /* Sesuaikan tinggi dengan mengurangi tinggi header */
         }
+
+        #timer {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+            display: none;
+        }
     </style>
 @endpush
 
@@ -127,50 +135,251 @@
                     <div class="mb-4">
                         <div class="flex justify-between items-center">
                             <div>
-                                <p>Daily Meeting Hari / Tanggal: {{ now()->format('d F Y') }}</p>
-                                <p>Lokasi: Ruang Rapat Rongi</p>
+                                <p>Daily Meeting Hari / Tanggal: {{ $scoreCard->tanggal ?? now()->format('d F Y') }}</p>
+                                <p>Lokasi: {{ $scoreCard->lokasi ?? 'Ruang Rapat Rongi' }}</p>
                             </div>
-                            <a href="{{ route('admin.score-card.create') }}"
-                                class="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
-                                <i class="fas fa-plus mr-2"></i> Tambah Score Card
-                            </a>
+                            <div class="flex justify-center">
+                                <a href="{{ route('admin.score-card.create') }}"
+                                    class="bg-blue-500 text-white px-4 py-2 rounded flex items-center ml-2">
+                                    <i class="fas fa-plus mr-2"></i> Tambah Score Card
+                                </a>
+                                <button id="startMeetingBtn" onclick="startMeeting()"
+                                    class="bg-green-500 text-white px-4 py-2 rounded flex items-center ml-2">
+                                    <i class="fas fa-play mr-2"></i> Mulai Rapat
+                                </button>
+                                <a href="#" onclick="createZoomMeeting()"
+                                    class="bg-purple-500 text-white px-4 py-2 rounded flex items-center ml-2">
+                                    <i class="fas fa-video mr-2"></i> Buat Rapat Zoom
+                                </a>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Timer Display -->
+                    <div id="timer" class="text-center"></div>
+
+                    <!-- Elemen untuk menampilkan link Zoom -->
+                    <div id="zoom-link-container" class="mt-4">
+                        <div id="zoom-link" class="bg-gray-100 border border-gray-300 rounded-lg p-4 shadow-md">
+                            <span class="font-semibold">Link Zoom:</span>
+                            <a href="#" id="zoom-link-url" class="text-blue-600 underline ml-2" target="_blank"></a>
+                        </div>
+                    </div>
+
                     <div class="overflow-auto">
-                        <table class="min-w-full bg-white border">
-                            <thead>
-                                <tr style="background-color: #0A749B; color: white;" class="text-center">
-                                    <th class="border p-2">No</th>
-                                    <th class="border p-2">Peserta</th>
-                                    <th class="border p-2">Awal</th>
-                                    <th class="border p-2">Akhir</th>
-                                    <th class="border p-2">Skor</th>
-                                    <th class="border p-2">Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($scoreCards as $index => $card)
-                                    <tr>
-                                        <td class="border p-2 text-center">{{ $index + 1 }}</td>
-                                        <td class="border p-2">{{ $card->peserta }}</td>
-                                        <td class="border p-2 text-center">{{ $card->awal }}</td>
-                                        <td class="border p-2 text-center">{{ $card->akhir }}</td>
-                                        <td class="border p-2 text-center">{{ $card->skor }}</td>
-                                        <td class="border p-2">{{ $card->keterangan }}</td>
-                                    </tr>
-                                @endforeach
-                                <!-- Tambahkan baris untuk total score -->
-                                <tr>
-                                    <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
-                                    <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
-                                    <td class="border p-2"></td>
-                                </tr>
-                            </tbody>
-                        </table>
+     <table class="min-w-full bg-white border">
+    <thead>
+        <tr style="background-color: #0A749B; color: white;" class="text-center">
+            <th class="border p-2">No</th>
+            <th class="border p-2">Peserta</th>
+            <th class="border p-2">Awal</th>
+            <th class="border p-2">Akhir</th>
+            <th class="border p-2">Skor</th>
+            <th class="border p-2">Keterangan</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php
+            $totalIndex = 0;
+        @endphp
+        @foreach ($scoreCards as $card)
+            @php
+                $peserta = json_decode($card->peserta, true);
+                $ketentuanRapat = json_decode($card->ketentuan_rapat, true);
+                $pesertaCount = count($peserta);
+                $currentIndex = 0;
+            @endphp
+            @foreach ($peserta as $jabatan => $data)
+                @php
+                    $currentIndex++;
+                @endphp
+                <tr>
+                    <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
+                    <td class="border p-2">{{ ucfirst(str_replace('_', ' ', $jabatan)) }}</td>
+                    <td class="border p-2 text-center">{{ $data['skor'] == 50 ? 0 : '' }}</td>
+                    <td class="border p-2 text-center">{{ $data['skor'] == 100 ? 1 : '' }}</td>
+                    <td class="border p-2 text-center">{{ $data['skor'] }}</td>
+                    <td class="border p-2"></td>
+                </tr>
+                @php
+                    $totalIndex++;
+                @endphp
+
+                @if ($currentIndex === $pesertaCount)
+                <!-- Menampilkan ketentuan rapat di kolom terpisah -->
+                
+                <tr>
+                    <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
+                    <td class="border p-2">Ketepatan waktu memulai meeting</td>
+                    <td class="border p-2 text-center">START</td>
+                    <td class="border p-2 text-center">{{ $ketentuanRapat['aktifitas_meeting'] ?? 'N/A' }}</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2">-</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ $totalIndex + 2 }}</td>
+                    <td class="border p-2">Ketepatan waktu mengakhiri meeting</td>
+                    <td class="border p-2 text-center">FINISH</td>
+                    <td class="border p-2 text-center">{{ $ketentuanRapat['gangguan_diskusi'] ?? 'N/A' }}</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2">-</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ $totalIndex + 3 }}</td>
+                    <td class="border p-2">Kesiapan panitia pelaksana meeting</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2 text-center">{{ $ketentuanRapat['kesiapan_panitia'] ?? 'N/A' }}</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2">-</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ $totalIndex + 4 }}</td>
+                    <td class="border p-2">Kesiapan bahan oleh peserta meeting</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2 text-center">{{ $ketentuanRapat['kesiapan_bahan'] ?? 'N/A' }}</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2">-</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ $totalIndex + 5 }}</td>
+                    <td class="border p-2">Aktifitas di Luar Kegiatan Meeting</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2 text-center">{{ $ketentuanRapat['aktifitas_luar'] ?? 'N/A' }}</td>
+                    <td class="border p-2 text-center">-</td>
+                    <td class="border p-2">-</td>
+                </tr>
+                <!-- Tambahkan ketentuan lain dengan format serupa -->
+                @endif
+            @endforeach
+        @endforeach
+        <tr>
+            <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
+            <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
+        </tr>
+    </tbody>
+</table>
+
+
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <script src="{{ asset('js/toggle.js') }}"></script>
+    <script>    
+        let timerInterval;
+        let startTime;
+        let isRunning = false;
+
+        function startMeeting() {
+            if (!isRunning) {
+                // Start the timer
+                const timerDisplay = document.getElementById('timer');
+                timerDisplay.style.display = 'block';
+                startTime = new Date();
+                
+                // Change button text and color
+                const startButton = document.getElementById('startMeetingBtn');
+                startButton.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Rapat';
+                startButton.classList.remove('bg-green-500');
+                startButton.classList.add('bg-red-500');
+                
+                timerInterval = setInterval(updateTimer, 1000);
+                isRunning = true;
+            } else {
+                stopMeeting();
+            }
+        }
+
+        function stopMeeting() {
+            clearInterval(timerInterval);
+            const startButton = document.getElementById('startMeetingBtn');
+            startButton.innerHTML = '<i class="fas fa-play mr-2"></i> Mulai Rapat';
+            startButton.classList.remove('bg-red-500');
+            startButton.classList.add('bg-green-500');
+            isRunning = false;
+            
+            // Hide timer
+            document.getElementById('timer').style.display = 'none';
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - startTime;
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            const timerDisplay = document.getElementById('timer');
+            
+            timerDisplay.textContent = `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
+        }
+
+        function padNumber(number) {
+            return number.toString().padStart(2, '0');
+        }
+
+        async function createZoomMeeting() {
+            try {
+                const response = await fetch('/create-zoom-meeting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    credentials: 'same-origin'
+                });
+
+                const data = await response.json();
+                console.log('Server Response:', data); // Debug response
+
+                if (!response.ok) {
+                    throw new Error(data.details?.error || data.error || 'Gagal membuat meeting');
+                }
+
+                if (data.data?.join_url) {
+                    const zoomLink = document.getElementById('zoom-link-url');
+                    zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
+                    zoomLink.href = data.data.join_url;
+                    document.getElementById('zoom-link-container').style.display = 'block';
+                    alert('Meeting Zoom berhasil dibuat!\nLink meeting telah ditampilkan di bawah.');
+                } else if (data.join_url) {
+                    const zoomLink = document.getElementById('zoom-link-url');
+                    zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
+                    zoomLink.href = data.join_url;
+                    document.getElementById('zoom-link-container').style.display = 'block';
+                    alert('Meeting Zoom berhasil dibuat!\nLink meeting telah ditampilkan di bawah.');
+                } else {
+                    throw new Error('Tidak ada join URL dalam respons');
+                }
+            } catch (error) {
+                console.error('Error detail:', error);
+                alert(`Terjadi kesalahan: ${error.message}`);
+            }
+        }
+
+        // Sembunyikan container link zoom saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('zoom-link-container').style.display = 'none';
+        });
+    </script>
+    
+    
+   
+        <script>
+            // Sweet Alert untuk memberitahu bahwa score card daily telah di submit
+            Swal.fire({
+                icon: 'success',
+                title: 'Score Card Daily',
+                text: 'Score Card Daily telah di submit',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        </script>
+
+@push('scripts')
+    @endpush
 @endsection

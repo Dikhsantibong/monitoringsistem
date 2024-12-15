@@ -134,7 +134,7 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
                                 <button onclick="openSRModal()"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base">
                                     <i class="fas fa-plus mr-2"></i>Tambah SR
                                 </button>
                             </div>
@@ -170,7 +170,7 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
                                 <button onclick="openWOModal()"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base">
                                     <i class="fas fa-plus mr-2"></i>Tambah WO
                                 </button>
                             </div>
