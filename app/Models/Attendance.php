@@ -27,6 +27,10 @@ class Attendance extends Model
     {
         $this->attributes['name'] = strip_tags(trim($value));
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function setDivisionAttribute($value)
     {

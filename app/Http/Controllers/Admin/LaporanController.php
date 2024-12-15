@@ -82,4 +82,21 @@ class LaporanController extends Controller
 
         return view('admin.laporan.sr_wo_closed', compact('closedReports'));
     }
+    public function downloadSrWoClosed()
+    {
+        $srReports = ServiceRequest::where('status', 'Closed')->get();
+        $woReports = WorkOrder::where('status', 'Closed')->get();
+
+        $pdf = PDF::loadView('admin.laporan.sr_wo_closed_pdf', compact('srReports', 'woReports'));
+        
+        return $pdf->download('laporan-sr-wo-closed.pdf');
+    }
+
+    public function printSrWoClosed()
+    {
+        $srReports = ServiceRequest::where('status', 'Closed')->get();
+        $woReports = WorkOrder::where('status', 'Closed')->get();
+
+        return view('admin.laporan.sr_wo_closed_print', compact('srReports', 'woReports'));
+    }
 }

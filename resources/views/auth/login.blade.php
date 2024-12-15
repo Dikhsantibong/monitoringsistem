@@ -52,13 +52,13 @@
 
                         <!-- Unit Selection -->
                         <div class="form-group mt-3">
-                            <label for="unit">Pilih Unit:</label>
-                            <select name="unit" id="unit" required>
-                                <option value="mysql">up_kendari</option>
-                                <option value="mysql_bau_bau">ULPLTD Bau-Bau</option>
-                                <option value="mysql_kolaka">ULPLTD Kolaka</option>
-                                <option value="mysql_poasia">ULPLTD Poasia</option>
-                                <option value="mysql_wua_wua">ULPLTD Wua-Wua</option>
+                            <label for="unit" class="text-primary">Pilih Unit:</label>
+                            <select name="unit" id="unit" required class="form-select block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="mysql" class="text-success"><i class="fas fa-building"></i> UP Kendari</option>
+                                <option value="mysql_bau_bau" class="text-info"><i class="fas fa-building"></i> ULPLTD Bau-Bau</option>
+                                <option value="mysql_kolaka" class="text-warning"><i class="fas fa-building"></i> ULPLTD Kolaka</option>
+                                <option value="mysql_poasia" class="text-danger"><i class="fas fa-building"></i> ULPLTD Poasia</option>
+                                <option value="mysql_wua_wua" class="text-primary"><i class="fas fa-building"></i> ULPLTD Wua-Wua</option>
                             </select>
                         </div>
 

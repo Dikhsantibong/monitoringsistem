@@ -169,8 +169,20 @@
 @push('scripts')
 <script>
 document.getElementById('filterDate').addEventListener('change', function() {
-    window.location.href = '{{ route('admin.pembangkit.report') }}?date=' + this.value;
-});
+        const selectedDate = this.value;
+        fetch(`{{ route('admin.pembangkit.report') }}?date=${selectedDate}`)
+            .then(response => response.text())
+            .then(html => {
+                // Update isi tabel dengan data baru
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTableBody = doc.getElementById('reportTableBody');
+                document.getElementById('reportTableBody').innerHTML = newTableBody.innerHTML;
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    });
 
 function toggleDropdown() {
     const dropdown = document.getElementById('dropdown');

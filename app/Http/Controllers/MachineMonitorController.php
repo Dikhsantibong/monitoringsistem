@@ -15,6 +15,9 @@ class MachineMonitorController extends Controller
         $efficiencyData = $machines->map(function ($machine) {
             return [
                 'name' => $machine->name,
+                'metrics' => $machine->metrics->pluck('value')->toArray(),
+            ];
+        });
 
         return view('admin.machine-monitor.index', compact('efficiencyData'));
     }

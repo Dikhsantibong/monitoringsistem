@@ -85,6 +85,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('laporan')->group(function () {
         Route::get('/sr_wo', [LaporanController::class, 'srWo'])->name('laporan.sr_wo');
         Route::get('/sr_wo/closed', [LaporanController::class, 'srWoClosed'])->name('laporan.sr_wo_closed');
+        Route::get('/sr_wo/closed/download', [LaporanController::class, 'downloadSrWoClosed'])->name('laporan.sr_wo.closed.download');
+        Route::get('/sr_wo/closed/print', [LaporanController::class, 'printSrWoClosed'])->name('laporan.sr_wo.closed.print');
         Route::post('/store-sr', [LaporanController::class, 'storeSR'])->name('laporan.store-sr');
         Route::post('/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
     });
@@ -146,6 +148,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/generate-qrcode', [AttendanceController::class, 'generateQrCode'])->name('generate.qrcode');
     Route::post('/record-attendance', [AttendanceController::class, 'recordAttendance'])->name('record.attendance');
     Route::get('/daftar-hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
+    Route::get('/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])->name('admin.daftar_hadir.rekapitulasi');
 });
 
 // Tambahkan route untuk AJAX

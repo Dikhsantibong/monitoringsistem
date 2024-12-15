@@ -170,4 +170,63 @@ class AttendanceController extends Controller
                 ->with('error', $e->getMessage());
         }
     }
+    public function rekapitulasi(Request $request)
+    {
+        try {
+            // Validasi input
+            $request->validate([
+                'tanggal_awal' => 'nullable|date',
+                'tanggal_akhir' => 'nullable|date'
+            ]);
+
+            $query = DB::table('attendance');
+            
+            // Filter berdasarkan rentang tanggal
+            if ($request->filled(['tanggal_awal', 'tanggal_akhir'])) {
+                $query->whereDate('time', '>=', $request->tanggal_awal)
+                      ->whereDate('time', '<=', $request->tanggal_akhir);
+            } else {
+                // Default tampilkan bulan ini
+                $query->whereMonth('time', now()->month)
+                      ->whereYear('time', now()->year);
+            }
+
+            // Log query untuk debugging
+            \Log::info('Query rekapitulasi:', [
+                'sql' => $query->toSql(),
+                'bindings' => $query->getBindings()
+            ]);
+
+            $kehadiran = $query->orderBy('time', 'desc')->get();
+
+            // Hitung statistik
+            $totalKehadiran = $kehadiran->count();
+            $tepatWaktu = $kehadiran->filter(function($item) {
+                return Carbon::parse($item->time)->format('H:i:s') <= '08:00:00';
+            })->count();
+            
+            $terlambat = $totalKehadiran - $tepatWaktu;
+            
+            $statistik = [
+                'total' => $totalKehadiran,
+                'tepat_waktu' => $tepatWaktu,
+                'terlambat' => $terlambat,
+                'persentase_tepat' => $totalKehadiran > 0 ? 
+                    round(($tepatWaktu / $totalKehadiran) * 100, 2) : 0
+            ];
+
+            // Log data untuk debugging
+            \Log::info('Data statistik:', $statistik);
+
+            return view('admin.daftar_hadir.rekapitulasi', compact('kehadiran', 'statistik'));
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in rekapitulasi: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return back()
+                ->with('error', 'Terjadi kesalahan saat memuat data rekapitulasi. Silakan coba lagi.')
+                ->withInput();
+        }
+    }
 } 

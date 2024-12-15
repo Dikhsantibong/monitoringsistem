@@ -118,27 +118,25 @@
             <main class="p-6">
                 <!-- Indikator Kinerja -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-white rounded-lg shadow p-6">
+                    <div class="bg-blue-500 rounded-lg shadow p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-gray-500 text-sm font-medium">Tindakan Korektif</h3>
-                                <p class="text-3xl font-bold text-gray-800 mt-1">
-                                    {{ $machines->sum(function ($machine) {
-                                        return $machine->issues->where('status', 'closed')->count();
-                                    }) }}
+                                <h3 class="text-white text-sm font-medium">Total Mesin Aktif</h3>
+                                <p class="text-3xl font-bold text-white mt-1">
+                                    {{ $machines->count() }}
                                 </p>
                             </div>
                             <div class="bg-green-100 p-3 rounded-full">
-                                <i class="fas fa-wrench text-green-500 text-xl"></i>
+                                <i class="fas fa-cog text-green-500 text-xl"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow p-6">
+                    <div class="bg-green-500 rounded-lg shadow p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-gray-500 text-sm font-medium">Akurasi Kerja</h3>
-                                <p class="text-3xl font-bold text-gray-800 mt-1">
+                                <h3 class="text-white text-sm font-medium">Akurasi Kerja</h3>
+                                <p class="text-3xl font-bold text-white mt-1">
                                     {{ number_format($machines->flatMap->metrics->avg('achievement_percentage'), 1) }}%
                                 </p>
                             </div>
@@ -148,17 +146,17 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow p-6">
+                    <div class="bg-red-500 rounded-lg shadow p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-gray-500 text-sm font-medium">Masalah Aktif</h3>
-                                <p class="text-3xl font-bold text-gray-800 mt-1">
+                                <h3 class="text-white text-sm font-medium">Masalah Aktif</h3>
+                                <p class="text-3xl font-bold text-white mt-1">
                                     {{ $machines->sum(function ($machine) {
                                         return $machine->issues->where('status', 'open')->count();
                                     }) }}
                                 </p>
                             </div>
-                            <div class="bg-red-100 p-3 rounded-full">
+                            <div class="bg-yellow-100 p-3 rounded-full">
                                 <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
                             </div>
                         </div>
@@ -213,42 +211,27 @@
                             </div>
                             <div class="space-y-4 max-h-60 overflow-y-auto flex flex-wrap w-full">
                                 @foreach ($machines as $machine)
+                                    @php
+                                        $statusLog = $machine->statusLogs()->latest()->first(); // Ambil status terbaru
+                                    @endphp
                                     <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                                         <div class="flex-1">
                                             <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
                                             <p class="text-sm text-gray-500">Kode: {{ $machine->code }}</p>
+                                            <p class="text-sm text-gray-500">Asal Unit: {{ $statusLog->powerPlant->name ?? 'N/A' }}</p> <!-- Menampilkan asal unit -->
                                         </div>
                                         <div class="flex items-center space-x-4">
                                             <!-- Status Badge -->
                                             <span
                                                 class="px-3 py-1 rounded-full text-sm font-medium
-                                        {{ $machine->status === 'START'
+                                        {{ $statusLog && $statusLog->status === 'START'
                                             ? 'bg-green-100 text-green-800'
-                                            : ($machine->status === 'STOP'
+                                            : ($statusLog && $statusLog->status === 'STOP'
                                                 ? 'bg-red-100 text-red-800'
                                                 : 'bg-yellow-100 text-yellow-800') }}">
-                                                {{ $machine->status }}
+                                                {{ $statusLog->status ?? 'N/A' }} <!-- Menampilkan status jika ada -->
                                             </span>
-
-                                            <!-- Action Buttons -->
-                                            <div class="flex space-x-2">
-                                                <button onclick="updateMachineStatus({{ $machine->id }}, 'START')"
-                                                    class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">
-                                                    Start
-                                                </button>
-                                                <button onclick="updateMachineStatus({{ $machine->id }}, 'STOP')"
-                                                    class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">
-                                                    Stop
-                                                </button>
-                                                <button onclick="editMachine({{ $machine->id }})"
-                                                    class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                                                    Edit
-                                                </button>
-                                                <button onclick="deleteMachine({{ $machine->id }})"
-                                                    class="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600">
-                                                    Delete
-                                                </button>
-                                            </div>
+                                            <i class="fas fa-cog text-xl"></i> <!-- Ikon mesin -->
                                         </div>
                                     </div>
                                 @endforeach
