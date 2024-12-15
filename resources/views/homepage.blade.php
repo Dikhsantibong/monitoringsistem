@@ -224,6 +224,7 @@
             position: absolute;
             top: 10px;
             left: 10px;
+            z-index: 9999999999;
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 8px;
             padding: 12px;
