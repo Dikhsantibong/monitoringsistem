@@ -163,6 +163,7 @@
                         <div id="zoom-link" class="bg-gray-100 border border-gray-300 rounded-lg p-4 shadow-md">
                             <span class="font-semibold">Link Zoom:</span>
                             <a href="#" id="zoom-link-url" class="text-blue-600 underline ml-2" target="_blank"></a>
+                            <i class="fas fa-copy cursor-pointer ml-2" onclick="copyToClipboard()"></i>
                         </div>
                     </div>
 
@@ -345,13 +346,29 @@
                     zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
                     zoomLink.href = data.data.join_url;
                     document.getElementById('zoom-link-container').style.display = 'block';
-                    alert('Meeting Zoom berhasil dibuat!\nLink meeting telah ditampilkan di bawah.');
+                    
+                    // Tambahkan Sweet Alert di sini
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Meeting Zoom',
+                        text: 'Link Zoom berhasil dibuat!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
                 } else if (data.join_url) {
                     const zoomLink = document.getElementById('zoom-link-url');
                     zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
                     zoomLink.href = data.join_url;
                     document.getElementById('zoom-link-container').style.display = 'block';
-                    alert('Meeting Zoom berhasil dibuat!\nLink meeting telah ditampilkan di bawah.');
+
+                    // Tambahkan Sweet Alert di sini
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Meeting Zoom',
+                        text: 'Link Zoom berhasil dibuat!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
                 } else {
                     throw new Error('Tidak ada join URL dalam respons');
                 }
@@ -365,6 +382,26 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('zoom-link-container').style.display = 'none';
         });
+
+        function copyToClipboard() {
+            const zoomLink = document.getElementById('zoom-link-url');
+            if (zoomLink.href) {
+                navigator.clipboard.writeText(zoomLink.href).then(() => {
+                    // Tambahkan Sweet Alert di sini
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Link Disalin',
+                        text: 'Link Zoom telah disalin ke clipboard!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }).catch(err => {
+                    console.error('Gagal menyalin: ', err);
+                });
+            } else {
+                alert('Link Zoom tidak tersedia untuk disalin.');
+            }
+        }
     </script>
     
     
