@@ -103,6 +103,7 @@
                         </svg>
                     </button>
                     <h2 class="text-xl font-semibold text-gray-800">Score Card Daily</h2>
+                    <div id="timer" class="text-lg font-bold text-gray-800" style="display: none;">00:00:00</div>
                     <div class="flex items-center">
                         <div class="relative">
                             <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
@@ -127,6 +128,7 @@
             <div class="flex items-center pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Score Card Daily', 'url' => null]]" />
             </div>
+            
             <!-- Main Content -->
             <div class="container mx-auto px-4">
                 <div class="bg-white rounded-lg shadow-lg p-6">
@@ -271,7 +273,35 @@
     <script>    
         let timerInterval;
         let startTime;
+        let elapsedTime = 0; // Menyimpan waktu yang telah berlalu
         let isRunning = false;
+
+        // Cek apakah timer sedang berjalan saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            const storedStartTime = localStorage.getItem('startTime');
+            const storedElapsedTime = localStorage.getItem('elapsedTime');
+            const storedIsRunning = localStorage.getItem('isRunning');
+
+            if (storedStartTime && storedIsRunning === 'true') {
+                startTime = new Date(parseInt(storedStartTime));
+                elapsedTime = parseInt(storedElapsedTime) || 0; // Ambil waktu yang telah berlalu
+                isRunning = true;
+                updateTimerDisplay(); // Perbarui tampilan timer
+                timerInterval = setInterval(updateTimer, 1000); // Mulai interval
+
+                // Tampilkan timer
+                document.getElementById('timer').style.display = 'block'; // Tampilkan timer
+
+                // Update tombol sesuai status
+                const startButton = document.getElementById('startMeetingBtn');
+                startButton.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Rapat';
+                startButton.classList.remove('bg-green-500');
+                startButton.classList.add('bg-red-500');
+            } else {
+                // Jika timer tidak berjalan, sembunyikan timer
+                document.getElementById('timer').style.display = 'none';
+            }
+        });
 
         function startMeeting() {
             if (!isRunning) {
@@ -279,6 +309,7 @@
                 const timerDisplay = document.getElementById('timer');
                 timerDisplay.style.display = 'block';
                 startTime = new Date();
+                localStorage.setItem('startTime', startTime.getTime()); // Simpan waktu mulai
                 
                 // Change button text and color
                 const startButton = document.getElementById('startMeetingBtn');
@@ -288,6 +319,7 @@
                 
                 timerInterval = setInterval(updateTimer, 1000);
                 isRunning = true;
+                localStorage.setItem('isRunning', 'true'); // Simpan status timer
             } else {
                 stopMeeting();
             }
@@ -300,21 +332,30 @@
             startButton.classList.remove('bg-red-500');
             startButton.classList.add('bg-green-500');
             isRunning = false;
+            localStorage.setItem('isRunning', 'false'); // Update status timer
             
             // Hide timer
             document.getElementById('timer').style.display = 'none';
+            localStorage.removeItem('startTime'); // Hapus waktu mulai
+            localStorage.removeItem('elapsedTime'); // Hapus waktu yang telah berlalu
         }
 
         function updateTimer() {
             const now = new Date();
-            const diff = now - startTime;
+            elapsedTime += 1000; // Tambahkan 1 detik ke waktu yang telah berlalu
+            localStorage.setItem('elapsedTime', elapsedTime); // Simpan waktu yang telah berlalu
+
+            updateTimerDisplay(); // Perbarui tampilan timer
+        }
+
+        function updateTimerDisplay() {
+            const totalElapsedTime = elapsedTime + (isRunning ? new Date() - startTime : 0);
             
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            const hours = Math.floor(totalElapsedTime / (1000 * 60 * 60));
+            const minutes = Math.floor((totalElapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((totalElapsedTime % (1000 * 60)) / 1000);
             
             const timerDisplay = document.getElementById('timer');
-            
             timerDisplay.textContent = `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
         }
 
@@ -346,7 +387,7 @@
                     zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
                     zoomLink.href = data.data.join_url;
                     document.getElementById('zoom-link-container').style.display = 'block';
-                    
+
                     // Tambahkan Sweet Alert di sini
                     Swal.fire({
                         icon: 'success',
@@ -405,7 +446,7 @@
     </script>
     
     
-   
+{{--    
         <script>
             // Sweet Alert untuk memberitahu bahwa score card daily telah di submit
             Swal.fire({
@@ -415,7 +456,7 @@
                 showConfirmButton: false,
                 timer: 1500
             });
-        </script>
+        </script> --}}
 
 @push('scripts')
     @endpush

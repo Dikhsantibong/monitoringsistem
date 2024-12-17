@@ -215,46 +215,6 @@
         <div id="map"
             style="height: 500px; border: 1px solid #ddd; position: relative; margin-top: 100px"
             class="z-0">
-
-            <div class="accumulation-data-container"
-                style="
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 9999999999;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-width: 240px;
-            width: 100%;
-            box-sizing: border-box;
-        ">
-                <h3
-                    style="
-                color: #0095B7;
-                margin-bottom: 10px;
-                font-size: 1rem;
-                border-bottom: 1px solid #0095B7;
-                padding-bottom: 6px;
-            ">
-                    Data Akumulasi</h3>
-                <ul 
-                    style="
-                list-style-type: none;
-                padding: 0;
-                margin: 0;
-            ">
-                    @if(isset($machineStatusLogs))
-                        @foreach ($machineStatusLogs as $log)
-                        <li style="margin: 6px 0; color: #333; display: flex; align-items: center;">
-                            <span style="width: 8px; height: 8px; background-color: #0095B7; border-radius: 50%; margin-right: 8px;"></span>
-                            Proxy Assistance: Medium (ID: {{ $log->machine_id }}) - Asal Unit: {{ $log->powerPlant->name ?? 'N/A' }}
-                        </li>
-                        @endforeach
-                    @endif
-                </ul>
-            </div>
         </div>
     </div>
 
@@ -303,6 +263,7 @@
                             <th class="text-center">Beban</th>
                             <th class="text-center">Status</th>
                             <th class="text-center">Kapasitas</th>
+                            <th class="text-center">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody id="unit-table-body">
@@ -477,7 +438,7 @@
         @foreach ($markers as $marker)
             L.marker([{{ $marker['lat'] }}, {{ $marker['lng'] }}]).addTo(map)
                 .bindPopup(
-                    '{{ $marker['name'] }}<br>Kapasitas: {{ $marker['capacity'] }} MW<br>Status: {{ $marker['status'] }}'
+                    '{{ $marker['name'] }}<br>Kapasitas: {{ $marker['capacity'] }} MW<br>Status: {{ $marker['status'] }}<br><button onclick="showAccumulationData({{ $marker['id'] }})">Lihat Data Akumulasi</button>'
                 )
                 .openPopup();
         @endforeach
@@ -546,6 +507,29 @@
                 }, 100 * index);
             });
         });
+
+        function showAccumulationData(markerId) {
+            // Data akumulasi sementara
+            const accumulationData = [
+                { machine_id: 1, powerPlant: { name: 'Pembangkit Listrik A' } },
+                { machine_id: 2, powerPlant: { name: 'Pembangkit Listrik B' } },
+                { machine_id: 3, powerPlant: { name: 'Pembangkit Listrik C' } },
+            ];
+            const selectedData = accumulationData.filter(log => log.machine_id === markerId);
+
+            // Buat popup untuk menampilkan data akumulasi
+            let popupContent = '<div class="accumulation-data-container" style="position: absolute; top: 10px; left: 10px; z-index: 9999999999; background-color: rgba(255, 255, 255, 0.8); border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); max-width: 240px; width: 100%; box-sizing: border-box;"><h3 style="color: #0095B7; margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid #0095B7; padding-bottom: 6px;">Data Akumulasi</h3><ul style="list-style-type: none; padding: 0; margin: 0;">';
+            selectedData.forEach(log => {
+                popupContent += `<li style="margin: 6px 0; color: #333; display: flex; align-items: center;"><span style="width: 8px; height: 8px; background-color: #0095B7; border-radius: 50%; margin-right: 8px;"></span>Proxy Assistance: Medium (ID: ${log.machine_id}) - Asal Unit: ${log.powerPlant?.name ?? 'N/A'}</li>`;
+            });
+            popupContent += '</ul></div>';
+
+            // Tampilkan popup dengan data akumulasi di sudut kiri peta
+            L.popup()
+                .setLatLng([-3.0125, 120.5156]) // Berada di paling sudut kiri peta
+                .setContent(popupContent)
+                .openOn(map);
+        }
     </script>
     @push('scripts')
     @endpush

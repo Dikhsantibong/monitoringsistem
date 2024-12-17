@@ -53,6 +53,7 @@
         <div class="container mx-auto px-4 py-8">
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-bold mb-6">Tambah Score Card Daily</h2>
+                @include('components.timer')
                 
                 <form action="{{ route('admin.score-card.store') }}" method="POST" class="space-y-6">
                     @csrf

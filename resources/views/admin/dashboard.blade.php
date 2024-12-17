@@ -94,6 +94,7 @@
                         </svg>
                     </button>
                     <h1 class="text-xl font-semibold text-gray-800">Dashboard Admin</h1>
+                    @include('components.timer')
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
                             <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"

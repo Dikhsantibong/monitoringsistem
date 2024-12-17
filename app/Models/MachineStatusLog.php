@@ -19,11 +19,16 @@ class MachineStatusLog extends Model
         'keterangan',
         'load_value',
         'dmn',
-        'dmp'
+        'dmp',
+        'kronologi',
+        'action_plan',
+        'progres',
+        'target_selesai'
     ];
 
     protected $casts = [
-        'tanggal' => 'date'
+        'tanggal' => 'date',
+        'target_selesai' => 'date'
     ];
 
     // Relasi ke model Machine

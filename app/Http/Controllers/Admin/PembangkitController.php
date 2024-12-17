@@ -42,7 +42,11 @@ class PembangkitController extends Controller
                         'keterangan' => $log['keterangan'],
                         'load_value' => $log['load_value'],
                         'dmn' => $log['dmn'] ?? 0,
-                        'dmp' => $log['dmp'] ?? 0
+                        'dmp' => $log['dmp'] ?? 0,
+                        'kronologi' => $log['kronologi'] ?? null, // Tambahkan kolom kronologi
+                        'action_plan' => $log['action_plan'] ?? null, // Tambahkan kolom action_plan
+                        'progres' => $log['progres'] ?? null, // Tambahkan kolom progres
+                        'target_selesai' => $log['target_selesai'] ?? null // Tambahkan kolom target_selesai
                     ]);
 
                     // Simpan ke machine_operations
@@ -97,7 +101,8 @@ class PembangkitController extends Controller
                 });
             }
             
-            $logs = $query->get();
+            // Tambahkan pengurutan berdasarkan status
+            $logs = $query->orderByRaw("CASE WHEN status = 'Gangguan' THEN 0 ELSE 1 END")->get();
             
             if ($logs->isEmpty()) {
                 return response()->json([

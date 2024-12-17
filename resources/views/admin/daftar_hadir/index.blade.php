@@ -82,6 +82,7 @@
                         </svg>
                     </button>
                     <h1 class="text-xl font-semibold text-gray-800">Daftar Hadir</h1>
+                    @include('components.timer')
                     <!-- User Dropdown -->
                     <div class="relative">
                         <button id="user-menu-button" class="flex items-center gap-2 hover:text-gray-600"

@@ -1,5 +1,17 @@
 @extends('layouts.app')
 
+@push('styles')
+    <style>
+        #timer {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+            display: none; /* Sembunyikan timer secara default */
+        }
+    </style>
+@endpush
+
 @section('content')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="flex h-screen bg-gray-50 overflow-auto">
@@ -82,6 +94,7 @@
                         </svg>
                     </button>
                     <h1 class="text-xl font-semibold text-gray-800">Kesiapan Pembangkit</h1>
+                    <div id="timer" class="text-lg font-bold text-gray-800">00:00:00</div>
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
                             <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
@@ -153,15 +166,19 @@
                                     class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead style="background-color: #0A749B; color: white;">
                                         <tr>
-                                            <th class="py-2 px-4 font-medium ">Mesin</th>
-                                            <th class="py-2 px-4 font-medium ">DMN</th>
-                                            <th class="py-2 px-4 font-medium ">DMP</th>
-                                            <th class="py-2 px-4 font-medium ">Beban</th>
-                                            <th class="py-2 px-4 font-medium ">Status</th>
-                                            <th class="py-2 px-4 font-medium ">Keterangan</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Mesin</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">DMN</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">DMP</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Beban</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Status</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Deskripsi</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">kronologi</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Action Plan</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">progres</th>
+                                            <th class="py-2 px-4 font-medium ">target selesai</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-200">
+                                    <tbody class="divide-y divide-gray-200 text-xs">
                                         @foreach ($unit->machines as $machine)
                                             <tr class="odd:bg-white even:bg-gray-100 searchable-row">
                                                 <td class="py-2 px-4 border-b" data-id="{{ $machine->id }}">
@@ -195,6 +212,23 @@
                                                         value="{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}"
                                                         placeholder="Masukkan keterangan...">
                                                 </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <input type="text" class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan kronologi...">
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <input type="text" class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan action plan...">
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <select class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
+                                                        <option value="">Pilih progres</option>
+                                                        <option value="Belum Dimulai">Belum Dimulai</option>
+                                                        <option value="Sedang Berjalan">Sedang Berjalan</option>
+                                                        <option value="Selesai">Selesai</option>
+                                                    </select>
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <input type="date" class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -207,6 +241,56 @@
         </div>
     </div>
     </div>
+
+    <script>
+        let timerInterval;
+        let startTime;
+        let elapsedTime = 0; // Menyimpan waktu yang telah berlalu
+        let isRunning = false;
+
+        // Cek apakah timer sedang berjalan saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            const storedStartTime = localStorage.getItem('startTime');
+            const storedElapsedTime = localStorage.getItem('elapsedTime');
+            const storedIsRunning = localStorage.getItem('isRunning');
+
+            if (storedStartTime && storedIsRunning === 'true') {
+                startTime = new Date(parseInt(storedStartTime));
+                elapsedTime = parseInt(storedElapsedTime) || 0; // Ambil waktu yang telah berlalu
+                isRunning = true;
+                updateTimerDisplay(); // Perbarui tampilan timer
+                timerInterval = setInterval(updateTimer, 1000); // Mulai interval
+
+                // Tampilkan timer
+                document.getElementById('timer').style.display = 'block'; // Tampilkan timer
+            } else {
+                // Jika timer tidak berjalan, sembunyikan timer
+                document.getElementById('timer').style.display = 'none';
+            }
+        });
+
+        function updateTimer() {
+            const now = new Date();
+            elapsedTime += 1000; // Tambahkan 1 detik ke waktu yang telah berlalu
+            localStorage.setItem('elapsedTime', elapsedTime); // Simpan waktu yang telah berlalu
+
+            updateTimerDisplay(); // Perbarui tampilan timer
+        }
+
+        function updateTimerDisplay() {
+            const totalElapsedTime = elapsedTime + (isRunning ? new Date() - startTime : 0);
+            const hours = Math.floor(totalElapsedTime / (1000 * 60 * 60));
+            const minutes = Math.floor((totalElapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((totalElapsedTime % (1000 * 60)) / 1000);
+
+            const timerDisplay = document.getElementById('timer');
+            timerDisplay.textContent = `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
+        }
+
+        function padNumber(number) {
+            return number.toString().padStart(2, '0');
+        }
+    </script>
 @endsection
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script>
@@ -498,6 +582,8 @@
     // Load data saat halaman dimuat
     document.addEventListener('DOMContentLoaded', function() {
         loadData();
+
+        
     });
 </script>
 @push('scripts')
