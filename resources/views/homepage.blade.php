@@ -437,9 +437,9 @@
         }).addTo(map);
 
         @foreach ($markers as $marker)
-            L.marker([{{ $marker['lat'] }}, {{ $marker['lng'] }}]).addTo(map)
+            L.marker([{{ $marker->lat }}, {{ $marker->lng }}]).addTo(map)
                 .bindPopup(
-                    '{{ $marker['name'] }}<br>Kapasitas: {{ $marker['capacity'] }} MW<br>Status: {{ $marker['status'] }}<br><button onclick="showAccumulationData({{ $marker['id'] }})">Lihat Data Akumulasi</button>'
+                    '{{ $marker->name }}<br>Kapasitas: {{ $marker->capacity }} MW<br>Status: {{ $marker->status }}<br><button onclick="showAccumulationData({{ $marker->id }})">Lihat Data Akumulasi</button>'
                 )
                 .openPopup();
         @endforeach

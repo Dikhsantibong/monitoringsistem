@@ -9,14 +9,15 @@ use App\Models\Machine;
 use App\Models\PowerPlant;
 use App\Models\MachineOperation;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $units = Machine::with(['powerPlant', 'machineOperations', 'operations'])->get();
-        $markers = Marker::all()->toArray();
-        $machineOperations = MachineOperation::all(); // Ambil semua data dari tabel machine_operations
+        $units = Unit::with(['powerPlant', 'machineOperations'])->get();
+        $markers = DB::connection('up_kendari')->table('markers')->get()->toArray();
+        $machineOperations = DB::connection('up_kendari')->table('machine_operations')->get(); // Ambil semua data dari tabel machine_operations
 
         // Hitung total capacity    
         $total_capacity = $units->sum('capacity');
