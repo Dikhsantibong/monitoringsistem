@@ -208,15 +208,15 @@
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
                                                     <input type="text"
-                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
+                                                        class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500"
                                                         value="{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}"
                                                         placeholder="Masukkan keterangan...">
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    <input type="text" class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan kronologi...">
+                                                    <input type="text" class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan kronologi...">
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    <input type="text" class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan action plan...">
+                                                    <input type="text" class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan action plan...">
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
                                                     <select class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">

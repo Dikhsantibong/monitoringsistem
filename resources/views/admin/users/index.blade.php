@@ -142,9 +142,10 @@
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <div class="overflow-auto">
                                 <table id="users-table"
-                                    class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200 md:max-w-full">
+                                    class="min-w-full divide-y diavide-gray-200 border-collapse border border-gray-200 md:max-w-full">
                                     <thead>
                                         <tr style="background-color: #0A749B; color: white">
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">No</th>
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">Nama
                                             </th>
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">Email
@@ -159,8 +160,11 @@
                                         </tr>
                                     </thead>
                                     <tbody id="users-body" class="divide-y divide-gray-200">
-                                        @foreach ($users as $user)
+                                        @foreach ($users as $index => $user)
                                             <tr class="odd:bg-white even:bg-gray-100">
+                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                    {{ $index + 1 }}
+                                                </td>
                                                 <td class="text-center p-2 whitespace-nowrap">
                                                     <div class="flex items-center">
                                                         <img class="h-8 w-8 rounded-full"

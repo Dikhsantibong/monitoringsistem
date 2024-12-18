@@ -121,19 +121,12 @@
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Hasil Rapat</h2>
                     <div class="overflow-auto">
                         <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                            <thead>
+                            <thead class="sticky top-0">
                                 <tr style="background-color: #0A749B; color: white;" class="text-center">
                                     <th class="border p-2">Judul</th>
                                     <th class="border p-2">Tanggal</th>
                                     <th class="border p-2">Departemen</th>
                                     <th class="border p-2">Status</th>
-                                    <th class="border p-2">Skor</th>
-                                    <th class="border p-2">Lokasi</th>
-                                    <th class="border p-2">Peserta</th>
-                                    <th class="border p-2">Kesiapan Panitia</th>
-                                    <th class="border p-2">Kesiapan Bahan</th>
-                                    <th class="border p-2">Aktivitas Luar</th>
-                                    <th class="border p-2">Gangguan Diskusi</th>
                                 </tr>
                             </thead>
                             <tbody>

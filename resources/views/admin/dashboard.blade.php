@@ -123,36 +123,36 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <!-- Card 1 -->
                     <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}">
-                        <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
-                            <i class="fa-solid fa-users text-white text-3xl mr-3"></i>
+                        <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center" style="height: 120px;">
+                            <i class="fa-solid fa-users text-white text-5xl mr-3"></i>
                             <div class="flex-1">
-                                <h3 class="text-white text-md font-medium">PRESENTASI KEHADIRAN </h3>
+                                <h3 class="text-white text-lg font-bold">PRESENTASI <br>KEHADIRAN </h3>
                             </div>
-                            <p class="text-2xl font-bold text-white" id="total-users">
+                            <p class="text-4xl font-bold text-white" id="total-users">
                                 {{ $totalUsers }}
                             </p>
                         </div>
                     </a>
-                    <!-- Card 2 -->
+                    <!-- Card 2 --> 
                     <a href="{{ route('admin.laporan.sr_wo_closed') }}">
-                        <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
-                            <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
+                        <div class="bg-green-500 rounded-lg shadow p-6 flex items-center" style="height: 120px;">
+                            <i class="fa-solid fa-calendar-check text-white text-4xl mr-3"></i>
                             <div class="flex-1">
-                                <h3 class="text-white text-md font-medium">TOTAL SR/WO CLOSED</h3>
+                                <h3 class="text-white text-lg font-bold">TOTAL SR/WO CLOSED</h3>
                             </div>
-                            <p class="text-2xl font-bold text-white" id="today-meetings">
+                            <p class="text-3xl font-bold text-white" id="today-meetings">
                                 {{ $totalClosedSRWO }}
                             </p>
                         </div>
                     </a>
                     <!-- Card 3 -->
                     <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'" 
-                         class="bg-yellow-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors">
-                        <i class="fa-solid fa-cogs text-white text-3xl mr-3"></i>
+                         class="bg-yellow-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors" style="height: 120px;">
+                        <i class="fa-solid fa-cogs text-white text-4xl mr-3"></i>
                         <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">JUMLAH MESIN GANGGUAN</h3>
+                            <h3 class="text-white text-lg font-bold">JUMLAH MESIN GANGGUAN</h3>
                         </div>
-                        <p class="text-2xl font-bold text-white" id="machine-issues">
+                        <p class="text-3xl font-bold text-white" id="machine-issues">
                             @php
                                 $gangguanCount = \App\Models\MachineStatusLog::where('status', 'Gangguan')
                                     ->whereDate('tanggal', now())
