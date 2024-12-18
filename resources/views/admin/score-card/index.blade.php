@@ -91,18 +91,32 @@
             <!-- Header -->
             <header class="bg-white shadow-sm sticky top-0 z-10">
                 <div class="flex justify-between items-center px-6 py-3">
-                    <!-- Mobile Menu Toggle -->
-                    <button id="mobile-menu-toggle"
-                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                        aria-controls="mobile-menu" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" aria-hidden="true" data-slot="icon">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button>
-                    <h2 class="text-xl font-semibold text-gray-800">Score Card Daily</h2>
+                    <div class="flex items-center gap-x-3">
+                        <!-- Mobile Menu Toggle -->
+                        <button id="mobile-menu-toggle"
+                            class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+                        <!--  Menu Toggle Sidebar-->
+                        <button id="desktop-menu-toggle"
+                            class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+                        <h2 class="text-xl font-semibold text-gray-800">Score Card Daily</h2>
+                    </div>
+
                     <div id="timer" class="text-lg font-bold text-gray-800" style="display: none;">00:00:00</div>
                     <div class="flex items-center">
                         <div class="relative">
@@ -128,7 +142,7 @@
             <div class="flex items-center pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Score Card Daily', 'url' => null]]" />
             </div>
-            
+
             <!-- Main Content -->
             <div class="container mx-auto px-4">
                 <div class="bg-white rounded-lg shadow-lg p-6">
@@ -164,103 +178,109 @@
                     <div id="zoom-link-container" class="mt-4">
                         <div id="zoom-link" class="bg-gray-100 border border-gray-300 rounded-lg p-4 shadow-md">
                             <span class="font-semibold">Link Zoom:</span>
-                            <a href="#" id="zoom-link-url" class="text-blue-600 underline ml-2" target="_blank"></a>
+                            <a href="#" id="zoom-link-url" class="text-blue-600 underline ml-2"
+                                target="_blank"></a>
                             <i class="fas fa-copy cursor-pointer ml-2" onclick="copyToClipboard()"></i>
                         </div>
                     </div>
 
                     <div class="overflow-auto">
-     <table class="min-w-full bg-white border">
-    <thead>
-        <tr style="background-color: #0A749B; color: white;" class="text-center">
-            <th class="border p-2">No</th>
-            <th class="border p-2">Peserta</th>
-            <th class="border p-2">Awal</th>
-            <th class="border p-2">Akhir</th>
-            <th class="border p-2">Skor</th>
-            <th class="border p-2">Keterangan</th>
-        </tr>
-    </thead>
-    <tbody>
-        @php
-            $totalIndex = 0;
-        @endphp
-        @foreach ($scoreCards as $card)
-            @php
-                $peserta = json_decode($card->peserta, true);
-                $ketentuanRapat = json_decode($card->ketentuan_rapat, true);
-                $pesertaCount = count($peserta);
-                $currentIndex = 0;
-            @endphp
-            @foreach ($peserta as $jabatan => $data)
-                @php
-                    $currentIndex++;
-                @endphp
-                <tr>
-                    <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
-                    <td class="border p-2">{{ ucfirst(str_replace('_', ' ', $jabatan)) }}</td>
-                    <td class="border p-2 text-center">{{ $data['skor'] == 50 ? 0 : '' }}</td>
-                    <td class="border p-2 text-center">{{ $data['skor'] == 100 ? 1 : '' }}</td>
-                    <td class="border p-2 text-center">{{ $data['skor'] }}</td>
-                    <td class="border p-2"></td>
-                </tr>
-                @php
-                    $totalIndex++;
-                @endphp
+                        <table class="min-w-full bg-white border">
+                            <thead>
+                                <tr style="background-color: #0A749B; color: white;" class="text-center">
+                                    <th class="border p-2">No</th>
+                                    <th class="border p-2">Peserta</th>
+                                    <th class="border p-2">Awal</th>
+                                    <th class="border p-2">Akhir</th>
+                                    <th class="border p-2">Skor</th>
+                                    <th class="border p-2">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $totalIndex = 0;
+                                @endphp
+                                @foreach ($scoreCards as $card)
+                                    @php
+                                        $peserta = json_decode($card->peserta, true);
+                                        $ketentuanRapat = json_decode($card->ketentuan_rapat, true);
+                                        $pesertaCount = count($peserta);
+                                        $currentIndex = 0;
+                                    @endphp
+                                    @foreach ($peserta as $jabatan => $data)
+                                        @php
+                                            $currentIndex++;
+                                        @endphp
+                                        <tr>
+                                            <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
+                                            <td class="border p-2">{{ ucfirst(str_replace('_', ' ', $jabatan)) }}</td>
+                                            <td class="border p-2 text-center">{{ $data['skor'] == 50 ? 0 : '' }}</td>
+                                            <td class="border p-2 text-center">{{ $data['skor'] == 100 ? 1 : '' }}</td>
+                                            <td class="border p-2 text-center">{{ $data['skor'] }}</td>
+                                            <td class="border p-2"></td>
+                                        </tr>
+                                        @php
+                                            $totalIndex++;
+                                        @endphp
 
-                @if ($currentIndex === $pesertaCount)
-                <!-- Menampilkan ketentuan rapat di kolom terpisah -->
-                
-                <tr>
-                    <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
-                    <td class="border p-2">Ketepatan waktu memulai meeting</td>
-                    <td class="border p-2 text-center">START</td>
-                    <td class="border p-2 text-center">{{ $ketentuanRapat['aktifitas_meeting'] ?? 'N/A' }}</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2">-</td>
-                </tr>
-                <tr>
-                    <td class="border p-2 text-center">{{ $totalIndex + 2 }}</td>
-                    <td class="border p-2">Ketepatan waktu mengakhiri meeting</td>
-                    <td class="border p-2 text-center">FINISH</td>
-                    <td class="border p-2 text-center">{{ $ketentuanRapat['gangguan_diskusi'] ?? 'N/A' }}</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2">-</td>
-                </tr>
-                <tr>
-                    <td class="border p-2 text-center">{{ $totalIndex + 3 }}</td>
-                    <td class="border p-2">Kesiapan panitia pelaksana meeting</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2 text-center">{{ $ketentuanRapat['kesiapan_panitia'] ?? 'N/A' }}</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2">-</td>
-                </tr>
-                <tr>
-                    <td class="border p-2 text-center">{{ $totalIndex + 4 }}</td>
-                    <td class="border p-2">Kesiapan bahan oleh peserta meeting</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2 text-center">{{ $ketentuanRapat['kesiapan_bahan'] ?? 'N/A' }}</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2">-</td>
-                </tr>
-                <tr>
-                    <td class="border p-2 text-center">{{ $totalIndex + 5 }}</td>
-                    <td class="border p-2">Aktifitas di Luar Kegiatan Meeting</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2 text-center">{{ $ketentuanRapat['aktifitas_luar'] ?? 'N/A' }}</td>
-                    <td class="border p-2 text-center">-</td>
-                    <td class="border p-2">-</td>
-                </tr>
-                <!-- Tambahkan ketentuan lain dengan format serupa -->
-                @endif
-            @endforeach
-        @endforeach
-        <tr>
-            <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
-            <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
-        </tr>
-    </tbody>
-</table>
+                                        @if ($currentIndex === $pesertaCount)
+                                            <!-- Menampilkan ketentuan rapat di kolom terpisah -->
+
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
+                                                <td class="border p-2">Ketepatan waktu memulai meeting</td>
+                                                <td class="border p-2 text-center">START</td>
+                                                <td class="border p-2 text-center">
+                                                    {{ $ketentuanRapat['aktifitas_meeting'] ?? 'N/A' }}</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 2 }}</td>
+                                                <td class="border p-2">Ketepatan waktu mengakhiri meeting</td>
+                                                <td class="border p-2 text-center">FINISH</td>
+                                                <td class="border p-2 text-center">
+                                                    {{ $ketentuanRapat['gangguan_diskusi'] ?? 'N/A' }}</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 3 }}</td>
+                                                <td class="border p-2">Kesiapan panitia pelaksana meeting</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2 text-center">
+                                                    {{ $ketentuanRapat['kesiapan_panitia'] ?? 'N/A' }}</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 4 }}</td>
+                                                <td class="border p-2">Kesiapan bahan oleh peserta meeting</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2 text-center">
+                                                    {{ $ketentuanRapat['kesiapan_bahan'] ?? 'N/A' }}</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 5 }}</td>
+                                                <td class="border p-2">Aktifitas di Luar Kegiatan Meeting</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2 text-center">
+                                                    {{ $ketentuanRapat['aktifitas_luar'] ?? 'N/A' }}</td>
+                                                <td class="border p-2 text-center">-</td>
+                                                <td class="border p-2">-</td>
+                                            </tr>
+                                            <!-- Tambahkan ketentuan lain dengan format serupa -->
+                                        @endif
+                                    @endforeach
+                                @endforeach
+                                <tr>
+                                    <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
+                                    <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
 
 
 
@@ -270,7 +290,7 @@
         </div>
     </div>
     <script src="{{ asset('js/toggle.js') }}"></script>
-    <script>    
+    <script>
         let timerInterval;
         let startTime;
         let elapsedTime = 0; // Menyimpan waktu yang telah berlalu
@@ -310,13 +330,13 @@
                 timerDisplay.style.display = 'block';
                 startTime = new Date();
                 localStorage.setItem('startTime', startTime.getTime()); // Simpan waktu mulai
-                
+
                 // Change button text and color
                 const startButton = document.getElementById('startMeetingBtn');
                 startButton.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Rapat';
                 startButton.classList.remove('bg-green-500');
                 startButton.classList.add('bg-red-500');
-                
+
                 timerInterval = setInterval(updateTimer, 1000);
                 isRunning = true;
                 localStorage.setItem('isRunning', 'true'); // Simpan status timer
@@ -333,7 +353,7 @@
             startButton.classList.add('bg-green-500');
             isRunning = false;
             localStorage.setItem('isRunning', 'false'); // Update status timer
-            
+
             // Hide timer
             document.getElementById('timer').style.display = 'none';
             localStorage.removeItem('startTime'); // Hapus waktu mulai
@@ -350,11 +370,11 @@
 
         function updateTimerDisplay() {
             const totalElapsedTime = elapsedTime + (isRunning ? new Date() - startTime : 0);
-            
+
             const hours = Math.floor(totalElapsedTime / (1000 * 60 * 60));
             const minutes = Math.floor((totalElapsedTime % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((totalElapsedTime % (1000 * 60)) / 1000);
-            
+
             const timerDisplay = document.getElementById('timer');
             timerDisplay.textContent = `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
         }
@@ -370,7 +390,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
                     },
                     credentials: 'same-origin'
                 });
@@ -444,9 +465,9 @@
             }
         }
     </script>
-    
-    
-{{--    
+
+
+    {{--    
         <script>
             // Sweet Alert untuk memberitahu bahwa score card daily telah di submit
             Swal.fire({
@@ -458,6 +479,6 @@
             });
         </script> --}}
 
-@push('scripts')
+    @push('scripts')
     @endpush
 @endsection

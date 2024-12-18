@@ -115,7 +115,7 @@
         <nav class="fixed bg-cyan-600 left-0 top-0 right-0 z-50 py-3 px-6">
             <div class="container-fluid flex justify-between w-full items-center">
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="logo-left">
+                    <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="logo-left" >
                 </a>
                 <button class="navbar-toggler" type="button" onclick="toggleMobileMenu()">
                     <span class="navbar-toggler-icon"></span>
@@ -193,7 +193,7 @@
                 </div>
                 <div class="flex items-center justify-center">
                     <div class="hidden lg:block md:block">
-                        <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                        <div class="hexagon bg-[#0A749B] flex flex-col items-center justify-center h-36 w-40 md:w-56 md:h-44">
                             <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
                         </div>
                     </div>
@@ -277,6 +277,7 @@
                                 <td class="text-center {{ $unit->status === 'Aktif' ? 'text-success' : 'text-danger' }}">
                                     {{ $unit->status }}</td>
                                 <td class="text-center">{{ $unit->capacity }} MW</td>
+                                <td></td>
                             </tr>
                         @endforeach
                     </tbody>

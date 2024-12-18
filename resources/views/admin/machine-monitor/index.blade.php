@@ -69,18 +69,32 @@
             <!-- Header -->
             <header class="bg-white shadow-sm sticky top-0 z-10">
                 <div class="flex justify-between items-center px-6 py-3">
-                    <!-- Mobile Menu Toggle -->
-                    <button id="mobile-menu-toggle"
-                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                        aria-controls="mobile-menu" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" aria-hidden="true" data-slot="icon">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button>
-                    <h1 class="text-xl font-semibold text-gray-800">Dasbor Pemantauan Mesin</h1>
+                    <div class="flex items-center gap-x-3">
+                        <!-- Mobile Menu Toggle -->
+                        <button id="mobile-menu-toggle"
+                            class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+                        <!--  Menu Toggle Sidebar-->
+                        <button id="desktop-menu-toggle"
+                            class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-800">Dasbor Pemantauan Mesin</h1>
+                    </div>
+
                     @include('components.timer')
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
@@ -164,7 +178,7 @@
                     </div>
                 </div>
 
-               
+
                 <!-- Grafik Masalah dan Status Mesin -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Grafik Masalah Bulanan -->
@@ -195,7 +209,9 @@
                                         <div class="flex-1">
                                             <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
                                             <p class="text-sm text-gray-500">Kode: {{ $machine->code }}</p>
-                                            <p class="text-sm text-gray-500">Asal Unit: {{ $statusLog->powerPlant->name ?? 'N/A' }}</p> <!-- Menampilkan asal unit -->
+                                            <p class="text-sm text-gray-500">Asal Unit:
+                                                {{ $statusLog->powerPlant->name ?? 'N/A' }}</p>
+                                            <!-- Menampilkan asal unit -->
                                         </div>
                                         <div class="flex items-center space-x-4">
                                             <!-- Status Badge -->
@@ -225,27 +241,38 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Kategori</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Deskripsi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($recentIssues as $issue)
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $issue->created_at->format('M d, Y H:i') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $issue->machine->name }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $issue->category->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {{ $issue->created_at->format('M d, Y H:i') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {{ $issue->machine->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {{ $issue->category->name }}</td>
                                             <td class="px-6 py-4 text-sm text-gray-900">{{ $issue->description }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $issue->status === 'open' ? 'bg-red-100 text-red-800' : ($issue->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $issue->status === 'open' ? 'bg-red-100 text-red-800' : ($issue->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
                                                     {{ ucfirst($issue->status) }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $issue->machine->powerPlant->name ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {{ $issue->machine->powerPlant->name ?? 'N/A' }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -369,21 +396,55 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="{{ asset('js/toggle.js') }}"></script>
         <script>
-
             // Data sementara untuk demonstrasi
-            const monthlyIssuesData = [
-                { date: 'Januari', count: 10 },
-                { date: 'Februari', count: 20 },
-                { date: 'Maret', count: 15 },
-                { date: 'April', count: 25 },
-                { date: 'Mei', count: 30 },
-                { date: 'Juni', count: 35 },
-                { date: 'Juli', count: 40 },
-                { date: 'Agustus', count: 45 },
-                { date: 'September', count: 50 },
-                { date: 'Oktober', count: 55 },
-                { date: 'November', count: 60 },
-                { date: 'Desember', count: 65 }
+            const monthlyIssuesData = [{
+                    date: 'Januari',
+                    count: 10
+                },
+                {
+                    date: 'Februari',
+                    count: 20
+                },
+                {
+                    date: 'Maret',
+                    count: 15
+                },
+                {
+                    date: 'April',
+                    count: 25
+                },
+                {
+                    date: 'Mei',
+                    count: 30
+                },
+                {
+                    date: 'Juni',
+                    count: 35
+                },
+                {
+                    date: 'Juli',
+                    count: 40
+                },
+                {
+                    date: 'Agustus',
+                    count: 45
+                },
+                {
+                    date: 'September',
+                    count: 50
+                },
+                {
+                    date: 'Oktober',
+                    count: 55
+                },
+                {
+                    date: 'November',
+                    count: 60
+                },
+                {
+                    date: 'Desember',
+                    count: 65
+                }
             ];
 
             // Inisialisasi grafik
@@ -478,7 +539,7 @@
                             }
                         });
                 }
-            }   
+            }
 
             // Fungsi untuk mengupdate status mesin
             function updateMachineStatus(machineId, status) {
@@ -507,12 +568,26 @@
             }
 
             // Data sementara untuk demonstrasi efisiensi mesin
-            const efficiencyData = [
-                { name: 'Mesin 1', efficiency: 80 },
-                { name: 'Mesin 2', efficiency: 75 },
-                { name: 'Mesin 3', efficiency: 90 },
-                { name: 'Mesin 4', efficiency: 85 },
-                { name: 'Mesin 5', efficiency: 95 }
+            const efficiencyData = [{
+                    name: 'Mesin 1',
+                    efficiency: 80
+                },
+                {
+                    name: 'Mesin 2',
+                    efficiency: 75
+                },
+                {
+                    name: 'Mesin 3',
+                    efficiency: 90
+                },
+                {
+                    name: 'Mesin 4',
+                    efficiency: 85
+                },
+                {
+                    name: 'Mesin 5',
+                    efficiency: 95
+                }
             ];
 
             // Inisialisasi grafik untuk efisiensi mesin
@@ -559,11 +634,10 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
-        
+
 
         .scrollbar-hide {
             /* -ms-overflow-style: none; */
             /* scrollbar-width: none; */
         }
     </style>
-

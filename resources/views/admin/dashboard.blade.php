@@ -17,7 +17,8 @@
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
-        <aside id="mobile-menu" class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
+        <aside id="mobile-menu"
+            class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
             <div class="p-4 flex items-center gap-3">
                 <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
                 <!-- Mobile Menu Toggle -->
@@ -82,19 +83,34 @@
             <!-- Header -->
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
-                    <!-- Mobile Menu Toggle -->
-                    <button id="mobile-menu-toggle"
-                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                        aria-controls="mobile-menu" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" aria-hidden="true" data-slot="icon">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button>
-                    <h1 class="text-xl font-semibold text-gray-800">Dashboard Admin</h1>
-                    @include('components.timer')
+                    <div class="flex items-center gap-x-3">
+                        <!-- Mobile Menu Toggle -->
+                        <button id="mobile-menu-toggle"
+                            class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+
+                        <!--  Menu Toggle Sidebar-->
+                        <button id="desktop-menu-toggle"
+                            class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+
+                        <h1 class="text-xl font-semibold text-gray-800">Dashboard Admin</h1>
+                    </div>
+
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
                             <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
@@ -123,36 +139,36 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <!-- Card 1 -->
                     <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}">
-                        <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center" style="height: 120px;">
-                            <i class="fa-solid fa-users text-white text-5xl mr-3"></i>
+                        <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
+                            <i class="fa-solid fa-users text-white text-3xl mr-3"></i>
                             <div class="flex-1">
-                                <h3 class="text-white text-lg font-bold">PRESENTASI <br>KEHADIRAN </h3>
+                                <h3 class="text-white text-md font-medium">PRESENTASI KEHADIRAN </h3>
                             </div>
-                            <p class="text-4xl font-bold text-white" id="total-users">
+                            <p class="text-2xl font-bold text-white" id="total-users">
                                 {{ $totalUsers }}
                             </p>
                         </div>
                     </a>
-                    <!-- Card 2 --> 
+                    <!-- Card 2 -->
                     <a href="{{ route('admin.laporan.sr_wo_closed') }}">
-                        <div class="bg-green-500 rounded-lg shadow p-6 flex items-center" style="height: 120px;">
-                            <i class="fa-solid fa-calendar-check text-white text-4xl mr-3"></i>
+                        <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
+                            <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
                             <div class="flex-1">
-                                <h3 class="text-white text-lg font-bold">TOTAL SR/WO CLOSED</h3>
+                                <h3 class="text-white text-md font-medium">TOTAL SR/WO CLOSED</h3>
                             </div>
-                            <p class="text-3xl font-bold text-white" id="today-meetings">
+                            <p class="text-2xl font-bold text-white" id="today-meetings">
                                 {{ $totalClosedSRWO }}
                             </p>
                         </div>
                     </a>
                     <!-- Card 3 -->
-                    <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'" 
-                         class="bg-yellow-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors" style="height: 120px;">
-                        <i class="fa-solid fa-cogs text-white text-4xl mr-3"></i>
+                    <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'"
+                        class="bg-yellow-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors">
+                        <i class="fa-solid fa-cogs text-white text-3xl mr-3"></i>
                         <div class="flex-1">
-                            <h3 class="text-white text-lg font-bold">JUMLAH MESIN GANGGUAN</h3>
+                            <h3 class="text-white text-md font-medium">JUMLAH MESIN GANGGUAN</h3>
                         </div>
-                        <p class="text-3xl font-bold text-white" id="machine-issues">
+                        <p class="text-2xl font-bold text-white" id="machine-issues">
                             @php
                                 $gangguanCount = \App\Models\MachineStatusLog::where('status', 'Gangguan')
                                     ->whereDate('tanggal', now())

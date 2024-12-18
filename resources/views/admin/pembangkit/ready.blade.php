@@ -7,7 +7,8 @@
             font-weight: bold;
             color: #333;
             margin: 10px 0;
-            display: none; /* Sembunyikan timer secara default */
+            display: none;
+            /* Sembunyikan timer secara default */
         }
     </style>
 @endpush
@@ -82,18 +83,34 @@
         <div id="main-content" class="flex-1 overflow-auto">{{-- tes --}}
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-3">
-                    <!-- Mobile Menu Toggle -->
-                    <button id="mobile-menu-toggle"
-                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                        aria-controls="mobile-menu" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" aria-hidden="true" data-slot="icon">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button>
-                    <h1 class="text-xl font-semibold text-gray-800">Kesiapan Pembangkit</h1>
+                    <div class="flex items-center gap-x-3">
+                        <!-- Mobile Menu Toggle -->
+                        <button id="mobile-menu-toggle"
+                            class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+
+                        <!--  Menu Toggle Sidebar-->
+                        <button id="desktop-menu-toggle"
+                            class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true" data-slot="icon">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+
+                        <h1 class="text-xl font-semibold text-gray-800">Kesiapan Pembangkit</h1>
+                    </div>
+
                     <div id="timer" class="text-lg font-bold text-gray-800">00:00:00</div>
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
@@ -162,8 +179,7 @@
                                 <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
 
                                 <!-- Tabel Status Pembangkit -->
-                                <table
-                                    class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                                <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead style="background-color: #0A749B; color: white;">
                                         <tr>
                                             <th class="py-2 px-4 font-medium border-r border-white border-r-1">Mesin</th>
@@ -171,9 +187,12 @@
                                             <th class="py-2 px-4 font-medium border-r border-white border-r-1">DMP</th>
                                             <th class="py-2 px-4 font-medium border-r border-white border-r-1">Beban</th>
                                             <th class="py-2 px-4 font-medium border-r border-white border-r-1">Status</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Deskripsi</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">kronologi</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Action Plan</th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Deskripsi
+                                            </th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">kronologi
+                                            </th>
+                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Action Plan
+                                            </th>
                                             <th class="py-2 px-4 font-medium border-r border-white border-r-1">progres</th>
                                             <th class="py-2 px-4 font-medium ">target selesai</th>
                                         </tr>
@@ -190,7 +209,7 @@
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    <input type="number" 
+                                                    <input type="number"
                                                         class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
                                                         value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
                                                         placeholder="Masukkan beban...">
@@ -199,11 +218,16 @@
                                                     <select
                                                         class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
                                                         onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                        <option value="" style="background-color: #FFFFFF">Pilih Status</option>
-                                                        <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
-                                                        <option value="Standby" style="background-color: #2196F3">Standby</option>
-                                                        <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
-                                                        <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
+                                                        <option value="" style="background-color: #FFFFFF">Pilih
+                                                            Status</option>
+                                                        <option value="Operasi" style="background-color: #4CAF50">Operasi
+                                                        </option>
+                                                        <option value="Standby" style="background-color: #2196F3">Standby
+                                                        </option>
+                                                        <option value="Gangguan" style="background-color: #f44336">
+                                                            Gangguan</option>
+                                                        <option value="Pemeliharaan" style="background-color: #FF9800">
+                                                            Pemeliharaan</option>
                                                     </select>
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
@@ -213,13 +237,18 @@
                                                         placeholder="Masukkan keterangan...">
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    <input type="text" class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan kronologi...">
+                                                    <input type="text"
+                                                        class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500"
+                                                        placeholder="Masukkan kronologi...">
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    <input type="text" class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500" placeholder="Masukkan action plan...">
+                                                    <input type="text"
+                                                        class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500"
+                                                        placeholder="Masukkan action plan...">
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    <select class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
+                                                    <select
+                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
                                                         <option value="">Pilih progres</option>
                                                         <option value="Belum Dimulai">Belum Dimulai</option>
                                                         <option value="Sedang Berjalan">Sedang Berjalan</option>
@@ -227,7 +256,8 @@
                                                     </select>
                                                 </td>
                                                 <td class="py-2 px-4 border-b">
-                                                    <input type="date" class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
+                                                    <input type="date"
+                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -297,7 +327,7 @@
     function searchTables() {
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
         const filterDate = document.getElementById('filterDate').value;
-        
+
         // Tampilkan loading indicator
         const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
         const loadingIndicator = document.createElement('div');
@@ -307,13 +337,13 @@
             <div class="mt-2 text-gray-600">Memuat data...</div>
         `;
         mainContent.appendChild(loadingIndicator);
-        
+
         fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${filterDate}&search=${searchInput}`)
             .then(response => response.json())
             .then(result => {
                 // Hapus loading indicator
                 loadingIndicator.remove();
-                
+
                 if (result.success) {
                     updateTablesWithSearchResult(result.data);
                 } else {
@@ -322,7 +352,7 @@
                     Array.from(unitTables).forEach(table => {
                         table.style.display = 'none';
                     });
-                    
+
                     // Tampilkan pesan tidak ada data
                     const noDataMessage = document.createElement('div');
                     noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
@@ -340,35 +370,35 @@
     function updateTablesWithSearchResult(data) {
         const unitTables = document.getElementsByClassName('unit-table');
         const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
-        
+
         // Hapus pesan "Data tidak ditemukan" jika ada
         const existingMessage = mainContent.querySelector('.text-center.py-8');
         if (existingMessage) {
             existingMessage.remove();
         }
-        
+
         // Sembunyikan semua tabel dan baris terlebih dahulu
         Array.from(unitTables).forEach(table => {
             table.style.display = 'none';
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => row.style.display = 'none');
         });
-        
+
         // Tampilkan hanya data yang sesuai dengan pencarian
         data.forEach(log => {
             const machineId = log.machine_id;
             const row = document.querySelector(`td[data-id="${machineId}"]`)?.closest('tr');
             const unitTable = row?.closest('.unit-table');
-            
+
             if (row && unitTable) {
                 unitTable.style.display = '';
                 row.style.display = '';
-                
+
                 // Update nilai-nilai di row
                 const select = row.querySelector('select');
                 const inputKeterangan = row.querySelector('input[type="text"]');
                 const inputBeban = row.querySelector('td:nth-child(4) input');
-                
+
                 if (select) {
                     select.value = log.status || '';
                     select.style.backgroundColor = getStatusColor(log.status);
@@ -400,93 +430,93 @@
 </script>
 
 <script>
-   function saveData() {
-    const data = [];
-    const tables = document.querySelectorAll('.unit-table table');
-    const tanggal = document.getElementById('filterDate').value;
+    function saveData() {
+        const data = [];
+        const tables = document.querySelectorAll('.unit-table table');
+        const tanggal = document.getElementById('filterDate').value;
 
-    tables.forEach(table => {
-        const rows = table.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-            const select = row.querySelector('select');
-            const inputKeterangan = row.querySelector('input[type="text"]');
-            const inputBeban = row.querySelector('td:nth-child(4) input');
-            
-            // Ambil nilai DMN dan DMP dari kolom tabel
-            const dmnValue = row.querySelector('td:nth-child(2)').textContent.trim();
-            const dmpValue = row.querySelector('td:nth-child(3)').textContent.trim();
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+                const select = row.querySelector('select');
+                const inputKeterangan = row.querySelector('input[type="text"]');
+                const inputBeban = row.querySelector('td:nth-child(4) input');
 
-            // Hanya tambahkan ke data jika status tidak kosong
-            if (select.value) {
-                data.push({
-                    machine_id: machineId,
-                    tanggal: tanggal,
-                    status: select.value,
-                    keterangan: inputKeterangan.value.trim() || null,
-                    load_value: inputBeban.value || null,
-                    dmn: dmnValue !== 'N/A' ? parseFloat(dmnValue) : 0,
-                    dmp: dmpValue !== 'N/A' ? parseFloat(dmpValue) : 0
-                });
+                // Ambil nilai DMN dan DMP dari kolom tabel
+                const dmnValue = row.querySelector('td:nth-child(2)').textContent.trim();
+                const dmpValue = row.querySelector('td:nth-child(3)').textContent.trim();
+
+                // Hanya tambahkan ke data jika status tidak kosong
+                if (select.value) {
+                    data.push({
+                        machine_id: machineId,
+                        tanggal: tanggal,
+                        status: select.value,
+                        keterangan: inputKeterangan.value.trim() || null,
+                        load_value: inputBeban.value || null,
+                        dmn: dmnValue !== 'N/A' ? parseFloat(dmnValue) : 0,
+                        dmp: dmpValue !== 'N/A' ? parseFloat(dmpValue) : 0
+                    });
+                }
+            });
+        });
+
+        if (data.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Pilih status terlebih dahulu!'
+            });
+            return;
+        }
+
+        // Tampilkan loading indicator
+        Swal.fire({
+            title: 'Menyimpan Data',
+            text: 'Mohon tunggu...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
         });
-    });
 
-    if (data.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan',
-            text: 'Pilih status terlebih dahulu!'
-        });
-        return;
-    }
-
-    // Tampilkan loading indicator
-    Swal.fire({
-        title: 'Menyimpan Data',
-        text: 'Mohon tunggu...',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
-    fetch('{{ route('admin.pembangkit.save-status') }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            logs: data
-        })
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: 'Data berhasil disimpan!',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                // Refresh data setelah berhasil simpan
-                loadData();
+        fetch('{{ route('admin.pembangkit.save-status') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    logs: data
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Data berhasil disimpan!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Refresh data setelah berhasil simpan
+                        loadData();
+                    });
+                } else {
+                    throw new Error(result.message || 'Gagal menyimpan data');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Terjadi kesalahan saat menyimpan data!'
+                });
             });
-        } else {
-            throw new Error(result.message || 'Gagal menyimpan data');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.message || 'Terjadi kesalahan saat menyimpan data!'
-        });
-    });
-}
+    }
 
     function confirmReset() {
         Swal.fire({
@@ -525,7 +555,7 @@
                 inputBeban.value = '';
             });
         });
-        
+
     }
 
     // Fungsi untuk memuat data
@@ -583,7 +613,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadData();
 
-        
+
     });
 </script>
 @push('scripts')
