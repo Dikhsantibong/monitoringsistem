@@ -179,85 +179,95 @@
                                 <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
 
                                 <!-- Tabel Status Pembangkit -->
-                                <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                    <thead style="background-color: #0A749B; color: white;">
+                                <table class="min-w-full bg-white">
+                                    <thead>
                                         <tr>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Mesin</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">DMN</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">DMP</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Beban</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Status</th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Deskripsi
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Mesin
                                             </th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">kronologi
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                DMN
                                             </th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">Action Plan
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                DMP
                                             </th>
-                                            <th class="py-2 px-4 font-medium border-r border-white border-r-1">progres</th>
-                                            <th class="py-2 px-4 font-medium ">target selesai</th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Beban
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Status
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Deskripsi
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Kronologi
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Action Plan
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Progres
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center">
+                                                Target Selesai
+                                            </th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-200 text-sm">
+                                    <tbody class="text-sm">
                                         @foreach ($unit->machines as $machine)
-                                            <tr class="odd:bg-white even:bg-gray-100 searchable-row">
-                                                <td class="py-2 px-4 border-b" data-id="{{ $machine->id }}">
-                                                    {{ $machine->name }}</td>
-                                                <td class="py-2 px-4 border-b">
+                                            <tr class="hover:bg-gray-50 border-b border-gray-200">
+                                                <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
+                                                    {{ $machine->name }}
+                                                </td>
+                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800">
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
+                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800">
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <input type="number"
-                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <input type="number" 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
                                                         value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
                                                         placeholder="Masukkan beban...">
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <select
-                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500"
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
                                                         onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                        <option value="" style="background-color: #FFFFFF">Pilih
-                                                            Status</option>
-                                                        <option value="Operasi" style="background-color: #4CAF50">Operasi
-                                                        </option>
-                                                        <option value="Standby" style="background-color: #2196F3">Standby
-                                                        </option>
-                                                        <option value="Gangguan" style="background-color: #f44336">
-                                                            Gangguan</option>
-                                                        <option value="Pemeliharaan" style="background-color: #FF9800">
-                                                            Pemeliharaan</option>
+                                                        <option value="" style="background-color: #FFFFFF">Pilih Status</option>
+                                                        <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
+                                                        <option value="Standby" style="background-color: #2196F3">Standby</option>
+                                                        <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
+                                                        <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
                                                     </select>
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <input type="text"
-                                                        class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500"
-                                                        value="{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}"
-                                                        placeholder="Masukkan keterangan...">
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <textarea 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                        rows="2" placeholder="Masukkan deskripsi...">{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}</textarea>
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <input type="text"
-                                                        class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500"
-                                                        placeholder="Masukkan kronologi...">
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <textarea 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                        rows="2" placeholder="Masukkan kronologi..."></textarea>
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <input type="text"
-                                                        class="w-full px-2 py-4 border rounded focus:outline-none focus:border-blue-500"
-                                                        placeholder="Masukkan action plan...">
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <textarea 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                        rows="2" placeholder="Masukkan action plan..."></textarea>
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <select
-                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800">
                                                         <option value="">Pilih progres</option>
                                                         <option value="Belum Dimulai">Belum Dimulai</option>
                                                         <option value="Sedang Berjalan">Sedang Berjalan</option>
                                                         <option value="Selesai">Selesai</option>
                                                     </select>
                                                 </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <input type="date"
-                                                        class="w-full px-2 py-1 border rounded focus:outline-none focus:border-blue-500">
+                                                <td class="px-3 py-2">
+                                                    <input type="date" 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800">
                                                 </td>
                                             </tr>
                                         @endforeach
