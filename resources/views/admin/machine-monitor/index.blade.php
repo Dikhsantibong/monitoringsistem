@@ -623,6 +623,12 @@
                     }
                 }
             });
+
+            function populateEditForm(machine) {
+                document.getElementById('name').value = machine.name;
+                document.getElementById('code').value = machine.code;
+                // Isi input lainnya sesuai kebutuhan
+            }
         </script>
 
         @push('scripts')

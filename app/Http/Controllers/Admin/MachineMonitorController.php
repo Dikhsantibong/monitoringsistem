@@ -73,6 +73,9 @@ class MachineMonitorController extends Controller
         // Ambil data dari MachineStatusLog
         $machineStatusLogs = MachineStatusLog::with('machine')->get(); // Ambil data status mesin
 
+        // Ambil semua power plants untuk filter
+        $powerPlants = PowerPlant::all();
+
         return view('admin.machine-monitor.index', compact(
             'machines',
             'healthCategories',
@@ -80,7 +83,8 @@ class MachineMonitorController extends Controller
             'uptime',
             'recentIssues',
             'machineStatusLogs',
-            'efficiencyData'
+            'efficiencyData',
+            'powerPlants'
         ));
     }
 
@@ -177,7 +181,8 @@ class MachineMonitorController extends Controller
     public function showMachine(Machine $machine)
     {
         $machine->load(['metrics', 'issues']);
-        return view('admin.machine-monitor.show', compact('machine'));
+        $powerPlants = PowerPlant::all(); // Ambil semua power plants untuk filter
+        return view('admin.machine-monitor.show', compact('machine', 'powerPlants'));
     }
 
     public function updateMachine(Request $request, Machine $machine)
@@ -241,10 +246,10 @@ public function show(Machine $machine)
     return view('admin.machine-monitor.show', compact('machine', 'machines'));
 }
 
-    public function edit(Machine $machine)
+    public function edit($id)
     {
-        $categories = Category::all(); // Ambil semua kategori mesin
-        return view('admin.machine-monitor.edit', compact('machine', 'categories'));
+        $item = Machine::findOrFail($id);
+        return view('admin.machine-monitor.edit', compact('item'));
     }
 
     public function update(Request $request, Machine $machine)

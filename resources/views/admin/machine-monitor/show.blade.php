@@ -102,7 +102,7 @@
                         <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
                         <i class="fas fa-caret-down ml-2 text-gray-600"></i>
                     </button>
-                    <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                    <div id=    "dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
                         <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
@@ -112,16 +112,85 @@
                 </div>
             </div>
         </header>
+        <div class="mt-3">
+            <x-admin-breadcrumb :breadcrumbs="[
+                        ['name' => 'Monitor Mesin', 'url' => route('admin.machine-monitor')],
+                        ['name' => 'Detail Mesin', 'url' => null]
+                    ]" />
+        </div>
 
-        <!-- Content -->
+        <!-- Content -->    
         <div class="container mx-auto px-6 py-8">
             <!-- Header & Breadcrumb -->
             <div class="mb-4">
                 <div class="flex justify-between items-center mb-2">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">Detail Monitor Mesin</h2>
+                 
+                  
+                </div>
+                
+            </div>
+
+                {{-- <!-- Summary Cards -->
+                <div class="grid grid-cols-3 gap-4 mb-6 mt-2">
+                    <!-- Total Mesin Card -->
+                    <div class="bg-[#4285F4] rounded-lg p-4 shadow-sm hover:shadow-md transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-xs mb-1">Total Mesin</p>
+                                <p class="text-2xl font-bold text-white">{{ count($machines) }}</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <i class="fas fa-cogs text-xl text-white"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-3">
+
+                    <!-- Mesin Aktif Card -->
+                    <div class="bg-[#34A853] rounded-lg p-4 shadow-sm hover:shadow-md transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-xs mb-1">Mesin Aktif</p>
+                                <p class="text-2xl font-bold text-white">{{ $machines->where('status', 'START')->count() }}</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <i class="fas fa-play text-xl text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mesin Nonaktif Card -->
+                    <div class="bg-[#EA4335] rounded-lg p-4 shadow-sm hover:shadow-md transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-xs mb-1">Mesin Nonaktif</p>
+                                <p class="text-2xl font-bold text-white">{{ $machines->where('status', 'STOP')->count() }}</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <i class="fas fa-stop text-xl text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div> --}}
+
+            <!-- Machine List Table -->
+            <div class="bg-white rounded-lg shadow p-6 sm:p-3">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Daftar Status Mesin</h3>
+                    <span class="text-sm text-gray-500">
+                        Last Updated: <span class="font-medium">{{ now()->format('H:i:s') }}</span>
+                    </span>
+                </div>
+                
+                <div class="overflow-auto">
+                    <div class="flex items-center gap-3 mb-4 justify-end">
+                        <div class="flex">
+                            <input type="text" id="searchInput" placeholder="Cari..."
+                                class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500" onkeyup="searchMachines()">
+                            <button onclick="searchMachines()"
+                                class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
                         <button onclick="refreshTable()" 
                             class="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all">
                             <i class="fas fa-sync-alt"></i>
@@ -133,118 +202,64 @@
                             <span>Kembali</span>
                         </a>
                     </div>
-                </div>
-                <x-admin-breadcrumb :breadcrumbs="[
-                    ['name' => 'Monitor Mesin', 'url' => route('admin.machine-monitor')],
-                    ['name' => 'Detail Mesin', 'url' => null]
-                ]" />
-            </div>
-
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-3 gap-4 mb-6 mt-2">
-                <!-- Total Mesin Card -->
-                <div class="bg-[#4285F4] rounded-lg p-4 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-white/80 text-xs mb-1">Total Mesin</p>
-                            <p class="text-2xl font-bold text-white">{{ count($machines) }}</p>
-                        </div>
-                        <div class="bg-white/20 p-3 rounded-lg">
-                            <i class="fas fa-cogs text-xl text-white"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mesin Aktif Card -->
-                <div class="bg-[#34A853] rounded-lg p-4 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-white/80 text-xs mb-1">Mesin Aktif</p>
-                            <p class="text-2xl font-bold text-white">{{ $machines->where('status', 'START')->count() }}</p>
-                        </div>
-                        <div class="bg-white/20 p-3 rounded-lg">
-                            <i class="fas fa-play text-xl text-white"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mesin Nonaktif Card -->
-                <div class="bg-[#EA4335] rounded-lg p-4 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-white/80 text-xs mb-1">Mesin Nonaktif</p>
-                            <p class="text-2xl font-bold text-white">{{ $machines->where('status', 'STOP')->count() }}</p>
-                        </div>
-                        <div class="bg-white/20 p-3 rounded-lg">
-                            <i class="fas fa-stop text-xl text-white"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Machine List Table -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800">Daftar Status Mesin</h3>
-                        <span class="text-sm text-gray-500">
-                            Last Updated: <span class="font-medium">{{ now()->format('H:i:s') }}</span>
-                        </span>
-                    </div>
-                    
-                    <div class="overflow-x-auto max-h-[calc(100vh-500px)] rounded-lg border border-gray-200">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50 sticky top-0">
-                                <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">ID Mesin</th>
-                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Nama Mesin</th>
-                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Status</th>
-                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Tanggal Pembaruan</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($machines as $machine)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-sm font-medium text-gray-900">#{{ str_pad($machine->id, 3, '0', STR_PAD_LEFT) }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-cog text-gray-500"></i>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $machine->name }}</div>
-                                            </div>
+                    <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                        <thead class="bg-blue-500 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">ID Mesin</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Nama Mesin</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Tanggal Pembaruan</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Asal Unit</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="machineTable" class="bg-white divide-y divide-gray-200 border border-gray-200 border-l-0 border-r-0">
+                            @forelse($machines as $machine)
+                            <tr class="hover:bg-gray-50 transition-colors border border-gray-200 border-l-0 border-r-0">
+                                <td class="px-4 py-3 border-r border-gray-200 whitespace-nowrap">
+                                    <span class="text-sm font-medium text-gray-900">#{{ str_pad($machine->id, 3, '0', STR_PAD_LEFT) }}</span>
+                                </td>
+                                <td class="px-4 py-3 border-r border-gray-200 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-cog text-gray-500"></i>
                                         </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1.5 inline-flex items-center gap-1.5 text-xs font-medium rounded-full 
-                                            {{ $machine->status === 'START' 
-                                                ? 'bg-[#E8F5E9] text-[#1B5E20] border border-[#A5D6A7]' 
-                                                : 'bg-[#FFEBEE] text-[#B71C1C] border border-[#FFCDD2]' }}">
-                                            <span class="w-1.5 h-1.5 rounded-full 
-                                                {{ $machine->status === 'START' ? 'bg-[#2E7D32]' : 'bg-[#C62828]' }}">
-                                            </span>
-                                            {{ $machine->status }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-500">
-                                            {{ \Carbon\Carbon::parse($machine->updated_at)->format('Y-m-d H:i:s') }}
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ $machine->name }}</div>
                                         </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                                        Tidak ada data mesin yang tersedia
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 border-r border-gray-200 whitespace-nowrap">
+                                    <div class="text-sm text-gray-500">
+                                        {{ \Carbon\Carbon::parse($machine->updated_at)->format('Y-m-d H:i:s') }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 border-r border-gray-200 whitespace-nowrap">
+                                    <span class="text-sm font-medium text-gray-900">{{ $machine->powerPlant->name ?? 'N/A' }}</span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="flex space-x-2">
+                                        <a href="javascript:void(0);" onclick="openPopup({{ $machine->id }})" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" method="POST" onsubmit="return showDeleteConfirmation(event, '{{ $machine->name }}', this);">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                    Tidak ada data mesin yang tersedia
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -296,5 +311,94 @@ function refreshTable() {
         location.reload();
     }, 500);
 }
+
+function openPopup(machineId) {
+    const editUrl = `{{ url('admin/machine-monitor') }}/${machineId}/edit`;
+    fetch(editUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(html => {
+            document.querySelector('#editModal .modal-body').innerHTML = html;
+            $('#editModal').modal('show'); // Menampilkan modal
+        })
+        .catch(error => console.error('Error fetching edit form:', error));
+}
+
+function closePopup() {
+    document.getElementById('editPopup').style.display = 'none';
+}
+
+// Tambahkan event listener pada ikon edit
+document.querySelectorAll('.edit-icon').forEach(icon => {
+    icon.addEventListener('click', openPopup);
+});
+
+function showDeleteConfirmation(event, machineName, form) {
+    event.preventDefault(); // Mencegah pengiriman form secara langsung
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "Anda akan menghapus mesin: " + machineName,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit(); // Mengirim form jika pengguna mengkonfirmasi
+        }
+    });
+}
+
+function searchMachines() {
+    const input = document.getElementById('search').value.toLowerCase();
+    const rows = document.querySelectorAll('#machineTable tr');
+
+    rows.forEach(row => {
+        const machineName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase();
+        if (machineName && machineName.includes(input)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function redirectToShowPage() {
+    window.location.href = "{{ route('admin.machine-monitor') }}"; // Ganti dengan rute yang sesuai
+}
 </script>
+
+<!-- Modal untuk Edit -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Data Mesin</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="redirectToShowPage()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Konten edit akan dimuat di sini -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="redirectToShowPage()">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tombol untuk menguji modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editModal">
+    Test Modal
+</button>
+
+@push('scripts')
+@endpush
 @endsection

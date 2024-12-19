@@ -73,8 +73,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{machine}/edit', [MachineMonitorController::class, 'edit'])->name('machine-monitor.edit');
         Route::put('/{machine}', [MachineMonitorController::class, 'update'])->name('machine-monitor.update');
         Route::get('admin/machine/{machine}/edit', [MachineMonitorController::class, 'edit'])->name('admin.machine.edit');
-        Route::delete('admin/machine/{machine}', [MachineMonitorController::class, 'destroy'])->name('admin.machine.destroy');
+Route::delete('admin/machine/{machine}', [MachineMonitorController::class, 'destroy'])->name('admin.machine.destroy');
         Route::delete('/{machine}', [MachineMonitorController::class, 'destroy'])->name('machine-monitor.destroy');
+        
+Route::get('admin/machine-monitor/{id}/edit', [MachineMonitorController::class, 'edit'])->name('admin.machine-monitor.edit');
     // Route::get('/crud', [MachineMonitorController::class, 'crud'])->name('machine-monitor.crud');
             
     });
