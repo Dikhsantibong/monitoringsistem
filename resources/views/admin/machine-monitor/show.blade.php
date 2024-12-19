@@ -109,9 +109,11 @@
                             @csrf
                         </form>
                     </div>
-                </div>
+                </div>      
             </div>
         </header>
+
+        <!-- Menaikkan posisi konten detail mesin -->
         <div class="mt-3">
             <x-admin-breadcrumb :breadcrumbs="[
                         ['name' => 'Monitor Mesin', 'url' => route('admin.machine-monitor')],
@@ -122,7 +124,7 @@
         <!-- Content -->    
         <div class="container mx-auto px-6 py-8">
             <!-- Header & Breadcrumb -->
-            <div class="mb-4">
+            <div class="mb-2">
                 <div class="flex justify-between items-center mb-2">
                  
                   
