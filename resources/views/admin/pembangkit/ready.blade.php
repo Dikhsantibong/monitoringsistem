@@ -245,26 +245,29 @@
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan deskripsi..." style="height: 100px;">{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}</textarea>
+                                                        rows="2" placeholder="Masukkan deskripsi..." style="height: 100px;" name="deskripsi[{{ $machine->id }}]">{{ $operations->where('machine_id', $machine->id)->first()->deskripsi ?? '' }}</textarea>
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan kronologi..." style="height: 100px;"></textarea>
+                                                        rows="2" placeholder="Masukkan kronologi..." style="height: 100px;" name="kronologi[{{ $machine->id }}]"></textarea>
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan action plan..." style="height: 100px;"></textarea>
+                                                        rows="2" placeholder="Masukkan action plan..." style="height: 100px;" name="action_plan[{{ $machine->id }}]"></textarea>
                                                 </td>
                                                 <td class="px-3 py-2">
-                                                    <textarea 
+                                                    <input type="text" 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan progres..." style="height: 100px;"></textarea>
-                                                </td>
+                                                        name="progres[{{ $machine->id }}]" 
+                                                        value="{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}"
+                                                        placeholder="Masukkan progres...">
+                                                </td>   
                                                 <td class="px-3 py-2">
                                                     <input type="date" 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800">
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
+                                                        name="target_selesai[{{ $machine->id }}]">
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -447,23 +450,23 @@
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
                 const select = row.querySelector('select');
-                const inputKeterangan = row.querySelector('input[type="text"]');
+                const inputDeskripsi = row.querySelector('textarea[name="deskripsi[' + machineId + ']"]');
+                const inputActionPlan = row.querySelector('textarea[name="action_plan[' + machineId + ']"]');
                 const inputBeban = row.querySelector('td:nth-child(4) input');
-                const inputProgres = row.querySelector('td:nth-child(8) input');
-                const inputKronologi = row.querySelector('td:nth-child(7) textarea');
-                const inputActionPlan = row.querySelector('td:nth-child(6) textarea');
-                const inputTargetSelesai = row.querySelector('td:nth-child(9) input');
+                const inputProgres = row.querySelector('input[name="progres[' + machineId + ']"]');
+                const inputKronologi = row.querySelector('textarea[name="kronologi[' + machineId + ']"]');
+                const inputTargetSelesai = row.querySelector('input[name="target_selesai[' + machineId + ']"]');
 
                 if (select && select.value) {
                     data.push({
                         machine_id: machineId,
                         tanggal: tanggal,
                         status: select.value,
-                        keterangan: inputKeterangan ? inputKeterangan.value.trim() : null,
+                        deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
+                        action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
                         load_value: inputBeban ? inputBeban.value : null,
                         progres: inputProgres ? inputProgres.value.trim() : null,
                         kronologi: inputKronologi ? inputKronologi.value.trim() : null,
-                        action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
                         target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
                     });
                 }
@@ -504,7 +507,7 @@
                 console.log(result);
                 if (result.success) {
                     Swal.fire({
-                        icon: 'success',
+                        icon: 'success',    
                         title: 'Berhasil',
                         text: 'Data berhasil disimpan!',
                         timer: 1500,

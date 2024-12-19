@@ -16,11 +16,11 @@ class MachineStatusLog extends Model
         'machine_id',
         'tanggal',
         'status',
-        'keterangan',
         'load_value',
         'dmn',
         'dmp',
         'kronologi',
+        'deskripsi',
         'action_plan',
         'progres',
         'target_selesai'

@@ -35,33 +35,28 @@ class PembangkitController extends Controller
             \Log::info('Data yang diterima untuk disimpan:', $request->logs);
             
             foreach ($request->logs as $log) {
+                // Pastikan deskripsi ada dalam log
+                if (!isset($log['deskripsi'])) {
+                    \Log::error('Deskripsi tidak ditemukan untuk machine_id: ' . $log['machine_id']);
+                    continue; // Lewati jika deskripsi tidak ada
+                }
+
                 // Hanya simpan jika ada nilai yang diinputkan
-                if (!empty($log['status']) || !empty($log['keterangan']) || !empty($log['load_value'])) {
+                if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
                     // Simpan ke machine_status_logs
                     MachineStatusLog::create([
                         'machine_id' => $log['machine_id'],
                         'tanggal' => $log['tanggal'],
                         'status' => $log['status'],
-                        'keterangan' => $log['keterangan'],
                         'load_value' => $log['load_value'],
                         'dmn' => $log['dmn'] ?? 0,
                         'dmp' => $log['dmp'] ?? 0,
-                        'kronologi' => $log['kronologi'] ?? null, // Tambahkan kolom kronologi
-                        'action_plan' => $log['action_plan'] ?? null, // Tambahkan kolom action_plan
-                        'progres' => $log['progres'] ?? null, // Tambahkan kolom progres
-                        'target_selesai' => $log['target_selesai'] ?? null // Tambahkan kolom target_selesai
+                        'deskripsi' => $log['deskripsi'] ?? null,
+                        'kronologi' => $log['kronologi'] ?? null,
+                        'action_plan' => $log['action_plan'] ?? null,
+                        'progres' => $log['progres'] ?? null,
+                        'target_selesai' => $log['target_selesai'] ?? null
                     ]);
-
-                    // Simpan ke machine_operations
-                    // MachineOperation::create([
-                    //     'machine_id' => $log['machine_id'],
-                    //     'dmn' => $log['dmn'] ?? 0,
-                    //     'dmp' => $log['dmp'] ?? 0,
-                    //     'load_value' => $log['load_value'],
-                    //     'recorded_at' => $log['tanggal'],
-                    //     'status' => $log['status'],
-                    //     'keterangan' => $log['keterangan']
-                    // ]);
                 }
             }
             
@@ -100,7 +95,7 @@ class PembangkitController extends Controller
                         $q->where('name', 'LIKE', "%{$search}%");
                     })
                     ->orWhere('status', 'LIKE', "%{$search}%")
-                    ->orWhere('keterangan', 'LIKE', "%{$search}%");
+                    ->orWhere('deskripsi', 'LIKE', "%{$search}%");
                 });
             }
             
@@ -138,7 +133,7 @@ class PembangkitController extends Controller
                 ->select([
                     'msl.tanggal',
                     'msl.status',
-                    'msl.keterangan',
+                    'msl.deskripsi',
                     'm.name as machine_name',
                     'pp.name as unit_name'
                 ])
