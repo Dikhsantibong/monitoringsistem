@@ -227,4 +227,44 @@ class MachineMonitorController extends Controller
     $categories = Category::all(); // Ambil semua kategori mesin
     return view('admin.machine-monitor.create', compact('categories'));
 }
-} 
+
+public function crud()
+{
+    return view('admin.machine-monitor.crud');
+}
+
+public function show(Machine $machine)
+{
+    // Ambil semua mesin untuk ditampilkan di tampilan
+    $machines = Machine::all(); // Ambil semua mesin
+
+    return view('admin.machine-monitor.show', compact('machine', 'machines'));
+}
+
+    public function edit(Machine $machine)
+    {
+        $categories = Category::all(); // Ambil semua kategori mesin
+        return view('admin.machine-monitor.edit', compact('machine', 'categories'));
+    }
+
+    public function update(Request $request, Machine $machine)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:machines,code,' . $machine->id,
+            'category_id' => 'required|exists:categories,id',
+            'location' => 'required|string|max:255',
+            'status' => 'required|in:START,STOP,PARALLEL',
+            'description' => 'nullable|string'
+        ]);
+
+        try {
+            $machine->update($validated);
+            Alert::success('Berhasil', 'Mesin berhasil diperbarui');
+            return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil diperbarui!');
+        } catch (\Exception $e) {
+            Alert::error('Gagal', 'Gagal memperbarui mesin: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Gagal memperbarui mesin: ' . $e->getMessage()]);
+        }
+    }
+}

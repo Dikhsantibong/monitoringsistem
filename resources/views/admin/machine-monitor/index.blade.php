@@ -133,19 +133,19 @@
             <main class="p-6">
                 <!-- Indikator Kinerja -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-blue-500 rounded-lg shadow p-6">
+                    <a href="{{ route('admin.machine-monitor.show', ['machine' => 1]) }}" class="bg-blue-500 rounded-lg shadow p-6 hover:bg-blue-600">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-white text-sm font-medium">Total Mesin Aktif</h3>
+                                <h3 class="text-white text-sm font-medium">Total Mesin</h3>
                                 <p class="text-3xl font-bold text-white mt-1">
-                                    {{ $machines->count() }}
+                                    {{ App\Models\Machine::count() }}
                                 </p>
                             </div>
                             <div class="bg-green-100 p-3 rounded-full">
                                 <i class="fas fa-cog text-green-500 text-xl"></i>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <div class="bg-green-500 rounded-lg shadow p-6">
                         <div class="flex items-center justify-between">

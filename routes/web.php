@@ -68,8 +68,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [MachineMonitorController::class, 'index'])->name('machine-monitor');
         Route::get('/create', [MachineMonitorController::class, 'create'])->name('machine-monitor.create');
         Route::post('/store', [MachineMonitorController::class, 'store'])->name('machine-monitor.store');
-        Route::get('/{machine}', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
+        // Route::get('/{machine}', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
+        Route::get('admin/machine-monitor/{machine}', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
+        Route::get('/{machine}/edit', [MachineMonitorController::class, 'edit'])->name('machine-monitor.edit');
+        Route::put('/{machine}', [MachineMonitorController::class, 'update'])->name('machine-monitor.update');
+        Route::get('admin/machine/{machine}/edit', [MachineMonitorController::class, 'edit'])->name('admin.machine.edit');
+        Route::delete('admin/machine/{machine}', [MachineMonitorController::class, 'destroy'])->name('admin.machine.destroy');
         Route::delete('/{machine}', [MachineMonitorController::class, 'destroy'])->name('machine-monitor.destroy');
+    // Route::get('/crud', [MachineMonitorController::class, 'crud'])->name('machine-monitor.crud');
+            
     });
 
     Route::prefix('pembangkit')->group(function () {
@@ -130,6 +137,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::resource('score-card', ScoreCardDailyController::class);
       
     });
+
+    Route::get('/machine-monitor', [MachineMonitorController::class, 'index'])->name('machine-monitor');
 });
 
 // Rute untuk menampilkan detail berita
