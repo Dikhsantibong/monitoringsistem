@@ -238,12 +238,13 @@ public function crud()
     return view('admin.machine-monitor.crud');
 }
 
-public function show(Machine $machine)
+public function show()
 {
-    // Ambil semua mesin untuk ditampilkan di tampilan
-    $machines = Machine::all(); // Ambil semua mesin
-
-    return view('admin.machine-monitor.show', compact('machine', 'machines'));
+    $machines = Machine::with('powerPlant')
+                      ->orderBy('id')
+                      ->paginate(15); // Menggunakan paginate() bukan get()
+    
+    return view('admin.machine-monitor.show', compact('machines'));
 }
 
     public function edit($id)

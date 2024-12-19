@@ -155,29 +155,22 @@
 
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <div class="overflow-auto">
-                                <table id="users-table"
-                                    class="min-w-full divide-y diavide-gray-200 border-collapse border border-gray-200 md:max-w-full">
+                                <table id="users-table" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead>
                                         <tr style="background-color: #0A749B; color: white">
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">No</th>
-                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Nama
-                                            </th>
-                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Email
-                                            </th>
-                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peran
-                                            </th>
-                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Dibuat
-                                                Pada
-                                            </th>
-                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Aksi
-                                            </th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Nama</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Email</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peran</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Dibuat Pada</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="users-body" class="divide-y divide-gray-200">
-                                        @foreach ($users as $index => $user)
-                                            <tr class="odd:bg-white even:bg-gray-100">
+                                        @forelse($users as $index => $user)
+                                            <tr class="hover:bg-gray-50 transition-colors">
                                                 <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                    {{ $index + 1 }}
+                                                    {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
                                                 </td>
                                                 <td class="text-center p-2 whitespace-nowrap">
                                                     <div class="flex items-center">
@@ -227,9 +220,51 @@
                                                     </form>
                                                 </td>
                                             </tr>
-                                        @endforeach
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                                    Tidak ada data pengguna yang tersedia
+                                                </td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
+
+                                <!-- Pagination -->
+                                <div class="mt-4">
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-sm text-gray-700">
+                                            Showing 
+                                            {{ ($users->currentPage()-1) * $users->perPage() + 1 }} 
+                                            to 
+                                            {{ min($users->currentPage() * $users->perPage(), $users->total()) }} 
+                                            of 
+                                            {{ $users->total() }} 
+                                            entries
+                                        </div>
+                                        
+                                        <div class="flex gap-2">
+                                            @if (!$users->onFirstPage())
+                                                <a href="{{ $users->previousPageUrl() }}" 
+                                                   class="px-3 py-1 bg-[#0A749B] text-white rounded">Previous</a>
+                                            @endif
+
+                                            @foreach ($users->getUrlRange(1, $users->lastPage()) as $page => $url)
+                                                <a href="{{ $url }}" 
+                                                   class="px-3 py-1 rounded {{ $page == $users->currentPage() 
+                                                       ? 'bg-[#0A749B] text-white' 
+                                                       : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">
+                                                    {{ $page }}
+                                                </a>
+                                            @endforeach
+
+                                            @if ($users->hasMorePages())
+                                                <a href="{{ $users->nextPageUrl() }}" 
+                                                   class="px-3 py-1 bg-[#0A749B] text-white rounded">Next</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -332,4 +367,47 @@
     </script>
     @push('scripts')
     @endpush
+
+    <style>
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 5px;
+        }
+
+        .page-item {
+            margin: 0;
+        }
+
+        .page-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: #0A749B;
+            background-color: #fff;
+            border: 1px solid #0A749B;
+            border-radius: 0.25rem;
+            text-decoration: none;
+        }
+
+        .page-item.active .page-link {
+            background-color: #0A749B;
+            color: #fff;
+            border-color: #0A749B;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+
+        .page-link:hover {
+            background-color: #0A749B;
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
 @endsection

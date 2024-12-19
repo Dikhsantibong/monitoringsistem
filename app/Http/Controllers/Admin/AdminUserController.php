@@ -13,7 +13,9 @@ class AdminUserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::orderBy('created_at', 'desc')
+            ->paginate(10);
+        
         return view('admin.users.index', compact('users'));
     }
 
@@ -127,4 +129,5 @@ class AdminUserController extends Controller
                 ->with('error', 'Gagal menghapus pengguna: ' . $e->getMessage());
         }
     }
+    
 } 

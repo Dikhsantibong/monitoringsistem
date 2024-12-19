@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app['router']->aliasMiddleware('admin', AdminMiddleware::class);
         $this->app['router']->aliasMiddleware('user', UserMiddleware::class);
+        
         Paginator::useBootstrap();
     }
 }
