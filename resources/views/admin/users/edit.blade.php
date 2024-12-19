@@ -79,7 +79,7 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
                             Nama
                         </label>
-                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('name') border-red-500 @enderror"
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('name') border-red-500 @enderror"
                             id="name" 
                             type="text" 
                             name="name" 
@@ -94,7 +94,7 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
                             Email
                         </label>
-                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('email') border-red-500 @enderror"
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('email') border-red-500 @enderror"
                             id="email" 
                             type="email" 
                             name="email" 
@@ -109,7 +109,7 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="role">
                             Role
                         </label>
-                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                             id="role" 
                             name="role">
                             <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
@@ -121,7 +121,7 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
                             Password Baru (kosongkan jika tidak ingin mengubah)
                         </label>
-                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('password') border-red-500 @enderror"
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('password') border-red-500 @enderror"
                             id="password" 
                             type="password" 
                             name="password">
@@ -134,7 +134,7 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password_confirmation">
                             Konfirmasi Password Baru
                         </label>
-                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                             id="password_confirmation" 
                             type="password" 
                             name="password_confirmation">
