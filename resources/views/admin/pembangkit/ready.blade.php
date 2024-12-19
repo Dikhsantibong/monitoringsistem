@@ -191,7 +191,7 @@
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 DMP
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-2 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Beban
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
@@ -226,7 +226,7 @@
                                                 <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800">
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                                 </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                <td class="px-2 py-2 border-r border-gray-200">
                                                     <input type="number" 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
                                                         value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
