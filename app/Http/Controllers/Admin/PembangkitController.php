@@ -31,6 +31,9 @@ class PembangkitController extends Controller
         try {
             DB::beginTransaction();
             
+            // Log data yang diterima
+            \Log::info('Data yang diterima untuk disimpan:', $request->logs);
+            
             foreach ($request->logs as $log) {
                 // Hanya simpan jika ada nilai yang diinputkan
                 if (!empty($log['status']) || !empty($log['keterangan']) || !empty($log['load_value'])) {

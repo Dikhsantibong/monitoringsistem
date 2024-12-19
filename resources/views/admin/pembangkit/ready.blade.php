@@ -206,7 +206,7 @@
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Action Plan
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center">
                                                 Progres
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center">
@@ -245,25 +245,22 @@
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan deskripsi...">{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}</textarea>
+                                                        rows="2" placeholder="Masukkan deskripsi..." style="height: 100px;">{{ $operations->where('machine_id', $machine->id)->first()->keterangan ?? '' }}</textarea>
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan kronologi..."></textarea>
+                                                        rows="2" placeholder="Masukkan kronologi..." style="height: 100px;"></textarea>
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan action plan..."></textarea>
+                                                        rows="2" placeholder="Masukkan action plan..." style="height: 100px;"></textarea>
                                                 </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
-                                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800">
-                                                        <option value="">Pilih progres</option>
-                                                        <option value="Belum Dimulai">Belum Dimulai</option>
-                                                        <option value="Sedang Berjalan">Sedang Berjalan</option>
-                                                        <option value="Selesai">Selesai</option>
-                                                    </select>
+                                                <td class="px-3 py-2">
+                                                    <textarea 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                        rows="2" placeholder="Masukkan progres..." style="height: 100px;"></textarea>
                                                 </td>
                                                 <td class="px-3 py-2">
                                                     <input type="date" 
@@ -452,21 +449,22 @@
                 const select = row.querySelector('select');
                 const inputKeterangan = row.querySelector('input[type="text"]');
                 const inputBeban = row.querySelector('td:nth-child(4) input');
+                const inputProgres = row.querySelector('td:nth-child(8) input');
+                const inputKronologi = row.querySelector('td:nth-child(7) textarea');
+                const inputActionPlan = row.querySelector('td:nth-child(6) textarea');
+                const inputTargetSelesai = row.querySelector('td:nth-child(9) input');
 
-                // Ambil nilai DMN dan DMP dari kolom tabel
-                const dmnValue = row.querySelector('td:nth-child(2)').textContent.trim();
-                const dmpValue = row.querySelector('td:nth-child(3)').textContent.trim();
-
-                // Hanya tambahkan ke data jika status tidak kosong
-                if (select.value) {
+                if (select && select.value) {
                     data.push({
                         machine_id: machineId,
                         tanggal: tanggal,
                         status: select.value,
-                        keterangan: inputKeterangan.value.trim() || null,
-                        load_value: inputBeban.value || null,
-                        dmn: dmnValue !== 'N/A' ? parseFloat(dmnValue) : 0,
-                        dmp: dmpValue !== 'N/A' ? parseFloat(dmpValue) : 0
+                        keterangan: inputKeterangan ? inputKeterangan.value.trim() : null,
+                        load_value: inputBeban ? inputBeban.value : null,
+                        progres: inputProgres ? inputProgres.value.trim() : null,
+                        kronologi: inputKronologi ? inputKronologi.value.trim() : null,
+                        action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
+                        target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
                     });
                 }
             });
@@ -503,6 +501,7 @@
             })
             .then(response => response.json())
             .then(result => {
+                console.log(result);
                 if (result.success) {
                     Swal.fire({
                         icon: 'success',

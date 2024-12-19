@@ -130,7 +130,11 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beban</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DMN</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DMP</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kronologi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action Plan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progres</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Selesai</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -149,11 +153,15 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $log->load_value }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $log->dmn }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $log->dmp }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->keterangan }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->kronologi }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->deskripsi }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->action_plan }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->progres }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->target_selesai }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                    <td colspan="11" class="px-6 py-4 text-center text-gray-500">
                                         Tidak ada data untuk ditampilkan
                                     </td>
                                 </tr>
@@ -174,7 +182,7 @@ document.getElementById('filterDate').addEventListener('change', function() {
     const tableBody = document.querySelector('tbody');
     tableBody.innerHTML = `
         <tr>
-            <td colspan="7" class="px-6 py-4 text-center">
+            <td colspan="10" class="px-6 py-4 text-center">
                 <i class="fas fa-spinner fa-spin"></i> Loading...
             </td>
         </tr>
@@ -196,8 +204,8 @@ document.getElementById('filterDate').addEventListener('change', function() {
         } else {
             // Tampilkan pesan error jika ada
             tableBody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="px-6 py-4 text-center text-red-500">
+                <tr></tr>
+                    <td colspan="10" class="px-6 py-4 text-center text-red-500">
                         ${data.message || 'Terjadi kesalahan saat memuat data'}
                     </td>
                 </tr>
@@ -208,7 +216,7 @@ document.getElementById('filterDate').addEventListener('change', function() {
         console.error('Error:', error);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="px-6 py-4 text-center text-red-500">
+                <td colspan="10" class="px-6 py-4 text-center text-red-500">
                     Terjadi kesalahan saat memuat data
                 </td>
             </tr>
