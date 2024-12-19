@@ -97,27 +97,17 @@
                     @include('components.timer')
                     <!-- User Dropdown -->
                     <div class="relative">
-                        <button id="user-menu-button" class="flex items-center gap-2 hover:text-gray-600"
-                            onclick="toggleUserDropdown()">
-                            <img src="{{ asset('foto_profile/admin1.png' . Auth::user()->avatar) }}" alt="User Avatar"
-                                class="w-8 h-8 rounded-full">
-                            <span>{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down text-sm"></i>
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-7 h-7 rounded-full mr-2">
+                            <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2 text-gray-600"></i>
                         </button>
-
-                        <!-- Dropdown Menu -->
-                        <div id="user-dropdown"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
-                            <a href="{{ route('profile.edit') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-user mr-2"></i>Profile
-                            </a>
-                            <form method="POST" action="{{ route('logout') }}">
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
                                 @csrf
-                                <button type="submit"
-                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                                </button>
                             </form>
                         </div>
                     </div>
