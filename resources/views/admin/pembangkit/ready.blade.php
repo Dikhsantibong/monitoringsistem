@@ -197,7 +197,7 @@
                                             <th class="py-2 px-4 font-medium ">target selesai</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-200 text-xs">
+                                    <tbody class="divide-y divide-gray-200 text-sm">
                                         @foreach ($unit->machines as $machine)
                                             <tr class="odd:bg-white even:bg-gray-100 searchable-row">
                                                 <td class="py-2 px-4 border-b" data-id="{{ $machine->id }}">
