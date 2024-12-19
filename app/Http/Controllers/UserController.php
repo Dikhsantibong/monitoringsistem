@@ -6,6 +6,10 @@ use App\Models\Machine;
 use App\Models\Meeting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -87,6 +91,11 @@ class UserController extends Controller
         return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
     }
 
+    public function index()
+    {
+        $users = User::all(); // Kembali ke pengambilan data sederhana
+        return view('admin.users.index', compact('users'));
+    }
 
     
 }

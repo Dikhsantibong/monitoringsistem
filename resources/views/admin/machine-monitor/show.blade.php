@@ -183,7 +183,7 @@
                     </span>
                 </div>
                 
-                <div class="overflow-auto">
+                <div>
                     <div class="flex items-center gap-3 mb-4 justify-end">
                         <div class="flex">
                             <input type="text" id="searchInput" placeholder="Cari..."
@@ -205,13 +205,13 @@
                         </a>
                     </div>
                     <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                        <thead class="bg-blue-500 sticky top-0">
+                        <thead class="bg-blue-500">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">ID Mesin</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Nama Mesin</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Tanggal Pembaruan</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Asal Unit</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Aksi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">ID Mesin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Nama Mesin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Tanggal Pembaruan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Asal Unit</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-500">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="machineTable" class="bg-white divide-y divide-gray-200 border border-gray-200 border-l-0 border-r-0">
@@ -255,13 +255,63 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                                     Tidak ada data mesin yang tersedia
                                 </td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
+
+                    <!-- Pagination -->
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-700">
+                                Menampilkan {{ $machines->firstItem() ?? 0 }} - {{ $machines->lastItem() ?? 0 }} dari {{ $machines->total() }} data
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            @if($machines->previousPageUrl())
+                            <a href="{{ $machines->previousPageUrl() }}" 
+                                class="px-4 py-2 bg-[#FF6B6B] text-white rounded-md text-sm font-medium hover:bg-[#FF5252] transition-colors">
+                                Previous
+                            </a>
+                            @endif
+
+                            @for($i = 1; $i <= $machines->lastPage(); $i++)
+                                @if($i == $machines->currentPage())
+                                    <span class="px-4 py-2 bg-[#4285F4] text-white rounded-md text-sm font-medium">
+                                        {{ $i }}
+                                    </span>
+                                @else
+                                    <a href="{{ $machines->url($i) }}" 
+                                        class="px-4 py-2 bg-[#4285F4] bg-opacity-10 text-[#4285F4] rounded-md text-sm font-medium hover:bg-opacity-20 transition-colors">
+                                        {{ $i }}
+                                    </a>
+                                @endif
+
+                                @if($i < $machines->lastPage())
+                                    @if($i == 3 && $machines->lastPage() > 6)
+                                        <span class="px-2 text-gray-500">...</span>
+                                        @break
+                                    @endif
+                                @endif
+                            @endfor
+
+                            @if($machines->lastPage() > 6)
+                                <span class="px-4 py-2 bg-[#4285F4] bg-opacity-10 text-[#4285F4] rounded-md text-sm font-medium">
+                                    {{ $machines->lastPage() }}
+                                </span>
+                            @endif
+
+                            @if($machines->nextPageUrl())
+                            <a href="{{ $machines->nextPageUrl() }}" 
+                                class="px-4 py-2 bg-[#FF6B6B] text-white rounded-md text-sm font-medium hover:bg-[#FF5252] transition-colors">
+                                Next
+                            </a>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -397,9 +447,7 @@ function redirectToShowPage() {
 </div>
 
 <!-- Tombol untuk menguji modal -->
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editModal">
-    Test Modal
-</button>
+
 
 @push('scripts')
 @endpush
