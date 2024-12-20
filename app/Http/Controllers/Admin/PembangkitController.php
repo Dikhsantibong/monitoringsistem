@@ -161,52 +161,21 @@ class PembangkitController extends Controller
 
     public function report(Request $request)
     {
-        try {   
-            $date = $request->date ?? now()->format('Y-m-d');
-            
-            $logs = MachineStatusLog::with(['machine.powerPlant'])
-                ->whereDate('tanggal', $date)
-                ->join('machines', 'machine_status_logs.machine_id', '=', 'machines.id')
-                ->join('power_plants', 'machines.power_plant_id', '=', 'power_plants.id')
-                ->select([
-                    'machine_status_logs.*',
-                    'power_plants.name as unit_name',
-                    'machines.name as mesin_name'
-                ])
-                ->orderBy('power_plants.name', 'asc')
-                ->orderBy('machines.name', 'asc')
-                ->get();
+        $date = $request->date ?? now()->format('Y-m-d');
+        
+        $logs = MachineStatusLog::with(['machine.powerPlant'])
+            ->whereDate('tanggal', $date)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-            if ($request->ajax()) {
-                $view = view('admin.pembangkit.report-table', compact('logs'))->render();
-                return response()->json([
-                    'success' => true,
-                    'html' => $view
-                ]);
-            }
-
-            return view('admin.pembangkit.report', [
-                'logs' => $logs,
-                'columns' => [
-                    'UNIT',
-                    'MESIN',
-                    'STATUS',
-                    'BEBAN',
-                    'DMN',
-                    'DMP',
-                    'KETERANGAN'
-                ]
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'html' => view('admin.pembangkit.report-table', compact('logs'))->render()
             ]);
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error: ' . $e->getMessage()
-                ]);
-            }
-            
-            throw $e;
         }
+
+        return view('admin.pembangkit.report', compact('logs'));
     }
 
     public function downloadReport(Request $request)

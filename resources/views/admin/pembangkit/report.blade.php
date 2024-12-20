@@ -121,38 +121,47 @@
             <!-- Tabel -->
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                @foreach($columns as $column)
-                                    <th class="px-2 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        {{ $column }}
-                                    </th>
-                                @endforeach
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Unit</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Mesin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Beban</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMN</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMP</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Kronologi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Deskripsi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Action Plan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Progres</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Target Selesai</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($logs as $log)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-2 py-2 text-sm text-gray-800">{{ $log->unit_name }}</td>
-                                    <td class="px-2 py-2 text-sm text-gray-800">{{ $log->mesin_name }}</td>
-                                    <td class="px-2 py-2 text-sm text-gray-800">
+                                <tr class="hover:bg-gray-50 border border-gray-200">
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->powerPlant->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                             {{ $log->status === 'Operasi' ? 'bg-green-100 text-green-800' : 
                                                ($log->status === 'Gangguan' ? 'bg-red-100 text-red-800' : 
-                                               ($log->status === 'Standby' ? 'bg-yellow-100 text-yellow-800' :
-                                               'bg-orange-100 text-orange-800')) }}">
+                                               'bg-yellow-100 text-yellow-800') }}">
                                             {{ $log->status }}
                                         </span>
                                     </td>
-                                    <td class="px-2 py-2 text-sm text-gray-800">{{ $log->load_value }}</td>
-                                    <td class="px-2 py-2 text-sm text-gray-800">{{ $log->dmn }}</td>
-                                    <td class="px-2 py-2 text-sm text-gray-800">{{ $log->dmp }}</td>
-                                    <td class="px-2 py-2 text-sm text-gray-800">{{ $log->deskripsi }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->load_value }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmn }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmp }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->kronologi }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->deskripsi }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->action_plan }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->progres }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->target_selesai ? $log->target_selesai->format('d/m/Y') : '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                    <td colspan="11" class="px-6 py-4 text-center text-gray-500 border border-gray-200">
                                         Tidak ada data untuk ditampilkan
                                     </td>
                                 </tr>
@@ -161,9 +170,34 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Pagination -->
+            @if($logs->hasPages())
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    {{ $logs->links() }}
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Menampilkan
+                            <span class="font-medium">{{ $logs->firstItem() ?? 0 }}</span>
+                            sampai
+                            <span class="font-medium">{{ $logs->lastItem() ?? 0 }}</span>
+                            dari
+                            <span class="font-medium">{{ $logs->total() }}</span>
+                            hasil
+                        </p>
+                    </div>
+                    <div>
+                        {{ $logs->links() }}
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
-</div>
+</div>          
 
 <script>
 document.getElementById('filterDate').addEventListener('change', function() {

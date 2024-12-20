@@ -258,11 +258,12 @@
                                                         rows="2" placeholder="Masukkan action plan..." style="height: 100px;" name="action_plan[{{ $machine->id }}]"></textarea>
                                                 </td>
                                                 <td class="px-3 py-2">
-                                                    <input type="text" 
+                                                    <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        name="progres[{{ $machine->id }}]" 
-                                                        value="{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}"
-                                                        placeholder="Masukkan progres...">
+                                                        rows="2" 
+                                                        placeholder="Masukkan progres..." 
+                                                        style="height: 100px;" 
+                                                        name="progres[{{ $machine->id }}]">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
                                                 </td>   
                                                 <td class="px-3 py-2">
                                                     <input type="date" 
@@ -453,7 +454,7 @@
                 const inputDeskripsi = row.querySelector('textarea[name="deskripsi[' + machineId + ']"]');
                 const inputActionPlan = row.querySelector('textarea[name="action_plan[' + machineId + ']"]');
                 const inputBeban = row.querySelector('td:nth-child(4) input');
-                const inputProgres = row.querySelector('input[name="progres[' + machineId + ']"]');
+                const inputProgres = row.querySelector('textarea[name="progres[' + machineId + ']"]');
                 const inputKronologi = row.querySelector('textarea[name="kronologi[' + machineId + ']"]');
                 const inputTargetSelesai = row.querySelector('input[name="target_selesai[' + machineId + ']"]');
 
@@ -472,6 +473,9 @@
                 }
             });
         });
+        
+        // Tambahkan console.log untuk debugging
+        console.log('Data yang akan dikirim:', data);
 
         if (data.length === 0) {
             Swal.fire({

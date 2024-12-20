@@ -240,14 +240,14 @@
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <div class="flex space-x-2">
-                                        <a href="javascript:void(0);" onclick="openPopup({{ $machine->id }})" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded">
-                                            <i class="fas fa-edit"></i>
+                                        <a href="javascript:void(0);" onclick="openPopup({{ $machine->id }})" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg">
+                                            <i class="fas fa-edit text-lg"></i>
                                         </a>
                                         <form action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" method="POST" onsubmit="return showDeleteConfirmation(event, '{{ $machine->name }}', this);">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-                                                <i class="fas fa-trash"></i>
+                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+                                                <i class="fas fa-trash-alt text-lg"></i>
                                             </button>
                                         </form>
                                     </div>
