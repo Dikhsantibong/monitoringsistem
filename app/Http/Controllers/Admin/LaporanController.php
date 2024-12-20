@@ -21,11 +21,16 @@ class LaporanController extends Controller
     public function storeSR(Request $request)
     {
         $validated = $request->validate([
+            'sr_id' => 'required|numeric|unique:service_requests,id', // Validasi ID SR
             'description' => 'required',
             'status' => 'required'
         ]);
 
-        ServiceRequest::create($validated);
+        ServiceRequest::create([
+            'id' => $request->sr_id, // Simpan ID yang diinputkan
+            'description' => $request->description,
+            'status' => $request->status
+        ]);
 
         return redirect()->back()->with('success', 'Service Request berhasil ditambahkan');
     }
@@ -34,11 +39,16 @@ class LaporanController extends Controller
     public function storeWO(Request $request)
     {
         $validated = $request->validate([
+            'wo_id' => 'required|numeric|unique:work_orders,id', // Validasi ID WO
             'description' => 'required',
             'status' => 'required'
         ]);
 
-        WorkOrder::create($validated);
+        WorkOrder::create([
+            'id' => $request->wo_id, // Simpan ID yang diinputkan
+            'description' => $request->description,
+            'status' => $request->status
+        ]);
 
         return redirect()->back()->with('success', 'Work Order berhasil ditambahkan');
     }

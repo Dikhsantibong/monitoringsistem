@@ -159,6 +159,7 @@
                                     class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead>
                                         <tr style="background-color: #0A749B; color: white;">
+                                            <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID SR</th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Status</th>
@@ -166,8 +167,9 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
-                                        @foreach ($serviceRequests as $sr)
+                                        @foreach ($serviceRequests as $index => $sr)
                                             <tr class="odd:bg-white even:bg-gray-100">
+                                                <td class="py-2 px-4 border-b">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
                                                 <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
                                                 <td
@@ -194,6 +196,7 @@
                                 <table id="woTable" class="min-w-full bg-white border border-gray-300">
                                     <thead>
                                         <tr style="background-color: #0A749B; color: white;">
+                                            <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID WO</th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Status</th>
@@ -201,8 +204,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($workOrders as $wo)
+                                        @foreach ($workOrders as $index => $wo)
                                             <tr>
+                                                <td class="py-2 px-4 border-b">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border-b">{{ $wo->id }}</td>
                                                 <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border-b">{{ $wo->status }}</td>
@@ -229,8 +233,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
                         ID SR
                     </label>
-                    <input type="text" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg"
-                        readonly>
+                    <input type="number" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
@@ -271,8 +274,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_id">
                         ID WO
                     </label>
-                    <input type="text" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-lg"
-                        readonly>
+                    <input type="number" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-lg" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
@@ -289,7 +291,6 @@
                         <option value="Closed">Closed</option>
                     </select>
                 </div>
-                <!-- Tanggal akan otomatis terisi saat penyimpanan -->
                 <div class="flex justify-end space-x-4">
                     <button type="button" onclick="closeWOModal()"
                         class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">

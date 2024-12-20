@@ -10,8 +10,9 @@ class WorkOrder extends Model
     use HasFactory;
 
     protected $fillable = [
-        'description', 'status', 'created_at'
+        'id', 'description', 'status'
     ];
+    public $incrementing = false;
     public function getConnectionName()
     {
         // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit

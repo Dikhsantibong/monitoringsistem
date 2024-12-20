@@ -10,8 +10,9 @@ class ServiceRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'description', 'status', 'created_at'
+        'id', 'description', 'status', 'created_at'
     ];
+    public $incrementing = false;
     public function getConnectionName()
     {
         // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
