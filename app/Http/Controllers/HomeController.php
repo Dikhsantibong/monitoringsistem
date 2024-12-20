@@ -15,9 +15,8 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $units = Unit::with(['powerPlant', 'machineOperations'])->get();
-        $markers = DB::connection('up_kendari')->table('markers')->get()->toArray();
-        $machineOperations = DB::connection('up_kendari')->table('machine_operations')->get(); // Ambil semua data dari tabel machine_operations
+        $units = DB::connection('up_kendari')->table('units')->get();
+        $markers = DB::connection('up_kendari')->table('markers')->get();
 
         // Hitung total capacity    
         $total_capacity = $units->sum('capacity');
@@ -28,35 +27,24 @@ class HomeController extends Controller
         // Hitung active units
         $active_units = $units->where('status', 'Aktif')->count();
 
-        // Ambil data untuk grafik
-        $total_capacity_data = $units->map(function ($unit) {
-            return $unit->capacity;
-        })->toArray();
-
-        $total_units_data = $units->map(function ($unit) {
-            return $unit->machineOperations->count();
-        })->toArray();
-
-        $active_units_data = $units->map(function ($unit) {
-            return $unit->status === 'Aktif' ? 1 : 0;
-        })->toArray();
-
-        $dates = $units->map(function ($unit) {
-            return $unit->created_at->format('M Y');
-        })->unique()->toArray();
-
-        // Mengambil data untuk grafik dari MachineOperation
-        $machineOperations = MachineOperation::with(['machine.powerPlant'])
+        // Ambil data untuk grafik dari database up_kendari
+        $machineOperations = DB::connection('up_kendari')
+            ->table('machine_operations')
+            ->join('machines', 'machine_operations.machine_id', '=', 'machines.id')
+            ->select('machine_operations.*', 'machines.capacity')
             ->orderBy('recorded_at')
             ->get()
-            ->groupBy(function($date) {
-                return Carbon::parse($date->recorded_at)->format('Y-m-d');
+            ->groupBy(function($item) {
+                return Carbon::parse($item->recorded_at)->format('Y-m-d');
             });
 
         $dmn_data = [];
         $dmp_data = [];
         $load_value_data = [];
         $capacity_data = [];
+        $total_capacity_data = [];
+        $total_units_data = [];
+        $active_units_data = [];
         $dates = [];
 
         foreach ($machineOperations as $date => $operations) {
@@ -64,7 +52,10 @@ class HomeController extends Controller
             $dmn_data[] = $operations->avg('dmn');
             $dmp_data[] = $operations->avg('dmp');
             $load_value_data[] = $operations->avg('load_value');
-            $capacity_data[] = $operations->first()->machine->capacity;
+            $capacity_data[] = $operations->first()->capacity;
+            $total_capacity_data[] = $total_capacity;
+            $total_units_data[] = $total_units;
+            $active_units_data[] = $active_units;
         }
 
         return view('homepage', compact(
@@ -73,14 +64,14 @@ class HomeController extends Controller
             'total_capacity',
             'total_units',
             'active_units',
-            'total_capacity_data',
-            'total_units_data',
-            'active_units_data',
-            'dates',
             'dmn_data',
             'dmp_data',
             'load_value_data',
-            'capacity_data'
+            'capacity_data',
+            'total_capacity_data',
+            'total_units_data',
+            'active_units_data',
+            'dates'
         ));
     }
 }
