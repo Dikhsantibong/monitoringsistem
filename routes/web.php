@@ -180,3 +180,5 @@ Route::prefix('attendance')->group(function () {
 Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoomMeeting'])
     ->name('create.zoom.meeting')
     ->middleware('web');
+
+Route::get('/admin/pembangkit/report', [PembangkitController::class, 'report'])->name('admin.pembangkit.report');
