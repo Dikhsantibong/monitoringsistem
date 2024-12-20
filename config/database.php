@@ -117,8 +117,8 @@ return [
     'host' => env('DB_HOST', '127.0.0.1'),
     'port' => env('DB_PORT', '3306'),
     'database' => env('DB_UNIT_BAU_BAU_DATABASE', 'forge'),
-    'username' => env('DB_USERNAME', 'forge'),
-    'password' => env('DB_PASSWORD', ''),
+    'username' => env('DB_USERNAME_BAU_BAU', 'forge'),
+    'password' => env('DB_PASSWORD_BAU_BAU', ''),
     'unix_socket' => env('DB_SOCKET', ''),
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
@@ -171,13 +171,13 @@ return [
     'strict' => true,
     'engine' => null,
 ],
-'up_kendari' => [
+'u478221055_up_kendari' => [
         'driver' => 'mysql', // atau driver yang sesuai
         'host' => env('DB_HOST_UP_KENDARI', '127.0.0.1'),
         'port' => env('DB_PORT_UP_KENDARI', '3306'),
-        'database' => env('DB_DATABASE_UP_KENDARI', 'up_kendari '),
-        'username' => env('DB_USERNAME_UP_KENDARI', 'root'),
-        'password' => env('DB_PASSWORD_UP_KENDARI', ''),
+        'database' => env('DB_DATABASE_UP_KENDARI', 'u478221055_up_kendari '),
+        'username' => env('DB_USERNAME_UP_KENDARI', 'u478221055_PLNNPUPKENDARI'),
+        'password' => env('DB_PASSWORD_UP_KENDARI', 'k3nd4r!PLN@2024'),
         'charset' => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
         'prefix' => '',

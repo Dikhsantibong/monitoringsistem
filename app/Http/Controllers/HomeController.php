@@ -15,8 +15,8 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $units = DB::connection('up_kendari')->table('units')->get();
-        $markers = DB::connection('up_kendari')->table('markers')->get();
+        $units = DB::connection('u478221055_up_kendari')->table('units')->get();
+        $markers = DB::connection('u478221055_up_kendari')->table('markers')->get();
 
         // Hitung total capacity    
         $total_capacity = $units->sum('capacity');
@@ -27,8 +27,8 @@ class HomeController extends Controller
         // Hitung active units
         $active_units = $units->where('status', 'Aktif')->count();
 
-        // Ambil data untuk grafik dari database up_kendari
-        $machineOperations = DB::connection('up_kendari')
+        // Ambil data untuk grafik dari database u478221055_up_kendari
+        $machineOperations = DB::connection('u478221055_up_kendari')
             ->table('machine_operations')
             ->join('machines', 'machine_operations.machine_id', '=', 'machines.id')
             ->select('machine_operations.*', 'machines.capacity')
