@@ -161,7 +161,7 @@ class PembangkitController extends Controller
 
     public function report(Request $request)
     {
-        try {
+        try {   
             $date = $request->date ?? now()->format('Y-m-d');
             
             $logs = MachineStatusLog::with(['machine.powerPlant'])
