@@ -175,7 +175,7 @@ return [
         'driver' => 'mysql', // atau driver yang sesuai
         'host' => env('DB_HOST_UP_KENDARI', '127.0.0.1'),
         'port' => env('DB_PORT_UP_KENDARI', '3306'),
-        'database' => env('DB_DATABASE_UP_KENDARI', 'up_kendari'),
+        'database' => env('DB_DATABASE_UP_KENDARI', 'up_kendari '),
         'username' => env('DB_USERNAME_UP_KENDARI', 'root'),
         'password' => env('DB_PASSWORD_UP_KENDARI', ''),
         'charset' => 'utf8mb4',
