@@ -451,21 +451,28 @@
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
                 const select = row.querySelector('select');
-                const inputDeskripsi = row.querySelector('textarea[name="deskripsi[' + machineId + ']"]');
-                const inputActionPlan = row.querySelector('textarea[name="action_plan[' + machineId + ']"]');
+                
+                // Ambil nilai DMN dan DMP dari input yang readonly
+                const dmnInput = row.querySelector(`input[name="dmn[${machineId}]"]`);
+                const dmpInput = row.querySelector(`input[name="dmp[${machineId}]"]`);
+                
+                const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
+                const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
                 const inputBeban = row.querySelector('td:nth-child(4) input');
-                const inputProgres = row.querySelector('textarea[name="progres[' + machineId + ']"]');
-                const inputKronologi = row.querySelector('textarea[name="kronologi[' + machineId + ']"]');
-                const inputTargetSelesai = row.querySelector('input[name="target_selesai[' + machineId + ']"]');
+                const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
+                const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
+                const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
 
                 if (select && select.value) {
                     data.push({
                         machine_id: machineId,
                         tanggal: tanggal,
                         status: select.value,
+                        dmn: dmnInput ? parseFloat(dmnInput.value) || 0 : 0,
+                        dmp: dmpInput ? parseFloat(dmpInput.value) || 0 : 0,
                         deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
                         action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
-                        load_value: inputBeban ? inputBeban.value : null,
+                        load_value: inputBeban ? parseFloat(inputBeban.value) || null : null,
                         progres: inputProgres ? inputProgres.value.trim() : null,
                         kronologi: inputKronologi ? inputKronologi.value.trim() : null,
                         target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
@@ -496,7 +503,7 @@
             }
         });
 
-        fetch('{{ route('admin.pembangkit.save-status') }}', {
+            fetch('{{ route('admin.pembangkit.save-status') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -529,7 +536,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: error.message || 'Terjadi kesalahan saat menyimpan data!'
+                    text: error.message
                 });
             });
     }
@@ -578,21 +585,39 @@
     function loadData() {
         const tanggal = document.getElementById('filterDate').value;
 
+        // Tampilkan loading indicator
+        Swal.fire({
+            title: 'Memuat Data',
+            text: 'Mohon tunggu...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`)
             .then(response => response.json())
             .then(result => {
+                Swal.close();
                 if (result.success) {
                     updateFormWithData(result.data);
                 } else {
                     resetForm();
-                    if (result.message) {
-                        alert(result.message);
-                    }
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Informasi',
+                        text: result.message || 'Tidak ada data untuk tanggal ini'
+                    });
                 }
             })
             .catch(error => {
+                Swal.close();
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat mengambil data!');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat mengambil data!'
+                });
             });
     }
 
@@ -606,18 +631,110 @@
         tables.forEach(table => {
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
-                const machineId = row.querySelector('td:first-child').getAttribute('data-id');
+                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
                 const machineData = data.find(d => d.machine_id == machineId);
 
                 if (machineData) {
+                    // Update status
                     const select = row.querySelector('select');
-                    const input = row.querySelector('input[type="text"]');
+                    if (select && machineData.status) {
+                        select.value = machineData.status;
+                        select.style.backgroundColor = getStatusColor(machineData.status);
+                    }
 
-                    select.value = machineData.status;
-                    select.style.backgroundColor = select.options[select.selectedIndex].style
-                        .backgroundColor;
-                    input.value = machineData.keterangan || '';
+                    // Update beban
+                    const inputBeban = row.querySelector('td:nth-child(4) input');
+                    if (inputBeban) {
+                        inputBeban.value = machineData.load_value || '';
+                    }
+
+                    // Update deskripsi
+                    const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
+                    if (inputDeskripsi) {
+                        inputDeskripsi.value = machineData.deskripsi || '';
+                    }
+
+                    // Update kronologi
+                    const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
+                    if (inputKronologi) {
+                        inputKronologi.value = machineData.kronologi || '';
+                    }
+
+                    // Update action plan
+                    const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
+                    if (inputActionPlan) {
+                        inputActionPlan.value = machineData.action_plan || '';
+                    }
+
+                    // Update progres
+                    const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
+                    if (inputProgres) {
+                        inputProgres.value = machineData.progres || '';
+                    }
+
+                    // Update target selesai
+                    const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
+                    if (inputTargetSelesai) {
+                        inputTargetSelesai.value = machineData.target_selesai || '';
+                    }
+
+                    // Update DMN dan DMP (sebagai text saja, karena readonly)
+                    const dmnCell = row.querySelector('td:nth-child(2)');
+                    const dmpCell = row.querySelector('td:nth-child(3)');
+                    if (dmnCell) dmnCell.textContent = machineData.dmn || 'N/A';
+                    if (dmpCell) dmpCell.textContent = machineData.dmp || 'N/A';
                 }
+            });
+        });
+    }
+
+    // Helper function untuk mendapatkan warna status
+    function getStatusColor(status) {
+        const colors = {
+            'Operasi': '#4CAF50',
+            'Standby': '#2196F3',
+            'Gangguan': '#f44336',
+            'Pemeliharaan': '#FF9800'
+        };
+        return colors[status] || '#FFFFFF';
+    }
+
+    // Fungsi reset form yang diperbaiki
+    function resetForm() {
+        const tables = document.querySelectorAll('.unit-table table');
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const select = row.querySelector('select');
+                const inputBeban = row.querySelector('td:nth-child(4) input');
+                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+
+                // Reset semua input
+                if (select) {
+                    select.value = '';
+                    select.style.backgroundColor = '';
+                }
+                if (inputBeban) {
+                    inputBeban.value = '';
+                }
+
+                // Reset semua textarea
+                const textareas = row.querySelectorAll('textarea');
+                textareas.forEach(textarea => {
+                    textarea.value = '';
+                });
+
+                // Reset target selesai
+                const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
+                if (inputTargetSelesai) {
+                    inputTargetSelesai.value = '';
+                }
+
+                // Reset DMN dan DMP cells
+                const dmnCell = row.querySelector('td:nth-child(2)');
+                const dmpCell = row.querySelector('td:nth-child(3)');
+                if (dmnCell) dmnCell.textContent = 'N/A';
+                if (dmpCell) dmpCell.textContent = 'N/A';
             });
         });
     }
