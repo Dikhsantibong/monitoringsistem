@@ -182,34 +182,34 @@
                                 <table class="min-w-full bg-white">
                                     <thead>
                                         <tr>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Mesin
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 DMN
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 DMP
                                             </th>
-                                            <th class="px-2 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Beban
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Status
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Deskripsi
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Kronologi
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 Action Plan
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
                                                 Progres
                                             </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-xs font-medium tracking-wider text-center">
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
                                                 Target Selesai
                                             </th>
                                         </tr>
@@ -219,7 +219,7 @@
                                             <tr class="hover:bg-gray-50 border-b border-gray-200">
                                                 <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
                                                     {{ $machine->name }}
-                                                </td>
+                                                </td>   
                                                 <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800">
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
                                                 </td>
