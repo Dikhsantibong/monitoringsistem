@@ -37,9 +37,14 @@ class LoginController extends Controller
         return back()->withErrors(['email' => 'Login failed!']);
     }
 
-    public function showLoginForm() 
+    public function showLoginForm(Request $request) 
     {
-        return view('auth.login');
+        // Ambil parameter unit dari URL jika ada
+        $selectedUnit = $request->query('unit');
+        
+        return view('auth.login', [
+            'selectedUnit' => $selectedUnit
+        ]);
     }
 
     protected function sendFailedLoginResponse(Request $request)

@@ -54,11 +54,21 @@
                         <div class="form-group mt-3">
                             <label for="unit" class="text-primary">Pilih Unit:</label>
                             <select name="unit" id="unit" required class="form-select block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                <option value="mysql" class="text-success"><i class="fas fa-building"></i> UP Kendari</option>
-                                <option value="mysql_bau_bau" class="text-info"><i class="fas fa-building"></i> ULPLTD Bau-Bau</option>
-                                {{-- <option value="mysql_kolaka" class="text-warning"><i class="fas fa-building"></i> ULPLTD Kolaka</option> --}}
-                                <option value="mysql_poasia" class="text-danger"><i class="fas fa-building"></i> ULPLTD Poasia</option>
-                                <option value="mysql_wua_wua" class="text-primary"><i class="fas fa-building"></i> ULPLTD Wua-Wua</option>
+                                <option value="mysql" {{ $selectedUnit == 'mysql' ? 'selected' : '' }} class="text-success">
+                                    <i class="fas fa-building"></i> UP Kendari
+                                </option>
+                                <option value="mysql_bau_bau" {{ $selectedUnit == 'mysql_bau_bau' ? 'selected' : '' }} class="text-info">
+                                    <i class="fas fa-building"></i> ULPLTD Bau-Bau
+                                </option>
+                                <option value="mysql_kolaka" {{ $selectedUnit == 'mysql_kolaka' ? 'selected' : '' }} class="text-warning">
+                                    <i class="fas fa-building"></i> ULPLTD Kolaka
+                                </option>
+                                <option value="mysql_poasia" {{ $selectedUnit == 'mysql_poasia' ? 'selected' : '' }} class="text-danger">
+                                    <i class="fas fa-building"></i> ULPLTD Poasia
+                                </option>
+                                <option value="mysql_wua_wua" {{ $selectedUnit == 'mysql_wua_wua' ? 'selected' : '' }} class="text-primary">
+                                    <i class="fas fa-building"></i> ULPLTD Wua-Wua
+                                </option>
                             </select>
                         </div>
 
