@@ -104,6 +104,7 @@ Route::get('admin/machine-monitor/{id}/edit', [MachineMonitorController::class, 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
         Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
         Route::post('/store-token', [DaftarHadirController::class, 'storeToken'])->name('store-token');
+        Route::post('/admin/daftar-hadir/store-token', [DaftarHadirController::class, 'storeToken'])->name('admin.daftar_hadir.store_token');
     });
 
     Route::prefix('meetings')->group(function () {
@@ -182,3 +183,5 @@ Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoo
     ->middleware('web');
 
 Route::get('/admin/pembangkit/report', [PembangkitController::class, 'report'])->name('admin.pembangkit.report');
+
+Route::get('/machine-monitor/show', [MachineMonitorController::class, 'showAll'])->name('admin.machine-monitor.show.all');

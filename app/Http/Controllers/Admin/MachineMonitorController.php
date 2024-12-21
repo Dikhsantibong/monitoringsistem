@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use App\Models\MachineStatusLog;
 use App\Models\MachineOperation;
 use App\Models\PowerPlant;
+use App\Models\Issue;
 
 class MachineMonitorController extends Controller
 {
@@ -272,5 +273,19 @@ public function show()
             Alert::error('Gagal', 'Gagal memperbarui mesin: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Gagal memperbarui mesin: ' . $e->getMessage()]);
         }
+    }
+
+    public function showAll()
+    {
+        $machines = Machine::with(['powerPlant', 'metrics', 'statusLogs' => function($query) {
+            $query->latest();
+        }])->paginate(10); // Mengubah get() menjadi paginate()
+
+        $recentIssues = Issue::with(['machine', 'category'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('admin.machine-monitor.show', compact('machines', 'recentIssues'));
     }
 }

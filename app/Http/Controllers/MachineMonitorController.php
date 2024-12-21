@@ -43,4 +43,10 @@ class MachineMonitorController extends Controller
 
         return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil ditambahkan');
     }
+
+    public function showAll()
+    {
+        $machines = Machine::all();
+        return view('admin.machine-monitor.show', compact('machines'));
+    }
 }
