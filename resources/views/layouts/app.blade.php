@@ -9,9 +9,13 @@
     <link rel="icon" href="{{asset('logo/icons.avif')}}" sizes="any">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
+
+    
 
       <!-- Existing styles -->
       @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/assets/flowbite/flowbite.min.js'])
         <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 

@@ -107,34 +107,75 @@
             margin: 28.87px 0;
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
         }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #0095B7;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #0095B7 !important;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
     </style>
 @endsection
 
 @section('content')
     <div class="w-full">
-        <nav class="fixed bg-cyan-600 left-0 top-0 right-0 z-50 py-3 px-6">
-            <div class="container-fluid flex justify-between w-full items-center">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="logo-left" >
+        <nav class="bg-[#0095B7] border-gray-200 dark:bg-[#0095B7]">
+            <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4">
+                <a href="{{ url('/') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
+                    <img src="{{ asset('logo/navlogo.png') }}" class="h-10" alt="Logo" />
+                    <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
                 </a>
-                <button class="navbar-toggler" type="button" onclick="toggleMobileMenu()">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="desktop-menu ms-auto">
-                    <a href="{{ route('login') }}">
-                        <i class="fas fa-user"></i> Login
-                    </a>
-                    <a href="{{ url('/') }}">
-                        <i class="fas fa-home"></i> Beranda
-                    </a>
-                </div>
-                <div class="mobile-menu" id="mobileMenu">
-                    <a href="{{ route('login') }}">
-                        <i class="fas fa-user"></i> Login
-                    </a>
-                    <a href="{{ url('/') }}">
-                        <i class="fas fa-home"></i> Beranda
-                    </a>
+                <div class="flex items-center space-x-6 rtl:space-x-reverse">
+                    <a href="tel:+6282299999999" class="text-base text-gray-500 dark:text-white hover:underline">(+62) 822 9999 9999 </a>
+                    <a href="{{ route('login') }}" class="text-base text-blue-600 dark:text-white hover:underline cursor-pointer"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    </div>
+            </div>
+        </nav>
+        <nav class="bg-gray-50 dark:bg-gray-700">
+            <div class="max-w-screen-xl px-4 py-3 mx-auto">
+                <div class="flex items-center">
+                    <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
+                        <li>
+                            <a href="{{ url('/') }}" 
+                               class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200" 
+                               aria-current="page">Home</a>
+                        </li>
+                        <li>
+                            <a href="#map" 
+                               class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">
+                               Peta Pembangkit</a>
+                        </li>
+                        <li>
+                            <a href="#grafik" 
+                               class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">
+                               Grafik Kinerja</a>
+                        </li>
+                        <li>
+                            <a href="#live-data" 
+                               class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">
+                               Live Data Unit Operasional</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -176,7 +217,7 @@
         {{-- Hero section --}}
         <div class="h-screen flex flex-col justify-center items-center hexagon-background">
             <!-- Overlay -->
-            <div class="absolute inset-0 bg-white h-screen bg-opacity-50"></div>
+            <div class="absolute inset-0 "></div>
             <!-- Header -->
             <h2 class="text-4xl font-bold mb-4 text-center" style="color: linear-gradient(135deg, #007bff 0%, #00bfff 100%); text-shadow: 1px 1px 2px #000000;">M<i class="fas fa-helmet-safety"></i>NDAY  <br>MONITORING dayly</h2>
             <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
@@ -219,7 +260,7 @@
 
         {{-- Map --}}
         <div id="map"
-            style="height: 500px; border: 1px solid #ddd; position: relative; margin-top: 100px"
+            style="height: 500px; border-radius: 20px; position: relative; margin: 100px 30px 0; padding: 0; "
             class="z-0">
         </div>
     </div>
@@ -230,7 +271,7 @@
 
     <!-- Rest of the content remains exactly the same -->
     <!-- Highlight Kinerja -->
-    <h3 class="mt-10 mb-4 text-2xl font-semibold">Highlight Kinerja</h3>
+    {{-- <h3 class="mt-10 mb-4 text-2xl font-semibold">Highlight Kinerja</h3>
     <div class="flex justify-center gap-5">
         <div class="bg-box">
             <h3 class="text-title">TOTAL KAPASITAS LISTRIK</h3>
@@ -244,7 +285,7 @@
             <h3 class="text-title">UNIT PEMBANGKIT AKTIF</h3>
             <p class="text-value">{{ $active_units }} UNIT</p>
         </div>
-    </div>
+    </div> --}}
 
     <div class="w-full flex justify-center flex-col items-center">
         <h3 class="mt-4 mb-4 text-xl font-semibold">Grafik Line</h3>
@@ -432,10 +473,10 @@
         chart.render();
 
         var map = L.map('map', {
-            zoomControl: false,
-            scrollWheelZoom: false,
-            doubleClickZoom: false,
-            dragging: false,
+            zoomControl: true,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            dragging: true,
         }).setView([-3.0125, 120.5156], 7);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -537,6 +578,57 @@
                 .setContent(popupContent)
                 .openOn(map);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            // Fungsi untuk smooth scroll
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (this.getAttribute('href').startsWith('#')) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        const targetElement = document.querySelector(targetId);
+                        
+                        if (targetElement) {
+                            // Hapus kelas active dari semua link
+                            navLinks.forEach(link => link.classList.remove('active'));
+                            
+                            // Tambah kelas active ke link yang diklik
+                            this.classList.add('active');
+
+                            // Smooth scroll ke target
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Update active state berdasarkan posisi scroll
+            function updateActiveLink() {
+                const sections = document.querySelectorAll('section, #map, #grafik, #live-data');
+                const scrollPosition = window.scrollY + 100; // offset untuk navbar
+
+                sections.forEach(section => {
+                    if (section.offsetTop <= scrollPosition && 
+                        (section.offsetTop + section.offsetHeight) > scrollPosition) {
+                        const currentId = section.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${currentId}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveLink);
+            updateActiveLink();
+        });
     </script>
     @push('scripts')
     @endpush
