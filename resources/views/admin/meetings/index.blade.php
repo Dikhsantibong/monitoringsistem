@@ -133,25 +133,49 @@
                 <!-- Tabel Hasil Rapat -->
                 <div class="bg-white rounded-lg shadow mb-6">
                     <div class="p-6">
+                        <!-- Header dengan filter -->
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-semibold text-gray-800">Score Card Daily</h2>
-                            <div class="flex gap-4">
+                            <div class="flex items-center gap-4">
                                 <!-- Filter Tanggal -->
-                                <div class="flex items-center gap-2">
-                                    <input type="date" id="tanggal-filter" 
-                                           class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <div class="flex items-center">
+                                    <select id="tanggal-filter" 
+                                           class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+                                           onchange="changeDateFilter(this.value)">
+                                        @foreach($availableDates as $date)
+                                            <option value="{{ $date }}" {{ $date == $selectedDate ? 'selected' : '' }}>
+                                                {{ \Carbon\Carbon::parse($date)->format('d F Y') }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <!-- Search -->
                                 <div class="relative">
                                     <input type="text" id="search-input" 
-                                           placeholder="Cari..."
+                                           placeholder="Cari peserta..."
                                            class="border rounded-md pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 </div>
-                                <!-- Tombol Reset -->
-                                <button onclick="resetFilters()" 
-                                        class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
-                                    Reset Filter
+                            </div>
+                        </div>
+
+                        <!-- Tombol Print dan Download dalam card terpisah -->
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <div class="flex justify-end gap-3">
+                                <button onclick="printTable()" 
+                                        class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
+                                    <i class="fas fa-print mr-2"></i>
+                                    Print
+                                </button>
+                                <button onclick="downloadPDF()" 
+                                        class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
+                                    <i class="fas fa-file-pdf mr-2"></i>
+                                    PDF
+                                </button>
+                                <button onclick="downloadExcel()" 
+                                        class="inline-flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
+                                    <i class="fas fa-file-excel mr-2"></i>
+                                    Excel
                                 </button>
                             </div>
                         </div>
@@ -438,6 +462,144 @@
                 }
                 </script>
 
+                <!-- Tambahkan script untuk handling print dan download -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+                <script>
+                function printTable() {
+                    const printContent = document.querySelector('.bg-white.rounded-lg.shadow.mb-6').innerHTML;
+                    const originalContent = document.body.innerHTML;
+
+                    document.body.innerHTML = `
+                        <div class="p-4">
+                            <h2 class="text-center text-xl font-bold mb-4">Score Card Daily</h2>
+                            ${printContent}
+                        </div>
+                    `;
+
+                    window.print();
+                    document.body.innerHTML = originalContent;
+                    window.location.reload(); // Reload halaman setelah print
+                }
+
+                function downloadPDF() {
+                    Swal.fire({
+                        title: 'Generating PDF...',
+                        text: 'Please wait...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const element = document.querySelector('.bg-white.rounded-lg.shadow.mb-6');
+                    const opt = {
+                        margin: 1,
+                        filename: `score_card_${document.querySelector('#tanggal-filter').value}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                    };
+
+                    html2pdf().set(opt).from(element).save()
+                        .then(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'PDF berhasil diunduh',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        })
+                        .catch(err => {
+                            console.error('PDF Error:', err);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Gagal mengunduh PDF'
+                            });
+                        });
+                }
+
+                function downloadExcel() {
+                    try {
+                        // Ambil data dari tabel
+                        const table = document.querySelector('table');
+                        const rows = Array.from(table.querySelectorAll('tr'));
+                        
+                        // Konversi data tabel ke array
+                        const data = rows.map(row => {
+                            return Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent.trim());
+                        });
+
+                        // Tambahkan header informasi
+                        const tanggal = document.querySelector('#tanggal-filter option:checked').text;
+                        const lokasi = document.querySelector('.bg-gray-50 .grid-cols-2 div:last-child').textContent.replace('Lokasi:', '').trim();
+                        
+                        const header = [
+                            ['Score Card Daily'],
+                            ['Tanggal:', tanggal],
+                            ['Lokasi:', lokasi],
+                            [] // Baris kosong
+                        ];
+
+                        // Gabungkan header dan data
+                        const finalData = [...header, ...data];
+
+                        // Buat workbook baru
+                        const wb = XLSX.utils.book_new();
+                        const ws = XLSX.utils.aoa_to_sheet(finalData);
+
+                        // Styling untuk header
+                        ws['!cols'] = [{ wch: 10 }, { wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 30 }];
+
+                        // Tambahkan worksheet ke workbook
+                        XLSX.utils.book_append_sheet(wb, ws, 'Score Card');
+
+                        // Download file
+                        XLSX.writeFile(wb, `score_card_${document.querySelector('#tanggal-filter').value}.xlsx`);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Excel berhasil diunduh',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } catch (error) {
+                        console.error('Excel Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Gagal mengunduh Excel'
+                        });
+                    }
+                }
+                </script>
+
                 @push('scripts')
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                @endpush
+
+                @push('styles')
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+                <style>
+                    @media print {
+                        body * {
+                            visibility: hidden;
+                        }
+                        .bg-white.rounded-lg.shadow.mb-6, .bg-white.rounded-lg.shadow.mb-6 * {
+                            visibility: visible;
+                        }
+                        .bg-white.rounded-lg.shadow.mb-6 {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                        }
+                    }
+                </style>
                 @endpush
             @endsection
