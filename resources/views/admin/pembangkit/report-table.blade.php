@@ -1,6 +1,7 @@
 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
     <thead class="bg-gray-50">
         <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">No</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Unit</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Mesin</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
@@ -15,8 +16,9 @@
         </tr>
     </thead>
     <tbody id="reportTableBody">
-        @forelse($logs as $log)
+        @forelse($logs as $index => $log)
             <tr class="hover:bg-gray-50 border border-gray-200">
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->powerPlant->name }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->name }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
