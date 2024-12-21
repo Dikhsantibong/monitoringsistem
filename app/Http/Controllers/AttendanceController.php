@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
 {
@@ -32,9 +33,12 @@ class AttendanceController extends Controller
     public function showScanForm($token)
     {
         try {
-            Log::info('Accessing attendance scan form', [
+            // Logging untuk debug URL
+            Log::info('Request details', [
+                'full_url' => request()->fullUrl(),
+                'base_url' => url('/'),
                 'token' => $token,
-                'timestamp' => now()->toDateTimeString()
+                'app_url' => config('app.url')
             ]);
             
             // Validasi token dengan logging
@@ -62,7 +66,8 @@ class AttendanceController extends Controller
             
             return view('attendance.scan-from', [
                 'token' => $token,
-                'tokenData' => $validToken
+                'tokenData' => $validToken,
+                'baseUrl' => url('/')
             ]);
             
         } catch (\Exception $e) {
@@ -188,6 +193,41 @@ class AttendanceController extends Controller
             return back()
                 ->with('error', 'Terjadi kesalahan saat memuat data rekapitulasi. Silakan coba lagi.')
                 ->withInput();
+        }
+    }
+
+    public function generateQrCode()
+    {
+        try {
+            $token = 'attendance_' . date('Y-m-d') . '_' . strtolower(Str::random(8));
+            $qrUrl = config('app.url') . '/attendance/scan/' . $token;
+            
+            // Simpan token
+            AttendanceToken::create([
+                'token' => $token,
+                'expires_at' => Carbon::now()->endOfDay(),
+            ]);
+            
+            Log::info('QR Code generated', [
+                'token' => $token,
+                'url' => $qrUrl
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'token' => $token,
+                'qr_url' => $qrUrl
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error generating QR code', [
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate QR Code'
+            ], 500);
         }
     }
 } 
