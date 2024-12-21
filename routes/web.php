@@ -226,4 +226,13 @@ Route::get('/attendance/scan/{token}', [App\Http\Controllers\AttendanceControlle
 Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])
     ->name('attendance.submit');
 
+// Pastikan route ini ada di luar middleware auth
+Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])
+    ->name('attendance.scan-form')
+    ->withoutMiddleware(['auth']); // Tambahkan ini agar bisa diakses tanpa login
+
+Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])
+    ->name('attendance.submit')
+    ->withoutMiddleware(['auth']); // Tambahkan ini juga
+
 
