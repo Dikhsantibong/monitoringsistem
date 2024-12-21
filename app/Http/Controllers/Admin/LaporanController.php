@@ -109,4 +109,23 @@ class LaporanController extends Controller
 
         return view('admin.laporan.sr_wo_closed_print', compact('srReports', 'woReports'));
     }
+
+    public function updateSRStatus(Request $request, $id)
+    {
+        $sr = ServiceRequest::findOrFail($id);
+        $sr->status = $request->status;
+        $sr->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateWOStatus(Request $request, $id)
+    {
+        $wo = WorkOrder::findOrFail($id);
+        $wo->status = $request->status;
+        $wo->save();
+
+        return response()->json(['success' => true]);
+    }
 }
+

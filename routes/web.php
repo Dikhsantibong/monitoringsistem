@@ -235,4 +235,7 @@ Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendanc
     ->name('attendance.submit')
     ->withoutMiddleware(['auth']); // Tambahkan ini juga
 
+Route::post('/admin/laporan/sr/{id}/update-status', [LaporanController::class, 'updateSRStatus'])->name('admin.laporan.update-sr-status');
+Route::post('/admin/laporan/wo/{id}/update-status', [LaporanController::class, 'updateWOStatus'])->name('admin.laporan.update-wo-status');
+
 

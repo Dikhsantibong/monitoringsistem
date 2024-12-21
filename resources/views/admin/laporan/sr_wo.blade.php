@@ -105,6 +105,7 @@
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Status</th>
                                             <th class="py-2 px-4 border-b">Tanggal</th>
+                                            <th class="py-2 px-4 border-b">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
@@ -117,6 +118,12 @@
                                                     class="py-2 px-4 border-b {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">
                                                     {{ $sr->status }}</td>
                                                 <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <button onclick="updateStatus('sr', {{ $sr->id }}, '{{ $sr->status }}')"
+                                                        class="px-3 py-1 text-sm rounded-full {{ $sr->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
+                                                        {{ $sr->status == 'Open' ? 'Tutup' : 'Buka' }}
+                                                    </button>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -142,6 +149,7 @@
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Status</th>
                                             <th class="py-2 px-4 border-b">Tanggal</th>
+                                            <th class="py-2 px-4 border-b">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -152,6 +160,12 @@
                                                 <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border-b {{ $wo->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">{{ $wo->status }}</td>
                                                 <td class="py-2 px-4 border-b">{{ $wo->created_at }}</td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <button onclick="updateStatus('wo', {{ $wo->id }}, '{{ $wo->status }}')"
+                                                        class="px-3 py-1 text-sm rounded-full {{ $wo->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
+                                                        {{ $wo->status == 'Open' ? 'Tutup' : 'Buka' }}
+                                                    </button>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -431,6 +445,55 @@
         // Jalankan pencarian awal
         searchTables();
     });
+
+    function updateStatus(type, id, currentStatus) {
+        const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
+        const url = type === 'sr' ? 
+            "{{ route('admin.laporan.update-sr-status', ['id' => ':id']) }}".replace(':id', id) :
+            "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
+
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: `Apakah Anda yakin ingin mengubah status menjadi ${newStatus}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Status berhasil diubah!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi kesalahan!',
+                        text: 'Gagal mengubah status'
+                    });
+                });
+            }
+        });
+    }
 </script>
 @push('scripts')
 @endpush
