@@ -222,23 +222,84 @@
         function searchUsers() {
             const input = document.getElementById('search').value.toLowerCase();
             const roleFilter = document.getElementById('role-filter').value.toLowerCase();
-            const rows = document.querySelectorAll('#users-body tr');
+            const tbody = document.getElementById('users-body');
+            const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => !row.classList.contains('no-data-row'));
 
+            // Urutkan rows berdasarkan role (admin di atas)
+            rows.sort((a, b) => {
+                const roleA = a.querySelector('td:nth-child(4) span')?.textContent.toLowerCase() || '';
+                const roleB = b.querySelector('td:nth-child(4) span')?.textContent.toLowerCase() || '';
+                
+                if (roleA === 'admin' && roleB !== 'admin') return -1;
+                if (roleA !== 'admin' && roleB === 'admin') return 1;
+                return 0;
+            });
+
+            let visibleCount = 0;
             rows.forEach(row => {
-                const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const email = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                const role = row.querySelector('td:nth-child(4) span').textContent.toLowerCase();
+                const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
+                const emailCell = row.querySelector('td:nth-child(3) .text-sm');
+                const roleCell = row.querySelector('td:nth-child(4) span');
 
-                const matchesSearch = name.includes(input) || email.includes(input);
-                const matchesRole = roleFilter === '' || role.includes(roleFilter);
+                if (!nameCell || !emailCell || !roleCell) return;
+
+                const name = nameCell.textContent.toLowerCase().trim();
+                const email = emailCell.textContent.toLowerCase().trim();
+                const role = roleCell.textContent.toLowerCase().trim();
+
+                const matchesSearch = !input || 
+                                    name.includes(input) || 
+                                    email.includes(input);
+                const matchesRole = !roleFilter || role === roleFilter;
 
                 if (matchesSearch && matchesRole) {
                     row.style.display = '';
+                    visibleCount++;
+                    // Update nomor urut
+                    const numberCell = row.querySelector('td:first-child');
+                    if (numberCell) {
+                        numberCell.textContent = visibleCount;
+                    }
                 } else {
                     row.style.display = 'none';
                 }
             });
+
+            // Hapus pesan "tidak ada data" yang lama jika ada
+            const existingNoData = tbody.querySelector('.no-data-row');
+            if (existingNoData) {
+                existingNoData.remove();
+            }
+
+            // Tampilkan pesan jika tidak ada hasil
+            if (visibleCount === 0) {
+                const noDataRow = document.createElement('tr');
+                noDataRow.className = 'no-data-row';
+                noDataRow.innerHTML = `
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        Tidak ada data pengguna yang sesuai dengan pencarian
+                    </td>
+                `;
+                tbody.appendChild(noDataRow);
+            }
+
+            // Urutkan ulang baris yang terlihat
+            rows.filter(row => row.style.display !== 'none')
+                .forEach(row => tbody.appendChild(row));
         }
+
+        // Filter ketika memilih role
+        document.getElementById('role-filter').addEventListener('change', searchUsers);
+
+        // Debounce untuk input pencarian
+        let searchTimeout;
+        document.getElementById('search').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(searchUsers, 300);
+        });
+
+        // Inisialisasi pencarian dan pengurutan saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', searchUsers);
 
         function confirmDelete(userId, userName) {
             Swal.fire({

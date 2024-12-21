@@ -131,47 +131,163 @@
                 </div>
 
                 <!-- Tabel Hasil Rapat -->
-                <div class="bg-white rounded-lg shadow mb-6 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold text-gray-800">Hasil Score Card Daily</h2>
-                        <div class="flex gap-4">
-                            <!-- Filter Tanggal -->
-                            <div class="flex items-center gap-2">
-                                <label for="tanggal" class="text-sm font-medium text-gray-600">Tanggal:</label>
-                                <input type="date" id="tanggal" name="tanggal" 
-                                    class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value="{{ date('Y-m-d') }}">
-                            </div>
-                            <!-- Tombol Print & Download -->
-                            <div class="flex gap-2">
-                                <button onclick="printTable()" 
-                                    class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 flex items-center gap-2">
-                                    <i class="fas fa-print"></i> Print
-                                </button>
-                                <button onclick="downloadTable()" 
-                                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 flex items-center gap-2">
-                                    <i class="fas fa-download"></i> Download
+                <div class="bg-white rounded-lg shadow mb-6">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Score Card Daily</h2>
+                            <div class="flex gap-4">
+                                <!-- Filter Tanggal -->
+                                <div class="flex items-center gap-2">
+                                    <input type="date" id="tanggal-filter" 
+                                           class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <!-- Search -->
+                                <div class="relative">
+                                    <input type="text" id="search-input" 
+                                           placeholder="Cari..."
+                                           class="border rounded-md pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <!-- Tombol Reset -->
+                                <button onclick="resetFilters()" 
+                                        class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+                                    Reset Filter
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white border" id="scoreCardTable">
-                            <thead>
-                                <tr style="background-color: #0A749B; color: white;" class="text-center">
-                                    <th class="border p-2">No</th>
-                                    <th class="border p-2">Peserta</th>
-                                    <th class="border p-2">Awal</th>
-                                    <th class="border p-2">Akhir</th>
-                                    <th class="border p-2">Skor</th>
-                                    <th class="border p-2">Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="scoreCardBody">
-                                <!-- Data akan diisi melalui AJAX -->
-                            </tbody>
-                        </table>
+                        <!-- Informasi Tanggal dan Lokasi -->
+                        @if($scoreCards->isNotEmpty())
+                            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <span class="font-semibold">Tanggal:</span> 
+                                        {{ \Carbon\Carbon::parse($selectedDate)->format('d F Y') }}
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold">Lokasi:</span> 
+                                        {{ $scoreCards->first()['lokasi'] }}
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                                <thead>
+                                    <tr style="background-color: #0A749B; color: white">
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">No</th>
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peserta</th>
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Awal</th>
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Akhir</th>
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Skor</th>
+                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="score-card-body">
+                                    @forelse($scoreCards as $scoreCard)
+                                        @foreach($scoreCard['peserta'] as $index => $peserta)
+                                            <tr class="hover:bg-gray-50 transition-colors" 
+                                                data-date="{{ $scoreCard['tanggal'] }}"
+                                                data-search="{{ strtolower($peserta['jabatan']) }}">
+                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                    {{ $loop->iteration }}
+                                                </td>
+                                                <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
+                                                    {{ $peserta['jabatan'] }}
+                                                </td>
+                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                    {{ $peserta['awal'] }}
+                                                </td>
+                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                    {{ $peserta['akhir'] }}
+                                                </td>
+                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                    {{ $peserta['skor'] }}
+                                                </td>
+                                                <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
+                                                    <!-- Kolom keterangan dikosongkan atau bisa diisi informasi lain jika diperlukan -->
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                        <!-- Informasi tambahan -->
+                                        <tr class="bg-gray-50" data-date="{{ $scoreCard['tanggal'] }}">
+                                            <td colspan="6" class="py-2 px-4 border border-gray-300">
+                                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                                    <div>Kesiapan Panitia: {{ $scoreCard['kesiapan_panitia'] }}%</div>
+                                                    <div>Kesiapan Bahan: {{ $scoreCard['kesiapan_bahan'] }}%</div>
+                                                    <div>Aktivitas Luar: {{ $scoreCard['aktivitas_luar'] }}%</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                                Tidak ada data score card yang tersedia
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Tambahkan Total Score di bawah tabel -->
+                        @if($scoreCards->isNotEmpty())
+                            @php
+                                $scoreCard = $scoreCards->first();
+                                $totalPesertaScore = collect($scoreCard['peserta'])->sum('skor');
+                                
+                                // Hitung rata-rata kesiapan rapat
+                                $kesiapanRapat = collect([
+                                    $scoreCard['kesiapan_panitia'],
+                                    $scoreCard['kesiapan_bahan'],
+                                    $scoreCard['aktivitas_luar']
+                                ])->average();
+
+                                // Hitung total keseluruhan (50% dari skor peserta + 50% dari kesiapan rapat)
+                                $totalScore = ($totalPesertaScore + $kesiapanRapat) / 2;
+                            @endphp
+
+                            <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold mb-3">Ringkasan Score</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="bg-white p-4 rounded-lg shadow">
+                                        <div class="text-sm text-gray-600">Total Score Peserta</div>
+                                        <div class="text-2xl font-bold text-blue-600">
+                                            {{ number_format($totalPesertaScore, 2) }}
+                                        </div>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg shadow">
+                                        <div class="text-sm text-gray-600">Rata-rata Kesiapan Rapat</div>
+                                        <div class="text-2xl font-bold text-green-600">
+                                            {{ number_format($kesiapanRapat, 2) }}%
+                                        </div>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg shadow">
+                                        <div class="text-sm text-gray-600">Total Score Keseluruhan</div>
+                                        <div class="text-2xl font-bold text-purple-600">
+                                            {{ number_format($totalScore, 2) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Detail Kesiapan -->
+                                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <span class="text-sm text-gray-600">Kesiapan Panitia:</span>
+                                        <span class="font-semibold">{{ $scoreCard['kesiapan_panitia'] }}%</span>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <span class="text-sm text-gray-600">Kesiapan Bahan:</span>
+                                        <span class="font-semibold">{{ $scoreCard['kesiapan_bahan'] }}%</span>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <span class="text-sm text-gray-600">Aktivitas Luar:</span>
+                                        <span class="font-semibold">{{ $scoreCard['aktivitas_luar'] }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -240,127 +356,85 @@
                 </script>
 
                 <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Load data awal
-                    loadScoreCardData();
+                function filterData() {
+                    const dateFilter = document.getElementById('tanggal-filter').value;
+                    const searchInput = document.getElementById('search-input').value.toLowerCase();
+                    const rows = document.querySelectorAll('#score-card-body tr');
+                    let visibleCount = 0;
 
-                    // Event listener untuk perubahan tanggal
-                    document.getElementById('tanggal').addEventListener('change', function() {
-                        loadScoreCardData();
+                    rows.forEach(row => {
+                        const date = row.getAttribute('data-date');
+                        const searchText = row.getAttribute('data-search');
+                        
+                        // Jika tidak ada filter yang aktif, tampilkan semua data
+                        if (!dateFilter && !searchInput) {
+                            row.style.display = '';
+                            visibleCount++;
+                            return;
+                        }
+
+                        const matchesDate = !dateFilter || date === dateFilter;
+                        const matchesSearch = !searchInput || (searchText && searchText.includes(searchInput));
+
+                        if (matchesDate && matchesSearch) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
                     });
+
+                    // Tampilkan pesan jika tidak ada data yang sesuai
+                    const noDataRow = document.querySelector('.no-data-message');
+                    if (visibleCount === 0) {
+                        if (!noDataRow) {
+                            const tbody = document.getElementById('score-card-body');
+                            const tr = document.createElement('tr');
+                            tr.className = 'no-data-message';
+                            tr.innerHTML = `
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                    Tidak ada data yang sesuai dengan filter
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    } else if (noDataRow) {
+                        noDataRow.remove();
+                    }
+                }
+
+                // Inisialisasi tanpa filter otomatis
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Hanya set tanggal tanpa menjalankan filter
+                    const today = new Date().toISOString().split('T')[0];
+                    const dateFilter = document.getElementById('tanggal-filter');
+                    if (dateFilter) {
+                        dateFilter.value = today;
+                    }
+                    
+                    // Tambahkan event listeners
+                    dateFilter?.addEventListener('change', filterData);
+                    document.getElementById('search-input')?.addEventListener('input', debounce(filterData, 300));
                 });
 
-                function loadScoreCardData() {
-                    const tanggal = document.getElementById('tanggal').value;
-                    const tbody = document.getElementById('scoreCardBody');
-                    
-                    // Tampilkan loading
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="6" class="border p-2 text-center">
-                                <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
-                            </td>
-                        </tr>
-                    `;
-                    
-                    fetch(`/admin/score-card/data?tanggal=${tanggal}`)
-                        .then(response => response.json())
-                        .then(response => {
-                            tbody.innerHTML = '';
-                            
-                            if (!response.success) {
-                                tbody.innerHTML = `
-                                    <tr>
-                                        <td colspan="6" class="border p-2 text-center">${response.message}</td>
-                                    </tr>
-                                `;
-                                return;
-                            }
-
-                            const data = response.data;
-                            let rowNumber = 1;
-
-                            // Tampilkan data sesuai dengan struktur tabel
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td class="border p-2 text-center">${rowNumber++}</td>
-                                    <td class="border p-2">Waktu Mulai</td>
-                                    <td class="border p-2 text-center">${data.waktu_mulai || '-'}</td>
-                                    <td class="border p-2 text-center">${data.waktu_selesai || '-'}</td>
-                                    <td class="border p-2 text-center">${data.skor || '-'}</td>
-                                    <td class="border p-2">-</td>
-                                </tr>
-                                <tr>
-                                    <td class="border p-2 text-center">${rowNumber++}</td>
-                                    <td class="border p-2">Kesiapan Panitia</td>
-                                    <td class="border p-2 text-center">${data.kesiapan_panitia || '-'}</td>
-                                    <td class="border p-2 text-center">-</td>
-                                    <td class="border p-2 text-center">-</td>
-                                    <td class="border p-2">-</td>
-                                </tr>
-                                <tr>
-                                    <td class="border p-2 text-center">${rowNumber++}</td>
-                                    <td class="border p-2">Kesiapan Bahan</td>
-                                    <td class="border p-2 text-center">${data.kesiapan_bahan || '-'}</td>
-                                    <td class="border p-2 text-center">-</td>
-                                    <td class="border p-2 text-center">-</td>
-                                    <td class="border p-2">-</td>
-                                </tr>
-                                <tr>
-                                    <td class="border p-2 text-center">${rowNumber++}</td>
-                                    <td class="border p-2">Aktivitas Luar</td>
-                                    <td class="border p-2 text-center">${data.aktivitas_luar || '-'}</td>
-                                    <td class="border p-2 text-center">-</td>
-                                    <td class="border p-2 text-center">-</td>
-                                    <td class="border p-2">-</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
-                                    <td class="border p-2 text-center font-bold">${data.skor || 0}</td>
-                                </tr>
-                            `;
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            tbody.innerHTML = `
-                                <tr>
-                                    <td colspan="6" class="border p-2 text-center text-red-500">
-                                        Terjadi kesalahan saat memuat data
-                                    </td>
-                                </tr>
-                            `;
-                        });
+                // Fungsi debounce untuk mencegah terlalu banyak pemanggilan fungsi filter
+                function debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
                 }
 
-                function printTable() {
-                    const printWindow = window.open('', '_blank');
-                    const table = document.getElementById('scoreCardTable').outerHTML;
-                    const tanggal = document.getElementById('tanggal').value;
-                    
-                    printWindow.document.write(`
-                        <html>
-                            <head>
-                                <title>Score Card Daily - ${tanggal}</title>
-                                <style>
-                                    table { border-collapse: collapse; width: 100%; }
-                                    th, td { border: 1px solid black; padding: 8px; }
-                                    th { background-color: #0A749B; color: white; }
-                                </style>
-                            </head>
-                            <body>
-                                <h2>Score Card Daily - ${tanggal}</h2>
-                                ${table}
-                            </body>
-                        </html>
-                    `);
-                    
-                    printWindow.document.close();
-                    printWindow.print();
-                }
-
-                function downloadTable() {
-                    const tanggal = document.getElementById('tanggal').value;
-                    window.location.href = `/admin/score-card/download?tanggal=${tanggal}`;
+                // Tambahkan fungsi untuk reset filter
+                function resetFilters() {
+                    document.getElementById('tanggal-filter').value = '';
+                    document.getElementById('search-input').value = '';
+                    filterData();
                 }
                 </script>
 
