@@ -200,17 +200,22 @@ class AttendanceController extends Controller
     {
         try {
             $token = 'attendance_' . date('Y-m-d') . '_' . strtolower(Str::random(8));
-            $qrUrl = config('app.url') . '/attendance/scan/' . $token;
+            
+            // Gunakan url() helper untuk generate URL lengkap
+            $qrUrl = url('/attendance/scan/' . $token);
+            
+            // Log untuk debugging
+            Log::info('Generating QR Code', [
+                'token' => $token,
+                'url' => $qrUrl,
+                'base_url' => url('/'),
+                'app_url' => config('app.url')
+            ]);
             
             // Simpan token
             AttendanceToken::create([
                 'token' => $token,
-                'expires_at' => Carbon::now()->endOfDay(),
-            ]);
-            
-            Log::info('QR Code generated', [
-                'token' => $token,
-                'url' => $qrUrl
+                'expires_at' => now()->endOfDay(),
             ]);
             
             return response()->json([
@@ -220,10 +225,7 @@ class AttendanceController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Error generating QR code', [
-                'error' => $e->getMessage()
-            ]);
-            
+            Log::error('Error generating QR code: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal generate QR Code'
