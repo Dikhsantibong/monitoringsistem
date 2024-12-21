@@ -160,15 +160,15 @@
                                                 <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
                                                     {{ $machine->name }}
                                                 </td>   
-                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800">
+                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
                                                 </td>
-                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800">
+                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                     {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                                 </td>
                                                 <td class="px-2 py-2 border-r border-gray-200">
                                                     <input type="number" 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                           class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
                                                         value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
                                                         placeholder="Masukkan beban...">
                                                 </td>
@@ -185,17 +185,29 @@
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan deskripsi..." style="height: 100px;" name="deskripsi[{{ $machine->id }}]">{{ $operations->where('machine_id', $machine->id)->first()->deskripsi ?? '' }}</textarea>
+                                                        rows="2" 
+                                                        placeholder="Masukkan deskripsi..." 
+                                                        style="height: 100px;" 
+                                                        name="deskripsi[{{ $machine->id }}]" 
+                                                        oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->deskripsi ?? '' }}</textarea>
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan kronologi..." style="height: 100px;" name="kronologi[{{ $machine->id }}]"></textarea>
+                                                        rows="2" 
+                                                        placeholder="Masukkan kronologi..." 
+                                                        style="height: 100px;" 
+                                                        name="kronologi[{{ $machine->id }}]" 
+                                                        oninput="autoResize(this)"></textarea>
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
                                                     <textarea 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" placeholder="Masukkan action plan..." style="height: 100px;" name="action_plan[{{ $machine->id }}]"></textarea>
+                                                        rows="2" 
+                                                        placeholder="Masukkan action plan..." 
+                                                        style="height: 100px;" 
+                                                        name="action_plan[{{ $machine->id }}]" 
+                                                        oninput="autoResize(this)"></textarea>
                                                 </td>
                                                 <td class="px-3 py-2">
                                                     <textarea 
@@ -203,7 +215,8 @@
                                                         rows="2" 
                                                         placeholder="Masukkan progres..." 
                                                         style="height: 100px;" 
-                                                        name="progres[{{ $machine->id }}]">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
+                                                        name="progres[{{ $machine->id }}]" 
+                                                        oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
                                                 </td>   
                                                 <td class="px-3 py-2">
                                                     <input type="date" 
@@ -688,6 +701,12 @@
 
 
     });
+</script>
+<script>
+    function autoResize(textarea) {
+        textarea.style.height = 'auto'; // Reset height
+        textarea.style.height = textarea.scrollHeight + 'px'; // Set to scroll height
+    }
 </script>
 @push('scripts')
 @endpush
