@@ -33,54 +33,62 @@ class AttendanceController extends Controller
     public function showScanForm($token)
     {
         try {
-            // Logging untuk debug URL
-            Log::info('Request details', [
-                'full_url' => request()->fullUrl(),
-                'base_url' => url('/'),
+            // Debug info lengkap
+            Log::info('Access scan form attempt', [
                 'token' => $token,
-                'app_url' => config('app.url')
+                'url' => request()->fullUrl(),
+                'method' => request()->method(),
+                'user_agent' => request()->userAgent(),
+                'ip' => request()->ip(),
+                'headers' => request()->headers->all(),
+                'server' => request()->server->all()
             ]);
-            
-            // Validasi token dengan logging
+
+            // Cek token di database
             $validToken = AttendanceToken::where('token', $token)
                 ->where('expires_at', '>', now())
                 ->first();
-            
+
             Log::info('Token validation result', [
                 'token' => $token,
-                'valid' => !is_null($validToken),
+                'found' => !is_null($validToken),
                 'token_data' => $validToken
             ]);
-            
+
             if (!$validToken) {
-                Log::warning('Invalid attendance token', [
+                Log::warning('Invalid token access attempt', [
                     'token' => $token,
-                    'timestamp' => now()->toDateTimeString()
+                    'timestamp' => now()
                 ]);
                 
-                return view('attendance.scan-from', [
-                    'token' => null,
-                    'error' => 'QR Code tidak valid atau sudah kadaluarsa. Silakan scan ulang QR Code yang baru.'
-                ]);
+                return response()->view('errors.404', [], 404);
             }
-            
-            return view('attendance.scan-from', [
+
+            // Cek apakah view exists
+            $viewPath = 'attendance.scan-from';
+            if (!view()->exists($viewPath)) {
+                Log::error('View not found', [
+                    'view' => $viewPath,
+                    'paths' => config('view.paths')
+                ]);
+                throw new \Exception("View {$viewPath} not found");
+            }
+
+            return view($viewPath, [
                 'token' => $token,
-                'tokenData' => $validToken,
-                'baseUrl' => url('/')
+                'tokenData' => $validToken
             ]);
-            
+
         } catch (\Exception $e) {
-            Log::error('Error in attendance scan form', [
+            Log::error('Error in scan form', [
                 'token' => $token,
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
-            return view('attendance.scan-from', [
-                'token' => null,
-                'error' => 'Terjadi kesalahan sistem. Silakan coba lagi nanti.'
-            ]);
+
+            return response()->view('errors.500', [], 500);
         }
     }
 
@@ -201,31 +209,40 @@ class AttendanceController extends Controller
         try {
             $token = 'attendance_' . date('Y-m-d') . '_' . strtolower(Str::random(8));
             
-            // Gunakan url() helper untuk generate URL lengkap
-            $qrUrl = url('/attendance/scan/' . $token);
+            // Generate URL dengan domain yang benar
+            $qrUrl = config('app.url') . '/attendance/scan/' . $token;
             
-            // Log untuk debugging
             Log::info('Generating QR Code', [
                 'token' => $token,
                 'url' => $qrUrl,
-                'base_url' => url('/'),
-                'app_url' => config('app.url')
+                'app_url' => config('app.url'),
+                'server_name' => request()->server('SERVER_NAME')
             ]);
-            
+
             // Simpan token
-            AttendanceToken::create([
+            $tokenModel = AttendanceToken::create([
                 'token' => $token,
                 'expires_at' => now()->endOfDay(),
             ]);
-            
+
+            Log::info('Token created', [
+                'token_id' => $tokenModel->id,
+                'expires_at' => $tokenModel->expires_at
+            ]);
+
             return response()->json([
                 'success' => true,
                 'token' => $token,
                 'qr_url' => $qrUrl
             ]);
-            
+
         } catch (\Exception $e) {
-            Log::error('Error generating QR code: ' . $e->getMessage());
+            Log::error('QR Code generation error', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal generate QR Code'
