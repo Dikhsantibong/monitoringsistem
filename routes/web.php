@@ -217,4 +217,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         ->name('admin.score-card.data');
 });
 
+// Route untuk scan QR Code attendance
+Route::get('/attendance/scan/{token}', [App\Http\Controllers\AttendanceController::class, 'showScanForm'])
+    ->name('attendance.scan-form')
+    ->where('token', '.*'); // Tambahkan ini untuk menerima karakter khusus pada token
+
+// Route untuk submit attendance
+Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])
+    ->name('attendance.submit');
+
 

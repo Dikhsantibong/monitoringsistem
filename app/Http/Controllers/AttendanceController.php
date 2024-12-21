@@ -32,26 +32,25 @@ class AttendanceController extends Controller
     public function showScanForm($token)
     {
         try {
-            Log::info('Attempting to validate token: ' . $token); // Perbaikan untuk menggunakan Log
+            Log::info('Accessing scan form with token: ' . $token);
             
-            // Cek token di database dengan validasi yang lebih longgar
+            // Validasi token
             $validToken = AttendanceToken::where('token', $token)
                 ->whereDate('created_at', Carbon::today())
                 ->first();
             
             if (!$validToken) {
-                Log::warning('Invalid token or token not found: ' . $token); // Perbaikan untuk menggunakan Log
+                Log::warning('Invalid token accessed: ' . $token);
                 return view('attendance.scan-from', ['token' => null])
-                       ->with('error', 'QR Code tidak valid atau sudah kadaluarsa. Silakan scan ulang QR Code yang baru.');
+                    ->with('error', 'QR Code tidak valid atau sudah kadaluarsa.');
             }
             
-            Log::info('Valid token found: ' . $token); // Perbaikan untuk menggunakan Log
             return view('attendance.scan-from', compact('token'));
             
         } catch (\Exception $e) {
-            Log::error('Error validating token: ' . $e->getMessage()); // Perbaikan untuk menggunakan Log
+            Log::error('Error in showScanForm: ' . $e->getMessage());
             return view('attendance.scan-from', ['token' => null])
-                   ->with('error', 'Terjadi kesalahan sistem.');
+                ->with('error', 'Terjadi kesalahan sistem.');
         }
     }
 
