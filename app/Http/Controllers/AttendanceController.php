@@ -32,25 +32,50 @@ class AttendanceController extends Controller
     public function showScanForm($token)
     {
         try {
-            Log::info('Accessing scan form with token: ' . $token);
+            Log::info('Accessing attendance scan form', [
+                'token' => $token,
+                'timestamp' => now()->toDateTimeString()
+            ]);
             
-            // Validasi token
+            // Validasi token dengan logging
             $validToken = AttendanceToken::where('token', $token)
-                ->whereDate('created_at', Carbon::today())
+                ->where('expires_at', '>', now())
                 ->first();
             
+            Log::info('Token validation result', [
+                'token' => $token,
+                'valid' => !is_null($validToken),
+                'token_data' => $validToken
+            ]);
+            
             if (!$validToken) {
-                Log::warning('Invalid token accessed: ' . $token);
-                return view('attendance.scan-from', ['token' => null])
-                    ->with('error', 'QR Code tidak valid atau sudah kadaluarsa.');
+                Log::warning('Invalid attendance token', [
+                    'token' => $token,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
+                
+                return view('attendance.scan-from', [
+                    'token' => null,
+                    'error' => 'QR Code tidak valid atau sudah kadaluarsa. Silakan scan ulang QR Code yang baru.'
+                ]);
             }
             
-            return view('attendance.scan-from', compact('token'));
+            return view('attendance.scan-from', [
+                'token' => $token,
+                'tokenData' => $validToken
+            ]);
             
         } catch (\Exception $e) {
-            Log::error('Error in showScanForm: ' . $e->getMessage());
-            return view('attendance.scan-from', ['token' => null])
-                ->with('error', 'Terjadi kesalahan sistem.');
+            Log::error('Error in attendance scan form', [
+                'token' => $token,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return view('attendance.scan-from', [
+                'token' => null,
+                'error' => 'Terjadi kesalahan sistem. Silakan coba lagi nanti.'
+            ]);
         }
     }
 
@@ -83,90 +108,27 @@ class AttendanceController extends Controller
 
     public function submitAttendance(Request $request)
     {
-        if ($request->method() !== 'POST') {
-            return response()->json([
-                'error' => 'Method not allowed'
-            ], 405);
-        }
-        DB::beginTransaction();
-        
         try {
-            // Debug log
-            Log::info('Form data received:', $request->all());
-
-            // Validasi token
-            $token = AttendanceToken::where('token', $request->token)
-                ->whereDate('created_at', Carbon::today())
-                ->first();
-            
-            if (!$token) {
-                throw new \Exception('Token tidak valid atau sudah kadaluarsa');
-            }
-
-            // Cek duplikasi attendance
-            $existingAttendance = DB::table('attendance')
-                ->where('token', $request->token)
-                ->where('name', $request->name)
-                ->whereDate('time', Carbon::today())
-                ->first();
-
-            if ($existingAttendance) {
-                throw new \Exception('Anda sudah melakukan absensi hari ini');
-            }
-
-            // Validasi input
             $validated = $request->validate([
+                'token' => 'required|string',
                 'name' => 'required|string|max:255',
                 'division' => 'required|string|max:255',
-                'position' => 'required|string|max:255',
-                'token' => 'required|string'
+                'position' => 'required|string|max:255'
             ]);
 
-            // Simpan attendance
-            $saved = DB::table('attendance')->insert([
-                'name' => $request->name,
-                'division' => $request->division,
-                'position' => $request->position,
-                'token' => $request->token,
-                'time' => now(),
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+            // Proses submit attendance
+            // ...
 
-            if (!$saved) {
-                throw new \Exception('Gagal menyimpan kehadiran');
-            }
-
-            DB::commit();
-            
-            Log::info('Attendance saved successfully');
-            
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Kehadiran berhasil dicatat!'
-                ]);
-            }
-            
-            return redirect()
-                ->back()
-                ->with('success', 'Kehadiran berhasil dicatat!');
-            
+            return redirect()->back()->with('success', 'Absensi berhasil dicatat');
         } catch (\Exception $e) {
-            DB::rollback();
-            Log::error('Error saving attendance: ' . $e->getMessage());
+            Log::error('Error submitting attendance', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage()
-                ], 422);
-            }
-            
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat mencatat absensi')
+                ->withInput();
         }
     }
     public function rekapitulasi(Request $request)
