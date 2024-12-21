@@ -97,7 +97,7 @@
                             <div class="flex justify-center">
                                 <a href="{{ route('admin.score-card.create') }}"
                                     class="bg-blue-500 text-white px-4 py-2 rounded flex items-center ml-2">
-                                    <i class="fas fa-plus mr-2"></i> Tambah Score Card
+                                    <i class="fas fa-plus mr-2"></i> Buat Score Card
                                 </a>
                                 <button id="startMeetingBtn" onclick="startMeeting()"
                                     class="bg-green-500 text-white px-4 py-2 rounded flex items-center ml-2">
@@ -325,45 +325,36 @@
 
         async function createZoomMeeting() {
             try {
-                const response = await fetch('/create-zoom-meeting', {
+                const response = await fetch("{{ route('admin.create-zoom-meeting') }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     credentials: 'same-origin'
                 });
 
-                const data = await response.json();
-                console.log('Server Response:', data); // Debug response
+                // Debug response
+                console.log('Response status:', response.status);
+                const contentType = response.headers.get('content-type');
+                console.log('Content type:', contentType);
 
                 if (!response.ok) {
-                    throw new Error(data.details?.error || data.error || 'Gagal membuat meeting');
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error('Gagal membuat meeting: ' + response.status);
                 }
 
-                if (data.data?.join_url) {
+                const data = await response.json();
+                console.log('Meeting data:', data);
+
+                if (data.success && data.data?.join_url) {
                     const zoomLink = document.getElementById('zoom-link-url');
                     zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
                     zoomLink.href = data.data.join_url;
                     document.getElementById('zoom-link-container').style.display = 'block';
 
-                    // Tambahkan Sweet Alert di sini
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Meeting Zoom',
-                        text: 'Link Zoom berhasil dibuat!',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                } else if (data.join_url) {
-                    const zoomLink = document.getElementById('zoom-link-url');
-                    zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
-                    zoomLink.href = data.join_url;
-                    document.getElementById('zoom-link-container').style.display = 'block';
-
-                    // Tambahkan Sweet Alert di sini
                     Swal.fire({
                         icon: 'success',
                         title: 'Meeting Zoom',
@@ -372,11 +363,17 @@
                         timer: 1500
                     });
                 } else {
-                    throw new Error('Tidak ada join URL dalam respons');
+                    throw new Error(data.message || 'Tidak ada join URL dalam respons');
                 }
             } catch (error) {
                 console.error('Error detail:', error);
-                alert(`Terjadi kesalahan: ${error.message}`);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Membuat Meeting',
+                    text: error.message,
+                    footer: 'Silakan cek koneksi internet dan konfigurasi Zoom API'
+                });
             }
         }
 

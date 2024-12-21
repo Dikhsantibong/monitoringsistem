@@ -163,8 +163,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/record-attendance', [AttendanceController::class, 'recordAttendance'])->name('record.attendance');
     Route::get('/daftar-hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
     Route::get('/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])->name('admin.daftar_hadir.rekapitulasi');
-    Route::post('/admin/daftar-hadir/store-token', [DaftarHadirController::class, 'storeToken'])
-        ->name('admin.daftar_hadir.store_token');
+    
+    // Tambahkan route untuk Zoom meeting
+    Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoomMeeting'])
+        ->name('admin.create-zoom-meeting');
 });
 
 // Tambahkan route untuk AJAX
@@ -187,3 +189,21 @@ Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoo
 Route::get('/admin/pembangkit/report', [PembangkitController::class, 'report'])->name('admin.pembangkit.report');
 
 Route::get('/machine-monitor/show', [MachineMonitorController::class, 'showAll'])->name('admin.machine-monitor.show.all');
+
+Route::middleware(['auth'])->group(function () {
+    // Prefix admin untuk semua route admin
+    Route::prefix('admin')->name('admin.')->group(function () {
+        // Route untuk Zoom Meeting
+        Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoomMeeting'])
+            ->name('create-zoom-meeting');
+
+        // Route untuk Daftar Hadir
+        Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
+            Route::post('/store-token', [DaftarHadirController::class, 'storeToken'])
+                ->name('store_token');
+        });
+
+        // Route Score Card lainnya
+        Route::resource('score-card', ScoreCardDailyController::class);
+    });
+});
