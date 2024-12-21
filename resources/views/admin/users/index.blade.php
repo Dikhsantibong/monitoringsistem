@@ -68,7 +68,8 @@
                         <div class="mb-4 flex flex-col sm:flex-row gap-3 justify-between space-x-4">
                             <div class="border">
                                 <select id="role-filter"
-                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 w-full">
+                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 w-full"
+                                    onchange="filterUsers()">
                                     <option value="">Semua Peran</option>
                                     <option value="admin">Admin</option>
                                     <option value="user">Pengguna</option>
@@ -220,13 +221,18 @@
     <script>
         function searchUsers() {
             const input = document.getElementById('search').value.toLowerCase();
+            const roleFilter = document.getElementById('role-filter').value.toLowerCase();
             const rows = document.querySelectorAll('#users-body tr');
 
             rows.forEach(row => {
-                const name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const email = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const role = row.querySelector('td:nth-child(4) span').textContent.toLowerCase();
 
-                if (name.includes(input) || email.includes(input)) {
+                const matchesSearch = name.includes(input) || email.includes(input);
+                const matchesRole = roleFilter === '' || role.includes(roleFilter);
+
+                if (matchesSearch && matchesRole) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
@@ -305,6 +311,14 @@
         function padNumber(number) {
             return number.toString().padStart(2, '0');
         }
+
+        function filterUsers() {
+            // Panggil searchUsers() untuk menerapkan filter dan pencarian sekaligus
+            searchUsers();
+        }
+
+        // Tambahkan event listener untuk input pencarian
+        document.getElementById('search').addEventListener('keyup', searchUsers);
     </script>
     @push('scripts')
     @endpush
