@@ -97,7 +97,7 @@
                             <div class="flex justify-center">
                                 <a href="{{ route('admin.score-card.create') }}"
                                     class="bg-blue-500 text-white px-4 py-2 rounded flex items-center ml-2">
-                                    <i class="fas fa-plus mr-2"></i> Buat Score Card
+                                    <i class="fas fa-book mr-2"></i> Buat Score Card
                                 </a>
                                 <button id="startMeetingBtn" onclick="startMeeting()"
                                     class="bg-green-500 text-white px-4 py-2 rounded flex items-center ml-2">
@@ -141,6 +141,7 @@
                                     // Ambil hanya score card terbaru
                                     $latestScoreCard = $scoreCards->sortByDesc('created_at')->first();
                                     $totalIndex = 0;
+                                    $totalScore = 0; // Reset total score
                                 @endphp
                                 @if($latestScoreCard)
                                     @php
@@ -148,6 +149,11 @@
                                         $ketentuanRapat = json_decode($latestScoreCard->ketentuan_rapat, true);
                                         $pesertaCount = count($peserta);
                                         $currentIndex = 0;
+                                        
+                                        // Hitung total score hanya dari score card terbaru
+                                        foreach ($peserta as $data) {
+                                            $totalScore += $data['skor'] ?? 0;
+                                        }
                                     @endphp
                                     @foreach ($peserta as $jabatan => $data)
                                         @php
@@ -223,7 +229,7 @@
                                 @endif
                                 <tr>
                                     <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
-                                    <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
+                                    <td class="border p-2 text-center font-bold">{{ $totalScore }}</td>
                                 </tr>
                             </tbody>
                         </table>

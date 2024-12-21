@@ -114,6 +114,8 @@ Route::get('admin/machine-monitor/{id}/edit', [MachineMonitorController::class, 
         Route::get('/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
         Route::get('/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
         Route::get('/user/daily-meeting', [UserController::class, 'dailyMeeting'])->name('user.daily-meeting');
+        Route::get('/admin/score-card/data', [AdminMeetingController::class, 'getScoreCardData'])->name('admin.score-card.data');
+Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
     });
 
     Route::prefix('users')->group(function () {
@@ -207,3 +209,11 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('score-card', ScoreCardDailyController::class);
     });
 });
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    // Pastikan route ini ada dan benar
+    Route::get('/score-card/data', [AdminMeetingController::class, 'getScoreCardData'])
+        ->name('admin.score-card.data');
+});
+
+

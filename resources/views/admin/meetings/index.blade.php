@@ -132,42 +132,44 @@
 
                 <!-- Tabel Hasil Rapat -->
                 <div class="bg-white rounded-lg shadow mb-6 p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Hasil Rapat</h2>
-                    <div class="overflow-auto">
-                        <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                            <thead class="sticky top-0">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Hasil Score Card Daily</h2>
+                        <div class="flex gap-4">
+                            <!-- Filter Tanggal -->
+                            <div class="flex items-center gap-2">
+                                <label for="tanggal" class="text-sm font-medium text-gray-600">Tanggal:</label>
+                                <input type="date" id="tanggal" name="tanggal" 
+                                    class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    value="{{ date('Y-m-d') }}">
+                            </div>
+                            <!-- Tombol Print & Download -->
+                            <div class="flex gap-2">
+                                <button onclick="printTable()" 
+                                    class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 flex items-center gap-2">
+                                    <i class="fas fa-print"></i> Print
+                                </button>
+                                <button onclick="downloadTable()" 
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 flex items-center gap-2">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border" id="scoreCardTable">
+                            <thead>
                                 <tr style="background-color: #0A749B; color: white;" class="text-center">
-                                    <th class="border p-2">Judul</th>
-                                    <th class="border p-2">Tanggal</th>
-                                    <th class="border p-2">Departemen</th>
-                                    <th class="border p-2">Status</th>
+                                    <th class="border p-2">No</th>
+                                    <th class="border p-2">Peserta</th>
+                                    <th class="border p-2">Awal</th>
+                                    <th class="border p-2">Akhir</th>
+                                    <th class="border p-2">Skor</th>
+                                    <th class="border p-2">Keterangan</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ($meetings ?? [] as $meeting)
-                                    <tr class="odd:bg-white even:bg-gray-100">
-                                        <td class="border p-2">{{ $meeting->title }}</td>
-                                        <td class="border p-2">{{ $meeting->scheduled_at->format('F j, Y') }}</td>
-                                        <td class="border p-2">{{ $meeting->department->name ?? 'Tidak Ada' }}</td>
-                                        <td class="border p-2">{{ $meeting->status }}</td>
-                                        <td class="border p-2">
-                                            @php
-                                                $scoreCard = ScoreCardDaily::where(
-                                                    'tanggal',
-                                                    $meeting->scheduled_at->format('Y-m-d'),
-                                                )->first();
-                                            @endphp
-                                            {{ $scoreCard->skor ?? 'Tidak Ada' }}
-                                        </td>
-                                        <td class="border p-2">{{ $scoreCard->lokasi ?? 'Tidak Ada' }}</td>
-                                        <td class="border p-2">
-                                            {{ implode(', ', json_decode($scoreCard->peserta, true) ?? []) }}</td>
-                                        <td class="border p-2">{{ $scoreCard->kesiapan_panitia ?? 'N/A' }}</td>
-                                        <td class="border p-2">{{ $scoreCard->kesiapan_bahan ?? 'N/A' }}</td>
-                                        <td class="border p-2">{{ $scoreCard->aktifitas_luar ?? 'N/A' }}</td>
-                                        <td class="border p-2">{{ $scoreCard->gangguan_diskusi ?? 'N/A' }}</td>
-                                    </tr>
-                                @endforeach
+                            <tbody id="scoreCardBody">
+                                <!-- Data akan diisi melalui AJAX -->
                             </tbody>
                         </table>
                     </div>
@@ -235,6 +237,131 @@
                             modal.classList.remove('modal-leave');
                         }, 300); // Delay untuk menunggu animasi selesai
                     }
+                </script>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Load data awal
+                    loadScoreCardData();
+
+                    // Event listener untuk perubahan tanggal
+                    document.getElementById('tanggal').addEventListener('change', function() {
+                        loadScoreCardData();
+                    });
+                });
+
+                function loadScoreCardData() {
+                    const tanggal = document.getElementById('tanggal').value;
+                    const tbody = document.getElementById('scoreCardBody');
+                    
+                    // Tampilkan loading
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="border p-2 text-center">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
+                            </td>
+                        </tr>
+                    `;
+                    
+                    fetch(`/admin/score-card/data?tanggal=${tanggal}`)
+                        .then(response => response.json())
+                        .then(response => {
+                            tbody.innerHTML = '';
+                            
+                            if (!response.success) {
+                                tbody.innerHTML = `
+                                    <tr>
+                                        <td colspan="6" class="border p-2 text-center">${response.message}</td>
+                                    </tr>
+                                `;
+                                return;
+                            }
+
+                            const data = response.data;
+                            let rowNumber = 1;
+
+                            // Tampilkan data sesuai dengan struktur tabel
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td class="border p-2 text-center">${rowNumber++}</td>
+                                    <td class="border p-2">Waktu Mulai</td>
+                                    <td class="border p-2 text-center">${data.waktu_mulai || '-'}</td>
+                                    <td class="border p-2 text-center">${data.waktu_selesai || '-'}</td>
+                                    <td class="border p-2 text-center">${data.skor || '-'}</td>
+                                    <td class="border p-2">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="border p-2 text-center">${rowNumber++}</td>
+                                    <td class="border p-2">Kesiapan Panitia</td>
+                                    <td class="border p-2 text-center">${data.kesiapan_panitia || '-'}</td>
+                                    <td class="border p-2 text-center">-</td>
+                                    <td class="border p-2 text-center">-</td>
+                                    <td class="border p-2">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="border p-2 text-center">${rowNumber++}</td>
+                                    <td class="border p-2">Kesiapan Bahan</td>
+                                    <td class="border p-2 text-center">${data.kesiapan_bahan || '-'}</td>
+                                    <td class="border p-2 text-center">-</td>
+                                    <td class="border p-2 text-center">-</td>
+                                    <td class="border p-2">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="border p-2 text-center">${rowNumber++}</td>
+                                    <td class="border p-2">Aktivitas Luar</td>
+                                    <td class="border p-2 text-center">${data.aktivitas_luar || '-'}</td>
+                                    <td class="border p-2 text-center">-</td>
+                                    <td class="border p-2 text-center">-</td>
+                                    <td class="border p-2">-</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
+                                    <td class="border p-2 text-center font-bold">${data.skor || 0}</td>
+                                </tr>
+                            `;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="6" class="border p-2 text-center text-red-500">
+                                        Terjadi kesalahan saat memuat data
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                }
+
+                function printTable() {
+                    const printWindow = window.open('', '_blank');
+                    const table = document.getElementById('scoreCardTable').outerHTML;
+                    const tanggal = document.getElementById('tanggal').value;
+                    
+                    printWindow.document.write(`
+                        <html>
+                            <head>
+                                <title>Score Card Daily - ${tanggal}</title>
+                                <style>
+                                    table { border-collapse: collapse; width: 100%; }
+                                    th, td { border: 1px solid black; padding: 8px; }
+                                    th { background-color: #0A749B; color: white; }
+                                </style>
+                            </head>
+                            <body>
+                                <h2>Score Card Daily - ${tanggal}</h2>
+                                ${table}
+                            </body>
+                        </html>
+                    `);
+                    
+                    printWindow.document.close();
+                    printWindow.print();
+                }
+
+                function downloadTable() {
+                    const tanggal = document.getElementById('tanggal').value;
+                    window.location.href = `/admin/score-card/download?tanggal=${tanggal}`;
+                }
                 </script>
 
                 @push('scripts')
