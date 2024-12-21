@@ -138,12 +138,14 @@
                             </thead>
                             <tbody>
                                 @php
+                                    // Ambil hanya score card terbaru
+                                    $latestScoreCard = $scoreCards->sortByDesc('created_at')->first();
                                     $totalIndex = 0;
                                 @endphp
-                                @foreach ($scoreCards as $card)
+                                @if($latestScoreCard)
                                     @php
-                                        $peserta = json_decode($card->peserta, true);
-                                        $ketentuanRapat = json_decode($card->ketentuan_rapat, true);
+                                        $peserta = json_decode($latestScoreCard->peserta, true);
+                                        $ketentuanRapat = json_decode($latestScoreCard->ketentuan_rapat, true);
                                         $pesertaCount = count($peserta);
                                         $currentIndex = 0;
                                     @endphp
@@ -214,7 +216,11 @@
                                             <!-- Tambahkan ketentuan lain dengan format serupa -->
                                         @endif
                                     @endforeach
-                                @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="6" class="border p-2 text-center">Belum ada score card yang dibuat</td>
+                                    </tr>
+                                @endif
                                 <tr>
                                     <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
                                     <td class="border p-2 text-center font-bold">{{ $totalScore ?? '0' }}</td>
