@@ -64,23 +64,23 @@
                 <div class="bg-white rounded-lg shadow p-6 sm:p-3">
                     <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
                     <div class="p-4 md:p-0">
+                        <!-- Filter dan Search Section -->
                         <div class="mb-4 flex flex-col lg:flex-row justify-end space-x-4 gap-y-3">
-                            <!-- Filter Tanggal -->
-                            <div class="flex flex-col md:flex-row gap-y-3 items-center space-x-2">
-                                <label class="text-gray-600">Dari:</label>
-                                <input type="date" id="startDate"
-                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                <label class="text-gray-600">Sampai:</label>
-                                <input type="date" id="endDate"
-                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                            </div>
+                            <form id="filterForm" class="flex flex-col md:flex-row gap-y-3 items-center space-x-2">
+                                <div class="flex items-center space-x-2">
+                                    <label for="tanggal" class="text-gray-600">Pilih Tanggal:</label>
+                                    <input type="date" id="tanggal" name="tanggal" 
+                                        value="{{ request('tanggal', date('Y-m-d')) }}"
+                                        class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                </div>
+                            </form>
 
                             <!-- Search Input -->
                             <div class="flex">
                                 <input type="text" id="searchInput" placeholder="Cari..."
-                                    class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
+                                    class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
                                 <button onclick="searchTables()"
-                                    class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                                    class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
                                     search
                                 </button>
                             </div>
@@ -332,119 +332,96 @@
         }, 500);
     }
 
+    // Filter tanggal
+    document.getElementById('tanggal').addEventListener('change', function() {
+        let baseUrl = window.location.pathname;
+        let tanggal = this.value;
+        let searchValue = document.getElementById('searchInput').value;
+        
+        // Redirect dengan parameter tanggal dan search jika ada
+        let url = `${baseUrl}?tanggal=${tanggal}`;
+        if (searchValue) {
+            url += `&search=${encodeURIComponent(searchValue)}`;
+        }
+        window.location.href = url;
+    });
+
+    // Fungsi search
     function searchTables() {
         const searchValue = document.getElementById('searchInput').value.toLowerCase();
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
+        
+        // Search di tabel SR
+        searchTable('srTable', searchValue);
+        
+        // Search di tabel WO
+        searchTable('woTable', searchValue);
+    }
 
-        // Fungsi untuk mengecek apakah tanggal dalam range
-        function isDateInRange(dateStr) {
-            if (!startDate && !endDate) return true;
+    function searchTable(tableId, searchValue) {
+        const table = document.getElementById(tableId);
+        const rows = table.getElementsByTagName('tr');
 
-            const date = new Date(dateStr);
-            const start = startDate ? new Date(startDate) : null;
-            const end = endDate ? new Date(endDate) : null;
-
-            if (start && end) {
-                return date >= start && date <= end;
-            } else if (start) {
-                return date >= start;
-            } else if (end) {
-                return date <= end;
-            }
-            return true;
-        }
-
-        // Cari di tabel SR
-        const srTable = document.getElementById('srTable');
-        const srRows = srTable.getElementsByTagName('tr');
-
-        for (let i = 1; i < srRows.length; i++) {
-            const row = srRows[i];
+        // Loop melalui semua baris, mulai dari index 1 untuk melewati header
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
             const cells = row.getElementsByTagName('td');
-            let textFound = false;
-            let dateFound = false;
+            let found = false;
 
-            // Cek text di semua kolom
-            for (let cell of cells) {
-                if (cell.textContent.toLowerCase().includes(searchValue)) {
-                    textFound = true;
+            // Cek setiap sel dalam baris
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
                 }
             }
 
-            // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
-            const dateCell = cells[cells.length - 1];
-            if (dateCell) {
-                dateFound = isDateInRange(dateCell.textContent);
-            }
-
-            row.style.display = (textFound && dateFound) ? '' : 'none';
-        }
-
-        // Cari di tabel WO
-        const woTable = document.getElementById('woTable');
-        const woRows = woTable.getElementsByTagName('tr');
-
-        for (let i = 1; i < woRows.length; i++) {
-            const row = woRows[i];
-            const cells = row.getElementsByTagName('td');
-            let textFound = false;
-            let dateFound = false;
-
-            // Cek text di semua kolom
-            for (let cell of cells) {
-                if (cell.textContent.toLowerCase().includes(searchValue)) {
-                    textFound = true;
-                }
-            }
-
-            // Cek tanggal (asumsikan tanggal ada di kolom terakhir)
-            const dateCell = cells[cells.length - 1];
-            if (dateCell) {
-                dateFound = isDateInRange(dateCell.textContent);
-            }
-
-            row.style.display = (textFound && dateFound) ? '' : 'none';
+            // Tampilkan/sembunyikan baris berdasarkan hasil pencarian
+            row.style.display = found ? '' : 'none';
         }
     }
 
-    // Event listener untuk input tanggal
-    document.getElementById('startDate').addEventListener('change', searchTables);
-    document.getElementById('endDate').addEventListener('change', searchTables);
-
-    // Event listener untuk pencarian teks (kode yang sudah ada)
+    // Event listener untuk search input
     document.getElementById('searchInput').addEventListener('keyup', function(e) {
         if (e.key === 'Enter') {
             searchTables();
-        } else {
-            clearTimeout(this.searchTimeout);
-            this.searchTimeout = setTimeout(() => {
-                searchTables();
-            }, 300);
         }
     });
 
-    // Reset pencarian
-    document.getElementById('searchInput').addEventListener('input', function() {
-        if (this.value === '') {
+    // Set tanggal default dan search value dari URL parameters
+    window.addEventListener('load', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Set tanggal default jika tidak ada di URL
+        if (!urlParams.has('tanggal')) {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tanggal').value = today;
+            window.location.href = `${window.location.pathname}?tanggal=${today}`;
+        }
+        
+        // Set search value dari URL jika ada
+        if (urlParams.has('search')) {
+            document.getElementById('searchInput').value = urlParams.get('search');
             searchTables();
         }
     });
 
-    // Set tanggal default
-    window.addEventListener('load', function() {
-        // Set tanggal akhir ke hari ini
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('endDate').value = today;
+    // Debounce function untuk search
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
-        // Set tanggal awal ke 30 hari yang lalu
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
-
-        // Jalankan pencarian awal
-        searchTables();
-    });
+    // Aplikasikan debounce pada search
+    const debouncedSearch = debounce(() => searchTables(), 300);
+    document.getElementById('searchInput').addEventListener('input', debouncedSearch);
 
     function updateStatus(type, id, currentStatus) {
         const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
