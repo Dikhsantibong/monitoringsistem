@@ -163,6 +163,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/record-attendance', [AttendanceController::class, 'recordAttendance'])->name('record.attendance');
     Route::get('/daftar-hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
     Route::get('/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])->name('admin.daftar_hadir.rekapitulasi');
+    Route::post('/admin/daftar-hadir/store-token', [DaftarHadirController::class, 'storeToken'])
+        ->name('admin.daftar_hadir.store_token');
 });
 
 // Tambahkan route untuk AJAX
