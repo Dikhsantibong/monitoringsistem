@@ -50,8 +50,9 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/user/machine-monitor', [UserController::class, 'machineMonitor'])->name('user.machine.monitor');
     Route::get('/attendance/check', [AttendanceController::class, 'check'])->name('attendance.check');
     Route::get('/attendance/record', [AttendanceController::class, 'record'])->name('attendance.record');
+    Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scan'])->name('attendance.scan');
     Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])
-        ->name('attendance.scan-form');
+    ->name('attendance.scan-form');
     Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])
         ->name('attendance.submit');
 });
