@@ -2,16 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AttendanceToken extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'token',
-        'expires_at'
+        'expires_at',
+        'user_id'
     ];
 
-    protected $casts = [
-        'expires_at' => 'datetime'
-    ];
+    protected $dates = ['expires_at'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 } 

@@ -251,6 +251,10 @@ Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scan'])->n
 Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
 Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])->name('attendance.generate-qr');
 
+Route::get('/attendance/success', function () {
+    return view('admin.daftar_hadir.success');
+})->name('attendance.success');
+
 
 
 

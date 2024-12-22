@@ -88,18 +88,16 @@ class AttendanceController extends Controller
         try {
             $token = 'attendance_' . now()->format('Y-m-d') . '_' . strtolower(Str::random(8));
 
-            // Ambil URL aplikasi
-            $appUrl = config('app.url');
-            // Gunakan route name yang benar untuk scan
-            $qrUrl = route('attendance.scan', ['token' => $token]);
-
-            Log::info('Generating QR Code', ['token' => $token, 'url' => $qrUrl]);
-
-            // Simpan token di database
+            // Simpan token di database dengan user_id
             AttendanceToken::create([
                 'token' => $token,
                 'expires_at' => now()->endOfDay(),
+                'user_id' => auth()->id() // Tambahkan user_id dari user yang login
             ]);
+
+            $qrUrl = route('attendance.scan', ['token' => $token]);
+
+            Log::info('Generating QR Code', ['token' => $token, 'url' => $qrUrl]);
 
             return response()->json([
                 'success' => true,
@@ -147,25 +145,45 @@ class AttendanceController extends Controller
                 'division' => 'required|string|max:255',
             ]);
 
+            // Cek token
             $attendanceToken = AttendanceToken::where('token', $request->token)
                 ->where('expires_at', '>=', now())
                 ->first();
 
             if (!$attendanceToken) {
-                return redirect()->back()->with('error', 'Token tidak valid atau sudah kadaluarsa');
+                return redirect()->back()
+                    ->with('error', 'Token tidak valid atau sudah kadaluarsa')
+                    ->withInput();
             }
 
-            Attendance::create([
+            // Cek apakah user sudah absen hari ini
+            $existingAttendance = Attendance::where('name', $request->name)
+                ->whereDate('time', today())
+                ->first();
+
+            if ($existingAttendance) {
+                return redirect()->back()
+                    ->with('error', 'Anda sudah melakukan absensi hari ini')
+                    ->withInput();
+            }
+
+            // Simpan absensi dengan token
+            $attendance = Attendance::create([
                 'name' => $request->name,
                 'position' => $request->position,
                 'division' => $request->division,
+                'token' => $request->token,
                 'time' => now(),
             ]);
 
-            return redirect()->route('attendance.success')->with('success', 'Absensi berhasil dicatat');
+            return redirect()->route('attendance.success')
+                ->with('success', 'Absensi berhasil dicatat');
+            
         } catch (\Exception $e) {
-            Log::error('Store attendance error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan absensi');
+            \Log::error('Store attendance error: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyimpan absensi: ' . $e->getMessage())
+                ->withInput();
         }
     }
     
