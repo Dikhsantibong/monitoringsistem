@@ -103,6 +103,10 @@
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
+                                        Jabatan
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Tanggal
                                     </th>
                                     <th
@@ -119,6 +123,9 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ $attendance->division }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                            {{ $attendance->position }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ \Carbon\Carbon::parse($attendance->time)->format('d M Y') }}
