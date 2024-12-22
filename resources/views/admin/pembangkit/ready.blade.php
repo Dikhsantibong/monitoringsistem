@@ -123,7 +123,7 @@
                                     <thead>
                                         <tr>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Mesin
+                                                MESIN
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 DMN
@@ -132,25 +132,25 @@
                                                 DMP
                                             </th>
                                             <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Beban
+                                                BEBAN
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Status
+                                                STATUS
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Deskripsi
+                                                DESKRIPSI
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Kronologi
+                                                KRONOLOGI
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Action Plan
+                                                ACTION PLAN
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
-                                                Progres
+                                                PROGRES
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
-                                                Target Selesai
+                                                TARGET SELESAI
                                             </th>
                                         </tr>
                                     </thead>
@@ -173,9 +173,9 @@
                                                         placeholder="Masukkan beban...">
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
-                                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                    <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
                                                         onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                        <option value="" style="background-color: #FFFFFF">Pilih Status</option>
+                                                        <option value="" style="background-color: #FFFFFF"></option>
                                                         <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
                                                         <option value="Standby" style="background-color: #2196F3">Standby</option>
                                                         <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
