@@ -65,7 +65,7 @@ class AttendanceController extends Controller
             }
 
             // Cek apakah view exists
-            $viewPath = 'attendance.scan-from';
+            $viewPath = 'attendance.scan-form';
             if (!view()->exists($viewPath)) {
                 Log::error('View not found', [
                     'view' => $viewPath,

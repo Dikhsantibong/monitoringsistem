@@ -97,7 +97,7 @@
                                 <div class="flex justify-center">
                                 <a href="{{ route('admin.score-card.create') }}"
                                     class="bg-blue-500 text-white px-4 py-2 rounded flex items-center ml-2">
-                                    <i class="fas fa-book mr-2"></i> Buat Score Card
+                                    <i class="fas fa-book mr-2"></i> Buat Score Card    
                                 </a>
                                 <button id="startMeetingBtn" onclick="startMeeting()"
                                     class="bg-green-500 text-white px-4 py-2 rounded flex items-center ml-2">
