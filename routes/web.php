@@ -248,7 +248,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 });
 
 // Route untuk menampilkan form scan QR
-Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan');
+Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('admin.daftar_hadir.scan');
 
 // Route untuk memproses submit form kehadiran
 Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');

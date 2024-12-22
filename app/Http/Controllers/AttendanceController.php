@@ -118,16 +118,18 @@ class AttendanceController extends Controller
                     ->withInput();
             }
 
-            // Simpan attendance dengan struktur yang benar
+            // Simpan attendance
             Attendance::create([
                 'name' => $validated['name'],
                 'division' => $validated['division'],
                 'position' => $validated['position'],
-                'token' => $validated['token'], // Simpan token string
-                'time' => now() // Gunakan waktu sekarang
+                'token' => $validated['token'],
+                'time' => now()
             ]);
 
-            return back()->with('success', 'Absensi berhasil dicatat');
+            // Redirect ke halaman sukses dengan pesan
+            return redirect()->route('attendance.success')
+                ->with('success', 'Absensi berhasil dicatat');
             
         } catch (\Exception $e) {
             Log::error('Error submitting attendance', [
@@ -193,19 +195,20 @@ class AttendanceController extends Controller
     {
         try {
             $token = 'attendance_' . now()->format('Y-m-d') . '_' . strtolower(Str::random(8));
-    
+
             // Ambil URL aplikasi
             $appUrl = config('app.url');
-            $qrUrl = rtrim($appUrl, '/') . '/attendance/scan/' . $token;
-    
+            // Gunakan route name yang benar untuk scan
+            $qrUrl = route('attendance.scan', ['token' => $token]);
+
             Log::info('Generating QR Code', ['token' => $token, 'url' => $qrUrl]);
-    
+
             // Simpan token di database
             AttendanceToken::create([
                 'token' => $token,
                 'expires_at' => now()->endOfDay(),
             ]);
-    
+
             return response()->json([
                 'success' => true,
                 'token' => $token,
@@ -216,7 +219,7 @@ class AttendanceController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-    
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal generate QR Code',
