@@ -286,46 +286,33 @@
             }
         }
 
+        function generateQR() {
+            fetch('{{ route("attendance.generate-qr") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Bersihkan container QR sebelum membuat yang baru
+                        document.getElementById('qrcode').innerHTML = '';
+
+                        // Buat QR code baru
+                        new QRCode(document.getElementById('qrcode'), {
+                            text: data.qr_url,
+                            width: 256,
+                            height: 256
+                        });
+                    } else {
+                        alert('Gagal generate QR Code');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat generate QR Code');
+                });
+        }
+
+        // Generate QR code saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
-            function clearQRCode() {
-                const qrcodeDiv = document.getElementById("qrcode");
-                qrcodeDiv.innerHTML = '';
-            }
-
-            function generateQRCode() {
-                clearQRCode();
-
-                // Generate QR code dengan timestamp untuk memastikan keunikan
-                const timestamp = new Date().getTime();
-                const qrData = `attendance_${timestamp}_${Math.random().toString(36).substring(7)}`;
-
-                new QRCode(document.getElementById("qrcode"), {
-                    text: qrData,
-                    width: 200,
-                    height: 200,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-
-                // Kirim data QR ke server
-                fetch('{{ route('record.attendance') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        qr_code: qrData
-                    })
-                });
-            }
-
-            // Generate QR code pertama kali
-            generateQRCode();
-
-            // Update QR code setiap 5 menit
-            setInterval(generateQRCode, 300000);
+            generateQR();
         });
 
         let html5QrcodeScanner = null;
