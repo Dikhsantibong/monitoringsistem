@@ -184,17 +184,7 @@
                             <h2 class="text-lg font-semibold text-gray-800">Score Card Daily</h2>
                             <div class="flex items-center gap-4">
                                 <!-- Filter Tanggal -->
-                                <div class="flex items-center">
-                                    <select id="tanggal-filter" 
-                                           class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
-                                           onchange="changeDateFilter(this.value)">
-                                        @foreach($availableDates as $date)
-                                            <option value="{{ $date }}" {{ $date == $selectedDate ? 'selected' : '' }}>
-                                                {{ \Carbon\Carbon::parse($date)->format('d F Y') }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                            
                                 <!-- Search -->
                                 <div class="relative">
                                     <input type="text" id="search-input" 
@@ -212,6 +202,17 @@
                             <!-- Tombol Print dan Download -->
                             <div class="bg-gray-50 p-4 rounded-lg mb-4">
                                 <div class="flex justify-end gap-3">
+                                    <div class="flex items-center">
+                                        <select id="tanggal-filter" 
+                                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+                                               onchange="changeDateFilter(this.value)">
+                                            @foreach($availableDates as $date)
+                                                <option value="{{ $date }}" {{ $date == $selectedDate ? 'selected' : '' }}>
+                                                    {{ \Carbon\Carbon::parse($date)->format('d F Y') }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <button onclick="printTable()" 
                                             class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
                                         <i class="fas fa-print mr-2"></i>
@@ -230,25 +231,23 @@
                                 </div>
                             </div>
 
-                            <!-- Tabel -->
+                            <!-- Tabel dengan Total Score di bagian bawah -->
                             <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
+                                <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead>
                                         <tr style="background-color: #0A749B; color: white">
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">No</th>
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peserta</th>
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">Awal</th>
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">Akhir</th>
-                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Skor</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Score</th>
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">Keterangan</th>
                                         </tr>
                                     </thead>
                                     <tbody id="score-card-body">
                                         @forelse($scoreCards as $scoreCard)
                                             @foreach($scoreCard['peserta'] as $index => $peserta)
-                                                <tr class="hover:bg-gray-50 transition-colors" 
-                                                    data-date="{{ $scoreCard['tanggal'] }}"
-                                                    data-search="{{ strtolower($peserta['jabatan']) }}">
+                                                <tr class="hover:bg-gray-50 transition-colors">
                                                     <td class="text-center py-2 whitespace-nowrap border border-gray-300">
                                                         {{ $loop->iteration }}
                                                     </td>
@@ -265,20 +264,10 @@
                                                         {{ $peserta['skor'] }}
                                                     </td>
                                                     <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
-                                                        <!-- Kolom keterangan dikosongkan atau bisa diisi informasi lain jika diperlukan -->
+                                                        <!-- Kolom keterangan -->
                                                     </td>
                                                 </tr>
                                             @endforeach
-                                            <!-- Informasi tambahan -->
-                                            <tr class="bg-gray-50" data-date="{{ $scoreCard['tanggal'] }}">
-                                                <td colspan="6" class="py-2 px-4 border border-gray-300">
-                                                    <div class="grid grid-cols-3 gap-4 text-sm">
-                                                        <div>Kesiapan Panitia: {{ $scoreCard['kesiapan_panitia'] }}%</div>
-                                                        <div>Kesiapan Bahan: {{ $scoreCard['kesiapan_bahan'] }}%</div>
-                                                        <div>Aktivitas Luar: {{ $scoreCard['aktivitas_luar'] }}%</div>
-                                                    </div>
-                                                </td>
-                                            </tr>
                                         @empty
                                             <tr>
                                                 <td colspan="6" class="px-6 py-4 text-center text-gray-500">
@@ -286,6 +275,24 @@
                                                 </td>
                                             </tr>
                                         @endforelse
+
+                                        <!-- Total Score di bagian bawah -->
+                                        @if($scoreCards->isNotEmpty())
+                                            @php
+                                                $totalPesertaScore = collect($scoreCards->first()['peserta'])->sum('skor');
+                                            @endphp
+                                            
+                                            <!-- Garis pemisah -->
+                                            <tr class="bg-gray-100 font-semibold">
+                                                <td colspan="4" class="py-3 px-4 border border-gray-300 text-right">
+                                                    Total Score Peserta:
+                                                </td>
+                                                <td class="py-3 px-4 border border-gray-300 text-center">
+                                                    {{ number_format($totalPesertaScore, 2) }}
+                                                </td>
+                                                <td class="border border-gray-300"></td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
