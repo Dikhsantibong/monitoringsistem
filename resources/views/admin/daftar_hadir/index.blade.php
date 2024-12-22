@@ -64,14 +64,13 @@
                     <div class="mb-4 flex flex-col lg:flex-row gap-y-3 justify-between items-center">
                         <!-- Tombol Generate QR Code -->
                         <div class="flex items-center">
-                            <button onclick="generateQRCode()"
-                                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center mr-2">
-                                <i class="fas fa-qrcode mr-2"></i> Generate QR Code
+                            <button id="generateQrBtn" onclick="generateQR()" class="bg-[#0A749B] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#009BB9]">
+                                <i class="fas fa-qrcode mr-2"></i>
+                                Generate QR Code
                             </button>
 
                             <!-- Modal QR Code -->
-                            <div id="qrModal"
-                                class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
                                 <div class="bg-white p-8 rounded-lg shadow-lg">
                                     <div class="flex justify-between items-center mb-4">
                                         <h3 class="text-xl font-bold flex items-center">
@@ -81,10 +80,8 @@
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
-                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]">
-                                    </div>
-                                    <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku
-                                        untuk hari ini</p>
+                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
+                                    <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
                                 </div>
                             </div>
                         </div>
@@ -180,89 +177,39 @@
         </script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Pastikan event listener terpasang setelah DOM siap
-                const generateButton = document.querySelector('button[onclick="generateQRCode()"]');
-                if (generateButton) {
-                    generateButton.addEventListener('click', generateQRCode);
-                }
-            });
-
-            function generateQRCode() {
-                console.log('Generate QR Code clicked');
-
-                fetch("{{ route('admin.daftar_hadir.generate_qr') }}", {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log('Success response:', data);
-
-                        const modal = document.getElementById('qrModal');
-                        const container = document.getElementById('qrcode-container');
-                        container.innerHTML = '';
-                        modal.classList.remove('hidden');
-
-                        const qrData = data.qr_url;
-                        console.log('QR Data URL:', qrData);
-
-                        new QRCode(container, {
-                            text: qrData,
-                            width: 256,
-                            height: 256,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.H
-                        });
-                    } else {
-                        throw new Error(data.message || 'Gagal generate QR Code');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Terjadi Kesalahan',
-                        text: 'Gagal generate QR Code. Silakan coba lagi.'
-                    });
-                });
-            }
-
-            // Fungsi untuk menutup modal
-            function closeModal() {
-                const modal = document.getElementById('qrModal');
-                const modalContent = modal.querySelector('.bg-white');
-
-                modalContent.classList.remove('scale-100');
-                modalContent.classList.add('scale-0');
-
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
-            }
-
-            // Cek apakah QR Code masih valid
-            function checkQRValidity() {
-                const token = localStorage.getItem('attendance_qr_token');
-                if (token) {
-                    const [, date] = token.split('_');
-                    const today = new Date().toISOString().split('T')[0];
-
-                    if (date !== today) {
-                        localStorage.removeItem('attendance_qr_token');
-                    }
-                }
-            }
-
-            // Jalankan pengecekan saat halaman dimuat
-            checkQRValidity();
-        </script>
+      
         @push('scripts')
         @endpush
     @endsection
+
+    <script>
+    function generateQR() {
+        fetch('{{ route("attendance.generate-qr") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('qrModal').classList.remove('hidden');
+                    
+                    // Bersihkan container QR sebelum membuat yang baru
+                    document.getElementById('qrcode-container').innerHTML = '';
+                    
+                    // Buat QR code baru
+                    new QRCode(document.getElementById('qrcode-container'), {
+                        text: data.qr_url,
+                        width: 256,
+                        height: 256
+                    });
+                } else {
+                    alert('Gagal generate QR Code');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat generate QR Code');
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('qrModal').classList.add('hidden');
+    }
+    </script>

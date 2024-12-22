@@ -30,118 +30,10 @@ class AttendanceController extends Controller
         return view('admin.daftar_hadir.index', compact('attendances'));
     }
 
-    public function showScanForm($token)
-    {
-        try {
-            Log::info('Access scan form attempt', [
-                'token' => $token,
-                'url' => request()->fullUrl()
-            ]);
+    
+ 
 
-            // Cek token di database
-            $validToken = AttendanceToken::where('token', $token)
-                ->where('expires_at', '>', now())
-                ->first();
-
-            if (!$validToken) {
-                return response()->view('errors.404', [], 404);
-            }
-
-            Log::info('Token validation result', [
-                'token' => $token,
-                'found' => true,
-                'token_data' => $validToken
-            ]);
-
-            // Render view scan form yang baru
-            return view('admin.daftar_hadir.scan', [
-                'token' => $token,
-                'error' => null
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error in scan form', [
-                'token' => $token,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->view('errors.404', [], 404);
-        }
-    }
-
-    public function storeToken(Request $request)
-    {
-        try {
-            DB::beginTransaction();
-            
-            // Hapus token lama untuk hari ini
-            AttendanceToken::whereDate('created_at', '<', Carbon::today())->delete();
-            
-            // Buat token baru
-            $token = new AttendanceToken();
-            $token->token = $request->token;
-            $token->expires_at = Carbon::now()->endOfDay();
-            $token->created_at = Carbon::now();
-            $token->save();
-            
-            DB::commit();
-            
-            Log::info('Token stored successfully: ' . $request->token); // Perbaikan untuk menggunakan Log
-            return response()->json(['success' => true]);
-            
-        } catch (\Exception $e) {
-            DB::rollback();
-            Log::error('Failed to store token: ' . $e->getMessage()); // Perbaikan untuk menggunakan Log
-            return response()->json(['success' => false], 500);
-        }
-    }
-
-    public function submitAttendance(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'token' => 'required|string',
-                'name' => 'required|string|max:255',
-                'division' => 'required|string|max:255',
-                'position' => 'required|string|max:255'
-            ]);
-
-            // Validasi token
-            $validToken = AttendanceToken::where('token', $validated['token'])
-                ->where('expires_at', '>', now())
-                ->first();
-
-            if (!$validToken) {
-                return back()
-                    ->with('error', 'Token tidak valid atau sudah kadaluarsa')
-                    ->withInput();
-            }
-
-            // Simpan attendance
-            Attendance::create([
-                'name' => $validated['name'],
-                'division' => $validated['division'],
-                'position' => $validated['position'],
-                'token' => $validated['token'],
-                'time' => now()
-            ]);
-
-            // Redirect ke halaman sukses dengan pesan
-            return redirect()->route('attendance.success')
-                ->with('success', 'Absensi berhasil dicatat');
-            
-        } catch (\Exception $e) {
-            Log::error('Error submitting attendance', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return back()
-                ->with('error', 'Terjadi kesalahan saat mencatat absensi')
-                ->withInput();
-        }
-    }
+    
     public function rekapitulasi(Request $request)
     {
         try {
@@ -224,6 +116,56 @@ class AttendanceController extends Controller
                 'success' => false,
                 'message' => 'Gagal generate QR Code',
             ], 500);
+        }
+    }
+
+    public function scan($token)
+    {
+        try {
+            $attendanceToken = AttendanceToken::where('token', $token)
+                ->where('expires_at', '>=', now())
+                ->first();
+
+            if (!$attendanceToken) {
+                return redirect()->route('attendance.error')->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
+            }
+
+            return view('admin.daftar_hadir.scan', compact('token'));
+        } catch (\Exception $e) {
+            Log::error('Scan error: ' . $e->getMessage());
+            return redirect()->route('attendance.error')->with('error', 'Terjadi kesalahan saat memproses QR Code');
+        }
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'token' => 'required',
+                'name' => 'required|string|max:255',
+                'position' => 'required|string|max:255',
+                'division' => 'required|string|max:255',
+            ]);
+
+            $attendanceToken = AttendanceToken::where('token', $request->token)
+                ->where('expires_at', '>=', now())
+                ->first();
+
+            if (!$attendanceToken) {
+                return redirect()->back()->with('error', 'Token tidak valid atau sudah kadaluarsa');
+            }
+
+            Attendance::create([
+                'name' => $request->name,
+                'position' => $request->position,
+                'division' => $request->division,
+                'time' => now(),
+            ]);
+
+            return redirect()->route('attendance.success')->with('success', 'Absensi berhasil dicatat');
+        } catch (\Exception $e) {
+            Log::error('Store attendance error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan absensi');
         }
     }
     

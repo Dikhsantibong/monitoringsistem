@@ -247,15 +247,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     });
 });
 
-// Route untuk menampilkan form scan QR
-Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('admin.daftar_hadir.scan');
+Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scan'])->name('attendance.scan');
+Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
+Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])->name('attendance.generate-qr');
 
-// Route untuk memproses submit form kehadiran
-Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
 
-// Route untuk halaman sukses setelah submit (opsional)
-Route::get('/attendance/success', function() {
-    return view('admin.daftar_hadir.success');
-})->name('attendance.success');
 
 
