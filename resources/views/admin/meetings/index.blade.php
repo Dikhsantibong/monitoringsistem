@@ -121,14 +121,60 @@
             </div>
             <main class="p-6">
                 <!-- Filter Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Informasi Rapat -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-800">Informasi Rapat</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Tanggal:</p>
+                                <p class="font-medium">{{ \Carbon\Carbon::parse($selectedDate)->format('d F Y') }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Lokasi:</p>
+                                <p class="font-medium">{{ $scoreCards->first()['lokasi'] }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Waktu Mulai:</p>
+                                <p class="font-medium">{{ \Carbon\Carbon::parse($scoreCards->first()['waktu_mulai'])->format('H:i') }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Waktu Selesai:</p>
+                                <p class="font-medium">{{ \Carbon\Carbon::parse($scoreCards->first()['waktu_selesai'])->format('H:i') }}</p>
+                            </div>
+                        </div>
+                    </div>
 
-
-                <!-- Setelah Filter Section -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <!-- Card Laporan Kesiapan Pembangkit -->
-
-                    <!-- Card lainnya bisa ditambahkan di sini -->
+                    <!-- Score Summary -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-800">Ringkasan Score</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Kesiapan Panitia:</p>
+                                <p class="font-medium text-blue-600">{{ $scoreCards->first()['kesiapan_panitia'] }}%</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Kesiapan Bahan:</p>
+                                <p class="font-medium text-green-600">{{ $scoreCards->first()['kesiapan_bahan'] }}%</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Aktivitas Luar:</p>
+                                <p class="font-medium text-purple-600">{{ $scoreCards->first()['aktivitas_luar'] }}%</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Total Score:</p>
+                                <p class="font-medium text-red-600">
+                                    {{ number_format(($scoreCards->first()['kesiapan_panitia'] + 
+                                       $scoreCards->first()['kesiapan_bahan'] + 
+                                       $scoreCards->first()['aktivitas_luar']) / 3, 2) }}%
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+
+               
 
                 <!-- Tabel Hasil Rapat -->
                 <div class="bg-white rounded-lg shadow mb-6">
@@ -159,157 +205,93 @@
                             </div>
                         </div>
 
-                        <!-- Tombol Print dan Download dalam card terpisah -->
-                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
-                            <div class="flex justify-end gap-3">
-                                <button onclick="printTable()" 
-                                        class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
-                                    <i class="fas fa-print mr-2"></i>
-                                    Print
-                                </button>
-                                <button onclick="downloadPDF()" 
-                                        class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
-                                    <i class="fas fa-file-pdf mr-2"></i>
-                                    PDF
-                                </button>
-                                <button onclick="downloadExcel()" 
-                                        class="inline-flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
-                                    <i class="fas fa-file-excel mr-2"></i>
-                                    Excel
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Informasi Tanggal dan Lokasi -->
                         @if($scoreCards->isNotEmpty())
+                            <!-- Card Score Rapat (Dipindahkan ke atas) -->
+                         
+
+                            <!-- Tombol Print dan Download -->
                             <div class="bg-gray-50 p-4 rounded-lg mb-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <span class="font-semibold">Tanggal:</span> 
-                                        {{ \Carbon\Carbon::parse($selectedDate)->format('d F Y') }}
-                                    </div>
-                                    <div>
-                                        <span class="font-semibold">Lokasi:</span> 
-                                        {{ $scoreCards->first()['lokasi'] }}
-                                    </div>
+                                <div class="flex justify-end gap-3">
+                                    <button onclick="printTable()" 
+                                            class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
+                                        <i class="fas fa-print mr-2"></i>
+                                        Print
+                                    </button>
+                                    <button onclick="downloadPDF()" 
+                                            class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
+                                        <i class="fas fa-file-pdf mr-2"></i>
+                                        PDF
+                                    </button>
+                                    <button onclick="downloadExcel()" 
+                                            class="inline-flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
+                                        <i class="fas fa-file-excel mr-2"></i>
+                                        Excel
+                                    </button>
                                 </div>
                             </div>
-                        @endif
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                <thead>
-                                    <tr style="background-color: #0A749B; color: white">
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">No</th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peserta</th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Awal</th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Akhir</th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Skor</th>
-                                        <th class="px-6 py-3 text-center text-sm font-medium uppercase">Keterangan</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="score-card-body">
-                                    @forelse($scoreCards as $scoreCard)
-                                        @foreach($scoreCard['peserta'] as $index => $peserta)
-                                            <tr class="hover:bg-gray-50 transition-colors" 
-                                                data-date="{{ $scoreCard['tanggal'] }}"
-                                                data-search="{{ strtolower($peserta['jabatan']) }}">
-                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                    {{ $loop->iteration }}
-                                                </td>
-                                                <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
-                                                    {{ $peserta['jabatan'] }}
-                                                </td>
-                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                    {{ $peserta['awal'] }}
-                                                </td>
-                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                    {{ $peserta['akhir'] }}
-                                                </td>
-                                                <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                                                    {{ $peserta['skor'] }}
-                                                </td>
-                                                <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
-                                                    <!-- Kolom keterangan dikosongkan atau bisa diisi informasi lain jika diperlukan -->
+                            <!-- Tabel -->
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr style="background-color: #0A749B; color: white">
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">No</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peserta</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Awal</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Akhir</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Skor</th>
+                                            <th class="px-6 py-3 text-center text-sm font-medium uppercase">Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="score-card-body">
+                                        @forelse($scoreCards as $scoreCard)
+                                            @foreach($scoreCard['peserta'] as $index => $peserta)
+                                                <tr class="hover:bg-gray-50 transition-colors" 
+                                                    data-date="{{ $scoreCard['tanggal'] }}"
+                                                    data-search="{{ strtolower($peserta['jabatan']) }}">
+                                                    <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                        {{ $loop->iteration }}
+                                                    </td>
+                                                    <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
+                                                        {{ $peserta['jabatan'] }}
+                                                    </td>
+                                                    <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                        {{ $peserta['awal'] }}
+                                                    </td>
+                                                    <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                        {{ $peserta['akhir'] }}
+                                                    </td>
+                                                    <td class="text-center py-2 whitespace-nowrap border border-gray-300">
+                                                        {{ $peserta['skor'] }}
+                                                    </td>
+                                                    <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
+                                                        <!-- Kolom keterangan dikosongkan atau bisa diisi informasi lain jika diperlukan -->
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                            <!-- Informasi tambahan -->
+                                            <tr class="bg-gray-50" data-date="{{ $scoreCard['tanggal'] }}">
+                                                <td colspan="6" class="py-2 px-4 border border-gray-300">
+                                                    <div class="grid grid-cols-3 gap-4 text-sm">
+                                                        <div>Kesiapan Panitia: {{ $scoreCard['kesiapan_panitia'] }}%</div>
+                                                        <div>Kesiapan Bahan: {{ $scoreCard['kesiapan_bahan'] }}%</div>
+                                                        <div>Aktivitas Luar: {{ $scoreCard['aktivitas_luar'] }}%</div>
+                                                    </div>
                                                 </td>
                                             </tr>
-                                        @endforeach
-                                        <!-- Informasi tambahan -->
-                                        <tr class="bg-gray-50" data-date="{{ $scoreCard['tanggal'] }}">
-                                            <td colspan="6" class="py-2 px-4 border border-gray-300">
-                                                <div class="grid grid-cols-3 gap-4 text-sm">
-                                                    <div>Kesiapan Panitia: {{ $scoreCard['kesiapan_panitia'] }}%</div>
-                                                    <div>Kesiapan Bahan: {{ $scoreCard['kesiapan_bahan'] }}%</div>
-                                                    <div>Aktivitas Luar: {{ $scoreCard['aktivitas_luar'] }}%</div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                                Tidak ada data score card yang tersedia
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Tambahkan Total Score di bawah tabel -->
-                        @if($scoreCards->isNotEmpty())
-                            @php
-                                $scoreCard = $scoreCards->first();
-                                $totalPesertaScore = collect($scoreCard['peserta'])->sum('skor');
-                                
-                                // Hitung rata-rata kesiapan rapat
-                                $kesiapanRapat = collect([
-                                    $scoreCard['kesiapan_panitia'],
-                                    $scoreCard['kesiapan_bahan'],
-                                    $scoreCard['aktivitas_luar']
-                                ])->average();
-
-                                // Hitung total keseluruhan (50% dari skor peserta + 50% dari kesiapan rapat)
-                                $totalScore = ($totalPesertaScore + $kesiapanRapat) / 2;
-                            @endphp
-
-                            <div class="mt-6 bg-gray-50 p-4 rounded-lg">
-                                <h3 class="text-lg font-semibold mb-3">Ringkasan Score</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="bg-white p-4 rounded-lg shadow">
-                                        <div class="text-sm text-gray-600">Total Score Peserta</div>
-                                        <div class="text-2xl font-bold text-blue-600">
-                                            {{ number_format($totalPesertaScore, 2) }}
-                                        </div>
-                                    </div>
-                                    <div class="bg-white p-4 rounded-lg shadow">
-                                        <div class="text-sm text-gray-600">Rata-rata Kesiapan Rapat</div>
-                                        <div class="text-2xl font-bold text-green-600">
-                                            {{ number_format($kesiapanRapat, 2) }}%
-                                        </div>
-                                    </div>
-                                    <div class="bg-white p-4 rounded-lg shadow">
-                                        <div class="text-sm text-gray-600">Total Score Keseluruhan</div>
-                                        <div class="text-2xl font-bold text-purple-600">
-                                            {{ number_format($totalScore, 2) }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Detail Kesiapan -->
-                                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="bg-white p-3 rounded shadow">
-                                        <span class="text-sm text-gray-600">Kesiapan Panitia:</span>
-                                        <span class="font-semibold">{{ $scoreCard['kesiapan_panitia'] }}%</span>
-                                    </div>
-                                    <div class="bg-white p-3 rounded shadow">
-                                        <span class="text-sm text-gray-600">Kesiapan Bahan:</span>
-                                        <span class="font-semibold">{{ $scoreCard['kesiapan_bahan'] }}%</span>
-                                    </div>
-                                    <div class="bg-white p-3 rounded shadow">
-                                        <span class="text-sm text-gray-600">Aktivitas Luar:</span>
-                                        <span class="font-semibold">{{ $scoreCard['aktivitas_luar'] }}%</span>
-                                    </div>
-                                </div>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                                    Tidak ada data score card yang tersedia
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <p class="text-gray-500">Tidak ada data score card yang tersedia</p>
                             </div>
                         @endif
                     </div>
