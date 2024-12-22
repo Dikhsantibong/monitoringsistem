@@ -194,6 +194,8 @@ Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoo
     ->middleware('web');
 
 Route::get('/admin/pembangkit/report', [PembangkitController::class, 'report'])->name('admin.pembangkit.report');
+Route::get('/admin/pembangkit/downloadReport', [PembangkitController::class, 'downloadReport'])->name('admin.pembangkit.downloadReport');
+Route::get('/admin/pembangkit/printReport', [PembangkitController::class, 'printReport'])->name('admin.pembangkit.printReport');
 
 Route::get('/machine-monitor/show', [MachineMonitorController::class, 'showAll'])->name('admin.machine-monitor.show.all');
 
@@ -254,7 +256,4 @@ Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRC
 Route::get('/attendance/success', function () {
     return view('admin.daftar_hadir.success');
 })->name('attendance.success');
-
-
-
 

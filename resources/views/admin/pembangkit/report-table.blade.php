@@ -5,6 +5,8 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Unit</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Mesin</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Sistem</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Component</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Beban</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMN</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMP</th>
@@ -12,6 +14,7 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Deskripsi</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Action Plan</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Progres</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Tanggal Mulai</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Target Selesai</th>
         </tr>
     </thead>
@@ -29,6 +32,8 @@
                         {{ $log->status }}
                     </span>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->sistem }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->component }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->load_value }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmn }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmp }}</td>
@@ -36,11 +41,12 @@
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->deskripsi }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->action_plan }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->progres }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->target_selesai }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->tanggal_mulai ? Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->target_selesai ? Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}</td>
             </tr>
         @empty
             <tr>
-                <td colspan="11" class="px-6 py-4 text-center text-gray-500 border border-gray-200">
+                <td colspan="15" class="px-6 py-4 text-center text-gray-500 border border-gray-200">
                     Tidak ada data untuk ditampilkan
                 </td>
             </tr>

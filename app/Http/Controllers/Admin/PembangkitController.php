@@ -167,6 +167,13 @@ class PembangkitController extends Controller
         $date = $request->date ?? now()->format('Y-m-d');
         
         $logs = MachineStatusLog::with(['machine.powerPlant'])
+            ->select([
+                'machine_status_logs.*',
+                'machines.name as machine_name',
+                'power_plants.name as power_plant_name'
+            ])
+            ->join('machines', 'machines.id', '=', 'machine_status_logs.machine_id')
+            ->join('power_plants', 'power_plants.id', '=', 'machines.power_plant_id')
             ->whereDate('tanggal', $date)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -184,7 +191,15 @@ class PembangkitController extends Controller
     public function downloadReport(Request $request)
     {
         $logs = MachineStatusLog::with(['machine.powerPlant'])
+            ->select([
+                'machine_status_logs.*',
+                'machines.name as machine_name',
+                'power_plants.name as power_plant_name'
+            ])
+            ->join('machines', 'machines.id', '=', 'machine_status_logs.machine_id')
+            ->join('power_plants', 'power_plants.id', '=', 'machines.power_plant_id')
             ->whereDate('tanggal', $request->date ?? now())
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $pdf = PDF::loadView('admin.pembangkit.report-pdf', compact('logs'));

@@ -132,15 +132,15 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600">Lokasi:</p>
-                                <p class="font-medium">{{ $scoreCards->first()['lokasi'] }}</p>
+                                <p class="font-medium">{{ $scoreCards->isNotEmpty() ? $scoreCards->first()['lokasi'] : '-' }}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600">Waktu Mulai:</p>
-                                <p class="font-medium">{{ \Carbon\Carbon::parse($scoreCards->first()['waktu_mulai'])->format('H:i') }}</p>
+                                <p class="font-medium">{{ $scoreCards->isNotEmpty() ? \Carbon\Carbon::parse($scoreCards->first()['waktu_mulai'])->format('H:i') : '-' }}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600">Waktu Selesai:</p>
-                                <p class="font-medium">{{ \Carbon\Carbon::parse($scoreCards->first()['waktu_selesai'])->format('H:i') }}</p>
+                                <p class="font-medium">{{ $scoreCards->isNotEmpty() ? \Carbon\Carbon::parse($scoreCards->first()['waktu_selesai'])->format('H:i') : '-' }}</p>
                             </div>
                         </div>
                     </div>
@@ -149,26 +149,32 @@
                     <div class="bg-white p-4 rounded-lg shadow">
                         <h3 class="text-lg font-semibold mb-3 text-gray-800">Ringkasan Score</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-sm text-gray-600">Kesiapan Panitia:</p>
-                                <p class="font-medium text-blue-600">{{ $scoreCards->first()['kesiapan_panitia'] }}%</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Kesiapan Bahan:</p>
-                                <p class="font-medium text-green-600">{{ $scoreCards->first()['kesiapan_bahan'] }}%</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Aktivitas Luar:</p>
-                                <p class="font-medium text-purple-600">{{ $scoreCards->first()['aktivitas_luar'] }}%</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Total Score:</p>
-                                <p class="font-medium text-red-600">
-                                    {{ number_format(($scoreCards->first()['kesiapan_panitia'] + 
-                                       $scoreCards->first()['kesiapan_bahan'] + 
-                                       $scoreCards->first()['aktivitas_luar']) / 3, 2) }}%
-                                </p>
-                            </div>
+                            @if($scoreCards->isNotEmpty())
+                                <div>
+                                    <p class="text-sm text-gray-600">Kesiapan Panitia:</p>
+                                    <p class="font-medium text-blue-600">{{ $scoreCards->first()['kesiapan_panitia'] }}%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Kesiapan Bahan:</p>
+                                    <p class="font-medium text-green-600">{{ $scoreCards->first()['kesiapan_bahan'] }}%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Aktivitas Luar:</p>
+                                    <p class="font-medium text-purple-600">{{ $scoreCards->first()['aktivitas_luar'] }}%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Total Score:</p>
+                                    <p class="font-medium text-red-600">
+                                        {{ number_format(($scoreCards->first()['kesiapan_panitia'] + 
+                                           $scoreCards->first()['kesiapan_bahan'] + 
+                                           $scoreCards->first()['aktivitas_luar']) / 3, 2) }}%
+                                    </p>
+                                </div>
+                            @else
+                                <div class="col-span-2 text-center text-gray-500">
+                                    Tidak ada data score yang tersedia
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
