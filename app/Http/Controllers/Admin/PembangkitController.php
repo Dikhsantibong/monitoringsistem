@@ -31,35 +31,33 @@ class PembangkitController extends Controller
         try {
             DB::beginTransaction();
             
-            // Log data yang diterima
             \Log::info('Data yang diterima untuk disimpan:', $request->logs);
             
             foreach ($request->logs as $log) {
-                // Pastikan deskripsi ada dalam log
                 if (!isset($log['deskripsi'])) {
                     \Log::error('Deskripsi tidak ditemukan untuk machine_id: ' . $log['machine_id']);
                     continue;
                 }
 
-                // Ambil data DMN dan DMP dari MachineOperation
                 $operation = MachineOperation::where('machine_id', $log['machine_id'])
                     ->latest('recorded_at')
                     ->first();
 
-                // Hanya simpan jika ada nilai yang diinputkan
                 if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
-                    // Simpan ke machine_status_logs dengan DMN dan DMP dari operation
                     MachineStatusLog::create([
                         'machine_id' => $log['machine_id'],
                         'tanggal' => $log['tanggal'],
                         'status' => $log['status'],
+                        'sistem' => $log['sistem'],
+                        'component' => $log['component'],
                         'load_value' => $log['load_value'],
-                        'dmn' => $operation ? $operation->dmn : 0, // Gunakan nilai dari operation
-                        'dmp' => $operation ? $operation->dmp : 0, // Gunakan nilai dari operation
+                        'dmn' => $operation ? $operation->dmn : 0,
+                        'dmp' => $operation ? $operation->dmp : 0,
                         'deskripsi' => $log['deskripsi'] ?? null,
                         'kronologi' => $log['kronologi'] ?? null,
                         'action_plan' => $log['action_plan'] ?? null,
                         'progres' => $log['progres'] ?? null,
+                        'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
                         'target_selesai' => $log['target_selesai'] ?? null
                     ]);
                 }

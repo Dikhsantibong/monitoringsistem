@@ -57,7 +57,7 @@
                         <h2 class="text-xl font-semibold text-gray-800">Score Card Daily</h2>
                     </div>
 
-                    <div id="timer" class="text-lg font-bold text-gray-800" style="display: none;">00:00:00</div>
+                    <div id="timer" class="text-2xl font-bold text-gray-800" style="display: none;">00:00:00</div>
                     <div class="flex items-center">
                         <div class="relative">
                             <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
@@ -93,6 +93,8 @@
                             <div>
                                 <p>Daily Meeting Hari / Tanggal: {{ $scoreCard->tanggal ?? now()->format('d F Y') }}</p>
                                 <p>Lokasi: {{ $scoreCard->lokasi ?? 'Ruang Rapat Rongi' }}</p>
+                                <a href="https://us02web.zoom.us/j/82649015876?pwd=mweLJcKxUWEhifFUNc7XsCpKK6Yuhg.1" style="color:  blue "   >link zoom</a>
+                            
                             </div>
                                 <div class="flex justify-center">
                                 <a href="{{ route('admin.score-card.create') }}"
@@ -103,10 +105,10 @@
                                     class="bg-green-500 text-white px-4 py-2 rounded flex items-center ml-2">
                                     <i class="fas fa-play mr-2"></i> Mulai Rapat
                                 </button>
-                                <a href="#" onclick="createZoomMeeting()"
+                                {{-- <a href="#" onclick="ZoomMeeting()"
                                     class="bg-purple-500 text-white px-4 py-2 rounded flex items-center ml-2">
                                     <i class="fas fa-video mr-2"></i> Buat Rapat Zoom
-                                </a>
+                                </a> --}}
                             </div>
                         </div>
                     </div>
@@ -243,90 +245,63 @@
     </div>
     <script src="{{ asset('js/toggle.js') }}"></script>
     <script>
-        let timerInterval;
-        let startTime;
-        let elapsedTime = 0; // Menyimpan waktu yang telah berlalu
-        let isRunning = false;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Definisikan variabel global
+        window.timerInterval = null;
+        window.startTime = null;
+        window.isRunning = false;
 
-        // Cek apakah timer sedang berjalan saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            const storedStartTime = localStorage.getItem('startTime');
-            const storedElapsedTime = localStorage.getItem('elapsedTime');
-            const storedIsRunning = localStorage.getItem('isRunning');
-
-            if (storedStartTime && storedIsRunning === 'true') {
-                startTime = new Date(parseInt(storedStartTime));
-                elapsedTime = parseInt(storedElapsedTime) || 0; // Ambil waktu yang telah berlalu
-                isRunning = true;
-                updateTimerDisplay(); // Perbarui tampilan timer
-                timerInterval = setInterval(updateTimer, 1000); // Mulai interval
-
-                // Tampilkan timer
-                document.getElementById('timer').style.display = 'block'; // Tampilkan timer
-
-                // Update tombol sesuai status
-                const startButton = document.getElementById('startMeetingBtn');
-                startButton.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Rapat';
-                startButton.classList.remove('bg-green-500');
-                startButton.classList.add('bg-red-500');
-            } else {
-                // Jika timer tidak berjalan, sembunyikan timer
-                document.getElementById('timer').style.display = 'none';
-            }
-        });
-
-        function startMeeting() {
-            if (!isRunning) {
-                // Start the timer
-                const timerDisplay = document.getElementById('timer');
-                timerDisplay.style.display = 'block';
-                startTime = new Date();
-                localStorage.setItem('startTime', startTime.getTime()); // Simpan waktu mulai
-
-                // Change button text and color
-                const startButton = document.getElementById('startMeetingBtn');
-                startButton.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Rapat';
-                startButton.classList.remove('bg-green-500');
-                startButton.classList.add('bg-red-500');
-
-                timerInterval = setInterval(updateTimer, 1000);
-                isRunning = true;
-                localStorage.setItem('isRunning', 'true'); // Simpan status timer
-            } else {
-                stopMeeting();
-            }
-        }
-
-        function stopMeeting() {
-            clearInterval(timerInterval);
+        // Definisikan fungsi startMeeting sebagai properti window
+        window.startMeeting = function() {
+            const timerDisplay = document.getElementById('timer');
             const startButton = document.getElementById('startMeetingBtn');
-            startButton.innerHTML = '<i class="fas fa-play mr-2"></i> Mulai Rapat';
-            startButton.classList.remove('bg-red-500');
-            startButton.classList.add('bg-green-500');
-            isRunning = false;
-            localStorage.setItem('isRunning', 'false'); // Update status timer
-
-            // Hide timer
-            document.getElementById('timer').style.display = 'none';
-            localStorage.removeItem('startTime'); // Hapus waktu mulai
-            localStorage.removeItem('elapsedTime'); // Hapus waktu yang telah berlalu
+            
+            if (!window.isRunning) {
+                // Mulai timer
+                window.startTime = new Date();
+                window.isRunning = true;
+                
+                // Tampilkan timer
+                timerDisplay.style.display = 'block';
+                
+                // Update tampilan button
+                startButton.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Rapat';
+                startButton.classList.remove('bg-green-500');
+                startButton.classList.add('bg-red-500');
+                
+                // Mulai interval timer
+                window.timerInterval = setInterval(updateTimer, 1000);
+                
+                // Simpan state ke localStorage
+                localStorage.setItem('meetingStartTime', window.startTime.getTime());
+                localStorage.setItem('isRunning', 'true');
+            } else {
+                // Stop timer
+                clearInterval(window.timerInterval);
+                window.isRunning = false;
+                
+                // Sembunyikan timer
+                timerDisplay.style.display = 'none';
+                
+                // Reset tampilan button
+                startButton.innerHTML = '<i class="fas fa-play mr-2"></i> Mulai Rapat';
+                startButton.classList.remove('bg-red-500');
+                startButton.classList.add('bg-green-500');
+                
+                // Hapus state dari localStorage
+                localStorage.removeItem('meetingStartTime');
+                localStorage.removeItem('isRunning');
+            }
         }
 
         function updateTimer() {
             const now = new Date();
-            elapsedTime += 1000; // Tambahkan 1 detik ke waktu yang telah berlalu
-            localStorage.setItem('elapsedTime', elapsedTime); // Simpan waktu yang telah berlalu
-
-            updateTimerDisplay(); // Perbarui tampilan timer
-        }
-
-        function updateTimerDisplay() {
-            const totalElapsedTime = elapsedTime + (isRunning ? new Date() - startTime : 0);
-
-            const hours = Math.floor(totalElapsedTime / (1000 * 60 * 60));
-            const minutes = Math.floor((totalElapsedTime % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((totalElapsedTime % (1000 * 60)) / 1000);
-
+            const diff = now - window.startTime;
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
             const timerDisplay = document.getElementById('timer');
             timerDisplay.textContent = `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
         }
@@ -335,102 +310,32 @@
             return number.toString().padStart(2, '0');
         }
 
-        async function createZoomMeeting() {
-            try {
-                const response = await fetch("{{ route('admin.create-zoom-meeting') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    credentials: 'same-origin'
-                });
-
-                // Debug response
-                console.log('Response status:', response.status);
-                const contentType = response.headers.get('content-type');
-                console.log('Content type:', contentType);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Error response:', errorText);
-                    throw new Error('Gagal membuat meeting: ' + response.status);
-                }
-
-                const data = await response.json();
-                console.log('Meeting data:', data);
-
-                if (data.success && data.data?.join_url) {
-                    const zoomLink = document.getElementById('zoom-link-url');
-                    zoomLink.innerHTML = 'Klik di sini untuk bergabung ke Zoom Meeting';
-                    zoomLink.href = data.data.join_url;
-                    document.getElementById('zoom-link-container').style.display = 'block';
-
-                    // Simpan link Zoom ke session
-                    session(['zoom_link' => data.data.join_url]);
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Meeting Zoom',
-                        text: 'Link Zoom berhasil dibuat!',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                } else {
-                    throw new Error(data.message || 'Tidak ada join URL dalam respons');
-                }
-            } catch (error) {
-                console.error('Error detail:', error);
-                
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal Membuat Meeting',
-                    text: error.message,
-                    footer: 'Silakan cek koneksi internet dan konfigurasi Zoom API'
-                });
-            }
+        // Check timer state saat halaman dimuat
+        const savedStartTime = localStorage.getItem('meetingStartTime');
+        const savedIsRunning = localStorage.getItem('isRunning');
+        
+        if (savedStartTime && savedIsRunning === 'true') {
+            window.startTime = new Date(parseInt(savedStartTime));
+            window.isRunning = true;
+            
+            const timerDisplay = document.getElementById('timer');
+            const startButton = document.getElementById('startMeetingBtn');
+            
+            // Tampilkan timer
+            timerDisplay.style.display = 'block';
+            
+            // Update tampilan button
+            startButton.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Rapat';
+            startButton.classList.remove('bg-green-500');
+            startButton.classList.add('bg-red-500');
+            
+            // Mulai interval timer
+            window.timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
         }
-
-        // Sembunyikan container link zoom saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('zoom-link-container').style.display = 'none';
-        });
-
-        function copyToClipboard() {
-            const zoomLink = document.getElementById('zoom-link-url');
-            if (zoomLink.href) {
-                navigator.clipboard.writeText(zoomLink.href).then(() => {
-                    // Tambahkan Sweet Alert di sini
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Link Disalin',
-                        text: 'Link Zoom telah disalin ke clipboard!',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                }).catch(err => {
-                    console.error('Gagal menyalin: ', err);
-                });
-            } else {
-                alert('Link Zoom tidak tersedia untuk disalin.');
-            }
-        }
+    });
     </script>
-
-
-    {{--    
-        <script>
-            // Sweet Alert untuk memberitahu bahwa score card daily telah di submit
-            Swal.fire({
-                icon: 'success',
-                title: 'Score Card Daily',
-                text: 'Score Card Daily telah di submit',
-                showConfirmButton: false,
-                timer: 1500
-            });
-        </script> --}}
-
+ 
     @push('scripts')
     @endpush
 @endsection

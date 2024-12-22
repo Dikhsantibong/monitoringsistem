@@ -16,6 +16,8 @@ class MachineStatusLog extends Model
         'machine_id',
         'tanggal',
         'status',
+        'sistem',
+        'component',
         'load_value',
         'dmn',
         'dmp',
@@ -23,11 +25,13 @@ class MachineStatusLog extends Model
         'deskripsi',
         'action_plan',
         'progres',
+        'tanggal_mulai',
         'target_selesai'
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'tanggal_mulai' => 'date',
         'target_selesai' => 'date'
     ];
 

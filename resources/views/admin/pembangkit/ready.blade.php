@@ -123,7 +123,7 @@
                                     <thead>
                                         <tr>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                MESIN
+                                                Mesin
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                 DMN
@@ -132,25 +132,34 @@
                                                 DMP
                                             </th>
                                             <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                BEBAN
+                                                Beban
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                STATUS
+                                                Status
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                DESKRIPSI
+                                                Sistem
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                KRONOLOGI
+                                                Comp
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                ACTION PLAN
+                                                Deskripsi
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Kronologi
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                Action Plan
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
-                                                PROGRES
+                                                Progres
                                             </th>
                                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
-                                                TARGET SELESAI
+                                                Tanggal Mulai
+                                            </th>
+                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                Target Selesai
                                             </th>
                                         </tr>
                                     </thead>
@@ -180,6 +189,25 @@
                                                         <option value="Standby" style="background-color: #2196F3">Standby</option>
                                                         <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
                                                         <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
+                                                    </select>
+                                                </td>
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 system-select"
+                                                            onchange="updateComponentOptions(this)" 
+                                                            name="sistem[{{ $machine->id }}]">
+                                                        <option value=""></option>
+                                                        <option value="MESIN">MESIN</option>
+                                                        <option value="GENERATOR">GENERATOR</option>
+                                                        <option value="PANEL_SINKRON">PANEL SINKRON</option>
+                                                        <option value="KUBIKAL">KUBIKAL</option>
+                                                        <option value="AUXILIARY">AUXILIARY</option>
+                                                    </select>
+                                                </td>
+                                                <td class="px-3 py-2 border-r border-gray-200">
+                                                    <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 component-select"
+                                                            name="component[{{ $machine->id }}]" 
+                                                            disabled>
+                                                        <option value=""></option>
                                                     </select>
                                                 </td>
                                                 <td class="px-3 py-2 border-r border-gray-200">
@@ -218,6 +246,11 @@
                                                         name="progres[{{ $machine->id }}]" 
                                                         oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
                                                 </td>   
+                                                <td class="px-3 py-2">
+                                                    <input type="date" 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
+                                                        name="tanggal_mulai[{{ $machine->id }}]">
+                                                </td>
                                                 <td class="px-3 py-2">
                                                     <input type="date" 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
@@ -403,31 +436,37 @@
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-                const select = row.querySelector('select');
+                const statusSelect = row.querySelector('select');
+                const sistemSelect = row.querySelector('.system-select');
+                const componentSelect = row.querySelector('.component-select');
                 
-                // Ambil nilai DMN dan DMP dari input yang readonly
-                const dmnInput = row.querySelector(`input[name="dmn[${machineId}]"]`);
-                const dmpInput = row.querySelector(`input[name="dmp[${machineId}]"]`);
+                // Ambil nilai DMN dan DMP
+                const dmnCell = row.querySelector('td:nth-child(2)');
+                const dmpCell = row.querySelector('td:nth-child(3)');
                 
                 const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
                 const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
                 const inputBeban = row.querySelector('td:nth-child(4) input');
                 const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
                 const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
+                const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
                 const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
 
-                if (select && select.value) {
+                if (statusSelect && statusSelect.value) {
                     data.push({
                         machine_id: machineId,
                         tanggal: tanggal,
-                        status: select.value,
-                        dmn: dmnInput ? parseFloat(dmnInput.value) || 0 : 0,
-                        dmp: dmpInput ? parseFloat(dmpInput.value) || 0 : 0,
+                        status: statusSelect.value,
+                        sistem: sistemSelect ? sistemSelect.value : null,        // Kolom baru
+                        component: componentSelect ? componentSelect.value : null, // Kolom baru
+                        dmn: dmnCell ? dmnCell.textContent.trim() : 'N/A',
+                        dmp: dmpCell ? dmpCell.textContent.trim() : 'N/A',
                         deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
                         action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
                         load_value: inputBeban ? parseFloat(inputBeban.value) || null : null,
                         progres: inputProgres ? inputProgres.value.trim() : null,
                         kronologi: inputKronologi ? inputKronologi.value.trim() : null,
+                        tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,  // Kolom baru
                         target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
                     });
                 }
@@ -577,8 +616,6 @@
     // Fungsi untuk mengupdate form dengan data
     function updateFormWithData(data) {
         const tables = document.querySelectorAll('.unit-table table');
-
-        // Reset form dulu
         resetForm();
 
         tables.forEach(table => {
@@ -589,13 +626,24 @@
 
                 if (machineData) {
                     // Update status
-                    const select = row.querySelector('select');
-                    if (select && machineData.status) {
-                        select.value = machineData.status;
-                        select.style.backgroundColor = getStatusColor(machineData.status);
+                    const statusSelect = row.querySelector('select');
+                    if (statusSelect && machineData.status) {
+                        statusSelect.value = machineData.status;
+                        statusSelect.style.backgroundColor = getStatusColor(machineData.status);
                     }
 
-                    // Update beban
+                    // Update sistem dan component
+                    const sistemSelect = row.querySelector('.system-select');
+                    const componentSelect = row.querySelector('.component-select');
+                    if (sistemSelect && machineData.sistem) {
+                        sistemSelect.value = machineData.sistem;
+                        updateComponentOptions(sistemSelect); // Update opsi component
+                        if (componentSelect && machineData.component) {
+                            componentSelect.value = machineData.component;
+                        }
+                    }
+
+                    // Update kolom lainnya
                     const inputBeban = row.querySelector('td:nth-child(4) input');
                     if (inputBeban) {
                         inputBeban.value = machineData.load_value || '';
@@ -623,6 +671,12 @@
                     const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
                     if (inputProgres) {
                         inputProgres.value = machineData.progres || '';
+                    }
+
+                    // Update tanggal mulai
+                    const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
+                    if (inputTanggalMulai) {
+                        inputTanggalMulai.value = machineData.tanggal_mulai || '';
                     }
 
                     // Update target selesai
@@ -707,6 +761,87 @@
         textarea.style.height = 'auto'; // Reset height
         textarea.style.height = textarea.scrollHeight + 'px'; // Set to scroll height
     }
+</script>
+<script>
+const componentOptions = {
+    MESIN: [
+        'Cylinder Head',
+        'Blok Mesin'
+    ],
+    GENERATOR: [
+        'Stator',
+        'Generator',
+        'Bearing',
+        'Exciter'
+    ],
+    PANEL_SINKRON: [
+        'MCB',
+        'Relay',
+        'Kontaktor',
+        'Fuse'
+    ],
+    KUBIKAL: [
+        'MCB',
+        'CT',
+        'PT',
+        'Busbar',
+        'Relay'
+    ],
+    AUXILIARY: [
+        'AVR',
+        'PCC'
+    ]
+};
+
+function updateComponentOptions(systemSelect) {
+    const componentSelect = systemSelect.closest('tr').querySelector('.component-select');
+    const selectedSystem = systemSelect.value;
+    
+    componentSelect.innerHTML = '<option value="">Pilih Component</option>';
+    componentSelect.disabled = !selectedSystem;
+    
+    if (selectedSystem) {
+        componentOptions[selectedSystem].forEach(component => {
+            const option = document.createElement('option');
+            option.value = component;
+            option.textContent = component;
+            componentSelect.appendChild(option);
+        });
+    }
+}
+
+function addNewRow() {
+    const tbody = document.getElementById('systemTableBody');
+    const newRow = tbody.querySelector('.system-row').cloneNode(true);
+    
+    // Reset nilai-nilai pada baris baru
+    newRow.querySelector('.system-select').value = '';
+    newRow.querySelector('.component-select').value = '';
+    newRow.querySelector('.component-select').disabled = true;
+    newRow.querySelector('input[type="date"]').value = '';
+    
+    tbody.appendChild(newRow);
+}
+
+function deleteRow(button) {
+    const tbody = document.getElementById('systemTableBody');
+    if (tbody.children.length > 1) {
+        button.closest('tr').remove();
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Minimal harus ada satu baris!'
+        });
+    }
+}
+
+// Event delegation untuk system-select
+document.getElementById('systemTableBody').addEventListener('change', function(e) {
+    if (e.target.classList.contains('system-select')) {
+        updateComponentOptions(e.target);
+    }
+});
 </script>
 @push('scripts')
 @endpush
