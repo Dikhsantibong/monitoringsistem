@@ -9,6 +9,8 @@ class AttendanceToken extends Model
 {
     use HasFactory;
 
+    protected $table = 'attendance_tokens';
+
     protected $fillable = [
         'token',
         'expires_at',

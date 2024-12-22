@@ -156,8 +156,9 @@ class AttendanceController extends Controller
                     ->withInput();
             }
 
-            // Cek apakah user sudah absen hari ini
-            $existingAttendance = Attendance::where('name', $request->name)
+            // Cek apakah user sudah absen hari ini menggunakan nama tabel yang benar
+            $existingAttendance = DB::table('attendance')
+                ->where('name', $request->name)
                 ->whereDate('time', today())
                 ->first();
 
