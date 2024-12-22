@@ -53,10 +53,9 @@ class AttendanceController extends Controller
                 'token_data' => $validToken
             ]);
 
-            // Render view dengan data yang sesuai
-            return view('attendance.scan-form', [
+            // Render view scan form yang baru
+            return view('admin.daftar_hadir.scan', [
                 'token' => $token,
-                'tokenData' => $validToken,
                 'error' => null
             ]);
 
