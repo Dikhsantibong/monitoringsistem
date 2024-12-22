@@ -18,4 +18,9 @@ class Attendance extends Model
     ];
 
     protected $dates = ['time'];
+
+    public function getConnectionName()
+    {
+        return session('unit', 'u478221055_up_kendari'); // default ke 'up_kendari' jika tidak ada
+    }
 }
