@@ -45,25 +45,15 @@ class AttendanceController extends Controller
 
             Log::info('Token validation result', [
                 'token' => $token,
-                'found' => !is_null($validToken)
+                'found' => !is_null($validToken),
+                'token_data' => $validToken
             ]);
 
-            if (!$validToken) {
-                Log::warning('Invalid token access attempt', [
-                    'token' => $token,
-                    'timestamp' => now()
-                ]);
-                
-                return view('attendance.scan-form', [
-                    'token' => null,
-                    'tokenData' => null,
-                    'error' => 'QR Code tidak valid atau sudah kadaluarsa'
-                ]);
-            }
-
+            // Render view dengan data yang sesuai
             return view('attendance.scan-form', [
                 'token' => $token,
-                'tokenData' => $validToken
+                'tokenData' => $validToken,
+                'error' => !$validToken ? 'QR Code tidak valid atau sudah kadaluarsa' : null
             ]);
 
         } catch (\Exception $e) {

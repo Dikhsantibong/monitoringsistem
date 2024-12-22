@@ -6,9 +6,9 @@
         <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <h2 class="text-center text-2xl font-bold mb-6">Form Absensi</h2>
             
-            @if (session('error'))
+            @if (session('error') || $error)
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('error') }}</span>
+                    <span class="block sm:inline">{{ session('error') ?? $error }}</span>
                 </div>
             @endif
 
@@ -62,9 +62,6 @@
                 <div class="text-center text-red-600">
                     <p>QR Code tidak valid atau sudah kadaluarsa.</p>
                     <p class="mt-2">Silakan scan ulang QR Code yang baru.</p>
-                    <a href="{{ url('/') }}" class="mt-4 inline-block text-blue-600 hover:text-blue-800">
-                        Kembali ke Beranda
-                    </a>
                 </div>
             @endif
         </div>
