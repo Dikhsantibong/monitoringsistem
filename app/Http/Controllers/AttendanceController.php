@@ -33,43 +33,42 @@ class AttendanceController extends Controller
     public function showScanForm($token)
     {
         try {
-            // Debug info lengkap
-            Log::info('Access scan form attempt', [
+            // Tambahkan logging di awal fungsi
+            Log::info('Attempting to show scan form', [
                 'token' => $token,
-                'url' => request()->fullUrl(),
-                'method' => request()->method(),
-                'user_agent' => request()->userAgent(),
-                'ip' => request()->ip(),
-                'headers' => request()->headers->all(),
-                'server' => request()->server->all()
+                'request_path' => request()->path(),
+                'full_url' => request()->fullUrl()
             ]);
 
-            // Cek token di database
+            // Cek token di database dengan logging detail
             $validToken = AttendanceToken::where('token', $token)
                 ->where('expires_at', '>', now())
                 ->first();
 
-            Log::info('Token validation result', [
-                'token' => $token,
-                'found' => !is_null($validToken),
-                'token_data' => $validToken
+            Log::info('Token validation check', [
+                'token_exists' => !is_null($validToken),
+                'current_time' => now(),
+                'token_details' => $validToken ? [
+                    'expires_at' => $validToken->expires_at,
+                    'is_expired' => $validToken->expires_at < now()
+                ] : null
             ]);
 
             if (!$validToken) {
-                Log::warning('Invalid token access attempt', [
+                Log::warning('Invalid or expired token', [
                     'token' => $token,
                     'timestamp' => now()
                 ]);
-                
                 return response()->view('errors.404', [], 404);
             }
 
-            // Cek apakah view exists
+            // Cek view dengan logging detail
             $viewPath = 'attendance.scan-form';
             if (!view()->exists($viewPath)) {
-                Log::error('View not found', [
-                    'view' => $viewPath,
-                    'paths' => config('view.paths')
+                Log::error('View file missing', [
+                    'view_path' => $viewPath,
+                    'absolute_path' => resource_path('views/attendance/scan-form.blade.php'),
+                    'view_paths' => config('view.paths')
                 ]);
                 throw new \Exception("View {$viewPath} not found");
             }
@@ -80,7 +79,7 @@ class AttendanceController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error in scan form', [
+            Log::error('Critical error in scan form', [
                 'token' => $token,
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -88,7 +87,9 @@ class AttendanceController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->view('errors.500', [], 500);
+            return response()->view('errors.500', [
+                'message' => 'Terjadi kesalahan sistem'
+            ], 500);
         }
     }
 
