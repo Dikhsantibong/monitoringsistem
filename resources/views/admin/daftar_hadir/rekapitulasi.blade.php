@@ -3,7 +3,7 @@
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
-       @include('admin.daftar_hadir.index')
+       @include('components.sidebar')
 
 
         <!-- Main Content -->
@@ -135,7 +135,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($kehadiran as $hadir)
+                    @forelse($attendances as $hadir)
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">
                             {{ Carbon\Carbon::parse($hadir->time)->format('d/m/Y') }}

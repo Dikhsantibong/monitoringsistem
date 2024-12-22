@@ -224,33 +224,25 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         ->name('admin.score-card.data');
 });
 
-// Route untuk scan QR Code attendance
-Route::get('/attendance/scan/{token}', [App\Http\Controllers\AttendanceController::class, 'showScanForm'])
-    ->name('attendance.scan-form')
-    ->where('token', '.*'); // Tambahkan ini untuk menerima karakter khusus pada token
+// Route untuk attendance (tanpa middleware auth)
+Route::prefix('attendance')->name('attendance.')->group(function () {
+    Route::get('/scan/{token}', [AttendanceController::class, 'showScanForm'])
+        ->name('scan-form')
+        ->where('token', '.*')
+        ->withoutMiddleware(['auth']);
+        
+    Route::post('/submit', [AttendanceController::class, 'submitAttendance'])
+        ->name('submit')
+        ->withoutMiddleware(['auth']);
+});
 
-// Route untuk submit attendance
-Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])
-    ->name('attendance.submit');
-
-// Pastikan route ini ada di luar middleware auth
-Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])
-    ->name('attendance.scan-form')
-    ->withoutMiddleware(['auth']); // Tambahkan ini agar bisa diakses tanpa login
-
-Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])
-    ->name('attendance.submit')
-    ->withoutMiddleware(['auth']); // Tambahkan ini juga
-
-Route::post('/admin/laporan/sr/{id}/update-status', [LaporanController::class, 'updateSRStatus'])->name('admin.laporan.update-sr-status');
-Route::post('/admin/laporan/wo/{id}/update-status', [LaporanController::class, 'updateWOStatus'])->name('admin.laporan.update-wo-status');
-
-Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan');
-Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
-
+// Route untuk admin (dengan middleware auth)
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    // ... route lainnya ...
+    // Route untuk laporan
+    Route::post('/laporan/sr/{id}/update-status', [LaporanController::class, 'updateSRStatus'])->name('laporan.update-sr-status');
+    Route::post('/laporan/wo/{id}/update-status', [LaporanController::class, 'updateWOStatus'])->name('laporan.update-wo-status');
     
+    // Route untuk daftar hadir
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
         Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
         Route::get('/generate-qr', [DaftarHadirController::class, 'generateQRCode'])->name('generate_qr');

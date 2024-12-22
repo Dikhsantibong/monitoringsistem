@@ -90,24 +90,7 @@
                         </div>
 
                         <!-- Filter Tanggal and Search Input -->
-                        <div class="flex flex-col lg:flex-row items-center space-x-2 gap-y-3">
-                            <div class="flex gap-x-2 items-center">
-                                <label class="text-gray-600">Tanggal:</label>
-                                <input type="date" id="date-filter" value="{{ date('Y-m-d') }}"
-                                    onchange="filterByDate(this.value)"
-                                    class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2">
-                            </div>
-
-                            <div class="flex">
-                                <input type="text" id="search" placeholder="Cari..."
-                                    class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
-                                <button
-                                    class="bg-blue-500 px-4 py-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-
-                        </div>
+                       
                     </div>
                     <div class="overflow-x-auto">
                         <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">

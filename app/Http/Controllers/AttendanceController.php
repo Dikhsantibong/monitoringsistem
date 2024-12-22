@@ -43,9 +43,13 @@ class AttendanceController extends Controller
                 ->where('expires_at', '>', now())
                 ->first();
 
+            if (!$validToken) {
+                return response()->view('errors.404', [], 404);
+            }
+
             Log::info('Token validation result', [
                 'token' => $token,
-                'found' => !is_null($validToken),
+                'found' => true,
                 'token_data' => $validToken
             ]);
 
@@ -53,7 +57,7 @@ class AttendanceController extends Controller
             return view('attendance.scan-form', [
                 'token' => $token,
                 'tokenData' => $validToken,
-                'error' => !$validToken ? 'QR Code tidak valid atau sudah kadaluarsa' : null
+                'error' => null
             ]);
 
         } catch (\Exception $e) {
@@ -63,11 +67,7 @@ class AttendanceController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return view('attendance.scan-form', [
-                'token' => null,
-                'tokenData' => null,
-                'error' => 'Terjadi kesalahan sistem'
-            ]);
+            return response()->view('errors.404', [], 404);
         }
     }
 
@@ -150,29 +150,23 @@ class AttendanceController extends Controller
                 'tanggal_akhir' => 'nullable|date'
             ]);
 
-            $query = DB::table('attendance');
-            
-            // Filter berdasarkan rentang tanggal
+            // Mendapatkan data kehadiran berdasarkan rentang tanggal
+            $attendances = Attendance::query();
+
             if ($request->filled(['tanggal_awal', 'tanggal_akhir'])) {
-                $query->whereDate('time', '>=', $request->tanggal_awal)
-                      ->whereDate('time', '<=', $request->tanggal_akhir);
+                $attendances->whereDate('time', '>=', $request->tanggal_awal)
+                            ->whereDate('time', '<=', $request->tanggal_akhir);
             } else {
                 // Default tampilkan bulan ini
-                $query->whereMonth('time', now()->month)
-                      ->whereYear('time', now()->year);
+                $attendances->whereMonth('time', now()->month)
+                            ->whereYear('time', now()->year);
             }
 
-            // Log query untuk debugging
-            \Log::info('Query rekapitulasi:', [
-                'sql' => $query->toSql(),
-                'bindings' => $query->getBindings()
-            ]);
-
-            $kehadiran = $query->orderBy('time', 'desc')->get();
+            $attendances = $attendances->get(); // Ambil data kehadiran
 
             // Hitung statistik
-            $totalKehadiran = $kehadiran->count();
-            $tepatWaktu = $kehadiran->filter(function($item) {
+            $totalKehadiran = $attendances->count();
+            $tepatWaktu = $attendances->filter(function($item) {
                 return Carbon::parse($item->time)->format('H:i:s') <= '08:00:00';
             })->count();
             
@@ -186,15 +180,10 @@ class AttendanceController extends Controller
                     round(($tepatWaktu / $totalKehadiran) * 100, 2) : 0
             ];
 
-            // Log data untuk debugging
-            \Log::info('Data statistik:', $statistik);
-
-            return view('admin.daftar_hadir.rekapitulasi', compact('kehadiran', 'statistik'));
+            return view('admin.daftar_hadir.rekapitulasi', compact('attendances', 'statistik'));
             
         } catch (\Exception $e) {
             \Log::error('Error in rekapitulasi: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
             return back()
                 ->with('error', 'Terjadi kesalahan saat memuat data rekapitulasi. Silakan coba lagi.')
                 ->withInput();
@@ -204,43 +193,36 @@ class AttendanceController extends Controller
     public function generateQRCode()
     {
         try {
-            $token = 'attendance_' . date('Y-m-d') . '_' . strtolower(Str::random(8));
-            
-            // Pastikan menggunakan URL lengkap dengan protocol
+            $token = 'attendance_' . now()->format('Y-m-d') . '_' . strtolower(Str::random(8));
+    
+            // Ambil URL aplikasi
             $appUrl = config('app.url');
-            if (!str_starts_with($appUrl, 'http')) {
-                $appUrl = 'https://' . $appUrl;
-            }
-            
-            $qrUrl = $appUrl . '/attendance/scan/' . $token;
-            
-            Log::info('Generating QR Code', [
-                'token' => $token,
-                'url' => $qrUrl
-            ]);
-
-            // Simpan token
-            $tokenModel = AttendanceToken::create([
+            $qrUrl = rtrim($appUrl, '/') . '/attendance/scan/' . $token;
+    
+            Log::info('Generating QR Code', ['token' => $token, 'url' => $qrUrl]);
+    
+            // Simpan token di database
+            AttendanceToken::create([
                 'token' => $token,
                 'expires_at' => now()->endOfDay(),
             ]);
-
+    
             return response()->json([
                 'success' => true,
                 'token' => $token,
-                'qr_url' => $qrUrl
+                'qr_url' => $qrUrl,
             ]);
-
         } catch (\Exception $e) {
             Log::error('QR Code generation error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-
+    
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate QR Code'
+                'message' => 'Gagal generate QR Code',
             ], 500);
         }
     }
+    
 } 
