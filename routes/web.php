@@ -238,4 +238,17 @@ Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendanc
 Route::post('/admin/laporan/sr/{id}/update-status', [LaporanController::class, 'updateSRStatus'])->name('admin.laporan.update-sr-status');
 Route::post('/admin/laporan/wo/{id}/update-status', [LaporanController::class, 'updateWOStatus'])->name('admin.laporan.update-wo-status');
 
+Route::get('/attendance/scan/{token}', [AttendanceController::class, 'showScanForm'])->name('attendance.scan');
+Route::post('/attendance/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    // ... route lainnya ...
+    
+    Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
+        Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
+        Route::get('/generate-qr', [DaftarHadirController::class, 'generateQRCode'])->name('generate_qr');
+        Route::post('/store-token', [DaftarHadirController::class, 'storeToken'])->name('store_token');
+    });
+});
+
 

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\AttendanceToken;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class DaftarHadirController extends Controller
 {
@@ -40,6 +42,44 @@ class DaftarHadirController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan token: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generateQRCode()
+    {
+        try {
+            $token = 'attendance_' . date('Y-m-d') . '_' . strtolower(Str::random(8));
+            
+            // Pastikan menggunakan URL lengkap dengan protocol
+            $appUrl = config('app.url');
+            if (!str_starts_with($appUrl, 'http')) {
+                $appUrl = 'https://' . $appUrl;
+            }
+            
+            $qrUrl = $appUrl . '/attendance/scan/' . $token;
+            
+            // Simpan token
+            AttendanceToken::create([
+                'token' => $token,
+                'expires_at' => now()->endOfDay(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'token' => $token,
+                'qr_url' => $qrUrl
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('QR Code generation error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate QR Code'
             ], 500);
         }
     }

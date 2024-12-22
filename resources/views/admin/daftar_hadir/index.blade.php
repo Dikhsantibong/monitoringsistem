@@ -209,72 +209,44 @@
             function generateQRCode() {
                 console.log('Generate QR Code clicked');
 
-                const today = new Date().toISOString().split('T')[0];
-                const token = `attendance_${today}_${Math.random().toString(36).substr(2, 9)}`;
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-                fetch("{{ route('admin.daftar_hadir.store_token') }}", {
-                    method: 'POST',
+                fetch("{{ route('admin.daftar_hadir.generate_qr') }}", {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        token: token,
-                        _token: csrfToken
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
-                    return response.json();
                 })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Success response:', data);
+                    if (data.success) {
+                        console.log('Success response:', data);
 
-                    const modal = document.getElementById('qrModal');
-                    const modalContent = modal.querySelector('.bg-white');
+                        const modal = document.getElementById('qrModal');
+                        const container = document.getElementById('qrcode-container');
+                        container.innerHTML = '';
+                        modal.classList.remove('hidden');
 
-                    const container = document.getElementById('qrcode-container');
-                    container.innerHTML = '';
+                        const qrData = data.qr_url;
+                        console.log('QR Data URL:', qrData);
 
-                    modal.classList.remove('hidden');
-                    modalContent.classList.remove('scale-0');
-                    modalContent.classList.add('scale-100');
-
-                    const qrData = `${window.location.origin}/attendance/scan/${token}`;
-                    console.log('QR Data URL:', qrData);
-
-                    new QRCode(container, {
-                        text: qrData,
-                        width: 256,
-                        height: 256,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-
-                    localStorage.setItem('attendance_qr_token', token);
+                        new QRCode(container, {
+                            text: qrData,
+                            width: 256,
+                            height: 256,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } else {
+                        throw new Error(data.message || 'Gagal generate QR Code');
+                    }
                 })
                 .catch(error => {
-                    console.error('Error details:', error);
-                    let errorMessage = 'Terjadi kesalahan yang tidak diketahui';
-                    
-                    if (error.response) {
-                        errorMessage = `Server error: ${error.response.status}`;
-                    } else if (error.request) {
-                        errorMessage = 'Tidak dapat terhubung ke server';
-                    } else {
-                        errorMessage = error.message;
-                    }
-                    
+                    console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Terjadi Kesalahan',
-                        text: errorMessage,
-                        footer: 'Silakan coba lagi atau hubungi administrator'
+                        text: 'Gagal generate QR Code. Silakan coba lagi.'
                     });
                 });
             }
