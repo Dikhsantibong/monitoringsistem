@@ -58,7 +58,14 @@ Route::middleware(['auth', 'user'])->group(function () {
 });
 
 Route::prefix('attendance')->group(function () {
-    Route::post('/submit', [AttendanceController::class, 'submitAttendance'])->name('attendance.submit');
+    Route::get('/scan/{token}', [AttendanceController::class, 'showScanForm'])
+        ->name('attendance.scan-form')
+        ->withoutMiddleware(['auth'])
+        ->where('token', '.*');
+    
+    Route::post('/submit', [AttendanceController::class, 'submitAttendance'])
+        ->name('attendance.submit')
+        ->withoutMiddleware(['auth']);
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

@@ -33,15 +33,9 @@ class AttendanceController extends Controller
     public function showScanForm($token)
     {
         try {
-            // Debug info lengkap
             Log::info('Access scan form attempt', [
                 'token' => $token,
-                'url' => request()->fullUrl(),
-                'method' => request()->method(),
-                'user_agent' => request()->userAgent(),
-                'ip' => request()->ip(),
-                'headers' => request()->headers->all(),
-                'server' => request()->server->all()
+                'url' => request()->fullUrl()
             ]);
 
             // Cek token di database
@@ -51,8 +45,7 @@ class AttendanceController extends Controller
 
             Log::info('Token validation result', [
                 'token' => $token,
-                'found' => !is_null($validToken),
-                'token_data' => $validToken
+                'found' => !is_null($validToken)
             ]);
 
             if (!$validToken) {
@@ -61,20 +54,14 @@ class AttendanceController extends Controller
                     'timestamp' => now()
                 ]);
                 
-                return response()->view('errors.404', [], 404);
-            }
-
-            // Cek apakah view exists
-            $viewPath = 'attendance.scan-form';
-            if (!view()->exists($viewPath)) {
-                Log::error('View not found', [
-                    'view' => $viewPath,
-                    'paths' => config('view.paths')
+                return view('attendance.scan-form', [
+                    'token' => null,
+                    'tokenData' => null,
+                    'error' => 'QR Code tidak valid atau sudah kadaluarsa'
                 ]);
-                throw new \Exception("View {$viewPath} not found");
             }
 
-            return view($viewPath, [
+            return view('attendance.scan-form', [
                 'token' => $token,
                 'tokenData' => $validToken
             ]);
@@ -83,12 +70,14 @@ class AttendanceController extends Controller
             Log::error('Error in scan form', [
                 'token' => $token,
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->view('errors.500', [], 500);
+            return view('attendance.scan-form', [
+                'token' => null,
+                'tokenData' => null,
+                'error' => 'Terjadi kesalahan sistem'
+            ]);
         }
     }
 
@@ -129,17 +118,35 @@ class AttendanceController extends Controller
                 'position' => 'required|string|max:255'
             ]);
 
-            // Proses submit attendance
-            // ...
+            // Validasi token
+            $validToken = AttendanceToken::where('token', $validated['token'])
+                ->where('expires_at', '>', now())
+                ->first();
 
-            return redirect()->back()->with('success', 'Absensi berhasil dicatat');
+            if (!$validToken) {
+                return back()
+                    ->with('error', 'Token tidak valid atau sudah kadaluarsa')
+                    ->withInput();
+            }
+
+            // Simpan attendance dengan struktur yang benar
+            Attendance::create([
+                'name' => $validated['name'],
+                'division' => $validated['division'],
+                'position' => $validated['position'],
+                'token' => $validated['token'], // Simpan token string
+                'time' => now() // Gunakan waktu sekarang
+            ]);
+
+            return back()->with('success', 'Absensi berhasil dicatat');
+            
         } catch (\Exception $e) {
             Log::error('Error submitting attendance', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return redirect()->back()
+            return back()
                 ->with('error', 'Terjadi kesalahan saat mencatat absensi')
                 ->withInput();
         }

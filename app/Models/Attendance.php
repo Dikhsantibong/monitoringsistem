@@ -12,14 +12,12 @@ class Attendance extends Model
         'name',
         'division',
         'position',
-        'time',
-        'token'
+        'token',
+        'time'
     ];
 
-    protected $dates = [
-        'time',
-        'created_at',
-        'updated_at'
+    protected $casts = [
+        'time' => 'datetime'
     ];
 
     // Tambahkan mutator untuk memastikan data tersimpan dengan benar

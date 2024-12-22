@@ -59,10 +59,16 @@ class DaftarHadirController extends Controller
             
             $qrUrl = $appUrl . '/attendance/scan/' . $token;
             
-            // Simpan token
+            // Simpan token dengan waktu kadaluarsa yang benar
             AttendanceToken::create([
                 'token' => $token,
-                'expires_at' => now()->endOfDay(),
+                'expires_at' => now()->endOfDay(), // Expired di akhir hari
+            ]);
+
+            Log::info('QR Code generated', [
+                'token' => $token,
+                'url' => $qrUrl,
+                'expires_at' => now()->endOfDay()
             ]);
 
             return response()->json([
