@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Models\MachineStatusLog;
 
 class UserController extends Controller
 {
@@ -48,11 +49,26 @@ class UserController extends Controller
         return view('user.profile'); // Pastikan Anda memiliki view untuk profil pengguna
     }
 
-    public function machineMonitor()
+    public function machineMonitor(Request $request)
     {
-        // Ambil data mesin dari model atau sumber data lainnya
-        $machines = Machine::all(); // Ganti dengan logika yang sesuai untuk mendapatkan data mesin
-        return view('user.machine-monitor', compact('machines'));
+        $date = $request->input('date', now()->format('Y-m-d'));
+
+        $machineStatusLogs = MachineStatusLog::with(['machine.powerPlant'])
+            ->whereDate('tanggal', $date)
+            ->orderBy('tanggal', 'desc')
+            ->paginate(10)
+            ->appends(['date' => $date]);
+
+        if ($request->ajax()) {
+            $view = view('user.machine-monitor._table', compact('machineStatusLogs'))->render();
+            
+            return response()->json([
+                'success' => true,
+                'html' => $view
+            ]);
+        }
+
+        return view('user.machine-monitor', compact('machineStatusLogs'));
     }
 
     public function meetings()

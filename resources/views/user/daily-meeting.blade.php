@@ -135,12 +135,24 @@
                 <h1 class="text-2xl font-semibold mb-1">Jadwal Pertemuan Harian</h1>
                 <p class="text-gray-600 mb-6">Berikut adalah jadwal pertemuan harian Anda:</p>
 
+                <!-- Tampilkan link Zoom jika ada -->
+                @if(session('zoom_link'))
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-4">
+                        <span class="font-semibold">Link Zoom:</span>
+                        <a href="{{ session('zoom_link') }}" class="text-blue-600 underline ml-2" target="_blank">Klik di sini untuk bergabung</a>
+                    </div>
+                @else
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
+                        <span class="font-semibold">Link Zoom tidak tersedia.</span>
+                    </div>
+                @endif
+
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Grafik Pertemuan dengan Chart.js -->
+                    <!-- Grafik Skor -->
                     <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h2 class="text-xl font-semibold mb-4">Grafik Pertemuan</h2>
+                        <h2 class="text-xl font-semibold mb-4">Grafik Skor</h2>
                         <div class="relative" style="height: 300px;">
-                            <canvas id="meetingChart"></canvas>
+                            <canvas id="scoreChart"></canvas>
                         </div>
                     </div>
 
@@ -183,56 +195,9 @@
                     <p class="mt-2 text-center">QR Code ini hanya berlaku untuk hari ini: {{ now()->format('d M Y') }}</p>
                 </div>
 
-                <!-- Input Kehadiran -->
-                <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
-                    <h2 class="text-xl font-semibold mb-4">Input Kehadiran</h2>
-                    <form id="attendance-form">
-                        <div class="flex space-x-4">
-                            <input type="text" id="barcode" placeholder="Masukkan Barcode"
-                                class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required>
-                            <button type="submit"
-                                class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
-                                Tambah Kehadiran
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Tabel Kehadiran -->
-                <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
-                    <h2 class="text-xl font-semibold mb-4">Daftar Kehadiran</h2>
-                    <div class="overflow-x-auto">
-                        <table id="attendance-table" class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Nama</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Waktu Kehadiran</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendance-body" class="bg-white divide-y divide-gray-200">
-                                <!-- Data kehadiran akan ditambahkan di sini -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
                 <!-- QR Code Scanner Section -->
-                <div class="bg-white rounded-lg shadow p-4 mt-6">
-                    <h2 class="text-lg font-semibold">Scan QR Code</h2>
-                    <div class="mt-4">
-                        <div id="reader" class="mt-4"></div>
-                        <div id="result"></div>
-                        <button id="startButton"
-                            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-4">
-                            <i class="fas fa-camera mr-2"></i>Mulai Scan
-                        </button>
-                    </div>
-                </div>
+               
             </div>
         </div>
     </div>
@@ -243,18 +208,19 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <script>
-        // Inisialisasi Chart.js
-        const ctx = document.getElementById('meetingChart').getContext('2d');
+        // Inisialisasi Grafik Skor
+        const ctx = document.getElementById('scoreChart').getContext('2d');
         new Chart(ctx, {
-            type: 'bar',
+            type: 'line', // Ubah tipe grafik sesuai kebutuhan
             data: {
-                labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+                labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'], // Label untuk sumbu X
                 datasets: [{
-                    label: 'Jumlah Pertemuan',
-                    data: [12, 19, 3, 5, 2],
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+                    label: 'Skor',
+                    data: [85, 90, 75, 88, 92], // Data skor yang ingin ditampilkan
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: true // Mengisi area di bawah grafik
                 }]
             },
             options: {

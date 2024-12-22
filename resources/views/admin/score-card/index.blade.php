@@ -367,6 +367,9 @@
                     zoomLink.href = data.data.join_url;
                     document.getElementById('zoom-link-container').style.display = 'block';
 
+                    // Simpan link Zoom ke session
+                    session(['zoom_link' => data.data.join_url]);
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Meeting Zoom',
