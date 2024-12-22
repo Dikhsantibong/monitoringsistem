@@ -64,7 +64,7 @@
                     <div class="mb-4 flex flex-col lg:flex-row gap-y-3 justify-between items-center">
                         <!-- Tombol Generate QR Code -->
                         <div class="flex items-center">
-                            <button id="generateQrBtn" onclick="generateQR()" class="bg-[#0A749B] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#009BB9]">
+                            <button id="generateQrBtn" onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700">
                                 <i class="fas fa-qrcode mr-2"></i>
                                 Generate QR Code
                             </button>
@@ -93,31 +93,32 @@
                         <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
                             <thead class="bg-gray-100">
                                 <tr style="background-color: #0A749B; color: white;">
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        No
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Nama
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Divisi
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider border-b border-gray-300">
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Jabatan
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Tanggal
                                     </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Waktu Kehadiran
                                     </th>
                                 </tr>
                             </thead>
                             <tbody id="attendance-body" class="divide-y divide-gray-300">
-                                @foreach ($attendances as $attendance)
+                                @foreach ($attendances as $index => $attendance)
                                     <tr class="hover:bg-gray-100">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                            {{ $index + 1 }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ $attendance->name }}
                                         </td>
