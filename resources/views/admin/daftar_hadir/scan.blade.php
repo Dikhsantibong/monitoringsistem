@@ -64,6 +64,34 @@
     const canvas = document.getElementById('signature-pad');
     const signaturePad = new SignaturePad(canvas);
 
+    // Menangani event untuk mouse dan touch
+    function startDrawing(event) {
+        event.preventDefault();
+        signaturePad.beginStroke(event.touches ? event.touches[0] : event);
+    }
+
+    function draw(event) {
+        event.preventDefault();
+        signaturePad.strokeUpdate(event.touches ? event.touches[0] : event);
+    }
+
+    function endDrawing(event) {
+        event.preventDefault();
+        signaturePad.endStroke();
+    }
+
+    // Event listener untuk mouse
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', endDrawing);
+    canvas.addEventListener('mouseleave', endDrawing);
+
+    // Event listener untuk touch
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', endDrawing);
+    canvas.addEventListener('touchcancel', endDrawing);
+
     document.getElementById('clear').addEventListener('click', function () {
         signaturePad.clear();
     });
