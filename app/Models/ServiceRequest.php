@@ -10,7 +10,7 @@ class ServiceRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'id', 'description', 'status', 'created_at'
+        'id', 'description', 'status', 'created_at', 'downtime', 'tipe_sr', 'priority'
     ];
     public $incrementing = false;
     public function getConnectionName()

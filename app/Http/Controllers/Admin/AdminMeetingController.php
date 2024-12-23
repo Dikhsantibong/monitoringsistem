@@ -181,4 +181,37 @@ class AdminMeetingController extends Controller
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', "attachment; filename=\"$filename\"");
     }
+
+    public function printScorecard(Request $request)
+    {
+        $selectedDate = $request->input('date');
+        
+        // Ambil data scoreCards sesuai dengan tanggal yang dipilih
+        $scoreCards = ScoreCardDaily::whereDate('tanggal', $selectedDate)
+            ->with(['participants']) // Jika Anda ingin memuat relasi peserta
+            ->get()
+            ->map(function ($scoreCard) {
+                $peserta = json_decode($scoreCard->peserta, true);
+                $formattedPeserta = [];
+                
+                foreach ($peserta as $jabatan => $data) {
+                    $formattedPeserta[] = [
+                        'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
+                        'awal' => $data['awal'] ?? '0',
+                        'akhir' => $data['akhir'] ?? '0',
+                        'skor' => $data['skor'] ?? '0'
+                    ];
+                }
+
+                return [
+                    'id' => $scoreCard->id,
+                    'tanggal' => $scoreCard->tanggal,
+                    'lokasi' => $scoreCard->lokasi,
+                    'peserta' => $formattedPeserta,
+                    'total_skor' => collect($formattedPeserta)->sum('skor')
+                ];
+            });
+
+        return view('admin.meetings.print_scorecard', compact('scoreCards', 'selectedDate'));
+    }
 }

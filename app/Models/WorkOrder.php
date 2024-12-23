@@ -10,7 +10,7 @@ class WorkOrder extends Model
     use HasFactory;
 
     protected $fillable = [
-        'id', 'description', 'status'
+        'id', 'description', 'status', 'priority', 'schedule_start', 'schedule_finish'
     ];
     public $incrementing = false;
     public function getConnectionName()

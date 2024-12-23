@@ -120,7 +120,12 @@ Route::get('admin/machine-monitor/{id}/edit', [MachineMonitorController::class, 
         Route::get('/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
         Route::get('/user/daily-meeting', [UserController::class, 'dailyMeeting'])->name('user.daily-meeting');
         Route::get('/admin/score-card/data', [AdminMeetingController::class, 'getScoreCardData'])->name('admin.score-card.data');
-Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
+        Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
+        
+   
+
+
+
     });
 
     Route::prefix('users')->group(function () {
@@ -132,6 +137,7 @@ Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downlo
         Route::post('/store', [AdminUserController::class, 'store'])->name('users.store');
         Route::get('/{user}/delete', [AdminUserController::class, 'delete'])->name('users.delete');
     });
+    
 
     Route::prefix('activities')->group(function () {
         Route::get('/export', [ActivityController::class, 'export'])->name('activities.export');
@@ -256,4 +262,15 @@ Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRC
 Route::get('/attendance/success', function () {
     return view('admin.daftar_hadir.success');
 })->name('attendance.success');
+
+Route::get('/admin/laporan/create-sr', [LaporanController::class, 'createSR'])->name('admin.laporan.create-sr');
+
+// Rute untuk halaman SR/WO
+Route::get('/admin/laporan/sr-wo', [LaporanController::class, 'srWo'])->name('admin.laporan.sr-wo');
+
+// Rute untuk halaman tambah SR
+Route::get('/admin/laporan/create-sr', [LaporanController::class, 'createSR'])->name('admin.laporan.create-sr');
+
+// Rute untuk menyimpan SR
+Route::post('/admin/laporan/store-sr', [LaporanController::class, 'storeSR'])->name('admin.laporan.store-sr');
 

@@ -90,10 +90,14 @@
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
-                                <button onclick="openSRModal()"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base">
-                                    <i class="fas fa-plus mr-2"></i>Tambah SR
-                                </button>
+                                <div class="flex justify-end space-x-4">
+                                    <a href="{{ route('admin.laporan.create-sr') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                        <i class="fas fa-plus-circle mr-2"></i> Tambah SR
+                                    </a>
+                                    {{-- <a href="{{ route('admin.laporan.sr-wo') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                                        Kembali
+                                    </a> --}}
+                                </div>
                             </div>
                             <div class="overflow-auto max-h-96">
                                 <table id="srTable"
@@ -105,20 +109,31 @@
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Status</th>
                                             <th class="py-2 px-4 border-b">Tanggal</th>
+                                            <th class="py-2 px-4 border-b">Downtime</th>
+                                            <th class="py-2 px-4 border-b">Tipe SR</th>
+                                            <th class="py-2 px-4 border-b">Priority</th>
                                             <th class="py-2 px-4 border-b">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
                                         @foreach ($serviceRequests as $index => $sr)
                                             <tr class="odd:bg-white even:bg-gray-100">
-                                                <td class="py-2 px-4 border-b">{{ $index + 1 }}</td>
-                                                <td class="py-2 px-4 border-b">{{ $sr->id }}</td>
-                                                <td class="py-2 px-4 border-b">{{ $sr->description }}</td>
-                                                <td
-                                                    class="py-2 px-4 border-b {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">
+                                                <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $sr->id }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $sr->description }}</td>
+                                                <td class="py-2 px-4 border border-gray-200 {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">
                                                     {{ $sr->status }}</td>
-                                                <td class="py-2 px-4 border-b">{{ $sr->created_at }}</td>
-                                                <td class="py-2 px-4 border-b">
+                                                <td class="py-2 px-4 border border-gray-200">{{ $sr->created_at }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    {{ $sr->downtime }}
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    {{ $sr->tipe_sr }}
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    {{ $sr->priority }}
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
                                                     <button onclick="updateStatus('sr', {{ $sr->id }}, '{{ $sr->status }}')"
                                                         class="px-3 py-1 text-sm rounded-full {{ $sr->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
                                                         {{ $sr->status == 'Open' ? 'Tutup' : 'Buka' }}
@@ -149,18 +164,32 @@
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Status</th>
                                             <th class="py-2 px-4 border-b">Tanggal</th>
+                                            <th class="py-2 px-4 border-b">Priority</th>
+                                            <th class="py-2 px-4 border-b">Schedule Start</th>
+                                            <th class="py-2 px-4 border-b">Schedule Finish</th>
                                             <th class="py-2 px-4 border-b">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($workOrders as $index => $wo)
-                                            <tr>
-                                                <td class="py-2 px-4 border-b">{{ $index + 1 }}</td>
-                                                <td class="py-2 px-4 border-b">{{ $wo->id }}</td>
-                                                <td class="py-2 px-4 border-b">{{ $wo->description }}</td>
-                                                <td class="py-2 px-4 border-b {{ $wo->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">{{ $wo->status }}</td>
-                                                <td class="py-2 px-4 border-b">{{ $wo->created_at }}</td>
-                                                <td class="py-2 px-4 border-b">
+                                            <tr class="odd:bg-white even:bg-gray-100">
+                                                <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $wo->description }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    {{ $wo->status }}
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    {{ $wo->priority }}
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    {{ $wo->schedule_start }}
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    {{ $wo->schedule_finish }}
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
                                                     <button onclick="updateStatus('wo', {{ $wo->id }}, '{{ $wo->status }}')"
                                                         class="px-3 py-1 text-sm rounded-full {{ $wo->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
                                                         {{ $wo->status == 'Open' ? 'Tutup' : 'Buka' }}
@@ -203,6 +232,43 @@
                     <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg" required>
                         <option value="Open">Open</option>
                         <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="tanggal">
+                        Tanggal
+                    </label>
+                    <input type="date" name="tanggal" id="tanggal" class="w-full px-3 py-2 border rounded-lg" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="downtime">
+                        Downtime
+                    </label>
+                    <select name="downtime" id="downtime" class="w-full px-3 py-2 border rounded-lg" required>
+                        <option value="ya">Ya</option>
+                        <option value="tidak">Tidak</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="tipe_sr">
+                        Tipe SR
+                    </label>
+                    <select name="tipe_sr" id="tipe_sr" class="w-full px-3 py-2 border rounded-lg" required>
+                        <option value="CM">CM</option>
+                        <option value="EJ">EJ</option>
+                        <option value="FLM">FLM</option>
+                        <option value="PDM">PDM</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="priority">
+                        Priority
+                    </label>
+                    <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-lg" required>
+                        <option value="emergency">Emergency</option>
+                        <option value="normal">Normal</option>
+                        <option value="outage">Outage</option>
+                        <option value="urgent">Urgent</option>
                     </select>
                 </div>
                 <div class="flex justify-end space-x-4">

@@ -481,7 +481,7 @@
                 function downloadPDF() {
                     Swal.fire({
                         title: 'Generating PDF...',
-                        text: 'Please wait...',
+                        text: 'Please wait...', 
                         allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading();

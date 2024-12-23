@@ -10,6 +10,14 @@
             display: none;
             /* Sembunyikan timer secara default */
         }
+        .table-responsive {
+            overflow-x: auto; /* Mengizinkan scroll horizontal */
+            width: 100%; /* Memaksimalkan lebar kolom */
+        }
+        table {
+            width: 100%; /* Memastikan tabel mengambil lebar penuh */
+            table-layout: auto; /* Mengizinkan kolom untuk menyesuaikan lebar */
+        }
     </style>
 @endpush
 
@@ -119,147 +127,149 @@
                                 <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
 
                                 <!-- Tabel Status Pembangkit -->
-                                <table class="min-w-full bg-white">
-                                    <thead>
-                                        <tr>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Mesin
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                DMN
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                DMP
-                                            </th>
-                                            <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Beban
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Status
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Sistem
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Comp
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Deskripsi
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Kronologi
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                Action Plan
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
-                                                Progres
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
-                                                Tanggal Mulai
-                                            </th>
-                                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
-                                                Target Selesai
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-sm">
-                                        @foreach ($unit->machines as $machine)
-                                            <tr class="hover:bg-gray-50 border-b border-gray-200">
-                                                <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
-                                                    {{ $machine->name }}
-                                                </td>   
-                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
-                                                    {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
-                                                </td>
-                                                <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
-                                                    {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
-                                                </td>
-                                                <td class="px-2 py-2 border-r border-gray-200">
-                                                    <input type="number" 
-                                                           class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
-                                                        placeholder="Masukkan beban...">
-                                                </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
-                                                    <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
-                                                        onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                        <option value="" style="background-color: #FFFFFF"></option>
-                                                        <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
-                                                        <option value="Standby" style="background-color: #2196F3">Standby</option>
-                                                        <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
-                                                        <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
-                                                    </select>
-                                                </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
-                                                    <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 system-select"
-                                                            onchange="updateComponentOptions(this)" 
-                                                            name="sistem[{{ $machine->id }}]">
-                                                        <option value=""></option>
-                                                        <option value="MESIN">MESIN</option>
-                                                        <option value="GENERATOR">GENERATOR</option>
-                                                        <option value="PANEL_SINKRON">PANEL SINKRON</option>
-                                                        <option value="KUBIKAL">KUBIKAL</option>
-                                                        <option value="AUXILIARY">AUXILIARY</option>
-                                                    </select>
-                                                </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
-                                                    <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 component-select"
-                                                            name="component[{{ $machine->id }}]" 
-                                                            disabled>
-                                                        <option value=""></option>
-                                                    </select>
-                                                </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
-                                                    <textarea 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" 
-                                                        placeholder="Masukkan deskripsi..." 
-                                                        style="height: 100px;" 
-                                                        name="deskripsi[{{ $machine->id }}]" 
-                                                        oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->deskripsi ?? '' }}</textarea>
-                                                </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
-                                                    <textarea 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" 
-                                                        placeholder="Masukkan kronologi..." 
-                                                        style="height: 100px;" 
-                                                        name="kronologi[{{ $machine->id }}]" 
-                                                        oninput="autoResize(this)"></textarea>
-                                                </td>
-                                                <td class="px-3 py-2 border-r border-gray-200">
-                                                    <textarea 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" 
-                                                        placeholder="Masukkan action plan..." 
-                                                        style="height: 100px;" 
-                                                        name="action_plan[{{ $machine->id }}]" 
-                                                        oninput="autoResize(this)"></textarea>
-                                                </td>
-                                                <td class="px-3 py-2">
-                                                    <textarea 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                        rows="2" 
-                                                        placeholder="Masukkan progres..." 
-                                                        style="height: 100px;" 
-                                                        name="progres[{{ $machine->id }}]" 
-                                                        oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
-                                                </td>   
-                                                <td class="px-3 py-2">
-                                                    <input type="date" 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
-                                                        name="tanggal_mulai[{{ $machine->id }}]">
-                                                </td>
-                                                <td class="px-3 py-2">
-                                                    <input type="date" 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
-                                                        name="target_selesai[{{ $machine->id }}]">
-                                                </td>
+                                <div class="table-responsive">
+                                    <table class="min-w-full bg-white">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Mesin
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    DMN
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    DMP
+                                                </th>
+                                                <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Beban
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Status
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Sistem
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Comp
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Deskripsi
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Kronologi
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Action Plan
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                    Progres
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                    Tanggal Mulai
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                    Target Selesai
+                                                </th>
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody class="text-sm">
+                                            @foreach ($unit->machines as $machine)
+                                                <tr class="hover:bg-gray-50 border-b border-gray-200">
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
+                                                        {{ $machine->name }}
+                                                    </td>   
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
+                                                        {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
+                                                        {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
+                                                    </td>
+                                                    <td class="px-2 py-2 border-r border-gray-200">
+                                                        <input type="number" 
+                                                               class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                            value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
+                                                            placeholder="Masukkan beban...">
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200">
+                                                        <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                            onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
+                                                            <option value="" style="background-color: #FFFFFF"></option>
+                                                            <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
+                                                            <option value="Standby" style="background-color: #2196F3">Standby</option>
+                                                            <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
+                                                            <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200">
+                                                        <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 system-select"
+                                                                onchange="updateComponentOptions(this)" 
+                                                                name="sistem[{{ $machine->id }}]">
+                                                            <option value=""></option>
+                                                            <option value="MESIN">MESIN</option>
+                                                            <option value="GENERATOR">GENERATOR</option>
+                                                            <option value="PANEL_SINKRON">PANEL SINKRON</option>
+                                                            <option value="KUBIKAL">KUBIKAL</option>
+                                                            <option value="AUXILIARY">AUXILIARY</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200">
+                                                        <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 component-select"
+                                                                name="component[{{ $machine->id }}]" 
+                                                                disabled>
+                                                            <option value=""></option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200">
+                                                        <textarea 
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                            rows="2" 
+                                                            placeholder="Masukkan deskripsi..." 
+                                                            style="height: 100px; width: 300px;" 
+                                                            name="deskripsi[{{ $machine->id }}]" 
+                                                            oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->deskripsi ?? '' }}</textarea>
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200">
+                                                        <textarea 
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                            rows="2" 
+                                                            placeholder="Masukkan kronologi..." 
+                                                            style="height: 100px; width: 300px;" 
+                                                            name="kronologi[{{ $machine->id }}]" 
+                                                            oninput="autoResize(this)"></textarea>
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200">
+                                                        <textarea 
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                            rows="2" 
+                                                            placeholder="Masukkan action plan..." 
+                                                            style="height: 100px; width: 300px;" 
+                                                            name="action_plan[{{ $machine->id }}]" 
+                                                            oninput="autoResize(this)"></textarea>
+                                                    </td>
+                                                    <td class="px-3 py-2">
+                                                        <textarea 
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                            rows="2" 
+                                                            placeholder="Masukkan progres..." 
+                                                            style="height: 100px; width: 300px;" 
+                                                            name="progres[{{ $machine->id }}]" 
+                                                            oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
+                                                    </td>   
+                                                    <td class="px-3 py-2">
+                                                        <input type="date" 
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
+                                                            name="tanggal_mulai[{{ $machine->id }}]">
+                                                    </td>
+                                                    <td class="px-3 py-2">
+                                                        <input type="date" 
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
+                                                            name="target_selesai[{{ $machine->id }}]">
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -760,7 +770,16 @@
     function autoResize(textarea) {
         textarea.style.height = 'auto'; // Reset height
         textarea.style.height = textarea.scrollHeight + 'px'; // Set to scroll height
+        textarea.style.width = '100%'; // Atur lebar menjadi 100% saat diklik
     }
+</script>
+<script>
+    // Tambahkan event listener untuk textarea
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('click', function() {
+            this.style.width = '100%'; // Atur lebar menjadi 100% saat diklik
+        });
+    });
 </script>
 <script>
 const componentOptions = {
