@@ -42,7 +42,7 @@
 
                             <div class="space-y-2">
                                 <label class="text-gray-600">Tanda Tangan</label>
-                                <canvas id="signature-pad" class="border border-gray-300 w-full h-32"></canvas>
+                                <canvas id="signature-pad" class="border border-gray-300 w-full h-32" style="touch-action: none;"></canvas>
                                 <button type="button" id="clear" class="text-red-500">Hapus Tanda Tangan</button>
                                 <input type="hidden" name="signature" id="signature">
                             </div>
@@ -63,6 +63,10 @@
 <script>
     const canvas = document.getElementById('signature-pad');
     const signaturePad = new SignaturePad(canvas);
+
+    // Atur ukuran canvas
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
 
     // Menangani event untuk mouse dan touch
     function startDrawing(event) {
