@@ -40,6 +40,13 @@
                                     value="{{ old('division') }}">
                             </div>
 
+                            <div class="space-y-2">
+                                <label class="text-gray-600">Tanda Tangan</label>
+                                <canvas id="signature-pad" class="border border-gray-300 w-full h-32"></canvas>
+                                <button type="button" id="clear" class="text-red-500">Hapus Tanda Tangan</button>
+                                <input type="hidden" name="signature" id="signature">
+                            </div>
+
                             <button type="submit" 
                                 class="w-full bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#009BB9] transition duration-300">
                                 Submit Absensi
@@ -51,4 +58,22 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/3.0.0/signature_pad.umd.min.js"></script>
+<script>
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas);
+
+    document.getElementById('clear').addEventListener('click', function () {
+        signaturePad.clear();
+    });
+
+    document.querySelector('form').addEventListener('submit', function () {
+        const dataURL = signaturePad.toDataURL();
+        document.getElementById('signature').value = dataURL;
+    });
+</script>
+@push('scripts')
+    
+@endpush
 @endsection 

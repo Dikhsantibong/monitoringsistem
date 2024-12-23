@@ -143,6 +143,7 @@ class AttendanceController extends Controller
                 'name' => 'required|string|max:255',
                 'position' => 'required|string|max:255',
                 'division' => 'required|string|max:255',
+                'signature' => 'required|string',
             ]);
 
             // Cek token
@@ -168,13 +169,14 @@ class AttendanceController extends Controller
                     ->withInput();
             }
 
-            // Simpan absensi dengan token
+            // Simpan absensi dengan token dan signature
             $attendance = Attendance::create([
                 'name' => $request->name,
                 'position' => $request->position,
                 'division' => $request->division,
                 'token' => $request->token,
                 'time' => now(),
+                'signature' => $request->signature,
             ]);
 
             return redirect()->route('attendance.success')
