@@ -16,7 +16,15 @@ class PembangkitController extends Controller
 {
     public function ready()
     {
-        $units = PowerPlant::all();
+        $units = PowerPlant::orderByRaw("
+            CASE 
+                WHEN name LIKE 'PLTU%' THEN 1
+                WHEN name LIKE 'PLTM%' THEN 2
+                WHEN name LIKE 'PLTD%' THEN 3
+                WHEN name LIKE 'PLTMG%' THEN 4
+                ELSE 5
+            END
+        ")->get();
         $machines = Machine::with('issues', 'metrics')->get();
         $operations = MachineOperation::all();
         
@@ -48,7 +56,6 @@ class PembangkitController extends Controller
                         'machine_id' => $log['machine_id'],
                         'tanggal' => $log['tanggal'],
                         'status' => $log['status'],
-                        'sistem' => $log['sistem'],
                         'component' => $log['component'],
                         'load_value' => $log['load_value'],
                         'dmn' => $operation ? $operation->dmn : 0,
