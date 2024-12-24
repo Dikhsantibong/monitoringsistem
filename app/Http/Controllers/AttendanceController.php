@@ -138,30 +138,36 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
+            // Validasi request
             $validated = $request->validate([
-                'name' => 'required',
-                'position' => 'required',
-                'division' => 'required',
-                'token' => 'required',
-                'signature' => 'required'
+                'name' => 'required|string',
+                'position' => 'required|string',
+                'division' => 'required|string',
+                'token' => 'required|string',
+                'signature' => 'required|string' // Validasi signature sebagai string
             ]);
 
-            // Debug: cek data yang diterima
-            \Log::info('Received attendance data:', $request->all());
+            // Debug: log data yang diterima
+            \Log::info('Received signature data length: ' . strlen($request->signature));
 
+            // Buat record attendance
             $attendance = Attendance::create([
                 'name' => $request->name,
                 'position' => $request->position,
                 'division' => $request->division,
                 'token' => $request->token,
                 'time' => now(),
-                'signature' => $request->signature
+                'signature' => $request->signature // Simpan data base64 langsung
             ]);
 
-            return redirect()->route('attendance.success')->with('success', 'Absensi berhasil disimpan');
+            return redirect()->route('attendance.success')
+                ->with('success', 'Absensi berhasil disimpan');
+
         } catch (\Exception $e) {
             \Log::error('Error saving attendance: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan absensi: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menyimpan absensi: ' . $e->getMessage());
         }
     }
     

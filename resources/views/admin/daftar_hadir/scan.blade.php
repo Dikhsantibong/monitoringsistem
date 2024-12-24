@@ -21,7 +21,7 @@
                                 </div>
                             @endif
 
-                            <form action="{{ route('attendance.store') }}" method="POST" class="space-y-4">
+                            <form action="{{ route('attendance.store') }}" method="POST" class="space-y-4" enctype="multipart/form-data">
                                 @csrf
                                 <input type="hidden" name="token" value="{{ $token }}">
                                 
@@ -59,11 +59,10 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <input type="hidden" name="signature" id="signature-data">
+                                    <input type="hidden" name="signature" id="signature-data" required>
                                 </div>
 
-                                <button type="submit" 
-                                    class="w-full bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#009BB9] transition duration-300">
+                                <button type="submit" class="w-full bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#009BB9] transition duration-300">
                                     Submit Absensi
                                 </button>
                             </form>
@@ -83,13 +82,13 @@
                 penColor: 'rgb(0, 0, 0)'
             });
 
-            // Atur ukuran canvas sesuai dengan container
+            // Fungsi untuk mengatur ukuran canvas
             function resizeCanvas() {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext("2d").scale(ratio, ratio);
-                signaturePad.clear(); // Bersihkan setelah resize
+                signaturePad.clear();
             }
 
             window.addEventListener("resize", resizeCanvas);
@@ -98,29 +97,36 @@
             // Tombol Clear
             document.getElementById('clear').addEventListener('click', function() {
                 signaturePad.clear();
+                document.getElementById('signature-data').value = '';
             });
 
             // Tombol Undo
             document.getElementById('undo').addEventListener('click', function() {
                 const data = signaturePad.toData();
                 if (data) {
-                    data.pop(); // Hapus goresan terakhir
+                    data.pop();
                     signaturePad.fromData(data);
                 }
             });
 
-            // Perbaiki event handler form submit
+            // Perbaikan pada event handler form submit
             document.querySelector('form').addEventListener('submit', function(e) {
+                e.preventDefault(); // Hentikan submit default
+
                 if (signaturePad.isEmpty()) {
-                    e.preventDefault();
                     alert('Mohon isi tanda tangan terlebih dahulu!');
                     return false;
                 }
 
-                // Pastikan data tanda tangan tersimpan sebelum form di-submit
-                const signatureData = signaturePad.toDataURL();
+                // Simpan data tanda tangan
+                const signatureData = signaturePad.toDataURL('image/png');
                 document.getElementById('signature-data').value = signatureData;
-                console.log('Signature data:', signatureData); // Tambahkan log untuk debugging
+
+                // Debug log
+                console.log('Submitting form with signature:', signatureData.substring(0, 100) + '...');
+
+                // Submit form
+                this.submit();
             });
         });
     </script>
