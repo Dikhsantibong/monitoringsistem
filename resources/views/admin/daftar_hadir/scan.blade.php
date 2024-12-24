@@ -121,6 +121,10 @@
                 // Simpan data tanda tangan
                 const signatureData = signaturePad.toDataURL('image/png');
                 document.getElementById('signature-data').value = signatureData;
+                
+                   // Debug log untuk memastikan data tersimpan
+                console.log('Signature data:', signatureData);
+
 
                 // Debug log
                 console.log('Submitting form with signature:', signatureData.substring(0, 100) + '...');
