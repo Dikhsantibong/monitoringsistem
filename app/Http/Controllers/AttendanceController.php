@@ -144,11 +144,19 @@ class AttendanceController extends Controller
                 'position' => 'required|string',
                 'division' => 'required|string',
                 'token' => 'required|string',
-                'signature' => 'required|string' // Validasi signature sebagai string
+                'signature' => 'required|string' // Validasi untuk data tanda tangan
             ]);
 
-            // Debug: log data yang diterima
-            \Log::info('Received signature data length: ' . strlen($request->signature));
+            // Validasi format base64 signature
+            if (!preg_match('/^data:image\/png;base64,/', $request->signature)) {
+                throw new \Exception('Format tanda tangan tidak valid');
+            }
+
+            // Debug log
+            \Log::info('Processing attendance with signature', [
+                'name' => $request->name,
+                'signature_length' => strlen($request->signature)
+            ]);
 
             // Buat record attendance
             $attendance = Attendance::create([
@@ -157,7 +165,7 @@ class AttendanceController extends Controller
                 'division' => $request->division,
                 'token' => $request->token,
                 'time' => now(),
-                'signature' => $request->signature // Simpan data base64 langsung
+                'signature' => $request->signature // Data base64 dari SignaturePad
             ]);
 
             return redirect()->route('attendance.success')
@@ -168,6 +176,23 @@ class AttendanceController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan saat menyimpan absensi: ' . $e->getMessage());
+        }
+    }
+
+    // Tambahkan method untuk menampilkan tanda tangan
+    public function showSignature($id)
+    {
+        try {
+            $attendance = Attendance::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'signature' => $attendance->signature
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tanda tangan tidak ditemukan'
+            ], 404);
         }
     }
     

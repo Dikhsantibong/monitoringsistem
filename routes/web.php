@@ -285,3 +285,5 @@ Route::get('/admin/laporan/create-wo', [LaporanController::class, 'createWO'])->
 
 Route::post('/admin/laporan/store-wo', [LaporanController::class, 'storeWO'])->name('admin.laporan.store-wo');
 
+Route::get('/attendance/signature/{id}', [AttendanceController::class, 'showSignature'])->name('attendance.signature');
+
