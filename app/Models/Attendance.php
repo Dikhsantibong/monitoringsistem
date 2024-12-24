@@ -16,7 +16,8 @@ class Attendance extends Model
         'position',
         'division',
         'token',
-        'time'
+        'time',
+        'signature'
     ];
 
     protected $dates = ['time'];

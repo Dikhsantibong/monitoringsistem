@@ -111,6 +111,9 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Waktu Kehadiran
                                     </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        Tanda Tangan
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="attendance-body" class="divide-y divide-gray-300">
@@ -133,6 +136,17 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ \Carbon\Carbon::parse($attendance->time)->format('H:i:s') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($attendance->signature)
+                                                <img src="{{ $attendance->signature }}" 
+                                                     alt="Tanda tangan {{ $attendance->name }}"
+                                                     class="h-16 object-contain"
+                                                     onclick="showSignatureModal(this.src, '{{ $attendance->name }}')"
+                                                >
+                                            @else
+                                                <span class="text-gray-400">Tidak ada tanda tangan</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -220,4 +234,36 @@
     function closeModal() {
         document.getElementById('qrModal').classList.add('hidden');
     }
+    </script>
+
+    <!-- Modal untuk menampilkan tanda tangan -->
+    <div id="signatureModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-4 rounded-lg max-w-2xl w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold" id="modalTitle">Tanda Tangan</h3>
+                <button onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <img id="modalSignature" src="" alt="Tanda tangan" class="w-full">
+        </div>
+    </div>
+
+    <script>
+    function showSignatureModal(src, name) {
+        document.getElementById('signatureModal').classList.remove('hidden');
+        document.getElementById('modalTitle').textContent = `Tanda Tangan - ${name}`;
+        document.getElementById('modalSignature').src = src;
+    }
+
+    function closeSignatureModal() {
+        document.getElementById('signatureModal').classList.add('hidden');
+    }
+
+    // Tutup modal jika mengklik di luar modal
+    document.getElementById('signatureModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeSignatureModal();
+        }
+    });
     </script>
