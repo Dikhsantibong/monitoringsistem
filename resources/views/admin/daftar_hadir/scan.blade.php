@@ -109,7 +109,7 @@
                 }
             });
 
-            // Saat form di-submit
+            // Perbaiki event handler form submit
             document.querySelector('form').addEventListener('submit', function(e) {
                 if (signaturePad.isEmpty()) {
                     e.preventDefault();
@@ -117,10 +117,10 @@
                     return false;
                 }
 
-                // Simpan data tanda tangan ke input hidden
+                // Pastikan data tanda tangan tersimpan sebelum form di-submit
                 const signatureData = signaturePad.toDataURL();
-                console.log('Signature Data:', signatureData); // Log data tanda tangan
                 document.getElementById('signature-data').value = signatureData;
+                console.log('Signature data:', signatureData); // Tambahkan log untuk debugging
             });
         });
     </script>

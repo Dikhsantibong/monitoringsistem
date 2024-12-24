@@ -138,55 +138,30 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
+            $validated = $request->validate([
+                'name' => 'required',
+                'position' => 'required',
+                'division' => 'required',
                 'token' => 'required',
-                'name' => 'required|string|max:255',
-                'position' => 'required|string|max:255',
-                'division' => 'required|string|max:255',
-                'signature' => 'required|string',
+                'signature' => 'required'
             ]);
 
-            // Cek token
-            $attendanceToken = AttendanceToken::where('token', $request->token)
-                ->where('expires_at', '>=', now())
-                ->first();  
+            // Debug: cek data yang diterima
+            \Log::info('Received attendance data:', $request->all());
 
-            if (!$attendanceToken) {
-                return redirect()->back()
-                    ->with('error', 'Token tidak valid atau sudah kadaluarsa')
-                    ->withInput();
-            }
-
-            // Cek apakah user sudah absen hari ini menggunakan nama tabel yang benar
-            $existingAttendance = DB::table('attendance')
-                ->where('name', $request->name)
-                ->whereDate('time', today())
-                ->first();
-
-            if ($existingAttendance) {
-                return redirect()->back()
-                    ->with('error', 'Anda sudah melakukan absensi hari ini')
-                    ->withInput();
-            }
-
-            // Simpan absensi dengan token dan signature
             $attendance = Attendance::create([
                 'name' => $request->name,
                 'position' => $request->position,
                 'division' => $request->division,
                 'token' => $request->token,
                 'time' => now(),
-                'signature' => $request->signature,
+                'signature' => $request->signature
             ]);
 
-            return redirect()->route('attendance.success')
-                ->with('success', 'Absensi berhasil dicatat');
-            
+            return redirect()->route('attendance.success')->with('success', 'Absensi berhasil disimpan');
         } catch (\Exception $e) {
-            \Log::error('Store attendance error: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat menyimpan absensi: ' . $e->getMessage())
-                ->withInput();
+            \Log::error('Error saving attendance: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan absensi: ' . $e->getMessage());
         }
     }
     
