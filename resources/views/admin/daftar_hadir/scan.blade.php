@@ -47,12 +47,6 @@
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="text-gray-600">Waktu Kehadiran</label>
-                                    <input type="datetime-local" name="time" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]">
-                                </div>
-
-                                <div class="space-y-2">
                                     <label class="text-gray-600">Tanda Tangan</label>
                                     <div class="border border-gray-300 rounded-lg p-2">
                                         <canvas id="signature-pad" class="border rounded-lg w-full h-48"></canvas>
@@ -125,6 +119,7 @@
 
                 // Simpan data tanda tangan ke input hidden
                 const signatureData = signaturePad.toDataURL();
+                console.log('Signature Data:', signatureData); // Log data tanda tangan
                 document.getElementById('signature-data').value = signatureData;
             });
         });

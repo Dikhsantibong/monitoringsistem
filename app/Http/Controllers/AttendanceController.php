@@ -138,19 +138,18 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
+            $request->validate([
+                'token' => 'required',
                 'name' => 'required|string|max:255',
                 'position' => 'required|string|max:255',
                 'division' => 'required|string|max:255',
-                'token' => 'required|string|max:255',
-                'time' => 'required|date',
                 'signature' => 'required|string',
             ]);
 
             // Cek token
             $attendanceToken = AttendanceToken::where('token', $request->token)
                 ->where('expires_at', '>=', now())
-                ->first();
+                ->first();  
 
             if (!$attendanceToken) {
                 return redirect()->back()
