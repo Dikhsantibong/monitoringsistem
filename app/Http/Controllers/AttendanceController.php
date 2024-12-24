@@ -138,11 +138,12 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'token' => 'required',
+            $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'position' => 'required|string|max:255',
                 'division' => 'required|string|max:255',
+                'token' => 'required|string|max:255',
+                'time' => 'required|date',
                 'signature' => 'required|string',
             ]);
 

@@ -200,9 +200,7 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
       
-        @push('scripts')
-        @endpush
-    @endsection
+    
 
     <script>
     function generateQR() {
@@ -267,3 +265,21 @@
         }
     });
     </script>
+
+    <script>
+    // Saat form di-submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (signaturePad.isEmpty()) {
+            e.preventDefault();
+            alert('Mohon isi tanda tangan terlebih dahulu!');
+            return false;
+        }
+
+        // Simpan data tanda tangan ke input hidden
+        const signatureData = signaturePad.toDataURL();
+        document.getElementById('signature-data').value = signatureData;
+    });
+    </script>
+    @push('scripts')
+    @endpush
+@endsection

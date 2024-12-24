@@ -1,8 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-   
-
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
        @include('components.sidebar')
@@ -59,84 +57,52 @@
             </header>
             <div class="pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan SR/WO', 'url' => null]]" />
-            </div>  
+            </div>
 
-<main class="px-6">
-    <div class="bg-white rounded-lg shadow p-6 sm:p-3">
-<div class="container mx-auto mt-8">
-    <h2 class="text-2xl font-bold mb-4">Tambah Service Request (SR)</h2>
-    <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST" onsubmit="showSuccessAlert(event, 'SR')">
-        @csrf
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
-                ID SR
-            </label>
-            <input type="number" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                Deskripsi
-            </label>
-            <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg" required></textarea>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                Status
-            </label>
-            <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="Open">Open</option>
-                <option value="Closed">Closed</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="tanggal">
-                Tanggal
-            </label>
-            <input type="date" name="tanggal" id="tanggal" class="w-full px-3 py-2 border rounded-lg" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="downtime">
-                Downtime
-            </label>
-            <select name="downtime" id="downtime" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="ya">Ya</option>
-                <option value="tidak">Tidak</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="tipe_sr">
-                Tipe SR
-            </label>
-            <select name="tipe_sr" id="tipe_sr" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="CM">CM</option>
-                <option value="EJ">EJ</option>
-                <option value="FLM">FLM</option>
-                <option value="PDM">PDM</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="priority">
-                Priority
-            </label>
-            <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="emergency">Emergency</option>
-                <option value="normal">Normal</option>
-                <option value="outage">Outage</option>
-                <option value="urgent">Urgent</option>
-            </select>
-        </div>
-        <div class="flex justify-end space-x-4">
-            <a href="{{ route('admin.laporan.sr-wo') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                Kembali
-            </a>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                Simpan
-            </button>
-        </div>
-    </form>
-</div>
-</main>
-</div>
-
-<script src="{{ asset('js/toggle.js') }}"></script>
+            <main class="px-6">
+                <!-- Konten Laporan SR/WO -->
+                <div class="bg-white rounded-lg shadow p-6 sm:p-3">
+    <div class="pt-2">
+        <h2 class="text-2xl font-bold mb-4">Tambah Work Order (WO)</h2>
+        <form action="{{ route('admin.laporan.store-wo') }}" method="POST">
+            @csrf
+            <div class="mb-4">
+                <label for="wo_id" class="block text-gray-700">ID WO</label>
+                <input type="number" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-md" required>
+            </div>
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700">Deskripsi</label>
+                <textarea name="description" id="description" class="w-full px-3 py-2 border rounded-md" required></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="status" class="block text-gray-700">Status</label>
+                <select name="status" id="status" class="w-full px-3 py-2 border rounded-md" required>
+                    <option value="Open">Open</option>
+                    <option value="Close">Close</option>
+                    <option value="Comp">Comp</option>
+                    <option value="APPR">APPR</option>
+                    <option value="WAPPR">WAPPR</option>
+                    <option value="WMATL">WMATL</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="priority" class="block text-gray-700">Priority</label>
+                <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-md" required>
+                    <option value="emergency">Emergency</option>
+                    <option value="normal">Normal</option>
+                    <option value="outage">Outage</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="schedule_start" class="block text-gray-700">Schedule Start</label>
+                <input type="date" name="schedule_start" id="schedule_start" class="w-full px-3 py-2 border rounded-md" required>
+            </div>
+            <div class="mb-4">
+                <label for="schedule_finish" class="block text-gray-700">Schedule Finish</label>
+                <input type="date" name="schedule_finish" id="schedule_finish" class="w-full px-3 py-2 border rounded-md" required>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Simpan</button>
+        </form>
+    </div>
 @endsection 

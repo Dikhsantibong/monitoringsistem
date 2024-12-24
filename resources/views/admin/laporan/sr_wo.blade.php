@@ -147,13 +147,13 @@
                         </div>
 
                         <!-- Card WO -->
-                        <div class="bg-white rounded-lg shadow p-6">
+                        <div class="bg-white rounded-lg shadow p-6 mb-4 ">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
-                                <button onclick="openWOModal()"
+                                <a href="{{ route('admin.laporan.create-wo') }}"
                                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base">
-                                    <i class="fas fa-plus mr-2"></i>Tambah WO
-                                </button>
+                                    <i class="fas fa-plus-circle mr-2"></i>Tambah WO
+                                </a>
                             </div>
                             <div class="overflow-auto max-h-96">
                                 <table id="woTable" class="min-w-full bg-white border border-gray-300">
@@ -201,129 +201,47 @@
                                 </table>
                             </div>
                         </div>
+
+                        <!-- Tabel Backlog -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
+                            <div class="flex justify-end mb-4">
+                                <a href="{{ route('admin.laporan.create-wo-backlog') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                    <i class="fas fa-plus-circle mr-2"></i> Tambah WO Backlog
+                                </a>
+                            </div>
+                            <div class="overflow-auto max-h-96">
+                                <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                                    <thead>
+                                        <tr style="background-color: #0A749B; color: white;">
+                                            <th class="py-2 px-4 border-b">No</th>
+                                            <th class="py-2 px-4 border-b">No WO</th>
+                                            <th class="py-2 px-4 border-b">Deskripsi</th>
+                                            <th class="py-2 px-4 border-b">Tanggal Backlog</th>
+                                            <th class="py-2 px-4 border-b">Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        @foreach ($woBacklogs as $index => $backlog)
+                                            <tr class="odd:bg-white even:bg-gray-100">
+                                                <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->no_wo }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->deskripsi }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->created_at }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->keterangan ?? 'N/A' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
             </main>
         </div>
     </div>
 
     <!-- Modal SR -->
-    <div id="srModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
-        <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
-            <h2 class="text-xl font-bold mb-4">Tambah Service Request (SR)</h2>
-            <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST" onsubmit="showSuccessAlert(event, 'SR')">
-                @csrf
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
-                        ID SR
-                    </label>
-                    <input type="number" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                        Deskripsi
-                    </label>
-                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg" required></textarea>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                        Status
-                    </label>
-                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg" required>
-                        <option value="Open">Open</option>
-                        <option value="Closed">Closed</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="tanggal">
-                        Tanggal
-                    </label>
-                    <input type="date" name="tanggal" id="tanggal" class="w-full px-3 py-2 border rounded-lg" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="downtime">
-                        Downtime
-                    </label>
-                    <select name="downtime" id="downtime" class="w-full px-3 py-2 border rounded-lg" required>
-                        <option value="ya">Ya</option>
-                        <option value="tidak">Tidak</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="tipe_sr">
-                        Tipe SR
-                    </label>
-                    <select name="tipe_sr" id="tipe_sr" class="w-full px-3 py-2 border rounded-lg" required>
-                        <option value="CM">CM</option>
-                        <option value="EJ">EJ</option>
-                        <option value="FLM">FLM</option>
-                        <option value="PDM">PDM</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="priority">
-                        Priority
-                    </label>
-                    <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-lg" required>
-                        <option value="emergency">Emergency</option>
-                        <option value="normal">Normal</option>
-                        <option value="outage">Outage</option>
-                        <option value="urgent">Urgent</option>
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeSRModal()"
-                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                        Batal
-                    </button>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal WO -->
-    <div id="woModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center transform transition-all duration-300 scale-0">
-        <div class="bg-white p-8 rounded-lg w-1/2 transform transition-all duration-300 scale-0">
-            <h2 class="text-xl font-bold mb-4">Tambah Work Order (WO)</h2>
-            <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST" onsubmit="showSuccessAlert(event, 'WO')">
-                @csrf
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_id">
-                        ID WO
-                    </label>
-                    <input type="number" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-lg" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                        Deskripsi
-                    </label>
-                    <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg" required></textarea>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                        Status
-                    </label>
-                    <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg" required>
-                        <option value="Open">Open</option>
-                        <option value="Closed">Closed</option>
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeWOModal()"
-                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                        Batal
-                    </button>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+   
 @endsection
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>

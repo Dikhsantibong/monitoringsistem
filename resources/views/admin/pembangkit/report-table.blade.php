@@ -20,7 +20,7 @@
     </thead>
     <tbody id="reportTableBody">
         @forelse($logs as $index => $log)
-            <tr class="hover:bg-gray-50 border border-gray-200">
+            <tr class="hover:bg-gray-50 border border-gray-200 resp">
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->powerPlant->name }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->name }}</td>
@@ -37,10 +37,10 @@
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->load_value }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmn }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmp }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->kronologi }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->deskripsi }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->action_plan }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->progres }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->kronologi }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->deskripsi }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->action_plan }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->progres }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->tanggal_mulai ? Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->target_selesai ? Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}</td>
             </tr>

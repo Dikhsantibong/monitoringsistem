@@ -1,8 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-   
-
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
        @include('components.sidebar')
@@ -59,84 +57,84 @@
             </header>
             <div class="pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan SR/WO', 'url' => null]]" />
-            </div>  
+            </div>
 
-<main class="px-6">
-    <div class="bg-white rounded-lg shadow p-6 sm:p-3">
-<div class="container mx-auto mt-8">
-    <h2 class="text-2xl font-bold mb-4">Tambah Service Request (SR)</h2>
-    <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST" onsubmit="showSuccessAlert(event, 'SR')">
-        @csrf
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
-                ID SR
-            </label>
-            <input type="number" name="sr_id" id="sr_id" class="w-full px-3 py-2 border rounded-lg" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                Deskripsi
-            </label>
-            <textarea name="description" id="description" rows="4" class="w-full px-3 py-2 border rounded-lg" required></textarea>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                Status
-            </label>
-            <select name="status" id="status" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="Open">Open</option>
-                <option value="Closed">Closed</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="tanggal">
-                Tanggal
-            </label>
-            <input type="date" name="tanggal" id="tanggal" class="w-full px-3 py-2 border rounded-lg" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="downtime">
-                Downtime
-            </label>
-            <select name="downtime" id="downtime" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="ya">Ya</option>
-                <option value="tidak">Tidak</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="tipe_sr">
-                Tipe SR
-            </label>
-            <select name="tipe_sr" id="tipe_sr" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="CM">CM</option>
-                <option value="EJ">EJ</option>
-                <option value="FLM">FLM</option>
-                <option value="PDM">PDM</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="priority">
-                Priority
-            </label>
-            <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-lg" required>
-                <option value="emergency">Emergency</option>
-                <option value="normal">Normal</option>
-                <option value="outage">Outage</option>
-                <option value="urgent">Urgent</option>
-            </select>
-        </div>
-        <div class="flex justify-end space-x-4">
-            <a href="{{ route('admin.laporan.sr-wo') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                Kembali
-            </a>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                Simpan
-            </button>
-        </div>
-    </form>
+            <main class="px-6">
+                <!-- Konten Laporan SR/WO -->
+                <div class="bg-white rounded-lg shadow p-6 sm:p-3">
+    <div class="pt-2">
+        <h2 class="text-2xl font-bold mb-4">Tambah WO Backlog</h2>
+
+        @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('admin.laporan.store-wo-backlog') }}" method="POST">
+            @csrf
+            <div class="mb-4">
+                <label for="no_wo" class="block text-gray-700">No WO <span class="text-red-500">*</span></label>
+                <input type="text" 
+                       name="no_wo" 
+                       id="no_wo" 
+                       class="w-full px-3 py-2 border rounded-md @error('no_wo') border-red-500 @enderror" 
+                       value="{{ old('no_wo') }}"
+                       required>
+            </div>
+            <div class="mb-4">
+                <label for="deskripsi" class="block text-gray-700">Deskripsi <span class="text-red-500">*</span></label>
+                <textarea name="deskripsi" 
+                          id="deskripsi" 
+                          class="w-full px-3 py-2 border rounded-md @error('deskripsi') border-red-500 @enderror" 
+                          required>{{ old('deskripsi') }}</textarea>
+            </div>
+            <div class="mb-4">
+                <label for="tanggal_backlog" class="block text-gray-700">Tanggal Backlog <span class="text-red-500">*</span></label>
+                <input type="date" 
+                       name="tanggal_backlog" 
+                       id="tanggal_backlog" 
+                       class="w-full px-3 py-2 border rounded-md @error('tanggal_backlog') border-red-500 @enderror" 
+                       value="{{ old('tanggal_backlog') }}"
+                       required>
+            </div>
+            <div class="mb-4">
+                <label for="keterangan" class="block text-gray-700">Keterangan</label>
+                <input type="text" 
+                       name="keterangan" 
+                       id="keterangan" 
+                       class="w-full px-3 py-2 border rounded-md @error('keterangan') border-red-500 @enderror" 
+                       value="{{ old('keterangan') }}">
+            </div>
+            <div class="flex justify-end space-x-4">
+                <a href="{{ route('admin.laporan.sr_wo') }}" 
+                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    Kembali
+                </a>
+                <button type="submit" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-</main>
-</div>
+@endsection 
 
 <script src="{{ asset('js/toggle.js') }}"></script>
-@endsection 

@@ -124,8 +124,10 @@
                     @foreach ($units as $unit)
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
                             <div class=" overflow-auto">
-                                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
+                                <h1 class="text-lg font-semibold uppercase mb-5" >sistem interkoneksi Sultra</h1>
 
+                                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
+                     
                                 <!-- Tabel Status Pembangkit -->
                                 <div class="table-responsive">
                                     <table class="min-w-full bg-white">
@@ -147,10 +149,10 @@
                                                     Status
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Sistem
+                                                    Comp
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Comp
+                                                    Equipment
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Deskripsi
@@ -173,6 +175,7 @@
                                             </tr>
                                         </thead>
                                         <tbody class="text-sm">
+                                           
                                             @foreach ($unit->machines as $machine)
                                                 <tr class="hover:bg-gray-50 border-b border-gray-200">
                                                     <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
@@ -213,10 +216,12 @@
                                                         </select>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
-                                                        <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 component-select"
-                                                                name="component[{{ $machine->id }}]" 
-                                                                disabled>
-                                                            <option value=""></option>
+                                                        <textarea 
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-80"
+                                                        style="height: 100px; width: 150px;" 
+                                                        name="equipment" id="" cols="30" rows="10"
+                                                        oninput="autoResize(this)">
+                                                    </textarea>
                                                         </select>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">

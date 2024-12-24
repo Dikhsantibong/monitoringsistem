@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
 use App\Models\SRWO;
+use App\Models\WoBacklog;
 
 class LaporanController extends Controller
 {
@@ -14,7 +15,11 @@ class LaporanController extends Controller
     {
         $serviceRequests = ServiceRequest::all();
         $workOrders = WorkOrder::all();
-        return view('admin.laporan.sr_wo', compact('serviceRequests', 'workOrders'));
+        
+        // Ambil data WO Backlog
+        $woBacklogs = WoBacklog::all();     
+
+        return view('admin.laporan.sr_wo', compact('serviceRequests', 'workOrders', 'woBacklogs'));
     }
     
 
@@ -48,24 +53,24 @@ class LaporanController extends Controller
     public function storeWO(Request $request)
     {
         $validated = $request->validate([
-            'wo_id' => 'required|numeric|unique:work_orders,id', // Validasi ID WO
+            'wo_id' => 'required|numeric|unique:work_orders,id',
             'description' => 'required',
-            'status' => 'required|in:Open,Close,Comp,APPR,WAPPR,WMATL', // Validasi status
-            'priority' => 'required|in:emergency,normal,outage,urgent', // Validasi priority
-            'schedule_start' => 'required|date', // Validasi schedule_start
-            'schedule_finish' => 'required|date', // Validasi schedule_finish
+            'status' => 'required|in:Open,Close,Comp,APPR,WAPPR,WMATL',
+            'priority' => 'required|in:emergency,normal,outage,urgent',
+            'schedule_start' => 'required|date',
+            'schedule_finish' => 'required|date',
         ]);
 
         WorkOrder::create([
-            'id' => $request->wo_id, // Simpan ID yang diinputkan
+            'id' => $request->wo_id,
             'description' => $request->description,
             'status' => $request->status,
-            'priority' => $request->priority, // Simpan priority
-            'schedule_start' => $request->schedule_start, // Simpan schedule_start
-            'schedule_finish' => $request->schedule_finish // Simpan schedule_finish
+            'priority' => $request->priority,
+            'schedule_start' => $request->schedule_start,
+            'schedule_finish' => $request->schedule_finish,
         ]);
 
-        return redirect()->back()->with('success', 'Work Order berhasil ditambahkan');
+        return redirect()->route('admin.laporan.sr_wo')->with('success', 'Work Order berhasil ditambahkan');
     }
 
     public function srWoClosed()
@@ -146,6 +151,47 @@ class LaporanController extends Controller
     public function createSR()
     {
         return view('admin.laporan.create_sr');
+    }
+
+    public function createWOBacklog()
+    {
+        return view('admin.laporan.create_wo_backlog'); // Ganti dengan nama view yang sesuai
+    }
+
+    public function createWO()
+    {
+        return view('admin.laporan.create_wo'); // Ganti dengan nama view yang sesuai
+    }
+
+    public function storeWOBacklog(Request $request)
+    {
+        try {
+            // Validasi input
+            $validated = $request->validate([
+                'no_wo' => 'required|string|max:255|unique:wo_backlog,no_wo',
+                'deskripsi' => 'required|string',
+                'tanggal_backlog' => 'required|date',
+                'keterangan' => 'nullable|string'
+            ]);
+
+            // Buat record baru
+            $woBacklog = WoBacklog::create([
+                'no_wo' => $request->no_wo,
+                'deskripsi' => $request->deskripsi,
+                'tanggal_backlog' => $request->tanggal_backlog,
+                'keterangan' => $request->keterangan
+            ]);
+
+            return redirect()
+                ->route('admin.laporan.sr_wo')
+                ->with('success', 'WO Backlog berhasil ditambahkan');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }
 

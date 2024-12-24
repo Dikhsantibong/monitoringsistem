@@ -28,6 +28,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Admin\MeetingController;
 use App\Http\Controllers\ScoreCardDailyController;
+use App\Http\Controllers\WoBacklogController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -273,4 +274,14 @@ Route::get('/admin/laporan/create-sr', [LaporanController::class, 'createSR'])->
 
 // Rute untuk menyimpan SR
 Route::post('/admin/laporan/store-sr', [LaporanController::class, 'storeSR'])->name('admin.laporan.store-sr');
+
+Route::resource('wo_backlog', WoBacklogController::class);
+
+Route::post('/admin/laporan/store-wo-backlog', [LaporanController::class, 'storeWOBacklog'])->name('admin.laporan.store-wo-backlog');
+
+Route::get('/admin/laporan/create-wo-backlog', [LaporanController::class, 'createWOBacklog'])->name('admin.laporan.create-wo-backlog');
+
+Route::get('/admin/laporan/create-wo', [LaporanController::class, 'createWO'])->name('admin.laporan.create-wo');
+
+Route::post('/admin/laporan/store-wo', [LaporanController::class, 'storeWO'])->name('admin.laporan.store-wo');
 

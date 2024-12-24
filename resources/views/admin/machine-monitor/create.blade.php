@@ -209,6 +209,8 @@ toggleSidebarButton.addEventListener('click', () => {
     sidebar.classList.toggle('ml-64');
 });
 </script>
+
+<script src="{{ asset('js/toggle.js') }}"></script>
 @push('scripts')
 @endpush
 @endsection
