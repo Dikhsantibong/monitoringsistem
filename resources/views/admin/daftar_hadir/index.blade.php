@@ -116,28 +116,28 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="attendance-body" class="divide-y divide-gray-300">
+                            <tbody id="attendance-body" class="divide-y divide-gray-300 border border-gray-300">
                                 @foreach ($attendances as $index => $attendance)
-                                    <tr class="hover:bg-gray-100">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    <tr class="hover:bg-gray-100 border-b border-gray-300">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
                                             {{ $index + 1 }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
                                             {{ $attendance->name }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
                                             {{ $attendance->division }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
                                             {{ $attendance->position }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
                                             {{ \Carbon\Carbon::parse($attendance->time)->format('d M Y') }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
                                             {{ \Carbon\Carbon::parse($attendance->time)->format('H:i:s') }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">
                                             @if($attendance->signature)
                                                 <img src="{{ $attendance->signature }}" 
                                                      alt="Tanda tangan {{ $attendance->name }}"
