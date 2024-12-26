@@ -185,7 +185,10 @@
                                                         {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
-                                                        {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
+                                                        <input type="number" 
+                                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                               style="width: 50px                                                            value="{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? '0' }}"
+                                                            placeholder="Masukkan DMP...">
                                                     </td>
                                                     <td class="px-2 py-2 border-r border-gray-200">
                                                         <input type="number" 
@@ -217,9 +220,11 @@
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <textarea 
+                                                        name="equipment" 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-80"
                                                         style="height: 100px; width: 150px;" 
-                                                        name="equipment" id="" cols="30" rows="10"
+                                                        cols="30" 
+                                                        rows="10"
                                                         oninput="autoResize(this)">
                                                     </textarea>
                                                         </select>
@@ -452,12 +457,12 @@
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
                 const statusSelect = row.querySelector('select');
-                const sistemSelect = row.querySelector('.system-select');
-                const componentSelect = row.querySelector('.component-select');
+                const componentSelect = row.querySelector('.system-select'); // Mengambil nilai component
+                const equipmentTextarea = row.querySelector('td:nth-child(7) textarea[name="equipment"]'); // Mengambil nilai equipment
                 
                 // Ambil nilai DMN dan DMP
                 const dmnCell = row.querySelector('td:nth-child(2)');
-                const dmpCell = row.querySelector('td:nth-child(3)');
+                const dmpInput = row.querySelector('td:nth-child(3) input'); // Mengambil input DMP
                 
                 const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
                 const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
@@ -472,23 +477,23 @@
                         machine_id: machineId,
                         tanggal: tanggal,
                         status: statusSelect.value,
-                        sistem: sistemSelect ? sistemSelect.value : null,        // Kolom baru
-                        component: componentSelect ? componentSelect.value : null, // Kolom baru
+                        component: componentSelect ? componentSelect.value : null,
+                        equipment: equipmentTextarea ? equipmentTextarea.value.trim() : null,
                         dmn: dmnCell ? dmnCell.textContent.trim() : 'N/A',
-                        dmp: dmpCell ? dmpCell.textContent.trim() : 'N/A',
+                        dmp: dmpInput ? dmpInput.value.trim() : 'N/A',
                         deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
                         action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
                         load_value: inputBeban ? parseFloat(inputBeban.value) || null : null,
                         progres: inputProgres ? inputProgres.value.trim() : null,
                         kronologi: inputKronologi ? inputKronologi.value.trim() : null,
-                        tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,  // Kolom baru
+                        tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
                         target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
                     });
                 }
             });
         });
         
-        // Tambahkan console.log untuk debugging
+        // Debug: Tampilkan data yang akan dikirim
         console.log('Data yang akan dikirim:', data);
 
         if (data.length === 0) {
@@ -647,15 +652,17 @@
                         statusSelect.style.backgroundColor = getStatusColor(machineData.status);
                     }
 
-                    // Update sistem dan component
-                    const sistemSelect = row.querySelector('.system-select');
-                    const componentSelect = row.querySelector('.component-select');
-                    if (sistemSelect && machineData.sistem) {
-                        sistemSelect.value = machineData.sistem;
-                        updateComponentOptions(sistemSelect); // Update opsi component
-                        if (componentSelect && machineData.component) {
-                            componentSelect.value = machineData.component;
-                        }
+                    // Update component
+                    const componentSelect = row.querySelector('.system-select');
+                    if (componentSelect && machineData.component) {
+                        componentSelect.value = machineData.component;
+                    }
+
+                    // Update equipment
+                    const equipmentTextarea = row.querySelector('td:nth-child(7) textarea[name="equipment"]');
+                    if (equipmentTextarea && machineData.equipment) {
+                        equipmentTextarea.value = machineData.equipment;
+                        autoResize(equipmentTextarea);
                     }
 
                     // Update kolom lainnya

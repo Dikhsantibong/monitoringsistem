@@ -54,12 +54,13 @@ class PembangkitController extends Controller
                 if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
                     MachineStatusLog::create([
                         'machine_id' => $log['machine_id'],
+                        'dmn' => $operation ? $operation->dmn : 0,
+                        'dmp' => $operation ? $operation->dmp : 0,
+                        'load_value' => $log['load_value'],
                         'tanggal' => $log['tanggal'],
                         'status' => $log['status'],
                         'component' => $log['component'],
-                        'load_value' => $log['load_value'],
-                        'dmn' => $operation ? $operation->dmn : 0,
-                        'dmp' => $operation ? $operation->dmp : 0,
+                        'equipment' => $log['equipment'],
                         'deskripsi' => $log['deskripsi'] ?? null,
                         'kronologi' => $log['kronologi'] ?? null,
                         'action_plan' => $log['action_plan'] ?? null,

@@ -16,17 +16,17 @@ class MachineStatusLog extends Model
         'machine_id',
         'tanggal',
         'status',
-        'sistem',
         'component',
-        'load_value',
-        'dmn',
-        'dmp',
-        'kronologi',
+        'equipment',
         'deskripsi',
+        'kronologi',
         'action_plan',
         'progres',
         'tanggal_mulai',
-        'target_selesai'
+        'target_selesai',
+        'dmn',
+        'dmp',
+        'load_value',
     ];
 
     protected $casts = [
@@ -47,10 +47,10 @@ class MachineStatusLog extends Model
         return $this->hasOneThrough(
             PowerPlant::class,
             Machine::class,
-            'id', // Foreign key di tabel machines
-            'id', // Foreign key di tabel power_plants
-            'machine_id', // Local key di tabel machine_status_logs
-            'power_plant_id' // Local key di tabel machines
+            'id', 
+            'id',
+            'machine_id', 
+            'power_plant_id' 
         );
     }
 
