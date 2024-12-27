@@ -122,11 +122,7 @@ Route::get('admin/machine-monitor/{id}/edit', [MachineMonitorController::class, 
         Route::get('/user/daily-meeting', [UserController::class, 'dailyMeeting'])->name('user.daily-meeting');
         Route::get('/admin/score-card/data', [AdminMeetingController::class, 'getScoreCardData'])->name('admin.score-card.data');
         Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
-        
-   
-
-
-
+        Route::get('/admin/score-card/print', [AdminMeetingController::class, 'printScorecard'])->name('meetings.print_scorecard');
     });
 
     Route::prefix('users')->group(function () {
@@ -286,4 +282,5 @@ Route::get('/admin/laporan/create-wo', [LaporanController::class, 'createWO'])->
 Route::post('/admin/laporan/store-wo', [LaporanController::class, 'storeWO'])->name('admin.laporan.store-wo');
 
 Route::get('/attendance/signature/{id}', [AttendanceController::class, 'showSignature'])->name('attendance.signature');
+
 

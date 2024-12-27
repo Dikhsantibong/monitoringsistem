@@ -30,16 +30,16 @@ class="fixed z-20 transform overflow-hidden transition-transform duration-300 md
         class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
         <i class="fas fa-cogs mr-3"></i>
         <span>Monitor Mesin</span>
-        <i class="fas fa-angle-down ml-auto transition-transform" id="machine-monitor-dropdown"></i>
+        {{-- <i class="fas fa-angle-down ml-auto transition-transform" id="machine-monitor-dropdown"></i> --}}
     </a>
     <!-- Subsidebar untuk Monitor Mesin -->
-    <div id="machine-monitor-submenu" class="pl-8 overflow-hidden transition-all duration-300" style="max-height: 0;">
+    {{-- <div id="machine-monitor-submenu" class="pl-8 overflow-hidden transition-all duration-300" style="max-height: 0;">
         <a href="{{ route('admin.machine-monitor.show.all') }}"
             class="flex items-center px-4 py-2 {{ request()->is('admin/machine-monitor/show*') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
             <i class="fas fa-wrench mr-2"></i>
             <span>Detail Mesin</span>
         </a>
-    </div>
+    </div> --}}
     <a href="{{ route('admin.daftar_hadir.index') }}"
         class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white hover:text-black hover:bg-[#F3F3F3]' }}">
         <i class="fas fa-list mr-3"></i>

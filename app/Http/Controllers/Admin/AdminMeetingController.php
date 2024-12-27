@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Department; // Pastikan model Department di-import
 use App\Models\ScoreCardDaily; // Ambil model ScoreCardDaily
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdminMeetingController extends Controller
 {
@@ -184,34 +185,45 @@ class AdminMeetingController extends Controller
 
     public function printScorecard(Request $request)
     {
-        $selectedDate = $request->input('date');
-        
-        // Ambil data scoreCards sesuai dengan tanggal yang dipilih
-        $scoreCards = ScoreCardDaily::whereDate('tanggal', $selectedDate)
-            ->with(['participants']) // Jika Anda ingin memuat relasi peserta
-            ->get()
-            ->map(function ($scoreCard) {
-                $peserta = json_decode($scoreCard->peserta, true);
-                $formattedPeserta = [];
-                
-                foreach ($peserta as $jabatan => $data) {
-                    $formattedPeserta[] = [
-                        'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
-                        'awal' => $data['awal'] ?? '0',
-                        'akhir' => $data['akhir'] ?? '0',
-                        'skor' => $data['skor'] ?? '0'
-                    ];
-                }
+        try {
+            $selectedDate = $request->input('tanggal', now()->format('Y-m-d'));
+            
+            $scoreCard = ScoreCardDaily::whereDate('tanggal', $selectedDate)
+                ->latest()
+                ->first();
 
+            if (!$scoreCard) {
+                return back()->with('error', 'Data tidak ditemukan untuk tanggal yang dipilih.');
+            }
+
+            $peserta = json_decode($scoreCard->peserta, true);
+            $formattedPeserta = [];
+            
+            foreach ($peserta as $jabatan => $data) {
+                $formattedPeserta[] = [
+                    'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
+                    'awal' => $data['awal'] ?? '0',
+                    'akhir' => $data['akhir'] ?? '0',
+                    'skor' => $data['skor'] ?? '0'
+                ];
+            }
+
+            $scoreCards = collect([$scoreCard])->map(function ($card) use ($formattedPeserta) {
                 return [
-                    'id' => $scoreCard->id,
-                    'tanggal' => $scoreCard->tanggal,
-                    'lokasi' => $scoreCard->lokasi,
-                    'peserta' => $formattedPeserta,
-                    'total_skor' => collect($formattedPeserta)->sum('skor')
+                    'lokasi' => $card->lokasi,
+                    'waktu_mulai' => $card->waktu_mulai,
+                    'waktu_selesai' => $card->waktu_selesai,
+                    'kesiapan_panitia' => $card->kesiapan_panitia,
+                    'kesiapan_bahan' => $card->kesiapan_bahan,
+                    'aktivitas_luar' => $card->aktivitas_luar,
+                    'peserta' => $formattedPeserta
                 ];
             });
 
-        return view('admin.meetings.print_scorecard', compact('scoreCards', 'selectedDate'));
+            return view('admin.meetings.print_scorecard', compact('scoreCards', 'selectedDate'));
+        } catch (\Exception $e) {
+            \Log::error('Error in printScorecard: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data.');
+        }
     }
 }

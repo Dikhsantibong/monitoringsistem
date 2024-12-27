@@ -4,13 +4,14 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">No</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Unit</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Mesin</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Comp</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Beban</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMN</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMP</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Kronologi</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Beban</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Comp</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Equipment</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Deskripsi</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Kronologi</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Action Plan</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Progres</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Tanggal Mulai</th>
@@ -23,6 +24,9 @@
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->powerPlant->name }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->dmn }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->dmp }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->load_value }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                         {{ $log->status === 'Operasi' ? 'bg-green-100 text-green-800' : 
@@ -31,13 +35,10 @@
                         {{ $log->status }}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->sistem }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->component }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->load_value }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmn }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->dmp }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->kronologi }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200 " style="width: 300px">{{ $log->component }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->equipment }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->deskripsi }}</td>
+                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->kronologi }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->action_plan }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->progres }}</td>
                 <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->tanggal_mulai ? Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}</td>

@@ -463,19 +463,9 @@
 
                 <script>
                 function printTable() {
-                    const printContent = document.querySelector('.bg-white.rounded-lg.shadow.mb-6').innerHTML;
-                    const originalContent = document.body.innerHTML;
-
-                    document.body.innerHTML = `
-                        <div class="p-4">
-                            <h2 class="text-center text-xl font-bold mb-4">Score Card Daily</h2>
-                            ${printContent}
-                        </div>
-                    `;
-
-                    window.print();
-                    document.body.innerHTML = originalContent;
-                    window.location.reload(); // Reload halaman setelah print
+                    const selectedDate = document.getElementById('tanggal-filter').value;
+                    const printUrl = `{{ route('admin.meetings.print_scorecard') }}?date=${selectedDate}`;
+                    window.open(printUrl, '_blank', 'width=800,height=600');
                 }
 
                 function downloadPDF() {
