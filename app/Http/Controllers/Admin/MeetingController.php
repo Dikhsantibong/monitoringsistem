@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Meeting;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
-use App\Models\ScoreCard;
 
 class MeetingController extends Controller
 {
@@ -76,17 +75,6 @@ class MeetingController extends Controller
     {
         // Logika untuk mengintegrasikan API Zoom
         return 'https://zoom.us/j/123456789'; // Ganti dengan link yang dihasilkan dari API
-    }
-
-    public function print($date)
-    {
-        $scoreCards = ScoreCard::where('tanggal', $date)
-            ->with('peserta')
-            ->get();
-        
-        $selectedDate = $date;
-        
-        return view('admin.meetings.print', compact('scoreCards', 'selectedDate'));
     }
 
     // ... tambahkan method lainnya sesuai kebutuhan
