@@ -13,15 +13,13 @@ class AdminMeetingController extends Controller
     public function index()
     {
         try {
-            // Ambil tanggal hari ini sebagai default
             $selectedDate = request('tanggal', now()->format('Y-m-d'));
-
-            // Query data hanya untuk tanggal yang dipilih
+            
             $scoreCards = ScoreCardDaily::whereDate('tanggal', $selectedDate)
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($scoreCard) {
-                    $peserta = json_decode($scoreCard->peserta, true);
+                    $peserta = json_decode($scoreCard->peserta, true) ?? [];
                     $formattedPeserta = [];
                     
                     foreach ($peserta as $jabatan => $data) {
@@ -42,20 +40,31 @@ class AdminMeetingController extends Controller
                         'waktu_selesai' => $scoreCard->waktu_selesai,
                         'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
                         'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                        'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                        'total_skor' => collect($formattedPeserta)->sum('skor')
+                        'aktivitas_luar' => $scoreCard->aktivitas_luar
                     ];
                 });
 
-            // Ambil daftar tanggal yang tersedia untuk dropdown
             $availableDates = ScoreCardDaily::orderBy('tanggal', 'desc')
                 ->pluck('tanggal')
                 ->unique()
                 ->values();
 
-            return view('admin.meetings.index', compact('scoreCards', 'selectedDate', 'availableDates'));
+            if (request()->ajax()) {
+                return view('admin.meetings._table', [
+                    'scoreCards' => $scoreCards
+                ])->render();
+            }
+
+            return view('admin.meetings.index', [
+                'scoreCards' => $scoreCards,
+                'selectedDate' => $selectedDate,
+                'availableDates' => $availableDates
+            ]);
         } catch (\Exception $e) {
             \Log::error('Error in AdminMeetingController@index: ' . $e->getMessage());
+            if (request()->ajax()) {
+                return response()->json(['error' => 'Terjadi kesalahan saat memuat data.'], 500);
+            }
             return back()->with('error', 'Terjadi kesalahan saat memuat data.');
         }
     }
@@ -182,5 +191,52 @@ class AdminMeetingController extends Controller
             ->header('Content-Disposition', "attachment; filename=\"$filename\"");
     }
 
-    
+    public function printView(Request $request)
+    {
+        try {
+            $date = $request->date;
+            \Log::info('Print view requested for date: ' . $date);
+
+            $scoreCards = ScoreCardDaily::whereDate('tanggal', $date)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($scoreCard) {
+                    $peserta = json_decode($scoreCard->peserta, true) ?? [];
+                    $formattedPeserta = [];
+                    
+                    foreach ($peserta as $jabatan => $data) {
+                        $formattedPeserta[] = [
+                            'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
+                            'awal' => $data['awal'] ?? '0',
+                            'akhir' => $data['akhir'] ?? '0',
+                            'skor' => $data['skor'] ?? '0'
+                        ];
+                    }
+
+                    return [
+                        'id' => $scoreCard->id,
+                        'tanggal' => $scoreCard->tanggal,
+                        'lokasi' => $scoreCard->lokasi,
+                        'peserta' => $formattedPeserta,
+                        'waktu_mulai' => $scoreCard->waktu_mulai,
+                        'waktu_selesai' => $scoreCard->waktu_selesai,
+                        'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                        'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                        'aktivitas_luar' => $scoreCard->aktivitas_luar
+                    ];
+                });
+
+            if ($scoreCards->isEmpty()) {
+                return back()->with('error', 'Tidak ada data untuk tanggal ini.');
+            }
+
+            return view('admin.meetings.print', [
+                'scoreCards' => $scoreCards,
+                'date' => $date
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in printView: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
+        }
+    }
 }
