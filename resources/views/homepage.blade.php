@@ -147,7 +147,7 @@
                 </a>
                 <div class="flex items-center space-x-6 rtl:space-x-reverse">
                     <a href="tel:+6282299999999" class="text-base text-gray-500 dark:text-white hover:underline">(+62) 822 9999 9999 </a>
-                    <a href="{{ route('login') }}" class="text-base text-blue-600 dark:text-white hover:underline cursor-pointer"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    <a href="{{ route('login') }}" class="text-base text-blue-600 dark:text-white hover:underline cursor-pointer"><i class="fas fa-user-circle"></i> Login</a>
                     </div>
             </div>
         </nav>
