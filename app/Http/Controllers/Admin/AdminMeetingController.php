@@ -194,7 +194,7 @@ class AdminMeetingController extends Controller
     public function printView(Request $request)
     {
         try {
-            $date = $request->date;
+            $date = $request->date ?? now()->format('Y-m-d'); // Default to today's date if not provided
             \Log::info('Print view requested for date: ' . $date);
 
             $scoreCards = ScoreCardDaily::whereDate('tanggal', $date)

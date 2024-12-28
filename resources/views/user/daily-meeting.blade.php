@@ -189,11 +189,52 @@
                 </div>
 
                 <!-- QR Code Section -->
-                <div class="bg-white rounded-lg shadow p-4 mt-6">
+                <div class="bg-white rounded-lg shadow p-6 mt-6">
                     <h2 class="text-lg font-semibold">QR Code Absensi</h2>
                     <div id="qrcode" class="mt-4 flex justify-center"></div>
                     <p class="mt-2 text-center">QR Code ini hanya berlaku untuk hari ini: {{ now()->format('d M Y') }}</p>
+                    <button id="downloadQRCode" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">Download QR Code</button>
                 </div>
+                <script>
+                    function generateQR() {
+                        fetch('{{ route("attendance.generate-qr") }}')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Bersihkan container QR sebelum membuat yang baru
+                                    document.getElementById('qrcode').innerHTML = '';
+
+                                    // Buat QR code baru
+                                    new QRCode(document.getElementById('qrcode'), {
+                                        text: data.qr_url,
+                                        width: 128,
+                                        height: 128,
+                                    });
+                                } else {
+                                    alert('Gagal generate QR Code');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Terjadi kesalahan saat generate QR Code');
+                            });
+                    }
+
+                    document.getElementById("downloadQRCode").addEventListener("click", function() {
+                        const canvas = document.querySelector("#qrcode canvas");
+                        if (canvas) {
+                            const link = document.createElement("a");
+                            link.href = canvas.toDataURL("image/png");
+                            link.download = "qrcode.png";
+                            link.click();
+                        } else {
+                            alert("QR Code belum tersedia untuk diunduh.");
+                        }
+                    });
+
+                    // Generate QR code on page load
+                    generateQR();
+                </script>
 
 
                 <!-- QR Code Scanner Section -->
