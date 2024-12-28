@@ -109,6 +109,15 @@
                         </td>
                     </tr>
                 @endforeach
+                <tr>
+                    <td colspan="4" class="text-right py-2 font-bold">Total Score:</td>
+                    <td class="text-center py-2 border border-gray-300">
+                        {{ collect($scoreCards->first()['peserta'])->sum('skor') }}
+                    </td>
+                    <td class="py-2 border border-gray-300 px-4">
+                        -
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
