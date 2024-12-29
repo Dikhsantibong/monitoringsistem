@@ -19,11 +19,18 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Ambil data 7 hari terakhir
-        $endDate = now();
-        $startDate = now()->subDays(6);
+        // Ambil tanggal awal dan akhir bulan ini
+        $currentMonth = now()->startOfMonth();
+        $startDate = $currentMonth->copy()->startOfMonth();
+        $endDate = $currentMonth->copy()->endOfMonth();
         
-        // Buat array tanggal untuk 7 hari terakhir
+        // Debug tanggal
+        \Log::info('Date Range:', [
+            'start' => $startDate->format('Y-m-d'),
+            'end' => $endDate->format('Y-m-d')
+        ]);
+        
+        // Buat array tanggal untuk satu bulan
         $dates = collect();
         for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
             $dates->push($date->format('Y-m-d'));
