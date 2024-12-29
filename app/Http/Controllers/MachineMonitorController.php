@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Machine;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\MachineStatusLog;
 
 class MachineMonitorController extends Controller
 {
@@ -19,7 +21,16 @@ class MachineMonitorController extends Controller
             ];
         });
 
-        return view('admin.machine-monitor.index', compact('efficiencyData'));
+        // Gunakan data dummy untuk testing
+        $monthlyIssues = MachineStatusLog::getDummyMonthlyData();
+        $activeIssues = MachineStatusLog::getDummyActiveIssues();
+
+        return view('admin.machine-monitor.index', compact(
+            'machines',
+            'efficiencyData',
+            'monthlyIssues',
+            'activeIssues'
+        ));
     }
 
     public function create()

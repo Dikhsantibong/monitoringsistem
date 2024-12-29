@@ -287,3 +287,8 @@ Route::post('/admin/laporan/store-wo', [LaporanController::class, 'storeWO'])->n
 
 Route::get('/attendance/signature/{id}', [AttendanceController::class, 'showSignature'])->name('attendance.signature');
 
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/meetings/print', [App\Http\Controllers\Admin\MeetingController::class, 'print'])
+        ->name('admin.meetings.print');
+});
+

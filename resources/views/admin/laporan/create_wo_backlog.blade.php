@@ -56,7 +56,7 @@
                 </div>
             </header>
             <div class="pt-2">
-                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan SR/WO', 'url' => null]]" />
+                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan SR/WO', 'url' => route('admin.laporan.sr_wo')], ['name' => 'Tambah WO Backlog', 'url' => null]]" />
             </div>
 
             <main class="px-6">

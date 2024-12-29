@@ -77,5 +77,11 @@ class MeetingController extends Controller
         return 'https://zoom.us/j/123456789'; // Ganti dengan link yang dihasilkan dari API
     }
 
+    public function print()
+    {
+        $logs = // ambil data yang diperlukan
+        return view('admin.pembangkit.report-print', compact('logs'));
+    }
+
     // ... tambahkan method lainnya sesuai kebutuhan
 } 

@@ -144,7 +144,7 @@
                     <!-- Card Kehadiran Rapat -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Kehadiran Rapat</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">Score Peserta</h3>
                             <div class="flex space-x-2">
                                 <button onclick="toggleChartType('meetingChart', 'line')"
                                     class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
@@ -227,18 +227,11 @@
 
         // Inisialisasi charts dengan data sementara
         document.addEventListener('DOMContentLoaded', function() {
-            // Data sementara untuk 7 hari terakhir
-            const sampleData = {
-                dates: [
-                    '2024-02-14', '2024-02-15', '2024-02-16',
-                    '2024-02-17', '2024-02-18', '2024-02-19', '2024-02-20'
-                ],
-                scores: [85, 90, 88, 92, 87, 91, 89],
-                attendance: [12, 15, 13, 14, 16, 15, 14]
-            };
-
+            // Data dari controller
+            const chartData = @json($chartData);
+            
             // Format tanggal untuk label
-            const formattedDates = sampleData.dates.map(date => {
+            const formattedDates = chartData.scoreCardData.dates.map(date => {
                 const d = new Date(date);
                 return d.toLocaleDateString('id-ID', {
                     weekday: 'short',
@@ -252,7 +245,7 @@
                 labels: formattedDates,
                 datasets: [{
                     label: 'Skor Ketepatan Waktu',
-                    data: sampleData.scores,
+                    data: chartData.scoreCardData.scores,
                     borderColor: 'rgb(59, 130, 246)',
                     backgroundColor: 'rgba(59, 130, 246, 0.5)',
                     tension: 0.1,
@@ -260,12 +253,12 @@
                 }]
             };
 
-            // Data untuk Kehadiran Rapat
+            // Data untuk Score Peserta
             const meetingData = {
                 labels: formattedDates,
                 datasets: [{
-                    label: 'Jumlah Peserta',
-                    data: sampleData.attendance,
+                    label: 'Score Peserta',
+                    data: chartData.attendanceData.scores,
                     borderColor: 'rgb(16, 185, 129)',
                     backgroundColor: 'rgba(16, 185, 129, 0.5)',
                     tension: 0.1,
