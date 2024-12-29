@@ -257,7 +257,7 @@
             const meetingData = {
                 labels: formattedDates,
                 datasets: [{
-                    label: 'Score Peserta',
+                    label: 'Total Score Peserta',
                     data: chartData.attendanceData.scores,
                     borderColor: 'rgb(16, 185, 129)',
                     backgroundColor: 'rgba(16, 185, 129, 0.5)',
@@ -334,7 +334,7 @@
                             ...commonOptions.scales.y,
                             ticks: {
                                 callback: function(value) {
-                                    return value + ' orang';
+                                    return value;
                                 }
                             }
                         }

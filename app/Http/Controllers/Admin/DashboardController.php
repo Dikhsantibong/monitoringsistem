@@ -29,7 +29,7 @@ class DashboardController extends Controller
             $dates->push($date->format('Y-m-d'));
         }
 
-        // Data ScoreCardDaily
+        // Data ScoreCardDaily untuk ketepatan waktu
         $scoreCardData = ScoreCardDaily::whereBetween('tanggal', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->orderBy('tanggal')
             ->get()
@@ -37,15 +37,24 @@ class DashboardController extends Controller
                 return Carbon::parse($item->tanggal)->format('Y-m-d');
             });
 
-        // Data Attendance
-        $attendanceData = Attendance::whereBetween('time', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->orderBy('time')
+        // Data ScoreCardDaily untuk total score peserta
+        $attendanceData = ScoreCardDaily::whereBetween('tanggal', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->selectRaw('DATE(tanggal) as date, SUM(
+                kesiapan_panitia + 
+                kesiapan_bahan + 
+                kontribusi_pemikiran + 
+                aktivitas_luar + 
+                gangguan_diskusi + 
+                gangguan_keluar_masuk + 
+                gangguan_interupsi + 
+                ketegasan_moderator + 
+                kelengkapan_sr
+            ) as total_score')
+            ->groupBy('date')
             ->get()
-            ->groupBy(function($item) {
-                return Carbon::parse($item->time)->format('Y-m-d');
-            });
+            ->keyBy('date');
 
-        // Siapkan data untuk chart dengan nilai default 0 untuk tanggal yang tidak memiliki data
+        // Siapkan data untuk chart ketepatan waktu
         $formattedScoreCard = $dates->mapWithKeys(function($date) use ($scoreCardData) {
             return [
                 $date => isset($scoreCardData[$date]) 
@@ -54,10 +63,11 @@ class DashboardController extends Controller
             ];
         })->sortKeys();
 
+        // Siapkan data untuk chart total score peserta
         $formattedAttendance = $dates->mapWithKeys(function($date) use ($attendanceData) {
             return [
                 $date => isset($attendanceData[$date]) 
-                    ? $attendanceData[$date]->count() 
+                    ? round($attendanceData[$date]->total_score, 2) 
                     : 0
             ];
         })->sortKeys();
