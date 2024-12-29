@@ -125,7 +125,7 @@
                     <!-- Grafik Masalah Bulanan -->
                     <div class="bg-white rounded-lg shadow">
                         <div class="p-6">
-                            <h2 class="text-lg font-semibold text-gray-800 mb-4">Masalah Bulanan</h2>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4">Masalah Bulanan {{ date('Y') }}</h2>
                             <canvas id="monthlyIssuesChart" height="200"></canvas>
                         </div>
                     </div>

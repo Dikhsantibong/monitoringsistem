@@ -156,8 +156,6 @@ Route::get('admin/machine-monitor/{id}/edit', [MachineMonitorController::class, 
     });
 
     Route::get('/machine-monitor', [MachineMonitorController::class, 'index'])->name('machine-monitor');
-
-    Route::get('/meetings/print', [AdminMeetingController::class, 'printView'])->name('admin.meetings.print');
 });
 
 // Rute untuk menampilkan detail berita
@@ -288,7 +286,4 @@ Route::get('/admin/laporan/create-wo', [LaporanController::class, 'createWO'])->
 Route::post('/admin/laporan/store-wo', [LaporanController::class, 'storeWO'])->name('admin.laporan.store-wo');
 
 Route::get('/attendance/signature/{id}', [AttendanceController::class, 'showSignature'])->name('attendance.signature');
-
-// Tambahkan rute ini di dalam grup admin
-Route::get('/admin/meetings/print', [AdminMeetingController::class, 'printView'])->name('admin.meetings.print');
 

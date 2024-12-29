@@ -17,6 +17,7 @@
             .logo {
                 max-width: 150px;
                 margin-bottom: 10px;
+                float: left;
             }
             .date-info {
                 margin-bottom: 20px;
@@ -71,7 +72,7 @@
                 <th>Beban</th>
                 <th>DMN</th>
                 <th>DMP</th>
-                <th>Keterangan</th>
+            
             </tr>
         </thead>
         <tbody>
@@ -86,7 +87,7 @@
                 <td>{{ $log->load_value }}</td>
                 <td>{{ $log->dmn }}</td>
                 <td>{{ $log->dmp }}</td>
-                <td>{{ $log->keterangan }}</td>
+               
             </tr>
             @endforeach
         </tbody>
