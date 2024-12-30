@@ -6,6 +6,27 @@
             <i class="fas fa-print mr-2"></i>
             Print
         </button>
+
+        <script>
+        function printTable() {
+            const dateSelect = document.querySelector('#tanggal-filter');
+            const date = dateSelect.value;
+            
+            if (!date) {
+                alert('Pilih tanggal terlebih dahulu');
+                return;
+            }
+
+            console.log('Selected date for print:', date);
+            const printUrl = "{{ route('admin.meetings.meeting-details') }}?date=" + encodeURIComponent(date);
+            
+            // Open a new window and print the content
+            const newWindow = window.open(printUrl, '_blank');
+            newWindow.onload = function() {
+                newWindow.print();
+            };
+        }
+        </script>
         <button onclick="downloadPDF()" 
                 class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
             <i class="fas fa-file-pdf mr-2"></i>

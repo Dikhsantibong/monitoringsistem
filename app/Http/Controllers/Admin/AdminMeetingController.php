@@ -239,4 +239,27 @@ class AdminMeetingController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
         }
     }
+
+    public function print(Request $request)
+    {
+        \Log::info('Print request received', ['date' => $request->query('date')]);
+        
+        // Check if the date is valid
+        if (!$request->query('date')) {
+            return response()->json(['error' => 'Date is required'], 400);
+        }
+
+        // Fetch score cards based on the date
+        $scoreCards = ScoreCardDaily::whereDate('tanggal', $request->query('date'))->get();
+
+        // Check if score cards are found
+        if ($scoreCards->isEmpty()) {
+            return response()->json(['error' => 'No data found for this date'], 404);
+        }
+
+        return view('admin.meetings.meeting-details', [
+            'scoreCards' => $scoreCards,
+            'date' => $request->query('date')
+        ]);
+    }
 }
