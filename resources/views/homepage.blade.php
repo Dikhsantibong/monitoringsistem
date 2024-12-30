@@ -175,6 +175,11 @@
                                class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">
                                Live Data Unit Operasional</a>
                         </li>
+                        <li>
+                            <a href="{{ route('dashboard.pemantauan') }}" 
+                               class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">
+                               Dashboard Pemantauan</a>
+                        </li>
                     </ul>
                 </div>
             </div>

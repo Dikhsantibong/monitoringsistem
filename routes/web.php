@@ -29,6 +29,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Admin\MeetingController;
 use App\Http\Controllers\ScoreCardDailyController;
 use App\Http\Controllers\WoBacklogController;
+use App\Http\Controllers\DashboardPemantauanController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -295,4 +296,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/meetings/print', [App\Http\Controllers\Admin\MeetingController::class, 'print'])
         ->name('admin.meetings.print');
 });
+
+Route::get('/dashboard-pemantauan', [DashboardPemantauanController::class, 'index'])
+    ->name('dashboard.pemantauan');
 

@@ -188,7 +188,9 @@
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
-                                                    {{ $wo->status }}
+                                                    <span class="text-{{ $wo->status == 'Open' ? 'red' : ($wo->status == 'Close' ? 'green' : ($wo->status == 'Comp' ? 'blue' : ($wo->status == 'APPR' ? 'yellow' : ($wo->status == 'WAPPR' ? 'purple' : 'gray')))) }}-600">
+                                                        {{ $wo->status }}
+                                                    </span>
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
@@ -201,10 +203,16 @@
                                                     {{ $wo->schedule_finish }}
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">
-                                                    <button onclick="updateStatus('wo', {{ $wo->id }}, '{{ $wo->status }}')"
-                                                        class="px-3 py-1 text-sm rounded-full {{ $wo->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
-                                                        {{ $wo->status == 'Open' ? 'Tutup' : 'Buka' }}
-                                                    </button>
+                                                    @if ($wo->status == 'Open')
+                                                        <button onclick="updateStatus('wo', {{ $wo->id }}, '{{ $wo->status }}')"
+                                                            class="px-3 py-1 text-sm rounded-full bg-green-500 hover:bg-green-600 text-white">
+                                                            Tutup
+                                                        </button>
+                                                    @else
+                                                        <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                                                            WO Sudah Ditutup
+                                                        </button>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -445,6 +453,14 @@
 
     function updateStatus(type, id, currentStatus) {
         const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
+        if (currentStatus === 'Closed') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi',
+                text: 'WO sudah ditutup dan tidak dapat diubah lagi.',
+            });
+            return; // Menghentikan eksekusi jika sudah ditutup
+        }
         const url = type === 'sr' ? 
             "{{ route('admin.laporan.update-sr-status', ['id' => ':id']) }}".replace(':id', id) :
             "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
@@ -468,7 +484,12 @@
                     },
                     body: JSON.stringify({ status: newStatus })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         Swal.fire({
@@ -479,9 +500,16 @@
                         }).then(() => {
                             location.reload();
                         });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan!',
+                            text: data.message || 'Gagal mengubah status'
+                        });
                     }
                 })
                 .catch(error => {
+                    console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Terjadi kesalahan!',

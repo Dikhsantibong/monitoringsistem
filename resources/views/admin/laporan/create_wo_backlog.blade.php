@@ -124,12 +124,12 @@
             </div>
             <div class="flex justify-end space-x-4">
                 <a href="{{ route('admin.laporan.sr_wo') }}" 
-                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                    Kembali
+                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali
                 </a>
                 <button type="submit" 
-                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                    Simpan
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                    <i class="fas fa-save mr-2"></i> Simpan
                 </button>
             </div>
         </form>
