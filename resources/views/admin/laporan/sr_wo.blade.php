@@ -68,9 +68,15 @@
                         <div class="mb-4 flex flex-col lg:flex-row justify-end space-x-4 gap-y-3">
                             <form id="filterForm" class="flex flex-col md:flex-row gap-y-3 items-center space-x-2">
                                 <div class="flex items-center space-x-2">
-                                    <label for="tanggal" class="text-gray-600">Pilih Tanggal:</label>
-                                    <input type="date" id="tanggal" name="tanggal" 
-                                        value="{{ request('tanggal', date('Y-m-d')) }}"
+                                    <label for="tanggal_mulai" class="text-gray-600">Dari:</label>
+                                    <input type="date" id="tanggal_mulai" name="tanggal_mulai" 
+                                        value="{{ request('tanggal_mulai', date('Y-m-d', strtotime('-7 days'))) }}"
+                                        class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <label for="tanggal_akhir" class="text-gray-600">Sampai:</label>
+                                    <input type="date" id="tanggal_akhir" name="tanggal_akhir" 
+                                        value="{{ request('tanggal_akhir', date('Y-m-d')) }}"
                                         class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                                 </div>
                             </form>
@@ -317,17 +323,54 @@
     }
 
     // Filter tanggal
-    document.getElementById('tanggal').addEventListener('change', function() {
+    document.getElementById('tanggal_mulai').addEventListener('change', updateFilter);
+    document.getElementById('tanggal_akhir').addEventListener('change', updateFilter);
+
+    function updateFilter() {
         let baseUrl = window.location.pathname;
-        let tanggal = this.value;
+        let tanggalMulai = document.getElementById('tanggal_mulai').value;
+        let tanggalAkhir = document.getElementById('tanggal_akhir').value;
         let searchValue = document.getElementById('searchInput').value;
         
+        // Validasi tanggal
+        if (tanggalMulai > tanggalAkhir) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Tanggal mulai tidak boleh lebih besar dari tanggal akhir'
+            });
+            return;
+        }
+        
         // Redirect dengan parameter tanggal dan search jika ada
-        let url = `${baseUrl}?tanggal=${tanggal}`;
+        let url = `${baseUrl}?tanggal_mulai=${tanggalMulai}&tanggal_akhir=${tanggalAkhir}`;
         if (searchValue) {
             url += `&search=${encodeURIComponent(searchValue)}`;
         }
         window.location.href = url;
+    }
+
+    // Set tanggal default dan search value dari URL parameters
+    window.addEventListener('load', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Set tanggal default jika tidak ada di URL
+        if (!urlParams.has('tanggal_mulai') || !urlParams.has('tanggal_akhir')) {
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 7);
+            
+            document.getElementById('tanggal_mulai').value = sevenDaysAgo.toISOString().split('T')[0];
+            document.getElementById('tanggal_akhir').value = today.toISOString().split('T')[0];
+            
+            window.location.href = `${window.location.pathname}?tanggal_mulai=${sevenDaysAgo.toISOString().split('T')[0]}&tanggal_akhir=${today.toISOString().split('T')[0]}`;
+        }
+        
+        // Set search value dari URL jika ada
+        if (urlParams.has('search')) {
+            document.getElementById('searchInput').value = urlParams.get('search');
+            searchTables();
+        }
     });
 
     // Fungsi search
@@ -368,24 +411,6 @@
     // Event listener untuk search input
     document.getElementById('searchInput').addEventListener('keyup', function(e) {
         if (e.key === 'Enter') {
-            searchTables();
-        }
-    });
-
-    // Set tanggal default dan search value dari URL parameters
-    window.addEventListener('load', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        // Set tanggal default jika tidak ada di URL
-        if (!urlParams.has('tanggal')) {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('tanggal').value = today;
-            window.location.href = `${window.location.pathname}?tanggal=${today}`;
-        }
-        
-        // Set search value dari URL jika ada
-        if (urlParams.has('search')) {
-            document.getElementById('searchInput').value = urlParams.get('search');
             searchTables();
         }
     });
