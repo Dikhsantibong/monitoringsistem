@@ -11,84 +11,97 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardPemantauanController extends Controller
 {
-    public function __construct()
-    {
-        // Set koneksi database default
-        config(['database.default' => 'u478221055_up_kendari']);
-    }
-
     public function index()
     {
-        // Inisialisasi variabel
-        $error = null;
-        $machineData = collect([]);
-        $statistics = [
-            'total' => 0,
-            'active' => 0,
-            'maintenance' => 0,
-            'percentage' => 0
+        // Inisialisasi default values
+        $viewData = [
+            'machineData' => collect([]),
+            'error' => null,
+            'statistics' => [
+                'total' => 0,
+                'active' => 0,
+                'maintenance' => 0,
+                'percentage' => 0
+            ]
         ];
 
         try {
-            DB::connection('u478221055_up_kendari')->getPdo();
+            // Set koneksi database
+            config(['database.default' => 'u478221055_up_kendari']);
             
-            $machineData = Machine::on('u478221055_up_kendari')
+            // Cek koneksi database
+            DB::connection('u478221055_up_kendari')->getPdo();
+
+            // Query data
+            $machines = Machine::on('u478221055_up_kendari')
                 ->with(['operations', 'powerPlant', 'statusLogs'])
                 ->select('machines.*')
                 ->join('machine_operations', 'machines.id', '=', 'machine_operations.machine_id')
                 ->join('power_plants', 'machines.power_plant_id', '=', 'power_plants.id')
                 ->groupBy('machines.id')
-                ->get()
-                ->map(function ($machine) {
-                    // Ambil status log terbaru untuk mesin ini
-                    $latestStatus = MachineStatusLog::on('u478221055_up_kendari')
-                        ->where('machine_id', $machine->id)
-                        ->latest('tanggal')
-                        ->first();
+                ->get();
 
-                    return [
-                        'id' => $machine->id,
-                        'type' => $machine->name,
-                        'unit_name' => $machine->powerPlant->name,
-                        'status' => $latestStatus ? $latestStatus->status : 'unknown',
-                        'latest_operation' => $machine->operations()
-                            ->latest('recorded_at')
-                            ->first()
-                    ];
-                });
+            // Transform data
+            $viewData['machineData'] = $machines->map(function ($machine) {
+                $latestStatus = MachineStatusLog::on('u478221055_up_kendari')
+                    ->where('machine_id', $machine->id)
+                    ->latest('tanggal')
+                    ->first();
 
-            $statistics = $this->getMachineStatistics();
+                return [
+                    'id' => $machine->id,
+                    'type' => $machine->name,
+                    'unit_name' => $machine->powerPlant->name,
+                    'status' => $latestStatus ? $latestStatus->status : 'unknown',
+                    'latest_operation' => $machine->operations()
+                        ->latest('recorded_at')
+                        ->first()
+                ];
+            });
+
+            // Get statistics
+            $viewData['statistics'] = $this->getMachineStatistics();
 
         } catch (\Exception $e) {
-            // Log error jika terjadi masalah koneksi
-            \Log::error('Database connection error: ' . $e->getMessage());
-            $error = 'Tidak dapat terhubung ke database';
+            \Log::error('Dashboard Pemantauan Error: ' . $e->getMessage());
+            $viewData['error'] = 'Terjadi kesalahan saat mengambil data. Silakan coba lagi nanti.';
         }
 
-        return view('dashboard_pemantauan', compact('machineData', 'statistics', 'error'));
+        // Return view dengan data yang sudah dipersiapkan
+        return view('dashboard_pemantauan', $viewData);
     }
 
     private function getMachineStatistics()
     {
-        $latestStatuses = MachineStatusLog::on('u478221055_up_kendari')
-            ->select('machine_id', 'status')
-            ->whereIn('id', function($query) {
-                $query->select(DB::raw('MAX(id)'))
-                    ->from('machine_status_logs')
-                    ->groupBy('machine_id');
-            })
-            ->get();
+        try {
+            $latestStatuses = MachineStatusLog::on('u478221055_up_kendari')
+                ->select('machine_id', 'status')
+                ->whereIn('id', function($query) {
+                    $query->select(DB::raw('MAX(id)'))
+                        ->from('machine_status_logs')
+                        ->groupBy('machine_id');
+                })
+                ->get();
 
-        $totalMachines = $latestStatuses->count();
-        $activeMachines = $latestStatuses->where('status', 'normal')->count();
-        $maintenanceMachines = $latestStatuses->where('status', 'maintenance')->count();
+            $totalMachines = $latestStatuses->count();
+            $activeMachines = $latestStatuses->where('status', 'normal')->count();
+            $maintenanceMachines = $latestStatuses->where('status', 'maintenance')->count();
 
-        return [
-            'total' => $totalMachines,
-            'active' => $activeMachines,
-            'maintenance' => $maintenanceMachines,
-            'percentage' => $totalMachines > 0 ? 
-                round(($maintenanceMachines / $totalMachines) * 100, 2) : 0
-        ];
+            return [
+                'total' => $totalMachines,
+                'active' => $activeMachines,
+                'maintenance' => $maintenanceMachines,
+                'percentage' => $totalMachines > 0 ? 
+                    round(($maintenanceMachines / $totalMachines) * 100, 2) : 0
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Statistics Error: ' . $e->getMessage());
+            return [
+                'total' => 0,
+                'active' => 0,
+                'maintenance' => 0,
+                'percentage' => 0
+            ];
+        }
     }
 } 
