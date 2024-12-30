@@ -79,6 +79,11 @@
                                         value="{{ request('tanggal_akhir', date('Y-m-d')) }}"
                                         class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                                 </div>
+                                <button type="button" onclick="updateFilter()" 
+                                    class="bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#0A649B] transition-colors" 
+                                    style="height: 42px;">
+                                    Filter
+                                </button>
                             </form>
 
                             <!-- Search Input -->
@@ -87,7 +92,7 @@
                                     class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
                                 <button onclick="searchTables()"
                                     class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                    search
+                                    Search
                                 </button>
                             </div>
                         </div>
@@ -323,9 +328,6 @@
     }
 
     // Filter tanggal
-    document.getElementById('tanggal_mulai').addEventListener('change', updateFilter);
-    document.getElementById('tanggal_akhir').addEventListener('change', updateFilter);
-
     function updateFilter() {
         let baseUrl = window.location.pathname;
         let tanggalMulai = document.getElementById('tanggal_mulai').value;
@@ -333,6 +335,15 @@
         let searchValue = document.getElementById('searchInput').value;
         
         // Validasi tanggal
+        if (!tanggalMulai || !tanggalAkhir) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Mohon isi kedua tanggal'
+            });
+            return;
+        }
+
         if (tanggalMulai > tanggalAkhir) {
             Swal.fire({
                 icon: 'error',
