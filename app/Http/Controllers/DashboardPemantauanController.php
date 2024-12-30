@@ -19,6 +19,16 @@ class DashboardPemantauanController extends Controller
 
     public function index()
     {
+        // Inisialisasi variabel
+        $error = null;
+        $machineData = collect([]);
+        $statistics = [
+            'total' => 0,
+            'active' => 0,
+            'maintenance' => 0,
+            'percentage' => 0
+        ];
+
         try {
             DB::connection('u478221055_up_kendari')->getPdo();
             
@@ -49,13 +59,13 @@ class DashboardPemantauanController extends Controller
 
             $statistics = $this->getMachineStatistics();
 
-            return view('dashboard_pemantauan', compact('machineData', 'statistics'));
-
         } catch (\Exception $e) {
             // Log error jika terjadi masalah koneksi
             \Log::error('Database connection error: ' . $e->getMessage());
-            return view('dashboard_pemantauan')->with('error', 'Tidak dapat terhubung ke database');
+            $error = 'Tidak dapat terhubung ke database';
         }
+
+        return view('dashboard_pemantauan', compact('machineData', 'statistics', 'error'));
     }
 
     private function getMachineStatistics()
