@@ -174,113 +174,39 @@
                                 </table>
 
                                 <!-- Pagination -->
-                                <div class="mt-4">
-                                    <div class="flex justify-between items-center">
-                                        <div class="text-sm text-gray-700">
-                                            Showing 
-                                            {{ ($users->currentPage()-1) * $users->perPage() + 1 }} 
-                                            to 
-                                            {{ min($users->currentPage() * $users->perPage(), $users->total()) }} 
-                                            of 
-                                            {{ $users->total() }} 
-                                            entries
-                                        </div>
-                                        <script>
-                                function filterUsers() {
-                                    const input = document.getElementById('search').value.toLowerCase();
-                                    const roleFilter = document.getElementById('role-filter').value.toLowerCase();
-                                    const tbody = document.getElementById('users-body');
-                                    const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => !row.classList.contains('no-data-row'));
+                                <div class="mt-4 flex justify-between items-center">
+                                    <div class="text-sm text-gray-700">
+                                        Menampilkan 
+                                        {{ ($users->currentPage() - 1) * $users->perPage() + 1 }} 
+                                        hingga 
+                                        {{ min($users->currentPage() * $users->perPage(), $users->total()) }} 
+                                        dari 
+                                        {{ $users->total() }} 
+                                        entri
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        @if (!$users->onFirstPage())
+                                            <a href="{{ $users->previousPageUrl() }}" 
+                                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                                        @endif
 
-                                    let visibleCount = 0;
-                                    rows.forEach(row => {
-                                        const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
-                                        const emailCell = row.querySelector('td:nth-child(3) .text-sm');
-                                        const roleCell = row.querySelector('td:nth-child(4) span');
-
-                                        if (!nameCell || !emailCell || !roleCell) return;
-
-                                        const name = nameCell.textContent.toLowerCase().trim();
-                                        const email = emailCell.textContent.toLowerCase().trim();
-                                        const role = roleCell.textContent.toLowerCase().trim();
-
-                                        const matchesSearch = !input || 
-                                                              name.includes(input) || 
-                                                              email.includes(input);
-                                        const matchesRole = !roleFilter || role === roleFilter;
-
-                                        if (matchesSearch && matchesRole) {
-                                            row.style.display = '';
-                                            visibleCount++;
-                                            // Update nomor urut
-                                            const numberCell = row.querySelector('td:first-child');
-                                            if (numberCell) {
-                                                numberCell.textContent = visibleCount;
-                                            }
-                                        } else {
-                                            row.style.display = 'none';
-                                        }
-                                    });
-
-                                    // Hapus pesan "tidak ada data" yang lama jika ada
-                                    const existingNoData = tbody.querySelector('.no-data-row');
-                                    if (existingNoData) {
-                                        existingNoData.remove();
-                                    }
-
-                                    // Tampilkan pesan jika tidak ada hasil
-                                    if (visibleCount === 0) {
-                                        const noDataRow = document.createElement('tr');
-                                        noDataRow.className = 'no-data-row';
-                                        noDataRow.innerHTML = `
-                                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                                Tidak ada data pengguna yang sesuai dengan pencarian
-                                            </td>
-                                        `;
-                                        tbody.appendChild(noDataRow);
-                                    }
-
-                                    // Urutkan ulang baris yang terlihat
-                                    rows.filter(row => row.style.display !== 'none')
-                                        .forEach(row => tbody.appendChild(row));
-                                }
-
-                                // Event listener for the role filter dropdown
-                                document.getElementById('role-filter').addEventListener('change', filterUsers);
-
-                                // Debounce for search input
-                                let searchTimeout;
-                                document.getElementById('search').addEventListener('input', function() {
-                                    clearTimeout(searchTimeout);
-                                    searchTimeout = setTimeout(filterUsers, 300);
-                                });
-
-                                // Initialize search and filter on page load
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    filterUsers(); // Call filterUsers to apply initial filtering
-                                });
-                            </script>
-                                        
-                                        <div class="flex gap-2">
-                                            @if (!$users->onFirstPage())
-                                                <a href="{{ $users->previousPageUrl() }}" 
-                                                   class="px-3 py-1 bg-[#0A749B] text-white rounded">Previous</a>
-                                            @endif
-
-                                            @foreach ($users->getUrlRange(1, $users->lastPage()) as $page => $url)
+                                        @foreach ($users->getUrlRange(1, $users->lastPage()) as $page => $url)
+                                            @if ($page == $users->currentPage())
+                                                <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                                            @else
                                                 <a href="{{ $url }}" 
                                                    class="px-3 py-1 rounded {{ $page == $users->currentPage() 
                                                        ? 'bg-[#0A749B] text-white' 
                                                        : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">
                                                     {{ $page }}
                                                 </a>
-                                            @endforeach
-
-                                            @if ($users->hasMorePages())
-                                                <a href="{{ $users->nextPageUrl() }}" 
-                                                   class="px-3 py-1 bg-[#0A749B] text-white rounded">Next</a>
                                             @endif
-                                        </div>
+                                        @endforeach
+
+                                        @if ($users->hasMorePages())
+                                            <a href="{{ $users->nextPageUrl() }}" 
+                                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
