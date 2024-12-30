@@ -131,45 +131,30 @@
                     </div>
 
                     <!-- Status Mesin -->
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="p-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-lg font-semibold text-gray-800">Status Mesin</h2>
-                                <div class="flex space-x-2">
-                                    <button onclick="refreshMachineStatus()" class="text-blue-500 hover:text-blue-700">
-                                        <i class="fas fa-sync-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="space-y-4 max-h-60 overflow-y-auto flex flex-wrap w-full">
-                                @foreach ($machines as $machine)
-                                    @php
-                                        $statusLog = $machine->statusLogs()->latest()->first(); // Ambil status terbaru
-                                    @endphp
-                                    <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                                        <div class="flex-1">
-                                            <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
-                                            <p class="text-sm text-gray-500">Kode: {{ $machine->code }}</p>
-                                            <p class="text-sm text-gray-500">Asal Unit:
-                                                {{ $statusLog->powerPlant->name ?? 'N/A' }}</p>
-                                            <!-- Menampilkan asal unit -->
-                                        </div>
-                                        <div class="flex items-center space-x-4">
-                                            <!-- Status Badge -->
-                                            <span
-                                                class="px-3 py-1 rounded-full text-sm font-medium
-                                        {{ $statusLog && $statusLog->status === 'START'
-                                            ? 'bg-green-100 text-green-800'
-                                            : ($statusLog && $statusLog->status === 'STOP'
-                                                ? 'bg-red-100 text-red-800'
-                                                : 'bg-yellow-100 text-yellow-800') }}">
-                                                {{ $statusLog->status ?? 'N/A' }} <!-- Menampilkan status jika ada -->
-                                            </span>
-                                            <i class="fas fa-cog text-xl"></i> <!-- Ikon mesin -->
-                                        </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Status Mesin</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-80 overflow-y-auto">
+                            @foreach ($machines as $machine)
+                                @php
+                                    $statusLog = $machine->statusLogs()->latest()->first(); // Ambil status terbaru
+                                @endphp
+                                <div class="flex flex-col p-4 border rounded-lg hover:bg-gray-50">
+                                    <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
+                                    <p class="text-sm text-gray-500">Kode: {{ $machine->code }}</p>
+                                    <p class="text-sm text-gray-500">Asal Unit: {{ $statusLog->powerPlant->name ?? 'N/A' }}</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium
+                                            {{ $statusLog && $statusLog->status === 'START'
+                                                ? 'bg-green-100 text-green-800'
+                                                : ($statusLog && $statusLog->status === 'STOP'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-yellow-100 text-yellow-800') }}">
+                                            {{ $statusLog->status ?? 'N/A' }}
+                                        </span>
+                                        <i class="fas fa-cog text-xl ml-2"></i>
                                     </div>
-                                @endforeach
-                            </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -234,20 +219,16 @@
                     </div>
 
                     <!-- Ringkasan Kinerja -->
-                    <div class="bg-white rounded-lg shadow p-6">
+                    <div class="bg-white rounded-lg shadow p-6 mt-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Ringkasan Kinerja</h3>
-                        <div class="space-y-4 max-h-60 overflow-y-auto">
+                        <div class="space-y-4 max-h-80 overflow-y-auto">
                             @foreach ($machines as $machine)
-                                <div class="border-b pb-3">
-                                    <div class="flex justify-between items-center">
-                                        <span class="font-medium">{{ $machine->name }}</span>
-                                        <span class="text-sm">Efisiensi:
-                                            {{ number_format($machine->metrics->avg('efficiency'), 1) }}%</span>
-                                    </div>
-                                    <div class="mt-2 h-2 bg-gray-200 rounded">
-                                        <div class="h-full bg-blue-500 rounded"
-                                            style="width: {{ $machine->metrics->avg('efficiency') }}%"></div>
-                                    </div>
+                                <div class="flex justify-between items-center border-b pb-3">
+                                    <span class="font-medium">{{ $machine->name }}</span>
+                                    <span class="text-sm">Efisiensi: {{ number_format($machine->metrics->avg('efficiency'), 1) }}%</span>
+                                </div>
+                                <div class="mt-2 h-2 bg-gray-200 rounded">
+                                    <div class="h-full bg-blue-500 rounded" style="width: {{ $machine->metrics->avg('efficiency') }}%"></div>
                                 </div>
                             @endforeach
                         </div>
