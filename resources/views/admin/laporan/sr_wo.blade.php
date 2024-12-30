@@ -80,9 +80,9 @@
                                         class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                                 </div>
                                 <button type="button" onclick="updateFilter()" 
-                                    class="bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#0A649B] transition-colors" 
+                                    class="bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#0A649B] transition-colors flex items-center" 
                                     style="height: 42px;">
-                                    Filter
+                                    <i class="fas fa-filter mr-2"></i> Filter
                                 </button>
                             </form>
 

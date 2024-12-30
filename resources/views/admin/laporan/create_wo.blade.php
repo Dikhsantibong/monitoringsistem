@@ -102,7 +102,9 @@
                 <label for="schedule_finish" class="block text-gray-700">Schedule Finish</label>
                 <input type="date" name="schedule_finish" id="schedule_finish" class="w-full px-3 py-2 border rounded-md" required>
             </div>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Simpan</button>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-save mr-2"></i> Simpan
+            </button>
         </form>
     </div>
 @endsection 
