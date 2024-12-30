@@ -82,7 +82,8 @@
                                             class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500"
                                             onkeyup="searchUsers()">
                                         <input type="button" value="Search"
-                                            class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                                            class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors"
+                                            onclick="searchUsers()">
                                     </div>
                                 </div>
                                 <div>
@@ -184,6 +185,81 @@
                                             {{ $users->total() }} 
                                             entries
                                         </div>
+                                        <script>
+                                function filterUsers() {
+                                    const input = document.getElementById('search').value.toLowerCase();
+                                    const roleFilter = document.getElementById('role-filter').value.toLowerCase();
+                                    const tbody = document.getElementById('users-body');
+                                    const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => !row.classList.contains('no-data-row'));
+
+                                    let visibleCount = 0;
+                                    rows.forEach(row => {
+                                        const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
+                                        const emailCell = row.querySelector('td:nth-child(3) .text-sm');
+                                        const roleCell = row.querySelector('td:nth-child(4) span');
+
+                                        if (!nameCell || !emailCell || !roleCell) return;
+
+                                        const name = nameCell.textContent.toLowerCase().trim();
+                                        const email = emailCell.textContent.toLowerCase().trim();
+                                        const role = roleCell.textContent.toLowerCase().trim();
+
+                                        const matchesSearch = !input || 
+                                                              name.includes(input) || 
+                                                              email.includes(input);
+                                        const matchesRole = !roleFilter || role === roleFilter;
+
+                                        if (matchesSearch && matchesRole) {
+                                            row.style.display = '';
+                                            visibleCount++;
+                                            // Update nomor urut
+                                            const numberCell = row.querySelector('td:first-child');
+                                            if (numberCell) {
+                                                numberCell.textContent = visibleCount;
+                                            }
+                                        } else {
+                                            row.style.display = 'none';
+                                        }
+                                    });
+
+                                    // Hapus pesan "tidak ada data" yang lama jika ada
+                                    const existingNoData = tbody.querySelector('.no-data-row');
+                                    if (existingNoData) {
+                                        existingNoData.remove();
+                                    }
+
+                                    // Tampilkan pesan jika tidak ada hasil
+                                    if (visibleCount === 0) {
+                                        const noDataRow = document.createElement('tr');
+                                        noDataRow.className = 'no-data-row';
+                                        noDataRow.innerHTML = `
+                                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                                Tidak ada data pengguna yang sesuai dengan pencarian
+                                            </td>
+                                        `;
+                                        tbody.appendChild(noDataRow);
+                                    }
+
+                                    // Urutkan ulang baris yang terlihat
+                                    rows.filter(row => row.style.display !== 'none')
+                                        .forEach(row => tbody.appendChild(row));
+                                }
+
+                                // Event listener for the role filter dropdown
+                                document.getElementById('role-filter').addEventListener('change', filterUsers);
+
+                                // Debounce for search input
+                                let searchTimeout;
+                                document.getElementById('search').addEventListener('input', function() {
+                                    clearTimeout(searchTimeout);
+                                    searchTimeout = setTimeout(filterUsers, 300);
+                                });
+
+                                // Initialize search and filter on page load
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    filterUsers(); // Call filterUsers to apply initial filtering
+                                });
+                            </script>
                                         
                                         <div class="flex gap-2">
                                             @if (!$users->onFirstPage())
@@ -215,9 +291,6 @@
         </div>
     </div>
     </div>
-
-    <script src="{{ asset('js/toggle.js') }}"></script>
-
     <script>
         function searchUsers() {
             const input = document.getElementById('search').value.toLowerCase();
@@ -374,13 +447,82 @@
         }
 
         function filterUsers() {
-            // Panggil searchUsers() untuk menerapkan filter dan pencarian sekaligus
-            searchUsers();
+            const input = document.getElementById('search').value.toLowerCase();
+            const roleFilter = document.getElementById('role-filter').value.toLowerCase();
+            const tbody = document.getElementById('users-body');
+            const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => !row.classList.contains('no-data-row'));
+
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
+                const emailCell = row.querySelector('td:nth-child(3) .text-sm');
+                const roleCell = row.querySelector('td:nth-child(4) span');
+
+                if (!nameCell || !emailCell || !roleCell) return;
+
+                const name = nameCell.textContent.toLowerCase().trim();
+                const email = emailCell.textContent.toLowerCase().trim();
+                const role = roleCell.textContent.toLowerCase().trim();
+
+                const matchesSearch = !input || 
+                                      name.includes(input) || 
+                                      email.includes(input);
+                const matchesRole = !roleFilter || role === roleFilter;
+
+                if (matchesSearch && matchesRole) {
+                    row.style.display = '';
+                    visibleCount++;
+                    // Update nomor urut
+                    const numberCell = row.querySelector('td:first-child');
+                    if (numberCell) {
+                        numberCell.textContent = visibleCount;
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Hapus pesan "tidak ada data" yang lama jika ada
+            const existingNoData = tbody.querySelector('.no-data-row');
+            if (existingNoData) {
+                existingNoData.remove();
+            }
+
+            // Tampilkan pesan jika tidak ada hasil
+            if (visibleCount === 0) {
+                const noDataRow = document.createElement('tr');
+                noDataRow.className = 'no-data-row';
+                noDataRow.innerHTML = `
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        Tidak ada data pengguna yang sesuai dengan pencarian
+                    </td>
+                `;
+                tbody.appendChild(noDataRow);
+            }
+
+            // Urutkan ulang baris yang terlihat
+            rows.filter(row => row.style.display !== 'none')
+                .forEach(row => tbody.appendChild(row));
         }
 
-        // Tambahkan event listener untuk input pencarian
-        document.getElementById('search').addEventListener('keyup', searchUsers);
+        // Event listener for the role filter dropdown
+        document.getElementById('role-filter').addEventListener('change', filterUsers);
+
+        // Debounce for search input
+        let searchTimeout;
+        document.getElementById('search').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(filterUsers, 300);
+        });
+
+        // Initialize search and filter on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            filterUsers(); // Call filterUsers to apply initial filtering
+        });
     </script>
+    <script src="{{ asset('js/toggle.js') }}"></script>
+
+    
     @push('scripts')
     @endpush
 
