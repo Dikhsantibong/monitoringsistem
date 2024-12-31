@@ -267,8 +267,8 @@
                                                             </button>
                                                         @endif --}}
                                                         <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
-                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white">
-                                                            Edit
+                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+                                                            <i class="fas fa-edit mr-2"></i> Edit
                                                         </a>
                                                     </div>
                                                 </td>
