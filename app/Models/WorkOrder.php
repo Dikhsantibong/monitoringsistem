@@ -10,12 +10,17 @@ class WorkOrder extends Model
     use HasFactory;
 
     protected $fillable = [
-        'id', 'description', 'status', 'priority', 'schedule_start', 'schedule_finish'
+        'id',
+        'description',
+        'status',
+        'priority',
+        'schedule_start',
+        'schedule_finish'
     ];
-    public $incrementing = false;
-    public function getConnectionName()
+
+    // Hapus semua event model yang mungkin mempengaruhi status
+    protected static function boot()
     {
-        // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
-        return session('unit', 'u478221055_up_kendari'); // default ke 'up_kendari' jika tidak ada
+        parent::boot();
     }
 } 

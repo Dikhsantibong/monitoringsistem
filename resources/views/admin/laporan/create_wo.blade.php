@@ -77,12 +77,11 @@
             <div class="mb-4">
                 <label for="status" class="block text-gray-700">Status</label>
                 <select name="status" id="status" class="w-full px-3 py-2 border rounded-md" required>
-                    <option value="Open">Open</option>
-                    <option value="Close">Close</option>
-                    <option value="Comp">Comp</option>
-                    <option value="APPR">APPR</option>
+                    <option value="Open" selected>Open</option>
                     <option value="WAPPR">WAPPR</option>
-                    <option value="WMATL">WMATL</option>
+                    <option value="APPR">APPR</option>
+                    <option value="Comp">Comp</option>
+                    <option value="Closed">Closed</option>
                 </select>
             </div>
             <div class="mb-4">

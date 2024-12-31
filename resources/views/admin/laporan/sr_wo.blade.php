@@ -190,8 +190,8 @@
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
-                                                    <span class="text-{{ $wo->status == 'Open' ? 'red' : ($wo->status == 'Close' ? 'green' : ($wo->status == 'Comp' ? 'blue' : ($wo->status == 'APPR' ? 'yellow' : ($wo->status == 'WAPPR' ? 'purple' : 'gray')))) }}-600">
-                                                        {{ $wo->status }}
+                                                    <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Close' ? 'green-500' : ($wo->status == 'Comp' ? 'blue-500' : ($wo->status == 'APPR' ? 'yellow-500' : ($wo->status == 'WAPPR' ? 'purple-500' : 'gray-500')))) }} text-white rounded-full px-2 py-1">
+                                                            {{ $wo->status }}
                                                     </span>
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
@@ -591,91 +591,89 @@
     }
 
     function showStatusOptions(id, currentStatus) {
+        // Definisikan semua status yang tersedia sesuai enum database
+        const allStatuses = {
+            'Open': 'Open',
+            'WAPPR': 'WAPPR',
+            'APPR': 'APPR',
+            'Comp': 'Comp',
+            'Close': 'Close',  // Ubah dari 'Closed' ke 'Close'
+            'WMATL': 'WMATL'
+        };
+
+        // Jika status saat ini adalah Close
+        if (currentStatus === 'Close') {  // Ubah dari 'Closed' ke 'Close'
+            Swal.fire({
+                icon: 'info',
+                title: 'Status Close',
+                text: 'WO sudah ditutup dan tidak dapat diubah statusnya',
+            });
+            return;
+        }
+
+        // Hapus status saat ini dari pilihan
+        const inputOptions = { ...allStatuses };
+        delete inputOptions[currentStatus];
+
+        console.log('Available Status Options:', inputOptions); // Debug log
+
         Swal.fire({
-            title: 'Pilih Status',
+            title: 'Ubah Status',
+            text: `Status saat ini: ${currentStatus}`,
             input: 'select',
-            inputOptions: {
-                'Open': 'Open',
-                'WAPPR': 'WAPPR',
-                'APPR': 'APPR',
-                'Comp': 'Comp',
-                'Closed': 'Closed'
-            },
-            inputValue: currentStatus,
+            inputOptions: inputOptions,
+            inputPlaceholder: 'Pilih status baru',
             showCancelButton: true,
             confirmButtonText: 'Ubah',
-            cancelButtonText: 'Batal'
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Anda harus memilih status!';
+                }
+            }
         }).then((result) => {
             if (result.isConfirmed) {
-                if (result.value === 'Closed') {
-                    // Konfirmasi tambahan untuk status Closed
-                    Swal.fire({
-                        title: 'Konfirmasi',
-                        text: 'Apakah Anda yakin ingin menutup WO ini? Status tidak dapat diubah kembali setelah ditutup.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, tutup WO',
-                        cancelButtonText: 'Batal'
-                    }).then((confirmResult) => {
-                        if (confirmResult.isConfirmed) {
-                            updateWOStatus(id, 'Closed');
-                        }
-                    });
-                } else {
-                    // Langsung update untuk status selain Closed
-                    updateWOStatus(id, result.value);
-                }
+                console.log('Selected Status:', result.value); // Debug log
+                processStatusUpdate(id, result.value);
             }
         });
     }
 
-    function updateWOStatus(id, newStatus) {
+    function processStatusUpdate(id, newStatus) {
         const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
         
-        // Tampilkan loading
-        Swal.fire({
-            title: 'Memproses...',
-            text: 'Sedang mengubah status',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            allowEnterKey: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
         fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ 
-                status: newStatus
-            })
+            body: JSON.stringify({ status: newStatus })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Status berhasil diubah!',
-                    text: newStatus === 'Closed' ? 'WO telah ditutup' : 'Status telah diperbarui',
+                    title: 'Berhasil!',
+                    text: data.message,
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    window.location.reload();
+                    // Refresh halaman dengan clear cache
+                    window.location.href = window.location.href.split('?')[0] + 
+                        '?_=' + new Date().getTime();
                 });
             } else {
-                throw new Error(data.message || 'Gagal mengubah status');
+                throw new Error(data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Terjadi kesalahan!',
-                text: 'Gagal mengubah status. Silakan coba lagi.'
+                title: 'Error!',
+                text: error.message
             });
         });
     }
