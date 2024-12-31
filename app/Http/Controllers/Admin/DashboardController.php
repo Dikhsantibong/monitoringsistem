@@ -86,6 +86,12 @@ class DashboardController extends Controller
         \Log::info('Formatted ScoreCard:', ['data' => $formattedScoreCard->toArray()]);
         \Log::info('Formatted Attendance:', ['data' => $formattedAttendance->toArray()]);
 
+        // Debug: Tampilkan jumlah WO di log
+        \Log::info('Work Order Counts:', [
+            'open' => WorkOrder::where('status', 'open')->count(),
+            'closed' => WorkOrder::where('status', 'closed')->count()
+        ]);
+
         // Format data untuk charts
         $chartData = [
             'scoreCardData' => [
@@ -95,15 +101,30 @@ class DashboardController extends Controller
             'attendanceData' => [
                 'dates' => $formattedAttendance->keys()->toArray(),
                 'scores' => $formattedAttendance->values()->toArray(),
+            ],
+            'srData' => [
+                'counts' => [
+                    ServiceRequest::where('status', 'Open')->count(),
+                    ServiceRequest::where('status', 'Closed')->count(),
+                ]
+            ],
+            'woData' => [
+                'counts' => [
+                    WorkOrder::where('status', 'Open')->count(),
+                    WorkOrder::where('status', 'Close')->count(),
+                ]
             ]
         ];
+
+        // Debug: Tampilkan seluruh data chart
+        \Log::info('Chart Data:', $chartData);
 
         // Tambahkan data untuk statistik
         $totalUsers = User::count();
         
         // Menggabungkan total SR dan WO yang closed
         $totalClosedSRWO = ServiceRequest::where('status', 'Closed')->count() +
-                           WorkOrder::where('status', 'Closed')->count();
+                           WorkOrder::where('status', 'Close')->count();
                            
         $recentActivities = Activity::with('user')
             ->latest()
@@ -162,4 +183,6 @@ class DashboardController extends Controller
             'data' => $meetings->pluck('count'),
         ];
     }
+
+    
 } 

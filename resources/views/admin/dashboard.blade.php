@@ -162,6 +162,49 @@
                     </div>
                 </div>
 
+                <!-- Tambahkan baris baru untuk diagram SR dan WO -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Card SR Status -->
+                    <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status SR</h3>
+                            <div class="flex space-x-2">
+                                <button onclick="toggleChartType('srChart', 'pie')" 
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Pie">
+                                    <i class="fas fa-chart-pie"></i>
+                                </button>
+                                <button onclick="toggleChartType('srChart', 'doughnut')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Donat">
+                                    <i class="fas fa-circle-notch"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="height: 300px;">
+                            <canvas id="srChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Card WO Status -->
+                    <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status WO</h3>
+                            <div class="flex space-x-2">
+                                <button onclick="toggleChartType('woChart', 'pie')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Pie">
+                                    <i class="fas fa-chart-pie"></i>
+                                </button>
+                                <button onclick="toggleChartType('woChart', 'doughnut')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Donat">
+                                    <i class="fas fa-circle-notch"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="height: 300px;">
+                            <canvas id="woChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Recent Activities Table -->
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
@@ -223,7 +266,7 @@
             });
         });
 
-        let activityChart, meetingChart;
+        let activityChart, meetingChart, srChart, woChart;
 
         // Inisialisasi charts dengan data sementara
         document.addEventListener('DOMContentLoaded', function() {
@@ -341,56 +384,104 @@
                     }
                 }
             });
-        });
 
-        // Fungsi untuk mengubah tipe chart
-        function toggleChartType(chartId, newType) {
-            const chart = chartId === 'activityChart' ? activityChart : meetingChart;
+            // Data untuk SR Chart
+            const srData = {
+                labels: ['Open', 'Closed'],
+                datasets: [{
+                    data: chartData.srData.counts,
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.8)', // Merah untuk Open
+                        'rgba(34, 197, 94, 0.8)'   // Hijau untuk Closed
+                    ],
+                    borderColor: [
+                        'rgb(239, 68, 68)',
+                        'rgb(34, 197, 94)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
 
-            // Simpan data dan options yang ada
-            const data = chart.data;
-            const options = chart.options;
+            // Data untuk WO Chart
+            const woData = {
+                labels: ['Open', 'Closed'],
+                datasets: [{
+                    data: chartData.woData.counts,
+                    backgroundColor: [
+                        'rgba(234, 179, 8, 0.8)',  // Kuning untuk Open
+                        'rgba(59, 130, 246, 0.8)'   // Biru untuk Closed
+                    ],
+                    borderColor: [
+                        'rgb(234, 179, 8)',
+                        'rgb(59, 130, 246)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
 
-            // Destroy chart lama
-            chart.destroy();
-
-            // Sesuaikan options berdasarkan tipe chart
-            if (newType === 'bar') {
-                // Untuk chart batang, hilangkan tension dan ubah fill
-                data.datasets[0].tension = 0;
-                data.datasets[0].fill = false;
-            } else {
-                // Untuk chart garis, tambahkan tension dan fill
-                data.datasets[0].tension = 0.1;
-                data.datasets[0].fill = true;
-            }
-
-            // Buat chart baru dengan tipe yang berbeda
-            const newChart = new Chart(document.getElementById(chartId), {
-                type: newType,
-                data: data,
-                options: {
-                    ...options,
-                    scales: {
-                        ...options.scales,
-                        y: {
-                            ...options.scales.y,
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + (chartId === 'activityChart' ? '%' : ' orang');
-                                }
+            // Konfigurasi untuk chart pie/doughnut
+            const pieOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
                             }
                         }
                     }
                 }
+            };
+
+            // Inisialisasi SR Chart
+            srChart = new Chart(document.getElementById('srChart'), {
+                type: 'pie',
+                data: srData,
+                options: pieOptions
             });
 
-            // Update referensi chart
-            if (chartId === 'activityChart') {
-                activityChart = newChart;
+            // Inisialisasi WO Chart
+            woChart = new Chart(document.getElementById('woChart'), {
+                type: 'pie',
+                data: woData,
+                options: pieOptions
+            });
+        });
+
+        // Fungsi untuk mengubah tipe chart
+        function toggleChartType(chartId, newType) {
+            const chart = chartId === 'srChart' ? srChart : 
+                         chartId === 'woChart' ? woChart :
+                         chartId === 'activityChart' ? activityChart : meetingChart;
+
+            if (['srChart', 'woChart'].includes(chartId)) {
+                // Untuk chart SR dan WO
+                const data = chart.data;
+                const options = chart.options;
+                chart.destroy();
+                
+                const newChart = new Chart(document.getElementById(chartId), {
+                    type: newType,
+                    data: data,
+                    options: options
+                });
+
+                if (chartId === 'srChart') {
+                    srChart = newChart;
+                } else {
+                    woChart = newChart;
+                }
             } else {
-                meetingChart = newChart;
+                // Existing logic untuk activity dan meeting charts
+                // ... (kode yang sudah ada)
             }
         }
 
