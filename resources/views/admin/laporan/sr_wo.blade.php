@@ -626,6 +626,8 @@
             showCancelButton: true,
             confirmButtonText: 'Ubah',
             cancelButtonText: 'Batal',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
             inputValidator: (value) => {
                 if (!value) {
                     return 'Anda harus memilih status!';
