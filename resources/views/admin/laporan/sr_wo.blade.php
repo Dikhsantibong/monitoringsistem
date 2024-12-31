@@ -207,8 +207,8 @@
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     @if ($wo->status != 'Closed')
                                                         <button onclick="showStatusOptions({{ $wo->id }}, '{{ $wo->status }}')"
-                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white">
-                                                            Ubah Status
+                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+                                                            <i class="fas fa-edit mr-2"></i> Ubah
                                                         </button>
                                                     @else
                                                         <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
