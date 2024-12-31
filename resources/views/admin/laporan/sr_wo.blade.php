@@ -203,10 +203,10 @@
                                                     {{ $wo->schedule_finish }}
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">
-                                                    @if ($wo->status == 'Open')
-                                                        <button onclick="updateStatus('wo', {{ $wo->id }}, '{{ $wo->status }}')"
-                                                            class="px-3 py-1 text-sm rounded-full bg-green-500 hover:bg-green-600 text-white">
-                                                            Tutup
+                                                    @if ($wo->status != 'Closed')
+                                                        <button onclick="showStatusOptions({{ $wo->id }}, '{{ $wo->status }}')"
+                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white">
+                                                            Ubah Status
                                                         </button>
                                                     @else
                                                         <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
@@ -585,6 +585,95 @@
                     });
                 });
             }
+        });
+    }
+
+    function showStatusOptions(id, currentStatus) {
+        Swal.fire({
+            title: 'Pilih Status',
+            input: 'select',
+            inputOptions: {
+                'Open': 'Open',
+                'WAPPR': 'WAPPR',
+                'APPR': 'APPR',
+                'Comp': 'Comp',
+                'Closed': 'Closed'
+            },
+            inputValue: currentStatus,
+            showCancelButton: true,
+            confirmButtonText: 'Ubah',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Anda harus memilih status!';
+                }
+                if (value === 'Closed') {
+                    return new Promise((resolve) => {
+                        Swal.fire({
+                            title: 'Konfirmasi',
+                            text: 'Apakah Anda yakin ingin menutup WO ini? Status tidak dapat diubah kembali setelah ditutup.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, tutup WO',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                resolve();
+                            } else {
+                                resolve('Pembatalan penutupan WO');
+                            }
+                        });
+                    });
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateWOStatus(id, result.value);
+            }
+        });
+    }
+
+    function updateWOStatus(id, newStatus) {
+        const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ 
+                status: newStatus
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status berhasil diubah!',
+                    text: newStatus === 'Closed' ? 'WO telah ditutup' : 'Status telah diperbarui',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Gagal mengubah status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Terjadi kesalahan!',
+                text: error.message || 'Gagal mengubah status'
+            });
         });
     }
 </script>
