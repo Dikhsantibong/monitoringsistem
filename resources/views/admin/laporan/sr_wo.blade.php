@@ -259,13 +259,13 @@
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     <div class="flex space-x-2">
-                                                        @if($backlog->status == 'Open')
+                                                        {{-- @if($backlog->status == 'Open')
                                                             <button 
                                                                 onclick="updateBacklogStatus({{ $backlog->id }})"
                                                                 class="px-3 py-1 text-sm rounded-full bg-green-500 hover:bg-green-600 text-white">
                                                                 Tutup
                                                             </button>
-                                                        @endif
+                                                        @endif --}}
                                                         <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
                                                             class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white">
                                                             Edit

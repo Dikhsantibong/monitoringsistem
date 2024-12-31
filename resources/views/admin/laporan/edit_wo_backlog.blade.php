@@ -94,10 +94,11 @@
 
                         <div class="mb-4">
                             <label for="status" class="block text-gray-700">Status</label>
-                            <input type="text" name="status" id="status" 
-                                value="{{ $backlog->status }}"
-                                class="w-full px-3 py-2 border rounded-md bg-gray-100"
-                                readonly>
+                            <select name="status" id="status" 
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Open" {{ $backlog->status == 'Open' ? 'selected' : '' }}>Open</option>
+                                <option value="Closed" {{ $backlog->status == 'Closed' ? 'selected' : '' }}>Closed</option>
+                            </select>
                         </div>
 
                         <div class="flex justify-end space-x-4">

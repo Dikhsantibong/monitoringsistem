@@ -247,7 +247,8 @@ class LaporanController extends Controller
     {
         $validated = $request->validate([
             'deskripsi' => 'required|string',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
+            'status' => 'required|in:Open,Closed'
         ]);
 
         $backlog = WoBacklog::findOrFail($id);
