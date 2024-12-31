@@ -16,7 +16,8 @@ class WoBacklog extends Model
         'no_wo',
         'deskripsi',
         'tanggal_backlog',
-        'keterangan'
+        'keterangan',
+        'status'
     ];
     public function getConnectionName()
     {

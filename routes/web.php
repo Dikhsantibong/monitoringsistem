@@ -300,3 +300,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::get('/dashboard-pemantauan', [DashboardPemantauanController::class, 'index'])
     ->name('dashboard.pemantauan');
 
+Route::get('/admin/laporan/wo-backlog/{id}/edit', [LaporanController::class, 'editWoBacklog'])->name('admin.laporan.edit-wo-backlog');
+Route::put('/admin/laporan/wo-backlog/{id}', [LaporanController::class, 'updateWoBacklog'])->name('admin.laporan.update-wo-backlog');
+
+Route::post('/admin/laporan/wo-backlog/{id}/status', [LaporanController::class, 'updateBacklogStatus'])->name('admin.laporan.update-backlog-status');
+
+    

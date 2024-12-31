@@ -8,17 +8,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100">
-    <div class="container mx-auto p-4">
+    <div class="container mx-auto p-1">
+        <!-- Tombol Kembali ke Homepage -->
+        <div class="flex justify-end mb-4">
+            <a href="{{ url('/') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                Kembali ke Homepage
+            </a>
+        </div>
         @if(isset($error))
             <div class="bg-red-500 text-white p-4 rounded-lg mb-4">
                 {{ $error }}
             </div>
         @endif
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
             <div class="dashboard-card p-4 rounded-lg">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg">KESELURUHAN KONDISI MESIN</h2>
-                    
                 </div>
                 <div class="mt-4">
                     <div class="text-center">
@@ -27,12 +32,12 @@
                     </div>
                 </div>
             </div>
-            <div class="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div class="dashboard-card p-4 rounded-lg col-span-full">
                     <div class="flex justify-between items-center">
                         <h2 class="text-lg">KONDISI PEMELIHARAAN MESIN</h2>
                     </div>
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div class="text-center">
                             <canvas id="availabilityChart" class="w-32 h-32 mx-auto"></canvas>
                             <p class="mt-2">Mothballed</p>
@@ -137,12 +142,23 @@
                 datasets: [{
                     data: [90, 10],
                     backgroundColor: ['#22c55e', '#e5e7eb']
-                }]
+                }],
+                labels: ['Aktif', 'Tidak Aktif']
             },
             options: {
                 cutout: '70%',
                 plugins: {
-                    tooltip: { enabled: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                var dataset = tooltipItem.dataset;
+                                var total = dataset.data.reduce((a, b) => a + b, 0);
+                                var currentValue = dataset.data[tooltipItem.dataIndex];
+                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
+                                return currentValue + ' (' + percentage + '%)';
+                            }
+                        }
+                    },
                     legend: { display: false }
                 }
             }
@@ -156,12 +172,23 @@
                 datasets: [{
                     data: [50, 50],
                     backgroundColor: ['#0ea5e9', '#e5e7eb']
-                }]
+                }],
+                labels: ['Tersedia', 'Tidak Tersedia']
             },
             options: {
                 cutout: '70%',
                 plugins: {
-                    tooltip: { enabled: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                var dataset = tooltipItem.dataset;
+                                var total = dataset.data.reduce((a, b) => a + b, 0);
+                                var currentValue = dataset.data[tooltipItem.dataIndex];
+                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
+                                return currentValue + ' (' + percentage + '%)';
+                            }
+                        }
+                    },
                     legend: { display: false }
                 }
             }
@@ -175,12 +202,23 @@
                 datasets: [{
                     data: [50, 50],
                     backgroundColor: ['#ef4444', '#e5e7eb']
-                }]
+                }],
+                labels: ['Kinerja Baik', 'Kinerja Buruk']
             },
             options: {
                 cutout: '70%',
                 plugins: {
-                    tooltip: { enabled: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                var dataset = tooltipItem.dataset;
+                                var total = dataset.data.reduce((a, b) => a + b, 0);
+                                var currentValue = dataset.data[tooltipItem.dataIndex];
+                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
+                                return currentValue + ' (' + percentage + '%)';
+                            }
+                        }
+                    },
                     legend: { display: false }
                 }
             }
@@ -194,12 +232,23 @@
                 datasets: [{
                     data: [70, 30],
                     backgroundColor: ['#f59e0b', '#e5e7eb']
-                }]
+                }],
+                labels: ['Kualitas Baik', 'Kualitas Buruk']
             },
             options: {
                 cutout: '70%',
                 plugins: {
-                    tooltip: { enabled: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                var dataset = tooltipItem.dataset;
+                                var total = dataset.data.reduce((a, b) => a + b, 0);
+                                var currentValue = dataset.data[tooltipItem.dataIndex];
+                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
+                                return currentValue + ' (' + percentage + '%)';
+                            }
+                        }
+                    },
                     legend: { display: false }
                 }
             }

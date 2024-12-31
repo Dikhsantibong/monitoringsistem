@@ -238,6 +238,8 @@
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Tanggal Backlog</th>
                                             <th class="py-2 px-4 border-b">Keterangan</th>
+                                            <th class="py-2 px-4 border-b">Status</th>
+                                            <th class="py-2 px-4 border-b">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
@@ -248,6 +250,26 @@
                                                 <td class="py-2 px-4 border border-gray-200">{{ $backlog->deskripsi }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $backlog->created_at }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $backlog->keterangan ?? 'N/A' }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    <span class="px-2 py-1 rounded-full {{ $backlog->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
+                                                        {{ $backlog->status }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    <div class="flex space-x-2">
+                                                        @if($backlog->status == 'Open')
+                                                            <button 
+                                                                onclick="updateBacklogStatus({{ $backlog->id }})"
+                                                                class="px-3 py-1 text-sm rounded-full bg-green-500 hover:bg-green-600 text-white">
+                                                                Tutup
+                                                            </button>
+                                                        @endif
+                                                        <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
+                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white">
+                                                            Edit
+                                                        </a>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -519,6 +541,53 @@
             }
         });
     }
+
+    function updateBacklogStatus(id) {
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: 'Apakah Anda yakin ingin menutup WO Backlog ini?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                fetch(`/admin/laporan/wo-backlog/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: JSON.stringify({ status: 'Closed' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'WO Backlog berhasil ditutup!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi kesalahan!',
+                        text: 'Gagal mengubah status'
+                    });
+                });
+            }
+        });
+    }
 </script>
 @push('scripts')
 @endpush
+    

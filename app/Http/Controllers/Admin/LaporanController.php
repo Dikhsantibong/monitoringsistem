@@ -8,11 +8,15 @@ use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
 use App\Models\SRWO;
 use App\Models\WoBacklog;
+use Illuminate\Support\Facades\DB;
 
 class LaporanController extends Controller
 {
     public function srWo()
     {
+        // Jalankan pengecekan WO yang expired
+        $this->checkExpiredWO();
+
         $serviceRequests = ServiceRequest::all();
         $workOrders = WorkOrder::all();
         
@@ -55,7 +59,7 @@ class LaporanController extends Controller
         $validated = $request->validate([
             'wo_id' => 'required|numeric|unique:work_orders,id',
             'description' => 'required',
-            'status' => 'required|in:Open,Close,Comp,APPR,WAPPR,WMATL',
+            'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
             'priority' => 'required|in:emergency,normal,outage,urgent',
             'schedule_start' => 'required|date',
             'schedule_finish' => 'required|date',
@@ -192,6 +196,66 @@ class LaporanController extends Controller
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    // Tambahkan method untuk mengecek dan memindahkan WO yang expired
+    private function checkExpiredWO()
+    {
+        $expiredWOs = WorkOrder::where('schedule_finish', '<', now())
+            ->where('status', 'Open')
+            ->get();
+
+        foreach ($expiredWOs as $wo) {
+            // Pindahkan ke WO Backlog
+            WoBacklog::create([
+                'no_wo' => $wo->id,
+                'deskripsi' => $wo->description,
+                'tanggal_backlog' => $wo->schedule_finish,
+                'keterangan' => 'Otomatis Terkirim ke Backlog',
+                'status' => 'Open'
+            ]);
+
+            // Update status WO menjadi COMP (sesuaikan dengan nilai ENUM yang valid di database Anda)
+            DB::table('work_orders')
+                ->where('id', $wo->id)
+                ->update([
+                    'status' => 'COMP', // Coba gunakan salah satu dari: COMP, APPR, WAPPR, WMATL
+                    'updated_at' => now()
+                ]);
+        }
+    }
+
+    // Method untuk update status WO Backlog
+    public function updateBacklogStatus(Request $request, $id)
+    {
+        $backlog = WoBacklog::findOrFail($id);
+        $backlog->status = $request->status;
+        $backlog->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    // Method untuk edit WO Backlog
+    public function editWoBacklog($id)
+    {
+        $backlog = WoBacklog::findOrFail($id);
+        return view('admin.laporan.edit_wo_backlog', compact('backlog'));
+    }
+
+    // Method untuk update WO Backlog
+    public function updateWoBacklog(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'deskripsi' => 'required|string',
+            'keterangan' => 'nullable|string'
+        ]);
+
+        $backlog = WoBacklog::findOrFail($id);
+        $backlog->update($validated);
+
+        return redirect()
+            ->route('admin.laporan.sr_wo')
+            ->with('success', 'WO Backlog berhasil diupdate');
     }
 }
 
