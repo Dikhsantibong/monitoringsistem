@@ -33,7 +33,7 @@
                             d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
-                    <h1 class="text-xl font-semibold text-gray-800">Laporann SR/WO</h1>
+                    <h1 class="text-xl font-semibold text-gray-800">Laporan SR/WO</h1>
                     </div>
                     
                     @include('components.timer')
@@ -602,33 +602,27 @@
             inputValue: currentStatus,
             showCancelButton: true,
             confirmButtonText: 'Ubah',
-            cancelButtonText: 'Batal',
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'Anda harus memilih status!';
-                }
-                if (value === 'Closed') {
-                    return new Promise((resolve) => {
-                        Swal.fire({
-                            title: 'Konfirmasi',
-                            text: 'Apakah Anda yakin ingin menutup WO ini? Status tidak dapat diubah kembali setelah ditutup.',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: 'Ya, tutup WO',
-                            cancelButtonText: 'Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                resolve();
-                            } else {
-                                resolve('Pembatalan penutupan WO');
-                            }
-                        });
-                    });
-                }
-            }
+            cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                updateWOStatus(id, result.value);
+                if (result.value === 'Closed') {
+                    // Konfirmasi tambahan untuk status Closed
+                    Swal.fire({
+                        title: 'Konfirmasi',
+                        text: 'Apakah Anda yakin ingin menutup WO ini? Status tidak dapat diubah kembali setelah ditutup.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, tutup WO',
+                        cancelButtonText: 'Batal'
+                    }).then((confirmResult) => {
+                        if (confirmResult.isConfirmed) {
+                            updateWOStatus(id, 'Closed');
+                        }
+                    });
+                } else {
+                    // Langsung update untuk status selain Closed
+                    updateWOStatus(id, result.value);
+                }
             }
         });
     }
@@ -636,6 +630,18 @@
     function updateWOStatus(id, newStatus) {
         const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
         
+        // Tampilkan loading
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Sedang mengubah status',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         fetch(url, {
             method: 'POST',
             headers: {
@@ -646,12 +652,7 @@
                 status: newStatus
             })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
                 Swal.fire({
@@ -661,7 +662,7 @@
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    location.reload();
+                    window.location.reload();
                 });
             } else {
                 throw new Error(data.message || 'Gagal mengubah status');
@@ -672,7 +673,7 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Terjadi kesalahan!',
-                text: error.message || 'Gagal mengubah status'
+                text: 'Gagal mengubah status. Silakan coba lagi.'
             });
         });
     }
