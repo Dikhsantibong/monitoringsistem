@@ -21,7 +21,7 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 main-content">
             <!-- Header -->
-            <header class="bg-white shadow-sm">
+            <header class="bg-white shadow-sm sticky top-0 z-10">
                 <div class="flex justify-between items-center px-6 py-3">
                     <div class="flex items-center gap-x-3">
                         <!-- Mobile Menu Toggle -->
