@@ -100,30 +100,35 @@ class LaporanController extends Controller
     // Tambah method untuk handle WO
     public function storeWO(Request $request)
     {
-        $validated = $request->validate([
-            'wo_id' => 'required|numeric|unique:work_orders,id',
-            'description' => 'required',
-            'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
-            'priority' => 'required|in:emergency,normal,outage,urgent',
-            'schedule_start' => 'required|date',
-            'schedule_finish' => 'required|date',
-        ]);
+        try {
+            $validated = $request->validate([
+                'wo_id' => 'required|numeric|unique:work_orders,id',
+                'description' => 'required',
+                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
+                'priority' => 'required|in:emergency,normal,outage,urgent',
+                'schedule_start' => 'required|date',
+                'schedule_finish' => 'required|date|after_or_equal:schedule_start',
+            ]);
 
-        // Pastikan status awal selalu "Open"
-        $validated['status'] = 'Open';
+            // Buat Work Order baru
+            WorkOrder::create([
+                'id' => $request->wo_id,
+                'description' => $request->description,
+                'status' => $request->status,  // Gunakan status dari request
+                'priority' => $request->priority,
+                'schedule_start' => $request->schedule_start,
+                'schedule_finish' => $request->schedule_finish,
+            ]);
 
-        WorkOrder::create([
-            'id' => $request->wo_id,
-            'description' => $request->description,
-            'status' => $validated['status'],  // Gunakan status yang sudah divalidasi
-            'priority' => $request->priority,
-            'schedule_start' => $request->schedule_start,
-            'schedule_finish' => $request->schedule_finish,
-        ]);
-
-        return redirect()
-            ->route('admin.laporan.sr_wo')
-            ->with('success', 'Work Order berhasil ditambahkan dengan status Open');
+            return redirect()
+                ->route('admin.laporan.sr_wo')
+                ->with('success', 'Work Order berhasil ditambahkan');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     public function srWoClosed()

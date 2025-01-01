@@ -35,7 +35,7 @@ class WorkOrder extends Model
                 'status' => 'Open'
             ]);
 
-            $this->update(['status' => 'COMP']);
+            // $this->update(['status' => 'COMP']);
             return true;
         }
         return false;
