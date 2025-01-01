@@ -111,7 +111,7 @@ class DashboardController extends Controller
             'woData' => [
                 'counts' => [
                     WorkOrder::where('status', 'Open')->count(),
-                    WorkOrder::where('status', 'Close')->count(),
+                    WorkOrder::where('status', 'Closed')->count(),
                 ]
             ]
         ];
@@ -124,7 +124,7 @@ class DashboardController extends Controller
         
         // Menggabungkan total SR dan WO yang closed
         $totalClosedSRWO = ServiceRequest::where('status', 'Closed')->count() +
-                           WorkOrder::where('status', 'Close')->count();
+                           WorkOrder::where('status', 'Closed')->count();
                            
         $recentActivities = Activity::with('user')
             ->latest()
