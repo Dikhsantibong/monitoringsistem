@@ -132,13 +132,20 @@
         // Disable submit button
         submitButton.disabled = true;
         
+        // Ubah data form menjadi object
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
         fetch(this.action, {
-            method: 'POST',
+            method: 'PUT', // Ubah dari POST ke PUT
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: formData
+            body: JSON.stringify(data) // Ubah formData menjadi JSON string
         })
         .then(response => response.json())
         .then(data => {
@@ -150,7 +157,7 @@
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    window.location.href = '{{ route("admin.machine-monitor") }}';
+                    window.location.href = '{{ route("admin.machine-monitor.show") }}';
                 });
             } else {
                 Swal.fire({

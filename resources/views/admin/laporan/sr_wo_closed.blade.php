@@ -80,37 +80,38 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 border">
                         @foreach(App\Models\ServiceRequest::where('status', 'Closed')->get() as $index => $report)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap border">{{ $index + 1 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                     SR
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $report->id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4">{{ $report->description }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap border">{{ $report->id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
+                            <td class="px-6 py-4 border">{{ $report->description }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     {{ $report->status }}
                                 </span>
                             </td>
                         </tr>
                         @endforeach
-                        @foreach(App\Models\WorkOrder::where('status', 'Closed')->get() as $index => $report)
+
+                        @foreach(App\Models\WorkOrder::where('status', 'Close')->get() as $index => $report)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap border">{{ App\Models\ServiceRequest::where('status', 'Closed')->count() + $index + 1 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     WO
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $report->id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4">{{ $report->description }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap border">{{ $report->id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
+                            <td class="px-6 py-4 border">{{ $report->description }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     {{ $report->status }}
                                 </span>

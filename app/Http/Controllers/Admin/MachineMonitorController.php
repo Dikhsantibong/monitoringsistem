@@ -267,23 +267,34 @@ class MachineMonitorController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required',
-            'type' => 'required',
-            'serial_number' => 'required',
-            'power_plant_id' => 'required|exists:power_plants,id', // Validasi unit
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required',
+                'type' => 'required',
+                'serial_number' => 'required',
+                'power_plant_id' => 'required|exists:power_plants,id',
+            ]);
 
-        $machine = Machine::findOrFail($id);
-        $machine->update([
-            'name' => $request->name,
-            'type' => $request->type,
-            'serial_number' => $request->serial_number,
-            'power_plant_id' => $request->power_plant_id, // Update power_plant_id
-        ]);
+            $machine = Machine::findOrFail($id);
+            $machine->update($request->only([
+                'name',
+                'type',
+                'serial_number',
+                'power_plant_id'
+            ]));
 
-        return redirect()->route('admin.machine-monitor.show.all')
-            ->with('success', 'Mesin berhasil diperbarui!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Mesin berhasil diperbarui!'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating machine: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function showAll()

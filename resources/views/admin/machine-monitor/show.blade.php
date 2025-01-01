@@ -113,14 +113,14 @@
                 <!-- Wrapper for Table with Shadow -->
                 <div class="overflow-x-auto shadow-md rounded-lg">
                     <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                        <thead class="bg-blue-500" style="height: 50px;">
+                        <thead class="bg-[#0A749B]" style="height: 50px;">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">No</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Nama Mesin</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Tipe</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">No. Seri</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Unit</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Aksi</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">No</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">Nama Mesin</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">Tipe</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">No. Seri</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">Unit</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm">
@@ -150,20 +150,23 @@
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
                                     <span class="text-sm font-medium text-gray-900">{{ $machine->powerPlant->name ?? 'N/A' }}</span>
                                 </td>
-                                <td class="px-2 py-1 whitespace-nowrap">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('admin.machine-monitor.edit', $machine->id) }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg">
-                                            <i class="fas fa-edit text-lg"></i>
+                                <td class="py-2 whitespace-nowrap flex justify-center gap-2">
+                                    <div>
+                                        <a href="{{ route('admin.machine-monitor.edit', $machine->id) }}" 
+                                           class="text-white btn bg-indigo-500 hover:bg-indigo-600 rounded-lg border px-4 py-2">
+                                            <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" 
-                                              method="POST" 
-                                              class="delete-form">
+                                    </div>
+                                    <div>
+                                        <form id="delete-form-{{ $machine->id }}" 
+                                              action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" 
+                                              method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" 
-                                                    onclick="confirmDelete(this)" 
-                                                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
-                                                <i class="fas fa-trash-alt text-lg"></i>
+                                                    onclick="confirmDelete({{ $machine->id }}, '{{ $machine->name }}')" 
+                                                    class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg border px-4 py-2">
+                                                <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -181,21 +184,36 @@
                 </div>
 
                 <!-- Pagination Section -->
-                <div class="mt-4">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-700">
-                            Menampilkan
-                            {{ $machines->firstItem() ?? 0 }}
-                            sampai
-                            {{ $machines->lastItem() ?? 0 }}
-                            dari
-                            {{ $machines->total() }}
-                            data
-                        </div>
-                        
-                        <div>
-                            {{ $machines->links('pagination::tailwind') }}
-                        </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="text-sm text-gray-700">
+                        Menampilkan 
+                        {{ ($machines->currentPage() - 1) * $machines->perPage() + 1 }} 
+                        hingga 
+                        {{ min($machines->currentPage() * $machines->perPage(), $machines->total()) }} 
+                        dari 
+                        {{ $machines->total() }} 
+                        data
+                    </div>
+                    <div>
+                        <ul class="pagination">
+                            @if (!$machines->onFirstPage())
+                                <li class="page-item">
+                                    <a href="{{ $machines->previousPageUrl() }}" class="page-link">Sebelumnya</a>
+                                </li>
+                            @endif
+
+                            @foreach ($machines->getUrlRange(1, $machines->lastPage()) as $page => $url)
+                                <li class="page-item {{ $page == $machines->currentPage() ? 'active' : '' }}">
+                                    <a href="{{ $url }}" class="page-link">{{ $page }}</a>
+                                </li>
+                            @endforeach
+
+                            @if ($machines->hasMorePages())
+                                <li class="page-item">
+                                    <a href="{{ $machines->nextPageUrl() }}" class="page-link">Selanjutnya</a>
+                                </li>
+                            @endif
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -353,6 +371,59 @@
 .overflow-x-auto::after {
     right: 0;
     background: linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0));
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 5px;
+}
+
+.page-item {
+    margin: 0;
+
+}
+
+.page-link {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #0A749B;
+    background-color: #fff;
+    border: 1px solid #0A749B;
+    border-radius: 0.25rem;
+    text-decoration: none;
+}
+
+.page-item.active .page-link {
+    background-color: #0A749B;
+    color: #fff;
+    border-color: #0A749B;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+.page-link:hover {
+    background-color: #0A749B;
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
 }
 </style>
 
