@@ -7,7 +7,7 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 main-content">
-            <header class="bg-white shadow-sm sticky top-0 z-10">
+            <header class="bg-white shadow-sm sticky top-0 z-20">
                 <div class="flex justify-between items-center px-6 py-3">
                     <div class="flex items-center gap-x-3">
                         <!-- Mobile Menu Toggle -->
@@ -115,7 +115,7 @@
                             <div class="overflow-auto max-h-96">
                                 <table id="srTable"
                                     class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                    <thead>
+                                    <thead class="sticky top-0 z-10">
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID SR</th>
@@ -170,7 +170,7 @@
                             </div>
                             <div class="overflow-auto max-h-96">
                                 <table id="woTable" class="min-w-full bg-white border border-gray-300">
-                                    <thead>
+                                    <thead class="sticky top-0 z-10">
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID WO</th>
@@ -233,7 +233,7 @@
                             </div>
                             <div class="overflow-auto max-h-96">
                                 <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                    <thead>
+                                    <thead class="sticky top-0 z-10 " style="height: 60px;">
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">No WO</th>
