@@ -86,6 +86,11 @@
                                     style="height: 42px;">
                                     <i class="fas fa-filter mr-2"></i> Filter
                                 </button>
+                                <button type="button" onclick="showAllData()" 
+                                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center" 
+                                    style="height: 42px;">
+                                    <i class="fas fa-list mr-2"></i> Tampilkan Semua
+                                </button>
                             </form>
 
                             <!-- Search Input -->
@@ -172,6 +177,12 @@
                                 </a>
                             </div>
                             <div class="overflow-auto max-h-96">
+                                @if(session('backlog_notification'))
+                                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+                                    <p class="font-bold">Perhatian!</p>
+                                    <p>{{ session('backlog_notification') }}</p>
+                                </div>
+                                @endif
                                 <table id="woTable" class="min-w-full bg-white border border-gray-300">
                                     <thead class="sticky top-0 z-10">
                                         <tr style="background-color: #0A749B; color: white;">
@@ -193,7 +204,7 @@
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
-                                                    <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Close' ? 'green-500' : ($wo->status == 'Comp' ? 'blue-500' : ($wo->status == 'APPR' ? 'yellow-500' : ($wo->status == 'WAPPR' ? 'purple-500' : 'gray-500')))) }} text-white rounded-full px-2 py-1">
+                                                    <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'Comp' ? 'blue-500' : ($wo->status == 'APPR' ? 'yellow-500' : ($wo->status == 'WAPPR' ? 'purple-500' : 'gray-500')))) }} text-white rounded-full px-2 py-1">
                                                             {{ $wo->status }}
                                                     </span>
                                                 </td>
@@ -215,7 +226,7 @@
                                                         </button>
                                                     @else
                                                         <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
-                                                            WO Sudah Ditutup
+                                                            Closed
                                                         </button>
                                                     @endif
                                                 </td>
@@ -400,16 +411,14 @@
     window.addEventListener('load', function() {
         const urlParams = new URLSearchParams(window.location.search);
         
-        // Set tanggal default jika tidak ada di URL
-        if (!urlParams.has('tanggal_mulai') || !urlParams.has('tanggal_akhir')) {
+        // Set tanggal default hanya jika bukan dari tombol "Tampilkan Semua"
+        if (!urlParams.has('show_all') && !urlParams.has('tanggal_mulai') && !urlParams.has('tanggal_akhir')) {
             const today = new Date();
             const sevenDaysAgo = new Date(today);
             sevenDaysAgo.setDate(today.getDate() - 7);
             
             document.getElementById('tanggal_mulai').value = sevenDaysAgo.toISOString().split('T')[0];
             document.getElementById('tanggal_akhir').value = today.toISOString().split('T')[0];
-            
-            window.location.href = `${window.location.pathname}?tanggal_mulai=${sevenDaysAgo.toISOString().split('T')[0]}&tanggal_akhir=${today.toISOString().split('T')[0]}`;
         }
         
         // Set search value dari URL jika ada
@@ -600,15 +609,15 @@
             'WAPPR': 'WAPPR',
             'APPR': 'APPR',
             'Comp': 'Comp',
-            'Close': 'Close',  // Ubah dari 'Closed' ke 'Close'
+            'Closed': 'Closed',  // Ubah dari 'Closed' ke 'Close'
             'WMATL': 'WMATL'
         };
 
         // Jika status saat ini adalah Close
-        if (currentStatus === 'Close') {  // Ubah dari 'Closed' ke 'Close'
+        if (currentStatus === 'Closed') {  // Ubah dari 'Closed' ke 'Close'
             Swal.fire({
                 icon: 'info',
-                title: 'Status Close',
+                title: 'Status Closed',
                 text: 'WO sudah ditutup dan tidak dapat diubah statusnya',
             });
             return;
@@ -681,6 +690,11 @@
                 text: error.message
             });
         });
+    }
+
+    function showAllData() {
+        // Redirect ke halaman yang sama tanpa parameter tanggal
+        window.location.href = window.location.pathname;
     }
 </script>
 @push('scripts')

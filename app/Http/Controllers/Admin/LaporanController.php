@@ -14,56 +14,60 @@ class LaporanController extends Controller
 {
     public function srWo(Request $request)
     {
-        // Ambil data Service Requests
-        $serviceRequests = DB::table('service_requests')
-            ->select('id', 'description', 'status', 'created_at', 'downtime', 'tipe_sr', 'priority')
-            ->when($request->has(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
-                return $query->whereBetween('created_at', [
-                    $request->tanggal_mulai . ' 00:00:00',
-                    $request->tanggal_akhir . ' 23:59:59'
-                ]);
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        try {
+            // Cek WO yang expired dan pindahkan ke backlog
+            $this->checkExpiredWO();
 
-        // Ambil data Work Orders (perbaikan nama kolom)
-        $workOrders = DB::table('work_orders')
-            ->select(
-                'id', 
-                'description',  // Menggunakan 'deskripsi' bukan 'description'
-                'status', 
-                'created_at', 
-                'priority', 
-                'schedule_start', 
-                'schedule_finish'
-            )
-            ->when($request->has(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
-                return $query->whereBetween('created_at', [
-                    $request->tanggal_mulai . ' 00:00:00',
-                    $request->tanggal_akhir . ' 23:59:59'
-                ]);
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+            // Query untuk Service Requests
+            $serviceRequests = ServiceRequest::query()
+                ->select('id', 'description', 'status', 'created_at', 'downtime', 'tipe_sr', 'priority')
+                ->when($request->filled(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
+                    return $query->whereBetween('created_at', [
+                        $request->tanggal_mulai . ' 00:00:00',
+                        $request->tanggal_akhir . ' 23:59:59'
+                    ]);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        // Ambil data WO Backlog
-        $woBacklogs = DB::table('wo_backlog')
-            ->select('id', 'no_wo', 'deskripsi', 'created_at', 'keterangan', 'status')
-            ->when($request->has(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
-                return $query->whereBetween('created_at', [
-                    $request->tanggal_mulai . ' 00:00:00',
-                    $request->tanggal_akhir . ' 23:59:59'
-                ]);
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+            // Query untuk Work Orders
+            $workOrders = WorkOrder::query()
+                ->select('id', 'description', 'status', 'created_at', 'priority', 'schedule_start', 'schedule_finish')
+                ->when($request->filled(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
+                    return $query->whereBetween('created_at', [
+                        $request->tanggal_mulai . ' 00:00:00',
+                        $request->tanggal_akhir . ' 23:59:59'
+                    ]);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        // Clear cache
-        \Cache::forget('work_orders');
-        \Cache::forget('service_requests');
-        \Cache::forget('wo_backlog');
+            // Query untuk WO Backlog
+            $woBacklogs = WoBacklog::query()
+                ->select('id', 'no_wo', 'deskripsi', 'tanggal_backlog', 'keterangan', 'status', 'created_at')
+                ->when($request->filled(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
+                    return $query->whereBetween('created_at', [
+                        $request->tanggal_mulai . ' 00:00:00',
+                        $request->tanggal_akhir . ' 23:59:59'
+                    ]);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        return view('admin.laporan.sr_wo', compact('serviceRequests', 'workOrders', 'woBacklogs'));
+            // Cek apakah ada notifikasi backlog
+            $backlogNotification = session('backlog_notification');
+
+            return view('admin.laporan.sr_wo', compact(
+                'serviceRequests',
+                'workOrders',
+                'woBacklogs',
+                'backlogNotification'
+            ));
+
+        } catch (\Exception $e) {
+            \Log::error('Error in srWo method: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
     
 
@@ -99,7 +103,7 @@ class LaporanController extends Controller
         $validated = $request->validate([
             'wo_id' => 'required|numeric|unique:work_orders,id',
             'description' => 'required',
-            'status' => 'required|in:Open,Close,Comp,APPR,WAPPR,WMATL',
+            'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
             'priority' => 'required|in:emergency,normal,outage,urgent',
             'schedule_start' => 'required|date',
             'schedule_finish' => 'required|date',
@@ -195,7 +199,7 @@ class LaporanController extends Controller
             
             // 1. Validasi input dengan nilai enum yang benar
             $request->validate([
-                'status' => 'required|in:Open,Close,Comp,APPR,WAPPR,WMATL'  // Sesuaikan dengan enum di database
+                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'  // Sesuaikan dengan enum di database
             ]);
 
             // 2. Ambil dan update WO dengan query builder
@@ -209,8 +213,8 @@ class LaporanController extends Controller
 
             $oldStatus = $wo->status;
 
-            if ($oldStatus === 'Close') {  // Ubah pengecekan ke 'Close'
-                throw new \Exception('WO yang sudah Close tidak dapat diubah statusnya');
+            if ($oldStatus === 'Closed') {  // Ubah pengecekan ke 'Close'
+                throw new \Exception('WO yang sudah Closed tidak dapat diubah statusnya');
             }
 
             // 3. Update menggunakan query builder
@@ -303,31 +307,6 @@ class LaporanController extends Controller
         }
     }
 
-    // Pisahkan logika expired WO ke method terpisah yang hanya dipanggil saat diperlukan
-    public function checkExpiredWO()
-    {
-        // Hanya jalankan jika bukan request update status
-        if (request()->is('*/update-wo-status/*')) {
-            return;
-        }
-
-        $expiredWOs = WorkOrder::where('schedule_finish', '<', now())
-            ->where('status', 'Open')
-            ->get();
-
-        foreach ($expiredWOs as $wo) {
-            WoBacklog::create([
-                'no_wo' => $wo->id,
-                'deskripsi' => $wo->description,
-                'tanggal_backlog' => $wo->schedule_finish,
-                'keterangan' => 'Otomatis Terkirim ke Backlog',
-                'status' => 'Open'
-            ]);
-
-            $wo->update(['status' => 'COMP']);
-        }
-    }
-
     // Method untuk update status WO Backlog
     public function updateBacklogStatus(Request $request, $id)
     {
@@ -348,17 +327,48 @@ class LaporanController extends Controller
     // Method untuk update WO Backlog
     public function updateWoBacklog(Request $request, $id)
     {
-        $validated = $request->validate([
-            'deskripsi' => 'required|string',
-            'keterangan' => 'nullable|string'
-        ]);
+        try {
+            $validated = $request->validate([
+                'deskripsi' => 'required|string',
+                'keterangan' => 'nullable|string',
+                'status' => 'required|in:Open,Closed' // Tambahkan validasi status
+            ]);
 
-        $backlog = WoBacklog::findOrFail($id);
-        $backlog->update($validated);
+            $backlog = WoBacklog::findOrFail($id);
+            $backlog->update([
+                'deskripsi' => $validated['deskripsi'],
+                'keterangan' => $validated['keterangan'],
+                'status' => $validated['status']
+            ]);
 
-        return redirect()
-            ->route('admin.laporan.sr_wo')
-            ->with('success', 'WO Backlog berhasil diupdate');
+            return redirect()
+                ->route('admin.laporan.sr_wo')
+                ->with('success', 'WO Backlog berhasil diupdate');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    private function checkExpiredWO()
+    {
+        // Hanya jalankan jika bukan request update status
+        if (request()->is('*/update-wo-status/*')) {
+            return;
+        }
+
+        $expiredWOs = WorkOrder::where('schedule_finish', '<', now())
+            ->where('status', 'Open')
+            ->get();
+
+        foreach ($expiredWOs as $wo) {
+            if ($wo->moveToBacklog()) {
+                session()->flash('backlog_notification', 
+                    "WO #{$wo->id} telah dipindahkan ke backlog karena melewati jadwal.");
+            }
+        }
     }
 }
 
