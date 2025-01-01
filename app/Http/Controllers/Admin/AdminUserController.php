@@ -129,5 +129,30 @@ class AdminUserController extends Controller
                 ->with('error', 'Gagal menghapus pengguna: ' . $e->getMessage());
         }
     }
-    
+
+    public function search(Request $request)
+    {
+        $query = User::query();
+        
+        // Search berdasarkan nama atau email
+        if ($search = $request->input('search')) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        // Filter berdasarkan role
+        if ($role = $request->input('role')) {
+            $query->where('role', $role);
+        }
+        
+        // Ambil semua data yang sesuai dengan kriteria pencarian
+        $users = $query->orderBy('created_at', 'desc')->get();
+        
+        return response()->json([
+            'users' => $users,
+            'total' => User::count()
+        ]);
+    }
 } 

@@ -130,6 +130,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
         Route::put('/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/search', [AdminUserController::class, 'search'])->name('users.search');
     });
 
     Route::resource('score-card', ScoreCardDailyController::class);
