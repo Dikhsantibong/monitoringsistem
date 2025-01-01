@@ -75,17 +75,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [MachineMonitorController::class, 'index'])->name('machine-monitor');
         Route::get('/create', [MachineMonitorController::class, 'create'])->name('machine-monitor.create');
         Route::post('/store', [MachineMonitorController::class, 'store'])->name('machine-monitor.store');
-        // Route::get('/{machine}', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
-        Route::get('admin/machine-monitor/{machine}', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
-        Route::get('/{machine}/edit', [MachineMonitorController::class, 'edit'])->name('machine-monitor.edit');
-        Route::put('/{machine}', [MachineMonitorController::class, 'update'])->name('machine-monitor.update');
-        Route::get('admin/machine/{machine}/edit', [MachineMonitorController::class, 'edit'])->name('admin.machine.edit');
-Route::delete('admin/machine/{machine}', [MachineMonitorController::class, 'destroy'])->name('admin.machine.destroy');
-        Route::delete('/{machine}', [MachineMonitorController::class, 'destroy'])->name('machine-monitor.destroy');
-        
-Route::get('admin/machine-monitor/{id}/edit', [MachineMonitorController::class, 'edit'])->name('admin.machine-monitor.edit');
-    // Route::get('/crud', [MachineMonitorController::class, 'crud'])->name('machine-monitor.crud');
-            
+        Route::get('/show', [MachineMonitorController::class, 'show'])->name('machine-monitor.show');
+        Route::get('/{id}/edit', [MachineMonitorController::class, 'edit'])->name('machine-monitor.edit');
+        Route::put('/{id}', [MachineMonitorController::class, 'update'])->name('machine-monitor.update');
+        Route::delete('/{id}', [MachineMonitorController::class, 'destroy'])->name('machine-monitor.destroy');
     });
 
     Route::prefix('pembangkit')->group(function () {
@@ -205,7 +198,8 @@ Route::get('/admin/pembangkit/report', [PembangkitController::class, 'report'])-
 Route::get('/admin/pembangkit/downloadReport', [PembangkitController::class, 'downloadReport'])->name('admin.pembangkit.downloadReport');
 Route::get('/admin/pembangkit/printReport', [PembangkitController::class, 'printReport'])->name('admin.pembangkit.printReport');
 
-Route::get('/machine-monitor/show', [MachineMonitorController::class, 'showAll'])->name('admin.machine-monitor.show.all');
+Route::get('/admin/machine-monitor/show-all', [MachineMonitorController::class, 'showAll'])
+    ->name('admin.machine-monitor.show.all');
 
 Route::middleware(['auth'])->group(function () {
     // Prefix admin untuk semua route admin
@@ -304,5 +298,8 @@ Route::get('/admin/laporan/wo-backlog/{id}/edit', [LaporanController::class, 'ed
 Route::put('/admin/laporan/wo-backlog/{id}', [LaporanController::class, 'updateWoBacklog'])->name('admin.laporan.update-wo-backlog');
 
 Route::post('/admin/laporan/wo-backlog/{id}/status', [LaporanController::class, 'updateBacklogStatus'])->name('admin.laporan.update-backlog-status');
+
+Route::delete('/admin/machine-monitor/{id}', [MachineMonitorController::class, 'destroy'])
+    ->name('admin.machine-monitor.destroy');
 
     

@@ -31,6 +31,7 @@
                     </div>
                 </div>
             </header>
+
             <!-- Breadcrumbs -->
             <div class="mt-3">
                 <x-admin-breadcrumb :breadcrumbs="[
@@ -38,6 +39,7 @@
                             ['name' => 'Tambah Mesin', 'url' => null]
                         ]" />
             </div>
+
             <!-- Konten utama -->
             <div class="container mx-auto px-6 py-8">
                 <h3 class="text-gray-700 text-3xl font-medium">Tambah Mesin Baru</h3>
@@ -45,7 +47,7 @@
                 <div class="mt-8">
                     <form id="createMachineForm" action="{{ route('admin.machine-monitor.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                         @csrf
-                        
+
                         <!-- Nama Mesin -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
@@ -58,72 +60,44 @@
                                    required>
                         </div>
 
-                        <!-- Kode Mesin -->
+                        <!-- Tipe -->
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="code">
-                                Kode Mesin <span class="text-red-500">*</span>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="type">
+                                Tipe <span class="text-red-500">*</span>
                             </label>
                             <input type="text" 
-                                   name="code" 
-                                   id="code" 
+                                   name="type" 
+                                   id="type" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                    required>
                         </div>
 
-                        <!-- Kategori Mesin -->
+                        <!-- No. Seri -->
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="category_id">
-                                Kategori Mesin <span class="text-red-500">*</span>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="serial_number">
+                                No. Seri <span class="text-red-500">*</span>
                             </label>
-                            <select name="category_id" 
-                                    id="category_id" 
+                            <input type="text" 
+                                   name="serial_number" 
+                                   id="serial_number" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   required>
+                        </div>
+
+                        <!-- Unit -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="power_plant_id">
+                                Unit <span class="text-red-500">*</span>
+                            </label>
+                            <select name="power_plant_id" 
+                                    id="power_plant_id" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     required>
-                                <option value="">Pilih Kategori</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                <option value="">Pilih Unit</option>
+                                @foreach(\App\Models\PowerPlant::all() as $powerPlant)
+                                    <option value="{{ $powerPlant->id }}">{{ $powerPlant->name }}</option>
                                 @endforeach
-                                <option value="SEO">SEO</option>
                             </select>
-                        </div>
-
-                        <!-- Lokasi -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="location">
-                                Lokasi Mesin <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   name="location" 
-                                   id="location" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   required>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                                Status <span class="text-red-500">*</span>
-                            </label>
-                            <select name="status" 
-                                    id="status" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    required>
-                                <option value="">Pilih Status</option>
-                                <option value="START">Start</option>
-                                <option value="STOP">Stop</option>
-                                <option value="PARALLEL">Parallel</option>
-                            </select>
-                        </div>
-
-                        <!-- Deskripsi -->
-                        <div class="mb-6">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                                Deskripsi
-                            </label>
-                            <textarea name="description" 
-                                      id="description" 
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      rows="3"></textarea>
                         </div>
 
                         <!-- Tombol Submit -->
@@ -142,61 +116,58 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @endpush
+
+    <script>
+    document.getElementById('createMachineForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitButton = this.querySelector('button[type="submit"]');
+        
+        submitButton.disabled = true;
+        
+        fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    window.location.href = data.redirect_url;
+                });
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message || 'Terjadi kesalahan saat menambahkan mesin'
+            });
+            submitButton.disabled = false;
+        });
+    });
+    </script>
 @endsection
 
 <script>
-document.getElementById('createMachineForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const data = {
-        _token: '{{ csrf_token() }}',
-        name: document.getElementById('name').value,
-        code: document.getElementById('code').value,
-        category_id: document.getElementById('category_id').value,
-        location: document.getElementById('location').value,
-        status: document.getElementById('status').value,
-        description: document.getElementById('description').value
-    };
-
-    fetch(this.action, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                title: 'Berhasil!',
-                text: data.message,
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                window.location.href = '{{ route("admin.machine-monitor") }}';
-            });
-        } else {
-            Swal.fire({
-                title: 'Gagal!',
-                html: data.message.split('\n').join('<br>'),
-                icon: 'error'
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Error!',
-            text: 'Terjadi kesalahan saat menambahkan mesin',
-            icon: 'error'
-        });
-    });
-});
-
 // Tambahkan logika untuk mengubah ukuran sidebar dan menyembunyikan teks pada mode ikon.
 const toggleSidebarButton = document.getElementById('toggleSidebar');
 const sidebar = document.getElementById('sidebar');

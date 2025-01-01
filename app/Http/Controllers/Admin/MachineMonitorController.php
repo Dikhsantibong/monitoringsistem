@@ -162,22 +162,32 @@ class MachineMonitorController extends Controller
     }
 
     public function store(Request $request)
-{
-    // Validasi input
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'code' => 'required|string|unique:machines,code',
-        'category_id' => 'required|exists:categories,id',
-        'location' => 'required|string|max:255',
-        'status' => 'required|in:START,STOP,PARALLEL',
-    ]);
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'type' => 'required|string|max:50',
+                'serial_number' => 'required|string|max:50',
+                'power_plant_id' => 'required|exists:power_plants,id',
+            ]);
 
-    // Simpan ke database
-    Machine::create($validated);
+            // Tambahkan default value untuk capacity
+            $validated['capacity'] = 0;
 
-    // Redirect atau kirim respons JSON
-    return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil ditambahkan!');
-}
+            $machine = Machine::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data mesin berhasil ditambahkan!',
+                'redirect_url' => route('admin.machine-monitor.show')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan mesin: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function showMachine(Machine $machine)
     {
@@ -229,63 +239,74 @@ class MachineMonitorController extends Controller
     }
 
     public function create()
-{
-    $categories = Category::all(); // Ambil semua kategori mesin
-    return view('admin.machine-monitor.create', compact('categories'));
-}
+    {
+        $machines = Machine::all(); // Ambil semua kategori mesin
+        return view('admin.machine-monitor.create', compact('machines'));
+    }
 
-public function crud()
-{
-    return view('admin.machine-monitor.crud');
-}
+    public function crud()
+    {
+        return view('admin.machine-monitor.crud');
+    }
 
-public function show()
-{
-    $machines = Machine::with('powerPlant')
-                      ->orderBy('id')
-                      ->paginate(15); // Menggunakan paginate() bukan get()
-    
-    return view('admin.machine-monitor.show', compact('machines'));
-}
+    public function show()
+    {
+        $machines = Machine::with('powerPlant')
+                          ->orderBy('id')
+                          ->paginate(10); // Ubah ke 10 item per halaman
+        
+        return view('admin.machine-monitor.show', compact('machines'));
+    }
 
     public function edit($id)
     {
         $item = Machine::findOrFail($id);
-        return view('admin.machine-monitor.edit', compact('item'));
+        $powerPlants = PowerPlant::all(); // Tambahkan ini untuk mendapatkan daftar unit
+        return view('admin.machine-monitor.edit', compact('item', 'powerPlants'));
     }
 
-    public function update(Request $request, Machine $machine)
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:machines,code,' . $machine->id,
-            'category_id' => 'required|exists:categories,id',
-            'location' => 'required|string|max:255',
-            'status' => 'required|in:START,STOP,PARALLEL',
-            'description' => 'nullable|string'
+        $request->validate([
+            'name' => 'required',
+            'type' => 'required',
+            'serial_number' => 'required',
+            'power_plant_id' => 'required|exists:power_plants,id', // Validasi unit
         ]);
 
-        try {
-            $machine->update($validated);
-            Alert::success('Berhasil', 'Mesin berhasil diperbarui');
-            return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil diperbarui!');
-        } catch (\Exception $e) {
-            Alert::error('Gagal', 'Gagal memperbarui mesin: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['error' => 'Gagal memperbarui mesin: ' . $e->getMessage()]);
-        }
+        $machine = Machine::findOrFail($id);
+        $machine->update([
+            'name' => $request->name,
+            'type' => $request->type,
+            'serial_number' => $request->serial_number,
+            'power_plant_id' => $request->power_plant_id, // Update power_plant_id
+        ]);
+
+        return redirect()->route('admin.machine-monitor.show.all')
+            ->with('success', 'Mesin berhasil diperbarui!');
     }
 
     public function showAll()
     {
-        $machines = Machine::with(['powerPlant', 'metrics', 'statusLogs' => function($query) {
-            $query->latest();
-        }])->paginate(10); // Mengubah get() menjadi paginate()
+        $machines = Machine::with(['powerPlant'])
+                          ->orderBy('id')
+                          ->paginate(10);
+                          
+        return view('admin.machine-monitor.show', compact('machines'));
+    }
 
-        $recentIssues = Issue::with(['machine', 'category'])
-            ->latest()
-            ->take(5)
-            ->get();
+    public function destroy($id)
+    {
+        try {
+            $machine = Machine::findOrFail($id);
+            $machineName = $machine->name;
+            $machine->delete();
 
-        return view('admin.machine-monitor.show', compact('machines', 'recentIssues'));
+            return redirect()->route('admin.machine-monitor.show.all')
+                ->with('success', "Mesin $machineName berhasil dihapus!");
+        } catch (\Exception $e) {
+            return redirect()->route('admin.machine-monitor.show.all')
+                ->with('error', 'Gagal menghapus mesin: ' . $e->getMessage());
+        }
     }
 }

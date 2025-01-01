@@ -59,14 +59,14 @@
             <div class="flex justify-between items-center pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Monitor Mesin', 'url' => null]]" />
                 <div class="flex items-center space-x-4 px-6">
-                    <button onclick="openNewIssueModal()"
+                    {{-- <button onclick="openNewIssueModal()"
                         class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                         <i class="fas fa-exclamation-circle mr-2"></i>Laporkan Masalah
                     </button>
-                    <button onclick="location.href='{{ route('admin.machine-monitor.create') }}'"
+                    {{-- <button onclick="location.href='{{ route('admin.machine-monitor.create') }}'"
                         class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
                         <i class="fas fa-plus mr-2"></i>Tambah Mesin
-                    </button>
+                    </button> --}} 
                 </div>
             </div>
 

@@ -1,5 +1,4 @@
-    @extends('layouts.app')
-
+@extends('layouts.app')
 @section('content')
 <div class="flex h-screen bg-gray-50 overflow-auto">
     <!-- Sidebar -->
@@ -77,7 +76,7 @@
                 </div>
                 
                 <!-- Search and Buttons Section -->
-                <div class="flex flex-col sm:flex-row justify-end gap-3 mb-4">
+                <div class="flex flex-col sm:flex-row justify-between gap-3 mb-4">
                     <!-- Search Bar -->
                     <div class="flex w-full sm:w-auto order-2 sm:order-1">
                         <input type="text" 
@@ -93,6 +92,11 @@
                     
                     <!-- Action Buttons -->
                     <div class="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
+                        <a href="{{ route('admin.machine-monitor.create') }}" 
+                            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all text-sm">
+                            <i class="fas fa-plus"></i>
+                            <span class="hidden sm:inline">Tambah Mesin</span>
+                        </a>
                         <button onclick="refreshTable()" 
                             class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all text-sm">
                             <i class="fas fa-sync-alt"></i>
@@ -109,22 +113,23 @@
                 <!-- Wrapper for Table with Shadow -->
                 <div class="overflow-x-auto shadow-md rounded-lg">
                     <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                        <thead class="bg-blue-500">
+                        <thead class="bg-blue-500" style="height: 50px;">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">ID Mesin</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">No</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Nama Mesin</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Tipe</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">No. Seri</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Tanggal</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Unit</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm">
-                            @forelse($machines as $machine)
+                            @forelse($machines as $index => $machine)
                             <tr class="hover:bg-gray-50 transition-colors border border-gray-200 border-l-0 border-r-0">
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
-                                    <span class="text-sm font-medium text-gray-900">#{{ str_pad($machine->id, 3, '0', STR_PAD_LEFT) }}</span>
+                                    <span class="text-sm font-medium text-gray-900">
+                                        {{ ($machines->currentPage() - 1) * $machines->perPage() + $index + 1 }}
+                                    </span>
                                 </td>
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
                                     <div class="flex items-center">
@@ -143,22 +148,21 @@
                                     <span class="text-sm text-gray-500">{{ $machine->serial_number ?? 'N/A' }}</span>
                                 </td>
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
-                                    <div class="text-sm text-gray-500">
-                                        {{ \Carbon\Carbon::parse($machine->updated_at)->format('Y-m-d H:i:s') }}
-                                    </div>
-                                </td>
-                                <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
                                     <span class="text-sm font-medium text-gray-900">{{ $machine->powerPlant->name ?? 'N/A' }}</span>
                                 </td>
                                 <td class="px-2 py-1 whitespace-nowrap">
                                     <div class="flex space-x-2">
-                                        <a href="javascript:void(0);" onclick="openPopup({{ $machine->id }})" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg">
+                                        <a href="{{ route('admin.machine-monitor.edit', $machine->id) }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg">
                                             <i class="fas fa-edit text-lg"></i>
                                         </a>
-                                        <form action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" method="POST" onsubmit="return showDeleteConfirmation(event, '{{ $machine->name }}', this);">
+                                        <form action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" 
+                                              method="POST" 
+                                              class="delete-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+                                            <button type="button" 
+                                                    onclick="confirmDelete(this)" 
+                                                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
                                                 <i class="fas fa-trash-alt text-lg"></i>
                                             </button>
                                         </form>
@@ -167,7 +171,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                                     Tidak ada data mesin yang tersedia
                                 </td>
                             </tr>
@@ -177,52 +181,21 @@
                 </div>
 
                 <!-- Pagination Section -->
-                <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
-                    <div class="flex items-center gap-1 overflow-x-auto w-full sm:w-auto order-1 sm:order-1">
-                        <span class="text-xs sm:text-sm text-gray-700">
-                            Menampilkan {{ $machines->firstItem() ?? 0 }} - {{ $machines->lastItem() ?? 0 }} dari {{ $machines->total() }} data
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-1 overflow-x-auto w-full sm:w-auto order-2 sm:order-2 justify-end">
-                        @if($machines->previousPageUrl())
-                        <a href="{{ $machines->previousPageUrl() }}" 
-                            class="px-4 py-2 bg-[#FF6B6B] text-white rounded-md text-sm font-medium hover:bg-[#FF5252] transition-colors">
-                            Previous
-                        </a>
-                        @endif
-
-                        @for($i = 1; $i <= $machines->lastPage(); $i++)
-                            @if($i == $machines->currentPage())
-                                <span class="px-4 py-2 bg-[#4285F4] text-white rounded-md text-sm font-medium">
-                                    {{ $i }}
-                                </span>
-                            @else
-                                <a href="{{ $machines->url($i) }}" 
-                                    class="px-4 py-2 bg-[#4285F4] bg-opacity-10 text-[#4285F4] rounded-md text-sm font-medium hover:bg-opacity-20 transition-colors">
-                                    {{ $i }}
-                                </a>
-                            @endif
-
-                            @if($i < $machines->lastPage())
-                                @if($i == 3 && $machines->lastPage() > 6)
-                                    <span class="px-2 text-gray-500">...</span>
-                                    @break
-                                @endif
-                            @endif
-                        @endfor
-
-                        @if($machines->lastPage() > 6)
-                            <span class="px-4 py-2 bg-[#4285F4] bg-opacity-10 text-[#4285F4] rounded-md text-sm font-medium">
-                                {{ $machines->lastPage() }}
-                            </span>
-                        @endif
-
-                        @if($machines->nextPageUrl())
-                        <a href="{{ $machines->nextPageUrl() }}" 
-                            class="px-4 py-2 bg-[#FF6B6B] text-white rounded-md text-sm font-medium hover:bg-[#FF5252] transition-colors">
-                            Next
-                        </a>
-                        @endif
+                <div class="mt-4">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Menampilkan
+                            {{ $machines->firstItem() ?? 0 }}
+                            sampai
+                            {{ $machines->lastItem() ?? 0 }}
+                            dari
+                            {{ $machines->total() }}
+                            data
+                        </div>
+                        
+                        <div>
+                            {{ $machines->links('pagination::tailwind') }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -423,24 +396,6 @@ document.querySelectorAll('.edit-icon').forEach(icon => {
     icon.addEventListener('click', openPopup);
 });
 
-function showDeleteConfirmation(event, machineName, form) {
-    event.preventDefault(); // Mencegah pengiriman form secara langsung
-    Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: "Anda akan menghapus mesin: " + machineName,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            form.submit(); // Mengirim form jika pengguna mengkonfirmasi
-        }
-    });
-}
-
 function searchMachines() {
     const input = document.getElementById('search').value.toLowerCase();
     const rows = document.querySelectorAll('#machineTable tr');
@@ -493,6 +448,50 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.remove('hidden');
         }
     });
+});
+
+// Fungsi untuk konfirmasi delete dengan SweetAlert2
+function confirmDelete(button) {
+    const form = button.closest('form');
+    const machineName = button.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
+
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: `Anda akan menghapus mesin: ${machineName}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+}
+
+// Handle flash messages
+document.addEventListener('DOMContentLoaded', function() {
+    // Success message
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 1500
+        });
+    @endif
+
+    // Error message
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: "{{ session('error') }}"
+        });
+    @endif
 });
 </script>
 

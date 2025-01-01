@@ -49,4 +49,26 @@ class MachineMonitorController extends Controller
         $machines = Machine::all();
         return view('admin.machine-monitor.show', compact('machines'));
     }
+
+    public function edit($id)
+    {
+        $machine = Machine::findOrFail($id);
+        return view('admin.machine-monitor.edit', compact('machine'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:50',
+            'serial_number' => 'required|string|max:50',
+            'powerPlant' => 'required|string|max:255',
+            'status' => 'required|in:START,STOP,PARALLEL',
+        ]);
+
+        $machine = Machine::findOrFail($id);
+        $machine->update($validated);
+
+        return redirect()->route('admin.machine-monitor')->with('success', 'Mesin berhasil diperbarui');
+    }
 }
