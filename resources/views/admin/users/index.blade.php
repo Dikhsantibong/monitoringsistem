@@ -76,14 +76,17 @@
                                 </select>
                             </div>
                             <div class="flex flex-col md:flex-row gap-3 items-center">
-                                <div class="flex-1 flex items-center ">
+                                <div class="flex-1 flex items-center">
                                     <div class="flex">
-                                        <input type="text" id="search" placeholder="Cari pengguna..."
-                                            class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500"
-                                            onkeyup="searchUsers()">
-                                        <input type="button" value="Search"
-                                            class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors"
-                                            onclick="searchUsers()">
+                                        <input type="text" 
+                                               id="search" 
+                                               placeholder="Cari pengguna..." 
+                                               class="w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:border-blue-500">
+                                        <button type="button" 
+                                                id="searchButton"
+                                                class="bg-blue-500 p-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors">
+                                            Search
+                                        </button>
                                     </div>
                                 </div>
                                 <div>
@@ -109,6 +112,19 @@
                                             <th class="px-6 py-3 text-center text-sm font-medium uppercase">Aksi</th>
                                         </tr>
                                     </thead>
+                                    
+                                    <!-- Loader tbody -->
+                                    <tbody id="tableLoader" style="display: none;">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">
+                                                <div class="flex justify-center items-center">
+                                                    <div class="loader-circle"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+
+                                    <!-- Data tbody -->
                                     <tbody id="users-body" class="divide-y divide-gray-200">
                                         @forelse($users as $index => $user)
                                             <tr class="hover:bg-gray-50 transition-colors">
@@ -215,28 +231,30 @@
         </div>
     </div>
     </div>
-    <script>
-        function searchUsers() {
-            const input = document.getElementById('search').value.toLowerCase();
-            const roleFilter = document.getElementById('role-filter').value.toLowerCase();
+    <script type="text/javascript">
+    // Definisikan searchUsers di window object untuk memastikan ia berada di global scope
+    window.searchUsers = function() {
+        // Ambil nilai input search dan role filter
+        const searchInput = document.getElementById('search');
+        const searchTerm = searchInput.value.toLowerCase();
+        const roleFilter = document.getElementById('role-filter').value.toLowerCase();
+        
+        // Tampilkan loader
+        document.getElementById('tableLoader').style.display = 'table-row-group';
+        document.getElementById('users-body').style.display = 'none';
+
+        setTimeout(() => {
             const tbody = document.getElementById('users-body');
-            const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => !row.classList.contains('no-data-row'));
-
-            // Urutkan rows berdasarkan role (admin di atas)
-            rows.sort((a, b) => {
-                const roleA = a.querySelector('td:nth-child(4) span')?.textContent.toLowerCase() || '';
-                const roleB = b.querySelector('td:nth-child(4) span')?.textContent.toLowerCase() || '';
-                
-                if (roleA === 'admin' && roleB !== 'admin') return -1;
-                if (roleA !== 'admin' && roleB === 'admin') return 1;
-                return 0;
-            });
-
+            const rows = tbody.getElementsByTagName('tr');
             let visibleCount = 0;
-            rows.forEach(row => {
-                const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
-                const emailCell = row.querySelector('td:nth-child(3) .text-sm');
-                const roleCell = row.querySelector('td:nth-child(4) span');
+
+            Array.from(rows).forEach((row) => {
+                if (row.classList.contains('no-data-row')) return;
+
+                // Ambil teks dari sel-sel yang relevan
+                const nameCell = row.querySelector('td:nth-child(2)');
+                const emailCell = row.querySelector('td:nth-child(3)');
+                const roleCell = row.querySelector('td:nth-child(4)');
 
                 if (!nameCell || !emailCell || !roleCell) return;
 
@@ -244,205 +262,76 @@
                 const email = emailCell.textContent.toLowerCase().trim();
                 const role = roleCell.textContent.toLowerCase().trim();
 
-                const matchesSearch = !input || 
-                                    name.includes(input) || 
-                                    email.includes(input);
-                const matchesRole = !roleFilter || role === roleFilter;
+                // Cek kecocokan
+                const matchesSearch = searchTerm === '' || 
+                                    name.includes(searchTerm) || 
+                                    email.includes(searchTerm);
+                const matchesRole = roleFilter === '' || role.includes(roleFilter);
 
+                // Tampilkan/sembunyikan baris
                 if (matchesSearch && matchesRole) {
                     row.style.display = '';
                     visibleCount++;
-                    // Update nomor urut
-                    const numberCell = row.querySelector('td:first-child');
-                    if (numberCell) {
-                        numberCell.textContent = visibleCount;
-                    }
+                    row.cells[0].textContent = visibleCount;
                 } else {
                     row.style.display = 'none';
                 }
             });
 
-            // Hapus pesan "tidak ada data" yang lama jika ada
-            const existingNoData = tbody.querySelector('.no-data-row');
-            if (existingNoData) {
-                existingNoData.remove();
-            }
+            // Sembunyikan loader dan tampilkan hasil
+            document.getElementById('tableLoader').style.display = 'none';
+            document.getElementById('users-body').style.display = 'table-row-group';
 
             // Tampilkan pesan jika tidak ada hasil
+            const noDataRow = tbody.querySelector('.no-data-row');
             if (visibleCount === 0) {
-                const noDataRow = document.createElement('tr');
-                noDataRow.className = 'no-data-row';
-                noDataRow.innerHTML = `
-                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                        Tidak ada data pengguna yang sesuai dengan pencarian
-                    </td>
-                `;
-                tbody.appendChild(noDataRow);
+                if (!noDataRow) {
+                    const newRow = document.createElement('tr');
+                    newRow.className = 'no-data-row';
+                    newRow.innerHTML = `
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            Tidak ada data pengguna yang sesuai dengan pencarian
+                        </td>
+                    `;
+                    tbody.appendChild(newRow);
+                }
+            } else if (noDataRow) {
+                noDataRow.remove();
             }
 
-            // Urutkan ulang baris yang terlihat
-            rows.filter(row => row.style.display !== 'none')
-                .forEach(row => tbody.appendChild(row));
-        }
+            // Update text menampilkan
+            const displayText = document.querySelector('.text-sm.text-gray-700');
+            if (displayText) {
+                displayText.textContent = `Menampilkan ${visibleCount} dari ${rows.length - (noDataRow ? 1 : 0)} data`;
+            }
+        }, 300);
+    };
 
-        // Filter ketika memilih role
-        document.getElementById('role-filter').addEventListener('change', searchUsers);
+    // Tunggu sampai DOM selesai dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup event listeners
+        const searchInput = document.getElementById('search');
+        const searchButton = document.getElementById('searchButton');
+        const roleFilter = document.getElementById('role-filter');
 
-        // Debounce untuk input pencarian
-        let searchTimeout;
-        document.getElementById('search').addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(searchUsers, 300);
-        });
-
-        // Inisialisasi pencarian dan pengurutan saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', searchUsers);
-
-        function confirmDelete(userId, userName) {
-            Swal.fire({
-                title: 'Apakah anda yakin?',
-                text: `Anda akan menghapus pengguna ${userName}!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('delete-form-' + userId).submit();
-
-                    // Tampilkan pesan sukses setelah penghapusan
-                    Swal.fire(
-                        'Terhapus!',
-                        'Pengguna berhasil dihapus.',
-                        'success'
-                    );
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.searchUsers();
                 }
             });
         }
 
-        let timerInterval;
-        let startTime;
-        let elapsedTime = 0; // Menyimpan waktu yang telah berlalu
-        let isRunning = false;
-
-        // Cek apakah timer sedang berjalan saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            const storedStartTime = localStorage.getItem('startTime');
-            const storedElapsedTime = localStorage.getItem('elapsedTime');
-            const storedIsRunning = localStorage.getItem('isRunning');
-
-            if (storedStartTime && storedIsRunning === 'true') {
-                startTime = new Date(parseInt(storedStartTime));
-                elapsedTime = parseInt(storedElapsedTime) || 0; // Ambil waktu yang telah berlalu
-                isRunning = true;
-                updateTimerDisplay(); // Perbarui tampilan timer
-                timerInterval = setInterval(updateTimer, 1000); // Mulai interval
-
-                // Tampilkan timer
-                document.getElementById('timer').style.display = 'block'; // Tampilkan timer
-            } else {
-                // Jika timer tidak berjalan, sembunyikan timer
-                document.getElementById('timer').style.display = 'none';
-            }
-        });
-
-        function updateTimer() {
-            const now = new Date();
-            elapsedTime += 1000; // Tambahkan 1 detik ke waktu yang telah berlalu
-            localStorage.setItem('elapsedTime', elapsedTime); // Simpan waktu yang telah berlalu
-
-            updateTimerDisplay(); // Perbarui tampilan timer
+        if (searchButton) {
+            // Hapus onclick dari HTML dan tambahkan event listener di sini
+            searchButton.addEventListener('click', window.searchUsers);
         }
 
-        function updateTimerDisplay() {
-            const totalElapsedTime = elapsedTime + (isRunning ? new Date() - startTime : 0);
-            const hours = Math.floor(totalElapsedTime / (1000 * 60 * 60));
-            const minutes = Math.floor((totalElapsedTime % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((totalElapsedTime % (1000 * 60)) / 1000);
-
-            const timerDisplay = document.getElementById('timer');
-            timerDisplay.textContent = `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
+        if (roleFilter) {
+            roleFilter.addEventListener('change', window.searchUsers);
         }
-
-        function padNumber(number) {
-            return number.toString().padStart(2, '0');
-        }
-
-        function filterUsers() {
-            const input = document.getElementById('search').value.toLowerCase();
-            const roleFilter = document.getElementById('role-filter').value.toLowerCase();
-            const tbody = document.getElementById('users-body');
-            const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => !row.classList.contains('no-data-row'));
-
-            let visibleCount = 0;
-            rows.forEach(row => {
-                const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
-                const emailCell = row.querySelector('td:nth-child(3) .text-sm');
-                const roleCell = row.querySelector('td:nth-child(4) span');
-
-                if (!nameCell || !emailCell || !roleCell) return;
-
-                const name = nameCell.textContent.toLowerCase().trim();
-                const email = emailCell.textContent.toLowerCase().trim();
-                const role = roleCell.textContent.toLowerCase().trim();
-
-                const matchesSearch = !input || 
-                                      name.includes(input) || 
-                                      email.includes(input);
-                const matchesRole = !roleFilter || role === roleFilter;
-
-                if (matchesSearch && matchesRole) {
-                    row.style.display = '';
-                    visibleCount++;
-                    // Update nomor urut
-                    const numberCell = row.querySelector('td:first-child');
-                    if (numberCell) {
-                        numberCell.textContent = visibleCount;
-                    }
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // Hapus pesan "tidak ada data" yang lama jika ada
-            const existingNoData = tbody.querySelector('.no-data-row');
-            if (existingNoData) {
-                existingNoData.remove();
-            }
-
-            // Tampilkan pesan jika tidak ada hasil
-            if (visibleCount === 0) {
-                const noDataRow = document.createElement('tr');
-                noDataRow.className = 'no-data-row';
-                noDataRow.innerHTML = `
-                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                        Tidak ada data pengguna yang sesuai dengan pencarian
-                    </td>
-                `;
-                tbody.appendChild(noDataRow);
-            }
-
-            // Urutkan ulang baris yang terlihat
-            rows.filter(row => row.style.display !== 'none')
-                .forEach(row => tbody.appendChild(row));
-        }
-
-        // Event listener for the role filter dropdown
-        document.getElementById('role-filter').addEventListener('change', filterUsers);
-
-        // Debounce for search input
-        let searchTimeout;
-        document.getElementById('search').addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(filterUsers, 300);
-        });
-
-        // Initialize search and filter on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            filterUsers(); // Call filterUsers to apply initial filtering
-        });
+    });
     </script>
     <script src="{{ asset('js/toggle.js') }}"></script>
 
@@ -490,6 +379,21 @@
             background-color: #0A749B;
             color: #fff;
             text-decoration: none;
+        }
+
+        /* Circle Loader styles */
+        .loader-circle {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0A749B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 @endsection

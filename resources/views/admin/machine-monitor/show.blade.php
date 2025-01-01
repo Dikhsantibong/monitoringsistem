@@ -81,9 +81,8 @@
                     <div class="flex w-full sm:w-auto order-2 sm:order-1">
                         <input type="text" 
                             id="searchInput" 
-                            placeholder="Cari..." 
-                            class="w-full px-3 py-2 text-sm border rounded-l-lg focus:outline-none focus:border-blue-500" 
-                            onkeyup="searchMachines()">
+                            placeholder="Cari nama mesin atau unit..." 
+                            class="w-full px-3 py-2 text-sm border rounded-l-lg focus:outline-none focus:border-blue-500">
                         <button onclick="searchMachines()" 
                             class="bg-blue-500 px-3 py-2 rounded-r-lg text-white hover:bg-blue-800 transition-colors">
                             <i class="fas fa-search"></i>
@@ -123,7 +122,20 @@
                                 <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="text-sm">
+                        
+                        <!-- Loader in tbody -->
+                        <tbody id="tableLoader">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="flex justify-center items-center">
+                                        <div class="loader-circle"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        <!-- Data tbody -->
+                        <tbody id="machineTable" style="display: none;" class="text-sm">
                             @forelse($machines as $index => $machine)
                             <tr class="hover:bg-gray-50 transition-colors border border-gray-200 border-l-0 border-r-0">
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
@@ -425,6 +437,35 @@
     text-align: center;
     text-decoration: none;
 }
+
+/* Loader styles */
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+/* Circle Loader styles */
+.loader-circle {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #0A749B;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 
 <script>
@@ -435,6 +476,10 @@ function refreshTable() {
     // Add spinning animation
     icon.classList.add('animate-spin');
     button.disabled = true;
+    
+    // Tampilkan loader dan sembunyikan data
+    document.getElementById('tableLoader').style.display = 'table-row-group';
+    document.getElementById('machineTable').style.display = 'none';
     
     // Reload after slight delay
     setTimeout(() => {
@@ -468,18 +513,46 @@ document.querySelectorAll('.edit-icon').forEach(icon => {
 });
 
 function searchMachines() {
-    const input = document.getElementById('search').value.toLowerCase();
-    const rows = document.querySelectorAll('#machineTable tr');
+    // Tampilkan loader dan sembunyikan data
+    document.getElementById('tableLoader').style.display = 'table-row-group';
+    document.getElementById('machineTable').style.display = 'none';
 
-    rows.forEach(row => {
-        const machineName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase();
-        if (machineName && machineName.includes(input)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
+    setTimeout(() => {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#machineTable tr');
+
+        // Tampilkan data dan sembunyikan loader
+        document.getElementById('tableLoader').style.display = 'none';
+        document.getElementById('machineTable').style.display = 'table-row-group';
+
+        rows.forEach(row => {
+            const machineName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+            const unitName = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+            
+            if (machineName.includes(searchInput) || unitName.includes(searchInput)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update "Menampilkan" text
+        updateDisplayingText();
+    }, 500);
 }
+
+function updateDisplayingText() {
+    const visibleRows = document.querySelectorAll('tbody tr:not([style*="display: none"])').length;
+    const totalRows = document.querySelectorAll('tbody tr').length;
+    
+    const displayText = document.querySelector('.text-sm.text-gray-700');
+    if (displayText) {
+        displayText.textContent = `Menampilkan ${visibleRows} dari ${totalRows} data`;
+    }
+}
+
+// Tambahkan event listener untuk pencarian real-time
+document.getElementById('searchInput').addEventListener('keyup', searchMachines);
 
 function redirectToShowPage() {
     window.location.href = "{{ route('admin.machine-monitor') }}"; // Ganti dengan rute yang sesuai
@@ -519,13 +592,16 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.remove('hidden');
         }
     });
+
+    // Simulasi loading
+    setTimeout(function() {
+        document.getElementById('tableLoader').style.display = 'none';
+        document.getElementById('machineTable').style.display = 'table-row-group';
+    }, 1000);
 });
 
 // Fungsi untuk konfirmasi delete dengan SweetAlert2
-function confirmDelete(button) {
-    const form = button.closest('form');
-    const machineName = button.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
-
+function confirmDelete(machineId, machineName) {
     Swal.fire({
         title: 'Apakah Anda yakin?',
         text: `Anda akan menghapus mesin: ${machineName}`,
@@ -537,7 +613,7 @@ function confirmDelete(button) {
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
-            form.submit();
+            document.getElementById(`delete-form-${machineId}`).submit();
         }
     });
 }
@@ -590,5 +666,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endpush
 @endsection
