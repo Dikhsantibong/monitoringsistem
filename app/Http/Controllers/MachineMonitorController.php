@@ -14,10 +14,10 @@ class MachineMonitorController extends Controller
 {
     public function index()
     {
-        $powerPlants = PowerPlant::with(['machines.statusLogs', 'machines.machineOperations'])->get();
+        $machines = Machine::with(['statusLogs', 'machineOperations'])->get();
         
         return view('admin.machine-monitor.index', [
-            'powerPlants' => $powerPlants,
+            'machines' => $machines,
             // ... other data ...
         ]);
     }

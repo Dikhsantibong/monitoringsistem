@@ -118,7 +118,7 @@
                         </div>
                     </div>
                 </div>
-
+                            
 
                 <!-- Grafik Masalah dan Status Mesin -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -542,18 +542,59 @@
                 }
             ];
 
-            // Inisialisasi grafik untuk efisiensi mesin
+            // Grafik Efisiensi Mesin
             const ctxEfficiency = document.getElementById('efficiencyChart').getContext('2d');
+
+            // Ambil data mesin dari PHP
+            const machineData = {!! json_encode($machines->map(function($machine) {
+                return [
+                    'name' => $machine->name,
+                    'status' => $machine->statusLogs()->latest()->first()->status ?? 'N/A',
+                    'operations' => $machine->machineOperations()->count(),
+                    'issues' => $machine->statusLogs()->count(),
+                    'capacity' => $machine->capacity,
+                    'efficiency' => $machine->machineOperations()
+                        ->whereNotNull('load_value')
+                        ->avg('load_value') ?? 0
+                ];
+            })) !!};
+
             new Chart(ctxEfficiency, {
-                type: 'bar', // Grafik batang
+                type: 'bar',
                 data: {
-                    labels: efficiencyData.map(machine => machine.name), // Nama mesin
+                    labels: machineData.map(machine => machine.name),
                     datasets: [{
                         label: 'Efisiensi (%)',
-                        data: efficiencyData.map(machine => machine.efficiency), // Data efisiensi
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        data: machineData.map(machine => machine.efficiency),
+                        backgroundColor: machineData.map(machine => {
+                            // Warna berbeda berdasarkan status
+                            switch(machine.status) {
+                                case 'START':
+                                    return 'rgba(75, 192, 192, 0.6)'; // hijau
+                                case 'STOP':
+                                    return 'rgba(255, 99, 132, 0.6)'; // merah
+                                default:
+                                    return 'rgba(201, 203, 207, 0.6)'; // abu-abu
+                            }
+                        }),
+                        borderColor: machineData.map(machine => {
+                            switch(machine.status) {
+                                case 'START':
+                                    return 'rgba(75, 192, 192, 1)';
+                                case 'STOP':
+                                    return 'rgba(255, 99, 132, 1)';
+                                default:
+                                    return 'rgba(201, 203, 207, 1)';
+                            }
+                        }),
                         borderWidth: 1
+                    }, {
+                        label: 'Jumlah Gangguan',
+                        data: machineData.map(machine => machine.issues),
+                        type: 'line',
+                        fill: false,
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        tension: 0.1
                     }]
                 },
                 options: {
@@ -563,13 +604,39 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Efisiensi (%)'
+                                text: 'Nilai'
                             }
                         },
                         x: {
                             title: {
                                 display: true,
-                                text: 'Nama Mesin'
+                                text: 'Mesin'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Efisiensi dan Gangguan per Mesin'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const machine = machineData[context.dataIndex];
+                                    if (context.dataset.label === 'Efisiensi (%)') {
+                                        return [
+                                            `Efisiensi: ${machine.efficiency.toFixed(1)}%`,
+                                            `Status: ${machine.status}`,
+                                            `Kapasitas: ${machine.capacity}`,
+                                            `Total Operasi: ${machine.operations}`
+                                        ];
+                                    }
+                                    return `Gangguan: ${machine.issues}`;
+                                }
                             }
                         }
                     }
