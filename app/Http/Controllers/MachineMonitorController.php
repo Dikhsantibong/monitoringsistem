@@ -8,29 +8,18 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\MachineStatusLog;
+use App\Models\PowerPlant;
 
 class MachineMonitorController extends Controller
 {
     public function index()
     {
-        $machines = Machine::with('metrics')->get();
-        $efficiencyData = $machines->map(function ($machine) {
-            return [
-                'name' => $machine->name,
-                'metrics' => $machine->metrics->pluck('value')->toArray(),
-            ];
-        });
-
-        // Gunakan data dummy untuk testing
-        $monthlyIssues = MachineStatusLog::getDummyMonthlyData();
-        $activeIssues = MachineStatusLog::getDummyActiveIssues();
-
-        return view('admin.machine-monitor.index', compact(
-            'machines',
-            'efficiencyData',
-            'monthlyIssues',
-            'activeIssues'
-        ));
+        $powerPlants = PowerPlant::with(['machines.statusLogs', 'machines.machineOperations'])->get();
+        
+        return view('admin.machine-monitor.index', [
+            'powerPlants' => $powerPlants,
+            // ... other data ...
+        ]);
     }
 
     public function create()

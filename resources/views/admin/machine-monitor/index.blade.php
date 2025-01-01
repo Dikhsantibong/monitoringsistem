@@ -125,7 +125,7 @@
                     <!-- Grafik Masalah Bulanan -->
                     <div class="bg-white rounded-lg shadow">
                         <div class="p-6">
-                            <h2 class="text-lg font-semibold text-gray-800 mb-4">Masalah Bulanan {{ date('Y') }}</h2>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4">Masalah Unit Gangguan</h2>
                             <canvas id="monthlyIssuesChart" height="200"></canvas>
                         </div>
                     </div>
@@ -138,11 +138,11 @@
                                 @php
                                     $statusLog = $machine->statusLogs()->latest()->first(); // Ambil status terbaru
                                 @endphp
-                                <div class="flex flex-col p-4 border rounded-lg hover:bg-gray-50">
+                                <div class="flex flex-col p-4 border rounded-lg hover:bg-gray-50 relative">
                                     <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
                                     <p class="text-sm text-gray-500">Kode: {{ $machine->code }}</p>
                                     <p class="text-sm text-gray-500">Asal Unit: {{ $statusLog->powerPlant->name ?? 'N/A' }}</p>
-                                    <div class="flex items-center mt-2">
+                                    <div class="flex items-center mt-2 absolute bottom-0 right-0 m-4">
                                         <span class="px-3 py-1 rounded-full text-sm font-medium
                                             {{ $statusLog && $statusLog->status === 'START'
                                                 ? 'bg-green-100 text-green-800'
@@ -369,21 +369,41 @@
                 }
             ];
 
+            // Ambil data dari PHP dan konversi ke format yang sesuai untuk Chart.js
+            const powerPlantData = {!! json_encode($powerPlants->map(function($powerPlant) {
+                return [
+                    'name' => $powerPlant->name,
+                    'issues' => $powerPlant->machines->sum(function($machine) {
+                        return $machine->statusLogs()->count();
+                    }),
+                    'operations' => $powerPlant->machines->sum(function($machine) {
+                        return $machine->machineOperations()->count();
+                    })
+                ];
+            })) !!};
+
+            // Siapkan data untuk grafik
+            const datasets = [{
+                label: 'Jumlah Gangguan',
+                data: powerPlantData.map(plant => plant.issues),
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2
+            }, {
+                label: 'Jumlah Operasi',
+                data: powerPlantData.map(plant => plant.operations),
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2
+            }];
+
             // Inisialisasi grafik
             const ctx = document.getElementById('monthlyIssuesChart').getContext('2d');
             new Chart(ctx, {
-                type: 'line', // Menggunakan grafik garis
+                type: 'bar',
                 data: {
-                    labels: monthlyIssuesData.map(issue => issue.date), // Ambil tanggal dari data
-                    datasets: [{
-                        label: 'Jumlah Masalah',
-                        data: monthlyIssuesData.map(issue => issue.count), // Ambil jumlah masalah dari data
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3 // Untuk membuat garis lebih halus
-                    }]
+                    labels: powerPlantData.map(plant => plant.name),
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
@@ -392,14 +412,24 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Jumlah Masalah'
+                                text: 'Jumlah'
                             }
                         },
                         x: {
                             title: {
                                 display: true,
-                                text: 'Tanggal'
+                                text: 'Unit'
                             }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Gangguan dan Operasi per Unit'
                         }
                     }
                 }
