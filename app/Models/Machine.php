@@ -13,7 +13,10 @@ class Machine extends Model
         'power_plant_id',
         'name',
         'status',
-        'capacity'
+        'capacity',
+        'type',
+        'serial_number',
+        'components'
     ];
 
     public function issues()

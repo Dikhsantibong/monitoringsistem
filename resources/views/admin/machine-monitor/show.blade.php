@@ -113,6 +113,8 @@
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">ID Mesin</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Nama Mesin</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Tipe</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">No. Seri</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Tanggal</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Unit</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Aksi</th>
@@ -133,6 +135,12 @@
                                             <div class="text-sm font-medium text-gray-900">{{ $machine->name }}</div>
                                         </div>
                                     </div>
+                                </td>
+                                <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
+                                    <span class="text-sm text-gray-500">{{ $machine->type ?? 'N/A' }}</span>
+                                </td>
+                                <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
+                                    <span class="text-sm text-gray-500">{{ $machine->serial_number ?? 'N/A' }}</span>
                                 </td>
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
                                     <div class="text-sm text-gray-500">
@@ -159,7 +167,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                                     Tidak ada data mesin yang tersedia
                                 </td>
                             </tr>
