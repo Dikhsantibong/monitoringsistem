@@ -117,9 +117,7 @@
                                                 </td>
                                                 <td class="text-center p-2 whitespace-nowrap">
                                                     <div class="flex items-center">
-                                                        <img class="h-8 w-8 rounded-full"
-                                                            src="{{ $user->avatar ?? asset('images/default-avatar.png') }}"
-                                                            alt="">
+                                                        
                                                         <div class="ml-4">
                                                             <div class="text-sm font-medium text-gray-900">
                                                                 {{ $user->name }}

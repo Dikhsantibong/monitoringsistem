@@ -134,8 +134,11 @@
                                                 <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $sr->id }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $sr->description }}</td>
-                                                <td class="py-2 px-4 border border-gray-200 {{ $sr->status == 'Open' ? 'text-red-500' : 'text-green-500' }}">
-                                                    {{ $sr->status }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
+                                                        {{ $sr->status }}
+                                                    </span>
+                                                </td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $sr->created_at }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     {{ $sr->downtime }}
