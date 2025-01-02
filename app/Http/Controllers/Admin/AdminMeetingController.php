@@ -203,78 +203,149 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->date ?? now()->format('Y-m-d');
-            \Log::info('Print view requested for date: ' . $date);
-
+            
             $scoreCards = ScoreCardDaily::whereDate('tanggal', $date)
                 ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($scoreCard) {
-                    $peserta = json_decode($scoreCard->peserta, true) ?? [];
-                    $formattedPeserta = [];
-                    
-                    foreach ($peserta as $jabatan => $data) {
-                        $formattedPeserta[] = [
-                            'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
-                            'awal' => $data['awal'] ?? '0',
-                            'akhir' => $data['akhir'] ?? '0',
-                            'skor' => $data['skor'] ?? '0',
-                            'keterangan' => $data['keterangan'] ?? null
-                        ];
-                    }
-
-                    return [
-                        'id' => $scoreCard->id,
-                        'tanggal' => $scoreCard->tanggal,
-                        'lokasi' => $scoreCard->lokasi,
-                        'peserta' => $formattedPeserta,
-                        'waktu_mulai' => $scoreCard->waktu_mulai,
-                        'waktu_selesai' => $scoreCard->waktu_selesai,
-                        'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-                        'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                        'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                        'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
-                        'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
-                        'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
-                        'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                        'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
-                        'keterangan' => $scoreCard->keterangan
-                    ];
-                });
+                ->get();
 
             if ($scoreCards->isEmpty()) {
                 return back()->with('error', 'Tidak ada data untuk tanggal ini.');
             }
 
+            $formattedScoreCards = $scoreCards->map(function ($scoreCard) {
+                $peserta = json_decode($scoreCard->peserta, true) ?? [];
+                $formattedPeserta = [];
+                
+                if (is_array($peserta)) {
+                    foreach ($peserta as $jabatan => $data) {
+                        if (is_array($data)) {
+                            $formattedPeserta[] = [
+                                'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
+                                'awal' => $data['awal'] ?? '0',
+                                'akhir' => $data['akhir'] ?? '0',
+                                'skor' => $data['skor'] ?? '0',
+                                'keterangan' => $data['keterangan'] ?? null
+                            ];
+                        }
+                    }
+                }
+                
+                return [
+                    'tanggal' => $scoreCard->tanggal,
+                    'lokasi' => $scoreCard->lokasi,
+                    'waktu_mulai' => $scoreCard->waktu_mulai,
+                    'waktu_selesai' => $scoreCard->waktu_selesai,
+                    'peserta' => $formattedPeserta,
+                    'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                    'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                    'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                    'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                    'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                    'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                    'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                    'kelengkapan_sr' => $scoreCard->kelengkapan_sr
+                ];
+            });
+
             return view('admin.meetings.print', [
-                'scoreCards' => $scoreCards,
+                'scoreCards' => $formattedScoreCards,
                 'date' => $date
             ]);
+            
         } catch (\Exception $e) {
-            \Log::error('Error in printView: ' . $e->getMessage());
+            \Log::error('Print error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
         }
     }
 
     public function print(Request $request)
     {
-        \Log::info('Print request received', ['date' => $request->query('date')]);
-        
-        // Check if the date is valid
-        if (!$request->query('date')) {
-            return response()->json(['error' => 'Date is required'], 400);
+        try {
+            $date = $request->date ?? now()->format('Y-m-d');
+            
+            \Log::info('Mencoba mengambil data untuk tanggal: ' . $date);
+
+            // Ambil data tanpa kolom yang tidak ada
+            $scoreCard = ScoreCardDaily::select([
+                'tanggal',
+                'lokasi',
+                'waktu_mulai',
+                'waktu_selesai',
+                'peserta',
+                'kesiapan_panitia',
+                'kesiapan_bahan',
+                'aktivitas_luar',
+                'gangguan_diskusi',
+                'gangguan_keluar_masuk',
+                'gangguan_interupsi',
+                'ketegasan_moderator',
+                'kelengkapan_sr'
+            ])
+            ->whereDate('tanggal', $date)
+            ->latest()
+            ->first();
+
+            if (!$scoreCard) {
+                \Log::warning('Data tidak ditemukan untuk tanggal: ' . $date);
+                return back()->with('error', 'Tidak ada data untuk tanggal ini.');
+            }
+
+            \Log::info('Data ditemukan, memproses peserta...');
+
+            // Decode peserta
+            $peserta = json_decode($scoreCard->peserta, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                \Log::error('Error decoding JSON peserta: ' . json_last_error_msg());
+                throw new \Exception('Error memproses data peserta');
+            }
+
+            $formattedPeserta = [];
+            
+            if (is_array($peserta)) {
+                foreach ($peserta as $jabatan => $data) {
+                    if (is_array($data)) {
+                        $formattedPeserta[] = [
+                            'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
+                            'skor' => $data['skor'] ?? 0,
+                            'keterangan' => $data['keterangan'] ?? '-'
+                        ];
+                    }
+                }
+            }
+
+            \Log::info('Jumlah peserta yang diproses: ' . count($formattedPeserta));
+
+            // Hitung skor waktu mulai berdasarkan ketepatan waktu
+            $waktuMulaiTerjadwal = \Carbon\Carbon::parse($scoreCard->waktu_mulai);
+            $skorWaktuMulai = 100; // Nilai default
+
+            // Format data untuk view
+            $data = [
+                'tanggal' => $scoreCard->tanggal,
+                'lokasi' => $scoreCard->lokasi ?? 'Tidak ada lokasi',
+                'waktu_mulai' => $scoreCard->waktu_mulai,
+                'waktu_selesai' => $scoreCard->waktu_selesai,
+                'peserta' => $formattedPeserta,
+                'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 0,
+                'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 0,
+                'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 0,
+                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 0,
+                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 0,
+                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 0,
+                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 0,
+                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 0,
+                'skor_waktu_mulai' => $skorWaktuMulai // Menggunakan nilai yang dihitung
+            ];
+
+            \Log::info('Data berhasil diformat, mengirim ke view');
+
+            return view('admin.meetings.print', compact('data', 'date'));
+
+        } catch (\Exception $e) {
+            \Log::error('Print error detail: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data print: ' . $e->getMessage());
         }
-
-        // Fetch score cards based on the date
-        $scoreCards = ScoreCardDaily::whereDate('tanggal', $request->query('date'))->get();
-
-        // Check if score cards are found
-        if ($scoreCards->isEmpty()) {
-            return response()->json(['error' => 'No data found for this date'], 404);
-        }
-
-        return view('admin.meetings.meeting-details', [
-            'scoreCards' => $scoreCards,
-            'date' => $request->query('date')
-        ]);
     }
 }

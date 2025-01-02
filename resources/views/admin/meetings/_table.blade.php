@@ -13,18 +13,21 @@
             const date = dateSelect.value;
             
             if (!date) {
-                alert('Pilih tanggal terlebih dahulu');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Pilih tanggal terlebih dahulu'
+                });
                 return;
             }
 
-            console.log('Selected date for print:', date);
-            const printUrl = "{{ route('admin.meetings.meeting-details') }}?date=" + encodeURIComponent(date);
+            const printUrl = "{{ route('admin.meetings.print') }}?date=" + encodeURIComponent(date);
+            const printWindow = window.open(printUrl, '_blank');
             
-            // Open a new window and print the content
-            const newWindow = window.open(printUrl, '_blank');
-            newWindow.onload = function() {
-                newWindow.print();
-            };
+            // Tunggu halaman selesai dimuat
+            printWindow.onload = function() {
+                printWindow.print();
+            }
         }
         </script>
         <button onclick="downloadPDF()" 

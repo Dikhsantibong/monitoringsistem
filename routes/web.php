@@ -104,11 +104,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');    
         Route::get('/create', [AdminMeetingController::class, 'create'])->name('meetings.create');
         Route::post('/upload', [AdminMeetingController::class, 'upload'])->name('meetings.upload');
+        Route::get('/print', [AdminMeetingController::class, 'print'])->name('meetings.print');
         Route::get('/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
         Route::get('/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
         Route::get('/user/daily-meeting', [UserController::class, 'dailyMeeting'])->name('user.daily-meeting');
         Route::get('/admin/score-card/data', [AdminMeetingController::class, 'getScoreCardData'])->name('admin.score-card.data');
         Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
+        Route::get('/admin/meetings/print', [AdminMeetingController::class, 'print'])
+        ->name('admin.meetings.print');
         
    
 
@@ -267,14 +270,7 @@ Route::post('/admin/laporan/store-wo', [LaporanController::class, 'storeWO'])->n
 
 Route::get('/attendance/signature/{id}', [AttendanceController::class, 'showSignature'])->name('attendance.signature');
 
-// rute print admin.meetings
 
-Route::get('/admin/meetings/meeting-details', [AdminMeetingController::class, 'print'])->name('admin.meetings.meeting-details');
-
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/meetings/print', [App\Http\Controllers\Admin\MeetingController::class, 'print'])
-        ->name('admin.meetings.print');
-});
 
 Route::get('/dashboard-pemantauan', [DashboardPemantauanController::class, 'index'])
     ->name('dashboard.pemantauan');
