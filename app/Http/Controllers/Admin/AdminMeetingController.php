@@ -42,6 +42,11 @@ class AdminMeetingController extends Controller
                         'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
                         'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
                         'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                        'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                        'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                        'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                        'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                        'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
                         'keterangan' => $scoreCard->keterangan
                     ];
                 });
@@ -197,7 +202,7 @@ class AdminMeetingController extends Controller
     public function printView(Request $request)
     {
         try {
-            $date = $request->date ?? now()->format('Y-m-d'); // Default to today's date if not provided
+            $date = $request->date ?? now()->format('Y-m-d');
             \Log::info('Print view requested for date: ' . $date);
 
             $scoreCards = ScoreCardDaily::whereDate('tanggal', $date)
@@ -212,7 +217,8 @@ class AdminMeetingController extends Controller
                             'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
                             'awal' => $data['awal'] ?? '0',
                             'akhir' => $data['akhir'] ?? '0',
-                            'skor' => $data['skor'] ?? '0'
+                            'skor' => $data['skor'] ?? '0',
+                            'keterangan' => $data['keterangan'] ?? null
                         ];
                     }
 
@@ -225,7 +231,13 @@ class AdminMeetingController extends Controller
                         'waktu_selesai' => $scoreCard->waktu_selesai,
                         'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
                         'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                        'aktivitas_luar' => $scoreCard->aktivitas_luar
+                        'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                        'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                        'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                        'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                        'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                        'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+                        'keterangan' => $scoreCard->keterangan
                     ];
                 });
 

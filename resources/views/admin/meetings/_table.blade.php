@@ -95,49 +95,106 @@
     </div>
 
     <!-- Table content -->
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+    <div class="overflow-auto bg-white p-4 rounded-lg mb-4 shadow-md ">
+        <table class="min-w-full bg-white border">
             <thead>
-                <tr style="background-color: #0A749B; color: white">
-                    <th class="px-6 py-3 text-center text-sm font-medium uppercase">No</th>
-                    <th class="px-6 py-3 text-center text-sm font-medium uppercase">Peserta</th>
-                    <th class="px-6 py-3 text-center text-sm font-medium uppercase">Awal</th>
-                    <th class="px-6 py-3 text-center text-sm font-medium uppercase">Akhir</th>
-                    <th class="px-6 py-3 text-center text-sm font-medium uppercase">Score</th>
-                    <th class="px-6 py-3 text-center text-sm font-medium uppercase">Keterangan</th>
+                <tr style="background-color: #0A749B; color: white;" class="text-center">
+                    <th class="border p-2">No</th>
+                    <th class="border p-2">Peserta</th>
+                    <th class="border p-2">Awal</th>
+                    <th class="border p-2">Akhir</th>
+                    <th class="border p-2">Skor</th>
+                    <th class="border p-2">Keterangan</th>
                 </tr>
             </thead>
-            <tbody id="score-card-body">
+            <tbody>
                 @foreach($scoreCards->first()['peserta'] as $index => $peserta)
                     <tr>
-                        <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                            {{ $loop->iteration }}
-                        </td>
-                        <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
-                            {{ $peserta['jabatan'] }}
-                        </td>
-                        <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                            {{ $peserta['awal'] }}
-                        </td>
-                        <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                            {{ $peserta['akhir'] }}
-                        </td>
-                        <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                            {{ $peserta['skor'] }}
-                        </td>
-                        <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
-                            {{ $peserta['keterangan'] ?? '-' }}
-                        </td>
+                        <td class="border p-2 text-center">{{ $loop->iteration }}</td>
+                        <td class="border p-2">{{ $peserta['jabatan'] }}</td>
+                        <td class="border p-2 text-center">{{ $peserta['skor'] == 50 ? 0 : '' }}</td>
+                        <td class="border p-2 text-center">{{ $peserta['skor'] == 100 ? 1 : '' }}</td>
+                        <td class="border p-2 text-center">{{ $peserta['skor'] }}</td>
+                        <td class="border p-2">{{ $peserta['keterangan'] ?? '-' }}</td>
                     </tr>
                 @endforeach
+
+                <!-- Ketentuan Rapat -->
                 <tr>
-                    <td colspan="4" class="text-right py-2 font-bold">Total Score:</td>
-                    <td class="text-center py-2 border border-gray-300">
-                        {{ collect($scoreCards->first()['peserta'])->sum('skor') }}
-                    </td>
-                    <td class="py-2 border border-gray-300 px-4">
-                        {{ $scoreCards->first()['keterangan'] ?? '-' }}
-                    </td>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 1 }}</td>
+                    <td class="border p-2">Kesiapan Panitia</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['kesiapan_panitia'] }}</td>
+                    <td class="border p-2">100 Jika tidak ada komplain dari peserta.</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 2 }}</td>
+                    <td class="border p-2">Kesiapan Bahan</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['kesiapan_bahan'] }}</td>
+                    <td class="border p-2">100 Jika setiap peserta membawa bahan masing-masing.</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 3 }}</td>
+                    <td class="border p-2">Aktivitas Luar</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['aktivitas_luar'] }}</td>
+                    <td class="border p-2">100 Jika tidak ada gangguan HP/LAPTOP/Etc</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 4 }}</td>
+                    <td class="border p-2">Gangguan Diskusi</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['gangguan_diskusi'] }}</td>
+                    <td class="border p-2">100 Jika semua peserta terfokus pada agenda meeting. Setiap 1 gangguan obrolan (diskusi kecil) dari peserta maka skor dikurangi 20.</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 5 }}</td>
+                    <td class="border p-2">Gangguan Keluar Masuk</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['gangguan_keluar_masuk'] }}</td>
+                    <td class="border p-2">100 Jika semua peserta tetap berada di ruangan sampai akhir</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 6 }}</td>
+                    <td class="border p-2">Gangguan Interupsi</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['gangguan_interupsi'] }}</td>
+                    <td class="border p-2">100 Jika tidak ada interupsi dari pihak lainnya. Setiap 1 interupsi dari pihak luar maka skor dikurangi 20.</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 7 }}</td>
+                    <td class="border p-2">Ketegasan Moderator</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['ketegasan_moderator'] }}</td>
+                    <td class="border p-2">Obyektif</td>
+                </tr>
+                <tr>
+                    <td class="border p-2 text-center">{{ count($scoreCards->first()['peserta']) + 8 }}</td>
+                    <td class="border p-2">Kelengkapan SR</td>
+                    <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                    <td class="border p-2 text-center">{{ $scoreCards->first()['kelengkapan_sr'] }}</td>
+                    <td class="border p-2">Kaidah, Pelaporan Dokumentasi, Upload ke CMMS</td>
+                </tr>
+
+                <!-- Total Score -->
+                @php
+                    $totalScorePeserta = collect($scoreCards->first()['peserta'])->sum('skor');
+                    $totalScoreKetentuan = 
+                        $scoreCards->first()['kesiapan_panitia'] +
+                        $scoreCards->first()['kesiapan_bahan'] +
+                        $scoreCards->first()['aktivitas_luar'] +
+                        $scoreCards->first()['gangguan_diskusi'] +
+                        $scoreCards->first()['gangguan_keluar_masuk'] +
+                        $scoreCards->first()['gangguan_interupsi'] +
+                        $scoreCards->first()['ketegasan_moderator'] +
+                        $scoreCards->first()['kelengkapan_sr'];
+                    $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+                @endphp
+                <tr>
+                    <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
+                    <td class="border p-2 text-center font-bold">{{ $grandTotal }}</td>
+                    <td class="border p-2">Total dari score peserta dan ketentuan rapat</td>
                 </tr>
             </tbody>
         </table>

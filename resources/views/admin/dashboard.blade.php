@@ -394,11 +394,11 @@
                     data: chartData.srData.counts,
                     backgroundColor: [
                         'rgba(239, 68, 68, 0.8)', // Merah untuk Open
-                        'rgba(34, 197, 94, 0.8)'   // Hijau untuk Closed
+                        'rgba(14, 165, 233, 0.8)'  // Biru langit untuk Closed
                     ],
                     borderColor: [
                         'rgb(239, 68, 68)',
-                        'rgb(34, 197, 94)'
+                        'rgb(14, 165, 233)'
                     ],
                     borderWidth: 1
                 }]
@@ -410,12 +410,12 @@
                 datasets: [{
                     data: chartData.woData.counts,
                     backgroundColor: [
-                        'rgba(234, 179, 8, 0.8)',  // Kuning untuk Open
-                        'rgba(59, 130, 246, 0.8)'   // Biru untuk Closed
+                        'rgba(239, 68, 68, 0.8)', // Merah untuk Open
+                        'rgba(14, 165, 233, 0.8)'  // Biru langit untuk Closed
                     ],
                     borderColor: [
-                        'rgb(234, 179, 8)',
-                        'rgb(59, 130, 246)'
+                        'rgb(239, 68, 68)',
+                        'rgb(14, 165, 233)'
                     ],
                     borderWidth: 1
                 }]
