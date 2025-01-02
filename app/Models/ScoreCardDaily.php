@@ -28,7 +28,8 @@ class ScoreCardDaily extends Model
         'gangguan_keluar_masuk',
         'gangguan_interupsi',
         'ketegasan_moderator',
-        'kelengkapan_sr'
+        'kelengkapan_sr',
+        'keterangan'
     ];
 
     protected $casts = [

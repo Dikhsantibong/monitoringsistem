@@ -56,7 +56,7 @@
                             </svg>
                         </button>
 
-                        <h1 class="text-xl font-semibold text-gray-800">Kesiapan Pembangkit</h1>
+                        <h1 class="text-xl font-semibold text-gray-800">Penyusunan Data Pembangkit</h1>
                     </div>
 
                     <div id="timer" class="text-lg font-bold text-gray-800">00:00:00</div>
@@ -199,8 +199,9 @@
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                            style="width: 100px;"
                                                             onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                            <option value="" style="background-color: #FFFFFF"></option>
+                                                            <option value="" style="background-color: #FFFFFF">Pilih Status</option>
                                                             <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
                                                             <option value="Standby" style="background-color: #2196F3">Standby</option>
                                                             <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
@@ -210,8 +211,9 @@
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 system-select"
                                                                 onchange="updateComponentOptions(this)" 
-                                                                name="sistem[{{ $machine->id }}]">
-                                                            <option value=""></option>
+                                                                name="sistem[{{ $machine->id }}]"
+                                                                style="width: 130px;">
+                                                            <option value="">Pilih Komponen</option>
                                                             <option value="MESIN">MESIN</option>
                                                             <option value="GENERATOR">GENERATOR</option>
                                                             <option value="PANEL_SINKRON">PANEL SINKRON</option>

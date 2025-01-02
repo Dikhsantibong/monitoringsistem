@@ -90,6 +90,7 @@ class ScoreCardDailyController extends Controller
             'gangguan_interupsi' => 'nullable|integer|max:100',
             'ketegasan_moderator' => 'nullable|integer|max:100',
             'kelengkapan_sr' => 'nullable|integer|max:100',
+            'keterangan' => 'nullable|string'
         ]);
 
         // Ambil data kehadiran untuk validasi

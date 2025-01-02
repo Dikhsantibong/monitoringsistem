@@ -94,27 +94,33 @@
                             </form>
 
                             <!-- Search Input -->
-                            <div class="flex">
+                            {{-- <div class="flex">
                                 <input type="text" id="searchInput" placeholder="Cari..."
                                     class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
                                 <button onclick="searchTables()"
                                     class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
                                     Search
                                 </button>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <!-- Card SR -->
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
-                                <div class="flex justify-end space-x-4">
-                                    <a href="{{ route('admin.laporan.create-sr') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
-                                        <i class="fas fa-plus-circle mr-2"></i> Tambah SR
-                                    </a>
-                                    {{-- <a href="{{ route('admin.laporan.sr-wo') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                                        Kembali
-                                    </a> --}}
+                                <a href="{{ route('admin.laporan.create-sr') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus-circle mr-2"></i> Tambah SR
+                                </a>
+                            </div>
+                            <!-- Kolom search untuk SR -->
+                            <div class="mb-4">
+                                <div class="flex">
+                                    <input type="text" id="searchSR" placeholder="Cari SR..."
+                                        class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
+                                    <button onclick="searchSRTable()"
+                                        class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
+                                        Search
+                                    </button>
                                 </div>
                             </div>
                             <div class="overflow-auto max-h-96">
@@ -165,16 +171,29 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="mt-4 text-sm text-gray-600">
+                                Menampilkan <span id="srVisibleCount">{{ count($serviceRequests) }}</span> dari total <span id="srTotalCount">{{ count($serviceRequests) }}</span> SR
+                            </div>
                         </div>
 
                         <!-- Card WO -->
-                        <div class="bg-white rounded-lg shadow p-6 mb-4 ">
+                        <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
-                                <a href="{{ route('admin.laporan.create-wo') }}"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base">
-                                    <i class="fas fa-plus-circle mr-2"></i>Tambah WO
+                                <a href="{{ route('admin.laporan.create-wo') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus-circle mr-2"></i> Tambah WO
                                 </a>
+                            </div>
+                            <!-- Kolom search untuk WO -->
+                            <div class="mb-4">
+                                <div class="flex">
+                                    <input type="text" id="searchWO" placeholder="Cari WO..."
+                                        class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
+                                    <button onclick="searchWOTable()"
+                                        class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
+                                        Search
+                                    </button>
+                                </div>
                             </div>
                             <div class="overflow-auto max-h-96">
                                 @if(session('backlog_notification'))
@@ -235,15 +254,29 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="mt-4 text-sm text-gray-600">
+                                Menampilkan <span id="woVisibleCount">{{ count($workOrders) }}</span> dari total <span id="woTotalCount">{{ count($workOrders) }}</span> WO
+                            </div>
                         </div>
 
                         <!-- Tabel Backlog -->
                         <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
-                            <div class="flex justify-end mb-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
                                 <a href="{{ route('admin.laporan.create-wo-backlog') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                                     <i class="fas fa-plus-circle mr-2"></i> Tambah WO Backlog
                                 </a>
+                            </div>
+                            <!-- Kolom search untuk Backlog -->
+                            <div class="mb-4">
+                                <div class="flex">
+                                    <input type="text" id="searchBacklog" placeholder="Cari Backlog..."
+                                        class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
+                                    <button onclick="searchBacklogTable()"
+                                        class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
+                                        Search
+                                    </button>
+                                </div>
                             </div>
                             <div class="overflow-auto max-h-96">
                                 <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
@@ -290,6 +323,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="mt-4 text-sm text-gray-600">
+                                Menampilkan <span id="backlogVisibleCount">{{ count($woBacklogs) }}</span> dari total <span id="backlogTotalCount">{{ count($woBacklogs) }}</span> WO Backlog
                             </div>
                         </div>
                     </div>
@@ -695,6 +731,132 @@
     function showAllData() {
         // Redirect ke halaman yang sama tanpa parameter tanggal
         window.location.href = window.location.pathname;
+    }
+
+    // Fungsi pencarian untuk tabel SR
+    function searchSRTable() {
+        const searchValue = document.getElementById('searchSR').value.toLowerCase();
+        const table = document.getElementById('srTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            let found = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            row.style.display = found ? '' : 'none';
+        }
+
+        // Update jumlah data SR
+        updateTableCounts('srTable', 'srVisibleCount', 'srTotalCount');
+    }
+
+    // Fungsi pencarian untuk tabel WO
+    function searchWOTable() {
+        const searchValue = document.getElementById('searchWO').value.toLowerCase();
+        const table = document.getElementById('woTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            let found = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            row.style.display = found ? '' : 'none';
+        }
+
+        // Update jumlah data WO
+        updateTableCounts('woTable', 'woVisibleCount', 'woTotalCount');
+    }
+
+    // Fungsi pencarian untuk tabel Backlog
+    function searchBacklogTable() {
+        const searchValue = document.getElementById('searchBacklog').value.toLowerCase();
+        const table = document.getElementById('backlogTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            let found = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            row.style.display = found ? '' : 'none';
+        }
+
+        // Update jumlah data Backlog
+        updateTableCounts('backlogTable', 'backlogVisibleCount', 'backlogTotalCount');
+    }
+
+    // Tambahkan event listener untuk pencarian real-time
+    document.getElementById('searchSR').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            searchSRTable();
+        }
+    });
+
+    document.getElementById('searchWO').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            searchWOTable();
+        }
+    });
+
+    document.getElementById('searchBacklog').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            searchBacklogTable();
+        }
+    });
+
+    // Tambahkan debounce untuk pencarian real-time
+    const debouncedSRSearch = debounce(() => searchSRTable(), 300);
+    const debouncedWOSearch = debounce(() => searchWOTable(), 300);
+    const debouncedBacklogSearch = debounce(() => searchBacklogTable(), 300);
+
+    document.getElementById('searchSR').addEventListener('input', debouncedSRSearch);
+    document.getElementById('searchWO').addEventListener('input', debouncedWOSearch);
+    document.getElementById('searchBacklog').addEventListener('input', debouncedBacklogSearch);
+
+    // Fungsi untuk memperbarui jumlah data yang ditampilkan
+    function updateTableCounts(tableId, visibleCountId, totalCountId) {
+        const table = document.getElementById(tableId);
+        const rows = table.getElementsByTagName('tr');
+        let visibleCount = 0;
+        let totalCount = 0;
+
+        // Hitung jumlah baris yang terlihat dan total (skip header)
+        for (let i = 1; i < rows.length; i++) {
+            totalCount++;
+            if (rows[i].style.display !== 'none') {
+                visibleCount++;
+            }
+        }
+
+        // Update tampilan jumlah
+        document.getElementById(visibleCountId).textContent = visibleCount;
+        document.getElementById(totalCountId).textContent = totalCount;
     }
 </script>
 @push('scripts')

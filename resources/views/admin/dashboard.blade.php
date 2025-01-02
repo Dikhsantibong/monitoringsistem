@@ -59,11 +59,13 @@
                             <i class="fas fa-caret-down ml-2 text-gray-600"></i>
                         </button>
                         <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
-
-                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <a href="{{ route('logout') }}" 
+                               class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                               onclick="event.preventDefault(); 
+                                        document.getElementById('logout-form').submit();">Logout</a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
                                 @csrf
+                                <input type="hidden" name="redirect" value="{{ route('homepage') }}">
                             </form>
                         </div>
                     </div>

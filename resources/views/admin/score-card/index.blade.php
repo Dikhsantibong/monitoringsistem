@@ -167,7 +167,7 @@
                                             <td class="border p-2 text-center">{{ $data['skor'] == 50 ? 0 : '' }}</td>
                                             <td class="border p-2 text-center">{{ $data['skor'] == 100 ? 1 : '' }}</td>
                                             <td class="border p-2 text-center">{{ $data['skor'] }}</td>
-                                            <td class="border p-2"></td>
+                                            <td class="border p-2">{{ $data['keterangan'] }}</td>
                                         </tr>
                                         @php
                                             $totalIndex++;

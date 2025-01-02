@@ -45,4 +45,12 @@ class ScoreCardController extends Controller
 
         return $pdf->download("score-card-{$tanggal}.pdf");
     }
+
+    public function index()
+    {
+        $scoreCards = ScoreCardDaily::latest()->get();
+        $latestScoreCard = $scoreCards->first();
+        
+        return view('admin.score-card.index', compact('scoreCards', 'latestScoreCard'));
+    }
 }
