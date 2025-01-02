@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+   
     <style>
         @page {
             size: A4;
@@ -74,9 +75,110 @@
                 margin-bottom: 0;
             }
         }
+
+        /* Style untuk halaman kedua */
+        .page-break {
+            page-break-before: always;
+        }
+        .report-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .report-table th {
+            background-color: #0A749B;
+            color: white;
+            font-size: 11px;
+            padding: 8px;
+            border: 1px solid #000;
+            text-align: left;
+        }
+        .report-table td {
+            font-size: 10px;
+            padding: 6px;
+            border: 1px solid #000;
+        }
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        .status-operasi {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .status-gangguan {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .status-standby {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+        .sr-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .sr-table th {
+            background-color: #0A749B;
+            color: white;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #000;
+            text-align: left;
+        }
+        .sr-table td {
+            font-size: 11px;
+            padding: 8px;
+            border: 1px solid #000;
+            vertical-align: middle;
+        }
+        .priority-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        .priority-high {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .priority-medium {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+        .priority-low {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .notes-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .notes-table th {
+            background-color: #0A749B;
+            color: white;
+            font-size: 14px;
+            padding: 12px;
+            border: 1px solid #000;
+            text-align: left;
+        }
+        .notes-table td {
+            font-size: 14px;
+            padding: 8px;
+            border: 1px solid #000;
+            vertical-align: top;
+        }
+        .notes-table tr td:last-child {
+            padding: 20px 12px;
+        }
     </style>
 </head>
 <body>
+    <!-- Halaman pertama - Score Card -->
     <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
 
     @if(isset($data) && isset($date))
@@ -208,6 +310,229 @@
             </tbody>
         </table>
     @endif
+
+    <!-- Halaman kedua - Daftar Hadir (dipindah ke sini) -->
+    <div class="page-break">
+        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+        
+        <div class="header">
+            <h2>DAFTAR HADIR RAPAT</h2>
+            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+        </div>
+
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 25%">Nama</th>
+                    <th style="width: 20%">Jabatan</th>
+                    <th style="width: 20%">Divisi</th>
+                    <th style="width: 15%">Waktu</th>
+                    <th style="width: 15%">Tanda Tangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($attendances as $index => $attendance)
+                    <tr>
+                        <td style="text-align: center;">{{ $loop->iteration }}</td>
+                        <td>{{ $attendance->name }}</td>
+                        <td>{{ $attendance->position }}</td>
+                        <td>{{ $attendance->division }}</td>
+                        <td style="text-align: center;">{{ \Carbon\Carbon::parse($attendance->time)->format('H:i') }}</td>
+                        <td>
+                            @if($attendance->signature)
+                                <img src="{{ $attendance->signature }}" alt="Tanda tangan" style="max-height: 40px;">
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Tidak ada data kehadiran</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Halaman ketiga - Report Table (dipindah ke akhir) -->
+    <div class="page-break">
+        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+        
+        <div class="header">
+            <h2>LAPORAN STATUS PEMBANGKIT</h2>
+            <p>Periode: {{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y') : '-' }} 
+               s/d {{ request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y') : '-' }}</p>
+        </div>
+
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Unit</th>
+                    <th>Mesin</th>
+                    <th>DMN</th>
+                    <th>DMP</th>
+                    <th>Beban</th>
+                    <th>Status</th>
+                    <th>Comp</th>
+                
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($logs as $index => $log)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $log->machine->powerPlant->name }}</td>
+                        <td>{{ $log->machine->name }}</td>
+                        <td>{{ $log->dmn }}</td>
+                        <td>{{ $log->dmp }}</td>
+                        <td>{{ $log->load_value }}</td>
+                        <td>
+                            <span class="status-badge {{ 
+                                $log->status === 'Operasi' ? 'status-operasi' : 
+                                ($log->status === 'Gangguan' ? 'status-gangguan' : 'status-standby') 
+                            }}">
+                                {{ $log->status }}
+                            </span>
+                        </td>
+                        <td>{{ $log->component }}</td>
+                      
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="15" style="text-align: center;">Tidak ada data untuk ditampilkan</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Halaman keempat - Service Request Table -->
+    <div class="page-break">
+        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+        
+        <div class="header">
+            <h2>DAFTAR SERVICE REQUEST</h2>
+            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+        </div>
+
+        <table class="sr-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 15%">ID SR</th>
+                    <th style="width: 30%">Deskripsi</th>
+                    <th style="width: 10%">Status</th>
+                    <th style="width: 10%">Downtime</th>
+                    <th style="width: 15%">Tipe SR</th>
+                    <th style="width: 15%">Prioritas</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($serviceRequests as $index => $sr)
+                    <tr>
+                        <td style="text-align: center;">{{ $loop->iteration }}</td>
+                        <td>{{ $sr->id }}</td>
+                        <td>{{ $sr->description }}</td>
+                        <td>
+                            <span class="status-badge {{ 
+                                $sr->status === 'Completed' ? 'status-operasi' : 
+                                ($sr->status === 'In Progress' ? 'status-standby' : 
+                                'status-gangguan') 
+                            }}">
+                                {{ $sr->status }}
+                            </span>
+                        </td>
+                        <td>{{ $sr->downtime }}</td>
+                        <td>{{ $sr->tipe_sr }}</td>
+                        <td>
+                            <span class="priority-badge priority-{{ strtolower($sr->priority) }}">
+                                {{ $sr->priority }}
+                            </span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" style="text-align: center;">Tidak ada Service Request untuk tanggal ini</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Halaman kelima - WO Backlog Table -->
+    <div class="page-break">
+        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+        
+        <div class="header">
+            <h2>DAFTAR WORK ORDER BACKLOG</h2>
+            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+        </div>
+
+        <table class="wo-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 15%">No WO</th>
+                    <th style="width: 35%">Deskripsi</th>
+                    <th style="width: 15%">Tanggal</th>
+                    <th style="width: 15%">Status</th>
+                    <th style="width: 15%">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($woBacklogs as $index => $wo)
+                    <tr>
+                        <td style="text-align: center;">{{ $loop->iteration }}</td>
+                        <td>{{ $wo->no_wo }}</td>
+                        <td>{{ $wo->deskripsi }}</td>
+                        <td>{{ \Carbon\Carbon::parse($wo->tanggal_backlog)->format('d/m/Y') }}</td>
+                        <td>
+                            <span class="status-badge {{ 
+                                $wo->status === 'Completed' ? 'status-operasi' : 
+                                ($wo->status === 'In Progress' ? 'status-standby' : 
+                                'status-gangguan') 
+                            }}">
+                                {{ $wo->status }}
+                            </span>
+                        </td>
+                        <td>{{ $wo->keterangan }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Tidak ada Work Order Backlog untuk tanggal ini</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Setelah tabel WO Backlog, tambahkan halaman Notes -->
+    <div class="page-break">
+        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+        
+        <div class="header">
+            <h2>CATATAN RAPAT</h2>
+            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+        </div>
+
+        <table class="notes-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 95%">Catatan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for ($i = 1; $i <= 10; $i++)
+                    <tr>
+                        <td style="text-align: center;">{{ $i }}</td>
+                        <td style="height: 50px;"></td>
+                    </tr>
+                @endfor
+            </tbody>
+        </table>
+    </div>
 
     <script>
         window.onload = function() {

@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Meeting;
 use App\Models\Department; // Pastikan model Department di-import
 use App\Models\ScoreCardDaily; // Ambil model ScoreCardDaily
+use App\Models\MachineStatusLog; // Ambil model MachineStatusLog
+use App\Models\Attendance; // Ambil model Attendance
+use App\Models\ServiceRequest; // Ambil model ServiceRequest
+use App\Models\WoBacklog; // Ambil model WoBacklog
 use Illuminate\Http\Request;
 
 class AdminMeetingController extends Controller
@@ -263,89 +267,77 @@ class AdminMeetingController extends Controller
         try {
             $date = $request->date ?? now()->format('Y-m-d');
             
-            \Log::info('Mencoba mengambil data untuk tanggal: ' . $date);
+            // Data untuk score card
+            $scoreCard = ScoreCardDaily::whereDate('tanggal', $date)->first();
+            
+            // Data untuk report table
+            $logs = MachineStatusLog::with(['machine.powerPlant'])
+                ->whereDate('tanggal', $date)
+                ->orderBy('tanggal', 'desc')
+                ->get();
 
-            // Ambil data tanpa kolom yang tidak ada
-            $scoreCard = ScoreCardDaily::select([
-                'tanggal',
-                'lokasi',
-                'waktu_mulai',
-                'waktu_selesai',
-                'peserta',
-                'kesiapan_panitia',
-                'kesiapan_bahan',
-                'aktivitas_luar',
-                'gangguan_diskusi',
-                'gangguan_keluar_masuk',
-                'gangguan_interupsi',
-                'ketegasan_moderator',
-                'kelengkapan_sr'
-            ])
-            ->whereDate('tanggal', $date)
-            ->latest()
-            ->first();
+            // Data untuk daftar hadir
+            $attendances = Attendance::whereDate('time', $date)
+                ->orderBy('time', 'asc')
+                ->get();
+
+            // Data untuk Service Request
+            $serviceRequests = ServiceRequest::whereDate('created_at', $date)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Data untuk WO Backlog
+            $woBacklogs = WoBacklog::whereDate('tanggal_backlog', $date)
+                ->orderBy('tanggal_backlog', 'desc')
+                ->get();
 
             if (!$scoreCard) {
-                \Log::warning('Data tidak ditemukan untuk tanggal: ' . $date);
-                return back()->with('error', 'Tidak ada data untuk tanggal ini.');
+                return back()->with('error', 'Data score card tidak ditemukan untuk tanggal tersebut');
             }
 
-            \Log::info('Data ditemukan, memproses peserta...');
-
-            // Decode peserta
-            $peserta = json_decode($scoreCard->peserta, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                \Log::error('Error decoding JSON peserta: ' . json_last_error_msg());
-                throw new \Exception('Error memproses data peserta');
-            }
-
+            // Format data peserta dengan benar
+            $peserta = json_decode($scoreCard->peserta, true) ?? [];
             $formattedPeserta = [];
             
-            if (is_array($peserta)) {
-                foreach ($peserta as $jabatan => $data) {
-                    if (is_array($data)) {
-                        $formattedPeserta[] = [
-                            'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
-                            'skor' => $data['skor'] ?? 0,
-                            'keterangan' => $data['keterangan'] ?? '-'
-                        ];
-                    }
-                }
+            foreach ($peserta as $key => $value) {
+                $formattedPeserta[] = [
+                    'jabatan' => ucwords(str_replace('_', ' ', $key)),
+                    'awal' => $value['awal'] ?? '0',
+                    'akhir' => $value['akhir'] ?? '0',
+                    'skor' => $value['skor'] ?? '0',
+                    'keterangan' => $value['keterangan'] ?? ''
+                ];
             }
 
-            \Log::info('Jumlah peserta yang diproses: ' . count($formattedPeserta));
-
-            // Hitung skor waktu mulai berdasarkan ketepatan waktu
-            $waktuMulaiTerjadwal = \Carbon\Carbon::parse($scoreCard->waktu_mulai);
-            $skorWaktuMulai = 100; // Nilai default
-
-            // Format data untuk view
+            // Format data score card
             $data = [
-                'tanggal' => $scoreCard->tanggal,
-                'lokasi' => $scoreCard->lokasi ?? 'Tidak ada lokasi',
+                'lokasi' => $scoreCard->lokasi,
                 'waktu_mulai' => $scoreCard->waktu_mulai,
                 'waktu_selesai' => $scoreCard->waktu_selesai,
-                'peserta' => $formattedPeserta,
-                'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 0,
-                'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 0,
-                'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 0,
-                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 0,
-                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 0,
-                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 0,
-                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 0,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 0,
-                'skor_waktu_mulai' => $skorWaktuMulai // Menggunakan nilai yang dihitung
+                'peserta' => $formattedPeserta, // Menggunakan data peserta yang sudah diformat
+                'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 0
             ];
 
-            \Log::info('Data berhasil diformat, mengirim ke view');
-
-            return view('admin.meetings.print', compact('data', 'date'));
+            return view('admin.meetings.print', compact(
+                'data', 
+                'date', 
+                'logs', 
+                'attendances', 
+                'serviceRequests',
+                'woBacklogs'
+            ));
 
         } catch (\Exception $e) {
-            \Log::error('Print error detail: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            return back()->with('error', 'Terjadi kesalahan saat memuat data print: ' . $e->getMessage());
+            \Log::error('Print error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data print');
         }
     }
 }
