@@ -167,61 +167,70 @@
                                             <td class="border p-2 text-center">{{ $data['skor'] == 50 ? 0 : '' }}</td>
                                             <td class="border p-2 text-center">{{ $data['skor'] == 100 ? 1 : '' }}</td>
                                             <td class="border p-2 text-center">{{ $data['skor'] }}</td>
-                                            <td class="border p-2">{{ $data['keterangan'] }}</td>
+                                            <td class="border p-2">{{ $data['keterangan'] ?? '-' }}</td>
                                         </tr>
                                         @php
                                             $totalIndex++;
                                         @endphp
 
                                         @if ($currentIndex === $pesertaCount)
-                                            <!-- Menampilkan ketentuan rapat di kolom terpisah -->
-
+                                            <!-- Menampilkan ketentuan rapat -->
                                             <tr>
                                                 <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
-                                                <td class="border p-2">Ketepatan waktu memulai meeting</td>
-                                                <td class="border p-2 text-center">START</td>
-                                                <td class="border p-2 text-center">
-                                                    {{ $ketentuanRapat['aktifitas_meeting'] ?? 'N/A' }}</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2">-</td>
+                                                <td class="border p-2">Kesiapan Panitia</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->kesiapan_panitia }}</td>
+                                                <td class="border p-2">100 Jika tidak ada komplain dari peserta.</td>
                                             </tr>
                                             <tr>
                                                 <td class="border p-2 text-center">{{ $totalIndex + 2 }}</td>
-                                                <td class="border p-2">Ketepatan waktu mengakhiri meeting</td>
-                                                <td class="border p-2 text-center">FINISH</td>
-                                                <td class="border p-2 text-center">
-                                                    {{ $ketentuanRapat['gangguan_diskusi'] ?? 'N/A' }}</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2">-</td>
+                                                <td class="border p-2">Kesiapan Bahan</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->kesiapan_bahan }}</td>
+                                                <td class="border p-2">100 Jika setiap peserta membawa bahan masing-masing.</td>
                                             </tr>
                                             <tr>
                                                 <td class="border p-2 text-center">{{ $totalIndex + 3 }}</td>
-                                                <td class="border p-2">Kesiapan panitia pelaksana meeting</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2 text-center">
-                                                    {{ $ketentuanRapat['kesiapan_panitia'] ?? 'N/A' }}</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2">-</td>
+                                                <td class="border p-2">Aktivitas Luar</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->aktivitas_luar }}</td>
+                                                <td class="border p-2">100 Jika tidak ada gangguan HP/LAPTOP/Etc</td>
                                             </tr>
                                             <tr>
                                                 <td class="border p-2 text-center">{{ $totalIndex + 4 }}</td>
-                                                <td class="border p-2">Kesiapan bahan oleh peserta meeting</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2 text-center">
-                                                    {{ $ketentuanRapat['kesiapan_bahan'] ?? 'N/A' }}</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2">-</td>
+                                                <td class="border p-2">Gangguan Diskusi</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->gangguan_diskusi }}</td>
+                                                <td class="border p-2">100 Jika semua peserta terfokus pada agenda meeting. Setiap 1 gangguan obrolan (diskusi kecil) dari peserta maka skor dikurangi 20.</td>
                                             </tr>
                                             <tr>
                                                 <td class="border p-2 text-center">{{ $totalIndex + 5 }}</td>
-                                                <td class="border p-2">Aktifitas di Luar Kegiatan Meeting</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2 text-center">
-                                                    {{ $ketentuanRapat['aktifitas_luar'] ?? 'N/A' }}</td>
-                                                <td class="border p-2 text-center">-</td>
-                                                <td class="border p-2">-</td>
+                                                <td class="border p-2">Gangguan Keluar Masuk</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->gangguan_keluar_masuk }}</td>
+                                                <td class="border p-2">100 Jika semua peserta tetap berada di ruangan sampai akhir</td>
                                             </tr>
-                                            <!-- Tambahkan ketentuan lain dengan format serupa -->
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 6 }}</td>
+                                                <td class="border p-2">Gangguan Interupsi</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->gangguan_interupsi }}</td>
+                                                <td class="border p-2">100 Jika tidak ada interupsi dari pihak lainnya. Setiap 1 interupsi dari pihak luar maka skor dikurangi 20.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 7 }}</td>
+                                                <td class="border p-2">Ketegasan Moderator</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->ketegasan_moderator }}</td>
+                                                <td class="border p-2">Obyektif</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 8 }}</td>
+                                                <td class="border p-2">Kelengkapan SR</td>
+                                                <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->kelengkapan_sr }}</td>
+                                                <td class="border p-2">Kaidah, Pelaporan Dokumentasi, Upload ke CMMS</td>
+                                            </tr>
                                         @endif
                                     @endforeach
                                 @else
@@ -229,9 +238,28 @@
                                         <td colspan="6" class="border p-2 text-center">Belum ada score card yang dibuat</td>
                                     </tr>
                                 @endif
+                                @php
+                                    // Hitung total score peserta
+                                    $totalScorePeserta = collect($peserta)->sum('skor');
+                                    
+                                    // Hitung total score ketentuan rapat
+                                    $totalScoreKetentuan = 
+                                        $latestScoreCard->kesiapan_panitia +
+                                        $latestScoreCard->kesiapan_bahan +
+                                        $latestScoreCard->aktivitas_luar +
+                                        $latestScoreCard->gangguan_diskusi +
+                                        $latestScoreCard->gangguan_keluar_masuk +
+                                        $latestScoreCard->gangguan_interupsi +
+                                        $latestScoreCard->ketegasan_moderator +
+                                        $latestScoreCard->kelengkapan_sr;
+                                    
+                                    // Total keseluruhan
+                                    $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+                                @endphp
                                 <tr>
-                                    <td colspan="5" class="border p-2 text-right font-bold">Total Score:</td>
-                                    <td class="border p-2 text-center font-bold">{{ $totalScore }}</td>
+                                    <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
+                                    <td class="border p-2 text-center font-bold">{{ $grandTotal }}</td>
+                                    <td class="border p-2">Total dari score peserta dan ketentuan rapat</td>
                                 </tr>
                             </tbody>
                         </table>

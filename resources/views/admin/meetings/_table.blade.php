@@ -126,7 +126,7 @@
                             {{ $peserta['skor'] }}
                         </td>
                         <td class="py-2 whitespace-nowrap border border-gray-300 px-4">
-                            -
+                            {{ $peserta['keterangan'] ?? '-' }}
                         </td>
                     </tr>
                 @endforeach
@@ -136,7 +136,7 @@
                         {{ collect($scoreCards->first()['peserta'])->sum('skor') }}
                     </td>
                     <td class="py-2 border border-gray-300 px-4">
-                        -
+                        {{ $scoreCards->first()['keterangan'] ?? '-' }}
                     </td>
                 </tr>
             </tbody>

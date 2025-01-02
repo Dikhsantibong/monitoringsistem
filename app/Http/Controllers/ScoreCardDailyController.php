@@ -26,9 +26,28 @@ class ScoreCardDailyController extends Controller
 
         // Menghitung total skor peserta
         $totalScore = $scoreCards->sum(function ($scoreCard) {
+            // Hitung skor peserta
             $pesertas = json_decode($scoreCard->peserta, true);
-            return array_sum(array_column($pesertas, 'skor'));
+            $pesertaScore = array_sum(array_column($pesertas, 'skor'));
+            
+            // Hitung skor ketentuan rapat
+            $ketentuanScore = 
+                $scoreCard->kesiapan_panitia +
+                $scoreCard->kesiapan_bahan +
+                $scoreCard->aktivitas_luar +
+                $scoreCard->gangguan_diskusi +
+                $scoreCard->gangguan_keluar_masuk +
+                $scoreCard->gangguan_interupsi +
+                $scoreCard->ketegasan_moderator +
+                $scoreCard->kelengkapan_sr;
+            
+            // Total keseluruhan
+            return $pesertaScore + $ketentuanScore;
         });
+
+        // Hitung rata-rata
+        $totalItems = count(json_decode($scoreCards->first()->peserta, true)) + 8; // 8 adalah jumlah ketentuan rapat
+        $averageScore = $totalScore / $totalItems;
 
         // Menggabungkan semua ketentuan rapat dari setiap scoreCard
         $ketentuanRapat = [];
@@ -42,7 +61,7 @@ class ScoreCardDailyController extends Controller
         // Menggabungkan semua ketentuan rapat menjadi satu array
         $ketentuanRapat = array_merge(...$ketentuanRapat); // Menggabungkan semua ketentuan rapat
 
-        return view('admin.score-card.index', compact('scoreCards', 'totalScore', 'ketentuanRapat'));
+        return view('admin.score-card.index', compact('scoreCards', 'totalScore', 'ketentuanRapat', 'averageScore'));
     }
 
     public function create()
