@@ -30,8 +30,10 @@ class ScoreCardDailyController extends Controller
             $pesertas = json_decode($scoreCard->peserta, true);
             $pesertaScore = array_sum(array_column($pesertas, 'skor'));
             
-            // Hitung skor ketentuan rapat
+            // Hitung skor ketentuan rapat termasuk waktu mulai dan selesai
             $ketentuanScore = 
+                ($scoreCard->skor_waktu_mulai ?? 100) +     // Tambahkan skor waktu mulai
+                ($scoreCard->skor_waktu_selesai ?? 100) +   // Tambahkan skor waktu selesai
                 $scoreCard->kesiapan_panitia +
                 $scoreCard->kesiapan_bahan +
                 $scoreCard->aktivitas_luar +
@@ -45,8 +47,8 @@ class ScoreCardDailyController extends Controller
             return $pesertaScore + $ketentuanScore;
         });
 
-        // Hitung rata-rata
-        $totalItems = count(json_decode($scoreCards->first()->peserta, true)) + 8; // 8 adalah jumlah ketentuan rapat
+        // Hitung rata-rata (tambahkan 2 untuk waktu mulai dan selesai)
+        $totalItems = count(json_decode($scoreCards->first()->peserta, true)) + 10; // 10 adalah jumlah ketentuan rapat termasuk waktu
         $averageScore = $totalScore / $totalItems;
 
         // Menggabungkan semua ketentuan rapat dari setiap scoreCard

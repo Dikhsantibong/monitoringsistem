@@ -403,11 +403,11 @@
                     </div>
 
                     <div class="flex justify-end space-x-4">
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            Simpan Score Card
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center">
+                            <i class="fas fa-save mr-2"></i> Simpan Score Card
                         </button>
-                        <a href="{{ route('admin.score-card.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            Batal
+                        <a href="{{ route('admin.score-card.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i> Batal
                         </a>
                     </div>
                 </form>

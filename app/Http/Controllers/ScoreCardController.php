@@ -44,7 +44,7 @@ class ScoreCardController extends Controller
         ]);
 
         return $pdf->download("score-card-{$tanggal}.pdf");
-    }
+    }s
 
     public function index()
     {

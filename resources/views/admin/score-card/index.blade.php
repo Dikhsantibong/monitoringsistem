@@ -117,14 +117,14 @@
                     <div id="timer" class="text-center"></div>
 
                     <!-- Elemen untuk menampilkan link Zoom -->
-                    <div id="zoom-link-container" class="mt-4">
+                    {{-- <div id="zoom-link-container" class="mt-4">
                         <div id="zoom-link" class="bg-gray-100 border border-gray-300 rounded-lg p-4 shadow-md">
                             <span class="font-semibold">Link Zoom:</span>
                             <a href="#" id="zoom-link-url" class="text-blue-600 underline ml-2"
                                 target="_blank"></a>
                             <i class="fas fa-copy cursor-pointer ml-2" onclick="copyToClipboard()"></i>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="overflow-auto">
                         <table class="min-w-full bg-white border">
@@ -177,55 +177,73 @@
                                             <!-- Menampilkan ketentuan rapat -->
                                             <tr>
                                                 <td class="border p-2 text-center">{{ $totalIndex + 1 }}</td>
-                                                <td class="border p-2">Kesiapan Panitia</td>
+                                                <td class="border p-2">Ketepatan waktu memulai meeting (09:30)</td>
+                                                <td class="border p-2 text-center">Start</td>
+                                                <td class="border p-2 text-center">{{ \Carbon\Carbon::parse($latestScoreCard->waktu_mulai)->format('H:i') }}</td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->skor_waktu_mulai ?? 100 }}</td>
+                                                <td class="border p-2">100 Jika dimulai tepat waktu.
+Setiap 3 menit keterlambatan waktu maka skor dikurangi 10.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 2 }}</td>
+                                                <td class="border p-2">Ketepatan waktu mengakhiri meeting (10:00)</td>
+                                                <td class="border p-2 text-center">Finish</td> 
+                                                <td class="border p-2 text-center">{{ \Carbon\Carbon::parse($latestScoreCard->waktu_selesai)->format('H:i') }}</td>
+                                                <td class="border p-2 text-center">{{ $latestScoreCard->skor_waktu_selesai ?? 100 }}</td>
+                                                <td class="border p-2">100 Jika di akhiri tepat waktu tepat waktu.
+Setiap 3 menit keterlambatan waktu maka skor dikurangi 10.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 3 }}</td>
+                                                <td class="border p-2">Kesiapan Panitia Pelaksana Meeting</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->kesiapan_panitia }}</td>
                                                 <td class="border p-2">100 Jika tidak ada komplain dari peserta.</td>
                                             </tr>
                                             <tr>
-                                                <td class="border p-2 text-center">{{ $totalIndex + 2 }}</td>
-                                                <td class="border p-2">Kesiapan Bahan</td>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 4 }}</td>
+                                                <td class="border p-2">Kesiapan Bahan Oleh Peserta Meeting</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->kesiapan_bahan }}</td>
                                                 <td class="border p-2">100 Jika setiap peserta membawa bahan masing-masing.</td>
                                             </tr>
                                             <tr>
-                                                <td class="border p-2 text-center">{{ $totalIndex + 3 }}</td>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 5 }}</td>
                                                 <td class="border p-2">Aktivitas Luar</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->aktivitas_luar }}</td>
                                                 <td class="border p-2">100 Jika tidak ada gangguan HP/LAPTOP/Etc</td>
                                             </tr>
                                             <tr>
-                                                <td class="border p-2 text-center">{{ $totalIndex + 4 }}</td>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 6 }}</td>
                                                 <td class="border p-2">Gangguan Diskusi</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->gangguan_diskusi }}</td>
                                                 <td class="border p-2">100 Jika semua peserta terfokus pada agenda meeting. Setiap 1 gangguan obrolan (diskusi kecil) dari peserta maka skor dikurangi 20.</td>
                                             </tr>
                                             <tr>
-                                                <td class="border p-2 text-center">{{ $totalIndex + 5 }}</td>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 7 }}</td>
                                                 <td class="border p-2">Gangguan Keluar Masuk</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->gangguan_keluar_masuk }}</td>
                                                 <td class="border p-2">100 Jika semua peserta tetap berada di ruangan sampai akhir</td>
                                             </tr>
                                             <tr>
-                                                <td class="border p-2 text-center">{{ $totalIndex + 6 }}</td>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 8 }}</td>
                                                 <td class="border p-2">Gangguan Interupsi</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->gangguan_interupsi }}</td>
                                                 <td class="border p-2">100 Jika tidak ada interupsi dari pihak lainnya. Setiap 1 interupsi dari pihak luar maka skor dikurangi 20.</td>
                                             </tr>
                                             <tr>
-                                                <td class="border p-2 text-center">{{ $totalIndex + 7 }}</td>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 9 }}</td>
                                                 <td class="border p-2">Ketegasan Moderator</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->ketegasan_moderator }}</td>
                                                 <td class="border p-2">Obyektif</td>
                                             </tr>
                                             <tr>
-                                                <td class="border p-2 text-center">{{ $totalIndex + 8 }}</td>
+                                                <td class="border p-2 text-center">{{ $totalIndex + 10 }}</td>
                                                 <td class="border p-2">Kelengkapan SR</td>
                                                 <td class="border p-2" colspan="2" style="background-color: #f3f4f6"></td>
                                                 <td class="border p-2 text-center">{{ $latestScoreCard->kelengkapan_sr }}</td>
@@ -251,6 +269,8 @@
                                         $latestScoreCard->gangguan_keluar_masuk +
                                         $latestScoreCard->gangguan_interupsi +
                                         $latestScoreCard->ketegasan_moderator +
+                                        $latestScoreCard->skor_waktu_mulai +
+                                        $latestScoreCard->skor_waktu_selesai +
                                         $latestScoreCard->kelengkapan_sr;
                                     
                                     // Total keseluruhan
