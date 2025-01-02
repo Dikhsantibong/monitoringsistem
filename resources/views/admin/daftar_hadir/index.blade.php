@@ -55,10 +55,17 @@
             </header>
             <div class="flex items-center pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Daftar Hadir', 'url' => null]]" />
+                <!-- Menampilkan Tanggal -->
+                
             </div>
             <main class="px-6">
                 <div class="bg-white rounded-lg shadow p-6 mb-3">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
+
+                    <!-- Menampilkan Tanggal di bawah judul -->
+                    <p class="text-gray-700 mb-4">
+                        Tanggal: {{ \Carbon\Carbon::now()->format('l, d F Y') }}
+                    </p>
 
                     <!-- Input Pencarian -->
                     <div class="mb-4 flex flex-col lg:flex-row gap-y-3 justify-between items-center">
