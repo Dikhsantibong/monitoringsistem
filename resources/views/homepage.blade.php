@@ -99,13 +99,25 @@
             background-size: cover;
             background-position: center;
         }
-
         .hexagon {
             position: relative;
-            /* width: 200px;
-                height: 170px; */
             margin: 28.87px 0;
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            text-shadow: 1px 1px 2px #000000;
+            
+        }
+
+        .hexagon:hover {
+            transform: translateY(-10px) rotateX(10deg) rotateY(10deg);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .hexagon:focus {
+            transform: translateY(-10px) rotateX(10deg) rotateY(10deg);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
         .nav-link {
@@ -211,7 +223,7 @@
                     <!-- Overlay -->
                     <div class="absolute inset-0 "></div>
                     <!-- Header -->
-                    <h2 class="text-4xl font-bold mb-4 text-center" style="color: linear-gradient(135deg, #007bff 0%, #00bfff 100%); text-shadow: 1px 1px 2px #000000;">M<i class="fas fa-helmet-safety"></i>NDAY  <br>MONITORING dayly</h2>
+                    <h2 class="text-6xl font-bold mb-4 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000;">M<i class="fas fa-helmet-safety"></i>NDAY  <br>MONITORING DAILY</h2>
                     <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
                         <div>
                             <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
