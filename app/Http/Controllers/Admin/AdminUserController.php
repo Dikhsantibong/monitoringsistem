@@ -11,10 +11,29 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class AdminUserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = User::query();
+        
+        // Search berdasarkan nama atau email
+        if ($search = $request->input('search')) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        // Filter berdasarkan role
+        if ($role = $request->input('role')) {
+            $query->where('role', $role);
+        }
+        
+        // Pagination
+        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+        
+        if ($request->ajax()) {
+            return view('admin.users.index', compact('users'))->render();
+        }
         
         return view('admin.users.index', compact('users'));
     }

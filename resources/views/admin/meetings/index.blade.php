@@ -390,12 +390,22 @@
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const dateSelect = document.querySelector('#tanggal-filter');
+                    
+                    function showLoader() {
+                        document.getElementById('tableLoader').classList.remove('hidden');
+                        document.getElementById('tableData').classList.add('hidden');
+                    }
+                    
+                    function hideLoader() {
+                        document.getElementById('tableLoader').classList.add('hidden');
+                        document.getElementById('tableData').classList.remove('hidden');
+                    }
+                    
                     if (dateSelect) {
-                        dateSelect.value = '{{ $selectedDate }}';
-                        
-                        // Tambahkan event listener untuk perubahan tanggal
                         dateSelect.addEventListener('change', function() {
                             const selectedDate = this.value;
+                            showLoader(); // Tampilkan loader
+                            
                             // Update URL tanpa refresh
                             const newUrl = new URL(window.location.href);
                             newUrl.searchParams.set('tanggal', selectedDate);
@@ -409,15 +419,16 @@
                             })
                             .then(response => response.text())
                             .then(html => {
-                                // Update hanya konten dinamis
                                 const dynamicContent = document.querySelector('#dynamic-content');
                                 if (dynamicContent) {
                                     dynamicContent.innerHTML = html;
                                 }
+                                hideLoader(); // Sembunyikan loader
                             })
                             .catch(error => {
                                 console.error('Error:', error);
                                 alert('Gagal memuat data. Silakan coba lagi.');
+                                hideLoader(); // Sembunyikan loader jika terjadi error
                             });
                         });
                     }

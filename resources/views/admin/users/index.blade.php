@@ -232,135 +232,80 @@
     </div>
     </div>
     <script type="text/javascript">
-    // Definisikan searchUsers di window object untuk memastikan ia berada di global scope
+    // Fungsi pencarian yang diperbarui
     window.searchUsers = function() {
-        const searchTerm = document.getElementById('search').value.toLowerCase();
-        const roleFilter = document.getElementById('role-filter').value.toLowerCase();
+        const searchTerm = document.getElementById('search').value;
+        const roleFilter = document.getElementById('role-filter').value;
         
         // Tampilkan loader
         document.getElementById('tableLoader').style.display = 'table-row-group';
         document.getElementById('users-body').style.display = 'none';
 
-        // Kirim request AJAX ke server
-        fetch(`/admin/users/search?search=${searchTerm}&role=${roleFilter}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.getElementById('users-body');
-            
-            // Bersihkan tbody
-            tbody.innerHTML = '';
-            
-            if (data.users.length > 0) {
-                // Render hasil pencarian
-                data.users.forEach((user, index) => {
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-gray-50 transition-colors';
-                    row.innerHTML = `
-                        <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                            ${index + 1}
+        // Buat URL dengan parameter pencarian
+        const url = new URL(window.location.href);
+        url.searchParams.set('search', searchTerm);
+        url.searchParams.set('role', roleFilter);
+        url.searchParams.set('page', '1'); 
+
+        // Lakukan fetch ke URL yang sama
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                // Parse HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Update tbody dengan hasil pencarian
+                const newTbody = doc.getElementById('users-body');
+                if (newTbody) {
+                    document.getElementById('users-body').innerHTML = newTbody.innerHTML;
+                }
+
+                // Update pagination
+                const newPagination = doc.querySelector('.mt-4.flex.justify-between.items-center');
+                const currentPagination = document.querySelector('.mt-4.flex.justify-between.items-center');
+                if (newPagination && currentPagination) {
+                    currentPagination.innerHTML = newPagination.innerHTML;
+                }
+
+                // Update URL tanpa reload
+                window.history.pushState({}, '', url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('users-body').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-red-500">
+                            Terjadi kesalahan saat mencari data
                         </td>
-                        <td class="text-center p-2 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        ${user.name}
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="p-2 whitespace-nowrap border border-gray-300">
-                            <div class="text-sm text-gray-900">${user.email}</div>
-                        </td>
-                        <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                ${user.role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
-                                ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                            </span>
-                        </td>
-                        <td class="text-center py-2 whitespace-nowrap border border-gray-300">
-                            <div class="text-sm text-gray-900">
-                                ${new Date(user.created_at).toLocaleDateString('id-ID', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric'
-                                })}
-                            </div>
-                        </td>
-                        <td class="py-2 whitespace-nowrap flex justify-center gap-2">
-                            <div>
-                                <a href="/admin/users/${user.id}/edit" 
-                                   class="text-white btn bg-indigo-500 hover:bg-indigo-900 rounded-lg border">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </div>
-                            <form id="delete-form-${user.id}" 
-                                  action="/admin/users/${user.id}" 
-                                  method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button"
-                                        onclick="confirmDelete(${user.id}, '${user.name}')"
-                                        class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </form>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            } else {
-                // Tampilkan pesan tidak ada data
-                const noDataRow = document.createElement('tr');
-                noDataRow.innerHTML = `
-                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                        Tidak ada data pengguna yang sesuai dengan pencarian
-                    </td>
+                    </tr>
                 `;
-                tbody.appendChild(noDataRow);
-            }
-
-            // Sembunyikan loader
-            document.getElementById('tableLoader').style.display = 'none';
-            document.getElementById('users-body').style.display = 'table-row-group';
-
-            // Update text menampilkan
-            const displayText = document.querySelector('.text-sm.text-gray-700');
-            if (displayText) {
-                displayText.textContent = `Menampilkan ${data.users.length} dari ${data.total} data`;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Tampilkan pesan error
-            const tbody = document.getElementById('users-body');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-6 py-4 text-center text-red-500">
-                        Terjadi kesalahan saat mencari data
-                    </td>
-                </tr>
-            `;
-            
-            // Sembunyikan loader
-            document.getElementById('tableLoader').style.display = 'none';
-            document.getElementById('users-body').style.display = 'table-row-group';
-        });
+            })
+            .finally(() => {
+                // Sembunyikan loader dan tampilkan hasil
+                document.getElementById('tableLoader').style.display = 'none';
+                document.getElementById('users-body').style.display = 'table-row-group';
+            });
     };
 
-    // Tunggu sampai DOM selesai dimuat
+    // Event listeners dengan debounce
     document.addEventListener('DOMContentLoaded', function() {
-        // Setup event listeners
         const searchInput = document.getElementById('search');
         const searchButton = document.getElementById('searchButton');
         const roleFilter = document.getElementById('role-filter');
 
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(), wait);
+            };
+        }
+
+        // Tambahkan event listeners
         if (searchInput) {
+            searchInput.addEventListener('input', debounce(window.searchUsers, 500));
             searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -370,7 +315,6 @@
         }
 
         if (searchButton) {
-            // Hapus onclick dari HTML dan tambahkan event listener di sini
             searchButton.addEventListener('click', window.searchUsers);
         }
 

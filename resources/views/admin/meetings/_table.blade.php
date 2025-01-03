@@ -110,7 +110,18 @@
                     <th class="border p-2">Keterangan</th>
                 </tr>
             </thead>
-            <tbody>
+            <!-- Loader tbody -->
+            <tbody id="tableLoader" class="hidden">
+                <tr>
+                    <td colspan="6" class="text-center py-8">
+                        <div class="flex justify-center items-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009BB9]"></div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            <!-- Data tbody -->
+            <tbody id="tableData">
                 @foreach($scoreCards->first()['peserta'] as $index => $peserta)
                     <tr>
                         <td class="border p-2 text-center">{{ $loop->iteration }}</td>

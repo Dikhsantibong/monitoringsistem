@@ -181,8 +181,9 @@
                                 </button>
                             </div>
                         </div>
-                        <div style="height: 300px;">
+                        <div class="relative" style="height: 300px;">
                             <canvas id="srChart"></canvas>
+                            <div id="srStats" class="absolute bottom-0 left-0 text-sm text-gray-600 p-2"></div>
                         </div>
                     </div>
 
@@ -201,8 +202,9 @@
                                 </button>
                             </div>
                         </div>
-                        <div style="height: 300px;">
+                        <div class="relative" style="height: 300px;">
                             <canvas id="woChart"></canvas>
+                            <div id="woStats" class="absolute bottom-0 left-0 text-sm text-gray-600 p-2"></div>
                         </div>
                     </div>
                 </div>
@@ -212,10 +214,10 @@
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Aktivitas Terbaru</h3>
-                            <button onclick="exportActivities()"
+                            {{-- <button onclick="exportActivities()"
                                 class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                                 <i class="fas fa-download mr-2"></i>Ekspor
-                            </button>
+                            </button> --}}
                         </div>
                         <div class="overflow-x-auto border-2 border-gray-200 rounded-lg">
                             <table id="activities-table" class="min-w-full divide-y divide-gray-200">
@@ -456,6 +458,18 @@
                 data: woData,
                 options: pieOptions
             });
+
+            // Update stats untuk SR
+            const srStats = document.getElementById('srStats');
+            const srOpen = chartData.srData.counts[0];
+            const srClosed = chartData.srData.counts[1];
+            srStats.innerHTML = `Open: ${srOpen} | Closed: ${srClosed}`;
+
+            // Update stats untuk WO
+            const woStats = document.getElementById('woStats');
+            const woOpen = chartData.woData.counts[0];
+            const woClosed = chartData.woData.counts[1];
+            woStats.innerHTML = `Open: ${woOpen} | Closed: ${woClosed}`;
         });
 
         // Fungsi untuk mengubah tipe chart
