@@ -100,7 +100,7 @@
                         </tr>
                         @endforeach
 
-                        @foreach(App\Models\WorkOrder::where('status', 'Close')->get() as $index => $report)
+                        @foreach(App\Models\WorkOrder::where('status', 'Closed')->get() as $index => $report)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap border">{{ App\Models\ServiceRequest::where('status', 'Closed')->count() + $index + 1 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap border">

@@ -135,14 +135,14 @@ class LaporanController extends Controller
     {
         // Ambil SR yang closed
         $closedSR = ServiceRequest::where('status', 'Closed')
-            ->select('id', 'description as deskripsi', 'status', 'created_at as tanggal')
+            ->select('id', 'description', 'status', 'created_at as tanggal')
             ->get()
             ->map(function($item) {
                 return [
                     'id' => $item->id,
                     'nomor' => 'SR-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
                     'tanggal' => $item->tanggal,
-                    'deskripsi' => $item->deskripsi,
+                    'deskripsi' => $item->description,
                     'status' => $item->status,
                     'tipe' => 'SR'
                 ];
@@ -150,14 +150,14 @@ class LaporanController extends Controller
 
         // Ambil WO yang closed
         $closedWO = WorkOrder::where('status', 'Closed')
-            ->select('id', 'description as deskripsi', 'status', 'created_at as tanggal')
+            ->select('id', 'description', 'status', 'created_at as tanggal')
             ->get()
             ->map(function($item) {
                 return [
                     'id' => $item->id,
                     'nomor' => 'WO-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
                     'tanggal' => $item->tanggal,
-                    'deskripsi' => $item->deskripsi,
+                    'deskripsi' => $item->description,
                     'status' => $item->status,
                     'tipe' => 'WO'
                 ];
