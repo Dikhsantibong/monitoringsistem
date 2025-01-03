@@ -326,13 +326,17 @@ class AdminMeetingController extends Controller
                 'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 0
             ];
 
+            // Decode signatures dari parameter URL
+            $signatures = json_decode(urldecode($request->signatures), true) ?? [];
+
             return view('admin.meetings.print', compact(
                 'data', 
                 'date', 
                 'logs', 
                 'attendances', 
                 'serviceRequests',
-                'woBacklogs'
+                'woBacklogs',
+                'signatures'
             ));
 
         } catch (\Exception $e) {

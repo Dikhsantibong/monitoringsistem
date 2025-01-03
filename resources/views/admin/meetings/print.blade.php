@@ -175,6 +175,33 @@
         .notes-table tr td:last-child {
             padding: 20px 12px;
         }
+        .signatures-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-top: 40px;
+            padding: 20px;
+        }
+        .signature-box {
+            text-align: center;
+            padding: 20px;
+        }
+        .signature-box .title {
+            font-weight: bold;
+            margin-bottom: 60px;
+        }
+        .signature-image {
+            max-width: 200px;
+            max-height: 100px;
+            margin: 0 auto;
+        }
+        .signature-line {
+            margin-top: 10px;
+            border-top: 1px solid black;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 <body>
@@ -533,6 +560,84 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Setelah halaman Notes, tambahkan halaman Pengesahan -->
+    <div class="page-break">
+        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+        
+        <div class="header">
+            <h2>LEMBAR PENGESAHAN</h2>
+            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+        </div>
+
+        <div class="signatures-grid">
+            <div class="signature-box">
+                <p class="title">ASMAN OPERASI</p>
+                @if(isset($signatures['Operasi']))
+                    <img src="{{ $signatures['Operasi'] }}" alt="Tanda Tangan ASMAN OPERASI" class="signature-image">
+                @endif
+                <div class="signature-line"></div>
+            </div>
+
+            <div class="signature-box">
+                <p class="title">ASMAN PEMELIHARAAN</p>
+                @if(isset($signatures['Pemeliharaan']))
+                    <img src="{{ $signatures['Pemeliharaan'] }}" alt="Tanda Tangan ASMAN PEMELIHARAAN" class="signature-image">
+                @endif
+                <div class="signature-line"></div>
+            </div>
+
+            <div class="signature-box">
+                <p class="title">ASMAN ENJINIRING</p>
+                @if(isset($signatures['Enjiniring']))
+                    <img src="{{ $signatures['Enjiniring'] }}" alt="Tanda Tangan ASMAN ENJINIRING" class="signature-image">
+                @endif
+                <div class="signature-line"></div>
+            </div>
+
+            <div class="signature-box">
+                <p class="title">MANAJER UP</p>
+                @if(isset($signatures['Manajer']))
+                    <img src="{{ $signatures['Manajer'] }}" alt="Tanda Tangan MANAJER UP" class="signature-image">
+                @endif
+                <div class="signature-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .signatures-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 40px;
+        margin-top: 40px;
+        padding: 20px;
+    }
+
+    .signature-box {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .signature-box .title {
+        font-weight: bold;
+        margin-bottom: 60px;
+    }
+
+    .signature-image {
+        max-width: 200px;
+        max-height: 100px;
+        margin: 0 auto;
+    }
+
+    .signature-line {
+        margin-top: 10px;
+        border-top: 1px solid black;
+        width: 200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    </style>
 
     <script>
         window.onload = function() {

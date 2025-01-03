@@ -112,11 +112,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
         Route::get('/admin/meetings/print', [AdminMeetingController::class, 'print'])
         ->name('admin.meetings.print');
+        Route::get('/admin/meetings/download-pdf', [AdminMeetingController::class, 'downloadPDF'])->name('admin.meetings.download-pdf');
+        Route::get('/admin/meetings/download-excel', [AdminMeetingController::class, 'downloadExcel'])->name('admin.meetings.download-excel');
         
-   
-
-
-
     });
 
     Route::prefix('users')->group(function () {

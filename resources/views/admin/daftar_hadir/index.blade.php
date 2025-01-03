@@ -116,7 +116,7 @@
                                         Tanggal
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Waktu Kehadiran
+                                        Waktu Absensi
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
                                         Tanda Tangan
