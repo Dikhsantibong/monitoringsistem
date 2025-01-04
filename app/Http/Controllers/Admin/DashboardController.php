@@ -44,22 +44,50 @@ class DashboardController extends Controller
                 return Carbon::parse($item->tanggal)->format('Y-m-d');
             });
 
-        // Data ScoreCardDaily untuk total score peserta
+        // Data ScoreCardDaily untuk total score peserta dan ketentuan rapat
         $attendanceData = ScoreCardDaily::whereBetween('tanggal', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->selectRaw('DATE(tanggal) as date, SUM(
-                kesiapan_panitia + 
-                kesiapan_bahan + 
-                kontribusi_pemikiran + 
-                aktivitas_luar + 
-                gangguan_diskusi + 
-                gangguan_keluar_masuk + 
-                gangguan_interupsi + 
-                ketegasan_moderator + 
-                kelengkapan_sr
-            ) as total_score')
-            ->groupBy('date')
             ->get()
-            ->keyBy('date');
+            ->map(function($scoreCard) {
+                try {
+                    // Hitung total score peserta
+                    $pesertaScore = 0;
+                    if ($scoreCard->peserta) {
+                        $peserta = json_decode($scoreCard->peserta, true) ?? [];
+                        $pesertaScore = collect($peserta)->sum('skor');
+                    }
+
+                    // Hitung total score ketentuan rapat
+                    $ketentuanScore = 
+                        ($scoreCard->kesiapan_panitia ?? 100) +
+                        ($scoreCard->kesiapan_bahan ?? 100) +
+                        ($scoreCard->aktivitas_luar ?? 100) +
+                        ($scoreCard->gangguan_diskusi ?? 100) +
+                        ($scoreCard->gangguan_keluar_masuk ?? 100) +
+                        ($scoreCard->gangguan_interupsi ?? 100) +
+                        ($scoreCard->ketegasan_moderator ?? 100) +
+                        ($scoreCard->skor_waktu_mulai ?? 100) +
+                        ($scoreCard->skor_waktu_selesai ?? 100) +
+                        ($scoreCard->kelengkapan_sr ?? 100);
+
+                    // Total keseluruhan
+                    $totalScore = $pesertaScore + $ketentuanScore;
+
+                    return [
+                        'date' => $scoreCard->tanggal->format('Y-m-d'),
+                        'total_score' => $totalScore
+                    ];
+                } catch (\Exception $e) {
+                    \Log::error('Error calculating score: ' . $e->getMessage());
+                    return [
+                        'date' => $scoreCard->tanggal->format('Y-m-d'),
+                        'total_score' => 0
+                    ];
+                }
+            })
+            ->groupBy('date')
+            ->map(function($group) {
+                return round($group->avg('total_score'), 2);
+            });
 
         // Siapkan data untuk chart ketepatan waktu
         $formattedScoreCard = $dates->mapWithKeys(function($date) use ($scoreCardData) {
@@ -73,9 +101,7 @@ class DashboardController extends Controller
         // Siapkan data untuk chart total score peserta
         $formattedAttendance = $dates->mapWithKeys(function($date) use ($attendanceData) {
             return [
-                $date => isset($attendanceData[$date]) 
-                    ? round($attendanceData[$date]->total_score, 2) 
-                    : 0
+                $date => $attendanceData[$date] ?? 0
             ];
         })->sortKeys();
 
@@ -184,5 +210,34 @@ class DashboardController extends Controller
         ];
     }
 
-    
+    // Tambahkan method helper untuk menghitung score
+    private function calculateTotalScore($scoreCard)
+    {
+        try {
+            // Hitung score peserta
+            $pesertaScore = 0;
+            if ($scoreCard->peserta) {
+                $peserta = json_decode($scoreCard->peserta, true) ?? [];
+                $pesertaScore = collect($peserta)->sum('skor');
+            }
+
+            // Hitung score ketentuan rapat
+            $ketentuanScore = 
+                ($scoreCard->kesiapan_panitia ?? 100) +
+                ($scoreCard->kesiapan_bahan ?? 100) +
+                ($scoreCard->aktivitas_luar ?? 100) +
+                ($scoreCard->gangguan_diskusi ?? 100) +
+                ($scoreCard->gangguan_keluar_masuk ?? 100) +
+                ($scoreCard->gangguan_interupsi ?? 100) +
+                ($scoreCard->ketegasan_moderator ?? 100) +
+                ($scoreCard->skor_waktu_mulai ?? 100) +
+                ($scoreCard->skor_waktu_selesai ?? 100) +
+                ($scoreCard->kelengkapan_sr ?? 100);
+
+            return $pesertaScore + $ketentuanScore;
+        } catch (\Exception $e) {
+            \Log::error('Error in calculateTotalScore: ' . $e->getMessage());
+            return 0;
+        }
+    }
 } 
