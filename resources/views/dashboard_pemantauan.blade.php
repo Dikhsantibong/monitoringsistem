@@ -56,30 +56,15 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div class="dashboard-card p-4 rounded-lg">
-                <h3 class="text-lg mb-4">PRESENTASI TOTAL DAYA HILANG</h3>
+                <h3 class="text-lg">PRESENTASI TOTAL DAYA HILANG</h3>
                 <div class="mt-2">
-                    <!-- Derating -->
-                    <div class="flex items-center mb-4">
-                        <span class="w-24">Derating</span>
-                        <div class="flex-grow mx-4">
-                            <div class="w-full bg-gray-300 rounded-full h-2.5">
-                                <div class="bg-blue-600 h-2.5 rounded-full" 
-                                     style="width: {{ $deratingPercentage ?? 0 }}%"></div>
-                            </div>
-                        </div>
-                        <span class="w-16 text-right">{{ $deratingPercentage ?? 0 }}%</span>
+                    <p>Derating <span class="float-right">85%</span></p>
+                    <div class="w-full bg-gray-300 rounded-full h-2.5 mb-4">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 85%"></div>
                     </div>
-                    
-                    <!-- Gangguan -->
-                    <div class="flex items-center mb-4">
-                        <span class="w-24">Gangguan</span>
-                        <div class="flex-grow mx-4">
-                            <div class="w-full bg-gray-300 rounded-full h-2.5">
-                                <div class="bg-red-600 h-2.5 rounded-full" 
-                                     style="width: {{ $gangguanPercentage['gangguan'] ?? 0 }}%"></div>
-                            </div>
-                        </div>
-                        <span class="w-16 text-right">{{ $gangguanPercentage['gangguan'] ?? 0 }}%</span>
+                    <p>Gangguan <span class="float-right">50%</span></p>
+                    <div class="w-full bg-gray-300 rounded-full h-2.5 mb-4">
+                        <div class="bg-red-600 h-2.5 rounded-full" style="width: 50%"></div>
                     </div>
                 </div>
             </div>
@@ -155,13 +140,10 @@
             type: 'doughnut',
             data: {
                 datasets: [{
-                    data: [
-                        {{ $gangguanPercentage['normal'] }}, 
-                        {{ $gangguanPercentage['gangguan'] }}
-                    ],
-                    backgroundColor: ['#22c55e', '#ef4444']
+                    data: [90, 10],
+                    backgroundColor: ['#22c55e', '#e5e7eb']
                 }],
-                labels: ['Normal', 'Gangguan']
+                labels: ['Aktif', 'Tidak Aktif']
             },
             options: {
                 cutout: '70%',
@@ -169,7 +151,11 @@
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
+                                var dataset = tooltipItem.dataset;
+                                var total = dataset.data.reduce((a, b) => a + b, 0);
+                                var currentValue = dataset.data[tooltipItem.dataIndex];
+                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
+                                return currentValue + ' (' + percentage + '%)';
                             }
                         }
                     },
