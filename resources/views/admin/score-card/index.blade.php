@@ -144,11 +144,13 @@
                                     $latestScoreCard = $scoreCards->sortByDesc('created_at')->first();
                                     $totalIndex = 0;
                                     $totalScore = 0; // Reset total score
+                                    $peserta = []; // Inisialisasi variabel peserta
                                 @endphp
                                 @if($latestScoreCard)
                                     @php
-                                        $peserta = json_decode($latestScoreCard->peserta, true);
-                                        $ketentuanRapat = json_decode($latestScoreCard->ketentuan_rapat, true);
+                                        // Decode data peserta dengan nilai default array kosong
+                                        $peserta = json_decode($latestScoreCard->peserta, true) ?? [];
+                                        $ketentuanRapat = json_decode($latestScoreCard->ketentuan_rapat, true) ?? [];
                                         $pesertaCount = count($peserta);
                                         $currentIndex = 0;
                                         
@@ -166,7 +168,7 @@
                                             <td class="border p-2">{{ ucfirst(str_replace('_', ' ', $jabatan)) }}</td>
                                             <td class="border p-2 text-center">{{ $data['skor'] == 50 ? 0 : '' }}</td>
                                             <td class="border p-2 text-center">{{ $data['skor'] == 100 ? 1 : '' }}</td>
-                                            <td class="border p-2 text-center">{{ $data['skor'] }}</td>
+                                            <td class="border p-2 text-center">{{ $data['skor'] ?? 0 }}</td>
                                             <td class="border p-2">{{ $data['keterangan'] ?? '-' }}</td>
                                         </tr>
                                         @php
@@ -257,21 +259,22 @@ Setiap 3 menit keterlambatan waktu maka skor dikurangi 10.</td>
                                     </tr>
                                 @endif
                                 @php
-                                    // Hitung total score peserta
-                                    $totalScorePeserta = collect($peserta)->sum('skor');
+                                    // Hitung total score peserta dengan pengecekan
+                                    $totalScorePeserta = isset($peserta) ? collect($peserta)->sum('skor') : 0;
                                     
-                                    // Hitung total score ketentuan rapat
-                                    $totalScoreKetentuan = 
-                                        $latestScoreCard->kesiapan_panitia +
-                                        $latestScoreCard->kesiapan_bahan +
-                                        $latestScoreCard->aktivitas_luar +
-                                        $latestScoreCard->gangguan_diskusi +
-                                        $latestScoreCard->gangguan_keluar_masuk +
-                                        $latestScoreCard->gangguan_interupsi +
-                                        $latestScoreCard->ketegasan_moderator +
-                                        $latestScoreCard->skor_waktu_mulai +
-                                        $latestScoreCard->skor_waktu_selesai +
-                                        $latestScoreCard->kelengkapan_sr;
+                                    // Hitung total score ketentuan rapat dengan pengecekan null coalescing
+                                    $totalScoreKetentuan = $latestScoreCard ? (
+                                        ($latestScoreCard->kesiapan_panitia ?? 100) +
+                                        ($latestScoreCard->kesiapan_bahan ?? 100) +
+                                        ($latestScoreCard->aktivitas_luar ?? 100) +
+                                        ($latestScoreCard->gangguan_diskusi ?? 100) +
+                                        ($latestScoreCard->gangguan_keluar_masuk ?? 100) +
+                                        ($latestScoreCard->gangguan_interupsi ?? 100) +
+                                        ($latestScoreCard->ketegasan_moderator ?? 100) +
+                                        ($latestScoreCard->skor_waktu_mulai ?? 100) +
+                                        ($latestScoreCard->skor_waktu_selesai ?? 100) +
+                                        ($latestScoreCard->kelengkapan_sr ?? 100)
+                                    ) : 0;
                                     
                                     // Total keseluruhan
                                     $grandTotal = $totalScorePeserta + $totalScoreKetentuan;

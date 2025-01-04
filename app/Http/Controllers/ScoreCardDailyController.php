@@ -24,44 +24,71 @@ class ScoreCardDailyController extends Controller
     {
         $scoreCards = ScoreCardDaily::latest()->get();
 
+        // Cek apakah ada data scoreCards
+        if ($scoreCards->isEmpty()) {
+            return view('admin.score-card.index', [
+                'scoreCards' => collect([]),
+                'totalScore' => 0,
+                'ketentuanRapat' => [],
+                'averageScore' => 0
+            ]);
+        }
+
         // Menghitung total skor peserta
         $totalScore = $scoreCards->sum(function ($scoreCard) {
-            // Hitung skor peserta
-            $pesertas = json_decode($scoreCard->peserta, true);
-            $pesertaScore = array_sum(array_column($pesertas, 'skor'));
-            
-            // Hitung skor ketentuan rapat termasuk waktu mulai dan selesai
-            $ketentuanScore = 
-                ($scoreCard->skor_waktu_mulai ?? 100) +     // Tambahkan skor waktu mulai
-                ($scoreCard->skor_waktu_selesai ?? 100) +   // Tambahkan skor waktu selesai
-                $scoreCard->kesiapan_panitia +
-                $scoreCard->kesiapan_bahan +
-                $scoreCard->aktivitas_luar +
-                $scoreCard->gangguan_diskusi +
-                $scoreCard->gangguan_keluar_masuk +
-                $scoreCard->gangguan_interupsi +
-                $scoreCard->ketegasan_moderator +
-                $scoreCard->kelengkapan_sr;
-            
-            // Total keseluruhan
-            return $pesertaScore + $ketentuanScore;
+            try {
+                // Pastikan peserta tidak null dan bisa di-decode
+                $pesertas = json_decode($scoreCard->peserta, true) ?? [];
+                $pesertaScore = is_array($pesertas) ? array_sum(array_column($pesertas, 'skor')) : 0;
+                
+                // Hitung skor ketentuan rapat termasuk waktu mulai dan selesai
+                $ketentuanScore = 
+                    ($scoreCard->skor_waktu_mulai ?? 100) +
+                    ($scoreCard->skor_waktu_selesai ?? 100) +
+                    ($scoreCard->kesiapan_panitia ?? 100) +
+                    ($scoreCard->kesiapan_bahan ?? 100) +
+                    ($scoreCard->aktivitas_luar ?? 100) +
+                    ($scoreCard->gangguan_diskusi ?? 100) +
+                    ($scoreCard->gangguan_keluar_masuk ?? 100) +
+                    ($scoreCard->gangguan_interupsi ?? 100) +
+                    ($scoreCard->ketegasan_moderator ?? 100) +
+                    ($scoreCard->kelengkapan_sr ?? 100);
+                
+                return $pesertaScore + $ketentuanScore;
+            } catch (\Exception $e) {
+                \Log::error('Error calculating score: ' . $e->getMessage());
+                return 0;
+            }
         });
 
-        // Hitung rata-rata (tambahkan 2 untuk waktu mulai dan selesai)
-        $totalItems = count(json_decode($scoreCards->first()->peserta, true)) + 10; // 10 adalah jumlah ketentuan rapat termasuk waktu
-        $averageScore = $totalScore / $totalItems;
+        // Hitung rata-rata dengan pengecekan
+        $firstCard = $scoreCards->first();
+        $pesertaCount = 0;
 
-        // Menggabungkan semua ketentuan rapat dari setiap scoreCard
+        try {
+            $pesertaCount = count(json_decode($firstCard->peserta, true) ?? []);
+        } catch (\Exception $e) {
+            \Log::error('Error counting peserta: ' . $e->getMessage());
+        }
+
+        $totalItems = $pesertaCount + 10; // 10 adalah jumlah ketentuan rapat
+        $averageScore = $totalItems > 0 ? $totalScore / $totalItems : 0;
+
+        // Menggabungkan ketentuan rapat dengan pengecekan
         $ketentuanRapat = [];
         foreach ($scoreCards as $card) {
-            $ketentuan = json_decode($card->ketentuan_rapat, true);
-            if (!empty($ketentuan)) {
-                $ketentuanRapat[] = $ketentuan; // Simpan ketentuan rapat
+            try {
+                $ketentuan = json_decode($card->ketentuan_rapat, true);
+                if (!empty($ketentuan) && is_array($ketentuan)) {
+                    $ketentuanRapat[] = $ketentuan;
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error processing ketentuan rapat: ' . $e->getMessage());
             }
         }
 
-        // Menggabungkan semua ketentuan rapat menjadi satu array
-        $ketentuanRapat = array_merge(...$ketentuanRapat); // Menggabungkan semua ketentuan rapat
+        // Gabungkan array ketentuan rapat jika ada
+        $ketentuanRapat = !empty($ketentuanRapat) ? array_merge(...$ketentuanRapat) : [];
 
         return view('admin.score-card.index', compact('scoreCards', 'totalScore', 'ketentuanRapat', 'averageScore'));
     }
