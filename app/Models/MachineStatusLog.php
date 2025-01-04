@@ -58,12 +58,7 @@ class MachineStatusLog extends Model
     {
         return $this->hasOne(MachineOperation::class, 'machine_id', 'machine_id')
             ->whereDate('recorded_at', '=', DB::raw('DATE(machine_status_logs.tanggal)'));
-    }
-    public function getConnectionName()
-    {
-        // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
-        return session('unit', 'u478221055_up_kendari'); // default ke 'up_kendari' jika tidak ada
-    }
+    }   
 
     // Tambahkan method untuk data sementara
     public static function getDummyMonthlyData()
@@ -136,6 +131,12 @@ class MachineStatusLog extends Model
             \Log::error('Error getting derating percentage: ' . $e->getMessage());
             return 0;
         }
+        
+    }
+    public function getConnectionName()
+    {
+        // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
+        return session('unit', 'u478221055_up_kendari'); // default ke 'up_kendari' jika tidak ada
     }
     
 } 
