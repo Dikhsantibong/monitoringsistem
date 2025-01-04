@@ -153,7 +153,7 @@
                                                 </td>
                                                 <td class="text-center py-2 whitespace-nowrap border border-gray-300">
                                                     <div class="text-sm text-gray-900">
-                                                        {{ $user->created_at->format('d M Y') }}
+                                                        {{ optional($user->created_at)->format('d M Y') ?: '-' }}
                                                     </div>
                                                 </td>
                                                 <td class="py-2 whitespace-nowrap flex justify-center gap-2">

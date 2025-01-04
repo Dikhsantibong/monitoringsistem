@@ -132,15 +132,16 @@
                                     <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
                                     <p class="text-sm text-gray-500">Kode: {{ $machine->code }}</p>
                                     <p class="text-sm text-gray-500">Asal Unit: {{ $statusLog->powerPlant->name ?? 'N/A' }}</p>
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium
+                                    {{ $statusLog && $statusLog->status === 'START'
+                                        ? 'bg-green-100 text-green-800'
+                                        : ($statusLog && $statusLog->status === 'STOP'
+                                            ? 'bg-red-100 text-red-800'
+                                            : 'bg-yellow-100 text-yellow-800') }}">
+                                    {{ $statusLog->status ?? 'N/A' }}
+                                </span>
                                     <div class="flex items-center mt-2 absolute bottom-0 right-0 m-4">
-                                        <span class="px-3 py-1 rounded-full text-sm font-medium
-                                            {{ $statusLog && $statusLog->status === 'START'
-                                                ? 'bg-green-100 text-green-800'
-                                                : ($statusLog && $statusLog->status === 'STOP'
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : 'bg-yellow-100 text-yellow-800') }}">
-                                            {{ $statusLog->status ?? 'N/A' }}
-                                        </span>
+                                       
                                         <i class="fas fa-cog text-xl ml-2"></i>
                                     </div>
                                 </div>

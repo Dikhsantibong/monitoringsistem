@@ -15,6 +15,7 @@
 
       <!-- Existing styles -->
       @vite(['resources/css/app.css', 'resources/js/app.js'])
+      
         {{-- @vite(['resources/assets/flowbite/flowbite.min.js']) --}}
         <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
@@ -50,6 +51,7 @@
      <!-- ... kode lainnya ... -->
      
      <meta name="csrf-token" content="{{ csrf_token() }}">
+    
      
  </head>
     <!-- Custom Styles -->

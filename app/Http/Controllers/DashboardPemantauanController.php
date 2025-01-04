@@ -62,6 +62,14 @@ class DashboardPemantauanController extends Controller
             // Get statistics
             $viewData['statistics'] = $this->getMachineStatistics();
 
+            // Tambahkan data gangguan percentage
+            $gangguanData = MachineStatusLog::getGangguanPercentage();
+            $viewData['gangguanPercentage'] = $gangguanData;
+
+            // Tambahkan data derating percentage
+            $deratingPercentage = MachineStatusLog::getDeratingPercentage();
+            $viewData['deratingPercentage'] = $deratingPercentage;
+
         } catch (\Exception $e) {
             \Log::error('Dashboard Pemantauan Error: ' . $e->getMessage());
             $viewData['error'] = 'Terjadi kesalahan saat mengambil data. Silakan coba lagi nanti.';

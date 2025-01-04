@@ -735,99 +735,90 @@
 
     // Fungsi pencarian untuk tabel SR
     function searchSRTable() {
-        const searchValue = document.getElementById('searchSR').value.toLowerCase();
-        const table = document.getElementById('srTable');
-        const rows = table.getElementsByTagName('tr');
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-
-            for (let j = 0; j < cells.length; j++) {
-                const cellText = cells[j].textContent.toLowerCase();
-                if (cellText.includes(searchValue)) {
-                    found = true;
-                    break;
-                }
+        const searchValue = document.getElementById('searchSR').value;
+        
+        // Kirim request AJAX
+        fetch(`${window.location.pathname}?searchSR=${encodeURIComponent(searchValue)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
             }
-
-            row.style.display = found ? '' : 'none';
-        }
-
-        // Update jumlah data SR
-        updateTableCounts('srTable', 'srVisibleCount', 'srTotalCount');
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Update tabel dengan hasil pencarian
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            document.getElementById('srTable').innerHTML = doc.getElementById('srTable').innerHTML;
+            
+            // Update counter
+            const visibleRows = document.querySelectorAll('#srTable tbody tr:not([style*="display: none"])').length;
+            document.getElementById('srVisibleCount').textContent = visibleRows;
+        });
     }
 
     // Fungsi pencarian untuk tabel WO
     function searchWOTable() {
-        const searchValue = document.getElementById('searchWO').value.toLowerCase();
-        const table = document.getElementById('woTable');
-        const rows = table.getElementsByTagName('tr');
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-
-            for (let j = 0; j < cells.length; j++) {
-                const cellText = cells[j].textContent.toLowerCase();
-                if (cellText.includes(searchValue)) {
-                    found = true;
-                    break;
-                }
+        const searchValue = document.getElementById('searchWO').value;
+        
+        fetch(`${window.location.pathname}?searchWO=${encodeURIComponent(searchValue)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
             }
-
-            row.style.display = found ? '' : 'none';
-        }
-
-        // Update jumlah data WO
-        updateTableCounts('woTable', 'woVisibleCount', 'woTotalCount');
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            document.getElementById('woTable').innerHTML = doc.getElementById('woTable').innerHTML;
+            
+            const visibleRows = document.querySelectorAll('#woTable tbody tr:not([style*="display: none"])').length;
+            document.getElementById('woVisibleCount').textContent = visibleRows;
+        });
     }
 
     // Fungsi pencarian untuk tabel Backlog
     function searchBacklogTable() {
-        const searchValue = document.getElementById('searchBacklog').value.toLowerCase();
-        const table = document.getElementById('backlogTable');
-        const rows = table.getElementsByTagName('tr');
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-
-            for (let j = 0; j < cells.length; j++) {
-                const cellText = cells[j].textContent.toLowerCase();
-                if (cellText.includes(searchValue)) {
-                    found = true;
-                    break;
-                }
+        const searchValue = document.getElementById('searchBacklog').value;
+        
+        fetch(`${window.location.pathname}?searchBacklog=${encodeURIComponent(searchValue)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
             }
-
-            row.style.display = found ? '' : 'none';
-        }
-
-        // Update jumlah data Backlog
-        updateTableCounts('backlogTable', 'backlogVisibleCount', 'backlogTotalCount');
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            document.getElementById('backlogTable').innerHTML = doc.getElementById('backlogTable').innerHTML;
+            
+            const visibleRows = document.querySelectorAll('#backlogTable tbody tr:not([style*="display: none"])').length;
+            document.getElementById('backlogVisibleCount').textContent = visibleRows;
+        });
     }
 
-    // Tambahkan event listener untuk pencarian real-time
-    document.getElementById('searchSR').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
-            searchSRTable();
-        }
-    });
+    // Event listeners dengan debounce
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInputs = {
+            'searchSR': searchSRTable,
+            'searchWO': searchWOTable,
+            'searchBacklog': searchBacklogTable
+        };
 
-    document.getElementById('searchWO').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
-            searchWOTable();
-        }
-    });
-
-    document.getElementById('searchBacklog').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
-            searchBacklogTable();
-        }
+        Object.entries(searchInputs).forEach(([inputId, searchFunction]) => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                const debouncedSearch = debounce(searchFunction, 300);
+                input.addEventListener('input', debouncedSearch);
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchFunction();
+                    }
+                });
+            }
+        });
     });
 
     // Tambahkan debounce untuk pencarian real-time
@@ -858,6 +849,121 @@
         document.getElementById(visibleCountId).textContent = visibleCount;
         document.getElementById(totalCountId).textContent = totalCount;
     }
+
+    // Perbaikan fungsi pencarian
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inisialisasi event listeners untuk search
+        const searchInputs = {
+            'searchSR': { tableId: 'srTable', counterId: 'srVisibleCount' },
+            'searchWO': { tableId: 'woTable', counterId: 'woVisibleCount' },
+            'searchBacklog': { tableId: 'backlogTable', counterId: 'backlogVisibleCount' }
+        };
+
+        Object.entries(searchInputs).forEach(([inputId, config]) => {
+            const searchInput = document.getElementById(inputId);
+            if (searchInput) {
+                // Fungsi pencarian untuk setiap tabel
+                const searchTable = () => {
+                    const searchValue = searchInput.value.toLowerCase();
+                    const table = document.getElementById(config.tableId);
+                    const rows = table.getElementsByTagName('tr');
+                    let visibleCount = 0;
+
+                    // Mulai dari index 1 untuk melewati header
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        const cells = row.getElementsByTagName('td');
+                        let found = false;
+
+                        for (let j = 0; j < cells.length; j++) {
+                            const cellText = cells[j].textContent.toLowerCase();
+                            if (cellText.includes(searchValue)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        row.style.display = found ? '' : 'none';
+                        if (found) visibleCount++;
+                    }
+
+                    // Update counter
+                    const counter = document.getElementById(config.counterId);
+                    if (counter) {
+                        counter.textContent = visibleCount;
+                    }
+                };
+
+                // Tambahkan event listeners
+                const debouncedSearch = debounce(searchTable, 300);
+                searchInput.addEventListener('input', debouncedSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchTable();
+                    }
+                });
+
+                // Tambahkan event listener untuk tombol search jika ada
+                const searchButton = searchInput.nextElementSibling;
+                if (searchButton && searchButton.tagName === 'BUTTON') {
+                    searchButton.addEventListener('click', searchTable);
+                }
+            }
+        });
+    });
+
+    // Fungsi untuk reset pencarian
+    function resetSearch(inputId, tableId) {
+        const searchInput = document.getElementById(inputId);
+        if (searchInput) {
+            searchInput.value = '';
+            const table = document.getElementById(tableId);
+            const rows = table.getElementsByTagName('tr');
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+            // Reset counter
+            const counterId = inputId === 'searchSR' ? 'srVisibleCount' :
+                             inputId === 'searchWO' ? 'woVisibleCount' : 'backlogVisibleCount';
+            const counter = document.getElementById(counterId);
+            if (counter) {
+                counter.textContent = rows.length - 1; // -1 untuk header
+            }
+        }
+    }
+
+    // Fungsi untuk memperbarui jumlah data yang ditampilkan
+    function updateTableCounts() {
+        const tables = [
+            { tableId: 'srTable', visibleId: 'srVisibleCount', totalId: 'srTotalCount' },
+            { tableId: 'woTable', visibleId: 'woVisibleCount', totalId: 'woTotalCount' },
+            { tableId: 'backlogTable', visibleId: 'backlogVisibleCount', totalId: 'backlogTotalCount' }
+        ];
+
+        tables.forEach(({ tableId, visibleId, totalId }) => {
+            const table = document.getElementById(tableId);
+            if (table) {
+                const rows = table.getElementsByTagName('tr');
+                const totalCount = rows.length - 1; // -1 untuk header
+                let visibleCount = 0;
+
+                for (let i = 1; i < rows.length; i++) {
+                    if (rows[i].style.display !== 'none') {
+                        visibleCount++;
+                    }
+                }
+
+                const visibleElement = document.getElementById(visibleId);
+                const totalElement = document.getElementById(totalId);
+                
+                if (visibleElement) visibleElement.textContent = visibleCount;
+                if (totalElement) totalElement.textContent = totalCount;
+            }
+        });
+    }
+
+    // Panggil updateTableCounts saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', updateTableCounts);
 </script>
 @push('scripts')
 @endpush

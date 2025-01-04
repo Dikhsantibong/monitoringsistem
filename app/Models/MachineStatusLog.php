@@ -93,4 +93,49 @@ class MachineStatusLog extends Model
     {
         return 15; // Contoh jumlah gangguan aktif
     }
+
+    public static function getGangguanPercentage()
+    {
+        try {
+            $totalMachines = Machine::count();
+            $gangguanCount = self::whereDate('tanggal', now()->toDateString())
+                ->where('status', 'Gangguan')
+                ->distinct('machine_id')
+                ->count('machine_id');
+
+            $percentage = $totalMachines > 0 ? ($gangguanCount / $totalMachines) * 100 : 0;
+            return [
+                'gangguan' => round($percentage, 2),
+                'normal' => round(100 - $percentage, 2)
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error getting gangguan percentage: ' . $e->getMessage());
+            return ['gangguan' => 0, 'normal' => 100];
+        }
+    }
+
+    public static function getDeratingPercentage()
+    {
+        try {
+            // Mengambil total DMN dan DMP untuk hari ini
+            $powerData = self::whereDate('tanggal', now()->toDateString())
+                ->select(
+                    DB::raw('SUM(dmn) as total_dmn'),
+                    DB::raw('SUM(dmp) as total_dmp')
+                )
+                ->first();
+
+            if ($powerData && $powerData->total_dmp > 0) {
+                // Menghitung persentase derating
+                $deratingPercentage = (($powerData->total_dmp - $powerData->total_dmn) / $powerData->total_dmp) * 100;
+                return round($deratingPercentage, 2);
+            }
+
+            return 0;
+        } catch (\Exception $e) {
+            \Log::error('Error getting derating percentage: ' . $e->getMessage());
+            return 0;
+        }
+    }
+    
 } 

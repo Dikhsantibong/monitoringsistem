@@ -1,11 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="flex h-screen bg-gray-50 overflow-auto">
-        <!-- Sidebar -->
-    @include("components.sidebar")
+<style>
+    .tab-btn {
+        transition: all 0.3s ease-in-out;
+    }
 
-        <!-- Main Content -->
+    .tab-btn:hover {
+        color: #1a56db;
+    }
+
+    .tab-content {
+        transition: opacity 0.3s ease-in-out;
+    }
+    </style>
+    
+
+    <div class="flex h-screen bg-gray-50 overflow-auto">
+        @include("components.sidebar")
+
         <div id="main-content" class="flex-1 overflow-auto">
             <header class="bg-white shadow-sm sticky top-0 z-10">
                 <div class="flex justify-between items-center px-6 py-3">
@@ -56,167 +69,125 @@
             <div class="flex items-center pt-2">
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Pengaturan', 'url' => null]]" />
             </div>
-            <main class="px-6">
-                <!-- Pengaturan Umum -->
-                <div class="bg-white rounded-lg shadow mb-6">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Pengaturan Umum</h2>
-                        <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-6">
-                            @csrf
-                            @method('POST')
 
-                            <!-- Informasi Perusahaan -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Nama Perusahaan
-                                    </label>
-                                    <input type="text" name="company_name"
-                                        value="{{ old('company_name', $settings['company_name'] ?? '') }}"
-                                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Email Kontak
-                                    </label>
-                                    <input type="email" name="contact_email"
-                                        value="{{ old('contact_email', $settings['contact_email'] ?? '') }}"
-                                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                </div>
-                            </div>
-
-                            <!-- Pengaturan Notifikasi -->
-                            <div class="border-t pt-6">
-                                <h3 class="text-md font-medium text-gray-700 mb-4">Pengaturan Notifikasi</h3>
-                                <div class="space-y-4">
-                                    <div class="flex items-center">
-                                        <input type="checkbox" name="email_notifications" id="email_notifications"
-                                            {{ isset($settings['email_notifications']) && $settings['email_notifications'] ? 'checked' : '' }}
-                                            class="h-4 w-4 text-blue-600 rounded border-gray-300">
-                                        <label for="email_notifications" class="ml-2 text-sm text-gray-700">
-                                            Aktifkan Notifikasi Email
-                                        </label>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox" name="maintenance_alerts" id="maintenance_alerts"
-                                            {{ isset($settings['maintenance_alerts']) && $settings['maintenance_alerts'] ? 'checked' : '' }}
-                                            class="h-4 w-4 text-blue-600 rounded border-gray-300">
-                                        <label for="maintenance_alerts" class="ml-2 text-sm text-gray-700">
-                                            Aktifkan Notifikasi Pemeliharaan
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Pengaturan Pemantauan Mesin -->
-                            <div class="border-t pt-6">
-                                <h3 class="text-md font-medium text-gray-700 mb-4">Pengaturan Pemantauan Mesin</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Interval Pembaruan Data (detik)
-                                        </label>
-                                        <input type="number" name="refresh_interval"
-                                            value="{{ old('refresh_interval', $settings['refresh_interval'] ?? 30) }}"
-                                            min="10" max="300"
-                                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Ambang Batas Peringatan (%)
-                                        </label>
-                                        <input type="number" name="alert_threshold"
-                                            value="{{ old('alert_threshold', $settings['alert_threshold'] ?? 80) }}"
-                                            min="0" max="100"
-                                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Jadwal Pemeliharaan -->
-                            <div class="border-t pt-6">
-                                <h3 class="text-md font-medium text-gray-700 mb-4">Jadwal Pemeliharaan</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Interval Pemeliharaan Rutin (hari)
-                                        </label>
-                                        <input type="number" name="maintenance_interval"
-                                            value="{{ old('maintenance_interval', $settings['maintenance_interval'] ?? 30) }}"
-                                            min="1" max="365"
-                                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Jendela Waktu Pemeliharaan
-                                        </label>
-                                        <select name="maintenance_window"
-                                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                            <option value="morning"
-                                                {{ isset($settings['maintenance_window']) && $settings['maintenance_window'] === 'morning' ? 'selected' : '' }}>
-                                                Pagi (6 AM - 12 PM)
-                                            </option>
-                                            <option value="afternoon"
-                                                {{ isset($settings['maintenance_window']) && $settings['maintenance_window'] === 'afternoon' ? 'selected' : '' }}>
-                                                Siang (12 PM - 6 PM)
-                                            </option>
-                                            <option value="night"
-                                                {{ isset($settings['maintenance_window']) && $settings['maintenance_window'] === 'night' ? 'selected' : '' }}>
-                                                Malam (6 PM - 12 AM)
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Tombol Simpan -->
-                            <div class="flex justify-end pt-6 border-t">
-                                <button type="submit"
-                                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                    Simpan Pengaturan
-                                </button>
-                            </div>
-                        </form>
+            <main class="px-6 py-8">
+                <!-- Tab Navigation -->
+                <div class="mb-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button type="button" 
+                                class="tab-btn flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600" 
+                                data-target="general-settings">
+                                <i class="fas fa-cog mr-2"></i>Umum
+                            </button>
+                            <button type="button" 
+                                class="tab-btn flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                                data-target="notification-settings">
+                                <i class="fas fa-bell mr-2"></i>Notifikasi
+                            </button>
+                            <button type="button" 
+                                class="tab-btn flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                                data-target="monitoring-settings">
+                                <i class="fas fa-desktop mr-2"></i>Pemantauan
+                            </button>
+                            <button type="button" 
+                                class="tab-btn flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                                data-target="security-settings">
+                                <i class="fas fa-shield-alt mr-2"></i>Keamanan
+                            </button>
+                        </nav>
                     </div>
                 </div>
 
-                <!-- Pengaturan API -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Pengaturan API</h2>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Kunci API
-                                </label>
-                                <div class="flex">
-                                    <input type="text" readonly
-                                        value="{{ $settings['api_key'] ?? 'Tidak ada kunci API yang dihasilkan' }}"
-                                        class="flex-1 px-3 py-2 border rounded-l-lg bg-gray-50">
-                                    <button type="button" onclick="regenerateApiKey()"
-                                        class="px-4 py-2 bg-gray-500 text-white rounded-r-lg hover:bg-gray-600">
-                                        Regenerasi
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    URL Webhook
-                                </label>
-                                <input type="url" name="webhook_url"
-                                    value="{{ old('webhook_url', $settings['webhook_url'] ?? '') }}"
-                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                            </div>
-                        </div>
+                <!-- Tab Contents -->
+                <div class="tab-contents">
+                    <!-- General Settings Tab -->
+                    <div id="general-settings" class="tab-content">
+                        @include('admin.settings.partials.general')
                     </div>
+
+                    <!-- Notification Settings Tab -->
+                    <div id="notification-settings" class="tab-content hidden">
+                        @include('admin.settings.partials.notification')
+                    </div>
+
+                    <!-- Monitoring Settings Tab -->
+                    <div id="monitoring-settings" class="tab-content hidden">
+                        @include('admin.settings.partials.monitoring')
+                    </div>
+
+                    <!-- Security Settings Tab -->
+                    <div id="security-settings" class="tab-content hidden">
+                        @include('admin.settings.partials.security')
+                    </div>
+                </div>
+
+                <!-- Floating Save Button -->
+                <div class="fixed bottom-6 right-6">
+                    <button type="submit" class="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-lg transition-all">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan Perubahan
+                    </button>
                 </div>
             </main>
         </div>
     </div>
-    <script src="{{ asset('js/toggle.js') }}"></script>
-@endsection
+    <script src="{{ asset('js/toggle.js ') }}"></script>
 
-@push('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fungsi untuk mengaktifkan tab
+            function activateTab(tabId) {
+                // Sembunyikan semua konten tab
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Hapus kelas aktif dari semua tab button
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+
+                // Tampilkan konten tab yang dipilih
+                const selectedContent = document.getElementById(tabId);
+                if (selectedContent) {
+                    selectedContent.classList.remove('hidden');
+                }
+
+                // Aktifkan tab button yang dipilih
+                const selectedTab = document.querySelector(`[data-target="${tabId}"]`);
+                if (selectedTab) {
+                    selectedTab.classList.remove('border-transparent', 'text-gray-500');
+                    selectedTab.classList.add('border-blue-500', 'text-blue-600');
+                }
+
+                // Simpan tab aktif ke localStorage
+                localStorage.setItem('activeSettingsTab', tabId);
+            }
+
+            // Tambahkan event listener ke semua tab button
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tabId = this.getAttribute('data-target');
+                    activateTab(tabId);
+                });
+            });
+
+            // Cek localStorage untuk tab yang terakhir aktif
+            const savedTab = localStorage.getItem('activeSettingsTab');
+            if (savedTab && document.getElementById(savedTab)) {
+                activateTab(savedTab);
+            } else {
+                // Default ke tab general jika tidak ada tab yang tersimpan
+                activateTab('general-settings');
+            }
+        });
+    </script>
+
+
     <script>
         function regenerateApiKey() {
             if (confirm(
@@ -254,4 +225,6 @@
             });
         @endif
     </script>
-@endpush
+        @push('scripts')
+    @endpush
+    @endsection

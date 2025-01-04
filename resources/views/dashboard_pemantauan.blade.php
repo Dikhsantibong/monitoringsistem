@@ -58,9 +58,9 @@
             <div class="dashboard-card p-4 rounded-lg">
                 <h3 class="text-lg">PRESENTASI TOTAL DAYA HILANG</h3>
                 <div class="mt-2">
-                    <p>Derating <span class="float-right">85%</span></p>
+                    <p>Derating <span class="float-right">{{ $deratingPercentage }}%</span></p>
                     <div class="w-full bg-gray-300 rounded-full h-2.5 mb-4">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 85%"></div>
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $deratingPercentage }}%"></div>
                     </div>
                     <p>Gangguan <span class="float-right">50%</span></p>
                     <div class="w-full bg-gray-300 rounded-full h-2.5 mb-4">
@@ -140,10 +140,13 @@
             type: 'doughnut',
             data: {
                 datasets: [{
-                    data: [90, 10],
-                    backgroundColor: ['#22c55e', '#e5e7eb']
+                    data: [
+                        {{ $gangguanPercentage['normal'] }}, 
+                        {{ $gangguanPercentage['gangguan'] }}
+                    ],
+                    backgroundColor: ['#22c55e', '#ef4444']
                 }],
-                labels: ['Aktif', 'Tidak Aktif']
+                labels: ['Normal', 'Gangguan']
             },
             options: {
                 cutout: '70%',
@@ -151,11 +154,7 @@
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
-                                var dataset = tooltipItem.dataset;
-                                var total = dataset.data.reduce((a, b) => a + b, 0);
-                                var currentValue = dataset.data[tooltipItem.dataIndex];
-                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
-                                return currentValue + ' (' + percentage + '%)';
+                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
                             }
                         }
                     },

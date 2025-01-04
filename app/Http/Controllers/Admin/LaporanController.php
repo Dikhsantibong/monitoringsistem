@@ -27,6 +27,16 @@ class LaporanController extends Controller
                         $request->tanggal_akhir . ' 23:59:59'
                     ]);
                 })
+                ->when($request->filled('searchSR'), function ($query) use ($request) {
+                    return $query->where(function($q) use ($request) {
+                        $search = $request->searchSR;
+                        $q->where('id', 'LIKE', "%{$search}%")
+                          ->orWhere('description', 'LIKE', "%{$search}%")
+                          ->orWhere('status', 'LIKE', "%{$search}%")
+                          ->orWhere('tipe_sr', 'LIKE', "%{$search}%")
+                          ->orWhere('priority', 'LIKE', "%{$search}%");
+                    });
+                })
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -39,6 +49,15 @@ class LaporanController extends Controller
                         $request->tanggal_akhir . ' 23:59:59'
                     ]);
                 })
+                ->when($request->filled('searchWO'), function ($query) use ($request) {
+                    return $query->where(function($q) use ($request) {
+                        $search = $request->searchWO;
+                        $q->where('id', 'LIKE', "%{$search}%")
+                          ->orWhere('description', 'LIKE', "%{$search}%")
+                          ->orWhere('status', 'LIKE', "%{$search}%")
+                          ->orWhere('priority', 'LIKE', "%{$search}%");
+                    });
+                })
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -50,6 +69,15 @@ class LaporanController extends Controller
                         $request->tanggal_mulai . ' 00:00:00',
                         $request->tanggal_akhir . ' 23:59:59'
                     ]);
+                })
+                ->when($request->filled('searchBacklog'), function ($query) use ($request) {
+                    return $query->where(function($q) use ($request) {
+                        $search = $request->searchBacklog;
+                        $q->where('no_wo', 'LIKE', "%{$search}%")
+                          ->orWhere('deskripsi', 'LIKE', "%{$search}%")
+                          ->orWhere('status', 'LIKE', "%{$search}%")
+                          ->orWhere('keterangan', 'LIKE', "%{$search}%");
+                    });
                 })
                 ->orderBy('created_at', 'desc')
                 ->get();
