@@ -12,9 +12,42 @@ use App\Models\PowerPlant;
 
 class MachineMonitorController extends Controller
 {
+    private function calculateTotalDowntimeHours($machineId)
+    {
+        $logs = MachineStatusLog::where('machine_id', $machineId)
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get();
+        
+        $totalHours = 0;
+        $startTime = null;
+        
+        foreach ($logs as $log) {
+            if ($log->status === 'gangguan' && !$startTime) {
+                $startTime = \Carbon\Carbon::parse($log->tanggal);
+            } elseif ($startTime && in_array($log->status, ['standby', 'operasi', 'pemeliharaan'])) {
+                $endTime = \Carbon\Carbon::parse($log->tanggal);
+                $totalHours += $startTime->diffInHours($endTime);
+                $startTime = null;
+            }
+        }
+        
+        // Jika masih dalam status gangguan (belum ada status standby)
+        if ($startTime) {
+            $totalHours += $startTime->diffInHours(now());
+        }
+        
+        return $totalHours;
+    }
+
     public function index()
     {
         $machines = Machine::with(['statusLogs', 'machineOperations'])->get();
+        
+        $machines = $machines->map(function ($machine) {
+            $machine->total_downtime_hours = $this->calculateTotalDowntimeHours($machine->id);
+            return $machine;
+        });
         
         return view('admin.machine-monitor.index', [
             'machines' => $machines,

@@ -228,12 +228,12 @@
                         <div>
                             <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
                                 <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> WUA-WUA</h5>
+                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">WUA-WUA</h5>
                                 </div>
                             </a>
                             <a href="{{ route('login', ['unit' => 'mysql_poasia']) }}" class="block">
                                 <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br>POASIA</h5>
+                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">POASIA</h5>
                                 </div>
                             </a>
                         </div>
@@ -241,7 +241,7 @@
                             <div class="hidden lg:block md:block">
                                 <a href="{{ route('login', ['unit' => 'mysql']) }}" class="block">
                                     <div class="hexagon bg-[#0A749B] flex flex-col items-center justify-center h-36 w-40 md:w-56 md:h-44">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
+                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">KENDARI</h5>
                                     </div>
                                 </a>
                             </div>
@@ -249,12 +249,12 @@
                         <div>
                             <a href="{{ route('login', ['unit' => 'mysql_kolaka']) }}" class="block">
                                 <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> KOLAKA</h5>
+                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">KOLAKA</h5>
                                 </div>
                             </a>
                             <a href="{{ route('login', ['unit' => 'mysql_bau_bau']) }}" class="block">
                                 <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> BAU-BAU</h5>
+                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">BAU-BAU</h5>
                                 </div>
                             </a>
                         </div>

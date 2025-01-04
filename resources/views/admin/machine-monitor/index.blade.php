@@ -204,21 +204,93 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Grafik Efisiensi Mesin -->
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Efisiensi Mesin</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Frekuensi Gangguan Mesin</h3>
                         <canvas id="efficiencyChart" height="200"></canvas>
                     </div>
 
                     <!-- Ringkasan Kinerja -->
-                    <div class="bg-white rounded-lg shadow p-6 mt-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Ringkasan Kinerja</h3>
-                        <div class="space-y-4 max-h-80 overflow-y-auto">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Jam Gangguan Mesin</h3>
+                        <div class="space-y-6 max-h-80 overflow-y-auto">
                             @foreach ($machines as $machine)
-                                <div class="flex justify-between items-center border-b pb-3">
-                                    <span class="font-medium">{{ $machine->name }}</span>
-                                    <span class="text-sm">Efisiensi: {{ number_format($machine->metrics->avg('efficiency'), 1) }}%</span>
-                                </div>
-                                <div class="mt-2 h-2 bg-gray-200 rounded">
-                                    <div class="h-full bg-blue-500 rounded" style="width: {{ $machine->metrics->avg('efficiency') }}%"></div>
+                                @php
+                                    $totalHours = $machine->total_downtime_hours;
+                                    $colorClass = $totalHours > 100 ? 'bg-red-500' : ($totalHours > 50 ? 'bg-yellow-500' : 'bg-green-500');
+                                    $textColorClass = $totalHours > 100 ? 'text-red-600' : ($totalHours > 50 ? 'text-yellow-600' : 'text-green-600');
+                                    $latestStatus = $machine->statusLogs->last()?->status ?? 'N/A';
+                                    $isCurrentlyDown = $latestStatus === 'gangguan';
+                                @endphp
+                                
+                                <div class="bg-gray-50 rounded-xl p-5 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg border border-gray-100">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="mt-1">
+                                                <div class="size-8 rounded-lg flex items-center justify-center {{ $isCurrentlyDown ? 'bg-red-100' : 'bg-blue-100' }}">
+                                                    <i class="fas fa-cog {{ $isCurrentlyDown ? 'text-red-500' : 'text-blue-500' }}"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">{{ $machine->name }}</h4>
+                                                <p class="text-sm text-gray-500">type: {{ $machine->type }}</p>
+                                                <p class="text-sm text-gray-500">Unit: {{ $machine->powerPlant->name ?? 'N/A' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col items-end">
+                                            <div class="flex items-center bg-gray-100 px-4 py-2 rounded-full">
+                                                <i class="fas fa-clock text-gray-400 mr-2"></i>
+                                                <span class="text-xl font-bold {{ $textColorClass }}">
+                                                    {{ number_format($totalHours, 1) }}
+                                                </span>
+                                                <span class="text-sm text-gray-500 ml-1">jam</span>
+                                            </div>
+                                            <span class="text-xs text-gray-500 mt-1">Status: {{ ucfirst($latestStatus) }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="relative">
+                                        <div class="overflow-hidden h-3 text-xs flex rounded-full bg-gray-200">
+                                            <div class="{{ $colorClass }} rounded-full transition-all duration-500 relative"
+                                                 style="width: {{ min(($totalHours/200) * 100, 100) }}%">
+                                                <div class="absolute inset-0 opacity-25 bg-stripes animate-move-stripes"></div>
+                                            </div>
+                                        </div>
+                                        <div class="absolute -bottom-4 left-1/4 w-0.5 h-2 bg-gray-300"></div>
+                                        <div class="absolute -bottom-4 left-1/2 w-0.5 h-2 bg-gray-300"></div>
+                                        <div class="absolute -bottom-4 left-3/4 w-0.5 h-2 bg-gray-300"></div>
+                                    </div>
+
+                                    <div class="mt-6 flex justify-between items-center">
+                                        <div class="flex items-center space-x-2">
+                                            @if($isCurrentlyDown)
+                                                <span class="flex items-center px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                                    Sedang Gangguan
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="text-xs text-gray-500 flex items-center">
+                                            <span>0</span>
+                                            <div class="w-24 mx-2 h-0.5 bg-gray-200 relative">
+                                                <div class="absolute -top-2 left-1/3 text-gray-400">50</div>
+                                                <div class="absolute -top-2 left-2/3 text-gray-400">100</div>
+                                            </div>
+                                            <span>150+ jam</span>
+                                        </div>
+                                    </div>
+
+                                    @if($isCurrentlyDown)
+                                        <div class="mt-3 p-3 bg-red-50 rounded-lg border border-red-100">
+                                            <div class="flex items-start space-x-2">
+                                                <i class="fas fa-tools text-red-500 mt-1"></i>
+                                                <div>
+                                                    <p class="text-sm font-medium text-red-800">Mesin Memerlukan Perhatian</p>
+                                                    <p class="text-xs text-red-600 mt-1">
+                                                        Gangguan telah berlangsung selama {{ floor($totalHours) }} jam {{ round(($totalHours - floor($totalHours)) * 60) }} menit
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -554,31 +626,6 @@
                 data: {
                     labels: machineData.map(machine => machine.name),
                     datasets: [{
-                        label: 'Efisiensi (%)',
-                        data: machineData.map(machine => machine.efficiency),
-                        backgroundColor: machineData.map(machine => {
-                            // Warna berbeda berdasarkan status
-                            switch(machine.status) {
-                                case 'START':
-                                    return 'rgba(75, 192, 192, 0.6)'; // hijau
-                                case 'STOP':
-                                    return 'rgba(255, 99, 132, 0.6)'; // merah
-                                default:
-                                    return 'rgba(201, 203, 207, 0.6)'; // abu-abu
-                            }
-                        }),
-                        borderColor: machineData.map(machine => {
-                            switch(machine.status) {
-                                case 'START':
-                                    return 'rgba(75, 192, 192, 1)';
-                                case 'STOP':
-                                    return 'rgba(255, 99, 132, 1)';
-                                default:
-                                    return 'rgba(201, 203, 207, 1)';
-                            }
-                        }),
-                        borderWidth: 1
-                    }, {
                         label: 'Jumlah Gangguan',
                         data: machineData.map(machine => machine.issues),
                         type: 'line',
@@ -612,22 +659,6 @@
                         title: {
                             display: true,
                             text: 'Efisiensi dan Gangguan per Mesin'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const machine = machineData[context.dataIndex];
-                                    if (context.dataset.label === 'Efisiensi (%)') {
-                                        return [
-                                            `Efisiensi: ${machine.efficiency.toFixed(1)}%`,
-                                            `Status: ${machine.status}`,
-                                            `Kapasitas: ${machine.capacity}`,
-                                            `Total Operasi: ${machine.operations}`
-                                        ];
-                                    }
-                                    return `Gangguan: ${machine.issues}`;
-                                }
-                            }
                         }
                     }
                 }
@@ -703,5 +734,32 @@
 
         #machine-monitor-submenu a:hover {
             padding-left: 1.5rem;
+        }
+
+        .bg-stripes {
+            background-image: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.15) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 255, 255, 0.15) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 1rem 1rem;
+        }
+
+        .hover\:scale-\[1\.02\]:hover {
+            transform: scale(1.02);
+        }
+
+        @keyframes move-stripes {
+            from { background-position: 0 0; }
+            to { background-position: 1rem 1rem; }
+        }
+
+        .animate-move-stripes {
+            animation: move-stripes 1s linear infinite;
         }
     </style>
