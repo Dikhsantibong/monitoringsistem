@@ -213,14 +213,17 @@
                 @php
                     $totalScorePeserta = collect($scoreCards->first()['peserta'])->sum('skor');
                     $totalScoreKetentuan = 
-                        $scoreCards->first()['kesiapan_panitia'] +
-                        $scoreCards->first()['kesiapan_bahan'] +
-                        $scoreCards->first()['aktivitas_luar'] +
-                        $scoreCards->first()['gangguan_diskusi'] +
-                        $scoreCards->first()['gangguan_keluar_masuk'] +
-                        $scoreCards->first()['gangguan_interupsi'] +
-                        $scoreCards->first()['ketegasan_moderator'] +
-                        $scoreCards->first()['kelengkapan_sr'];
+                        ($scoreCards->first()['kesiapan_panitia'] ?? 100) +
+                        ($scoreCards->first()['kesiapan_bahan'] ?? 100) +
+                        ($scoreCards->first()['aktivitas_luar'] ?? 100) +
+                        ($scoreCards->first()['gangguan_diskusi'] ?? 100) +
+                        ($scoreCards->first()['gangguan_keluar_masuk'] ?? 100) +
+                        ($scoreCards->first()['gangguan_interupsi'] ?? 100) +
+                        ($scoreCards->first()['ketegasan_moderator'] ?? 100) +
+                        ($scoreCards->first()['skor_waktu_mulai'] ?? 100) +
+                        ($scoreCards->first()['skor_waktu_selesai'] ?? 100) +
+                        ($scoreCards->first()['kelengkapan_sr'] ?? 100);
+
                     $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
                 @endphp
                 <tr>

@@ -391,15 +391,25 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     const dateSelect = document.querySelector('#tanggal-filter');
                     
+                    function showLoader() {
+                        document.getElementById('tableLoader').classList.remove('hidden');
+                        document.getElementById('tableData').classList.add('hidden');
+                    }
+                    
+                    function hideLoader() {
+                        document.getElementById('tableLoader').classList.add('hidden');
+                        document.getElementById('tableData').classList.remove('hidden');
+                    }
+                    
                     if (dateSelect) {
                         dateSelect.addEventListener('change', function() {
                             const selectedDate = this.value;
+                            showLoader(); // Tampilkan loader
                             
-                            // Tambahkan loading indicator
-                            const dynamicContent = document.querySelector('#dynamic-content');
-                            if (dynamicContent) {
-                                dynamicContent.innerHTML = '<div class="text-center py-4">Loading...</div>';
-                            }
+                            // Update URL tanpa refresh
+                            const newUrl = new URL(window.location.href);
+                            newUrl.searchParams.set('tanggal', selectedDate);
+                            window.history.pushState({}, '', newUrl);
                             
                             // AJAX call untuk memperbarui data
                             fetch(`{{ route('admin.meetings') }}?tanggal=${selectedDate}`, {
@@ -407,22 +417,18 @@
                                     'X-Requested-With': 'XMLHttpRequest'
                                 }
                             })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Network response was not ok');
-                                }
-                                return response.text();
-                            })
+                            .then(response => response.text())
                             .then(html => {
+                                const dynamicContent = document.querySelector('#dynamic-content');
                                 if (dynamicContent) {
                                     dynamicContent.innerHTML = html;
                                 }
+                                hideLoader(); // Sembunyikan loader
                             })
                             .catch(error => {
                                 console.error('Error:', error);
-                                if (dynamicContent) {
-                                    dynamicContent.innerHTML = '<div class="text-center py-4 text-red-500">Gagal memuat data</div>';
-                                }
+                                alert('Gagal memuat data. Silakan coba lagi.');
+                                hideLoader(); // Sembunyikan loader jika terjadi error
                             });
                         });
                     }

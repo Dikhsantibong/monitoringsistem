@@ -8,12 +8,10 @@ use App\Models\Meeting;
 use App\Models\Activity;
 use Carbon\Carbon;
 use App\Models\Machine;
-use App\Models\MachineIssue;
 use App\Models\ScoreCardDaily;
-use App\Models\SRWO;
 use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
-use App\Models\Attendance;
+
 
 class DashboardController extends Controller
 {

@@ -260,7 +260,7 @@ Setiap 3 menit keterlambatan waktu maka skor dikurangi 10.</td>
                                 @endif
                                 @php
                                     // Hitung total score peserta dengan pengecekan
-                                    $totalScorePeserta = isset($peserta) ? collect($peserta)->sum('skor') : 0;
+                                    $totalScorePeserta = $latestScoreCard->peserta ? collect(json_decode($latestScoreCard->peserta, true))->sum('skor') : 0;
                                     
                                     // Hitung total score ketentuan rapat dengan pengecekan null coalescing
                                     $totalScoreKetentuan = $latestScoreCard ? (

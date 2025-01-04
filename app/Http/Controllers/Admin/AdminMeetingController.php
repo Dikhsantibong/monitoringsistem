@@ -19,20 +19,14 @@ class AdminMeetingController extends Controller
         try {
             $selectedDate = request('tanggal', now()->format('Y-m-d'));
             
-            \Log::info('Selected date:', ['date' => $selectedDate]);
-            
             $scoreCards = ScoreCardDaily::whereDate('tanggal', $selectedDate)
                 ->orderBy('created_at', 'desc')
-                ->get();
-            
-            \Log::info('Found score cards:', ['count' => $scoreCards->count()]);
-
-            $formattedScoreCards = $scoreCards->map(function ($scoreCard) {
-                $peserta = json_decode($scoreCard->peserta, true) ?? [];
-                $formattedPeserta = [];
-                
-                foreach ($peserta as $jabatan => $data) {
-                    if (is_array($data)) {
+                ->get()
+                ->map(function ($scoreCard) {
+                    $peserta = json_decode($scoreCard->peserta, true) ?? [];
+                    $formattedPeserta = [];
+                    
+                    foreach ($peserta as $jabatan => $data) {
                         $formattedPeserta[] = [
                             'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
                             'awal' => $data['awal'] ?? '0',
@@ -41,26 +35,25 @@ class AdminMeetingController extends Controller
                             'keterangan' => $data['keterangan'] ?? null
                         ];
                     }
-                }
 
-                return [
-                    'id' => $scoreCard->id,
-                    'tanggal' => $scoreCard->tanggal,
-                    'lokasi' => $scoreCard->lokasi,
-                    'peserta' => $formattedPeserta,
-                    'waktu_mulai' => $scoreCard->waktu_mulai,
-                    'waktu_selesai' => $scoreCard->waktu_selesai,
-                    'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-                    'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                    'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                    'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
-                    'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
-                    'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
-                    'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                    'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
-                    'keterangan' => $scoreCard->keterangan
-                ];
-            });
+                    return [
+                        'id' => $scoreCard->id,
+                        'tanggal' => $scoreCard->tanggal,
+                        'lokasi' => $scoreCard->lokasi,
+                        'peserta' => $formattedPeserta,
+                        'waktu_mulai' => $scoreCard->waktu_mulai,
+                        'waktu_selesai' => $scoreCard->waktu_selesai,
+                        'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                        'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                        'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                        'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                        'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                        'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                        'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                        'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+                        'keterangan' => $scoreCard->keterangan
+                    ];
+                });
 
             $availableDates = ScoreCardDaily::orderBy('tanggal', 'desc')
                 ->pluck('tanggal')
@@ -69,12 +62,12 @@ class AdminMeetingController extends Controller
 
             if (request()->ajax()) {
                 return view('admin.meetings._table', [
-                    'scoreCards' => $formattedScoreCards
+                    'scoreCards' => $scoreCards
                 ])->render();
             }
 
             return view('admin.meetings.index', [
-                'scoreCards' => $formattedScoreCards,
+                'scoreCards' => $scoreCards,
                 'selectedDate' => $selectedDate,
                 'availableDates' => $availableDates
             ]);
