@@ -241,7 +241,7 @@
                             <div class="hidden lg:block md:block">
                                 <a href="{{ route('login', ['unit' => 'mysql']) }}" class="block">
                                     <div class="hexagon bg-[#0A749B] flex flex-col items-center justify-center h-36 w-40 md:w-56 md:h-44">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">KENDARI</h5>
+                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
                                     </div>
                                 </a>
                             </div>
