@@ -17,6 +17,8 @@ class DashboardPemantauanController extends Controller
         $viewData = [
             'machineData' => collect([]),
             'error' => null,
+            'gangguanPercentage' => ['normal' => 100, 'gangguan' => 0],
+            'deratingPercentage' => 0,
             'statistics' => [
                 'total' => 0,
                 'active' => 0,
@@ -27,48 +29,65 @@ class DashboardPemantauanController extends Controller
 
         try {
             // Set koneksi database
-            config(['database.default' => 'u478221055_up_kendari']);
+            $connection = 'u478221055_up_kendari';
+            config(['database.default' => $connection]);
             
             // Cek koneksi database
-            DB::connection('u478221055_up_kendari')->getPdo();
+            DB::connection($connection)->getPdo();
 
-            // Query data
-            $machines = Machine::on('u478221055_up_kendari')
-                ->with(['operations', 'powerPlant', 'statusLogs'])
-                ->select('machines.*')
-                ->join('machine_operations', 'machines.id', '=', 'machine_operations.machine_id')
-                ->join('power_plants', 'machines.power_plant_id', '=', 'power_plants.id')
-                ->groupBy('machines.id')
-                ->get();
+            // Query data dengan error handling
+            try {
+                $machines = Machine::on($connection)
+                    ->with(['operations', 'powerPlant', 'statusLogs'])
+                    ->select('machines.*')
+                    ->join('machine_operations', 'machines.id', '=', 'machine_operations.machine_id')
+                    ->join('power_plants', 'machines.power_plant_id', '=', 'power_plants.id')
+                    ->groupBy('machines.id')
+                    ->get();
 
-            // Transform data
-            $viewData['machineData'] = $machines->map(function ($machine) {
-                $latestStatus = MachineStatusLog::on('u478221055_up_kendari')
-                    ->where('machine_id', $machine->id)
-                    ->latest('tanggal')
-                    ->first();
+                // Transform data
+                $viewData['machineData'] = $machines->map(function ($machine) {
+                    $latestStatus = MachineStatusLog::on('u478221055_up_kendari')
+                        ->where('machine_id', $machine->id)
+                        ->latest('tanggal')
+                        ->first();
 
-                return [
-                    'id' => $machine->id,
-                    'type' => $machine->name,
-                    'unit_name' => $machine->powerPlant->name,
-                    'status' => $latestStatus ? $latestStatus->status : 'unknown',
-                    'latest_operation' => $machine->operations()
-                        ->latest('recorded_at')
-                        ->first()
-                ];
-            });
+                    return [
+                        'id' => $machine->id,
+                        'type' => $machine->name ?? 'Unknown',
+                        'unit_name' => $machine->powerPlant->name ?? 'Unknown',
+                        'status' => $latestStatus ? $latestStatus->status : 'unknown',
+                        'latest_operation' => $machine->operations()
+                            ->latest('recorded_at')
+                            ->first()
+                    ];
+                });
+            } catch (\Exception $e) {
+                \Log::error('Error querying machine data: ' . $e->getMessage());
+            }
 
-            // Get statistics
-            $viewData['statistics'] = $this->getMachineStatistics();
+            // Get gangguan percentage dengan error handling
+            try {
+                $gangguanData = MachineStatusLog::getGangguanPercentage();
+                $viewData['gangguanPercentage'] = $gangguanData;
+            } catch (\Exception $e) {
+                \Log::error('Error getting gangguan percentage: ' . $e->getMessage());
+            }
 
-            // Tambahkan data gangguan percentage
-            $gangguanData = MachineStatusLog::getGangguanPercentage();
-            $viewData['gangguanPercentage'] = $gangguanData;
+            // Get derating percentage dengan error handling
+            try {
+                $deratingPercentage = MachineStatusLog::getDeratingPercentage();
+                $viewData['deratingPercentage'] = $deratingPercentage;
+            } catch (\Exception $e) {
+                \Log::error('Error getting derating percentage: ' . $e->getMessage());
+            }
 
-            // Tambahkan data derating percentage
-            $deratingPercentage = MachineStatusLog::getDeratingPercentage();
-            $viewData['deratingPercentage'] = $deratingPercentage;
+            // Get statistics dengan error handling
+            try {
+                $viewData['statistics'] = $this->getMachineStatistics();
+            } catch (\Exception $e) {
+                \Log::error('Error getting machine statistics: ' . $e->getMessage());
+            }
 
         } catch (\Exception $e) {
             \Log::error('Dashboard Pemantauan Error: ' . $e->getMessage());
@@ -82,7 +101,8 @@ class DashboardPemantauanController extends Controller
     private function getMachineStatistics()
     {
         try {
-            $latestStatuses = MachineStatusLog::on('u478221055_up_kendari')
+            $connection = 'u478221055_up_kendari';
+            $latestStatuses = MachineStatusLog::on($connection)
                 ->select('machine_id', 'status')
                 ->whereIn('id', function($query) {
                     $query->select(DB::raw('MAX(id)'))
