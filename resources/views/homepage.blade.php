@@ -363,6 +363,10 @@
             padding: 0;
             min-height: 100vh;
             background-color: #ffee; /* Dark background for body */
+            background-image: url('{{ asset('background/backgorund.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: scroll;
         }
 
         main {
@@ -372,50 +376,34 @@
         /* Hero section adjustments */
         .hexagon-background {
             position: relative;
-            margin-top: -80px; /* Negative margin to pull content up */
-            padding-top: 80px; /* Add padding to compensate for navbar */
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark overlay */
+            margin-top: -80px;
+            background-image: url('{{ asset('background/backgorund.jp   g') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
-        /* Hexagon grid adjustments */
-        .hexagon {
-            margin-top: -20px; /* Pull hexagons up slightly */
+        /* Adjust content positioning */
+        main {
+            margin-top: 0;
         }
 
-        /* Additional spacing adjustments */
-        .container {
-            padding-top: 0;
+        /* Remove spacer */
+        .h-[80px] {
+            display: none;
         }
 
-        /* Ensure content flows smoothly */
+        /* Ensure map section starts after hero */
         #map {
-            margin-top: 60px; /* Reduce top margin of map section */
+            margin-top: 0;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Navbar adjustments for larger logo */
-        .nav-background {
-            background-color: #1a1a1a;
-            background-image: linear-gradient(to right, #1a1a1a, #2d3748);
-        }
-
-        nav .container {
-            padding: 0.5rem 1rem; /* Tambah padding untuk memastikan logo tidak terlalu dekat dengan tepi */
-        }
-
-        /* Adjust navbar height to accommodate larger logo */
-        nav .flex.justify-between {
-            height: 4.5rem; /* Tinggi navbar disesuaikan (72px) */
-        }
-
-        /* Ensure vertical alignment with larger logo */
-        .flex.items-center {
-            gap: 1rem; /* Spacing antara logo dan menu items */
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            nav .flex.justify-between {
-                height: 4rem; /* Sedikit lebih kecil di mobile (64px) */
+        /* Additional responsive adjustments */
+        @media (max-height: 768px) {
+            .hexagon-background {
+                padding: 120px 0;
             }
         }
     </style>
@@ -436,7 +424,7 @@
                             <!-- Logo -->
                             <div class="flex items-center">
                                 <a href="#" class="flex items-center">
-                                    <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="h-12 md:h-14">
+                                    <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="h-8">
                                 </a>
                             </div>
 
@@ -489,46 +477,47 @@
             <div class="h-[80px]"></div>
             <div class="w-full">
                 {{-- Hero section --}}
-                <div class="h-[calc(100vh-80px)] flex flex-col justify-center items-center hexagon-background">
-                    <!-- Overlay -->
-                    <div class="absolute inset-0"></div>
-                    <!-- Header -->
-                    <h2 class="text-6xl font-bold mb-4 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000;">
-                        M<i class="fas fa-helmet-safety"></i>NDAY <br>MONITORING DAILY
-                    </h2>
-                    <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
-                        <div>
-                            <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
-                                <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">WUA-WUA</h5>
-                                </div>
-                            </a>
-                            <a href="{{ route('login', ['unit' => 'mysql_poasia']) }}" class="block">
-                                <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">POASIA</h5>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="flex items-center justify-center">
-                            <div class="hidden lg:block md:block">
-                                <a href="{{ route('login', ['unit' => 'mysql']) }}" class="block">
-                                    <div class="hexagon bg-[#0A749B] flex flex-col items-center justify-center h-36 w-40 md:w-56 md:h-44">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
+                <div class="min-h-screen flex flex-col justify-center items-center hexagon-background">
+                    <!-- Content wrapper -->
+                    <div class="relative z-10 mt-16">
+                        <!-- Header -->
+                        <h2 class="text-6xl font-bold mb-8 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000;">
+                            M<i class="fas fa-helmet-safety"></i>NDAY <br>MONITORING DAILY
+                        </h2>
+                        <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
+                            <div>
+                                <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
+                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> WUA-WUA</h5>
+                                    </div>
+                                </a>
+                                <a href="{{ route('login', ['unit' => 'mysql_poasia']) }}" class="block">
+                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
+                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> POASIA</h5>
                                     </div>
                                 </a>
                             </div>
-                        </div>
-                        <div>
-                            <a href="{{ route('login', ['unit' => 'mysql_kolaka']) }}" class="block">
-                                <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">KOLAKA</h5>
+                            <div class="flex items-center justify-center">
+                                <div class="hidden lg:block md:block">
+                                    <a href="{{ route('login', ['unit' => 'mysql']) }}" class="block">
+                                        <div class="hexagon bg-[#0A749B] flex flex-col items-center justify-center h-36 w-40 md:w-56 md:h-44">
+                                            <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
+                                        </div>
+                                    </a>
                                 </div>
-                            </a>
-                            <a href="{{ route('login', ['unit' => 'mysql_bau_bau']) }}" class="block">
-                                <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                                    <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">BAU-BAU</h5>
-                                </div>
-                            </a>
+                            </div>
+                            <div>
+                                <a href="{{ route('login', ['unit' => 'mysql_kolaka']) }}" class="block">
+                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
+                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> KOLAKA</h5>
+                                    </div>
+                                </a>
+                                <a href="{{ route('login', ['unit' => 'mysql_bau_bau']) }}" class="block">
+                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
+                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> BAU-BAU</h5>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

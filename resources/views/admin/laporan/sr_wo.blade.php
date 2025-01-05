@@ -218,13 +218,13 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($workOrders as $index => $wo)
-                                            <tr class="odd:bg-white even:bg-gray-100">
+                                            <tr class="odd:bg-white even:bg-gray-100" data-id="{{ $wo->id }}">
                                                 <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->description }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">
+                                                <td class="py-2 px-4 border border-gray-200" data-column="status">
                                                     <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'Comp' ? 'blue-500' : ($wo->status == 'APPR' ? 'yellow-500' : ($wo->status == 'WAPPR' ? 'purple-500' : 'gray-500')))) }} text-white rounded-full px-2 py-1">
-                                                            {{ $wo->status }}
+                                                        {{ $wo->status }}
                                                     </span>
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
@@ -237,9 +237,9 @@
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     {{ $wo->schedule_finish }}
                                                 </td>
-                                                <td class="py-2 px-4 border border-gray-200">
+                                                <td class="py-2 px-4 border border-gray-200" data-column="action">
                                                     @if ($wo->status != 'Closed')
-                                                        <button onclick="showStatusOptions({{ $wo->id }}, '{{ $wo->status }}')"
+                                                        <button onclick="showStatusOptions('{{ $wo->id }}', '{{ $wo->status }}')"
                                                             class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
                                                             <i class="fas fa-edit mr-2"></i> Ubah
                                                         </button>
@@ -339,6 +339,130 @@
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Helper Functions
+    function getStatusColor(status) {
+        const colors = {
+            'Open': 'red-500',
+            'Closed': 'green-500',
+            'Comp': 'blue-500',
+            'APPR': 'yellow-500',
+            'WAPPR': 'purple-500',
+            'WMATL': 'gray-500'
+        };
+        return colors[status] || 'gray-500';
+    }
+
+    function getStatusBadge(status) {
+        return `<span class="bg-${getStatusColor(status)} text-white rounded-full px-2 py-1">
+            ${status}
+        </span>`;
+    }
+
+    function getActionButton(id, status) {
+        if (status === 'Closed') {
+            return `<button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                Closed
+            </button>`;
+        }
+        return `<button onclick="showStatusOptions('${id}', '${status}')"
+            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+            <i class="fas fa-edit mr-2"></i> Ubah
+        </button>`;
+    }
+
+    // Main Functions
+    function showStatusOptions(woId, currentStatus) {
+        if (currentStatus === 'Closed') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi',
+                text: 'WO sudah ditutup dan tidak dapat diubah lagi.'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Pilih Status',
+            input: 'select',
+            inputOptions: {
+                'Open': 'Open',
+                'Closed': 'Closed',
+                'Comp': 'Comp',
+                'APPR': 'APPR',
+                'WAPPR': 'WAPPR',
+                'WMATL': 'WMATL'
+            },
+            inputValue: currentStatus,
+            showCancelButton: true,
+            cancelButtonText: 'Batal',
+            confirmButtonText: 'Simpan',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Anda harus memilih status!';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                processStatusUpdate(woId, result.value);
+            }
+        });
+    }
+
+    function processStatusUpdate(id, newStatus) {
+        const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector(`#woTable tbody tr[data-id="${id}"]`);
+                
+                if (row) {
+                    const statusCell = row.querySelector('td[data-column="status"]');
+                    const actionCell = row.querySelector('td[data-column="action"]');
+
+                    if (statusCell) {
+                        statusCell.innerHTML = getStatusBadge(newStatus);
+                    }
+
+                    if (actionCell) {
+                        actionCell.innerHTML = getActionButton(id, newStatus);
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message || 'Terjadi kesalahan saat mengupdate status'
+            });
+        });
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inisialisasi event listeners jika diperlukan
+    });
+
     // Fungsi untuk membuka modal SR
     function openSRModal() {
         const modal = document.getElementById('srModal');
@@ -635,96 +759,6 @@
                     });
                 });
             }
-        });
-    }
-
-    function showStatusOptions(id, currentStatus) {
-        // Definisikan semua status yang tersedia sesuai enum database
-        const allStatuses = {
-            'Open': 'Open',
-            'WAPPR': 'WAPPR',
-            'APPR': 'APPR',
-            'Comp': 'Comp',
-            'Closed': 'Closed',  // Ubah dari 'Closed' ke 'Close'
-            'WMATL': 'WMATL'
-        };
-
-        // Jika status saat ini adalah Close
-        if (currentStatus === 'Closed') {  // Ubah dari 'Closed' ke 'Close'
-            Swal.fire({
-                icon: 'info',
-                title: 'Status Closed',
-                text: 'WO sudah ditutup dan tidak dapat diubah statusnya',
-            });
-            return;
-        }
-
-        // Hapus status saat ini dari pilihan
-        const inputOptions = { ...allStatuses };
-        delete inputOptions[currentStatus];
-
-        console.log('Available Status Options:', inputOptions); // Debug log
-
-        Swal.fire({
-            title: 'Ubah Status',
-            text: `Status saat ini: ${currentStatus}`,
-            input: 'select',
-            inputOptions: inputOptions,
-            inputPlaceholder: 'Pilih status baru',
-            showCancelButton: true,
-            confirmButtonText: 'Ubah',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'Anda harus memilih status!';
-                }
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                console.log('Selected Status:', result.value); // Debug log
-                processStatusUpdate(id, result.value);
-            }
-        });
-    }
-
-    function processStatusUpdate(id, newStatus) {
-        const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
-        
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ status: newStatus })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.message,
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    // Refresh halaman dengan clear cache
-                    window.location.href = window.location.href.split('?')[0] + 
-                        '?_=' + new Date().getTime();
-                });
-            } else {
-                throw new Error(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: error.message
-            });
         });
     }
 
