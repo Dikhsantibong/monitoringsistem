@@ -111,7 +111,7 @@
                                    id="dmn" 
                                    step="0.01"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ $item->operations->first()->dmn ?? 0 }}" 
+                                   value="{{ optional($item->operations()->latest('recorded_at')->first())->dmn ?? 0 }}" 
                                    required>
                         </div>
 
@@ -125,7 +125,7 @@
                                    id="dmp" 
                                    step="0.01"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ $item->operations->first()->dmp ?? 0 }}" 
+                                   value="{{ optional($item->operations()->latest('recorded_at')->first())->dmp ?? 0 }}" 
                                    required>
                         </div>
 
@@ -139,7 +139,7 @@
                                    id="load_value" 
                                    step="0.01"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ $item->operations->first()->load_value ?? 0 }}" 
+                                   value="{{ optional($item->operations()->latest('recorded_at')->first())->load_value ?? 0 }}" 
                                    required>
                         </div>
 

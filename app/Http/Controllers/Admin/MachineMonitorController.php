@@ -263,23 +263,30 @@ class MachineMonitorController extends Controller
     {
         return view('admin.machine-monitor.crud');
     }
-
+    
     public function show()
     {
-        $machines = Machine::with(['powerPlant', 'operations' => function($query) {
+        $query = Machine::with(['powerPlant', 'operations' => function($query) {
             $query->latest('recorded_at')->take(1);
-        }])
-        ->orderBy('id')
-        ->paginate(10);
+        }]);
+
+        // Filter berdasarkan power plant jika ada
+        if (request()->has('power_plant_id')) {
+            $query->where('power_plant_id', request('power_plant_id'));
+        }
+
+        $machines = $query->orderBy('id')->paginate(10);
         
         return view('admin.machine-monitor.show', compact('machines'));
     }
 
     public function edit($id)
     {
-        $item = Machine::findOrFail($id);
-        $powerPlants = PowerPlant::all(); // Tambahkan ini untuk mendapatkan daftar unit
-        return view('admin.machine-monitor.edit', compact('item', 'powerPlants'));
+        $item = Machine::with(['operations' => function($query) {
+            $query->latest('recorded_at');
+        }])->findOrFail($id);
+        
+        return view('admin.machine-monitor.edit', compact('item'));
     }
 
     public function update(Request $request, $id)

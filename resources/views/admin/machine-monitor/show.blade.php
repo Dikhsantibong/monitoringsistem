@@ -163,7 +163,10 @@
                                     <span class="text-sm text-gray-500">{{ $machine->serial_number ?? 'N/A' }}</span>
                                 </td>
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
-                                    <span class="text-sm font-medium text-gray-900">{{ $machine->powerPlant->name ?? 'N/A' }}</span>
+                                    <a href="{{ route('admin.power-plants.index') }}?search={{ $machine->powerPlant->name ?? '' }}" 
+                                       class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ $machine->powerPlant->name ?? 'N/A' }}
+                                    </a>
                                 </td>
                                 <td class="px-6 py-4 text-center whitespace-nowrap border-r border-gray-200">
                                     {{ $machine->operations->first()->dmn ?? '0' }}

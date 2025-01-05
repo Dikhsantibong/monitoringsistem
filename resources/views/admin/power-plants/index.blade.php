@@ -97,21 +97,28 @@
                                             </span>
                                         </td>
                                         <td class="py-2 whitespace-nowrap flex justify-center gap-2">
-                                            <div>
-                                                <a href="{{ route('admin.power-plants.edit', $unit->id) }}"
-                                                    class="text-white btn bg-indigo-500 hover:bg-indigo-900 rounded-lg border p-2">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </div>
+                                            <!-- Tombol Lihat Data Mesin -->
+                                            <a href="{{ route('admin.machine-monitor.show') }}?power_plant_id={{ $unit->id }}" 
+                                               class="text-white btn bg-blue-500 hover:bg-blue-600 rounded-lg border p-2"
+                                               title="Lihat Data Mesin">
+                                                <i class="fas fa-cogs"></i>
+                                            </a>
 
+                                            <!-- Tombol Edit yang sudah ada -->
+                                            <a href="{{ route('admin.power-plants.edit', $unit->id) }}"
+                                               class="text-white btn bg-indigo-500 hover:bg-indigo-900 rounded-lg border p-2">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                            <!-- Form Delete yang sudah ada -->
                                             <form id="delete-form-{{ $unit->id }}"
-                                                action="{{ route('admin.power-plants.destroy', $unit->id) }}"
-                                                method="POST" class="inline">
+                                                  action="{{ route('admin.power-plants.destroy', $unit->id) }}"
+                                                  method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button"
-                                                    onclick="confirmDelete({{ $unit->id }}, '{{ $unit->name }}')"
-                                                    class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg p-2">
+                                                        onclick="confirmDelete({{ $unit->id }}, '{{ $unit->name }}')"
+                                                        class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg p-2">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
