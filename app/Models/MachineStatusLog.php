@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class MachineStatusLog extends Model
 {
@@ -106,5 +107,28 @@ class MachineStatusLog extends Model
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('H:i:s d/m/Y') : 'N/A';
+    }
+
+    // Method untuk mengecek apakah gangguan masih aktif
+    public function isActiveIssue()
+    {
+        if ($this->status !== 'Gangguan') {
+            return false;
+        }
+
+        if (!$this->target_selesai) {
+            return true;
+        }
+
+        return Carbon::now()->lte($this->target_selesai);
+    }
+
+    // Method untuk mengecek apakah ada update lebih baru
+    public function hasNewerUpdate()
+    {
+        return static::where('machine_id', $this->machine_id)
+            ->where('created_at', '>', $this->created_at)
+            ->whereBetween('created_at', [$this->tanggal_mulai, $this->target_selesai])
+            ->exists();
     }
 } 

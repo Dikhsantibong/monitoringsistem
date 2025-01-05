@@ -606,6 +606,7 @@
                                     <th class="text-center">DMP</th>
                                     <th class="text-center">Beban</th>
                                     <th class="text-center">Status</th>
+                               
                                     <th class="text-center">Waktu Update</th>
                                 </tr>
                             </thead>
@@ -618,12 +619,13 @@
                                         <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
                                         <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
                                         <td class="text-center">
-                                            <span class="px-2 py-1 rounded-full {{ $log->status === 'Aktif' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                            <span class="px-2 py-1 rounded-full bg-red-100 text-red-600">
                                                 {{ $log->status }}
                                             </span>
                                         </td>
+                                       
                                         <td class="text-center text-sm text-gray-500">
-                                            {{ $log->created_at ? $log->created_at->format('H:i:s d/m/Y') : 'N/A' }}
+                                            {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : 'N/A' }}
                                         </td>
                                     </tr>
                                 @endforeach

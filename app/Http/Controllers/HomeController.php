@@ -24,21 +24,34 @@ class HomeController extends Controller
             
             // Ambil data status log hari ini
             $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
-                ->select('machine_id', 'status', 'dmn', 'dmp', 'load_value', 'tanggal', 'created_at')
-                ->whereDate('created_at', Carbon::today())
+                ->select(
+                    'machine_id',
+                    'status',
+                    'dmn',
+                    'dmp',
+                    'load_value',
+                    'tanggal',
+                    'created_at',
+                    'tanggal_mulai',
+                    'target_selesai'
+                )
+                ->where('status', 'Gangguan')
+                ->where(function ($query) {
+                    $query->where('target_selesai', '>=', Carbon::now())
+                        ->orWhereNull('target_selesai');
+                })
+                ->whereNotExists(function ($query) {
+                    $query->from('machine_status_logs as msl2')
+                        ->whereColumn('msl2.machine_id', 'machine_status_logs.machine_id')
+                        ->where('msl2.created_at', '>', 'machine_status_logs.created_at')
+                        ->where('msl2.status', 'Gangguan')
+                        ->whereBetween('msl2.created_at', [
+                            DB::raw('machine_status_logs.tanggal_mulai'),
+                            DB::raw('machine_status_logs.target_selesai')
+                        ]);
+                })
                 ->orderBy('created_at', 'desc')
-                ->get()
-                ->unique('machine_id');
-
-            // Jika tidak ada data hari ini, ambil data terakhir
-            if ($units->isEmpty()) {
-                $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
-                    ->select('machine_id', 'status', 'dmn', 'dmp', 'load_value', 'tanggal', 'created_at')
-                    ->orderBy('created_at', 'desc')
-                    ->get()
-                    ->unique('machine_id')
-                    ->take(5);
-            }
+                ->get();
 
             // Gunakan created_at untuk lastUpdate
             $lastUpdate = $units->max('created_at');
