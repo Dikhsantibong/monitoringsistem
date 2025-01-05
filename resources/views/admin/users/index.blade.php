@@ -157,23 +157,23 @@
                                                     </div>
                                                 </td>
                                                 <td class="py-2 whitespace-nowrap flex justify-center gap-2">
-                                                    <div>
-                                                        <a href="{{ route('admin.users.edit', $user->id) }}"
-                                                            class="text-white btn bg-indigo-500 hover:bg-indigo-900 rounded-lg border">
-                                                            <i class="fas fa-edit"></i>
-                                                        </a>
-                                                    </div>
+                                                    <a href="{{ route('admin.users.edit', $user->id) }}"
+                                                        class="text-white btn bg-indigo-500 hover:bg-indigo-900 rounded-lg border">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
 
-                                                    <form id="delete-form-{{ $user->id }}"
-                                                        action="{{ route('admin.users.destroy', $user->id) }}"
-                                                        method="POST" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="button"
+                                                    <button type="button" 
                                                             onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
                                                             class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+
+                                                    <form id="delete-form-{{ $user->id }}" 
+                                                          action="{{ route('admin.users.destroy', $user->id) }}" 
+                                                          method="POST" 
+                                                          class="hidden">
+                                                        @csrf
+                                                        @method('DELETE')
                                                     </form>
                                                 </td>
                                             </tr>
@@ -321,6 +321,47 @@
         if (roleFilter) {
             roleFilter.addEventListener('change', window.searchUsers);
         }
+    });
+
+    function confirmDelete(userId, userName) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: `Anda akan menghapus pengguna: ${userName}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById(`delete-form-${userId}`);
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    }
+
+    // Handle flash messages
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: "{{ session('error') }}"
+            });
+        @endif
     });
     </script>
     <script src="{{ asset('js/toggle.js') }}"></script>
