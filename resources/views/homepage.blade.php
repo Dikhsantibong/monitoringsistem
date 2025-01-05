@@ -360,13 +360,9 @@
         /* Adjust body and main content positioning */
         body {
             margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            background-color: #ffee; /* Dark background for body */
-            background-image: url('{{ asset('background/backgorund.jpg') }}');
-            background-size: cover;
-            background-position: center;
-            background-attachment: scroll;
+            padding-top: 100px;
+            min-height: calc(100vh - 100px);
+            overflow-x: hidden;
         }
 
         main {
@@ -377,10 +373,41 @@
         .hexagon-background {
             position: relative;
             margin-top: -80px;
-            background-image: url('{{ asset('background/backgorund.jp   g') }}');
+            background-image: url('{{ asset('background/backgorund.jpg') }}');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Tambahkan overlay gelap untuk meningkatkan kontras */
+        .hexagon-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5); /* Sesuaikan opacity sesuai kebutuhan */
+            z-index: 1;
+        }
+
+        /* Pastikan konten hero berada di atas overlay */
+        .hexagon-background > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Pastikan section di bawah hero memiliki background putih */
+        #map, #grafik, #live-data {
+            background-color: white;
+            position: relative;
+            z-index: 1;
         }
 
         /* Adjust content positioning */
