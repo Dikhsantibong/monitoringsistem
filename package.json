@@ -18,6 +18,6 @@
         "bootstrap": "^5.3.3",
         "chart.js": "^4.4.7",
         "flowbite": "^2.5.2",
-        "sweetalert2": "^11.14.5"
+        "sweetalert2": "^11.6.13"
     }
 }

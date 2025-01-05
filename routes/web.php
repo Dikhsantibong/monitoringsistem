@@ -281,5 +281,7 @@ Route::post('/admin/laporan/wo-backlog/{id}/status', [LaporanController::class, 
 Route::delete('/admin/machine-monitor/{id}', [MachineMonitorController::class, 'destroy'])
     ->name('admin.machine-monitor.destroy');
 
+Route::get('/accumulation-data/{markerId}', [HomeController::class, 'getAccumulationData']);
+
 
     
