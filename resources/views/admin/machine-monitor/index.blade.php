@@ -78,19 +78,19 @@
                         </div>
                     </a>
 
-                    <div class="bg-green-500 rounded-lg shadow p-6">
+                    <a href="{{ route('admin.power-plants.index') }}" class="bg-green-500 rounded-lg shadow p-6 hover:bg-green-600">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-white text-sm font-medium">Akurasi Kerja</h3>
+                                <h3 class="text-white text-sm font-medium">Total Unit</h3>
                                 <p class="text-3xl font-bold text-white mt-1">
-                                    {{ number_format($machines->flatMap->metrics->avg('achievement_percentage'), 1) }}%
+                                    {{ App\Models\PowerPlant::count() }}
                                 </p>
                             </div>
                             <div class="bg-blue-100 p-3 rounded-full">
-                                <i class="fas fa-chart-line text-blue-500 text-xl"></i>
+                                <i class="fas fa-building text-blue-500 text-xl"></i>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <div class="bg-red-500 rounded-lg shadow p-6">
                         <div class="flex items-center justify-between">

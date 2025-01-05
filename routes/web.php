@@ -17,12 +17,12 @@ use App\Http\Controllers\Admin\PembangkitController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\DaftarHadirController;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\PowerPlantController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\MeetingController;
 use App\Http\Controllers\ScoreCardDailyController;
 use App\Http\Controllers\WoBacklogController;
 use App\Http\Controllers\DashboardPemantauanController;
+use App\Http\Controllers\Admin\PowerPlantController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -282,6 +282,18 @@ Route::delete('/admin/machine-monitor/{id}', [MachineMonitorController::class, '
     ->name('admin.machine-monitor.destroy');
 
 Route::get('/accumulation-data/{markerId}', [HomeController::class, 'getAccumulationData']);
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
+        // Power Plants routes
+        Route::get('/power-plants', [PowerPlantController::class, 'index'])->name('power-plants.index');
+        Route::get('/power-plants/{id}/edit', [PowerPlantController::class, 'edit'])->name('power-plants.edit');
+        Route::put('/power-plants/{id}', [PowerPlantController::class, 'update'])->name('power-plants.update');
+        Route::delete('/power-plants/{id}', [PowerPlantController::class, 'destroy'])->name('power-plants.destroy');
+        Route::get('/power-plants/create', [PowerPlantController::class, 'create'])->name('power-plants.create');
+        Route::post('/power-plants', [PowerPlantController::class, 'store'])->name('power-plants.store');
+    });
+});
 
 
     
