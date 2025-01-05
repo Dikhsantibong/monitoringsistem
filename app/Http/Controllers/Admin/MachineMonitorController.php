@@ -267,7 +267,7 @@ class MachineMonitorController extends Controller
     public function show(Request $request)
     {
         $query = Machine::with(['powerPlant', 'operations' => function($query) {
-            $query->latest('recorded_at')->first();
+            $query->latest('recorded_at')->take(1);
         }]);
 
         // Filter berdasarkan power plant jika ada
@@ -284,6 +284,13 @@ class MachineMonitorController extends Controller
                   ->orWhere('serial_number', 'LIKE', "%{$searchTerm}%")
                   ->orWhereHas('powerPlant', function($q) use ($searchTerm) {
                       $q->where('name', 'LIKE', "%{$searchTerm}%");
+                  })
+                  ->orWhereHas('operations', function($q) use ($searchTerm) {
+                      $q->where('dmn', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('dmp', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('load_value', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('hop', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('keterangan', 'LIKE', "%{$searchTerm}%");
                   });
             });
         }
@@ -293,11 +300,11 @@ class MachineMonitorController extends Controller
         if ($request->ajax()) {
             return view('admin.machine-monitor.table-body', compact('machines'))->render();
         }
-
+        
         return view('admin.machine-monitor.show', compact('machines'));
     }
 
-    public function edit($id)   
+    public function edit($id)
     {
         $item = Machine::with(['operations' => function($query) {
             $query->latest('recorded_at');
