@@ -21,34 +21,40 @@
             </div>
         @endif
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <div class="dashboard-card p-4 rounded-lg">
+            <div class="dashboard-card p-4 rounded-lg h-[300px]">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg">KESELURUHAN KONDISI MESIN</h2>
                 </div>
-                <div class="mt-4">
-                    <div class="text-center">
-                        <canvas id="oeeChart" class="w-32 h-32 mx-auto"></canvas>
-                        <p class="mt-2">Presentasi Mesin Gangguan</p>
+                <div class="mt-4 flex justify-center items-center h-[200px]">
+                    <div class="w-48 h-48">
+                        <canvas id="oeeChart"></canvas>
                     </div>
                 </div>
+                <p class="text-center mt-2">Presentasi Mesin Gangguan</p>
             </div>
-            <div class="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-2">
-                <div class="dashboard-card p-4 rounded-lg col-span-full">
+            <div class="col-span-2">
+                <div class="dashboard-card p-4 rounded-lg h-[300px]">
                     <div class="flex justify-between items-center">
                         <h2 class="text-lg">KONDISI PEMELIHARAAN MESIN</h2>
                     </div>
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <div class="text-center">
-                            <canvas id="availabilityChart" class="w-32 h-32 mx-auto"></canvas>
+                    <div class="mt-4 grid grid-cols-3 gap-4 h-[200px]">
+                        <div class="flex flex-col items-center">
+                            <div class="w-32 h-32">
+                                <canvas id="availabilityChart"></canvas>
+                            </div>
                             <p class="mt-2">Mothballed</p>
                         </div>
-                        <div class="text-center">
-                            <canvas id="performanceChart" class="w-32 h-32 mx-auto"></canvas>
+                        <div class="flex flex-col items-center">
+                            <div class="w-32 h-32">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
                             <p class="mt-2">Pemeliharaan</p>
                         </div>
-                        <div class="text-center">
-                            <canvas id="qualityChart" class="w-32 h-32 mx-auto"></canvas>
-                            <p class="mt-2">Overhaul </p>
+                        <div class="flex flex-col items-center">
+                            <div class="w-32 h-32">
+                                <canvas id="qualityChart"></canvas>
+                            </div>
+                            <p class="mt-2">Overhaul</p>
                         </div>
                     </div>
                 </div>
@@ -77,7 +83,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Type</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Nama Mesin Unit</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Serial Number</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Last Update</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,11 +93,21 @@
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $index + 1 }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['type'] }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['unit_name'] }}</td>
-                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['serial_number'] ?? 'N/A' }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">
+                                        <span class="px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {{ $machine['status'] === 'Aktif' ? 'bg-green-500' : 
+                                               ($machine['status'] === 'Standby' ? 'bg-yellow-500' : 
+                                               ($machine['status'] === 'Gangguan' ? 'bg-red-500' : 'bg-gray-500')) }}">
+                                            {{ $machine['status'] }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">
+                                        {{ $machine['updated_at'] ? $machine['updated_at']->format('d/m/Y H:i:s') : 'N/A' }}
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                         Tidak ada data mesin
                                     </td>
                                 </tr>
@@ -102,294 +119,240 @@
         </div>
        
        
+        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <!-- Availability Card -->
+            <!-- Target vs Realisasi -->
             <div class="dashboard-card p-4 rounded-lg">
-                <h3 class="text-lg mb-4">Availability</h3>
-                <div class="h-48"> <!-- Tambahkan container dengan tinggi tetap -->
-                    <canvas id="availabilityBarChart"></canvas>
+                <h3 class="text-lg mb-4">Target vs Realisasi</h3>
+                <div class="h-48">
+                    <canvas id="completionChart"></canvas>
                 </div>
             </div>
 
-            <!-- Performance Card -->
+            <!-- Progress Pekerjaan -->
             <div class="dashboard-card p-4 rounded-lg">
-                <h3 class="text-lg mb-4">Performance</h3>
-                <div class="h-48"> <!-- Tambahkan container dengan tinggi tetap -->
-                    <canvas id="performanceBarChart"></canvas>
+                <h3 class="text-lg mb-4">Progress Pekerjaan</h3>
+                <div class="h-48">
+                    <canvas id="progressChart"></canvas>
                 </div>
             </div>
 
-            <!-- Quality Card -->
+            <!-- Tren Penyelesaian -->
             <div class="dashboard-card p-4 rounded-lg">
-                <h3 class="text-lg mb-4">Quality</h3>
-                <div class="h-48"> <!-- Tambahkan container dengan tinggi tetap -->
-                    <canvas id="qualityBarChart"></canvas>
+                <h3 class="text-lg mb-4">Tren Penyelesaian</h3>
+                <div class="h-48">
+                    <canvas id="trendChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
     <script>
-        // OEE Chart
-        var ctxOEE = document.getElementById('oeeChart').getContext('2d');
-        var oeeChart = new Chart(ctxOEE, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [90, 10],
-                    backgroundColor: ['#22c55e', '#e5e7eb']
-                }],
-                labels: ['Aktif', 'Tidak Aktif']
-            },
-            options: {
-                cutout: '70%',
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                var dataset = tooltipItem.dataset;
-                                var total = dataset.data.reduce((a, b) => a + b, 0);
-                                var currentValue = dataset.data[tooltipItem.dataIndex];
-                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
-                                return currentValue + ' (' + percentage + '%)';
-                            }
-                        }
-                    },
-                    legend: { display: false }
-                }
-            }
-        });
-
-        // Availability Chart
-        var ctxAvailability = document.getElementById('availabilityChart').getContext('2d');
-        var availabilityChart = new Chart(ctxAvailability, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [50, 50],
-                    backgroundColor: ['#0ea5e9', '#e5e7eb']
-                }],
-                labels: ['Tersedia', 'Tidak Tersedia']
-            },
-            options: {
-                cutout: '70%',
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                var dataset = tooltipItem.dataset;
-                                var total = dataset.data.reduce((a, b) => a + b, 0);
-                                var currentValue = dataset.data[tooltipItem.dataIndex];
-                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
-                                return currentValue + ' (' + percentage + '%)';
-                            }
-                        }
-                    },
-                    legend: { display: false }
-                }
-            }
-        });
-
-        // Performance Chart
-        var ctxPerformance = document.getElementById('performanceChart').getContext('2d');
-        var performanceChart = new Chart(ctxPerformance, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [50, 50],
-                    backgroundColor: ['#ef4444', '#e5e7eb']
-                }],
-                labels: ['Kinerja Baik', 'Kinerja Buruk']
-            },
-            options: {
-                cutout: '70%',
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                var dataset = tooltipItem.dataset;
-                                var total = dataset.data.reduce((a, b) => a + b, 0);
-                                var currentValue = dataset.data[tooltipItem.dataIndex];
-                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
-                                return currentValue + ' (' + percentage + '%)';
-                            }
-                        }
-                    },
-                    legend: { display: false }
-                }
-            }
-        });
-
-        // Quality Chart
-        var ctxQuality = document.getElementById('qualityChart').getContext('2d');
-        var qualityChart = new Chart(ctxQuality, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [70, 30],
-                    backgroundColor: ['#f59e0b', '#e5e7eb']
-                }],
-                labels: ['Kualitas Baik', 'Kualitas Buruk']
-            },
-            options: {
-                cutout: '70%',
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                var dataset = tooltipItem.dataset;
-                                var total = dataset.data.reduce((a, b) => a + b, 0);
-                                var currentValue = dataset.data[tooltipItem.dataIndex];
-                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
-                                return currentValue + ' (' + percentage + '%)';
-                            }
-                        }
-                    },
-                    legend: { display: false }
-                }
-            }
-        });
-
-        // Konfigurasi umum untuk semua chart
+        // Konfigurasi umum untuk chart
         const chartConfig = {
             responsive: true,
-            maintainAspectRatio: false, // Penting: set false agar ukuran chart mengikuti container
+            maintainAspectRatio: true,
             plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                x: { 
-                    beginAtZero: true,
-                    max: 100,
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#FFFFFF'
-                    }
-                },
-                y: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#FFFFFF'
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#ffffff',
+                        padding: 10,
+                        font: {
+                            size: 12
+                        }
                     }
                 }
             }
         };
 
-        // Availability Bar Chart
-        new Chart(document.getElementById('availabilityBarChart'), {
-            type: 'bar',
+        // OEE Chart
+        new Chart(document.getElementById('oeeChart'), {
+            type: 'doughnut',
             data: {
-                labels: ['Total Operative Mode Time', 'Run Time'],
+                labels: ['Normal', 'Gangguan'],
                 datasets: [{
-                    data: [100, 75],
-                    backgroundColor: ['#0ea5e9', '#0ea5e9']
+                    data: [
+                        {{ $chartData['percentages']['active'] }},
+                        {{ $chartData['percentages']['fault'] }}
+                    ],
+                    backgroundColor: ['#22c55e', '#ef4444']
                 }]
             },
             options: {
                 ...chartConfig,
-                indexAxis: 'y'
+                cutout: '65%'
             }
         });
 
-        // Performance Bar Chart
-        new Chart(document.getElementById('performanceBarChart'), {
-            type: 'bar',
+        // Mothballed Chart
+        new Chart(document.getElementById('availabilityChart'), {
+            type: 'doughnut',
             data: {
-                labels: ['Nominal Speed', 'Actual Speed'],
+                labels: ['Mothballed', 'Normal'],
                 datasets: [{
-                    data: [100, 85],
-                    backgroundColor: ['#ef4444', '#ef4444']
+                    data: [
+                        {{ $maintenanceData['mothballed']['current'] }},
+                        {{ $maintenanceData['mothballed']['total'] - $maintenanceData['mothballed']['current'] }}
+                    ],
+                    backgroundColor: ['#0ea5e9', '#e5e7eb']
                 }]
             },
             options: {
                 ...chartConfig,
-                indexAxis: 'y'
+                cutout: '65%'
             }
         });
 
-        // Quality Bar Chart
-        new Chart(document.getElementById('qualityBarChart'), {
-            type: 'bar',
+        // Maintenance Chart
+        new Chart(document.getElementById('performanceChart'), {
+            type: 'doughnut',
             data: {
-                labels: ['Product Output', 'Actual Good Product'],
+                labels: ['Maintenance', 'Normal'],
                 datasets: [{
-                    data: [100, 90],
-                    backgroundColor: ['#f59e0b', '#f59e0b']
+                    data: [
+                        {{ $maintenanceData['maintenance']['current'] }},
+                        {{ $maintenanceData['maintenance']['total'] - $maintenanceData['maintenance']['current'] }}
+                    ],
+                    backgroundColor: ['#ef4444', '#e5e7eb']
+                }]
+            },
+            options: {  
+                ...chartConfig,
+                cutout: '65%'
+            }
+        });
+
+        // Overhaul Chart
+        new Chart(document.getElementById('qualityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Overhaul', 'Normal'],
+                datasets: [{
+                    data: [
+                        {{ $maintenanceData['overhaul']['current'] }},
+                        {{ $maintenanceData['overhaul']['total'] - $maintenanceData['overhaul']['current'] }}
+                    ],
+                    backgroundColor: ['#f59e0b', '#e5e7eb']
                 }]
             },
             options: {
                 ...chartConfig,
-                indexAxis: 'y'
+                cutout: '65%'
             }
         });
 
-        const chartColors = {
-            primary: '#00BFB3',    // teal
-            secondary: '#007991',  // dark teal
-            accent: '#0066FF',    // blue
-            background: '#FFFFFF' // white
-        };
-
-        // Update warna pada charts
-        new Chart(document.getElementById('availabilityBarChart'), {
+        // Target vs Realisasi Chart
+        @if($completionData->isNotEmpty())
+        new Chart(document.getElementById('completionChart'), {
             type: 'bar',
             data: {
-                labels: ['Total Operative Mode Time', 'Run Time'],
+                labels: {!! json_encode($completionData->pluck('machine_name')) !!},
                 datasets: [{
-                    data: [100, 75],
-                    backgroundColor: [chartColors.primary, chartColors.primary]
+                    label: 'Target (Hari)',
+                    data: {!! json_encode($completionData->pluck('target_days')) !!},
+                    backgroundColor: '#22c55e'
+                }, {
+                    label: 'Realisasi (Hari)',
+                    data: {!! json_encode($completionData->pluck('actual_days')) !!},
+                    backgroundColor: '#ef4444'
                 }]
             },
             options: {
                 ...chartConfig,
-                indexAxis: 'y'
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#ffffff' }
+                    },
+                    x: {
+                        ticks: { color: '#ffffff' }
+                    }
+                }
             }
         });
+        @endif
 
-        new Chart(document.getElementById('performanceBarChart'), {
+        // Progress Pekerjaan Chart
+        @if($progressData->isNotEmpty())
+        new Chart(document.getElementById('progressChart'), {
             type: 'bar',
             data: {
-                labels: ['Nominal Speed', 'Actual Speed'],
+                labels: {!! json_encode($progressData->pluck('machine_name')) !!},
                 datasets: [{
-                    data: [100, 85],
-                    backgroundColor: [chartColors.secondary, chartColors.secondary]
+                    label: 'Progress (%)',
+                    data: {!! json_encode($progressData->pluck('progress')) !!},
+                    backgroundColor: function(context) {
+                        const progress = context.raw;
+                        if (progress >= 80) return '#22c55e';      // Hijau
+                        if (progress >= 50) return '#eab308';      // Kuning
+                        return '#ef4444';                          // Merah
+                    }
                 }]
             },
             options: {
                 ...chartConfig,
-                indexAxis: 'y'
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { color: '#ffffff' }
+                    },
+                    x: {
+                        ticks: { color: '#ffffff' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const data = $progressData[context.dataIndex];
+                                return [
+                                    `Progress: ${context.raw}%`,
+                                    `Sisa Waktu: ${data.remaining_days} hari`
+                                ];
+                            }
+                        }
+                    }
+                }
             }
         });
+        @endif
 
-        new Chart(document.getElementById('qualityBarChart'), {
-            type: 'bar',
+        // Tren Penyelesaian Chart
+        @if($trendData->isNotEmpty())
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
             data: {
-                labels: ['Product Output', 'Actual Good Product'],
+                labels: {!! json_encode($trendData->keys()) !!},
                 datasets: [{
-                    data: [100, 90],
-                    backgroundColor: [chartColors.accent, chartColors.accent]
+                    label: 'Tepat Waktu',
+                    data: {!! json_encode($trendData->pluck('on_time')) !!},
+                    borderColor: '#22c55e',
+                    backgroundColor: '#22c55e',
+                    fill: false
+                }, {
+                    label: 'Terlambat',
+                    data: {!! json_encode($trendData->pluck('delayed')) !!},
+                    borderColor: '#ef4444',
+                    backgroundColor: '#ef4444',
+                    fill: false
                 }]
             },
             options: {
                 ...chartConfig,
-                indexAxis: 'y'
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#ffffff' }
+                    },
+                    x: {
+                        ticks: { color: '#ffffff' }
+                    }
+                }
             }
         });
-
-        // Update status badges
-        document.querySelectorAll('.status-badge').forEach(badge => {
-            const status = badge.dataset.status;
-            if (status === 'normal') {
-                badge.style.backgroundColor = chartColors.primary;
-            } else if (status === 'maintenance') {
-                badge.style.backgroundColor = chartColors.accent;
-            } else {
-                badge.style.backgroundColor = chartColors.secondary;
-            }
-        });
+        @endif
     </script>
     <style>
         :root {
@@ -405,6 +368,13 @@
         .dashboard-card {
             background-color: var(--color-dark-teal);
             color: var(--color-white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card canvas {
+            max-width: 100%;
+            max-height: 100%;
         }
 
         /* Styling untuk progress bars */
@@ -446,6 +416,30 @@
 
         .overflow-y-auto::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Memastikan container chart memiliki posisi relatif */
+        .relative {
+            position: relative;
+        }
+        
+        /* Memastikan canvas chart mengisi container dengan benar */
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Mencegah chart overflow */
+        .h-[300px] {
+            height: 300px;
+            min-height: 300px;
+            max-height: 300px;
+        }
+
+        .h-[200px] {
+            height: 200px;
+            min-height: 200px;
+            max-height: 200px;
         }
     </style>
 </body>
