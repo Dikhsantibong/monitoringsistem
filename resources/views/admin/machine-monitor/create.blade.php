@@ -100,6 +100,48 @@
                             </select>
                         </div>
 
+                        <!-- DMN -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="dmn">
+                                DMN <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" 
+                                   name="dmn" 
+                                   id="dmn" 
+                                   step="0.01"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   value="0" 
+                                   required>
+                        </div>
+
+                        <!-- DMP -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="dmp">
+                                DMP <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" 
+                                   name="dmp" 
+                                   id="dmp" 
+                                   step="0.01"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   value="0" 
+                                   required>
+                        </div>
+
+                        <!-- Beban (MW) -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="load_value">
+                                Beban (MW) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" 
+                                   name="load_value" 
+                                   id="load_value" 
+                                   step="0.01"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   value="0" 
+                                   required>
+                        </div>
+
                         <!-- Tombol Submit -->
                         <div class="flex items-center justify-end">
                             <a href="{{ route('admin.machine-monitor') }}" 

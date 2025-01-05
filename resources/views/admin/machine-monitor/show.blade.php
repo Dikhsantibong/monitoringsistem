@@ -114,12 +114,15 @@
                     <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                         <thead class="bg-[#0A749B]" style="height: 50px;">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">No</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">Nama Mesin</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">Tipe</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">No. Seri</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase text-center">Unit</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase text-center">Aksi</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase">No</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase ">Nama Mesin</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase ">Tipe</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase">No. Seri</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase ">Unit</th>
+                                <th class="px-6 py-3 text-left text-xa font-medium text-white uppercase">DMN</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMP</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium  text-white uppercase">Beban (MW)</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase ">Aksi</th>
                             </tr>
                         </thead>
                         
@@ -161,6 +164,15 @@
                                 </td>
                                 <td class="px-4 py-1 border-r border-gray-200 whitespace-nowrap">
                                     <span class="text-sm font-medium text-gray-900">{{ $machine->powerPlant->name ?? 'N/A' }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap border-r border-gray-200">
+                                    {{ $machine->operations->first()->dmn ?? '0' }}
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap border-r border-gray-200">
+                                    {{ $machine->operations->first()->dmp ?? '0' }}
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap border-r border-gray-200">
+                                    {{ $machine->operations->first()->load_value ?? '0' }} MW
                                 </td>
                                 <td class="py-2 whitespace-nowrap flex justify-center gap-2">
                                     <div>

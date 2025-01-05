@@ -169,12 +169,27 @@ class MachineMonitorController extends Controller
                 'type' => 'required|string|max:50',
                 'serial_number' => 'required|string|max:50',
                 'power_plant_id' => 'required|exists:power_plants,id',
+                'dmn' => 'required|numeric',
+                'dmp' => 'required|numeric',
+                'load_value' => 'required|numeric',
             ]);
 
-            // Tambahkan default value untuk capacity
-            $validated['capacity'] = 0;
+            // Buat mesin baru
+            $machine = Machine::create([
+                'name' => $validated['name'],
+                'type' => $validated['type'],
+                'serial_number' => $validated['serial_number'],
+                'power_plant_id' => $validated['power_plant_id'],
+            ]);
 
-            $machine = Machine::create($validated);
+            // Buat data operasi mesin
+            MachineOperation::create([
+                'machine_id' => $machine->id,
+                'dmn' => $validated['dmn'],
+                'dmp' => $validated['dmp'],
+                'load_value' => $validated['load_value'],
+                'recorded_at' => now(),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -251,9 +266,11 @@ class MachineMonitorController extends Controller
 
     public function show()
     {
-        $machines = Machine::with('powerPlant')
-                          ->orderBy('id')
-                          ->paginate(10); // Ubah ke 10 item per halaman
+        $machines = Machine::with(['powerPlant', 'operations' => function($query) {
+            $query->latest('recorded_at')->take(1);
+        }])
+        ->orderBy('id')
+        ->paginate(10);
         
         return view('admin.machine-monitor.show', compact('machines'));
     }
@@ -268,20 +285,36 @@ class MachineMonitorController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $request->validate([
+            $validated = $request->validate([
                 'name' => 'required',
                 'type' => 'required',
                 'serial_number' => 'required',
                 'power_plant_id' => 'required|exists:power_plants,id',
+                'dmn' => 'required|numeric',
+                'dmp' => 'required|numeric',
+                'load_value' => 'required|numeric',
             ]);
 
             $machine = Machine::findOrFail($id);
-            $machine->update($request->only([
-                'name',
-                'type',
-                'serial_number',
-                'power_plant_id'
-            ]));
+            
+            // Update data mesin
+            $machine->update([
+                'name' => $validated['name'],
+                'type' => $validated['type'],
+                'serial_number' => $validated['serial_number'],
+                'power_plant_id' => $validated['power_plant_id'],
+            ]);
+
+            // Update atau buat data operasi mesin baru
+            MachineOperation::updateOrCreate(
+                ['machine_id' => $machine->id],
+                [
+                    'dmn' => $validated['dmn'],
+                    'dmp' => $validated['dmp'],
+                    'load_value' => $validated['load_value'],
+                    'recorded_at' => now(),
+                ]
+            );
 
             return response()->json([
                 'success' => true,
