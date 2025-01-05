@@ -316,16 +316,16 @@
                                 </tr>
                             </thead>
                             <tbody id="unit-table-body">
-                                @foreach ($units->take(5) as $unit)
+                                @foreach ($units as $log)
                                     <tr class="table-row">
-                                        <td class="text-center">{{ $unit->powerPlant->name ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $unit->name }}</td>
-                                        <td class="text-center">{{ $unit->machineOperations->first()->dmn ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $unit->machineOperations->first()->dmp ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $unit->machineOperations->first()->load_value ?? 'N/A' }}</td>
-                                        <td class="text-center {{ $unit->status === 'Aktif' ? 'text-success' : 'text-danger' }}">
-                                            {{ $unit->status }}</td>
-                                        <td class="text-center">{{ $unit->capacity }} MW</td>
+                                        <td class="text-center">{{ $log->machine->powerPlant->name ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->machine->name ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->dmn ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
+                                        <td class="text-center {{ $log->status === 'Aktif' ? 'text-success' : 'text-danger' }}">
+                                            {{ $log->status }}</td>
+                                        <td class="text-center">{{ $log->machine->capacity ?? 'N/A' }} MW</td>
                                         <td></td>
                                     </tr>
                                 @endforeach
@@ -505,164 +505,6 @@
                             </div>
                         `);
                 @endforeach
-
-                document.addEventListener('DOMContentLoaded', function() {
-                    const tableBody = document.getElementById('unit-table-body');
-                    const toggleButton = document.getElementById('toggle-data');
-                    let showingAll = false;
-
-                    const units = @json($units);
-
-                    function renderTable(showAll) {
-                        const existingRows = tableBody.querySelectorAll('tr');
-                        existingRows.forEach(row => {
-                            row.style.opacity = '0';
-                            row.style.transform = 'translateY(-20px)';
-                        });
-
-                        setTimeout(() => {
-                            tableBody.innerHTML = '';
-                            const displayUnits = showAll ? units : units.slice(0, 5);
-
-                            displayUnits.forEach((unit, index) => {
-                                const row = document.createElement('tr');
-                                row.className = 'table-row';
-                                row.innerHTML = `
-                                <td class="text-center">${unit.power_plant?.name ?? 'N/A'}</td>
-                                <td class="text-center">${unit.name}</td>
-                                <td class="text-center">${unit.dmn ?? 'N/A'}</td>
-                                <td class="text-center">${unit.dmp ?? 'N/A'}</td>
-                                <td class="text-center">${unit.load ?? 'N/A'}</td>
-                                <td class="text-center ${unit.status === 'Aktif' ? 'text-success' : 'text-danger'}">${unit.status}</td>
-                                <td class="text-center">${unit.capacity} MW</td>
-                            `;
-                                tableBody.appendChild(row);
-
-                                row.offsetHeight;
-
-                                setTimeout(() => {
-                                    row.classList.add('show');
-                                }, 50 * index);
-                            });
-                        }, 300);
-
-                        toggleButton.innerHTML = showAll ?
-                            '<i class="fas fa-arrow-up fa-2x animate-pulse" style="color: #0095B7; cursor: pointer;"></i>' :
-                            '<i class="fas fa-arrow-down fa-2x animate-pulse" style="color: #0095B7; cursor: pointer;"></i>';
-                    }
-
-                    toggleButton.addEventListener('click', function() {
-                        showingAll = !showingAll;
-                        renderTable(showingAll);
-
-                        if (showingAll) {
-                            const tableBottom = tableBody.getBoundingClientRect().bottom;
-                            window.scrollTo({
-                                top: window.scrollY + tableBottom - window.innerHeight + 100,
-                                behavior: 'smooth'
-                            });
-                        }
-                    });
-
-                    document.querySelectorAll('.table-row').forEach((row, index) => {
-                        setTimeout(() => {
-                            row.classList.add('show');
-                        }, 100 * index);
-                    });
-                });
-
-                function showAccumulationData(markerId) {
-                    fetch(`/accumulation-data/${markerId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Debug
-                            console.log('Received data:', data);
-
-                            // Cek jika ada error
-                            if (data.status === 'error') {
-                                alert('Terjadi kesalahan: ' + data.error);
-                                return;
-                            }
-
-                            // Cek jika data kosong
-                            if (data.status === 'empty') {
-                                let emptyContent = `
-                                    <div class="accumulation-data-container" style="background-color: rgba(255, 255, 255, 0.95); border-radius: 8px; padding: 12px;">
-                                        <h3 style="color: #0095B7; margin: 0;">
-                                            Tidak ada data gangguan untuk unit ini
-                                        </h3>
-                                    </div>
-                                `;
-                                
-                                L.popup()
-                                    .setLatLng(map.getCenter())
-                                    .setContent(emptyContent)
-                                    .openOn(map);
-                                return;
-                            }
-
-                            let popupContent = `
-                                <div class="accumulation-data-container" style="position: relative; background-color: rgba(255, 255, 255, 0.95); border-radius: 8px; padding: 12px; max-width: 400px; width: 100%; box-sizing: border-box;">
-                                    <h3 style="color: #0095B7; margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid #0095B7; padding-bottom: 6px;">
-                                        ${data[0]?.unit_name || 'N/A'} - ${data[0]?.power_plant_name || 'N/A'}
-                                        <span style="float: right; background: #0095B7; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
-                                            ${data.length} Gangguan
-                                        </span>
-                                    </h3>
-                                    <div style="max-height: 400px; overflow-y: auto;">
-                                        <ul style="list-style-type: none; padding: 0; margin: 0;">
-                            `;
-
-                            data.forEach(log => {
-                                const tanggal = new Date(log.tanggal).toLocaleDateString('id-ID');
-                                popupContent += `
-                                    <li style="margin: 12px 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 12px;">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                            <div>
-                                                <strong style="color: #0095B7; font-size: 1.1rem;">${log.machine_name}</strong>
-                                                <div style="font-size: 0.8rem; color: #666; margin-top: 2px;">
-                                                    ${log.unit_name} - ${log.power_plant_name}
-                                                </div>
-                                            </div>
-                                            <span style="font-size: 0.8rem; color: #666;">${tanggal}</span>
-                                        </div>
-                                        <div style="font-size: 0.9rem; margin-top: 8px;">
-                                            <div style="margin-bottom: 4px;">
-                                                <span style="color: #666; font-weight: bold;">Komponen:</span> 
-                                                ${log.component || 'N/A'}
-                                            </div>
-                                            <div style="margin-bottom: 4px;">
-                                                <span style="color: #666; font-weight: bold;">Equipment:</span> 
-                                                ${log.equipment || 'N/A'}
-                                            </div>
-                                            <div>
-                                                <span style="color: #666; font-weight: bold;">Deskripsi:</span> 
-                                                ${log.deskripsi || 'N/A'}
-                                            </div>
-                                        </div>
-                                    </li>
-                                `;
-                            });
-
-                            popupContent += `
-                                        </ul>
-                                    </div>
-                                </div>
-                            `;
-
-                            L.popup({
-                                maxWidth: 400,
-                                className: 'custom-popup'
-                            })
-                                .setLatLng(map.getCenter())
-                                .setContent(popupContent)
-                                .openOn(map);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Terjadi kesalahan saat mengambil data');
-                        });
-                }
 
                 document.addEventListener('DOMContentLoaded', function() {
                     const navLinks = document.querySelectorAll('.nav-link');

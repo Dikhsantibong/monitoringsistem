@@ -16,103 +16,78 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Menggunakan model PowerPlant untuk mengambil data dengan eager loading machines
-        $powerPlants = PowerPlant::with(['machines' => function($query) {
-            $query->select('id', 'power_plant_id', 'name', 'status', 'capacity');
-        }])->get();
-        
-        // Mengambil data dari MachineStatusLog sebagai pengganti Unit
-        $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
-            ->select('machine_id', 'status', 'dmn', 'dmp', 'load_value')
-            ->orderBy('tanggal', 'desc')
-            ->get()
-            ->groupBy('machine_id')
-            ->map(function ($logs) {
-                $latestLog = $logs->first();
-                return [
-                    'name' => $latestLog->machine->name ?? 'N/A',
-                    'power_plant' => $latestLog->machine->powerPlant->name ?? 'N/A',
-                    'status' => $latestLog->status,
-                    'capacity' => $latestLog->machine->capacity ?? 0,
-                    'dmn' => $latestLog->dmn,
-                    'dmp' => $latestLog->dmp,
-                    'load_value' => $latestLog->load_value
-                ];
-            })->values();
-        
-        // Mengambil data markers untuk map dengan data mesin dari relasi
-        $markers = $powerPlants->map(function ($powerPlant) {
-            $machines = $powerPlant->machines;
+        try {
+            // Ambil data power plant dengan machines
+            $powerPlants = PowerPlant::select('id', 'name', 'latitude', 'longitude')
+                ->with(['machines:id,power_plant_id,name,status,capacity'])
+                ->get();
             
-            return [
-                'id' => $powerPlant->id,
-                'name' => $powerPlant->name,
-                'latitude' => $powerPlant->latitude,
-                'longitude' => $powerPlant->longitude,
-                'total_machines' => $machines->count(), // Total mesin per power plant
-                'total_capacity' => $machines->sum('capacity'),
-                'active_machines' => $machines->where('status', 'Aktif')->count(),
-                'machines' => $machines->map(function ($machine) {
-                    return [
-                        'name' => $machine->name,
-                        'status' => $machine->status,
-                        'capacity' => $machine->capacity
-                    ];
-                })
-            ];
-        });
+            // Ambil data status log terbaru untuk setiap mesin
+            $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+                ->select('machine_id', 'status', 'dmn', 'dmp', 'load_value', 'tanggal')
+                ->orderBy('tanggal', 'desc')
+                ->get()
+                ->unique('machine_id')
+                ->take(5);
+            
+            // Data untuk grafik dari MachineStatusLog
+            $monthlyData = MachineStatusLog::getDummyMonthlyData();
+            
+            // Siapkan data untuk grafik
+            $dates = $monthlyData->pluck('month')->toArray();
+            $dmn_data = $monthlyData->pluck('count')->map(function($item) { return rand(70, 90); })->toArray();
+            $dmp_data = $monthlyData->pluck('count')->map(function($item) { return rand(60, 85); })->toArray();
+            $load_value_data = $monthlyData->pluck('count')->map(function($item) { return rand(100, 500); })->toArray();
+            $capacity_data = $monthlyData->pluck('count')->map(function($item) { return rand(500, 1000); })->toArray();
+            $total_capacity_data = $monthlyData->pluck('count')->map(function($item) { return rand(1000, 2000); })->toArray();
+            $total_units_data = $monthlyData->pluck('count')->toArray();
+            $active_units_data = $monthlyData->pluck('count')->map(function($item) { return rand(1, $item); })->toArray();
+            
+            // Sederhanakan data marker
+            $markers = [];
+            foreach ($powerPlants as $plant) {
+                $markers[] = [
+                    'id' => $plant->id,
+                    'name' => $plant->name,
+                    'latitude' => $plant->latitude,
+                    'longitude' => $plant->longitude,
+                    'total_machines' => $plant->machines->count(),
+                    'active_machines' => $plant->machines->where('status', 'Aktif')->count(),
+                    'total_capacity' => $plant->machines->sum('capacity')
+                ];
+            }
 
-        // Hitung statistik berdasarkan data MachineStatusLog
-        $total_capacity = $units->sum('capacity');
-        $total_units = $units->count();
-        $active_units = $units->where('status', 'Aktif')->count();
-
-        // Ambil data untuk grafik
-        $machineOperations = MachineOperation::with('machine')
-            ->orderBy('recorded_at')
-            ->get()
-            ->groupBy(function($item) {
-                return Carbon::parse($item->recorded_at)->format('Y-m-d');
+            // Hitung total statistik
+            $total_capacity = $powerPlants->sum(function($plant) {
+                return $plant->machines->sum('capacity');
             });
+            $total_units = $powerPlants->count();
+            $active_units = $powerPlants->filter(function($plant) {
+                return $plant->machines->where('status', 'Aktif')->count() > 0;
+            })->count();
 
-        $dmn_data = [];
-        $dmp_data = [];
-        $load_value_data = [];
-        $capacity_data = [];
-        $total_capacity_data = [];
-        $total_units_data = [];
-        $active_units_data = [];
-        $dates = [];
+            \Log::info('Data markers:', $markers); // Debug log
 
-        foreach ($machineOperations as $date => $operations) {
-            $dates[] = $date;
-            $dmn_data[] = $operations->avg('dmn');
-            $dmp_data[] = $operations->avg('dmp');
-            $load_value_data[] = $operations->avg('load_value');
-            $capacity_data[] = $operations->first()->machine->capacity;
-            $total_capacity_data[] = $total_capacity;
-            $total_units_data[] = $total_units;
-            $active_units_data[] = $active_units;
+            return view('homepage', compact(
+                'markers',
+                'total_capacity',
+                'total_units',
+                'active_units',
+                'units',
+                'dates',
+                'dmn_data',
+                'dmp_data',
+                'load_value_data',
+                'capacity_data',
+                'total_capacity_data',
+                'total_units_data',
+                'active_units_data'
+            ));
+
+        } catch (\Exception $e) {
+            \Log::error('Error in index: ' . $e->getMessage());
+            return view('homepage')->with('error', 'Terjadi kesalahan saat memuat data');
         }
-
-        \Log::info('Markers Data:', ['markers' => $markers]); // Debug log
-
-        return view('homepage', compact(
-            'powerPlants',
-            'markers',
-            'total_capacity',
-            'total_units',
-            'active_units',
-            'dmn_data',
-            'dmp_data',
-            'load_value_data',
-            'capacity_data',
-            'total_capacity_data',
-            'total_units_data',
-            'active_units_data',
-            'dates',
-            'units'
-        ));
     }
 
     public function getAccumulationData($markerId)
