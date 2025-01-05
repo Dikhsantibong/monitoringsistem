@@ -71,7 +71,7 @@
             <div class="dashboard-card p-4 rounded-lg col-span-2 overflow-auto">
                 <h3 class="text-lg">Data Mesin</h3>
                 <div class="mt-2 h-[200px] overflow-y-auto">
-                    <table class="w-full  border-gray-300">
+                    <table class="w-full border-gray-300">
                         <thead class="bg-gray-200 sticky top-0">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">No</th>
@@ -81,7 +81,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($machineData as $index => $machine)
+                            @php
+                                // Data statis untuk contoh
+                                $dummyMachines = [
+                                    ['type' => 'Mesin A', 'unit_name' => 'Unit 1', 'status' => 'Operasi'],
+                                    ['type' => 'Mesin B', 'unit_name' => 'Unit 2', 'status' => 'Standby'],
+                                    ['type' => 'Mesin C', 'unit_name' => 'Unit 3', 'status' => 'Gangguan'],
+                                    ['type' => 'Mesin D', 'unit_name' => 'Unit 4', 'status' => 'Operasi'],
+                                    ['type' => 'Mesin E', 'unit_name' => 'Unit 5', 'status' => 'Standby']
+                                ];
+                            @endphp
+
+                            @forelse($dummyMachines as $index => $machine)
                                 <tr class="hover:bg-blue-800">
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $index + 1 }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['type'] }}</td>
@@ -97,7 +108,9 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">Tidak ada data mesin</td>
+                                    <td colspan="4" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                        Tidak ada data mesin
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>

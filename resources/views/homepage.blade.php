@@ -171,6 +171,253 @@
         .page-visible {
             opacity: 1;
         }
+
+        /* Navbar Styles */
+        .nav-link {
+            color: #1a202c;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #4299e1;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: #4299e1;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #4299e1;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Mobile Menu Styles */
+        .nav-link-mobile {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #1a202c;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link-mobile:hover {
+            background-color: #f7fafc;
+            color: #4299e1;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .nav-link {
+                color: #fff;
+            }
+            
+            .nav-link-mobile {
+                color: #fff;
+            }
+
+            .nav-link-mobile:hover {
+                background-color: #2d3748;
+            }
+        }
+
+        /* Navbar Background */
+        .nav-background {
+            background-color: #1a1a1a; /* Dark background */
+            background-image: linear-gradient(to right, #1a1a1a, #2d3748);
+        }
+
+        /* Navbar Styles */
+        .nav-link {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #4299e1;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 50%;
+            background-color: #4299e1;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #4299e1;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Mobile Menu Styles */
+        .nav-link-mobile {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link-mobile:hover {
+            background-color: #2d3748;
+            color: #4299e1;
+            border-left-color: #4299e1;
+        }
+
+        /* Dark mode is now default */
+        .nav-link, .nav-link-mobile {
+            color: #ffffff;
+        }
+
+        .nav-link-mobile:hover {
+            background-color: #2d3748;
+        }
+
+        /* Glassmorphism effect */
+        .nav-background {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* Shadow effect */
+        .shadow-lg {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Tambahan style untuk tombol login */
+        .login-button {
+            background-color: #4299e1;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .login-button:hover {
+            background-color: #3182ce;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Style untuk login di mobile menu */
+        .login-mobile {
+            background-color: #4299e1;
+            color: white !important;
+            border-radius: 0.375rem;
+            margin: 0.5rem 1rem;
+        }
+
+        .login-mobile:hover {
+            background-color: #3182ce !important;
+            border-left-color: transparent !important;
+        }
+
+        /* Memastikan icon font-awesome sejajar dengan teks */
+        .fas {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Adjust body and main content positioning */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #ffee; /* Dark background for body */
+        }
+
+        main {
+            margin-top: 80px; /* Sesuaikan dengan tinggi navbar */
+        }
+
+        /* Hero section adjustments */
+        .hexagon-background {
+            position: relative;
+            margin-top: -80px; /* Negative margin to pull content up */
+            padding-top: 80px; /* Add padding to compensate for navbar */
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark overlay */
+        }
+
+        /* Hexagon grid adjustments */
+        .hexagon {
+            margin-top: -20px; /* Pull hexagons up slightly */
+        }
+
+        /* Additional spacing adjustments */
+        .container {
+            padding-top: 0;
+        }
+
+        /* Ensure content flows smoothly */
+        #map {
+            margin-top: 60px; /* Reduce top margin of map section */
+        }
+
+        /* Navbar adjustments for larger logo */
+        .nav-background {
+            background-color: #1a1a1a;
+            background-image: linear-gradient(to right, #1a1a1a, #2d3748);
+        }
+
+        nav .container {
+            padding: 0.5rem 1rem; /* Tambah padding untuk memastikan logo tidak terlalu dekat dengan tepi */
+        }
+
+        /* Adjust navbar height to accommodate larger logo */
+        nav .flex.justify-between {
+            height: 4.5rem; /* Tinggi navbar disesuaikan (72px) */
+        }
+
+        /* Ensure vertical alignment with larger logo */
+        .flex.items-center {
+            gap: 1rem; /* Spacing antara logo dan menu items */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            nav .flex.justify-between {
+                height: 4rem; /* Sedikit lebih kecil di mobile (64px) */
+            }
+        }
     </style>
 @endsection
 
@@ -181,49 +428,74 @@
     <!-- Wrap content in transition div -->
     <div id="page-content" class="page-transition">
         <div class="w-full">
-            <nav class="bg-[#0095B7] border-gray-200 dark:bg-[#0095B7] fixed w-full top-0 z-50">
-                <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4">
-                    <a href="{{ url('/') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-                        <img src="{{ asset('logo/navlogo.png') }}" class="h-10" alt="Logo" />
-                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
-                    </a>
-                    <div class="flex items-center space-x-6 rtl:space-x-reverse">
-                        <a href="tel:+6282299999999" class="text-base text-white dark:text-white hover:underline">(+62) 822 9999 9999 </a>
-                        <a href="{{ route('login') }}" class="text-base text-white dark:text-white hover:underline relative z-10" tabindex="0"><i class="fas fa-user-circle"></i> Login</a>
+            <!-- Navbar -->
+            <nav class="fixed w-full top-0 z-50">
+                <div class="nav-background shadow-lg">
+                    <div class="container mx-auto px-4">
+                        <div class="flex justify-between items-center h-16">
+                            <!-- Logo -->
+                            <div class="flex items-center">
+                                <a href="#" class="flex items-center">
+                                    <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="h-12 md:h-14">
+                                </a>
+                            </div>
+
+                            <!-- Menu Desktop -->
+                            <div class="hidden md:flex items-center">
+                                <ul class="flex space-x-8">
+                                    <li><a href="#" class="nav-link">Home</a></li>
+                                    <li><a href="#map" class="nav-link">Peta Pembangkit</a></li>
+                                    <li><a href="#grafik" class="nav-link">Grafik Kinerja</a></li>
+                                    <li><a href="#live-data" class="nav-link">Live Data Unit Operasional</a></li>
+                                    <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
+                                    <!-- Tambah Menu Login -->
+                                    <li>
+                                        <a href="{{ route('login') }}" class="login-button">
+                                            <i class="fas fa-user mr-2"></i> Login
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Menu Mobile -->
+                            <div class="md:hidden">
+                                <button id="mobile-menu-button" class="text-white">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Menu -->
+                        <div id="mobile-menu" class="hidden md:hidden pb-4">
+                            <ul class="space-y-4">
+                                <li><a href="#" class="nav-link-mobile">Home</a></li>
+                                <li><a href="#map" class="nav-link-mobile">Peta Pembangkit</a></li>
+                                <li><a href="#grafik" class="nav-link-mobile">Grafik Kinerja</a></li>
+                                <li><a href="#live-data" class="nav-link-mobile">Live Data Unit Operasional</a></li>
+                                <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link-mobile">Dashboard Pemantauan</a></li>
+                                <!-- Tambah Menu Login di Mobile -->
+                                <li>
+                                    <a href="{{ route('login') }}" class="nav-link-mobile login-mobile">
+                                        <i class="fas fa-user mr-2"></i> Login
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </nav>
-            <nav class="bg-gray-50 dark:bg-gray-700 fixed w-full top-[72px] z-40 mt-3 ">
-                <div class="max-w-screen-xl px-4 py-3 mx-auto">
-                    <div class="flex items-center">
-                        <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
-                            <li>
-                                <a href="#" class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200" aria-current="page">Home</a>
-                            </li>
-                            <li>
-                                <a href="#map" class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">Peta Pembangkit</a>
-                            </li>
-                            <li>
-                                <a href="#grafik" class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">Grafik Kinerja</a>
-                            </li>
-                            <li>
-                                <a href="#live-data" class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">Live Data Unit Operasional</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('dashboard.pemantauan') }}" class="nav-link text-gray-900 dark:text-white hover:underline cursor-pointer transition-all duration-200">Dashboard Pemantauan</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-            <div class="h-[120px]"></div>
+            <div class="h-[80px]"></div>
             <div class="w-full">
                 {{-- Hero section --}}
-                <div class="h-screen flex flex-col justify-center items-center hexagon-background">
+                <div class="h-[calc(100vh-80px)] flex flex-col justify-center items-center hexagon-background">
                     <!-- Overlay -->
-                    <div class="absolute inset-0 "></div>
+                    <div class="absolute inset-0"></div>
                     <!-- Header -->
-                    <h2 class="text-6xl font-bold mb-4 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000;">M<i class="fas fa-helmet-safety"></i>NDAY  <br>MONITORING DAILY</h2>
+                    <h2 class="text-6xl font-bold mb-4 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000;">
+                        M<i class="fas fa-helmet-safety"></i>NDAY <br>MONITORING DAILY
+                    </h2>
                     <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
                         <div>
                             <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
@@ -260,12 +532,12 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {{-- Map --}}
-                <div id="map"
-                    style="height: 500px; border-radius: 20px; position: relative; margin: 100px 30px 0; padding: 0; "
-                    class="z-0">
-                </div>
+            {{-- Map --}}
+            <div id="map"
+                style="height: 500px; border-radius: 20px; position: relative; margin: 100px 30px 0; padding: 0; "
+                class="z-0">
             </div>
 
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

@@ -26,14 +26,8 @@ class DashboardPemantauanController extends Controller
         ];
 
         try {
-            // Set koneksi database
-            config(['database.default' => 'u478221055_up_kendari']);
-            
-            // Cek koneksi database
-            DB::connection('u478221055_up_kendari')->getPdo();
-
             // Query data
-            $machines = Machine::on('u478221055_up_kendari')
+            $machines = Machine::query()
                 ->with(['operations', 'powerPlant', 'statusLogs'])
                 ->select('machines.*')
                 ->join('machine_operations', 'machines.id', '=', 'machine_operations.machine_id')
@@ -43,8 +37,7 @@ class DashboardPemantauanController extends Controller
 
             // Transform data
             $viewData['machineData'] = $machines->map(function ($machine) {
-                $latestStatus = MachineStatusLog::on('u478221055_up_kendari')
-                    ->where('machine_id', $machine->id)
+                $latestStatus = MachineStatusLog::where('machine_id', $machine->id)
                     ->latest('tanggal')
                     ->first();
 
@@ -67,15 +60,13 @@ class DashboardPemantauanController extends Controller
             $viewData['error'] = 'Terjadi kesalahan saat mengambil data. Silakan coba lagi nanti.';
         }
 
-        // Return view dengan data yang sudah dipersiapkan
         return view('dashboard_pemantauan', $viewData);
     }
 
     private function getMachineStatistics()
     {
         try {
-            $latestStatuses = MachineStatusLog::on('u478221055_up_kendari')
-                ->select('machine_id', 'status')
+            $latestStatuses = MachineStatusLog::select('machine_id', 'status')
                 ->whereIn('id', function($query) {
                     $query->select(DB::raw('MAX(id)'))
                         ->from('machine_status_logs')
