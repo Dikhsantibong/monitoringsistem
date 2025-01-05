@@ -13,54 +13,37 @@ class DashboardPemantauanController extends Controller
 {
     public function index()
     {
-        // Inisialisasi default values
-        $viewData = [
-            'machineData' => collect([]),
-            'error' => null,
-            'statistics' => [
-                'total' => 0,
-                'active' => 0,
-                'maintenance' => 0,
-                'percentage' => 0
-            ]
-        ];
-
         try {
-            // Query data
-            $machines = Machine::query()
-                ->with(['operations', 'powerPlant', 'statusLogs'])
-                ->select('machines.*')
-                ->join('machine_operations', 'machines.id', '=', 'machine_operations.machine_id')
-                ->join('power_plants', 'machines.power_plant_id', '=', 'power_plants.id')
-                ->groupBy('machines.id')
-                ->get();
+            // Query data mesin dengan relasi yang dibutuhkan
+            $machines = Machine::with(['powerPlant', 'statusLogs' => function($query) {
+                $query->latest('created_at');
+            }])
+            ->select('machines.*')
+            ->get();
 
-            // Transform data
-            $viewData['machineData'] = $machines->map(function ($machine) {
-                $latestStatus = MachineStatusLog::where('machine_id', $machine->id)
-                    ->latest('tanggal')
-                    ->first();
-
+            // Transform data untuk tampilan
+            $machineData = $machines->map(function ($machine) {
+                $latestStatus = $machine->statusLogs->first();
+                
                 return [
                     'id' => $machine->id,
-                    'type' => $machine->name,
-                    'unit_name' => $machine->powerPlant->name,
-                    'status' => $latestStatus ? $latestStatus->status : 'unknown',
-                    'latest_operation' => $machine->operations()
-                        ->latest('recorded_at')
-                        ->first()
+                    'type' => $machine->type ?? $machine->name,
+                    'unit_name' => $machine->powerPlant->name ?? 'N/A',
+                    'status' => $latestStatus ? $latestStatus->status : 'Unknown',
+                    'updated_at' => $latestStatus ? $latestStatus->created_at : null,
+                    'serial_number' => $machine->serial_number ?? 'N/A'
                 ];
             });
 
-            // Get statistics
-            $viewData['statistics'] = $this->getMachineStatistics();
+            return view('dashboard_pemantauan', compact('machineData'));
 
         } catch (\Exception $e) {
             \Log::error('Dashboard Pemantauan Error: ' . $e->getMessage());
-            $viewData['error'] = 'Terjadi kesalahan saat mengambil data. Silakan coba lagi nanti.';
+            return view('dashboard_pemantauan', [
+                'machineData' => collect([]),
+                'error' => 'Terjadi kesalahan saat mengambil data.'
+            ]);
         }
-
-        return view('dashboard_pemantauan', $viewData);
     }
 
     private function getMachineStatistics()

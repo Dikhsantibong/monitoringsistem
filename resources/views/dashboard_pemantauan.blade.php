@@ -77,34 +77,16 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Type</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Nama Mesin Unit</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Serial Number</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                // Data statis untuk contoh
-                                $dummyMachines = [
-                                    ['type' => 'Mesin A', 'unit_name' => 'Unit 1', 'status' => 'Operasi'],
-                                    ['type' => 'Mesin B', 'unit_name' => 'Unit 2', 'status' => 'Standby'],
-                                    ['type' => 'Mesin C', 'unit_name' => 'Unit 3', 'status' => 'Gangguan'],
-                                    ['type' => 'Mesin D', 'unit_name' => 'Unit 4', 'status' => 'Operasi'],
-                                    ['type' => 'Mesin E', 'unit_name' => 'Unit 5', 'status' => 'Standby']
-                                ];
-                            @endphp
-
-                            @forelse($dummyMachines as $index => $machine)
+                            @forelse($machineData as $index => $machine)
                                 <tr class="hover:bg-blue-800">
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $index + 1 }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['type'] }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['unit_name'] }}</td>
-                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">
-                                        <span class="px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            {{ $machine['status'] === 'Operasi' ? 'bg-green-500' : 
-                                               ($machine['status'] === 'Standby' ? 'bg-yellow-500' : 
-                                               ($machine['status'] === 'Gangguan' ? 'bg-red-500' : 'bg-gray-500')) }}">
-                                            {{ ucfirst($machine['status']) }}
-                                        </span>
-                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['serial_number'] ?? 'N/A' }}</td>
                                 </tr>
                             @empty
                                 <tr>
