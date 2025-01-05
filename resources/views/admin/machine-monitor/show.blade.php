@@ -114,15 +114,15 @@
                     <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                         <thead class="bg-[#0A749B]" style="height: 50px;">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase">No</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase ">Nama Mesin</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase ">Tipe</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase">No. Seri</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase ">Unit</th>
-                                <th class="px-6 py-3 text-left text-xa font-medium text-white uppercase">DMN</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Nama Mesin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tipe</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No. Seri</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMN</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMP</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium  text-white uppercase">Beban (MW)</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-white uppercase ">Aksi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Beban (MW)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                             </tr>
                         </thead>
                         
