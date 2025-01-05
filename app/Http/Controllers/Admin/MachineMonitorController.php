@@ -264,23 +264,40 @@ class MachineMonitorController extends Controller
         return view('admin.machine-monitor.crud');
     }
     
-    public function show()
+    public function show(Request $request)
     {
         $query = Machine::with(['powerPlant', 'operations' => function($query) {
-            $query->latest('recorded_at')->take(1);
+            $query->latest('recorded_at')->first();
         }]);
 
         // Filter berdasarkan power plant jika ada
-        if (request()->has('power_plant_id')) {
-            $query->where('power_plant_id', request('power_plant_id'));
+        if ($request->has('power_plant_id')) {
+            $query->where('power_plant_id', $request->power_plant_id);
+        }
+
+        // Pencarian
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('type', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('serial_number', 'LIKE', "%{$searchTerm}%")
+                  ->orWhereHas('powerPlant', function($q) use ($searchTerm) {
+                      $q->where('name', 'LIKE', "%{$searchTerm}%");
+                  });
+            });
         }
 
         $machines = $query->orderBy('id')->paginate(10);
         
+        if ($request->ajax()) {
+            return view('admin.machine-monitor.table-body', compact('machines'))->render();
+        }
+
         return view('admin.machine-monitor.show', compact('machines'));
     }
 
-    public function edit($id)
+    public function edit($id)   
     {
         $item = Machine::with(['operations' => function($query) {
             $query->latest('recorded_at');

@@ -528,33 +528,78 @@ document.querySelectorAll('.edit-icon').forEach(icon => {
 });
 
 function searchMachines() {
-    // Tampilkan loader dan sembunyikan data
+    const searchTerm = document.getElementById('searchInput').value;
+    const url = new URL(window.location.href);
+    
+    // Reset halaman ke 1 saat melakukan pencarian
+    url.searchParams.delete('page');
+    url.searchParams.set('search', searchTerm);
+
+    // Tampilkan loader
     document.getElementById('tableLoader').style.display = 'table-row-group';
     document.getElementById('machineTable').style.display = 'none';
 
-    setTimeout(() => {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const rows = document.querySelectorAll('#machineTable tr');
-
-        // Tampilkan data dan sembunyikan loader
-        document.getElementById('tableLoader').style.display = 'none';
-        document.getElementById('machineTable').style.display = 'table-row-group';
-
-        rows.forEach(row => {
-            const machineName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-            const unitName = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
             
-            if (machineName.includes(searchInput) || unitName.includes(searchInput)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
+            // Update tbody dengan hasil pencarian
+            const newTbody = doc.querySelector('#machineTable');
+            if (newTbody) {
+                document.getElementById('machineTable').innerHTML = newTbody.innerHTML;
+                document.getElementById('machineTable').style.display = 'table-row-group';
+            }
+
+            // Update pagination
+            const newPagination = doc.querySelector('.mt-4.flex.justify-between.items-center');
+            const currentPagination = document.querySelector('.mt-4.flex.justify-between.items-center');
+            if (newPagination && currentPagination) {
+                currentPagination.innerHTML = newPagination.innerHTML;
+            }
+
+            // Sembunyikan loader
+            document.getElementById('tableLoader').style.display = 'none';
+
+            // Update URL tanpa reload
+            window.history.pushState({}, '', url);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Sembunyikan loader jika terjadi error
+            document.getElementById('tableLoader').style.display = 'none';
+            document.getElementById('machineTable').style.display = 'table-row-group';
+        });
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(), wait);
+        };
+    }
+
+    // Event listener untuk input pencarian
+    if (searchInput) {
+        // Pencarian otomatis setelah mengetik (dengan debounce)
+        searchInput.addEventListener('input', debounce(searchMachines, 500));
+        
+        // Pencarian saat menekan Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchMachines();
             }
         });
-
-        // Update "Menampilkan" text
-        updateDisplayingText();
-    }, 500);
-}
+    }
+});
 
 function updateDisplayingText() {
     const visibleRows = document.querySelectorAll('tbody tr:not([style*="display: none"])').length;
