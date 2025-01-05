@@ -22,13 +22,26 @@ class HomeController extends Controller
                 ->with(['machines:id,power_plant_id,name,status,capacity'])
                 ->get();
             
-            // Ambil data status log terbaru untuk setiap mesin
+            // Ambil data status log hari ini
             $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
-                ->select('machine_id', 'status', 'dmn', 'dmp', 'load_value', 'tanggal')
-                ->orderBy('tanggal', 'desc')
+                ->select('machine_id', 'status', 'dmn', 'dmp', 'load_value', 'tanggal', 'created_at')
+                ->whereDate('created_at', Carbon::today())
+                ->orderBy('created_at', 'desc')
                 ->get()
-                ->unique('machine_id')
-                ->take(5);
+                ->unique('machine_id');
+
+            // Jika tidak ada data hari ini, ambil data terakhir
+            if ($units->isEmpty()) {
+                $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+                    ->select('machine_id', 'status', 'dmn', 'dmp', 'load_value', 'tanggal', 'created_at')
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->unique('machine_id')
+                    ->take(5);
+            }
+
+            // Gunakan created_at untuk lastUpdate
+            $lastUpdate = $units->max('created_at');
             
             // Data untuk grafik dari MachineStatusLog
             $monthlyData = MachineStatusLog::getDummyMonthlyData();
@@ -74,6 +87,7 @@ class HomeController extends Controller
                 'total_units',
                 'active_units',
                 'units',
+                'lastUpdate',
                 'dates',
                 'dmn_data',
                 'dmp_data',

@@ -35,6 +35,14 @@ class MachineStatusLog extends Model
         'target_selesai' => 'date'
     ];
 
+    protected $dates = [
+        'tanggal',
+        'tanggal_mulai',
+        'target_selesai',
+        'created_at',
+        'updated_at'
+    ];
+
     // Relasi ke model Machine
     public function machine()
     {
@@ -92,5 +100,11 @@ class MachineStatusLog extends Model
     public static function getDummyActiveIssues()
     {
         return 15; // Contoh jumlah gangguan aktif
+    }
+
+    // Tambahkan accessor untuk format waktu yang lebih readable
+    public function getFormattedCreatedAtAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('H:i:s d/m/Y') : 'N/A';
     }
 } 
