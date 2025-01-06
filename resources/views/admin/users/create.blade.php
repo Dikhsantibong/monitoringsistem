@@ -1,172 +1,146 @@
 @extends('layouts.app')
 @section('content')
 <div class="flex h-screen bg-gray-50 overflow-auto">
-   <!-- Sidebar -->
-   <aside class="w-64 bg-[#0A749B] shadow-md">
-    <div class="p-4">
-        <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
-    </div>
-    <nav class="mt-4">
-        <a href="{{ route('admin.dashboard') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-home mr-3"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="{{ route('admin.score-card.index') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-clipboard-list mr-3"></i>
-            <span>Score Card Daily</span>
-        </a>
-        <a href="{{ route('admin.daftar_hadir.index') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-list mr-3"></i>
-            <span>Daftar Hadir</span>
-        </a>
-        <a href="{{ route('admin.pembangkit.ready') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-check mr-3"></i>
-            <span>Kesiapan Pembangkit</span>
-        </a>
-        <a href="{{ route('admin.laporan.sr_wo') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-file-alt mr-3"></i>
-            <span>Laporan SR/WO</span>
-        </a>
-        <a href="{{ route('admin.machine-monitor') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-cogs mr-3"></i>
-            <span>Monitor Mesin</span>
-        </a>
-        <a href="{{ route('admin.users') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-users mr-3"></i>
-            <span>Manajemen Pengguna</span>
-        </a>
-        <a href="{{ route('admin.meetings') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-chart-bar mr-3"></i>
-            <span>Laporan Rapat</span>
-        </a>
-        <a href="{{ route('admin.settings') }}"
-            class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-            <i class="fas fa-cog mr-3"></i>
-            <span>Pengaturan</span>
-        </a>
-    </nav>
-</aside>    
+    <!-- Sidebar -->
+    @include('components.sidebar')
+
     <!-- Main Content -->
-   <div class="flex-1 overflow-x-hidden overflow-y-auto">
-       <div class="container mx-auto px-6 py-8">
-           <header class="bg-white shadow-sm">
-               <div class="flex justify-between items-center px-6 py-4">
-                   <h1 class="text-2xl font-semibold text-gray-800">Tambah Pengguna Baru</h1>
-               </div>
-               <x-admin-breadcrumb :breadcrumbs="[
-                   ['name' => 'Manajemen Pengguna', 'url' => route('admin.users')],
-                   ['name' => 'Tambah Pengguna', 'url' => null]
-               ]" />
-           </header>
+    <div class="flex-1 overflow-x-hidden overflow-y-auto">
+        <!-- Header -->
+        <header class="bg-white shadow-sm sticky top-0 z-20">
+            <div class="flex justify-between items-center px-6 py-3">
+                <div class="flex items-center gap-x-3">
+                    <h1 class="text-xl font-semibold text-gray-800">Tambah Pengguna Baru</h1>
+                </div>
+                @include('components.timer')
+                <div class="relative">
+                    <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                        <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                             class="w-7 h-7 rounded-full mr-2">
+                        <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                        <i class="fas fa-caret-down ml-2 text-gray-600"></i>
+                    </button>
+                    <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                        <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                            @csrf
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Breadcrumbs -->
+        <div class="mt-3">
+            <x-admin-breadcrumb :breadcrumbs="[
+                ['name' => 'Manajemen Pengguna', 'url' => route('admin.users')],
+                ['name' => 'Tambah Pengguna', 'url' => null]
+            ]" />
+        </div>
+
+        <!-- Konten utama -->
+        <div class="container mx-auto px-6 py-8">
+            <h3 class="text-gray-700 text-3xl font-medium">Tambah Pengguna Baru</h3>
+
             <div class="mt-8">
-               <form action="{{ route('admin.users.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                   @csrf
+                <form id="createUserForm" action="{{ route('admin.users.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                    @csrf
+
+                    <!-- Nama -->
                     <div class="mb-4">
-                       <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
-                           Nama
-                       </label>
-                       <input type="text" 
-                              name="name" 
-                              id="name" 
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('name') border-red-500 @enderror"
-                              value="{{ old('name') }}"
-                              required>
-                       @error('name')
-                           <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                       @enderror
-                   </div>
-                    <div class="mb-4">
-                       <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
-                           Email
-                       </label>
-                       <input type="email" 
-                              name="email" 
-                              id="email" 
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('email') border-red-500 @enderror"
-                              value="{{ old('email') }}"
-                              required>
-                       @error('email')
-                           <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                       @enderror
-                   </div>
-                    <div class="mb-4">
-                       <label class="block text-gray-700 text-sm font-bold mb-2" for="role">
-                           Role
-                       </label>
-                       <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                               id="role" 
-                               name="role"
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+                            Nama <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               name="name" 
+                               id="name" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('name') border-red-500 @enderror"
+                               value="{{ old('name') }}"
                                required>
-                           <option value="user">User</option>
-                           <option value="admin">Admin</option>
-                       </select>
-                   </div>
+                        @error('name')
+                            <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Email -->
                     <div class="mb-4">
-                       <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
-                           Password
-                       </label>
-                       <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('password') border-red-500 @enderror"
-                           id="password" 
-                           type="password" 
-                           name="password"
-                           required>
-                       @error('password')
-                           <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                       @enderror
-                   </div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                            Email <span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" 
+                               name="email" 
+                               id="email" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('email') border-red-500 @enderror"
+                               value="{{ old('email') }}"
+                               required>
+                        @error('email')
+                            <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Role -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="role">
+                            Role <span class="text-red-500">*</span>
+                        </label>
+                        <select name="role" 
+                                id="role" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                required>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" 
+                               name="password" 
+                               id="password" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 @error('password') border-red-500 @enderror"
+                               required>
+                        @error('password')
+                            <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Konfirmasi Password -->
                     <div class="mb-6">
-                       <label class="block text-gray-700 text-sm font-bold mb-2" for="password_confirmation">
-                           Konfirmasi Password
-                       </label>
-                       <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                           id="password_confirmation" 
-                           type="password" 
-                           name="password_confirmation"
-                           required>
-                   </div>
-                    <div class="flex items-center justify-between">
-                       <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
-                           type="submit" onclick="return Swal.fire({
-                               title: 'Konfirmasi',
-                               text: 'Apakah Anda yakin ingin menambahkan pengguna baru?',
-                               icon: 'question',
-                               showCancelButton: true,
-                               confirmButtonText: 'Ya, Tambahkan',
-                               cancelButtonText: 'Batal',
-                               reverseButtons: true
-                           }).then((result) => {
-                               if (result.isConfirmed) {
-                                   return true;
-                               } else {
-                                   return false;
-                               }
-                           });">
-                           Tambah Pengguna
-                       </button>
-                       <a href="{{ route('admin.users') }}" 
-                          class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                           Batal
-                       </a>
-                   </div>
-               </form>
-           </div>
-       </div>
-   </div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="password_confirmation">
+                            Konfirmasi Password <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" 
+                               name="password_confirmation" 
+                               id="password_confirmation" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                               required>
+                    </div>
+
+                    <!-- Tombol Submit -->
+                    <div class="flex items-center justify-end">
+                        <a href="{{ route('admin.users') }}" 
+                           class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i> Batal
+                        </a>
+                        <button type="submit" 
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center ml-4">
+                            <i class="fas fa-save mr-2"></i> Simpan Pengguna
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
-@endsection
-
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.querySelector('form').addEventListener('submit', function(e) {
+document.getElementById('createUserForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     Swal.fire({
@@ -179,7 +153,6 @@ document.querySelector('form').addEventListener('submit', function(e) {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
-            // Tampilkan loading
             Swal.fire({
                 title: 'Memproses...',
                 allowOutsideClick: false,
@@ -187,32 +160,31 @@ document.querySelector('form').addEventListener('submit', function(e) {
                     Swal.showLoading();
                 }
             });
-            
-            // Submit form
             this.submit();
         }
     });
 });
 
-// Tampilkan pesan sukses jika ada
 @if(session('success'))
     Swal.fire({
+        icon: 'success',
         title: 'Berhasil!',
         text: '{{ session("success") }}',
-        icon: 'success',
-        timer: 3000,
-        showConfirmButton: false
+        showConfirmButton: false,
+        timer: 1500
     });
 @endif
 
-// Tampilkan pesan error jika ada
 @if(session('error'))
     Swal.fire({
+        icon: 'error',
         title: 'Error!',
         text: '{{ session("error") }}',
-        icon: 'error',
         confirmButtonText: 'OK'
     });
 @endif
 </script>
 @endpush
+
+<script src="{{ asset('js/toggle.js') }}"></script>
+@endsection

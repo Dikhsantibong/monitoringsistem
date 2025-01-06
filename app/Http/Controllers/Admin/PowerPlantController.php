@@ -75,4 +75,33 @@ class PowerPlantController extends Controller
                 ->with('error', 'Gagal menambahkan unit pembangkit. ' . $e->getMessage());
         }
     }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            // Validasi input
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
+            ]);
+
+            // Cari power plant berdasarkan ID
+            $powerPlant = PowerPlant::findOrFail($id);
+
+            // Update data
+            $powerPlant->update($validated);
+
+            // Redirect dengan pesan sukses
+            return redirect()
+                ->route('admin.power-plants.index')
+                ->with('success', 'Unit pembangkit berhasil diperbarui');
+
+        } catch (\Exception $e) {
+            // Redirect dengan pesan error
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui unit pembangkit: ' . $e->getMessage());
+        }
+    }
 } 

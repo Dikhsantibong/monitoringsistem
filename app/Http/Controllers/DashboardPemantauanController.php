@@ -30,7 +30,7 @@ class DashboardPemantauanController extends Controller
                 ]
             ];
 
-            // Data untuk grafik kondisi pemeliharaan
+            // Data untuk grafik kondisi pemeliharaan   
             $maintenanceData = [
                 'mothballed' => [
                     'total' => 100,
@@ -73,7 +73,8 @@ class DashboardPemantauanController extends Controller
                     'type' => $machine->type ?? 'N/A',
                     'unit_name' => $machine->powerPlant->name ?? 'N/A',
                     'status' => $latestStatus ? $latestStatus->status : 'N/A',
-                    'updated_at' => $latestStatus ? $latestStatus->created_at : null
+                    'updated_at' => $latestStatus ? $latestStatus->created_at : null,
+                    'serial_number' => $machine->serial_number ?? 'N/A'
                 ];
             });
 
