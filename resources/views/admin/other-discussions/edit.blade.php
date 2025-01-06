@@ -279,15 +279,11 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     e.preventDefault();
     
     const formData = new FormData(this);
-    const submitButton = this.querySelector('button[type="submit"]');
     
-    submitButton.disabled = true;
-    
-    fetch(this.action, {
+    fetch('{{ route('admin.other-discussions.update', $discussion->id) }}', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: formData
     })
@@ -301,20 +297,16 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
                 showConfirmButton: false,
                 timer: 1500
             }).then(() => {
-                window.location.href = data.redirect_url;
+                window.location.href = '{{ route('admin.other-discussions.index') }}';
             });
-        } else {
-            throw new Error(data.message);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: error.message || 'Terjadi kesalahan saat menyimpan data'
+            text: 'Terjadi kesalahan saat menyimpan data'
         });
-        submitButton.disabled = false;
     });
 });
 </script>

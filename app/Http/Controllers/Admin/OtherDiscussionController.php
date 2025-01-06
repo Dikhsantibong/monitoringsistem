@@ -181,18 +181,27 @@ class OtherDiscussionController extends Controller
 
             $discussion->update($validated);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil diperbarui',
-                'redirect_url' => route('admin.other-discussions.index')
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data berhasil diperbarui'
+                ]);
+            }
+
+            return redirect()->route('admin.other-discussions.index')
+                            ->with('success', 'Data berhasil diperbarui');
 
         } catch (\Exception $e) {
             \Log::error('Error in update: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
-            ], 500);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat memperbarui data'
+                ], 500);
+            }
+
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui data');
         }
     }
 
