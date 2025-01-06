@@ -435,7 +435,7 @@
             // Ambil data dari PHP dan konversi ke format yang sesuai untuk Chart.js
             const powerPlantData = {!! json_encode($powerPlants->map(function($powerPlant) {
                 return [
-                    'name' => $powerPlant->id,
+                    'name' => $powerPlant->name,
                     'issues' => $powerPlant->machines->sum(function($machine) {
                         return $machine->statusLogs()->count();
                     }),
