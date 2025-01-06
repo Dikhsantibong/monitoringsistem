@@ -101,7 +101,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-32">PIC</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-24">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-32">Deadline</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-24">Aksi</th>
+                                {{-- <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-24">Aksi</th> --}}
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-200">
@@ -125,7 +125,7 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-2 whitespace-nowrap border">{{ $discussion->deadline->format('d/m/Y') }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border">
+                                {{-- <td class="px-4 py-2 whitespace-nowrap border">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('admin.other-discussions.edit', $discussion->id) }}" 
                                            class="text-white btn bg-indigo-500 hover:bg-indigo-600 rounded-lg px-3 py-1">
@@ -136,7 +136,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
-                                </td>
+                                </td> --}}
                             </tr>
                             @empty
                             <tr>
