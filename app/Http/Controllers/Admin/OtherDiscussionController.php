@@ -8,9 +8,35 @@ use Illuminate\Http\Request;
 
 class OtherDiscussionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $discussions = OtherDiscussion::latest()->paginate(10);
+        $query = OtherDiscussion::query();
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('topic', 'like', "%{$search}%")
+                  ->orWhere('pic', 'like', "%{$search}%")
+                  ->orWhere('unit', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter unit
+        if ($request->filled('unit')) {
+            $query->where('unit', $request->unit);
+        }
+
+        // Filter date range
+        if ($request->filled('start_date')) {
+            $query->whereDate('deadline', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('deadline', '<=', $request->end_date);
+        }
+
+        $discussions = $query->latest()->paginate(10);
+
         return view('admin.other-discussions.index', compact('discussions'));
     }
 

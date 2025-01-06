@@ -61,27 +61,73 @@
                 </div>
 
                 <!-- Filter Section -->
-                {{-- <div class="mb-4 flex gap-4 items-center">
-                    <div class="flex flex-col">
-                        <label for="unit-filter" class="text-sm font-medium text-gray-700">Filter Unit</label>
-                        <select id="unit-filter" class="mt-1 rounded-lg border-gray-300">
-                            <option value="">Semua Unit</option>
-                            @foreach(\App\Models\OtherDiscussion::UNITS as $unit)
-                                <option value="{{ $unit }}">{{ $unit }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="mb-6 bg-white p-4 rounded-lg shadow">
+                    <form action="{{ route('admin.other-discussions.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Search -->
+                        <div class="relative">
+                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
+                            <div class="relative">
+                                <input type="text" 
+                                       name="search" 
+                                       id="search" 
+                                       placeholder="Cari topik, PIC, unit..."
+                                       value="{{ request('search') }}"
+                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="flex flex-col">
-                        <label for="status-filter" class="text-sm font-medium text-gray-700">Filter Status</label>
-                        <select id="status-filter" class="mt-1 rounded-lg border-gray-300">
-                            <option value="">Semua Status</option>
-                            @foreach(\App\Models\OtherDiscussion::STATUSES as $status)
-                                <option value="{{ $status }}">{{ $status }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div> --}}
+                        <!-- Filter Unit -->
+                        <div>
+                            <label for="unit-filter" class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                            <select id="unit-filter" 
+                                    name="unit" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50">
+                                <option value="">Semua Unit</option>
+                                @foreach(\App\Models\OtherDiscussion::UNITS as $unit)
+                                    <option value="{{ $unit }}" {{ request('unit') == $unit ? 'selected' : '' }}>
+                                        {{ $unit }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Filter Tanggal Mulai -->
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                            <input type="date" 
+                                   name="start_date" 
+                                   id="start_date"
+                                   value="{{ request('start_date') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+
+                        <!-- Filter Tanggal Akhir -->
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                            <input type="date" 
+                                   name="end_date" 
+                                   id="end_date"
+                                   value="{{ request('end_date') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+
+                        <!-- Tombol Filter -->
+                        <div class="md:col-span-4 flex justify-end space-x-2">
+                            <button type="reset" 
+                                    onclick="window.location.href='{{ route('admin.other-discussions.index') }}'"
+                                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                <i class="fas fa-undo mr-2"></i>Reset
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <i class="fas fa-filter mr-2"></i>Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
                 <!-- Wrapper for Table with Shadow -->
                 <div class="overflow-x-auto shadow-md rounded-lg">
@@ -113,8 +159,16 @@
                                 <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">{{ $discussion->unit }}</td>
                                 <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->topic }}</td>
                                 <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->target }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">{{ $discussion->risk_level_label }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">{{ $discussion->priority_level }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">
+                                    <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
+                                        {{ $discussion->risk_level_label }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">
+                                    <span class="px-2 py-1 rounded text-sm bg-purple-100 text-purple-800">
+                                        {{ $discussion->priority_level }}
+                                    </span>
+                                </td>
                                 <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->previous_commitment }}</td>
                                 <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->next_commitment }}</td>
                                 <td class="px-4 py-2 whitespace-nowrap border">{{ $discussion->pic }}</td>
@@ -231,9 +285,36 @@
 }
 </style>
 
-@push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validasi tanggal
+        const startDate = document.getElementById('start_date');
+        const endDate = document.getElementById('end_date');
+
+        startDate.addEventListener('change', function() {
+            endDate.min = this.value;
+        });
+
+        endDate.addEventListener('change', function() {
+            startDate.max = this.value;
+        });
+
+        // Auto submit saat memilih unit
+        document.getElementById('unit-filter').addEventListener('change', function() {
+            this.form.submit();
+        });
+
+        // Debounce search
+        let searchTimeout;
+        document.getElementById('search').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.form.submit();
+            }, 500);
+        });
+    });
     function confirmDelete(id) {
         Swal.fire({
             title: 'Apakah Anda yakin?',
@@ -268,5 +349,6 @@
         });
     }
 </script>
+@push('scripts')
 @endpush
 @endsection 
