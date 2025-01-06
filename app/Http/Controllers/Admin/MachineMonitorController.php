@@ -74,8 +74,8 @@ class MachineMonitorController extends Controller
         // Ambil data dari MachineStatusLog
         $machineStatusLogs = MachineStatusLog::with('machine')->get(); // Ambil data status mesin
 
-        // Ambil semua power plants untuk filter
-        $powerPlants = PowerPlant::all();
+        // Ambil semua power plants tanpa pagination
+        $powerPlants = PowerPlant::with(['machines.statusLogs', 'machines.machineOperations'])->get();
 
         return view('admin.machine-monitor.index', compact(
             'machines',
