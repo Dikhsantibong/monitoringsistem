@@ -23,6 +23,7 @@ use App\Http\Controllers\ScoreCardDailyController;
 use App\Http\Controllers\WoBacklogController;
 use App\Http\Controllers\DashboardPemantauanController;
 use App\Http\Controllers\Admin\PowerPlantController;
+use App\Http\Controllers\Admin\OtherDiscussionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -297,6 +298,22 @@ Route::middleware(['auth'])->group(function () {
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+});
+
+// Other Discussions Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    Route::get('/other-discussions', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'index'])
+        ->name('other-discussions.index');
+    Route::get('/other-discussions/create', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'create'])
+        ->name('other-discussions.create');
+    Route::post('/other-discussions', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'store'])
+        ->name('other-discussions.store');
+    Route::get('/other-discussions/{id}/edit', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'edit'])
+        ->name('other-discussions.edit');
+    Route::put('/other-discussions/{id}', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'update'])
+        ->name('other-discussions.update');
+    Route::delete('/other-discussions/{id}', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'destroy'])
+        ->name('other-discussions.destroy');
 });
 
 

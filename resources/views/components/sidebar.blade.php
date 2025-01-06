@@ -26,6 +26,11 @@ class="fixed z-20 transform overflow-hidden transition-transform duration-300 md
         <i class="fas fa-file-alt mr-3"></i>
         <span>Laporan SR/WO</span>
     </a>
+    <a href="{{ route('admin.other-discussions.index') }}"
+    class="flex items-center px-4 py-3 rounded mb-2 {{ request()->routeIs('admin.other-discussions.*') ? 'bg-[#F3F3F3] text-black shadow' : 'text-white hover:text-black hover:bg-[#F3F3F3] hover:rounded hover:shadow' }}">
+    <i class="fas fa-comments mr-3"></i>
+    <span>Pembahasan Lain-lain</span>
+    </a>
     <a href="{{ route('admin.machine-monitor') }}"
         class="flex items-center px-4 py-3 rounded mb-2 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black shadow' : 'text-white hover:text-black hover:bg-[#F3F3F3] hover:rounded hover:shadow' }}">
         <i class="fas fa-cogs mr-3"></i>
@@ -58,6 +63,7 @@ class="fixed z-20 transform overflow-hidden transition-transform duration-300 md
         <i class="fas fa-cog mr-3"></i>
         <span>Pengaturan</span>
     </a>
+   
 </nav>
 </aside>
 {{-- 
