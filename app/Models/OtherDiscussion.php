@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class OtherDiscussion extends Model
 {
@@ -30,6 +31,8 @@ class OtherDiscussion extends Model
         'deadline' => 'date',
         'sr_number' => 'integer',
         'wo_number' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     protected $dates = ['deadline'];
@@ -92,5 +95,17 @@ class OtherDiscussion extends Model
     public function scopeByPriorityLevel($query, $priorityLevel)
     {
         return $query->where('priority_level', $priorityLevel);
+    }
+
+    // Accessor untuk memastikan format tanggal selalu benar
+    public function getDeadlineAttribute($value)
+    {
+        return $value ? Carbon::parse($value) : null;
+    }
+
+    // Optional: Jika ingin custom format saat menyimpan data
+    public function setDeadlineAttribute($value)
+    {
+        $this->attributes['deadline'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
     }
 } 

@@ -150,48 +150,34 @@ class OtherDiscussionController extends Controller
 
     public function edit($id)
     {
-        $discussion = OtherDiscussion::findOrFail($id);
-        return view('admin.other-discussions.edit', compact('discussion'));
+        try {
+            $discussion = OtherDiscussion::findOrFail($id);
+            return view('admin.other-discussions.edit', compact('discussion'));
+        } catch (\Exception $e) {
+            \Log::error('Error in edit: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat form edit');
+        }
     }
 
-    public function update(Request $request, OtherDiscussion $discussion)
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'sr_number' => 'nullable|string',
-            'wo_number' => 'nullable|string',
-            'unit' => 'required|string',
-            'topic' => 'required|string',
-            'target' => 'required|string',
-            'risk_level' => 'required|string',
-            'priority_level' => 'required|string',
-            'previous_commitment' => 'required|string',
-            'next_commitment' => 'required|string',
-            'pic' => 'required|string',
-            'status' => 'required|string',
-            'deadline' => 'required|date',
-        ]);
-
         try {
-            // Cek jika status berubah menjadi Closed
-            if ($validated['status'] === 'Closed' && $discussion->status !== 'Closed') {
-                // Pastikan semua data terisi sebelum dipindahkan
-                ClosedDiscussion::create([
-                    'sr_number' => $discussion->sr_number ?? '',
-                    'wo_number' => $discussion->wo_number ?? '',
-                    'unit' => $validated['unit'],
-                    'topic' => $validated['topic'],
-                    'target' => $validated['target'],
-                    'risk_level' => $validated['risk_level'],
-                    'priority_level' => $validated['priority_level'],
-                    'previous_commitment' => $validated['previous_commitment'],
-                    'next_commitment' => $validated['next_commitment'],
-                    'pic' => $validated['pic'],
-                    'status' => 'Closed',
-                    'deadline' => $validated['deadline'],
-                    'closed_at' => now(),
-                    'original_id' => $discussion->id
-                ]);
-            }
+            $discussion = OtherDiscussion::findOrFail($id);
+            
+            $validated = $request->validate([
+                'sr_number' => 'nullable|string',
+                'wo_number' => 'nullable|string',
+                'unit' => 'required|string',
+                'topic' => 'required|string',
+                'target' => 'required|string',
+                'risk_level' => 'required|string',
+                'priority_level' => 'required|string',
+                'previous_commitment' => 'required|string',
+                'next_commitment' => 'required|string',
+                'pic' => 'required|string',
+                'status' => 'required|string',
+                'deadline' => 'required|date'
+            ]);
 
             $discussion->update($validated);
 
@@ -202,9 +188,10 @@ class OtherDiscussionController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error in update: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
             ], 500);
         }
     }

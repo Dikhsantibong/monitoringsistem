@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="flex h-screen bg-gray-50 overflow-auto">
-    <x-sidebar />
+    <x-sidebar />   
 
     <div class="flex-1 overflow-x-hidden overflow-y-auto">
         <!-- Header -->
