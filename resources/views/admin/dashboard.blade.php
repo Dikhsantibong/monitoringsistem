@@ -78,7 +78,7 @@
             <!-- Dashboard Content -->
             <main class="px-6">
                 <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                     <!-- Card 1 -->
                     <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}">
                         <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
@@ -117,6 +117,21 @@
                                     ->count();
                             @endphp
                             {{ $gangguanCount }}
+                        </p>
+                    </div>
+                    <!-- Card 4 -->
+                    <div onclick="window.location.href='{{ route('admin.other-discussions.index') }}'"
+                        class="bg-purple-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-purple-600 transition-colors">
+                        <i class="fa-solid fa-check-circle text-white text-3xl mr-3"></i>
+                        <div class="flex-1">
+                            <h3 class="text-white text-md font-medium">TOTAL DISKUSI SELESAI</h3>
+                        </div>
+                        <p class="text-2xl font-bold text-white" id="total-closed-discussions">
+                            @php
+                                $closedCount = \App\Models\OtherDiscussion::where('status', 'Closed')
+                                    ->count();
+                            @endphp
+                            {{ $closedCount }}
                         </p>
                     </div>
                 </div>
