@@ -261,12 +261,12 @@
 
                         <!-- Tabel Backlog -->
                         <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex justify-between items-center mb-4">
+                            {{-- <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
                                 <a href="{{ route('admin.laporan.create-wo-backlog') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                                     <i class="fas fa-plus-circle mr-2"></i> Tambah WO Backlog
                                 </a>
-                            </div>
+                            </div> --}}
                             <!-- Kolom search untuk Backlog -->
                             <div class="mb-4">
                                 <div class="flex">

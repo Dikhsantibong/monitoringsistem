@@ -154,26 +154,19 @@
             color: #166534;
         }
         .notes-table {
-            margin-top: 20px;
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px; /* Ukuran font lebih kecil */
         }
-        .notes-table th {
-            background-color: #0A749B;
-            color: white;
-            font-size: 14px;
-            padding: 12px;
-            border: 1px solid #000;
+        .notes-table th, .notes-table td {
+            border: 1px solid black;
+            padding: 5px;
             text-align: left;
         }
-        .notes-table td {
-            font-size: 14px;
-            padding: 8px;
-            border: 1px solid #000;
-            vertical-align: top;
-        }
-        .notes-table tr td:last-child {
-            padding: 20px 12px;
+        .notes-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
         }
         .signatures-grid {
             display: grid;
@@ -534,7 +527,7 @@
         </table>
     </div>
 
-    <!-- Setelah tabel WO Backlog, tambahkan halaman Notes -->
+    <!-- Halaman Notes -->
     <div class="page-break">
         <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
         
@@ -546,17 +539,72 @@
         <table class="notes-table">
             <thead>
                 <tr>
-                    <th style="width: 5%">No</th>
-                    <th style="width: 95%">Catatan</th>
+                    <th style="width: 3%">No</th>
+                    <th style="width: 7%">No SR</th>
+                    <th style="width: 7%">No WO</th>
+                    <th style="width: 10%">Unit</th>
+                    <th style="width: 15%">Topik</th>
+                    <th style="width: 15%">Target</th>
+                    <th style="width: 7%">Risk Level</th>
+                    <th style="width: 7%">Priority</th>
+                    <th style="width: 10%">Previous</th>
+                    <th style="width: 10%">Next</th>
+                    <th style="width: 5%">PIC</th>
+                    <th style="width: 7%">Status</th>
+                    <th style="width: 7%">Deadline</th>
                 </tr>
             </thead>
             <tbody>
-                @for ($i = 1; $i <= 10; $i++)
+                @php
+                    $discussions = collect()
+                        ->concat(App\Models\OtherDiscussion::whereDate('created_at', $date)->get())
+                        ->concat(App\Models\ClosedDiscussion::whereDate('created_at', $date)->get())
+                        ->concat(App\Models\OverdueDiscussion::whereDate('created_at', $date)->get())
+                        ->sortBy('created_at');
+                    $no = 1;
+                @endphp
+
+                @forelse($discussions as $discussion)
                     <tr>
-                        <td style="text-align: center;">{{ $i }}</td>
-                        <td style="height: 50px;"></td>
+                        <td style="text-align: center;">{{ $no++ }}</td>
+                        <td>{{ $discussion->sr_number ?? '-' }}</td>
+                        <td>{{ $discussion->wo_number ?? '-' }}</td>
+                        <td>{{ $discussion->unit }}</td>
+                        <td>{{ $discussion->topic }}</td>
+                        <td>{{ $discussion->target }}</td>
+                        <td>{{ $discussion->risk_level }}</td>
+                        <td>{{ $discussion->priority_level }}</td>
+                        <td>{{ $discussion->previous_commitment }}</td>
+                        <td>{{ $discussion->next_commitment }}</td>
+                        <td>{{ $discussion->pic }}</td>
+                        <td>{{ $discussion->status }}</td>
+                        <td>{{ $discussion->deadline ? $discussion->deadline->format('d/m/Y') : '-' }}</td>
                     </tr>
-                @endfor
+                @empty
+                    <tr>
+                        <td colspan="13" style="text-align: center; height: 50px;">Tidak ada catatan untuk tanggal ini</td>
+                    </tr>
+                @endforelse
+
+                @if($discussions->count() < 10)
+                    @for($i = $discussions->count() + 1; $i <= 10; $i++)
+                        <tr>
+                            <td style="text-align: center;">{{ $i }}</td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                            <td style="height: 50px;"></td>
+                        </tr>
+                    @endfor
+                @endif
             </tbody>
         </table>
     </div>

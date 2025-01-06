@@ -121,12 +121,11 @@
                     </div>
 
                     <!-- Search Bar -->
+                    <h1 class="text-lg font-semibold uppercase mb-5">KESIAPAN PEMBANGKIT UP KENDARI ( MEGAWATT )</h1>
+
                     @foreach ($units as $unit)
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
-                            <div class=" overflow-auto">
-                                <h1 class="text-lg font-semibold uppercase mb-5" >sistem interkoneksi Sultra ( MEGAWATT /MW )
-                                </h1>
-
+                            <div class="overflow-auto">
                                 <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
                      
                                 <!-- Tabel Status Pembangkit -->
