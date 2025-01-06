@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class MachineStatusLog extends Model
 {
     use HasFactory;
+
+    public static $isSyncing = false;
 
     protected $table = 'machine_status_logs';
 
@@ -28,6 +31,7 @@ class MachineStatusLog extends Model
         'dmn',
         'dmp',
         'load_value',
+        'unit_source'
     ];
 
     protected $casts = [
@@ -44,13 +48,11 @@ class MachineStatusLog extends Model
         'updated_at'
     ];
 
-    // Relasi ke model Machine
     public function machine()
     {
         return $this->belongsTo(Machine::class);
     }
 
-    // Relasi ke PowerPlant melalui Machine
     public function powerPlant()
     {
         return $this->hasOneThrough(
@@ -68,17 +70,99 @@ class MachineStatusLog extends Model
         return $this->hasOne(MachineOperation::class, 'machine_id', 'machine_id')
             ->whereDate('recorded_at', '=', DB::raw('DATE(machine_status_logs.tanggal)'));
     }
+
     public function getConnectionName()
     {
-        // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
-        return session('unit', 'u478221055_up_kendari'); // default ke 'up_kendari' jika tidak ada
+        return session('unit');
     }
 
-    // Tambahkan method untuk data sementara
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Handle Created Event
+        static::created(function ($machineStatusLog) {
+            self::syncToUpKendari('create', $machineStatusLog);
+        });
+
+        // Handle Updated Event
+        static::updated(function ($machineStatusLog) {
+            self::syncToUpKendari('update', $machineStatusLog);
+        });
+
+        // Handle Deleted Event
+        static::deleted(function ($machineStatusLog) {
+            self::syncToUpKendari('delete', $machineStatusLog);
+        });
+    }
+
+    protected static function syncToUpKendari($action, $machineStatusLog)
+    {
+        if (self::$isSyncing) return;
+
+        try {
+            self::$isSyncing = true;
+            
+            $data = [
+                'id' => $machineStatusLog->id,
+                'machine_id' => $machineStatusLog->machine_id,
+                'tanggal' => $machineStatusLog->tanggal,
+                'status' => $machineStatusLog->status,
+                'component' => $machineStatusLog->component,
+                'equipment' => $machineStatusLog->equipment,
+                'deskripsi' => $machineStatusLog->deskripsi,
+                'kronologi' => $machineStatusLog->kronologi,
+                'action_plan' => $machineStatusLog->action_plan,
+                'progres' => $machineStatusLog->progres,
+                'tanggal_mulai' => $machineStatusLog->tanggal_mulai,
+                'target_selesai' => $machineStatusLog->target_selesai,
+                'dmn' => $machineStatusLog->dmn,
+                'dmp' => $machineStatusLog->dmp,
+                'load_value' => $machineStatusLog->load_value,
+                'unit_source' => session('unit'),
+                'created_at' => $machineStatusLog->created_at,
+                'updated_at' => $machineStatusLog->updated_at
+            ];
+
+            Log::info("Attempting to {$action} Machine Status Log sync", ['data' => $data]);
+
+            $upKendari = DB::connection('mysql')->table('machine_status_logs');
+
+            switch($action) {
+                case 'create':
+                    $upKendari->insert($data);
+                    break;
+                    
+                case 'update':
+                    $upKendari->where('id', $machineStatusLog->id)
+                             ->update($data);
+                    break;
+                    
+                case 'delete':
+                    $upKendari->where('id', $machineStatusLog->id)
+                             ->delete();
+                    break;
+            }
+
+            Log::info("Machine Status Log {$action} sync successful", [
+                'id' => $machineStatusLog->id,
+                'unit' => 'poasia'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Machine Status Log {$action} sync failed", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        } finally {
+            self::$isSyncing = false;
+        }
+    }
+
+    // Helper methods yang sudah ada
     public static function getDummyMonthlyData()
     {
-        // Data dummy untuk 12 bulan di tahun 2024
-        $dummyData = [
+        return collect([
             ['month' => 'January', 'count' => 5, 'tanggal' => '2024-01-15'],
             ['month' => 'February', 'count' => 8, 'tanggal' => '2024-02-15'],
             ['month' => 'March', 'count' => 3, 'tanggal' => '2024-03-15'],
@@ -91,39 +175,27 @@ class MachineStatusLog extends Model
             ['month' => 'October', 'count' => 4, 'tanggal' => '2024-10-15'],
             ['month' => 'November', 'count' => 7, 'tanggal' => '2024-11-15'],
             ['month' => 'December', 'count' => 10, 'tanggal' => '2024-12-15']
-        ];
-
-        // Konversi array ke collection
-        return collect($dummyData);
+        ]);
     }
 
-    // Tambahkan method untuk total gangguan aktif
     public static function getDummyActiveIssues()
     {
-        return 15; // Contoh jumlah gangguan aktif
+        return 15;
     }
 
-    // Tambahkan accessor untuk format waktu yang lebih readable
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('H:i:s d/m/Y') : 'N/A';
     }
 
-    // Method untuk mengecek apakah gangguan masih aktif
     public function isActiveIssue()
     {
         if ($this->status !== 'Gangguan') {
             return false;
         }
-
-        if (!$this->target_selesai) {
-            return true;
-        }
-
-        return Carbon::now()->lte($this->target_selesai);
+        return !$this->target_selesai || Carbon::now()->lte($this->target_selesai);
     }
 
-    // Method untuk mengecek apakah ada update lebih baru
     public function hasNewerUpdate()
     {
         return static::where('machine_id', $this->machine_id)

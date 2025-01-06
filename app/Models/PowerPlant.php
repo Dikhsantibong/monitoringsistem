@@ -4,19 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PowerPlant extends Model
 {
     use HasFactory;
 
-    // Tentukan nama tabel jika tidak sesuai dengan konvensi
+    public static $isSyncing = false;
+
     protected $table = 'power_plants';
 
-    // Tentukan kolom yang dapat diisi
     protected $fillable = [
         'name',
         'latitude',
         'longitude',
+        'unit_source'
     ];
 
     public function machines()
@@ -24,15 +27,86 @@ class PowerPlant extends Model
         return $this->hasMany(Machine::class, 'power_plant_id');
     }
 
-    // Tambahkan metode untuk mendapatkan unit berdasarkan nama
     public function getMachinesByName($name)
     {
         return $this->machines()->where('name', $name)->get();
     }
+
     public function getConnectionName()
     {
-        // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit
-        return session('unit', 'u478221055_up_kendari'); // default ke 'up_kendari' jika tidak ada
+        return session('unit');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Handle Created Event
+        static::created(function ($powerPlant) {
+            self::syncToUpKendari('create', $powerPlant);
+        });
+
+        // Handle Updated Event
+        static::updated(function ($powerPlant) {
+            self::syncToUpKendari('update', $powerPlant);
+        });
+
+        // Handle Deleted Event
+        static::deleted(function ($powerPlant) {
+            self::syncToUpKendari('delete', $powerPlant);
+        });
+    }
+
+    protected static function syncToUpKendari($action, $powerPlant)
+    {
+        if (self::$isSyncing) return;
+
+        try {
+            self::$isSyncing = true;
+            
+            $data = [
+                'id' => $powerPlant->id,
+                'name' => $powerPlant->name,
+                'latitude' => $powerPlant->latitude,
+                'longitude' => $powerPlant->longitude,
+                'unit_source' => 'poasia',
+                'created_at' => $powerPlant->created_at,
+                'updated_at' => $powerPlant->updated_at
+            ];
+
+            Log::info("Attempting to {$action} Power Plant sync", ['data' => $data]);
+
+            $upKendari = DB::connection('mysql')->table('power_plants');
+
+            switch($action) {
+                case 'create':
+                    $upKendari->insert($data);
+                    break;
+                    
+                case 'update':
+                    $upKendari->where('id', $powerPlant->id)
+                             ->update($data);
+                    break;
+                    
+                case 'delete':
+                    $upKendari->where('id', $powerPlant->id)
+                             ->delete();
+                    break;
+            }
+
+            Log::info("Power Plant {$action} sync successful", [
+                'id' => $powerPlant->id,
+                'unit' => 'poasia'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Power Plant {$action} sync failed", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        } finally {
+            self::$isSyncing = false;
+        }
     }
 }
 

@@ -5,10 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OtherDiscussion extends Model
 {
     use HasFactory;
+
+    public static $isSyncing = false;
 
     protected $table = 'other_discussions';
 
@@ -25,6 +29,7 @@ class OtherDiscussion extends Model
         'pic',
         'status',
         'deadline',
+        'unit_source'
     ];
 
     protected $casts = [
@@ -66,6 +71,92 @@ class OtherDiscussion extends Model
         'Open',
         'Closed'
     ];
+
+    public function getConnectionName()
+    {
+        return session('unit');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Handle Created Event
+        static::created(function ($discussion) {
+            self::syncToUpKendari('create', $discussion);
+        });
+
+        // Handle Updated Event
+        static::updated(function ($discussion) {
+            self::syncToUpKendari('update', $discussion);
+        });
+
+        // Handle Deleted Event
+        static::deleted(function ($discussion) {
+            self::syncToUpKendari('delete', $discussion);
+        });
+    }
+
+    protected static function syncToUpKendari($action, $discussion)
+    {
+        if (self::$isSyncing) return;
+
+        try {
+            self::$isSyncing = true;
+            
+            $data = [
+                'id' => $discussion->id,
+                'sr_number' => $discussion->sr_number,
+                'wo_number' => $discussion->wo_number,
+                'unit' => $discussion->unit,
+                'topic' => $discussion->topic,
+                'target' => $discussion->target,
+                'risk_level' => $discussion->risk_level,
+                'priority_level' => $discussion->priority_level,
+                'previous_commitment' => $discussion->previous_commitment,
+                'next_commitment' => $discussion->next_commitment,
+                'pic' => $discussion->pic,
+                'status' => $discussion->status,
+                'deadline' => $discussion->deadline,
+                'unit_source' => session('unit'),
+                'created_at' => $discussion->created_at,
+                'updated_at' => $discussion->updated_at
+            ];
+
+            Log::info("Attempting to {$action} Other Discussion sync", ['data' => $data]);
+
+            $upKendari = DB::connection('mysql')->table('other_discussions');
+
+            switch($action) {
+                case 'create':
+                    $upKendari->insert($data);
+                    break;
+                    
+                case 'update':
+                    $upKendari->where('id', $discussion->id)
+                             ->update($data);
+                    break;
+                    
+                case 'delete':
+                    $upKendari->where('id', $discussion->id)
+                             ->delete();
+                    break;
+            }
+
+            Log::info("Other Discussion {$action} sync successful", [
+                'id' => $discussion->id,
+                'unit' => 'poasia'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Other Discussion {$action} sync failed", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        } finally {
+            self::$isSyncing = false;
+        }
+    }
 
     // Accessor untuk mendapatkan label tingkat resiko
     public function getRiskLevelLabelAttribute()
