@@ -61,7 +61,7 @@
                 </div>
 
                 <!-- Filter Section -->
-                <div class="mb-4 flex gap-4 items-center">
+                {{-- <div class="mb-4 flex gap-4 items-center">
                     <div class="flex flex-col">
                         <label for="unit-filter" class="text-sm font-medium text-gray-700">Filter Unit</label>
                         <select id="unit-filter" class="mt-1 rounded-lg border-gray-300">
@@ -81,7 +81,7 @@
                             @endforeach
                         </select>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Wrapper for Table with Shadow -->
                 <div class="overflow-x-auto shadow-md rounded-lg">
