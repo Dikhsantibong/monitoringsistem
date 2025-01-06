@@ -30,67 +30,55 @@ class OverdueDiscussionController extends Controller
         }
     }
 
-    public function updateStatus(Request $request, OverdueDiscussion $discussion)
+    public function updateStatus(Request $request, $id)
     {
         try {
-            DB::beginTransaction();
+            $overdueDiscussion = OverdueDiscussion::findOrFail($id);
+            $originalDiscussion = OtherDiscussion::findOrFail($overdueDiscussion->original_id);
 
-            // Update status di tabel original
-            if ($discussion->original_id) {
-                $originalDiscussion = OtherDiscussion::find($discussion->original_id);
-                if ($originalDiscussion) {
-                    $originalDiscussion->update(['status' => 'Closed']);
-                }
-            }
-
-            // Pindahkan ke tabel closed
-            $closedDiscussion = ClosedDiscussion::create([
-                'sr_number' => $discussion->sr_number,
-                'wo_number' => $discussion->wo_number,
-                'unit' => $discussion->unit,
-                'topic' => $discussion->topic,
-                'target' => $discussion->target,
-                'risk_level' => $discussion->risk_level,
-                'priority_level' => $discussion->priority_level,
-                'previous_commitment' => $discussion->previous_commitment,
-                'next_commitment' => $discussion->next_commitment,
-                'pic' => $discussion->pic,
+            // Update status di kedua tabel
+            $overdueDiscussion->update([
                 'status' => 'Closed',
-                'deadline' => $discussion->deadline,
-                'closed_at' => now(),
-                'original_id' => $discussion->original_id
+                'closed_at' => now()
             ]);
 
-            if (!$closedDiscussion) {
-                throw new \Exception('Gagal membuat record closed discussion');
-            }
-
-            // Hapus dari tabel overdue
-            $discussion->delete();
-
-            DB::commit();
-
-            \Log::info('Successfully moved overdue discussion to closed', [
-                'overdue_id' => $discussion->id,
-                'closed_id' => $closedDiscussion->id
+            $originalDiscussion->update([
+                'status' => 'Closed'
             ]);
+
+            // Pindahkan ke tabel closed_discussions
+            ClosedDiscussion::updateOrCreate(
+                ['original_id' => $overdueDiscussion->original_id],
+                [
+                    'sr_number' => $overdueDiscussion->sr_number,
+                    'wo_number' => $overdueDiscussion->wo_number,
+                    'unit' => $overdueDiscussion->unit,
+                    'topic' => $overdueDiscussion->topic,
+                    'target' => $overdueDiscussion->target,
+                    'risk_level' => $overdueDiscussion->risk_level,
+                    'priority_level' => $overdueDiscussion->priority_level,
+                    'previous_commitment' => $overdueDiscussion->previous_commitment,
+                    'next_commitment' => $overdueDiscussion->next_commitment,
+                    'pic' => $overdueDiscussion->pic,
+                    'status' => 'Closed',
+                    'deadline' => $overdueDiscussion->deadline,
+                    'closed_at' => now()
+                ]
+            );
+
+            // Hapus data dari tabel overdue
+            $overdueDiscussion->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Status berhasil diperbarui dan data dipindahkan ke Data Selesai'
+                'message' => 'Status berhasil diperbarui'
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Error updating overdue discussion status: ' . $e->getMessage());
-            \Log::error('Discussion data: ', [
-                'id' => $discussion->id,
-                'original_id' => $discussion->original_id
-            ]);
-            
+            \Log::error('Error in updateStatus: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengubah status: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat mengubah status'
             ], 500);
         }
     }

@@ -151,7 +151,17 @@ class OtherDiscussionController extends Controller
     public function edit($id)
     {
         try {
-            $discussion = OtherDiscussion::findOrFail($id);
+            // Cek apakah data ada di tabel overdue
+            $overdueDiscussion = OverdueDiscussion::where('original_id', $id)->first();
+            
+            if ($overdueDiscussion) {
+                // Jika ada di overdue, ambil data original
+                $discussion = OtherDiscussion::findOrFail($overdueDiscussion->original_id);
+            } else {
+                // Jika tidak ada di overdue, ambil langsung dari other discussions
+                $discussion = OtherDiscussion::findOrFail($id);
+            }
+
             return view('admin.other-discussions.edit', compact('discussion'));
         } catch (\Exception $e) {
             \Log::error('Error in edit: ' . $e->getMessage());
@@ -162,6 +172,8 @@ class OtherDiscussionController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            // Cek apakah data ada di tabel overdue
+            $overdueDiscussion = OverdueDiscussion::where('original_id', $id)->first();
             $discussion = OtherDiscussion::findOrFail($id);
             
             $validated = $request->validate([
@@ -179,7 +191,52 @@ class OtherDiscussionController extends Controller
                 'deadline' => 'required|date'
             ]);
 
+            // Update data di tabel utama
             $discussion->update($validated);
+
+            // Jika status berubah menjadi 'Closed'
+            if ($validated['status'] === 'Closed') {
+                // Jika ada di tabel overdue, update status dan tanggal selesai
+                if ($overdueDiscussion) {
+                    $overdueDiscussion->update([
+                        'status' => 'Closed',
+                        'closed_at' => now()
+                    ]);
+                }
+
+                // Tambahkan ke tabel closed_discussions jika belum ada
+                ClosedDiscussion::updateOrCreate(
+                    ['original_id' => $discussion->id],
+                    [
+                        'sr_number' => $discussion->sr_number,
+                        'wo_number' => $discussion->wo_number,
+                        'unit' => $discussion->unit,
+                        'topic' => $discussion->topic,
+                        'target' => $discussion->target,
+                        'risk_level' => $discussion->risk_level,
+                        'priority_level' => $discussion->priority_level,
+                        'previous_commitment' => $discussion->previous_commitment,
+                        'next_commitment' => $discussion->next_commitment,
+                        'pic' => $discussion->pic,
+                        'status' => 'Closed',
+                        'deadline' => $discussion->deadline,
+                        'closed_at' => now()
+                    ]
+                );
+
+                // Hapus dari tabel overdue jika ada
+                if ($overdueDiscussion) {
+                    $overdueDiscussion->delete();
+                }
+            }
+            // Jika status bukan 'Closed' tapi masih ada di overdue
+            else if ($validated['status'] !== 'Closed' && $overdueDiscussion) {
+                // Update data overdue
+                $overdueDiscussion->update([
+                    'status' => $validated['status'],
+                    'deadline' => $validated['deadline']
+                ]);
+            }
 
             if ($request->ajax()) {
                 return response()->json([

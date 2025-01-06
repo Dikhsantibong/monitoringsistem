@@ -235,10 +235,10 @@
                                                 </button>
 
                                                 <!-- Status Closed -->
-                                                <button onclick="updateStatus({{ $discussion->id }}, 'Closed')"
+                                                {{-- <button onclick="updateStatus({{ $discussion->id }}, 'Closed')"
                                                         class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center">
                                                     <i class="fas fa-check-circle mr-1.5"></i> Selesai
-                                                </button>
+                                                </button> --}}
                                             </div>
                                         </td>
                                     </tr>
