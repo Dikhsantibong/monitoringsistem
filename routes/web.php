@@ -24,6 +24,7 @@ use App\Http\Controllers\WoBacklogController;
 use App\Http\Controllers\DashboardPemantauanController;
 use App\Http\Controllers\Admin\PowerPlantController;
 use App\Http\Controllers\Admin\OtherDiscussionController;
+use App\Http\Controllers\Admin\OverdueDiscussionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -315,6 +316,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::delete('/other-discussions/{id}', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'destroy'])
         ->name('other-discussions.destroy');
 });
+
+Route::post('/admin/other-discussions/{discussion}/update-status', [OtherDiscussionController::class, 'updateStatus'])
+     ->name('admin.other-discussions.update-status');
+
+// Route untuk overdue discussions
+Route::delete('/admin/overdue-discussions/{discussion}', [OverdueDiscussionController::class, 'destroy'])
+     ->name('admin.overdue-discussions.destroy');
+Route::post('/admin/overdue-discussions/{discussion}/update-status', [OverdueDiscussionController::class, 'updateStatus'])
+     ->name('admin.overdue-discussions.update-status');
 
 
     

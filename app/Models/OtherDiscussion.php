@@ -32,6 +32,8 @@ class OtherDiscussion extends Model
         'wo_number' => 'integer',
     ];
 
+    protected $dates = ['deadline'];
+
     // Konstanta untuk pilihan unit
     const UNITS = [
         'UP KENDARI',

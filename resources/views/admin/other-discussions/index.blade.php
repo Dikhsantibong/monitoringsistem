@@ -129,93 +129,293 @@
                     </form>
                 </div>
 
-                <!-- Wrapper for Table with Shadow -->
-                <div class="overflow-x-auto shadow-md rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                        <thead class="bg-[#0A749B]" style="height: 50px;">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-16">No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-24">No SR</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-24">No WO</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-32">Unit</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Topik</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Sasaran</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-32">Tingkat Resiko</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-32">Tingkat Prioritas</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Komitmen Sebelum</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Komitmen Selanjutnya</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-32">PIC</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-24">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-32">Deadline</th>
-                                {{-- <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-24">Aksi</th> --}}
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-gray-200">
-                            @forelse($discussions ?? [] as $index => $discussion)
-                            <tr class="hover:bg-gray-50 transition-colors border border-gray-200 border-l-0 border-r-0">
-                                <td class="px-4 py-2 whitespace-nowrap border">{{ $index + 1 }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border">{{ $discussion->sr_number }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border">{{ $discussion->wo_number }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">{{ $discussion->unit }}</td>
-                                <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->topic }}</td>
-                                <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->target }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">
-                                    <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
-                                        {{ $discussion->risk_level_label }}
+                <!-- Tab Navigation -->
+                <div class="mb-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex">
+                            <button onclick="switchTab('active')" 
+                                    class="tab-btn active-tab py-4 px-6 font-medium text-sm"
+                                    id="active-tab">
+                                Data Aktif
+                            </button>
+                            <button onclick="switchTab('overdue')" 
+                                    class="tab-btn py-4 px-6 font-medium text-sm"
+                                    id="overdue-tab">
+                                Melewati Deadline
+                                @if($overdueDiscussions->total() > 0)
+                                    <span class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                                        {{ $overdueDiscussions->total() }}
                                     </span>
-                                </td>
-                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">
-                                    <span class="px-2 py-1 rounded text-sm bg-purple-100 text-purple-800">
-                                        {{ $discussion->priority_level }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->previous_commitment }}</td>
-                                <td class="px-4 py-2 whitespace-normal break-words w-[300px] border">{{ $discussion->next_commitment }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border">{{ $discussion->pic }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap border bg-gray-50">
-                                    <span class="px-2 py-1 rounded text-sm 
-                                        {{ $discussion->status === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                        {{ $discussion->status }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2 whitespace-nowrap border">{{ $discussion->deadline->format('d/m/Y') }}</td>
-                                {{-- <td class="px-4 py-2 whitespace-nowrap border">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('admin.other-discussions.edit', $discussion->id) }}" 
-                                           class="text-white btn bg-indigo-500 hover:bg-indigo-600 rounded-lg px-3 py-1">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button onclick="confirmDelete({{ $discussion->id }})" 
-                                                class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg px-3 py-1">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td> --}}
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="14" class="px-6 py-4 text-center text-gray-500">
-                                    Tidak ada data yang tersedia
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                @endif
+                            </button>
+                            <button onclick="switchTab('closed')" 
+                                    class="tab-btn py-4 px-6 font-medium text-sm"
+                                    id="closed-tab">
+                                Data Selesai
+                            </button>
+                        </nav>
+                    </div>
                 </div>
 
-                <!-- Pagination -->
-                <div class="mt-4 flex justify-between items-center">
-                    <div class="text-sm text-gray-700">
-                        Menampilkan 
-                        {{ ($discussions->currentPage() - 1) * $discussions->perPage() + 1 }} 
-                        hingga 
-                        {{ min($discussions->currentPage() * $discussions->perPage(), $discussions->total()) }} 
-                        dari 
-                        {{ $discussions->total() }} 
-                        data
+                <!-- Tabel Data Aktif -->
+                <div id="active-content" class="tab-content">
+                    <div class="overflow-x-auto shadow-md rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-[#0A749B]">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Target</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Previous Commitment</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Next Commitment</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($activeDiscussions as $index => $discussion)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 whitespace-normal border border-gray-200 max-w-[400px] break-words">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-normal border border-gray-200 max-w-[400px] break-words">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <span class="px-2 py-1 text-sm rounded
+                                                @if($discussion->risk_level == 'R') bg-green-100 text-green-800
+                                                @elseif($discussion->risk_level == 'MR') bg-yellow-100 text-yellow-800  
+                                                @elseif($discussion->risk_level == 'MT') bg-orange-100 text-orange-800
+                                                @elseif($discussion->risk_level == 'T') bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $discussion->risk_level }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <span class="px-2 py-1 text-sm rounded
+                                                @if($discussion->priority_level == 'Low') bg-green-100 text-green-800
+                                                @elseif($discussion->priority_level == 'Medium') bg-yellow-100 text-yellow-800
+                                                @elseif($discussion->priority_level == 'High') bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $discussion->priority_level }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->previous_commitment }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->next_commitment }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->pic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <span class="px-2 py-1 text-sm rounded
+                                                @if($discussion->status == 'Open') bg-blue-100 text-blue-800
+                                                @elseif($discussion->status == 'Closed') bg-green-100 text-green-800
+                                                @elseif($discussion->status == 'Overdue') bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $discussion->status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <div class="flex items-center space-x-3">
+                                                <!-- Edit -->
+                                                <a href="{{ route('admin.other-discussions.edit', $discussion->id) }}"
+                                                   class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit text-lg"></i>
+                                                </a>
+                                                
+                                                <!-- Delete -->
+                                                <button onclick="confirmDelete({{ $discussion->id }})"
+                                                        class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash text-lg"></i>
+                                                </button>
+
+                                                <!-- Status Closed -->
+                                                <button onclick="updateStatus({{ $discussion->id }}, 'Closed')"
+                                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center">
+                                                    <i class="fas fa-check-circle mr-1.5"></i> Selesai
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="14" class="px-6 py-4 text-center text-gray-500">
+                                            Tidak ada data aktif
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
-                    <div>
-                        {{ $discussions->links() }}
+                    <div class="mt-4">
+                        {{ $activeDiscussions->appends(request()->except('active_page'))->links() }}
+                    </div>
+                </div>
+
+                <!-- Tabel Data Selesai -->
+                <div id="closed-content" class="tab-content hidden">
+                    <div class="overflow-x-auto shadow-md rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-[#0A749B]">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Sebelum</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Selanjutnya</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tanggal Selesai</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($closedDiscussions as $index => $discussion)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->sr_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
+                                                {{ $discussion->risk_level }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 rounded text-sm bg-purple-100 text-purple-800">
+                                                {{ $discussion->priority_level }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->previous_commitment }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->next_commitment }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->pic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 rounded text-sm 
+                                                {{ $discussion->status === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                {{ $discussion->status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->deadline->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->closed_at->format('d/m/Y') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="14" class="px-6 py-4 text-center text-gray-500">
+                                            Tidak ada data selesai
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4">
+                        {{ $closedDiscussions->appends(request()->except('closed_page'))->links() }}
+                    </div>
+                </div>
+
+                <!-- Tambahkan section untuk tabel overdue -->
+                <div id="overdue-content" class="tab-content hidden">
+                    <div class="overflow-x-auto shadow-md rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-red-600">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Sebelum</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Selanjutnya</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tanggal Selesai</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
+                                        Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($overdueDiscussions as $index => $discussion)
+                                    <tr class="hover:bg-red-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->sr_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
+                                                {{ $discussion->risk_level }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 rounded text-sm bg-purple-100 text-purple-800">
+                                                {{ $discussion->priority_level }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->previous_commitment }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->next_commitment }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->pic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 rounded text-sm 
+                                                {{ $discussion->status === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                {{ $discussion->status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->deadline->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-red-600">
+                                            {{ $discussion->overdue_at->format('d/m/Y') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <div class="flex items-center space-x-3">
+                                                <!-- Edit -->
+                                                <a href="{{ route('admin.other-discussions.edit', $discussion->original_id) }}"
+                                                   class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit text-lg"></i>
+                                                </a>
+                                                
+                                                <!-- Delete -->
+                                                <button onclick="confirmDeleteOverdue({{ $discussion->id }})"
+                                                        class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash text-lg"></i>
+                                                </button>
+
+                                                <!-- Status Closed -->
+                                                <button onclick="updateOverdueStatus({{ $discussion->id }}, 'Closed')"
+                                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center">
+                                                    <i class="fas fa-check-circle mr-1.5"></i> Selesai
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="14" class="px-6 py-4 text-center text-gray-500">
+                                            Tidak ada data yang melewati deadline
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4">
+                        {{ $overdueDiscussions->appends(request()->except('overdue_page'))->links() }}
                     </div>
                 </div>
             </div>
@@ -283,6 +483,11 @@
     right: 0;
     background: linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0));
 }
+
+.active-tab {
+    border-bottom-color: #3B82F6;
+    color: #2563EB;
+}
 </style>
 
 
@@ -314,6 +519,11 @@
                 this.form.submit();
             }, 500);
         });
+
+        // Set active tab from URL parameter or default to 'active'
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || 'active';
+        switchTab(activeTab);
     });
     function confirmDelete(id) {
         Swal.fire({
@@ -345,6 +555,250 @@
                 
                 document.body.appendChild(form);
                 form.submit();
+            }
+        });
+    }
+    function switchTab(tab) {
+        // Remove active class from all tabs and content
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active-tab', 'border-blue-500', 'text-blue-600');
+            btn.classList.add('text-gray-500');
+        });
+        
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Add active class to selected tab and show content
+        const selectedTab = document.getElementById(`${tab}-tab`);
+        const selectedContent = document.getElementById(`${tab}-content`);
+        
+        selectedTab.classList.add('active-tab', 'border-blue-500', 'text-blue-600');
+        selectedTab.classList.remove('text-gray-500');
+        selectedContent.classList.remove('hidden');
+    }
+    function updateStatus(id, status) {
+        const statusText = status === 'Closed' ? 'selesai' : 'overdue';
+        
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: `Status akan diubah menjadi ${statusText}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: status === 'Closed' ? '#10B981' : '#EF4444',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, ubah status!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/other-discussions/${id}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Status berhasil diperbarui',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Terjadi kesalahan saat mengubah status',
+                        icon: 'error'
+                    });
+                });
+            }
+        });
+    }
+    function checkAndUpdateOverdueStatus() {
+        const rows = document.querySelectorAll('tr[data-deadline]');
+        const now = new Date();
+        
+        rows.forEach(row => {
+            const deadline = new Date(row.dataset.deadline);
+            if (now > deadline && row.dataset.status === 'Open') {
+                // Kirim request untuk update status ke overdue
+                fetch(`/admin/other-discussions/${row.dataset.id}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: 'Overdue' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh halaman jika ada perubahan status
+                        window.location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    }
+
+    // Jalankan pengecekan setiap menit
+    setInterval(checkAndUpdateOverdueStatus, 60000);
+
+    // Jalankan pengecekan saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', checkAndUpdateOverdueStatus);
+
+    // Fungsi update status untuk tombol Selesai
+    function updateStatus(id, status) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Status akan diubah menjadi selesai',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10B981',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, selesaikan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/other-discussions/${id}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Status berhasil diperbarui',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Terjadi kesalahan saat mengubah status',
+                        icon: 'error'
+                    });
+                });
+            }
+        });
+    }
+
+    // Fungsi untuk konfirmasi delete data overdue
+    function confirmDeleteOverdue(id) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Kirim request delete
+                fetch(`/admin/overdue-discussions/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Data berhasil dihapus',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Terjadi kesalahan saat menghapus data',
+                        icon: 'error'
+                    });
+                });
+            }
+        });
+    }
+
+    // Fungsi untuk update status overdue
+    function updateOverdueStatus(id, status) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Status akan diubah menjadi selesai',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10B981',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, selesaikan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/overdue-discussions/${id}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Status berhasil diperbarui',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Terjadi kesalahan saat mengubah status',
+                        icon: 'error'
+                    });
+                });
             }
         });
     }
