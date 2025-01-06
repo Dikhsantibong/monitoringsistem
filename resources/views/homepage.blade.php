@@ -776,14 +776,19 @@
                     scrollWheelZoom: true,
                     doubleClickZoom: true,
                     dragging: true,
-                }).setView([-4.0435, 122.4972], 13);
+                }).setView([-4.0435, 122.4972], 8);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
 
+                // Buat array untuk menyimpan semua koordinat marker
+                var markers = [];
+                var bounds = L.latLngBounds();
+
                 @foreach ($markers as $marker)
-                    var marker = L.marker([{{ $marker['latitude'] }}, {{ $marker['longitude'] }}])
+                    var markerLatLng = [{{ $marker['latitude'] }}, {{ $marker['longitude'] }}];
+                    var marker = L.marker(markerLatLng)
                         .addTo(map)
                         .bindPopup(`
                             <div style="min-width: 200px;">
@@ -801,7 +806,19 @@
                                 </button>
                             </div>
                         `);
+                    
+                    // Tambahkan koordinat marker ke bounds
+                    bounds.extend(markerLatLng);
+                    markers.push(marker);
                 @endforeach
+
+                // Sesuaikan tampilan peta agar mencakup semua marker
+                if (markers.length > 0) {
+                    map.fitBounds(bounds, {
+                        padding: [50, 50], // Tambahkan padding agar marker tidak terlalu dekat dengan tepi
+                        maxZoom: 12 // Batasi zoom maksimal
+                    });
+                }
 
                 document.addEventListener('DOMContentLoaded', function() {
                     const navLinks = document.querySelectorAll('.nav-link');

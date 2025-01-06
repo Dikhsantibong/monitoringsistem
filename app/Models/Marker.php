@@ -17,15 +17,26 @@ class Marker extends Model
         'lat',
         'lng',
         'name',
+        'mesin',
         'capacity',
         'status',
-        'date',
-        'is_active',
         'DMN',
         'DMP',
-        'HOP',
         'Beban',
+        'HOP'
     ];
+
+    // Jika Anda menggunakan accessor untuk mendapatkan latitude dan longitude
+    public function getLatitudeAttribute()
+    {
+        return $this->lat; // Pastikan ini sesuai dengan nama kolom di database
+    }
+
+    public function getLongitudeAttribute()
+    {
+        return $this->lng; // Pastikan ini sesuai dengan nama kolom di database
+    }
+
     public function getConnectionName()
     {
         // Mengambil unit yang dipilih dari session dan mengatur koneksi sesuai unit

@@ -22,6 +22,7 @@ class HomeController extends Controller
                 ->with(['machines:id,power_plant_id,name,status,capacity'])
                 ->get();
             
+            $markers = Marker::all();
             // Ambil data status log hari ini
             $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
                 ->select(
@@ -93,6 +94,20 @@ class HomeController extends Controller
             })->count();
 
             \Log::info('Data markers:', $markers); // Debug log
+
+            $markers = Marker::all()->map(function($marker) {
+                $data = [
+                    'id' => $marker->id,
+                    'name' => $marker->name,
+                    'latitude' => $marker->lat,
+                    'longitude' => $marker->lng,
+                    'total_machines' => 1,
+                    'active_machines' => $marker->status == 'Aktif' ? 1 : 0,
+                    'total_capacity' => (float) $marker->capacity
+                ];
+                \Log::info("Processing marker: ", $data);
+                return $data;
+            })->toArray();
 
             return view('homepage', compact(
                 'markers',
