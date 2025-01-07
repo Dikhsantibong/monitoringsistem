@@ -371,25 +371,40 @@
         // Inisialisasi data peserta dari database
         let pesertaList = @json($defaultPeserta);
 
-        // Fungsi untuk render tabel peserta
+        // Fungsi untuk memperbarui jumlah peserta
+        function updatePesertaCount() {
+            const count = pesertaList.length;
+            const pesertaCount = document.getElementById('pesertaCount');
+            if (pesertaCount) {
+                pesertaCount.textContent = count;
+            }
+        }
+
+        // Fungsi untuk render tabel peserta yang diperbaiki
         function renderPesertaTable() {
             const tbody = document.getElementById('pesertaTableBody');
+            if (!tbody) {
+                console.error('Tbody element tidak ditemukan');
+                return;
+            }
+
             tbody.innerHTML = '';
             
             pesertaList.forEach((peserta, index) => {
                 const row = document.createElement('tr');
-                row.className = 'peserta-row';
+                row.className = 'peserta-row hover:bg-gray-50';
                 row.innerHTML = `
-                    <td class="px-4 py-2">${index + 1}</td>
+                    <td class="px-4 py-2 text-center">${index + 1}</td>
                     <td class="px-4 py-2">
                         <input type="text" 
                                value="${peserta.jabatan}" 
-                               class="w-full border rounded px-2 py-1 jabatan-input"
-                               data-id="${peserta.id}">
+                               class="w-full border rounded px-2 py-1 jabatan-input focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                               data-id="${peserta.id}"
+                               placeholder="Masukkan Jabatan">
                     </td>
-                    <td class="px-4 py-2">
+                    <td class="px-4 py-2 text-center">
                         <button type="button" 
-                                class="text-red-500 hover:text-red-700 delete-btn"
+                                class="text-red-500 hover:text-red-700 delete-btn transition-colors duration-150"
                                 onclick="deletePeserta(${peserta.id})">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -397,23 +412,70 @@
                 `;
                 tbody.appendChild(row);
             });
+
+            // Update jumlah peserta setiap kali tabel di-render
+            updatePesertaCount();
         }
 
-        // Fungsi untuk menghapus peserta
+        // Fungsi untuk menghapus peserta dengan SweetAlert
         window.deletePeserta = function(id) {
-            pesertaList = pesertaList.filter(p => p.id !== id);
-            renderPesertaTable();
-            renderPesertaForm();
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Peserta ini akan dihapus dari daftar",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proses penghapusan
+                    pesertaList = pesertaList.filter(p => p.id !== id);
+                    renderPesertaTable();
+                    renderPesertaForm();
+
+                    // Tampilkan notifikasi sukses
+                    Swal.fire(
+                        'Terhapus!',
+                        'Peserta berhasil dihapus.',
+                        'success'
+                    );
+                }
+            });
         }
 
         // Event listener untuk tombol tambah peserta
         document.getElementById('addPesertaBtn').addEventListener('click', function() {
-            const newId = Math.max(...pesertaList.map(p => p.id), 0) + 1;
-            pesertaList.push({
-                id: newId,
-                jabatan: ''
-            });
-            renderPesertaTable();
+            try {
+                const newId = pesertaList.length > 0 
+                    ? Math.max(...pesertaList.map(p => parseInt(p.id))) + 1 
+                    : 1;
+                
+                pesertaList.push({
+                    id: newId,
+                    jabatan: 'Jabatan Baru'
+                });
+                
+                renderPesertaTable();
+                
+                // Scroll ke baris baru
+                const tbody = document.getElementById('pesertaTableBody');
+                const lastRow = tbody.lastElementChild;
+                if (lastRow) {
+                    lastRow.scrollIntoView({ behavior: 'smooth' });
+                    // Focus pada input jabatan baru
+                    const input = lastRow.querySelector('.jabatan-input');
+                    if (input) {
+                        input.focus();
+                        input.select();
+                    }
+                }
+            } catch (error) {
+                console.error('Error menambah peserta:', error);
+                alert('Terjadi kesalahan saat menambah peserta');
+            }
         });
 
         // Event listener untuk tombol simpan dengan AJAX
@@ -467,9 +529,18 @@
         });
 
         // Render awal
-        renderPesertaForm();
+        renderPesertaTable();
+        updatePesertaCount();
     });
 </script>
+
 @push('scripts')
+<!-- Include SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@endpush
+
+@push('styles')
+<!-- Optional: Include SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
 @endpush
 @endsection
