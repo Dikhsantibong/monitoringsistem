@@ -64,7 +64,14 @@
             <main class="px-6">
                 <!-- Konten Laporan SR/WO -->
                 <div class="bg-white rounded-lg shadow p-6 sm:p-3">
-                    <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">Detail Laporan</h2>
+                        <a href="{{ route('admin.laporan.manage') }}" 
+                           class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-cog mr-2"></i>
+                            Manajemen Laporan
+                        </a>
+                    </div>
                     <div class="p-4 md:p-0">
                         <!-- Filter dan Search Section -->
                         <div class="mb-4 flex flex-col lg:flex-row justify-end space-x-4 gap-y-3">

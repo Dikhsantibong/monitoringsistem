@@ -306,26 +306,38 @@
         // Fungsi untuk render form peserta dengan event listener skor
         function renderPesertaForm() {
             const container = document.getElementById('pesertaContainer');
-            container.innerHTML = pesertaList.map((peserta, index) => `
+            container.innerHTML = `
+                <div class="grid grid-cols-6 gap-4 mb-4 font-semibold">
+                    <div>Jabatan</div>
+                    <div class="text-center">Awal</div>
+                    <div class="text-center">Akhir</div>
+                    <div class="text-center">Skor</div>
+                    <div class="col-span-2">Keterangan</div>
+                </div>
+            `;
+
+            container.innerHTML += pesertaList.map((peserta, index) => `
                 <div class="grid grid-cols-6 gap-4 items-center mb-2">
+                    <input type="hidden" name="peserta[${index}][id]" value="${peserta.id}">
+                    <input type="hidden" name="peserta[${index}][jabatan]" value="${peserta.jabatan}">
                     <label class="text-sm">${index + 1}. ${peserta.jabatan}</label>
                     <div class="text-center">
-                        <select name="peserta[${peserta.id}][awal]" class="w-20 border rounded text-center peserta-select" data-group="${peserta.id}">
+                        <select name="peserta[${index}][awal]" class="w-20 border rounded text-center peserta-select" data-group="${index}">
                             <option value="1">✓</option>
                             <option value="0" selected>✗</option>
                         </select>
                     </div>
                     <div class="text-center">
-                        <select name="peserta[${peserta.id}][akhir]" class="w-20 border rounded text-center peserta-select" data-group="${peserta.id}">
+                        <select name="peserta[${index}][akhir]" class="w-20 border rounded text-center peserta-select" data-group="${index}">
                             <option value="1">✓</option>
                             <option value="0" selected>✗</option>
                         </select>
                     </div>
                     <div class="text-center">
-                        <input type="number" name="peserta[${peserta.id}][skor]" class="w-20 border rounded text-center" readonly>
+                        <input type="number" name="peserta[${index}][skor]" class="w-20 border rounded text-center" readonly>
                     </div>
                     <div class="col-span-2">
-                        <input type="text" name="peserta[${peserta.id}][keterangan]" class="w-full border rounded px-2 py-1 text-sm" readonly>
+                        <input type="text" name="peserta[${index}][keterangan]" class="w-full border rounded px-2 py-1 text-sm" readonly>
                     </div>
                 </div>
             `).join('');
@@ -339,8 +351,8 @@
             });
 
             // Hitung skor awal untuk semua peserta
-            pesertaList.forEach(peserta => {
-                calculateScore(peserta.id);
+            pesertaList.forEach((peserta, index) => {
+                calculateScore(index);
             });
         }
 

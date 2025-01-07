@@ -403,5 +403,78 @@ class LaporanController extends Controller
             }
         }
     }
+
+    public function destroySR($id)
+    {
+        try {
+            $sr = ServiceRequest::findOrFail($id);
+            $sr->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Service Request berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus Service Request: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyWO($id)
+    {
+        try {
+            $wo = WorkOrder::findOrFail($id);
+            $wo->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Work Order berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus Work Order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyBacklog($id)
+    {
+        try {
+            $backlog = WoBacklog::findOrFail($id);
+            $backlog->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'WO Backlog berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus WO Backlog: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function manage()
+    {
+        try {
+            // Ambil data SR, WO, dan Backlog
+            $serviceRequests = ServiceRequest::orderBy('created_at', 'desc')->get();
+            $workOrders = WorkOrder::orderBy('created_at', 'desc')->get();
+            $woBacklogs = WoBacklog::orderBy('created_at', 'desc')->get();
+
+            return view('admin.laporan.manage', compact(
+                'serviceRequests',
+                'workOrders',
+                'woBacklogs'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Error in manage method: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data.');
+        }
+    }
 }
 

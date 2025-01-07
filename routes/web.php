@@ -323,7 +323,20 @@ Route::delete('/admin/overdue-discussions/{discussion}', [OverdueDiscussionContr
 Route::post('/admin/overdue-discussions/{discussion}/update-status', [OverdueDiscussionController::class, 'updateStatus'])
      ->name('admin.overdue-discussions.update-status');
 
-Route::post('/admin/peserta/update', [ScoreCardDailyController::class, 'updatePeserta'])->name('admin.peserta.update');
+Route::post('/admin/peserta/update', [PesertaController::class, 'update'])->name('admin.peserta.update');
+
+Route::prefix('admin/laporan')->group(function () {
+    // Route yang sudah ada
+    Route::get('/sr-wo', [LaporanController::class, 'srWo'])->name('admin.laporan.sr_wo');
+    
+    // Route baru untuk halaman manage
+    Route::get('/manage', [LaporanController::class, 'manage'])->name('admin.laporan.manage');
+    
+    // Route untuk delete
+    Route::delete('/sr/{id}', [LaporanController::class, 'destroySR'])->name('admin.laporan.sr.destroy');
+    Route::delete('/wo/{id}', [LaporanController::class, 'destroyWO'])->name('admin.laporan.wo.destroy');
+    Route::delete('/backlog/{id}', [LaporanController::class, 'destroyBacklog'])->name('admin.laporan.backlog.destroy');
+});
 
 
     

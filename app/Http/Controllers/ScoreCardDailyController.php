@@ -145,37 +145,34 @@ class ScoreCardDailyController extends Controller
 
         // Ambil data kehadiran untuk validasi
         $attendances = \App\Models\Attendance::whereDate('time', $validated['tanggal'])->get();
+
+
+        // Ambil data peserta dari database untuk referensi jabatan
+        $pesertaDb = Peserta::all()->keyBy('id');
         
-        // Hitung jumlah kehadiran awal dan akhir
-        $awal = $attendances->where('time', $attendances->min('time'))->count();
-        $akhir = $attendances->where('time', $attendances->max('time'))->count();
-        
-        // Hitung skor berdasarkan kehadiran
-        $skor = 0;
-        if ($awal > 0 && $akhir > 0) {
-            $skor = 100;
-        } elseif ($awal > 0 || $akhir > 0) {
-            $skor = 50;
+        // Format ulang data peserta yang diterima
+        $formattedPeserta = [];
+        foreach ($validated['peserta'] as $id => $data) {
+            // Pastikan peserta ada di database
+            if (isset($pesertaDb[$id])) {
+                $formattedPeserta[$pesertaDb[$id]->jabatan] = [
+                    'awal' => $data['awal'] ?? '0',
+                    'akhir' => $data['akhir'] ?? '0',
+                    'skor' => $data['skor'] ?? '0',
+                    'keterangan' => $data['keterangan'] ?? '',
+                    'jabatan' => $pesertaDb[$id]->jabatan // Tambahkan jabatan
+                ];
+            }
         }
 
-        // Tambahkan ini di bagian store() setelah validasi
-        $ketentuanRapat = [
-            'aktifitas_meeting' => $validated['aktifitas_meeting'] ?? 100,
-            'gangguan_diskusi' => $validated['gangguan_diskusi'] ?? 100,
-            'gangguan_keluar_masuk' => $validated['gangguan_keluar_masuk'] ?? 100,
-            'gangguan_interupsi' => $validated['gangguan_interupsi'] ?? 100,
-            'ketegasan_moderator' => $validated['ketegasan_moderator'] ?? 100,
-            'kelengkapan_sr' => $validated['kelengkapan_sr'] ?? 100,
-        ];
-
-        // Buat record baru
+        // Buat record baru dengan data peserta yang sudah diformat
         ScoreCardDaily::create([
             'tanggal' => $validated['tanggal'],
             'lokasi' => $validated['lokasi'],
-            'peserta' => json_encode($validated['peserta']), // Simpan sebagai JSON
-            'awal' => $awal,
-            'akhir' => $akhir,
-            'skor' => $skor,
+            'peserta' => json_encode($formattedPeserta), // Simpan data peserta yang sudah diformat
+            'awal' => $attendances->where('time', $attendances->min('time'))->count(),
+            'akhir' => $attendances->where('time', $attendances->max('time'))->count(),
+            'skor' => 0,
             'waktu_mulai' => $validated['waktu_mulai'],
             'waktu_selesai' => $validated['waktu_selesai'],
             'kesiapan_panitia' => $validated['kesiapan_panitia'] ?? 100,
@@ -187,12 +184,18 @@ class ScoreCardDailyController extends Controller
             'gangguan_interupsi' => $validated['gangguan_interupsi'] ?? 100,
             'ketegasan_moderator' => $validated['ketegasan_moderator'] ?? 100,
             'kelengkapan_sr' => $validated['kelengkapan_sr'] ?? 100,
-            'ketentuan_rapat' => json_encode($ketentuanRapat), // Simpan sebagai JSON
+            'ketentuan_rapat' => json_encode([
+                'aktifitas_meeting' => $validated['aktifitas_meeting'] ?? 100,
+                'gangguan_diskusi' => $validated['gangguan_diskusi'] ?? 100,
+                'gangguan_keluar_masuk' => $validated['gangguan_keluar_masuk'] ?? 100,
+                'gangguan_interupsi' => $validated['gangguan_interupsi'] ?? 100,
+                'ketegasan_moderator' => $validated['ketegasan_moderator'] ?? 100,
+                'kelengkapan_sr' => $validated['kelengkapan_sr'] ?? 100,
+            ]),
         ]);
 
         return redirect()->route('admin.score-card.index')
-            ->with('success', 'Score Card berhasil dibuat')
-            ->with('ketentuanRapat', $ketentuanRapat);
+            ->with('success', 'Score Card berhasil dibuat');
     }
 
     public function createZoomMeeting()
