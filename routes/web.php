@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\PowerPlantController;
 use App\Http\Controllers\Admin\OtherDiscussionController;
 use App\Http\Controllers\Admin\OverdueDiscussionController;
 use App\Http\Controllers\PesertaController;
+use App\Http\Controllers\Admin\LaporanDeleteController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -345,10 +346,21 @@ Route::prefix('admin/laporan')->group(function () {
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
     Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::delete('/destroy-sr/{id}', [LaporanController::class, 'destroySR'])->name('destroy-sr');
-        Route::delete('/destroy-wo/{id}', [LaporanController::class, 'destroyWO'])->name('destroy-wo');
-        Route::delete('/destroy-backlog/{id}', [LaporanController::class, 'destroyBacklog'])->name('destroy-backlog');
+        Route::get('/manage', [LaporanController::class, 'manage'])->name('manage');
+        // Route untuk delete dengan method POST
+        Route::post('/delete/{type}/{id}', [LaporanDeleteController::class, 'destroy'])
+            ->name('delete')
+            ->where(['type' => 'sr|wo|backlog']);
     });
+});
+
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+    // ... route lainnya ...
+    
+    // Route khusus untuk delete
+    Route::delete('/laporan/delete/{type}/{id}', [LaporanDeleteController::class, 'destroy'])
+        ->name('laporan.delete')
+        ->where(['type' => 'sr|wo|backlog']);
 });
 
 

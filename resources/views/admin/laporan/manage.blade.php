@@ -120,7 +120,8 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border">{{ $sr->priority }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <button data-delete 
+                                        <button type="button"
+                                                data-delete 
                                                 data-type="sr" 
                                                 data-id="{{ $sr->id }}" 
                                                 class="text-red-600 hover:text-red-900">
@@ -171,7 +172,8 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $wo->priority }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <button data-delete 
+                                        <button type="button"
+                                                data-delete 
                                                 data-type="wo" 
                                                 data-id="{{ $wo->id }}" 
                                                 class="text-red-600 hover:text-red-900">
@@ -194,10 +196,9 @@
     </div>
 </div>
 
-@push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-// Fungsi untuk menangani penghapusan data
 function handleDelete(type, id) {
     const types = {
         'sr': 'Service Request',
@@ -221,48 +222,31 @@ function handleDelete(type, id) {
     });
 }
 
-// Fungsi untuk mengirim request delete
 function deleteData(type, id) {
     const token = document.querySelector('meta[name="csrf-token"]').content;
     
-    fetch(`/admin/laporan/destroy-${type}/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: data.message,
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                window.location.reload();
-            });
-        } else {
-            throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: 'Terjadi kesalahan saat menghapus data',
-            confirmButtonText: 'Tutup'
-        });
-    });
+    // Buat form untuk submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/laporan/delete/${type}/${id}`;
+    
+    // Tambahkan CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = token;
+    form.appendChild(csrfInput);
+    
+    // Tambahkan method spoofing untuk DELETE
+    const methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.value = 'DELETE';
+    form.appendChild(methodInput);
+    
+    // Tambahkan form ke document dan submit
+    document.body.appendChild(form);
+    form.submit();
 }
 
 // Event listener untuk tombol hapus
@@ -316,9 +300,10 @@ window.onclick = function(event) {
     }
 }
 </script>
-@endpush
-
 @push('styles')
+@endpush
+@endsection 
+
 <style>
 .tab-btn.active {
     border-bottom-color: #3b82f6;
@@ -328,9 +313,10 @@ window.onclick = function(event) {
     transition: all 0.3s ease-in-out;
 }
 </style>
-@endpush
 
-@push('head')
+
+
+
+{{-- @push('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-@endpush
-@endsection 
+@endpush --}}
