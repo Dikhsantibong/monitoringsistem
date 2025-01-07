@@ -119,7 +119,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border">{{ $sr->priority }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium border">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <button onclick="confirmDelete('sr', {{ $sr->id }})" 
                                                 class="text-red-600 hover:text-red-900">
                                             <i class="fas fa-trash"></i>
@@ -168,7 +168,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $wo->priority }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <button onclick="confirmDelete('wo', {{ $wo->id }})" 
                                                 class="text-red-600 hover:text-red-900">
                                             <i class="fas fa-trash"></i>
@@ -212,7 +212,7 @@ function confirmDelete(type, id) {
     }).then((result) => {
         if (result.isConfirmed) {
             // Kirim request delete ke endpoint yang sesuai
-            fetch(`/admin/laporan/${type}/${id}`, {
+            fetch(`/admin/laporan/destroy-${type}/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -222,23 +222,26 @@ function confirmDelete(type, id) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire(
-                        'Terhapus!',
-                        `${types[type]} berhasil dihapus.`,
-                        'success'
-                    ).then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
                         location.reload();
                     });
                 } else {
-                    throw new Error(data.message || 'Terjadi kesalahan');
+                    throw new Error(data.message);
                 }
             })
             .catch(error => {
-                Swal.fire(
-                    'Error!',
-                    error.message,
-                    'error'
-                );
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: error.message,
+                    confirmButtonText: 'Tutup'
+                });
             });
         }
     });

@@ -343,5 +343,13 @@ Route::prefix('admin/laporan')->group(function () {
     Route::delete('/backlog/{id}', [LaporanController::class, 'destroyBacklog'])->name('admin.laporan.backlog.destroy');
 });
 
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::delete('/destroy-sr/{id}', [LaporanController::class, 'destroySR'])->name('destroy-sr');
+        Route::delete('/destroy-wo/{id}', [LaporanController::class, 'destroyWO'])->name('destroy-wo');
+        Route::delete('/destroy-backlog/{id}', [LaporanController::class, 'destroyBacklog'])->name('destroy-backlog');
+    });
+});
+
 
     
