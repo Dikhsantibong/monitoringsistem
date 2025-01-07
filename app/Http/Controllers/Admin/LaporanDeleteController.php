@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class LaporanDeleteController extends Controller
 {
-    public function destroy(Request $request, $type, $id)
+    public function destroy($type, $id)
     {
         try {
             switch ($type) {
@@ -32,27 +32,17 @@ class LaporanDeleteController extends Controller
             }
 
             $item->delete();
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $message
-                ]);
-            }
-
-            return redirect()->back()->with('success', $message);
+            
+            return redirect()
+                ->route('admin.laporan.manage')
+                ->with('success', $message);
 
         } catch (\Exception $e) {
-            Log::error('Error deleting ' . $type . ': ' . $e->getMessage());
+            \Log::error('Error deleting ' . $type . ': ' . $e->getMessage());
             
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat menghapus data'
-                ], 500);
-            }
-
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data');
+            return redirect()
+                ->route('admin.laporan.manage')
+                ->with('error', 'Terjadi kesalahan saat menghapus data');
         }
     }
 } 

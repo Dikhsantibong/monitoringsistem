@@ -217,36 +217,32 @@ function handleDelete(type, id) {
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
-            deleteData(type, id);
+            // Buat form untuk submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ route('admin.laporan.delete', ['type' => ':type', 'id' => ':id']) }}".replace(':type', type).replace(':id', id);
+            
+            // Tambahkan CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+            
+            // Tambahkan method spoofing untuk DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            // Tambahkan form ke document dan submit
+            document.body.appendChild(form);
+            
+            // Submit form
+            form.submit();
         }
     });
-}
-
-function deleteData(type, id) {
-    const token = document.querySelector('meta[name="csrf-token"]').content;
-    
-    // Buat form untuk submit
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/admin/laporan/delete/${type}/${id}`;
-    
-    // Tambahkan CSRF token
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = '_token';
-    csrfInput.value = token;
-    form.appendChild(csrfInput);
-    
-    // Tambahkan method spoofing untuk DELETE
-    const methodInput = document.createElement('input');
-    methodInput.type = 'hidden';
-    methodInput.name = '_method';
-    methodInput.value = 'DELETE';
-    form.appendChild(methodInput);
-    
-    // Tambahkan form ke document dan submit
-    document.body.appendChild(form);
-    form.submit();
 }
 
 // Event listener untuk tombol hapus
@@ -320,3 +316,30 @@ window.onclick = function(event) {
 {{-- @push('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @endpush --}}
+
+@if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        });
+    </script>
+@endif
+
+@if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: "{{ session('error') }}",
+                confirmButtonText: 'Tutup'
+            });
+        });
+    </script>
+@endif

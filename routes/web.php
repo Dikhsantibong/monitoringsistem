@@ -347,8 +347,8 @@ Route::prefix('admin/laporan')->group(function () {
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
     Route::prefix('laporan')->name('laporan.')->group(function () {
         Route::get('/manage', [LaporanController::class, 'manage'])->name('manage');
-        // Route untuk delete dengan method POST
-        Route::post('/delete/{type}/{id}', [LaporanDeleteController::class, 'destroy'])
+        // Perbaikan route delete
+        Route::delete('/delete/{type}/{id}', [LaporanDeleteController::class, 'destroy'])
             ->name('delete')
             ->where(['type' => 'sr|wo|backlog']);
     });
