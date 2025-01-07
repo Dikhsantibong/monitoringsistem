@@ -3,51 +3,7 @@
 @section('content')
 <div class="flex h-screen bg-gray-50 overflow-auto">
     <!-- Sidebar -->
-    <aside class="w-64 bg-[#0A749B] shadow-md">
-        <div class="p-4">
-            <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40 h-15">
-        </div>
-        <nav class="mt-4">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-[#F3F3F3] text-white' : 'text-white  hover:bg-[#F3F3F3] hover:text-black' }}">
-                <i class="fas fa-home mr-3"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ route('admin.score-card.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.score-card.*') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3] hover:text-black' }}">
-                <i class="fas fa-clipboard-list mr-3"></i>
-                <span>Score Card Daily</span>
-            </a>
-            <a href="{{ route('admin.daftar_hadir.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-list mr-3"></i>
-                <span>Daftar Hadir</span>
-            </a>
-            <a href="{{ route('admin.pembangkit.ready') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-check mr-3"></i>
-                <span>Kesiapan Pembangkit</span>
-            </a>
-            <a href="{{ route('admin.laporan.sr_wo') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-file-alt mr-3"></i>
-                <span>Laporan SR/WO</span>
-            </a>
-            <a href="{{ route('admin.machine-monitor') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.machine-monitor') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-cogs mr-3"></i>
-                <span>Monitor Mesin</span>
-            </a>
-            <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-users mr-3"></i>
-                <span>Manajemen Pengguna</span>
-            </a>
-            <a href="{{ route('admin.meetings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.meetings') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-chart-bar mr-3"></i>
-                <span>Laporan Rapat</span>
-            </a>
-            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings') ? 'bg-[#F3F3F3] text-black' : 'text-white  hover:bg-[#F3F3F3]' }}">
-                <i class="fas fa-cog mr-3"></i>
-                <span>Pengaturan</span>
-            </a>
-        </nav>
-    </aside>
-    
-
+    @include('components.sidebar')
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
         <div class="container mx-auto px-4 py-8">
@@ -306,38 +262,26 @@
         // Fungsi untuk render form peserta dengan event listener skor
         function renderPesertaForm() {
             const container = document.getElementById('pesertaContainer');
-            container.innerHTML = `
-                <div class="grid grid-cols-6 gap-4 mb-4 font-semibold">
-                    <div>Jabatan</div>
-                    <div class="text-center">Awal</div>
-                    <div class="text-center">Akhir</div>
-                    <div class="text-center">Skor</div>
-                    <div class="col-span-2">Keterangan</div>
-                </div>
-            `;
-
-            container.innerHTML += pesertaList.map((peserta, index) => `
+            container.innerHTML = pesertaList.map((peserta, index) => `
                 <div class="grid grid-cols-6 gap-4 items-center mb-2">
-                    <input type="hidden" name="peserta[${index}][id]" value="${peserta.id}">
-                    <input type="hidden" name="peserta[${index}][jabatan]" value="${peserta.jabatan}">
                     <label class="text-sm">${index + 1}. ${peserta.jabatan}</label>
                     <div class="text-center">
-                        <select name="peserta[${index}][awal]" class="w-20 border rounded text-center peserta-select" data-group="${index}">
+                        <select name="peserta[${peserta.id}][awal]" class="w-20 border rounded text-center peserta-select" data-group="${peserta.id}">
                             <option value="1">✓</option>
                             <option value="0" selected>✗</option>
                         </select>
                     </div>
                     <div class="text-center">
-                        <select name="peserta[${index}][akhir]" class="w-20 border rounded text-center peserta-select" data-group="${index}">
+                        <select name="peserta[${peserta.id}][akhir]" class="w-20 border rounded text-center peserta-select" data-group="${peserta.id}">
                             <option value="1">✓</option>
                             <option value="0" selected>✗</option>
                         </select>
                     </div>
                     <div class="text-center">
-                        <input type="number" name="peserta[${index}][skor]" class="w-20 border rounded text-center" readonly>
+                        <input type="number" name="peserta[${peserta.id}][skor]" class="w-20 border rounded text-center" readonly>
                     </div>
                     <div class="col-span-2">
-                        <input type="text" name="peserta[${index}][keterangan]" class="w-full border rounded px-2 py-1 text-sm" readonly>
+                        <input type="text" name="peserta[${peserta.id}][keterangan]" class="w-full border rounded px-2 py-1 text-sm" readonly>
                     </div>
                 </div>
             `).join('');
@@ -351,8 +295,8 @@
             });
 
             // Hitung skor awal untuk semua peserta
-            pesertaList.forEach((peserta, index) => {
-                calculateScore(index);
+            pesertaList.forEach(peserta => {
+                calculateScore(peserta.id);
             });
         }
 
@@ -502,6 +446,18 @@
                     }
                 });
 
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Menyimpan...',
+                    text: 'Mohon tunggu sebentar',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 // Kirim data ke server
                 const response = await fetch('{{ route("admin.peserta.update") }}', {
                     method: 'POST',
@@ -523,9 +479,24 @@
                 document.getElementById('pesertaModal').classList.add('hidden');
                 
                 // Tampilkan pesan sukses
-                alert('Perubahan berhasil disimpan');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Data peserta berhasil disimpan',
+                    showConfirmButton: true,
+                    timer: 1500,
+                    timerProgressBar: true
+                });
+
             } catch (error) {
-                alert('Terjadi kesalahan: ' + error.message);
+                // Tampilkan pesan error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan: ' + error.message,
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#d33'
+                });
             }
         });
 
