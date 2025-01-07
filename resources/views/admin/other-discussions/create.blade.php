@@ -278,7 +278,7 @@
     </div>
 </div>
 
-@push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.getElementById('createDiscussionForm').addEventListener('submit', function(e) {
@@ -324,5 +324,6 @@ document.getElementById('createDiscussionForm').addEventListener('submit', funct
     });
 });
 </script>
+@push('scripts')
 @endpush
 @endsection 
