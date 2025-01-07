@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ScoreCardDaily;
+use App\Models\Peserta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -95,13 +96,15 @@ class ScoreCardDailyController extends Controller
 
     public function create()
     {
-        // Ambil data kehadiran hari ini
+        // Ambil data peserta dari database
+        $defaultPeserta = Peserta::select('id', 'jabatan')->get()->toArray();
+
+        // Data lainnya tetap sama
         $today = now()->format('Y-m-d');
         $attendances = \App\Models\Attendance::whereDate('time', $today)
             ->select('name', 'division', 'time')
             ->get();
 
-        // Kelompokkan peserta berdasarkan divisi
         $peserta = [
             'manager_up' => $attendances->where('division', 'MANAGER UP')->count(),
             'asman_operasi' => $attendances->where('division', 'ASMAN OPERASI')->count(),
@@ -114,11 +117,10 @@ class ScoreCardDailyController extends Controller
             'tl_lingkungan' => $attendances->where('division', 'TL LINGKUNGAN')->count(),
         ];
 
-        // Ambil waktu awal dan akhir kehadiran
         $waktuMulai = $attendances->min('time');
         $waktuSelesai = $attendances->max('time');
 
-        return view('admin.score-card.create', compact('peserta', 'waktuMulai', 'waktuSelesai'));
+        return view('admin.score-card.create', compact('peserta', 'waktuMulai', 'waktuSelesai', 'defaultPeserta'));
     }
 
     public function store(Request $request)
@@ -292,5 +294,23 @@ class ScoreCardDailyController extends Controller
             ], 500);
         }
     }
-        
+
+    // Tambahkan method untuk update peserta
+    public function updatePeserta(Request $request)
+    {
+        try {
+            $pesertaData = $request->input('peserta', []);
+            
+            foreach ($pesertaData as $data) {
+                Peserta::updateOrCreate(
+                    ['id' => $data['id']],
+                    ['jabatan' => $data['jabatan']]
+                );
+            }
+
+            return response()->json(['message' => 'Peserta berhasil diupdate'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error updating peserta: ' . $e->getMessage()], 500);
+        }
+    }
 }

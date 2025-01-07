@@ -390,46 +390,84 @@
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const dateSelect = document.querySelector('#tanggal-filter');
+                    const searchInput = document.querySelector('#search-input');
                     
                     function showLoader() {
-                        document.getElementById('tableLoader').classList.remove('hidden');
-                        document.getElementById('tableData').classList.add('hidden');
+                        const loader = document.getElementById('tableLoader');
+                        const content = document.getElementById('tableData');
+                        if (loader && content) {
+                            loader.classList.remove('hidden');
+                            content.classList.add('hidden');
+                        }
                     }
                     
                     function hideLoader() {
-                        document.getElementById('tableLoader').classList.add('hidden');
-                        document.getElementById('tableData').classList.remove('hidden');
+                        const loader = document.getElementById('tableLoader');
+                        const content = document.getElementById('tableData');
+                        if (loader && content) {
+                            loader.classList.add('hidden');
+                            content.classList.remove('hidden');
+                        }
                     }
                     
                     if (dateSelect) {
                         dateSelect.addEventListener('change', function() {
                             const selectedDate = this.value;
-                            showLoader(); // Tampilkan loader
+                            showLoader();
                             
-                            // Update URL tanpa refresh
+                            // Update URL
                             const newUrl = new URL(window.location.href);
                             newUrl.searchParams.set('tanggal', selectedDate);
                             window.history.pushState({}, '', newUrl);
                             
-                            // AJAX call untuk memperbarui data
+                            // Fetch data dengan AJAX
                             fetch(`{{ route('admin.meetings') }}?tanggal=${selectedDate}`, {
+                                method: 'GET',
                                 headers: {
-                                    'X-Requested-With': 'XMLHttpRequest'
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'text/html'
                                 }
                             })
-                            .then(response => response.text())
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.text();
+                            })
                             .then(html => {
                                 const dynamicContent = document.querySelector('#dynamic-content');
                                 if (dynamicContent) {
                                     dynamicContent.innerHTML = html;
+                                    // Reinisialisasi event listeners jika diperlukan
+                                    initializeEventListeners();
                                 }
-                                hideLoader(); // Sembunyikan loader
+                                hideLoader();
                             })
                             .catch(error => {
                                 console.error('Error:', error);
                                 alert('Gagal memuat data. Silakan coba lagi.');
-                                hideLoader(); // Sembunyikan loader jika terjadi error
+                                hideLoader();
                             });
+                        });
+                    }
+
+                    // Fungsi untuk menginisialisasi event listeners
+                    function initializeEventListeners() {
+                        // Tambahkan event listeners tambahan di sini jika diperlukan
+                        const searchInput = document.querySelector('#search-input');
+                        if (searchInput) {
+                            searchInput.addEventListener('input', handleSearch);
+                        }
+                    }
+
+                    // Fungsi untuk pencarian
+                    function handleSearch() {
+                        const searchValue = searchInput.value.toLowerCase();
+                        const rows = document.querySelectorAll('#tableData tr');
+                        
+                        rows.forEach(row => {
+                            const text = row.textContent.toLowerCase();
+                            row.style.display = text.includes(searchValue) ? '' : 'none';
                         });
                     }
                 });
@@ -449,3 +487,4 @@
                 }
                 </script>
             @endsection
+

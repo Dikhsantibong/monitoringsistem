@@ -70,227 +70,73 @@
 
                     <!-- Peserta Meeting -->
                     <div class="border p-4 rounded">
-                        <h3 class="font-bold mb-4">Jumlah Peserta Meeting</h3>
-                        <div class="space-y-2">
-                            <!-- Header kolom -->
-                            <div class="grid grid-cols-6 gap-4 items-center mb-2">
-                                <div class="text-sm font-bold">Peserta</div>
-                                <div class="text-sm font-bold text-center">Awal</div>
-                                <div class="text-sm font-bold text-center">Akhir</div>
-                                <div class="text-sm font-bold text-center">Skor</div>
-                                <div class="text-sm font-bold col-span-2">Keterangan</div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold">Jumlah Peserta Meeting</h3>
+                            <button type="button" id="managePesertaBtn" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                <i class="fas fa-users-cog mr-1"></i> Kelola Peserta
+                            </button>
+                        </div>
+                        
+                        <!-- Daftar peserta yang sudah ada -->
+                        <div id="pesertaContainer">
+                            <!-- Peserta akan di-render di sini secara dinamis -->
+                        </div>
+                    </div>
+
+                    <!-- Modal Kelola Peserta -->
+                    <div id="pesertaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+                        <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-bold">Kelola Peserta Rapat</h3>
+                                <button type="button" id="closeModal" class="text-gray-600 hover:text-gray-800">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
 
-                            <!-- MANAGER UP -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">1. MANAGER UP</label>
-                                <div class="text-center">
-                                    <select name="peserta[manager_up][awal]" class="w-20 border rounded text-center peserta-select" data-group="manager_up">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[manager_up][akhir]" class="w-20 border rounded text-center peserta-select" data-group="manager_up">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[manager_up][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[manager_up][keterangan]" class="w-full border rounded px-2 py-1 text-sm keterangan-input" placeholder="Keterangan">
-                                </div>
+                            <div class="mb-4">
+                                <button type="button" id="addPesertaBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-150">
+                                    <i class="fas fa-plus mr-1"></i> Tambah Peserta
+                                </button>
+                                <span class="ml-2 text-gray-600">Total Peserta: <span id="pesertaCount">0</span></span>
                             </div>
 
-                            <!-- ASMAN OPERASI -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">2. ASMAN OPERASI</label>
-                                <div class="text-center">
-                                    <select name="peserta[asman_operasi][awal]" class="w-20 border rounded text-center peserta-select" data-group="asman_operasi">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[asman_operasi][akhir]" class="w-20 border rounded text-center peserta-select" data-group="asman_operasi">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[asman_operasi][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[asman_operasi][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white border">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-2 border-b w-16">No</th>
+                                            <th class="px-4 py-2 border-b">Jabatan</th>
+                                            <th class="px-4 py-2 border-b w-24">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pesertaTableBody">
+                                        <!-- Data peserta akan di-render di sini -->
+                                    </tbody>
+                                </table>
                             </div>
 
-                            <!-- ASMAN PEMELIHARAAN -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">3. ASMAN PEMELIHARAAN</label>
-                                <div class="text-center">
-                                    <select name="peserta[asman_pemeliharaan][awal]" class="w-20 border rounded text-center peserta-select" data-group="asman_pemeliharaan">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[asman_pemeliharaan][akhir]" class="w-20 border rounded text-center peserta-select" data-group="asman_pemeliharaan">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[asman_pemeliharaan][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[asman_pemeliharaan][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
-                            </div>
-
-                            <!-- ASMAN ENJINIRING -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">4. ASMAN ENJINIRING</label>
-                                <div class="text-center">
-                                    <select name="peserta[asman_enjiniring][awal]" class="w-20 border rounded text-center peserta-select" data-group="asman_enjiniring">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[asman_enjiniring][akhir]" class="w-20 border rounded text-center peserta-select" data-group="asman_enjiniring">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[asman_enjiniring][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[asman_enjiniring][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
-                            </div>
-
-                            <!-- TL RENDAL HAR -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">5. TL RENDAL HAR</label>
-                                <div class="text-center">
-                                    <select name="peserta[tl_rendal_har][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_rendal_har">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[tl_rendal_har][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_rendal_har">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[tl_rendal_har][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[tl_rendal_har][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
-                            </div>
-
-                            <!-- TL ICC -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">6. TL ICC</label>
-                                <div class="text-center">
-                                    <select name="peserta[tl_icc][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_icc">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[tl_icc][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_icc">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[tl_icc][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[tl_icc][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
-                            </div>
-
-                            <!-- TL OUTAGE MANAGEMENT -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">7. TL OUTAGE MANAGEMENT</label>
-                                <div class="text-center">
-                                    <select name="peserta[tl_outage][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_outage">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[tl_outage][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_outage">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[tl_outage][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[tl_outage][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
-                            </div>
-
-                            <!-- TL K3 DAN KAM -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">8. TL K3 DAN KAM</label>
-                                <div class="text-center">
-                                    <select name="peserta[tl_k3][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_k3">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[tl_k3][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_k3">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[tl_k3][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[tl_k3][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
-                            </div>
-
-                            <!-- TL LINGKUNGAN -->
-                            <div class="grid grid-cols-6 gap-4 items-center">
-                                <label class="text-sm">9. TL LINGKUNGAN</label>
-                                <div class="text-center">
-                                    <select name="peserta[tl_lingkungan][awal]" class="w-20 border rounded text-center peserta-select" data-group="tl_lingkungan">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <select name="peserta[tl_lingkungan][akhir]" class="w-20 border rounded text-center peserta-select" data-group="tl_lingkungan">
-                                        <option value="1">✓</option>
-                                        <option value="0" selected>✗</option>
-                                    </select>
-                                </div>
-                                <div class="text-center">
-                                    <input type="number" name="peserta[tl_lingkungan][skor]" class="w-20 border rounded text-center skor-input" readonly>
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="text" name="peserta[tl_lingkungan][keterangan]" class="w-full border rounded px-2 py-1 text-sm" placeholder="Keterangan" readonly>
-                                </div>
+                            <div class="mt-4 flex justify-end">
+                                <button type="button" id="savePesertaBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150">
+                                    <i class="fas fa-save mr-1"></i> Simpan Perubahan
+                                </button>
                             </div>
                         </div>
                     </div>
 
-              
+                    <!-- Template untuk baris peserta baru -->
+                    <template id="pesertaRowTemplate">
+                        <tr class="peserta-row">
+                            <td class="px-4 py-2 nomor"></td>
+                            <td class="px-4 py-2">
+                                <input type="text" class="w-full border rounded px-2 py-1 jabatan-input" placeholder="Masukkan Jabatan">
+                            </td>
+                            <td class="px-4 py-2">
+                                <button class="text-red-500 hover:text-red-700 delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
 
                     <!-- Setelah bagian peserta meeting, tambahkan section baru -->
                     <div class="border p-4 rounded mt-6">
@@ -418,12 +264,18 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Fungsi untuk menghitung skor
         function calculateScore(group) {
             const awalSelect = document.querySelector(`select[name="peserta[${group}][awal]"]`);
             const akhirSelect = document.querySelector(`select[name="peserta[${group}][akhir]"]`);
             const skorInput = document.querySelector(`input[name="peserta[${group}][skor]"]`);
             const keteranganInput = document.querySelector(`input[name="peserta[${group}][keterangan]"]`);
             
+            if (!awalSelect || !akhirSelect || !skorInput || !keteranganInput) {
+                console.error('Elemen tidak ditemukan untuk group:', group);
+                return;
+            }
+
             const awalValue = parseInt(awalSelect.value);
             const akhirValue = parseInt(akhirSelect.value);
             const totalChecks = awalValue + akhirValue;
@@ -431,51 +283,193 @@
             let score = 0;
             let keterangan = '';
             
+            // Logika perhitungan skor
             if (totalChecks === 0) {
                 score = 0;
-                keterangan = `${formatJabatan(group)} tidak hadir dalam rapat`;
+                keterangan = 'Tidak hadir dalam rapat';
             } else if (totalChecks === 1) {
                 score = 50;
                 if (awalValue === 1) {
-                    keterangan = `${formatJabatan(group)} hanya hadir di awal rapat`;
+                    keterangan = 'Hanya hadir di awal rapat';
                 } else {
-                    keterangan = `${formatJabatan(group)} hanya hadir di akhir rapat`;
+                    keterangan = 'Hanya hadir di akhir rapat';
                 }
             } else if (totalChecks === 2) {
                 score = 100;
-                keterangan = `${formatJabatan(group)} hadir penuh`;
+                keterangan = 'Hadir penuh';
             }
             
             skorInput.value = score;
             keteranganInput.value = keterangan;
-
-            // Buat keterangan bisa diedit manual
-            keteranganInput.readOnly = false;
         }
 
-        function formatJabatan(jabatan) {
-            return jabatan
-                .split('_')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-        }
+        // Fungsi untuk render form peserta dengan event listener skor
+        function renderPesertaForm() {
+            const container = document.getElementById('pesertaContainer');
+            container.innerHTML = pesertaList.map((peserta, index) => `
+                <div class="grid grid-cols-6 gap-4 items-center mb-2">
+                    <label class="text-sm">${index + 1}. ${peserta.jabatan}</label>
+                    <div class="text-center">
+                        <select name="peserta[${peserta.id}][awal]" class="w-20 border rounded text-center peserta-select" data-group="${peserta.id}">
+                            <option value="1">✓</option>
+                            <option value="0" selected>✗</option>
+                        </select>
+                    </div>
+                    <div class="text-center">
+                        <select name="peserta[${peserta.id}][akhir]" class="w-20 border rounded text-center peserta-select" data-group="${peserta.id}">
+                            <option value="1">✓</option>
+                            <option value="0" selected>✗</option>
+                        </select>
+                    </div>
+                    <div class="text-center">
+                        <input type="number" name="peserta[${peserta.id}][skor]" class="w-20 border rounded text-center" readonly>
+                    </div>
+                    <div class="col-span-2">
+                        <input type="text" name="peserta[${peserta.id}][keterangan]" class="w-full border rounded px-2 py-1 text-sm" readonly>
+                    </div>
+                </div>
+            `).join('');
 
-        // Add event listeners to all select elements
-        document.querySelectorAll('.peserta-select').forEach(select => {
-            select.addEventListener('change', function() {
-                const group = this.getAttribute('data-group');
-                calculateScore(group);
+            // Tambahkan event listener untuk perhitungan skor
+            document.querySelectorAll('.peserta-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const group = this.getAttribute('data-group');
+                    calculateScore(group);
+                });
             });
+
+            // Hitung skor awal untuk semua peserta
+            pesertaList.forEach(peserta => {
+                calculateScore(peserta.id);
+            });
+        }
+
+        // Debugging
+        console.log('Script loaded');
+        
+        const modal = document.getElementById('pesertaModal');
+        const managePesertaBtn = document.getElementById('managePesertaBtn');
+        
+        // Debugging
+        console.log('Modal element:', modal);
+        console.log('Manage Peserta Button:', managePesertaBtn);
+
+        if (managePesertaBtn) {
+            managePesertaBtn.addEventListener('click', function() {
+                console.log('Button clicked'); // Debugging
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    renderPesertaTable();
+                } else {
+                    console.error('Modal element not found');
+                }
+            });
+        } else {
+            console.error('Manage Peserta Button not found');
+        }
+
+        // Inisialisasi data peserta dari database
+        let pesertaList = @json($defaultPeserta);
+
+        // Fungsi untuk render tabel peserta
+        function renderPesertaTable() {
+            const tbody = document.getElementById('pesertaTableBody');
+            tbody.innerHTML = '';
+            
+            pesertaList.forEach((peserta, index) => {
+                const row = document.createElement('tr');
+                row.className = 'peserta-row';
+                row.innerHTML = `
+                    <td class="px-4 py-2">${index + 1}</td>
+                    <td class="px-4 py-2">
+                        <input type="text" 
+                               value="${peserta.jabatan}" 
+                               class="w-full border rounded px-2 py-1 jabatan-input"
+                               data-id="${peserta.id}">
+                    </td>
+                    <td class="px-4 py-2">
+                        <button type="button" 
+                                class="text-red-500 hover:text-red-700 delete-btn"
+                                onclick="deletePeserta(${peserta.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Fungsi untuk menghapus peserta
+        window.deletePeserta = function(id) {
+            pesertaList = pesertaList.filter(p => p.id !== id);
+            renderPesertaTable();
+            renderPesertaForm();
+        }
+
+        // Event listener untuk tombol tambah peserta
+        document.getElementById('addPesertaBtn').addEventListener('click', function() {
+            const newId = Math.max(...pesertaList.map(p => p.id), 0) + 1;
+            pesertaList.push({
+                id: newId,
+                jabatan: ''
+            });
+            renderPesertaTable();
         });
 
-        // Initial calculation for all groups
-        document.querySelectorAll('.peserta-select').forEach(select => {
-            const group = select.getAttribute('data-group');
-            calculateScore(group);
+        // Event listener untuk tombol simpan dengan AJAX
+        document.getElementById('savePesertaBtn').addEventListener('click', async function() {
+            try {
+                // Update pesertaList dari input fields
+                document.querySelectorAll('.jabatan-input').forEach(input => {
+                    const id = parseInt(input.dataset.id);
+                    const peserta = pesertaList.find(p => p.id === id);
+                    if (peserta) {
+                        peserta.jabatan = input.value;
+                    }
+                });
+
+                // Kirim data ke server
+                const response = await fetch('{{ route("admin.peserta.update") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ peserta: pesertaList })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Gagal menyimpan perubahan');
+                }
+
+                // Render ulang form peserta
+                renderPesertaForm();
+                
+                // Sembunyikan modal
+                document.getElementById('pesertaModal').classList.add('hidden');
+                
+                // Tampilkan pesan sukses
+                alert('Perubahan berhasil disimpan');
+            } catch (error) {
+                alert('Terjadi kesalahan: ' + error.message);
+            }
         });
+
+        // Event listener untuk tombol tutup modal
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('pesertaModal').classList.add('hidden');
+        });
+
+        // Event listener untuk tombol kelola peserta
+        document.getElementById('managePesertaBtn').addEventListener('click', function() {
+            document.getElementById('pesertaModal').classList.remove('hidden');
+            renderPesertaTable();
+        });
+
+        // Render awal
+        renderPesertaForm();
     });
-    </script>
-    @push('scripts')
-        
-    @endpush
+</script>
+@push('scripts')
+@endpush
 @endsection

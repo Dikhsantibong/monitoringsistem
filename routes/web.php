@@ -25,6 +25,7 @@ use App\Http\Controllers\DashboardPemantauanController;
 use App\Http\Controllers\Admin\PowerPlantController;
 use App\Http\Controllers\Admin\OtherDiscussionController;
 use App\Http\Controllers\Admin\OverdueDiscussionController;
+use App\Http\Controllers\PesertaController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -321,6 +322,8 @@ Route::delete('/admin/overdue-discussions/{discussion}', [OverdueDiscussionContr
      ->name('admin.overdue-discussions.destroy');
 Route::post('/admin/overdue-discussions/{discussion}/update-status', [OverdueDiscussionController::class, 'updateStatus'])
      ->name('admin.overdue-discussions.update-status');
+
+Route::post('/admin/peserta/update', [ScoreCardDailyController::class, 'updatePeserta'])->name('admin.peserta.update');
 
 
     

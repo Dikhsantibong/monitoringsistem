@@ -80,6 +80,7 @@
     @yield('content')
     
     <!-- Scripts -->
+    @stack('scripts')
     <script>
     function showLogoutConfirmation() {
         Swal.fire({
