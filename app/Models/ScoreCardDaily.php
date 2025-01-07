@@ -48,10 +48,25 @@ class ScoreCardDaily extends Model
         return session('unit', 'u478221055_up_kendari');
     }
 
+    public function pesertaList()
+    {
+        return $this->belongsToMany(Peserta::class, 'score_card_peserta', 'score_card_daily_id', 'peserta_id')
+            ->withPivot(['kehadiran_awal', 'kehadiran_akhir', 'skor', 'keterangan'])
+            ->withTimestamps();
+    }
+
     protected static function boot()
     {
         parent::boot();
         
+        // Sebelum menyimpan, ambil data peserta dari tabel peserta
+        static::creating(function ($scoreCard) {
+            if (empty($scoreCard->peserta)) {
+                $pesertaList = Peserta::pluck('jabatan')->implode(', ');
+                $scoreCard->peserta = $pesertaList;
+            }
+        });
+
         // Handle Created Event
         static::created(function ($scoreCard) {
             self::syncToUpKendari('create', $scoreCard);
