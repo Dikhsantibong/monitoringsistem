@@ -128,6 +128,8 @@ class OtherDiscussionController extends Controller
     {
         try {
             $validated = $request->validate([
+                'sr_number' => 'nullable|numeric',
+                'wo_number' => 'nullable|numeric',
                 'unit' => 'required',
                 'topic' => 'required',
                 'target' => 'required',
@@ -140,7 +142,21 @@ class OtherDiscussionController extends Controller
                 'deadline' => 'required|date'
             ]);
 
-            OtherDiscussion::create($validated);
+            // Pastikan sr_number dan wo_number dimasukkan ke database
+            $discussion = OtherDiscussion::create([
+                'sr_number' => $request->sr_number,
+                'wo_number' => $request->wo_number,
+                'unit' => $validated['unit'],
+                'topic' => $validated['topic'],
+                'target' => $validated['target'],
+                'risk_level' => $validated['risk_level'],
+                'priority_level' => $validated['priority_level'],
+                'previous_commitment' => $validated['previous_commitment'],
+                'next_commitment' => $validated['next_commitment'],
+                'pic' => $validated['pic'],
+                'status' => $validated['status'],
+                'deadline' => $validated['deadline']
+            ]);
 
             return redirect()
                 ->route('admin.other-discussions.index')
