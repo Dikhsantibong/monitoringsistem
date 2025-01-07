@@ -65,6 +65,7 @@ Route::prefix('attendance')->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
     Route::get('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
 
     Route::prefix('machine-monitor')->group(function () {
@@ -88,6 +89,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     Route::prefix('laporan')->group(function () {
+        Route::get('/', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/manage', [LaporanController::class, 'manage'])->name('laporan.manage');
         Route::get('/sr_wo', [LaporanController::class, 'srWo'])->name('laporan.sr_wo');
         Route::get('/sr_wo/closed', [LaporanController::class, 'srWoClosed'])->name('laporan.sr_wo_closed');
         Route::get('/sr_wo/closed/download', [LaporanController::class, 'downloadSrWoClosed'])->name('laporan.sr_wo.closed.download');
@@ -95,7 +98,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/store-sr', [LaporanController::class, 'storeSR'])->name('laporan.store-sr');
         Route::post('/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
         
+
     });
+   
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
         Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
