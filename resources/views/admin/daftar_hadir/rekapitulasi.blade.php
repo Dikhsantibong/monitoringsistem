@@ -114,7 +114,7 @@
             </div>
             <div class="flex items-end">
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-                    Filter
+                    <i class="fas fa-filter mr-2"></i> Filter
                 </button>
             </div>
         </form>
@@ -126,8 +126,10 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Divisi</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu Hadir</th>
@@ -137,19 +139,20 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($attendances as $hadir)
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 border-r border-gray-200">{{ $loop->iteration }}</td>
+                        <td class="px-6 py-4 border-r border-gray-200">{{ $hadir->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
                             {{ Carbon\Carbon::parse($hadir->time)->format('d/m/Y') }}
                         </td>
-                        <td class="px-6 py-4">{{ $hadir->name }}</td>
-                        <td class="px-6 py-4">{{ $hadir->division }}</td>
-                        <td class="px-6 py-4">{{ $hadir->position }}</td>
-                        <td class="px-6 py-4">{{ Carbon\Carbon::parse($hadir->time)->format('H:i:s') }}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 border-r border-gray-200">{{ $hadir->division }}</td>
+                        <td class="px-6 py-4 border-r border-gray-200">{{ $hadir->position }}</td>
+                        <td class="px-6 py-4 border-r border-gray-200">{{ Carbon\Carbon::parse($hadir->time)->format('H:i:s') }}</td>
+                        <td class="px-6 py-4 border-r border-gray-200">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ Carbon\Carbon::parse($hadir->time)->format('H:i:s') <= '08:00:00' 
+                                {{ Carbon\Carbon::parse($hadir->time)->format('H:i:s') <= '09:00:00' 
                                    ? 'bg-green-100 text-green-800' 
                                    : 'bg-red-100 text-red-800' }}">
-                                {{ Carbon\Carbon::parse($hadir->time)->format('H:i:s') <= '08:00:00' 
+                                {{ Carbon\Carbon::parse($hadir->time)->format('H:i:s') <= '09:00:00' 
                                    ? 'Tepat Waktu' 
                                    : 'Terlambat' }}
                             </span>

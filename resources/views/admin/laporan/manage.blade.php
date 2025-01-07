@@ -56,8 +56,8 @@
         <!-- Breadcrumbs -->
         <div class="mt-3">
             <x-admin-breadcrumb :breadcrumbs="[
-                ['name' => 'Dashboard', 'url' => route('admin.dashboard')],
-                ['name' => 'Laporan', 'url' => route('admin.laporan.index')],
+                // ['name' => 'Dashboard', 'url' => route('admin.dashboard')],
+                ['name' => 'Laporan ', 'url' => route('admin.laporan.index')],
                 ['name' => 'Manajemen', 'url' => null]
             ]" />
         </div>
@@ -109,17 +109,17 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($serviceRequests as $index => $sr)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap border">{{ $index + 1 }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap border">SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}</td>
-                                    <td class="px-6 py-4 border">{{ $sr->description }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap border">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                    <td class="px-6 py-4 border border-gray-200">{{ $sr->description }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border border-gray-200
                                             {{ $sr->status == 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $sr->status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap border">{{ $sr->priority }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $sr->priority }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
                                                 data-delete 
                                                 data-type="sr" 
@@ -161,17 +161,17 @@
                             <tbody>
                                 @foreach($workOrders as $index => $wo)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}</td>
-                                    <td class="px-6 py-4">{{ $wo->description }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                    <td class="px-6 py-4 border border-gray-200">{{ $wo->description }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                             {{ $wo->status == 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $wo->status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $wo->priority }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $wo->priority }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
                                                 data-delete 
                                                 data-type="wo" 

@@ -19,4 +19,8 @@ class Peserta extends Model
             ->withPivot(['kehadiran_awal', 'kehadiran_akhir', 'skor', 'keterangan'])
             ->withTimestamps();
     }
+    public function getConnectionName()
+    {
+        return session('unit', 'u478221055_up_kendari');
+    }
 } 
