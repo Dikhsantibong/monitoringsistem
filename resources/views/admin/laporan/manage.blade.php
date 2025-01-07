@@ -120,7 +120,9 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border">{{ $sr->priority }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <button onclick="confirmDelete('sr', {{ $sr->id }})" 
+                                        <button data-delete 
+                                                data-type="sr" 
+                                                data-id="{{ $sr->id }}" 
                                                 class="text-red-600 hover:text-red-900">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -169,7 +171,9 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $wo->priority }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <button onclick="confirmDelete('wo', {{ $wo->id }})" 
+                                        <button data-delete 
+                                                data-type="wo" 
+                                                data-id="{{ $wo->id }}" 
                                                 class="text-red-600 hover:text-red-900">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -193,7 +197,8 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function confirmDelete(type, id) {
+// Fungsi untuk menangani penghapusan data
+function handleDelete(type, id) {
     const types = {
         'sr': 'Service Request',
         'wo': 'Work Order',
@@ -211,41 +216,66 @@ function confirmDelete(type, id) {
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Kirim request delete ke endpoint yang sesuai
-            fetch(`/admin/laporan/destroy-${type}/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    throw new Error(data.message);
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: error.message,
-                    confirmButtonText: 'Tutup'
-                });
-            });
+            deleteData(type, id);
         }
     });
 }
+
+// Fungsi untuk mengirim request delete
+function deleteData(type, id) {
+    const token = document.querySelector('meta[name="csrf-token"]').content;
+    
+    fetch(`/admin/laporan/destroy-${type}/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: 'Terjadi kesalahan saat menghapus data',
+            confirmButtonText: 'Tutup'
+        });
+    });
+}
+
+// Event listener untuk tombol hapus
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('[data-delete]');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const id = this.dataset.id;
+            handleDelete(type, id);
+        });
+    });
+});
 
 // Tab switching functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -298,5 +328,9 @@ window.onclick = function(event) {
     transition: all 0.3s ease-in-out;
 }
 </style>
+@endpush
+
+@push('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
 @endpush
 @endsection 
