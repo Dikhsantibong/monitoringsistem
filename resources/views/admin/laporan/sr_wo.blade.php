@@ -115,7 +115,8 @@
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
-                                <a href="{{ route('admin.laporan.create-sr') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                <a href="{{ route('admin.laporan.create-sr') }}" 
+                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-plus-circle mr-2"></i> Tambah SR
                                 </a>
                             </div>

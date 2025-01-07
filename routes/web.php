@@ -363,13 +363,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         ->where(['type' => 'sr|wo|backlog']);
 });
 
-Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
-    Route::prefix('other-discussions')->name('other-discussions.')->group(function () {
-        Route::get('/create', [OtherDiscussionController::class, 'create'])->name('create');
-        Route::post('/store', [OtherDiscussionController::class, 'store'])->name('store');
-        // ... route lainnya ...
-    });
-});
 
 
     
