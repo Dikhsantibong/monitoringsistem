@@ -284,45 +284,79 @@
 document.getElementById('createDiscussionForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const formData = new FormData(this);
+    // Disable submit button
     const submitButton = this.querySelector('button[type="submit"]');
-    
     submitButton.disabled = true;
     
-    fetch(this.action, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: data.message,
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                window.location.href = data.redirect_url;
-            });
-        } else {
-            throw new Error(data.message);
+    // Create form data
+    const form = this;
+    const formData = new FormData(form);
+    
+    // Submit form using traditional form submission
+    const tempForm = document.createElement('form');
+    tempForm.method = 'POST';
+    tempForm.action = form.action;
+    
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = '{{ csrf_token() }}';
+    tempForm.appendChild(csrfInput);
+    
+    // Add form data
+    for (let pair of formData.entries()) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = pair[0];
+        input.value = pair[1];
+        tempForm.appendChild(input);
+    }
+    
+    // Add to document and submit
+    document.body.appendChild(tempForm);
+    
+    Swal.fire({
+        title: 'Memproses...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
+    });
+    
+    tempForm.submit();
+});
+
+// Handle response messages
+@if(session('success'))
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 1500
+        }).then(() => {
+            window.location.href = "{{ route('admin.other-discussions.index') }}";
+        });
+    });
+@endif
+
+@if(session('error'))
+    document.addEventListener('DOMContentLoaded', function() {
         Swal.fire({
             icon: 'error',
-            title: 'Error!',
-            text: error.message || 'Terjadi kesalahan saat menyimpan data'
+            title: 'Gagal!',
+            text: "{{ session('error') }}",
+            confirmButtonText: 'Tutup'
+        }).then(() => {
+            submitButton.disabled = false;
         });
-        submitButton.disabled = false;
     });
-});
+@endif
 </script>
 @push('scripts')
 @endpush

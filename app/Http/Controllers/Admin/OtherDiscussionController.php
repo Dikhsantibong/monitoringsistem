@@ -126,26 +126,34 @@ class OtherDiscussionController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'sr_number' => 'nullable|string|max:255',
-            'wo_number' => 'nullable|string|max:255',
-            'unit' => 'required|string|max:255',
-            'topic' => 'required|string|max:255',
-            'target' => 'required|string',
-            'risk_level' => 'required|string|max:255',
-            'priority_level' => 'required|string|max:255',
-            'previous_commitment' => 'required|string',
-            'next_commitment' => 'required|string',
-            'pic' => 'required|string|max:255',
-            'status' => 'required|string|max:255',
-            'deadline' => 'required|date',
-        ]);
+        try {
+            $validated = $request->validate([
+                'unit' => 'required',
+                'topic' => 'required',
+                'target' => 'required',
+                'risk_level' => 'required',
+                'priority_level' => 'required',
+                'previous_commitment' => 'required',
+                'next_commitment' => 'required',
+                'pic' => 'required',
+                'status' => 'required',
+                'deadline' => 'required|date'
+            ]);
 
-        OtherDiscussion::create($validated);
+            OtherDiscussion::create($validated);
 
-        return redirect()
-            ->route('admin.other-discussions.index')
-            ->with('success', 'Data pembahasan berhasil ditambahkan');
+            return redirect()
+                ->route('admin.other-discussions.index')
+                ->with('success', 'Pembahasan lain berhasil ditambahkan');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating other discussion: ' . $e->getMessage());
+            
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menyimpan data');
+        }
     }
 
     public function edit($id)
