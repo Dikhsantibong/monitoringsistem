@@ -92,7 +92,7 @@
                         </div>
 
                         <!-- Filter Unit -->
-                        <div>
+                        {{-- <div>
                             <label for="unit-filter" class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
                             <select id="unit-filter" 
                                     name="unit" 
@@ -104,7 +104,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                        </div>
+                        </div> --}}
 
                         <!-- Filter Tanggal Mulai -->
                         <div>

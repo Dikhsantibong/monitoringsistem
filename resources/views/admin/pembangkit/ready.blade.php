@@ -206,6 +206,8 @@
                                                             <option value="Standby" style="background-color: #2196F3">Standby</option>
                                                             <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
                                                             <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
+                                                            <option value="Mothballed" style="background-color: #9E9E9E">Mothballed</option>
+                                                            <option value="Overhaul" style="background-color: #673AB7">Overhaul</option>
                                                         </select>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
@@ -434,7 +436,9 @@
             'Operasi': '#4CAF50',
             'Standby': '#2196F3',
             'Gangguan': '#f44336',
-            'Pemeliharaan': '#FF9800'
+            'Pemeliharaan': '#FF9800',
+            'Mothballed': '#9E9E9E',
+            'Overhaul': '#673AB7'
         };
         return colors[status] || '#FFFFFF';
     }
@@ -726,7 +730,9 @@
             'Operasi': '#4CAF50',
             'Standby': '#2196F3',
             'Gangguan': '#f44336',
-            'Pemeliharaan': '#FF9800'
+            'Pemeliharaan': '#FF9800',
+            'Mothballed': '#9E9E9E',
+            'Overhaul': '#673AB7'
         };
         return colors[status] || '#FFFFFF';
     }
