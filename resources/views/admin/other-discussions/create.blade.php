@@ -89,8 +89,11 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                     required>
                                 <option value="">Pilih Unit</option>
-                                @foreach(\App\Models\PowerPlant::select('name')->get() as $powerPlant)
-                                    <option value="{{ $powerPlant->name }}" {{ old('unit') == $powerPlant->name ? 'selected' : '' }}
+                                @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
+                                    @php
+                                        $shortName = Str::limit($powerPlant->name, 50, '');  // Memotong nama unit jika terlalu panjang
+                                    @endphp
+                                    <option value="{{ $shortName }}" {{ old('unit') == $shortName ? 'selected' : '' }}
                                             class="bg-white">
                                         {{ $powerPlant->name }}
                                     </option>

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\PowerPlant;
+use Illuminate\Support\Str;
 
 class OtherDiscussionController extends Controller
 {   
@@ -127,49 +128,34 @@ class OtherDiscussionController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'sr_number' => 'nullable|numeric',
+            'wo_number' => 'nullable|numeric',
+            'unit' => 'required|string',
+            'topic' => 'required',
+            'target' => 'required',
+            'risk_level' => 'required',
+            'priority_level' => 'required',
+            'previous_commitment' => 'required',
+            'next_commitment' => 'required',
+            'pic' => 'required',
+            'status' => 'required',
+            'deadline' => 'required|date'
+        ]);
+
         try {
-            $validated = $request->validate([
-                'sr_number' => 'nullable|numeric',
-                'wo_number' => 'nullable|numeric',
-                'unit' => 'required',
-                'topic' => 'required',
-                'target' => 'required',
-                'risk_level' => 'required',
-                'priority_level' => 'required',
-                'previous_commitment' => 'required',
-                'next_commitment' => 'required',
-                'pic' => 'required',
-                'status' => 'required',
-                'deadline' => 'required|date'
-            ]);
+            // Potong string unit jika terlalu panjang (sesuaikan dengan panjang kolom di database)
+            $validated['unit'] = Str::limit($request->unit, 50, ''); // Ubah 50 sesuai dengan panjang maksimal kolom
 
-            // Pastikan sr_number dan wo_number dimasukkan ke database
-            $discussion = OtherDiscussion::create([
-                'sr_number' => $request->sr_number,
-                'wo_number' => $request->wo_number,
-                'unit' => $powerPlant['name'],
-                'topic' => $validated['topic'],
-                'target' => $validated['target'],
-                'risk_level' => $validated['risk_level'],
-                'priority_level' => $validated['priority_level'],
-                'previous_commitment' => $validated['previous_commitment'],
-                'next_commitment' => $validated['next_commitment'],
-                'pic' => $validated['pic'],
-                'status' => $validated['status'],
-                'deadline' => $validated['deadline']
-            ]);
-
-            return redirect()
-                ->route('admin.other-discussions.index')
-                ->with('success', 'Pembahasan lain berhasil ditambahkan');
-
-        } catch (\Exception $e) {
-            \Log::error('Error creating other discussion: ' . $e->getMessage());
+            $discussion = OtherDiscussion::create($validated);
             
             return redirect()
-                ->back()
+                ->route('admin.other-discussions.index')
+                ->with('success', 'Pembahasan berhasil ditambahkan');
+        } catch (\Exception $e) {
+            return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan data');
+                ->with('error', 'Gagal menambahkan pembahasan. ' . $e->getMessage());
         }
     }
 
