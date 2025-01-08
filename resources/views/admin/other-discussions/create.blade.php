@@ -89,10 +89,10 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                     required>
                                 <option value="">Pilih Unit</option>
-                                @foreach(\App\Models\OtherDiscussion::UNITS as $unit)
-                                    <option value="{{ $unit }}" {{ old('unit') == $unit ? 'selected' : '' }}
+                                @foreach(\App\Models\PowerPlant::select('name')->get() as $powerPlant)
+                                    <option value="{{ $powerPlant->name }}" {{ old('unit') == $powerPlant->name ? 'selected' : '' }}
                                             class="bg-white">
-                                        {{ $unit }}
+                                        {{ $powerPlant->name }}
                                     </option>
                                 @endforeach
                             </select>
