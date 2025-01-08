@@ -9,6 +9,7 @@ use App\Models\OverdueDiscussion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\PowerPlant;
 
 class OtherDiscussionController extends Controller
 {   
@@ -146,7 +147,7 @@ class OtherDiscussionController extends Controller
             $discussion = OtherDiscussion::create([
                 'sr_number' => $request->sr_number,
                 'wo_number' => $request->wo_number,
-                'unit' => $validated['unit'],
+                'unit' => $powerPlant['name'],
                 'topic' => $validated['topic'],
                 'target' => $validated['target'],
                 'risk_level' => $validated['risk_level'],
