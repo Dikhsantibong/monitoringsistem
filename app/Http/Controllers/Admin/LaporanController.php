@@ -122,8 +122,12 @@ class LaporanController extends Controller
             'priority' => $request->priority
         ]);
 
-        return redirect()->back()->with('success', 'Service Request berhasil ditambahkan');
+        return redirect()
+                ->route('admin.laporan.sr_wo')
+                ->with('success', 'service Request berhasil di tambahkan berhasil ditambahkan');
+        
     }
+    
 
     // Tambah method untuk handle WO
     public function storeWO(Request $request)
@@ -151,7 +155,8 @@ class LaporanController extends Controller
             return redirect()
                 ->route('admin.laporan.sr_wo')
                 ->with('success', 'Work Order berhasil ditambahkan');
-        } catch (\Exception $e) {
+       
+                 } catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withInput()
