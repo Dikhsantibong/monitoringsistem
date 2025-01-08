@@ -178,7 +178,25 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
+                                        <div class="flex items-center justify-between">
+                                            <span>Unit</span>
+                                            <div class="relative">
+                                                <select id="unitTableFilter" onchange="filterTableByUnit()" 
+                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                    <option value="" class="text-gray-700">Semua</option>
+                                                    @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
+                                                        <option value="{{ $powerPlant->name }}" class="text-gray-700">{{ $powerPlant->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Target</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
@@ -186,7 +204,25 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Previous Commitment</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Next Commitment</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
+                                        <div class="flex items-center justify-between">
+                                            <span>Status</span>
+                                            <div class="relative">
+                                                <select id="statusTableFilter" onchange="filterTableByStatus()" 
+                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                    <option value="" class="text-gray-700">Semua</option>
+                                                    <option value="Open" class="text-gray-700">Open</option>
+                                                    <option value="Closed" class="text-gray-700">Closed</option>
+                                                    <option value="Overdue" class="text-gray-700">Overdue</option>
+                                                </select>
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
@@ -538,6 +574,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const activeTab = urlParams.get('tab') || 'active';
         switchTab(activeTab);
+
+        // Reset filter saat berpindah tab
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('unitTableFilter').value = '';
+                document.getElementById('statusTableFilter').value = '';
+            });
+        });
     });
     function confirmDelete(id) {
         Swal.fire({
@@ -815,6 +860,66 @@
                 });
             }
         });
+    }
+
+    // Fungsi filter untuk Unit
+    function filterTableByUnit() {
+        const unit = document.getElementById('unitTableFilter').value;
+        const tables = ['active-content', 'closed-content', 'overdue-content'];
+        let totalVisible = 0;
+
+        tables.forEach(tableId => {
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const unitCell = row.querySelector('td:nth-child(4)'); // Sesuaikan dengan posisi kolom unit
+                if (!unit || (unitCell && unitCell.textContent.trim() === unit)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            totalVisible += visibleCount;
+        });
+
+        // Update counter jika ada
+        const counter = document.getElementById('visibleCounter');
+        if (counter) {
+            counter.textContent = totalVisible;
+        }
+    }
+
+    // Fungsi filter untuk Status
+    function filterTableByStatus() {
+        const status = document.getElementById('statusTableFilter').value;
+        const tables = ['active-content', 'closed-content', 'overdue-content'];
+        let totalVisible = 0;
+
+        tables.forEach(tableId => {
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan posisi kolom status
+                if (!status || (statusCell && statusCell.textContent.trim().includes(status))) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            totalVisible += visibleCount;
+        });
+
+        // Update counter jika ada
+        const counter = document.getElementById('visibleCounter');
+        if (counter) {
+            counter.textContent = totalVisible;
+        }
     }
 </script>
 @push('scripts')

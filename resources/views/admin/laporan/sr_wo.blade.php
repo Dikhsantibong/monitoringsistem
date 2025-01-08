@@ -139,7 +139,24 @@
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID SR</th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
-                                            <th class="py-2 px-4 border-b">Status</th>
+                                            <th class="py-2 px-4 border-b">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Status</span>
+                                                    <div class="relative">
+                                                        <select id="srStatusFilter" onchange="filterSRTable()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                            <option value="" class="text-gray-700">Semua</option>
+                                                            <option value="Open" class="text-gray-700">Open</option>
+                                                            <option value="Closed" class="text-gray-700">Closed</option>
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th class="py-2 px-4 border-b">Tanggal</th>
                                             <th class="py-2 px-4 border-b">Downtime</th>
                                             <th class="py-2 px-4 border-b">Tipe SR</th>
@@ -216,7 +233,28 @@
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID WO</th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
-                                            <th class="py-2 px-4 border-b">Status</th>
+                                            <th class="py-2 px-4 border-b">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Status</span>
+                                                    <div class="relative">
+                                                        <select id="woStatusFilter" onchange="filterWOTable()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                            <option value="" class="text-gray-700">Semua</option>
+                                                            <option value="Open" class="text-gray-700">Open</option>
+                                                            <option value="Closed" class="text-gray-700">Closed</option>
+                                                            <option value="Comp" class="text-gray-700">Comp</option>
+                                                            <option value="APPR" class="text-gray-700">APPR</option>
+                                                            <option value="WAPPR" class="text-gray-700">WAPPR</option>
+                                                            <option value="WMATL" class="text-gray-700">WMATL</option>
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th class="py-2 px-4 border-b">Tanggal</th>
                                             <th class="py-2 px-4 border-b">Priority</th>
                                             <th class="py-2 px-4 border-b">Schedule Start</th>
@@ -288,14 +326,31 @@
                             </div>
                             <div class="overflow-auto max-h-96">
                                 <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                    <thead class="sticky top-0 z-10 " style="height: 60px;">
+                                    <thead class="sticky top-0 z-10">
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">No WO</th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Tanggal Backlog</th>
                                             <th class="py-2 px-4 border-b">Keterangan</th>
-                                            <th class="py-2 px-4 border-b">Status</th>
+                                            <th class="py-2 px-4 border-b">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Status</span>
+                                                    <div class="relative">
+                                                        <select id="backlogStatusFilter" onchange="filterBacklogTable()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                            <option value="" class="text-gray-700">Semua</option>
+                                                            <option value="Open" class="text-gray-700">Open</option>
+                                                            <option value="Closed" class="text-gray-700">Closed</option>
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th class="py-2 px-4 border-b">Aksi</th>
                                         </tr>
                                     </thead>
@@ -1008,6 +1063,63 @@
 
     // Panggil updateTableCounts saat halaman dimuat
     document.addEventListener('DOMContentLoaded', updateTableCounts);
+
+    function filterSRTable() {
+        const status = document.getElementById('srStatusFilter').value;
+        const rows = document.querySelectorAll('#srTable tbody tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(4)');
+            const statusText = statusCell.textContent.trim();
+            if (!status || statusText.includes(status)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('srVisibleCount').textContent = visibleCount;
+    }
+
+    function filterWOTable() {
+        const status = document.getElementById('woStatusFilter').value;
+        const rows = document.querySelectorAll('#woTable tbody tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td[data-column="status"]');
+            const statusText = statusCell.textContent.trim();
+            if (!status || statusText.includes(status)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('woVisibleCount').textContent = visibleCount;
+    }
+
+    function filterBacklogTable() {
+        const status = document.getElementById('backlogStatusFilter').value;
+        const rows = document.querySelectorAll('#backlogTable tbody tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const statusText = statusCell.textContent.trim();
+            if (!status || statusText.includes(status)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('backlogVisibleCount').textContent = visibleCount;
+    }
 </script>
 @push('scripts')
 @endpush
