@@ -23,166 +23,179 @@ class ScoreCardDailyController extends Controller
 
     public function index()
     {
-        try {
-            $scoreCards = ScoreCardDaily::latest()->get();
-            $latestScoreCard = $scoreCards->first();
-            
-            $totalScore = 0;
-            $pesertaData = [];
-            $ketentuanScores = [];
-            
-            if ($latestScoreCard) {
-                // Ambil data peserta dari model (sudah ditangani oleh accessor)
-                $pesertaData = $latestScoreCard->peserta;
+        $scoreCards = ScoreCardDaily::latest()->get();
 
-                // Definisikan field-field ketentuan rapat
-                $ketentuanFields = [
-                    'kesiapan_panitia',
-                    'kesiapan_bahan',
-                    'aktivitas_luar',
-                    'gangguan_diskusi',
-                    'gangguan_keluar_masuk',
-                    'gangguan_interupsi',
-                    'ketegasan_moderator',
-                    'kelengkapan_sr'
-                ];
-
-                // Hitung skor ketentuan
-                $ketentuanScores = collect($ketentuanFields)->mapWithKeys(function ($field) use ($latestScoreCard) {
-                    return [$field => intval($latestScoreCard->$field ?? 0)];
-                })->toArray();
-
-                // Hitung total skor
-                $pesertaScore = collect($pesertaData)->sum('skor');
-                $ketentuanScore = array_sum($ketentuanScores);
-                $totalScore = $pesertaScore + $ketentuanScore;
-
-                Log::info('Score calculation completed', [
-                    'peserta_score' => $pesertaScore,
-                    'ketentuan_score' => $ketentuanScore,
-                    'total_score' => $totalScore
-                ]);
-            }
-
-            return view('admin.score-card.index', compact(
-                'scoreCards',
-                'latestScoreCard',
-                'pesertaData',
-                'totalScore',
-                'ketentuanScores'
-            ));
-
-        } catch (\Exception $e) {
-            Log::error('Error in ScoreCardDaily index:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
+        // Cek apakah ada data scoreCards
+        if ($scoreCards->isEmpty()) {
             return view('admin.score-card.index', [
-                'scoreCards' => collect(),
-                'latestScoreCard' => null,
-                'pesertaData' => [],
+                'scoreCards' => collect([]),
                 'totalScore' => 0,
-                'ketentuanScores' => []
-            ])->with('error', 'Terjadi kesalahan saat memuat data.');
+                'ketentuanRapat' => [],
+                'averageScore' => 0
+            ]);
         }
+
+        // Menghitung total skor peserta
+        $totalScore = $scoreCards->sum(function ($scoreCard) {
+            try {
+                // Pastikan peserta tidak null dan bisa di-decode
+                $pesertas = json_decode($scoreCard->peserta, true) ?? [];
+                $pesertaScore = is_array($pesertas) ? array_sum(array_column($pesertas, 'skor')) : 0;
+                
+                // Hitung skor ketentuan rapat termasuk waktu mulai dan selesai
+                $ketentuanScore = 
+                    ($scoreCard->skor_waktu_mulai ?? 100) +
+                    ($scoreCard->skor_waktu_selesai ?? 100) +
+                    ($scoreCard->kesiapan_panitia ?? 100) +
+                    ($scoreCard->kesiapan_bahan ?? 100) +
+                    ($scoreCard->aktivitas_luar ?? 100) +
+                    ($scoreCard->gangguan_diskusi ?? 100) +
+                    ($scoreCard->gangguan_keluar_masuk ?? 100) +
+                    ($scoreCard->gangguan_interupsi ?? 100) +
+                    ($scoreCard->ketegasan_moderator ?? 100) +
+                    ($scoreCard->kelengkapan_sr ?? 100);
+                
+                return $pesertaScore + $ketentuanScore;
+            } catch (\Exception $e) {
+                \Log::error('Error calculating score: ' . $e->getMessage());
+                return 0;
+            }
+        });
+
+        // Hitung rata-rata dengan pengecekan
+        $firstCard = $scoreCards->first();
+        $pesertaCount = 0;
+
+        try {
+            $pesertaCount = count(json_decode($firstCard->peserta, true) ?? []);
+        } catch (\Exception $e) {
+            \Log::error('Error counting peserta: ' . $e->getMessage());
+        }
+
+        $totalItems = $pesertaCount + 10; // 10 adalah jumlah ketentuan rapat
+        $averageScore = $totalItems > 0 ? $totalScore / $totalItems : 0;
+
+        // Menggabungkan ketentuan rapat dengan pengecekan
+        $ketentuanRapat = [];
+        foreach ($scoreCards as $card) {
+            try {
+                $ketentuan = json_decode($card->ketentuan_rapat, true);
+                if (!empty($ketentuan) && is_array($ketentuan)) {
+                    $ketentuanRapat[] = $ketentuan;
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error processing ketentuan rapat: ' . $e->getMessage());
+            }
+        }
+
+        // Gabungkan array ketentuan rapat jika ada
+        $ketentuanRapat = !empty($ketentuanRapat) ? array_merge(...$ketentuanRapat) : [];
+
+        return view('admin.score-card.index', compact('scoreCards', 'totalScore', 'ketentuanRapat', 'averageScore'));
+    }
+
+    public function create()
+    {
+        // Ambil data peserta dari database
+        $defaultPeserta = Peserta::select('id', 'jabatan')->get()->toArray();
+
+        // Data lainnya tetap sama
+        $today = now()->format('Y-m-d');
+        $attendances = \App\Models\Attendance::whereDate('time', $today)
+            ->select('name', 'division', 'time')
+            ->get();
+
+        $peserta = [
+            'manager_up' => $attendances->where('division', 'MANAGER UP')->count(),
+            'asman_operasi' => $attendances->where('division', 'ASMAN OPERASI')->count(),
+            'asman_pemeliharaan' => $attendances->where('division', 'ASMAN PEMELIHARAAN')->count(),
+            'asman_enjiniring' => $attendances->where('division', 'ASMAN ENJINIRING')->count(),
+            'tl_rendal_har' => $attendances->where('division', 'TL RENDAL HAR')->count(),
+            'tl_icc' => $attendances->where('division', 'TL ICC')->count(),
+            'tl_outage' => $attendances->where('division', 'TL OUTAGE MANAGEMENT')->count(),
+            'tl_k3' => $attendances->where('division', 'TL K3 DAN KAM')->count(),
+            'tl_lingkungan' => $attendances->where('division', 'TL LINGKUNGAN')->count(),
+        ];
+
+        $waktuMulai = $attendances->min('time');
+        $waktuSelesai = $attendances->max('time');
+
+        return view('admin.score-card.create', compact('peserta', 'waktuMulai', 'waktuSelesai', 'defaultPeserta'));
     }
 
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'tanggal' => 'required|date',
-                'lokasi' => 'required|string',
-                'peserta' => 'required',
-                'waktu_mulai' => 'required',
-                'waktu_selesai' => 'required',
-                'kesiapan_panitia' => 'required|integer',
-                'kesiapan_bahan' => 'required|integer',
-                'kontribusi_pemikiran' => 'required|integer',
-                'aktivitas_luar' => 'required|integer',
-                'gangguan_diskusi' => 'required|integer',
-                'gangguan_keluar_masuk' => 'required|integer',
-                'gangguan_interupsi' => 'required|integer',
-                'ketegasan_moderator' => 'required|integer',
-                'kelengkapan_sr' => 'required|integer',
-                'ketentuan_rapat' => 'nullable|array',
-                'keterangan' => 'nullable|string'
-            ]);
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'lokasi' => 'required|string',
+            'peserta' => 'required|array',
+            'waktu_mulai' => 'required',
+            'waktu_selesai' => 'required',
+            'kesiapan_panitia' => 'nullable|integer|max:100',
+            'kesiapan_bahan' => 'nullable|integer|max:100',
+            'kontribusi_pemikiran' => 'nullable|integer|max:100',
+            'aktivitas_luar' => 'nullable|integer|max:100',
+            'gangguan_diskusi' => 'nullable|integer|max:100',
+            'gangguan_keluar_masuk' => 'nullable|integer|max:100',
+            'gangguan_interupsi' => 'nullable|integer|max:100',
+            'ketegasan_moderator' => 'nullable|integer|max:100',
+            'kelengkapan_sr' => 'nullable|integer|max:100',
+            'keterangan' => 'nullable|string'
+        ]);
 
-            // Pastikan data peserta dalam format yang benar
-            $pesertaData = $validated['peserta'];
-            if (is_string($pesertaData)) {
-                $pesertaData = json_decode($pesertaData, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new \Exception('Invalid JSON format for peserta data');
-                }
+        // Ambil data kehadiran untuk validasi
+        $attendances = \App\Models\Attendance::whereDate('time', $validated['tanggal'])->get();
+
+
+        // Ambil data peserta dari database untuk referensi jabatan
+        $pesertaDb = Peserta::all()->keyBy('id');
+        
+        // Format ulang data peserta yang diterima
+        $formattedPeserta = [];
+        foreach ($validated['peserta'] as $id => $data) {
+            // Pastikan peserta ada di database
+            if (isset($pesertaDb[$id])) {
+                $formattedPeserta[$pesertaDb[$id]->jabatan] = [
+                    'awal' => $data['awal'] ?? '0',
+                    'akhir' => $data['akhir'] ?? '0',
+                    'skor' => $data['skor'] ?? '0',
+                    'keterangan' => $data['keterangan'] ?? '',
+                    'jabatan' => $pesertaDb[$id]->jabatan // Tambahkan jabatan
+                ];
             }
-
-            // Buat instance baru ScoreCardDaily
-            $scoreCard = new ScoreCardDaily();
-            $scoreCard->fill($validated);
-            $scoreCard->peserta = $pesertaData;
-            $scoreCard->unit_source = session('unit');
-            $scoreCard->save();
-
-            Log::info('ScoreCard created successfully', [
-                'id' => $scoreCard->id,
-                'unit' => session('unit')
-            ]);
-
-            return redirect()
-                ->route('admin.score-card.index')
-                ->with('success', 'Score card berhasil disimpan.');
-
-        } catch (\Exception $e) {
-            Log::error('Error storing ScoreCard:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Gagal menyimpan score card: ' . $e->getMessage());
         }
-    }
 
-    public function updatePeserta(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'peserta' => 'required|array',
-                'peserta.*.id' => 'required|integer',
-                'peserta.*.jabatan' => 'required|string'
-            ]);
+        // Buat record baru dengan data peserta yang sudah diformat
+        ScoreCardDaily::create([
+            'tanggal' => $validated['tanggal'],
+            'lokasi' => $validated['lokasi'],
+            'peserta' => json_encode($formattedPeserta), // Simpan data peserta yang sudah diformat
+            'awal' => $attendances->where('time', $attendances->min('time'))->count(),
+            'akhir' => $attendances->where('time', $attendances->max('time'))->count(),
+            'skor' => 0,
+            'waktu_mulai' => $validated['waktu_mulai'],
+            'waktu_selesai' => $validated['waktu_selesai'],
+            'kesiapan_panitia' => $validated['kesiapan_panitia'] ?? 100,
+            'kesiapan_bahan' => $validated['kesiapan_bahan'] ?? 100,
+            'kontribusi_pemikiran' => $validated['kontribusi_pemikiran'] ?? 100,
+            'aktivitas_luar' => $validated['aktivitas_luar'] ?? 100,
+            'gangguan_diskusi' => $validated['gangguan_diskusi'] ?? 100,
+            'gangguan_keluar_masuk' => $validated['gangguan_keluar_masuk'] ?? 100,
+            'gangguan_interupsi' => $validated['gangguan_interupsi'] ?? 100,
+            'ketegasan_moderator' => $validated['ketegasan_moderator'] ?? 100,
+            'kelengkapan_sr' => $validated['kelengkapan_sr'] ?? 100,
+            'ketentuan_rapat' => json_encode([
+                'aktifitas_meeting' => $validated['aktifitas_meeting'] ?? 100,
+                'gangguan_diskusi' => $validated['gangguan_diskusi'] ?? 100,
+                'gangguan_keluar_masuk' => $validated['gangguan_keluar_masuk'] ?? 100,
+                'gangguan_interupsi' => $validated['gangguan_interupsi'] ?? 100,
+                'ketegasan_moderator' => $validated['ketegasan_moderator'] ?? 100,
+                'kelengkapan_sr' => $validated['kelengkapan_sr'] ?? 100,
+            ]),
+        ]);
 
-            foreach ($validated['peserta'] as $data) {
-                Peserta::updateOrCreate(
-                    ['id' => $data['id']],
-                    [
-                        'jabatan' => $data['jabatan'],
-                        'unit_source' => session('unit')
-                    ]
-                );
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Peserta berhasil diupdate'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error updating peserta:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error updating peserta: ' . $e->getMessage()
-            ], 500);
-        }
+        return redirect()->route('admin.score-card.index')
+            ->with('success', 'Score Card berhasil dibuat');
     }
 
     public function createZoomMeeting()
@@ -282,6 +295,25 @@ class ScoreCardDailyController extends Controller
                 'error' => 'Terjadi kesalahan',
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    // Tambahkan method untuk update peserta
+    public function updatePeserta(Request $request)
+    {
+        try {
+            $pesertaData = $request->input('peserta', []);
+            
+            foreach ($pesertaData as $data) {
+                Peserta::updateOrCreate(
+                    ['id' => $data['id']],
+                    ['jabatan' => $data['jabatan']]
+                );
+            }
+
+            return response()->json(['message' => 'Peserta berhasil diupdate'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error updating peserta: ' . $e->getMessage()], 500);
         }
     }
 }
