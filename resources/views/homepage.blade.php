@@ -460,7 +460,7 @@
                                 <ul class="flex space-x-8">
                                     <li><a href="#" class="nav-link">Home</a></li>
                                     <li><a href="#map" class="nav-link">Peta Pembangkit</a></li>
-                                    <li><a href="#grafik" class="nav-link">Grafik Kinerja</a></li>
+                                    {{-- <li><a href="#grafik" class="nav-link">Grafik Kinerja</a></li> --}}
                                     <li><a href="#live-data" class="nav-link">Live Data Unit Operasional</a></li>
                                     <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
                                     <!-- Tambah Menu Login -->
@@ -487,7 +487,7 @@
                             <ul class="space-y-4">
                                 <li><a href="#" class="nav-link-mobile">Home</a></li>
                                 <li><a href="#map" class="nav-link-mobile">Peta Pembangkit</a></li>
-                                <li><a href="#grafik" class="nav-link-mobile">Grafik Kinerja</a></li>
+                                {{-- <li><a href="#grafik" class="nav-link-mobile">Grafik Kinerja</a></li> --}}
                                 <li><a href="#live-data" class="nav-link-mobile">Live Data Unit Operasional</a></li>
                                 <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link-mobile">Dashboard Pemantauan</a></li>
                                 <!-- Tambah Menu Login di Mobile -->
@@ -578,12 +578,12 @@
                 </div>
             </div> --}}
 
-            <div class="w-full flex justify-center flex-col items-center">
+            {{-- <div class="w-full flex justify-center flex-col items-center">
                 <h3 class="mt-4 mb-4 text-xl font-semibold">Grafik Line</h3>
                 <div id="line-chart" style="border: 1px solid #ddd; border-radius: 10px;"
                     class="w-4/5 flex justify-center">
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Live Data Unit Operasional -->
             <div class="flex justify-center items-center mt-10 mb-4 gap-4">

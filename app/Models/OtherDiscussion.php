@@ -15,27 +15,23 @@ class OtherDiscussion extends Model
 
     // Definisi konstanta untuk risk levels
     const RISK_LEVELS = [
-        'low' => 'Rendah',
-        'medium' => 'Sedang',
-        'high' => 'Tinggi',
-        'critical' => 'Kritis'
+        'R' => 'Rendah',
+        'MR' => 'Menengah Rendah',
+        'MT' => 'Menengah Tinggi',
+        'T' => 'Tinggi'
     ];
 
     // Definisi konstanta untuk priority levels
     const PRIORITY_LEVELS = [
         'Low',
         'Medium',
-        'High',
-        'Urgent'
+        'High'
     ];
 
     // Definisi konstanta untuk status
     const STATUSES = [
         'Open',
-        'In Progress',
-        'Pending',
-        'Closed',
-        'Cancelled'
+        'Closed'
     ];
 
     protected $fillable = [
