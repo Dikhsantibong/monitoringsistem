@@ -10,6 +10,34 @@ class OtherDiscussion extends Model
 {
     use HasFactory;
 
+    protected $table = 'other_discussions';
+    protected static $isSyncing = false;
+
+    // Definisi konstanta untuk risk levels
+    const RISK_LEVELS = [
+        'low' => 'Rendah',
+        'medium' => 'Sedang',
+        'high' => 'Tinggi',
+        'critical' => 'Kritis'
+    ];
+
+    // Definisi konstanta untuk priority levels
+    const PRIORITY_LEVELS = [
+        'Low',
+        'Medium',
+        'High',
+        'Urgent'
+    ];
+
+    // Definisi konstanta untuk status
+    const STATUSES = [
+        'Open',
+        'In Progress',
+        'Pending',
+        'Closed',
+        'Cancelled'
+    ];
+
     protected $fillable = [
         'sr_number',
         'wo_number',
@@ -34,27 +62,37 @@ class OtherDiscussion extends Model
         'updated_at'
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::created(function ($discussion) {
-            event(new OtherDiscussionUpdated($discussion, 'create'));
-        });
-
-        static::updated(function ($discussion) {
-            event(new OtherDiscussionUpdated($discussion, 'update'));
-        });
-
-        static::deleted(function ($discussion) {
-            event(new OtherDiscussionUpdated($discussion, 'delete'));
-        });
-    }
-
     public function getConnectionName()
     {
         return session('unit', 'mysql');
     }
 
-    // ... method lain yang sudah ada ...
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::created(function ($discussion) {
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                event(new OtherDiscussionUpdated($discussion, 'create'));
+                static::$isSyncing = false;
+            }
+        });
+
+        static::updated(function ($discussion) {
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                event(new OtherDiscussionUpdated($discussion, 'update'));
+                static::$isSyncing = false;
+            }
+        });
+
+        static::deleted(function ($discussion) {
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                event(new OtherDiscussionUpdated($discussion, 'delete'));
+                static::$isSyncing = false;
+            }
+        });
+    }
 } 
