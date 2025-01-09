@@ -133,6 +133,9 @@
                                     <table class="min-w-full bg-white">
                                         <thead>
                                             <tr>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    No
+                                                </th>
                                                     <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Mesin
                                                 </th>
@@ -177,7 +180,10 @@
                                         <tbody class="text-sm">
                                            
                                             @foreach ($unit->machines as $machine)
-                                                <tr class="hover:bg-gray-50 border-b border-gray-200">
+                                                <tr class="hover:bg-gray-50 border border-gray-200">
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
+                                                        {{ $loop->iteration }}
+                                                    </td>
                                                     <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
                                                         {{ $machine->name }}
                                                     </td>   
@@ -563,18 +569,19 @@
     function confirmReset() {
         Swal.fire({
             title: 'Apakah Anda yakin?',
-            text: "Data akan direset!",
+            text: "Data akan direset kecuali status Gangguan, DMN, dan DMP!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, reset!'
+            confirmButtonText: 'Ya, reset!',
+            cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
                 resetForm();
                 Swal.fire(
                     'Reset!',
-                    'Data telah direset.',
+                    'Data telah direset kecuali status Gangguan, DMN, dan DMP.',
                     'success'
                 );
             }
@@ -586,18 +593,88 @@
         tables.forEach(table => {
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
-                const select = row.querySelector('select');
-                const inputKeterangan = row.querySelector('input[type="text"]');
-                const inputBeban = row.querySelector('td:nth-child(4) input');
-
-                // Reset semua input
-                select.value = '';
-                select.style.backgroundColor = '';
-                inputKeterangan.value = '';
-                inputBeban.value = '';
+                // Cek status saat ini
+                const statusSelect = row.querySelector('select');
+                const currentStatus = statusSelect.value;
+                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+                
+                // Jika status bukan 'Gangguan', reset field-field yang diizinkan
+                if (currentStatus !== 'Gangguan') {
+                    // Reset status dropdown dan warnanya
+                    statusSelect.value = '';
+                    statusSelect.style.backgroundColor = '';
+                    
+                    // Reset input beban
+                    const inputBeban = row.querySelector('td:nth-child(4) input');
+                    if (inputBeban) inputBeban.value = '';
+                    
+                    // Reset komponen dropdown
+                    const componentSelect = row.querySelector('.system-select');
+                    if (componentSelect) componentSelect.value = '';
+                    
+                    // Reset equipment
+                    const equipmentTextarea = row.querySelector('textarea[name="equipment"]');
+                    if (equipmentTextarea) equipmentTextarea.value = '';
+                    
+                    // Reset deskripsi
+                    const deskripsiTextarea = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
+                    if (deskripsiTextarea) deskripsiTextarea.value = '';
+                    
+                    // Reset kronologi
+                    const kronologiTextarea = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
+                    if (kronologiTextarea) kronologiTextarea.value = '';
+                    
+                    // Reset action plan
+                    const actionPlanTextarea = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
+                    if (actionPlanTextarea) actionPlanTextarea.value = '';
+                    
+                    // Reset progres
+                    const progresTextarea = row.querySelector(`textarea[name="progres[${machineId}]"]`);
+                    if (progresTextarea) progresTextarea.value = '';
+                    
+                    // Reset tanggal
+                    const tanggalMulaiInput = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
+                    if (tanggalMulaiInput) tanggalMulaiInput.value = '';
+                    
+                    const targetSelesaiInput = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
+                    if (targetSelesaiInput) targetSelesaiInput.value = '';
+                }
             });
         });
 
+        // Muat ulang data DMN dan DMP dari MachineOperation
+        const tanggal = document.getElementById('filterDate').value;
+        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Update DMN dan DMP dari data MachineOperation
+                    result.data.forEach(log => {
+                        const machineId = log.machine_id;
+                        const row = document.querySelector(`td[data-id="${machineId}"]`)?.closest('tr');
+                        
+                        if (row) {
+                            // Update DMN
+                            const dmnCell = row.querySelector('td:nth-child(2)');
+                            if (dmnCell) {
+                                const dmnValue = log.dmn !== null ? log.dmn : 'N/A';
+                                dmnCell.textContent = dmnValue;
+                            }
+                            
+                            // Update DMP
+                            const dmpCell = row.querySelector('td:nth-child(3)');
+                            if (dmpCell) {
+                                const dmpValue = log.dmp !== null ? log.dmp : 'N/A';
+                                dmpCell.textContent = dmpValue;
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Jika gagal mengambil data baru, pertahankan nilai DMN dan DMP yang ada
+            });
     }
 
     // Fungsi untuk memuat data

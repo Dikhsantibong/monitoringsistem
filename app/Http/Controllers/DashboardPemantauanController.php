@@ -156,4 +156,100 @@ class DashboardPemantauanController extends Controller
         if ($progress >= 50) return 'warning';
         return 'critical';
     }
+
+    public function getMothballedMachines()
+    {
+        try {
+            // Ambil data mesin terbaru dengan status Mothballed
+            $mothballedMachines = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+                ->select('machine_status_logs.*')
+                ->join(DB::raw('(
+                    SELECT machine_id, MAX(created_at) as latest_date
+                    FROM machine_status_logs
+                    GROUP BY machine_id
+                ) latest'), function($join) {
+                    $join->on('machine_status_logs.machine_id', '=', 'latest.machine_id')
+                         ->on('machine_status_logs.created_at', '=', 'latest.latest_date');
+                })
+                ->where('machine_status_logs.status', 'Mothballed')
+                ->get()
+                ->map(function($log) {
+                    return [
+                        'type' => $log->machine->type ?? 'N/A',
+                        'unit_name' => $log->machine->powerPlant->name ?? 'N/A',
+                        'serial_number' => $log->machine->serial_number ?? 'N/A',
+                        'status' => $log->status
+                    ];
+                });
+
+            return response()->json($mothballedMachines);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching mothballed machines: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan saat mengambil data'], 500);
+        }
+    }
+
+    // Tambahkan method baru untuk maintenance dan overhaul
+    public function getMaintenanceMachines()
+    {
+        try {
+            // Ambil data mesin terbaru dengan status Maintenance
+            $maintenanceMachines = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+                ->select('machine_status_logs.*')
+                ->join(DB::raw('(
+                    SELECT machine_id, MAX(created_at) as latest_date
+                    FROM machine_status_logs
+                    GROUP BY machine_id
+                ) latest'), function($join) {
+                    $join->on('machine_status_logs.machine_id', '=', 'latest.machine_id')
+                         ->on('machine_status_logs.created_at', '=', 'latest.latest_date');
+                })
+                ->where('machine_status_logs.status', 'Maintenance')
+                ->get()
+                ->map(function($log) {
+                    return [
+                        'type' => $log->machine->type ?? 'N/A',
+                        'unit_name' => $log->machine->powerPlant->name ?? 'N/A',
+                        'serial_number' => $log->machine->serial_number ?? 'N/A',
+                        'status' => $log->status
+                    ];
+                });
+
+            return response()->json($maintenanceMachines);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching maintenance machines: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan saat mengambil data'], 500);
+        }
+    }
+
+    public function getOverhaulMachines()
+    {
+        try {
+            $overhaulMachines = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+                ->select('machine_status_logs.*')
+                ->join(DB::raw('(
+                    SELECT machine_id, MAX(created_at) as latest_date
+                    FROM machine_status_logs
+                    GROUP BY machine_id
+                ) latest'), function($join) {
+                    $join->on('machine_status_logs.machine_id', '=', 'latest.machine_id')
+                         ->on('machine_status_logs.created_at', '=', 'latest.latest_date');
+                })
+                ->where('machine_status_logs.status', 'Overhaul')
+                ->get()
+                ->map(function($log) {
+                    return [
+                        'type' => $log->machine->type ?? 'N/A',
+                        'unit_name' => $log->machine->powerPlant->name ?? 'N/A',
+                        'serial_number' => $log->machine->serial_number ?? 'N/A',
+                        'status' => $log->status
+                    ];
+                });
+
+            return response()->json($overhaulMachines);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching overhaul machines: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan saat mengambil data'], 500);
+        }
+    }
 } 

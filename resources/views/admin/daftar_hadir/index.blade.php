@@ -57,7 +57,7 @@
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'Daftar Hadir', 'url' => null]]" />
                 <!-- Menampilkan Tanggal -->
                 
-            </div>
+            </div>  
             <main class="px-6">
                 <div class="bg-white rounded-lg shadow p-6 mb-3">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>

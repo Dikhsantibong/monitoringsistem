@@ -26,6 +26,9 @@ class OtherDiscussionController extends Controller
             $closedQuery = ClosedDiscussion::query();
             $overdueQuery = OverdueDiscussion::query();
 
+            // Ambil data unit dari PowerPlant
+            $units = PowerPlant::pluck('name')->toArray();
+
             // Filter yang sudah ada
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -58,7 +61,7 @@ class OtherDiscussionController extends Controller
                 session()->flash('info', "Terdapat $overdueCount diskusi yang telah dipindahkan ke status overdue");
             }
 
-            return view('admin.other-discussions.index', compact('activeDiscussions', 'closedDiscussions', 'overdueDiscussions'));
+            return view('admin.other-discussions.index', compact('activeDiscussions', 'closedDiscussions', 'overdueDiscussions', 'units'));
 
         } catch (\Exception $e) {
             DB::rollBack();

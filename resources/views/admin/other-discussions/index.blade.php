@@ -94,11 +94,10 @@
                         <!-- Filter Unit -->
                         {{-- <div>
                             <label for="unit-filter" class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                            <select id="unit-filter" 
-                                    name="unit" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50">
-                                <option value="">Semua Unit</option>
-                                @foreach(\App\Models\OtherDiscussion::UNITS as $unit)
+                            <select id="unitTableFilter" name="unit" onchange="filterTableByUnit()" 
+                                    class="block w-full border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Semua</option>
+                                @foreach($units as $unit)
                                     <option value="{{ $unit }}" {{ request('unit') == $unit ? 'selected' : '' }}>
                                         {{ $unit }}
                                     </option>
@@ -106,38 +105,23 @@
                             </select>
                         </div> --}}
 
-                        <!-- Filter Tanggal Mulai -->
-                        <div>
-                            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                            <input type="date" 
-                                   name="start_date" 
-                                   id="start_date"
-                                   value="{{ request('start_date') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <!-- Filter Status -->
+                        {{-- <div>
+                            <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select id="statusTableFilter" name="status" onchange="filterTableByStatus()" 
+                                    class="block w-full border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Semua</option>
+                                <option value="Open" {{ request('status') == 'Open' ? 'selected' : '' }}>Open</option>
+                                <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
+                                <option value="Overdue" {{ request('status') == 'Overdue' ? 'selected' : '' }}>Overdue</option>
+                            </select>
                         </div>
 
-                        <!-- Filter Tanggal Akhir -->
-                        <div>
-                            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
-                            <input type="date" 
-                                   name="end_date" 
-                                   id="end_date"
-                                   value="{{ request('end_date') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        </div>
-
-                        <!-- Tombol Filter -->
-                        <div class="md:col-span-4 flex justify-end space-x-2">
-                            <button type="reset" 
-                                    onclick="window.location.href='{{ route('admin.other-discussions.index') }}'"
-                                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                                <i class="fas fa-undo mr-2"></i>Reset
+                        <div class="flex items-center justify-end">
+                            <button type="submit" class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
+                                <i class="fas fa-filter mr-2"></i> Filter
                             </button>
-                            <button type="submit"
-                                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                <i class="fas fa-filter mr-2"></i>Filter
-                            </button>
-                        </div>
+                        </div> --}}
                     </form>
                 </div>
 
@@ -182,11 +166,13 @@
                                         <div class="flex items-center justify-between">
                                             <span>Unit</span>
                                             <div class="relative">
-                                                <select id="unitTableFilter" onchange="filterTableByUnit()" 
+                                                <select id="unitTableFilterActive" name="unit" onchange="filterTableByUnitActive()" 
                                                         class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="" class="text-gray-700">Semua</option>
-                                                    @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
-                                                        <option value="{{ $powerPlant->name }}" class="text-gray-700">{{ $powerPlant->name }}</option>
+                                                    <option value="">Semua</option>
+                                                    @foreach($units as $unit)
+                                                        <option value="{{ $unit }}" class="text-gray-700" {{ request('unit') == $unit ? 'selected' : '' }}>
+                                                            {{ $unit }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
@@ -208,7 +194,7 @@
                                         <div class="flex items-center justify-between">
                                             <span>Status</span>
                                             <div class="relative">
-                                                <select id="statusTableFilter" onchange="filterTableByStatus()" 
+                                                <select id="statusTableFilterActive" onchange="filterTableByStatusActive()" 
                                                         class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                     <option value="" class="text-gray-700">Semua</option>
                                                     <option value="Open" class="text-gray-700">Open</option>
@@ -382,7 +368,27 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
+                                        <div class="flex items-center justify-between">
+                                            <span>Unit</span>
+                                            <div class="relative">
+                                                <select id="unitTableFilterOverdue" name="unit" onchange="filterTableByUnitOverdue()" 
+                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                    <option value="">Semua</option>
+                                                    @foreach($units as $unit)
+                                                        <option value="{{ $unit }}" class="text-gray-700" {{ request('unit') == $unit ? 'selected' : '' }}>
+                                                            {{ $unit }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
@@ -390,12 +396,28 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Sebelum</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Selanjutnya</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
+                                        <div class="flex items-center justify-between">
+                                            <span>Status</span>
+                                            <div class="relative">
+                                                <select id="statusTableFilterOverdue" name="status" onchange="filterTableByStatusOverdue()" 
+                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                    <option value="">Semua</option>
+                                                    <option value="Open" {{ request('status') == 'Open' ? 'selected' : '' }} class="text-gray-700"></option>Open</option>
+                                                    <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }} class="text-gray-700">Closed</option>
+                                                    <option value="Overdue" {{ request('status') == 'Overdue' ? 'selected' : '' }} class="text-gray-700">Overdue</option>
+                                                </select>
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tanggal Selesai</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        Aksi
-                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -407,29 +429,19 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->target }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
-                                                {{ $discussion->risk_level }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 rounded text-sm bg-purple-100 text-purple-800">
-                                                {{ $discussion->priority_level }}
-                                            </span>
-                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->risk_level }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->priority_level }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->previous_commitment }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->next_commitment }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->pic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 py-1 rounded text-sm 
-                                                {{ $discussion->status === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                @if($discussion->status == 'Open') bg-yellow-500 @elseif($discussion->status == 'Closed') bg-green-500 @elseif($discussion->status == 'Overdue') bg-red-500 @endif text-white">
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->deadline->format('d/m/Y') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-red-600">
-                                            {{ $discussion->overdue_at->format('d/m/Y') }}
-                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $discussion->deadline->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $discussion->closed_at ? $discussion->closed_at->format('d/m/Y') : '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
@@ -917,6 +929,98 @@
 
         // Update counter jika ada
         const counter = document.getElementById('visibleCounter');
+        if (counter) {
+            counter.textContent = totalVisible;
+        }
+    }
+
+    // Fungsi filter untuk Unit di tabel Aktif
+    function filterTableByUnitActive() {
+        const unit = document.getElementById('unitTableFilterActive').value;
+        const rows = document.querySelectorAll('#active-content tbody tr');
+        let totalVisible = 0;
+
+        rows.forEach(row => {
+            const unitCell = row.querySelector('td:nth-child(4)'); // Sesuaikan dengan posisi kolom unit
+            if (!unit || (unitCell && unitCell.textContent.trim() === unit)) {
+                row.style.display = '';
+                totalVisible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update counter jika ada
+        const counter = document.getElementById('visibleCounterActive');
+        if (counter) {
+            counter.textContent = totalVisible;
+        }
+    }
+
+    // Fungsi filter untuk Status di tabel Aktif
+    function filterTableByStatusActive() {
+        const status = document.getElementById('statusTableFilterActive').value;
+        const rows = document.querySelectorAll('#active-content tbody tr');
+        let totalVisible = 0;
+
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan posisi kolom status
+            if (!status || (statusCell && statusCell.textContent.trim().includes(status))) {
+                row.style.display = '';
+                totalVisible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update counter jika ada
+        const counter = document.getElementById('visibleCounterActive');
+        if (counter) {
+            counter.textContent = totalVisible;
+        }
+    }
+
+    // Fungsi filter untuk Unit di tabel Overdue
+    function filterTableByUnitOverdue() {
+        const unit = document.getElementById('unitTableFilterOverdue').value;
+        const rows = document.querySelectorAll('#overdue-content tbody tr');
+        let totalVisible = 0;
+
+        rows.forEach(row => {
+            const unitCell = row.querySelector('td:nth-child(4)'); // Sesuaikan dengan posisi kolom unit
+            if (!unit || (unitCell && unitCell.textContent.trim() === unit)) {
+                row.style.display = '';
+                totalVisible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update counter jika ada
+        const counter = document.getElementById('visibleCounterOverdue');
+        if (counter) {
+            counter.textContent = totalVisible;
+        }
+    }
+
+    // Fungsi filter untuk Status di tabel Overdue
+    function filterTableByStatusOverdue() {
+        const status = document.getElementById('statusTableFilterOverdue').value;
+        const rows = document.querySelectorAll('#overdue-content tbody tr');
+        let totalVisible = 0;
+
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan posisi kolom status
+            if (!status || (statusCell && statusCell.textContent.trim().includes(status))) {
+                row.style.display = '';
+                totalVisible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update counter jika ada
+        const counter = document.getElementById('visibleCounterOverdue');
         if (counter) {
             counter.textContent = totalVisible;
         }

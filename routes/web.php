@@ -363,6 +363,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         ->where(['type' => 'sr|wo|backlog']);
 });
 
+Route::get('/get-mothballed-machines', [DashboardPemantauanController::class, 'getMothballedMachines']);
+
+Route::get('/get-maintenance-machines', [DashboardPemantauanController::class, 'getMaintenanceMachines']);
+
 
 
     

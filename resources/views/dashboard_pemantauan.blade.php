@@ -86,6 +86,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Type</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Nama Mesin Unit</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Serial Number</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,10 +96,25 @@
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['type'] }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['unit_name'] }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['serial_number'] }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200">
+                                        <span class="px-2 py-1 text-xs rounded-full 
+                                            @if($machine['status'] == 'Mothballed')
+                                                bg-blue-500
+                                            @elseif($machine['status'] == 'Maintenance')
+                                                bg-yellow-500
+                                            @elseif($machine['status'] == 'Overhaul')
+                                                bg-red-500
+                                            @else
+                                                bg-green-500
+                                            @endif 
+                                            text-white">
+                                            {{ $machine['status'] ?? 'Normal' }}
+                                        </span>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                         Tidak ada data mesin
                                     </td>
                                 </tr>
@@ -176,8 +192,11 @@
             }
         });
 
-        // Mothballed Chart
-        new Chart(document.getElementById('availabilityChart'), {
+        // Tambahkan variabel untuk menyimpan instance chart
+        let availabilityChartInstance;
+        
+        // Modifikasi availabilityChart
+        availabilityChartInstance = new Chart(document.getElementById('availabilityChart'), {
             type: 'doughnut',
             data: {
                 labels: ['Mothballed', 'Normal'],
@@ -191,11 +210,93 @@
             },
             options: {
                 ...chartConfig,
-                cutout: '65%'
+                cutout: '65%',
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        
+                        if (index === 0) { // Jika yang diklik adalah segment Mothballed
+                            // Tambahkan loading indicator
+                            const tbody = document.querySelector('table tbody');
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
+                                    </td>
+                                </tr>
+                            `;
+
+                            fetch('/get-mothballed-machines')
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    if (data.error) {
+                                        throw new Error(data.error);
+                                    }
+                                    updateTable(data);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    const tbody = document.querySelector('table tbody');
+                                    tbody.innerHTML = `
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                                Terjadi kesalahan saat memuat data
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                        } else {
+                            // Kembalikan ke tampilan tabel default
+                            location.reload();
+                        }
+                    }
+                }
             }
         });
 
-        // Maintenance Chart
+        // Fungsi untuk memperbarui tabel
+        function updateTable(machines) {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = ''; // Kosongkan tabel
+
+            if (!machines || machines.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                            Tidak ada data mesin dengan status Mothballed
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            machines.forEach((machine, index) => {
+                const statusClass = machine.status === 'Mothballed' ? 'bg-blue-500' :
+                                  machine.status === 'Maintenance' ? 'bg-yellow-500' :
+                                  machine.status === 'Overhaul' ? 'bg-red-500' : 'bg-green-500';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-blue-800">
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${index + 1}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.type}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.unit_name}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.serial_number}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200">
+                            <span class="px-2 py-1 text-xs rounded-full ${statusClass} text-white">
+                                ${machine.status || 'Normal'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Maintenance Chart (performanceChart)
         new Chart(document.getElementById('performanceChart'), {
             type: 'doughnut',
             data: {
@@ -210,7 +311,52 @@
             },
             options: {  
                 ...chartConfig,
-                cutout: '65%'
+                cutout: '65%',
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        
+                        if (index === 0) { // Jika yang diklik adalah segment Maintenance
+                            // Tambahkan loading indicator
+                            const tbody = document.querySelector('table tbody');
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
+                                    </td>
+                                </tr>
+                            `;
+
+                            fetch('/get-maintenance-machines')
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    if (data.error) {
+                                        throw new Error(data.error);
+                                    }
+                                    updateTable(data);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    const tbody = document.querySelector('table tbody');
+                                    tbody.innerHTML = `
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                                Terjadi kesalahan saat memuat data
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                        } else {
+                            // Kembalikan ke tampilan tabel default
+                            location.reload();
+                        }
+                    }
+                }
             }
         });
 
@@ -229,7 +375,52 @@
             },
             options: {
                 ...chartConfig,
-                cutout: '65%'
+                cutout: '65%',
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        
+                        if (index === 0) { // Jika yang diklik adalah segment Overhaul
+                            // Tambahkan loading indicator
+                            const tbody = document.querySelector('table tbody');
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
+                                    </td>
+                                </tr>
+                            `;
+
+                            fetch('/get-overhaul-machines')
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    if (data.error) {
+                                        throw new Error(data.error);
+                                    }
+                                    updateTable(data);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    const tbody = document.querySelector('table tbody');
+                                    tbody.innerHTML = `
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                                Terjadi kesalahan saat memuat data
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                        } else {
+                            // Kembalikan ke tampilan tabel default
+                            location.reload();
+                        }
+                    }
+                }
             }
         });
 
