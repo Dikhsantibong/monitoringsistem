@@ -607,12 +607,11 @@
                                     <th class="text-center">DMP</th>
                                     <th class="text-center">Beban</th>
                                     <th class="text-center">Status</th>
-                               
                                     <th class="text-center">Waktu Update</th>
                                 </tr>
                             </thead>
                             <tbody id="unit-table-body">
-                                @foreach ($units as $log)
+                                @foreach ($statusLogs as $log)
                                     <tr class="table-row">
                                         <td class="text-center">{{ $log->machine->powerPlant->name ?? 'N/A' }}</td>
                                         <td class="text-center">{{ $log->machine->name ?? 'N/A' }}</td>
@@ -620,11 +619,17 @@
                                         <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
                                         <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
                                         <td class="text-center">
-                                            <span class="px-2 py-1 rounded-full bg-red-100 text-red-600">
+                                            @php
+                                                $statusColor = [
+                                                    'Gangguan' => 'bg-red-100 text-red-600',
+                                                    'Mothballed' => 'bg-yellow-100 text-yellow-600',
+                                                    'Overhaul' => 'bg-orange-100 text-orange-600'
+                                                ][$log->status] ?? 'bg-gray-100 text-gray-600';
+                                            @endphp
+                                            <span class="px-2 py-1 rounded-full {{ $statusColor }}">
                                                 {{ $log->status }}
                                             </span>
                                         </td>
-                                       
                                         <td class="text-center text-sm text-gray-500">
                                             {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : 'N/A' }}
                                         </td>
@@ -657,11 +662,11 @@
                         <p>Email: info@plnnusantarapower.co.id</p>
                         <p>Telepon: +62 31 8283180</p>
                     </div>
-                    <div class="column">
+                    {{-- <div class="column">
                         <h4>Strategic Office</h4>
                         <p>18 Office Park, Lt.2 ABCD</p>
                         <p>Jl. TB Simatupang No.18, Jakarta Selatan, Indonesia</p>
-                    </div>
+                    </div> --}}
                     <div class="column">
                         <h4>Newsletter</h4>
                         <form>

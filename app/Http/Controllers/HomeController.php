@@ -109,6 +109,12 @@ class HomeController extends Controller
                 return $data;
             })->toArray();
 
+            // Ambil data untuk live unit operational
+            $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
+                ->whereIn('status', ['Gangguan', 'Mothballed', 'Overhaul'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
             return view('homepage', compact(
                 'markers',
                 'total_capacity',
@@ -123,7 +129,8 @@ class HomeController extends Controller
                 'capacity_data',
                 'total_capacity_data',
                 'total_units_data',
-                'active_units_data'
+                'active_units_data',
+                'statusLogs'
             ));
 
         } catch (\Exception $e) {
@@ -151,7 +158,7 @@ class HomeController extends Controller
             // Gunakan model MachineStatusLog untuk mendapatkan data gangguan
             $statusLogs = MachineStatusLog::with(['machine', 'machine.powerPlant'])
                 ->whereIn('machine_id', $machineIds)
-                ->where('status', 'Gangguan')
+                ->whereIn('status', ['Gangguan', 'Mothballed', 'Overhaul'])
                 ->orderBy('tanggal', 'desc')
                 ->get()
                 ->map(function ($log) {
