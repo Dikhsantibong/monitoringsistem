@@ -866,10 +866,34 @@
 </script>
 <script>
     function autoResize(textarea) {
-        textarea.style.height = 'auto'; // Reset height
-        textarea.style.height = textarea.scrollHeight + 'px'; // Set to scroll height
-        textarea.style.width = '100%'; // Atur lebar menjadi 100% saat diklik
+        // Set tinggi minimum default
+        const minHeight = 60;
+        
+        // Simpan tinggi scroll saat ini
+        const currentScrollHeight = textarea.scrollHeight;
+        const currentHeight = parseInt(window.getComputedStyle(textarea).height);
+        
+        // Hanya resize jika konten benar-benar melebihi area yang tersedia
+        if (currentScrollHeight > currentHeight) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.max(minHeight, textarea.scrollHeight) + 'px';
+        }
     }
+
+    // Event listener untuk textarea
+    document.querySelectorAll('textarea').forEach(textarea => {
+        // Set tinggi awal yang tetap
+        textarea.style.height = '60px';
+        textarea.style.overflow = 'hidden';
+        
+        // Tambahkan event listener
+        textarea.addEventListener('input', function() {
+            // Cek apakah scroll diperlukan
+            if (this.scrollHeight > this.clientHeight) {
+                autoResize(this);
+            }
+        });
+    });
 </script>
 <script>
     // Tambahkan event listener untuk textarea
