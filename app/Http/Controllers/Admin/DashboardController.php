@@ -50,25 +50,28 @@ class DashboardController extends Controller
                     // Hitung total score peserta
                     $pesertaScore = 0;
                     if ($scoreCard->peserta) {
-                        $peserta = json_decode($scoreCard->peserta, true) ?? [];
-                        $pesertaScore = collect($peserta)->sum('skor');
+                        $pesertaData = is_string($scoreCard->peserta) 
+                            ? json_decode($scoreCard->peserta, true) 
+                            : (is_array($scoreCard->peserta) ? $scoreCard->peserta : []);
+                        $pesertaScore = collect($pesertaData)->sum(function($peserta) {
+                            return intval($peserta['skor'] ?? 0);
+                        });
                     }
 
                     // Hitung total score ketentuan rapat
-                    $ketentuanScore = 
-                        ($scoreCard->kesiapan_panitia ?? 100) +
-                        ($scoreCard->kesiapan_bahan ?? 100) +
-                        ($scoreCard->aktivitas_luar ?? 100) +
-                        ($scoreCard->gangguan_diskusi ?? 100) +
-                        ($scoreCard->gangguan_keluar_masuk ?? 100) +
-                        ($scoreCard->gangguan_interupsi ?? 100) +
-                        ($scoreCard->ketegasan_moderator ?? 100) +
-                        ($scoreCard->skor_waktu_mulai ?? 100) +
-                        ($scoreCard->skor_waktu_selesai ?? 100) +
-                        ($scoreCard->kelengkapan_sr ?? 100);
+                    $ketentuanScore = intval($scoreCard->kesiapan_panitia ?? 0) +
+                        intval($scoreCard->kesiapan_bahan ?? 0) +
+                        intval($scoreCard->aktivitas_luar ?? 0) +
+                        intval($scoreCard->gangguan_diskusi ?? 0) +
+                        intval($scoreCard->gangguan_keluar_masuk ?? 0) +
+                        intval($scoreCard->gangguan_interupsi ?? 0) +
+                        intval($scoreCard->ketegasan_moderator ?? 0) +
+                        intval($scoreCard->skor_waktu_mulai ?? 0) +
+                        intval($scoreCard->skor_waktu_selesai ?? 0) +
+                        intval($scoreCard->kelengkapan_sr ?? 0);
 
                     // Total keseluruhan
-                    $totalScore = $pesertaScore + $ketentuanScore;
+                    $totalScore = intval($pesertaScore) + intval($ketentuanScore);
 
                     return [
                         'date' => $scoreCard->tanggal->format('Y-m-d'),

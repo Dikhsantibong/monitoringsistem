@@ -4,14 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Events\ScoreCardDailyUpdated;
 
 class ScoreCardDaily extends Model
 {
     use HasFactory;
-
-    public static $isSyncing = false;
 
     protected $table = 'score_card_daily';
 
@@ -33,6 +30,7 @@ class ScoreCardDaily extends Model
         'gangguan_interupsi',
         'ketegasan_moderator',
         'kelengkapan_sr',
+        'ketentuan_rapat',
         'keterangan',
         'unit_source'
     ];
@@ -40,98 +38,79 @@ class ScoreCardDaily extends Model
     protected $casts = [
         'tanggal' => 'date',
         'waktu_mulai' => 'datetime',
-        'waktu_selesai' => 'datetime'
+        'waktu_selesai' => 'datetime',
+        'peserta' => 'array',
+        'ketentuan_rapat' => 'array'
     ];
 
-    public function getConnectionName()
+    // Relasi dengan model Peserta
+    public function pesertaList()
     {
-        return session('unit', 'u478221055_up_kendari');
+        return $this->belongsToMany(Peserta::class, 'score_card_peserta')
+            ->withPivot(['kehadiran_awal', 'kehadiran_akhir', 'skor', 'keterangan'])
+            ->withTimestamps();
     }
 
     protected static function boot()
     {
         parent::boot();
         
-        // Handle Created Event
+        static::creating(function ($scoreCard) {
+            // Konversi data peserta ke format yang sesuai
+            if (is_array($scoreCard->peserta)) {
+                $pesertaData = collect($scoreCard->peserta)->map(function ($data, $id) {
+                    return [
+                        'peserta_id' => $id,
+                        'kehadiran_awal' => $data['awal'] ?? 0,
+                        'kehadiran_akhir' => $data['akhir'] ?? 0,
+                        'skor' => $data['skor'] ?? 0,
+                        'keterangan' => $data['keterangan'] ?? ''
+                    ];
+                })->toArray();
+                
+                $scoreCard->pesertaToSync = $pesertaData;
+            }
+        });
+
         static::created(function ($scoreCard) {
-            self::syncToUpKendari('create', $scoreCard);
+            // Sync data peserta ke tabel pivot
+            if (isset($scoreCard->pesertaToSync)) {
+                $scoreCard->pesertaList()->sync($scoreCard->pesertaToSync);
+            }
+            event(new ScoreCardDailyUpdated($scoreCard, 'create'));
         });
 
-        // Handle Updated Event
+        static::updating(function ($scoreCard) {
+            if (is_array($scoreCard->peserta)) {
+                $pesertaData = collect($scoreCard->peserta)->map(function ($data, $id) {
+                    return [
+                        'peserta_id' => $id,
+                        'kehadiran_awal' => $data['awal'] ?? 0,
+                        'kehadiran_akhir' => $data['akhir'] ?? 0,
+                        'skor' => $data['skor'] ?? 0,
+                        'keterangan' => $data['keterangan'] ?? ''
+                    ];
+                })->toArray();
+                
+                $scoreCard->pesertaToSync = $pesertaData;
+            }
+        });
+
         static::updated(function ($scoreCard) {
-            self::syncToUpKendari('update', $scoreCard);
+            if (isset($scoreCard->pesertaToSync)) {
+                $scoreCard->pesertaList()->sync($scoreCard->pesertaToSync);
+            }
+            event(new ScoreCardDailyUpdated($scoreCard, 'update'));
         });
 
-        // Handle Deleted Event
         static::deleted(function ($scoreCard) {
-            self::syncToUpKendari('delete', $scoreCard);
+            $scoreCard->pesertaList()->detach();
+            event(new ScoreCardDailyUpdated($scoreCard, 'delete'));
         });
     }
 
-    protected static function syncToUpKendari($action, $scoreCard)
+    public function getConnectionName()
     {
-        if (self::$isSyncing) return;
-
-        try {
-            self::$isSyncing = true;
-            
-            $data = [
-                'id' => $scoreCard->id,
-                'tanggal' => $scoreCard->tanggal,
-                'lokasi' => $scoreCard->lokasi,
-                'peserta' => $scoreCard->peserta,
-                'awal' => $scoreCard->awal,
-                'akhir' => $scoreCard->akhir,
-                'skor' => $scoreCard->skor,
-                'waktu_mulai' => $scoreCard->waktu_mulai,
-                'waktu_selesai' => $scoreCard->waktu_selesai,
-                'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-                'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                'kontribusi_pemikiran' => $scoreCard->kontribusi_pemikiran,
-                'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
-                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
-                'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
-                'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
-                'keterangan' => $scoreCard->keterangan,
-                'unit_source' => session('unit'),
-                'created_at' => $scoreCard->created_at,
-                'updated_at' => $scoreCard->updated_at
-            ];
-
-            Log::info("Attempting to {$action} Score Card Daily sync", ['data' => $data]);
-
-            $upKendari = DB::connection('mysql')->table('score_card_daily');
-
-            switch($action) {
-                case 'create':
-                    $upKendari->insert($data);
-                    break;
-                    
-                case 'update':
-                    $upKendari->where('id', $scoreCard->id)
-                             ->update($data);
-                    break;
-                    
-                case 'delete':
-                    $upKendari->where('id', $scoreCard->id)
-                             ->delete();
-                    break;
-            }
-
-            Log::info("Score Card Daily {$action} sync successful", [
-                'id' => $scoreCard->id,
-                'unit' => 'poasia'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Score Card Daily {$action} sync failed", [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        } finally {
-            self::$isSyncing = false;
-        }
+        return session('unit', 'mysql');
     }
 } 

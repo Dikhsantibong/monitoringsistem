@@ -367,6 +367,11 @@ Route::get('/get-mothballed-machines', [DashboardPemantauanController::class, 'g
 
 Route::get('/get-maintenance-machines', [DashboardPemantauanController::class, 'getMaintenanceMachines']);
 
+Route::prefix('admin/pembangkit')->middleware(['auth'])->group(function () {
+    Route::post('/save-status', [PembangkitController::class, 'saveStatus'])
+        ->name('admin.pembangkit.save-status');
+});
+
 
 
     

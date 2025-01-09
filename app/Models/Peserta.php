@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Events\PesertaUpdated;
 
 class Peserta extends Model
 {
@@ -22,5 +23,22 @@ class Peserta extends Model
     public function getConnectionName()
     {
         return session('unit', 'u478221055_up_kendari');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::created(function ($peserta) {
+            event(new PesertaUpdated($peserta, 'create'));
+        });
+
+        static::updated(function ($peserta) {
+            event(new PesertaUpdated($peserta, 'update'));
+        });
+
+        static::deleted(function ($peserta) {
+            event(new PesertaUpdated($peserta, 'delete'));
+        });
     }
 } 

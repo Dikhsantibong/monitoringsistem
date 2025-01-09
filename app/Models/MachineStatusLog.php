@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Events\MachineStatusUpdated;
 
 class MachineStatusLog extends Model
 {
@@ -73,90 +74,24 @@ class MachineStatusLog extends Model
 
     public function getConnectionName()
     {
-        return session('unit');
+        return session('unit', 'mysql');
     }
 
     protected static function boot()
     {
         parent::boot();
         
-        // Handle Created Event
-        static::created(function ($machineStatusLog) {
-            self::syncToUpKendari('create', $machineStatusLog);
+        static::created(function ($machineStatus) {
+            event(new MachineStatusUpdated($machineStatus, 'create'));
         });
 
-        // Handle Updated Event
-        static::updated(function ($machineStatusLog) {
-            self::syncToUpKendari('update', $machineStatusLog);
+        static::updated(function ($machineStatus) {
+            event(new MachineStatusUpdated($machineStatus, 'update'));
         });
 
-        // Handle Deleted Event
-        static::deleted(function ($machineStatusLog) {
-            self::syncToUpKendari('delete', $machineStatusLog);
+        static::deleted(function ($machineStatus) {
+            event(new MachineStatusUpdated($machineStatus, 'delete'));
         });
-    }
-
-    protected static function syncToUpKendari($action, $machineStatusLog)
-    {
-        if (self::$isSyncing) return;
-
-        try {
-            self::$isSyncing = true;
-            
-            $data = [
-                'id' => $machineStatusLog->id,
-                'machine_id' => $machineStatusLog->machine_id,
-                'tanggal' => $machineStatusLog->tanggal,
-                'status' => $machineStatusLog->status,
-                'component' => $machineStatusLog->component,
-                'equipment' => $machineStatusLog->equipment,
-                'deskripsi' => $machineStatusLog->deskripsi,
-                'kronologi' => $machineStatusLog->kronologi,
-                'action_plan' => $machineStatusLog->action_plan,
-                'progres' => $machineStatusLog->progres,
-                'tanggal_mulai' => $machineStatusLog->tanggal_mulai,
-                'target_selesai' => $machineStatusLog->target_selesai,
-                'dmn' => $machineStatusLog->dmn,
-                'dmp' => $machineStatusLog->dmp,
-                'load_value' => $machineStatusLog->load_value,
-                'unit_source' => session('unit'),
-                'created_at' => $machineStatusLog->created_at,
-                'updated_at' => $machineStatusLog->updated_at
-            ];
-
-            Log::info("Attempting to {$action} Machine Status Log sync", ['data' => $data]);
-
-            $upKendari = DB::connection('mysql')->table('machine_status_logs');
-
-            switch($action) {
-                case 'create':
-                    $upKendari->insert($data);
-                    break;
-                    
-                case 'update':
-                    $upKendari->where('id', $machineStatusLog->id)
-                             ->update($data);
-                    break;
-                    
-                case 'delete':
-                    $upKendari->where('id', $machineStatusLog->id)
-                             ->delete();
-                    break;
-            }
-
-            Log::info("Machine Status Log {$action} sync successful", [
-                'id' => $machineStatusLog->id,
-                'unit' => 'poasia'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Machine Status Log {$action} sync failed", [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        } finally {
-            self::$isSyncing = false;
-        }
     }
 
     // Helper methods yang sudah ada
