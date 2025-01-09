@@ -11,9 +11,6 @@ class SyncOtherDiscussionToUpKendari
     public function handle(OtherDiscussionUpdated $event)
     {
         try {
-            // Koneksi ke database UP Kendari
-            $upKendariDB = DB::connection('mysql');
-            
             $data = [
                 'sr_number' => $event->discussion->sr_number,
                 'wo_number' => $event->discussion->wo_number,
@@ -27,40 +24,62 @@ class SyncOtherDiscussionToUpKendari
                 'pic' => $event->discussion->pic,
                 'status' => $event->discussion->status,
                 'deadline' => $event->discussion->deadline,
-                'closed_at' => $event->discussion->closed_at,
                 'unit_source' => $event->sourceUnit,
                 'created_at' => now(),
                 'updated_at' => now()
             ];
 
-            switch($event->action) {
-                case 'create':
-                    $upKendariDB->table('other_discussions')->insert($data);
-                    break;
-                    
-                case 'update':
-                    $upKendariDB->table('other_discussions')
-                        ->where('id', $event->discussion->id)
-                        ->update($data);
-                    break;
-                    
-                case 'delete':
-                    $upKendariDB->table('other_discussions')
-                        ->where('id', $event->discussion->id)
-                        ->delete();
-                    break;
+            // Gunakan koneksi UP Kendari
+            DB::connection('mysql')->beginTransaction();
+
+            try {
+                switch($event->action) {
+                    case 'create':
+                        // Tambahkan id dari discussion asli
+                        $data['id'] = $event->discussion->id;
+                        
+                        DB::connection('mysql')
+                            ->table('other_discussions')
+                            ->insert($data);
+                        break;
+                        
+                    case 'update':
+                        DB::connection('mysql')
+                            ->table('other_discussions')
+                            ->where('id', $event->discussion->id)
+                            ->where('unit_source', $event->sourceUnit)
+                            ->update($data);
+                        break;
+                        
+                    case 'delete':
+                        DB::connection('mysql')
+                            ->table('other_discussions')
+                            ->where('id', $event->discussion->id)
+                            ->where('unit_source', $event->sourceUnit)
+                            ->delete();
+                        break;
+                }
+
+                DB::connection('mysql')->commit();
+
+                Log::info("Other Discussion sync successful", [
+                    'action' => $event->action,
+                    'source_unit' => $event->sourceUnit,
+                    'id' => $event->discussion->id
+                ]);
+
+            } catch (\Exception $e) {
+                DB::connection('mysql')->rollBack();
+                throw $e;
             }
 
-            Log::info("Other Discussion sync to UP Kendari successful", [
+        } catch (\Exception $e) {
+            Log::error("Other Discussion sync failed", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'action' => $event->action,
                 'source_unit' => $event->sourceUnit,
-                'discussion_id' => $event->discussion->id
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Other Discussion sync to UP Kendari failed", [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'id' => $event->discussion->id ?? null
             ]);
         }
     }

@@ -278,12 +278,33 @@ class OtherDiscussionController extends Controller
 
     public function destroy($id)
     {
-        $discussion = OtherDiscussion::findOrFail($id);
-        $discussion->delete();
+        try {
+            DB::beginTransaction();
+            
+            $discussion = OtherDiscussion::findOrFail($id);
+            
+            // Hapus dari tabel terkait
+            OverdueDiscussion::where('original_id', $id)->delete();
+            ClosedDiscussion::where('original_id', $id)->delete();
+            
+            $discussion->delete();
+            
+            DB::commit();
 
-        return redirect()
-            ->route('admin.other-discussions.index')
-            ->with('success', 'Data pembahasan berhasil dihapus');
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error in destroy: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data'
+            ], 500);
+        }
     }
 
     public function updateStatus(Request $request, OtherDiscussion $discussion)

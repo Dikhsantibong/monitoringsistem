@@ -88,7 +88,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                     required>
                                 <option value="">Pilih Unit</option>
-                                @foreach(\App\Models\OtherDiscussion::UNITS as $unit)
+                                @foreach(\App\Models\OtherDiscussion::getUnits() as $unit)
                                     <option value="{{ $unit }}" {{ old('unit', $discussion->unit) == $unit ? 'selected' : '' }}>
                                         {{ $unit }}
                                     </option>
@@ -246,7 +246,7 @@
                             <input type="date" 
                                    name="deadline" 
                                    id="deadline" 
-                                   value="{{ old('deadline', $discussion->deadline->format('Y-m-d')) }}"
+                                   value="{{ old('deadline', $discussion->deadline ? date('Y-m-d', strtotime($discussion->deadline)) : '') }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                    required>
                             @error('deadline')
@@ -280,14 +280,24 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     
     const formData = new FormData(this);
     
+    // Tambahkan method _method untuk Laravel
+    formData.append('_method', 'PUT');
+    
     fetch('{{ route('admin.other-discussions.update', $discussion->id) }}', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'  // Tambahkan header Accept
         },
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        // Cek status response terlebih dahulu
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             Swal.fire({
@@ -299,9 +309,17 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
             }).then(() => {
                 window.location.href = '{{ route('admin.other-discussions.index') }}';
             });
+        } else {
+            // Tampilkan pesan error jika ada
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: data.message || 'Terjadi kesalahan saat menyimpan data'
+            });
         }
     })
     .catch(error => {
+        console.error('Error:', error);  // Tambahkan log error
         Swal.fire({
             icon: 'error',
             title: 'Error!',

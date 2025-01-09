@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Events\OtherDiscussionUpdated;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
+use App\Models\PowerPlant;
 
 class OtherDiscussion extends Model
 {
@@ -70,7 +73,14 @@ class OtherDiscussion extends Model
         static::created(function ($discussion) {
             if (!static::$isSyncing) {
                 static::$isSyncing = true;
-                event(new OtherDiscussionUpdated($discussion, 'create'));
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'create'));
+                } catch (\Exception $e) {
+                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
+                        'error' => $e->getMessage(),
+                        'discussion_id' => $discussion->id
+                    ]);
+                }
                 static::$isSyncing = false;
             }
         });
@@ -78,7 +88,14 @@ class OtherDiscussion extends Model
         static::updated(function ($discussion) {
             if (!static::$isSyncing) {
                 static::$isSyncing = true;
-                event(new OtherDiscussionUpdated($discussion, 'update'));
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'update'));
+                } catch (\Exception $e) {
+                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
+                        'error' => $e->getMessage(),
+                        'discussion_id' => $discussion->id
+                    ]);
+                }
                 static::$isSyncing = false;
             }
         });
@@ -86,9 +103,24 @@ class OtherDiscussion extends Model
         static::deleted(function ($discussion) {
             if (!static::$isSyncing) {
                 static::$isSyncing = true;
-                event(new OtherDiscussionUpdated($discussion, 'delete'));
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'delete'));
+                } catch (\Exception $e) {
+                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
+                        'error' => $e->getMessage(),
+                        'discussion_id' => $discussion->id
+                    ]);
+                }
                 static::$isSyncing = false;
             }
         });
+    }
+
+    public static function getUnits()
+    {
+        return PowerPlant::select('name')
+            ->distinct()
+            ->pluck('name')
+            ->toArray();
     }
 } 
