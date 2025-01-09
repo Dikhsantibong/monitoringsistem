@@ -257,7 +257,8 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
-                                                <a href="{{ route('admin.other-discussions.edit', $discussion->id) }}"
+                                                <a href="#" 
+                                                   onclick="editDiscussion({{ $discussion->id }})"
                                                    class="text-blue-500 hover:text-blue-700">
                                                     <i class="fas fa-edit text-lg"></i>
                                                 </a>
@@ -445,7 +446,8 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
-                                                <a href="{{ route('admin.other-discussions.edit', $discussion->original_id) }}"
+                                                <a href="#" 
+                                                   onclick="editDiscussion({{ $discussion->id }})"
                                                    class="text-blue-500 hover:text-blue-700">
                                                     <i class="fas fa-edit text-lg"></i>
                                                 </a>
@@ -1044,6 +1046,50 @@
             counter.textContent = totalVisible;
         }
     }
+
+    function editDiscussion(id) {
+        try {
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Mohon tunggu...',
+                text: 'Membuka form edit...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    // Langsung redirect tanpa Promise
+                    window.location.href = `/admin/other-discussions/${id}/edit`;
+                }
+            });
+        } catch (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat membuka form edit',
+                icon: 'error'
+            });
+        }
+    }
+
+    // Tambahkan ini untuk handling pesan sukses setelah update
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cek jika ada parameter success di URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMessage = urlParams.get('success');
+        
+        if (successMessage) {
+            Swal.fire({
+                title: 'Berhasil!',
+                text: 'Data berhasil diperbarui',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                // Hapus parameter success dari URL
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            });
+        }
+    });
 </script>
 @push('scripts')
 @endpush

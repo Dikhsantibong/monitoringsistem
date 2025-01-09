@@ -278,52 +278,51 @@
 document.getElementById('editDiscussionForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const formData = new FormData(this);
+    const form = this;
+    const formData = new FormData(form);
     
-    // Tambahkan method _method untuk Laravel
-    formData.append('_method', 'PUT');
-    
+    // Tampilkan loading
+    Swal.fire({
+        title: 'Mohon tunggu...',
+        text: 'Sedang menyimpan data',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     fetch('{{ route('admin.other-discussions.update', $discussion->id) }}', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'  // Tambahkan header Accept
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: formData
     })
-    .then(response => {
-        // Cek status response terlebih dahulu
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    
     .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: data.message,
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                window.location.href = '{{ route('admin.other-discussions.index') }}';
-            });
-        } else {
-            // Tampilkan pesan error jika ada
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: data.message || 'Terjadi kesalahan saat menyimpan data'
-            });
-        }
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Data berhasil diperbarui',
+            showConfirmButton: false,
+            timer: 1500
+        }).then(() => {
+            window.location.href = '{{ route('admin.other-discussions.index') }}?success=true';
+        }); 
     })
     .catch(error => {
-        console.error('Error:', error);  // Tambahkan log error
+        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Terjadi kesalahan saat menyimpan data'
+            text: error.message || 'Terjadi kesalahan saat menyimpan data',
+            confirmButtonText: 'Coba Lagi'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit form secara normal jika fetch gagal
+                form.submit();
+            }
         });
     });
 });
