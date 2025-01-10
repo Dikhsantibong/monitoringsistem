@@ -372,6 +372,9 @@ Route::prefix('admin/pembangkit')->middleware(['auth'])->group(function () {
         ->name('admin.pembangkit.save-status');
 });
 
+Route::post('/admin/pembangkit/reset-status', [PembangkitController::class, 'resetStatus'])
+    ->name('admin.pembangkit.reset-status');
+
 
 
     

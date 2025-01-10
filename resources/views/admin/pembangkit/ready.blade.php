@@ -231,11 +231,11 @@
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <textarea 
-                                                        name="equipment" 
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-80"
                                                         style="height: 100px; width: 150px;" 
                                                         cols="30" 
                                                         rows="10"
+                                                        name="equipment[{{ $machine->id }}]" 
                                                         oninput="autoResize(this)">
                                                     </textarea>
                                                         </select>
@@ -470,13 +470,14 @@
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
                 const statusSelect = row.querySelector('select');
-                const componentSelect = row.querySelector('.system-select'); // Mengambil nilai component
-                const equipmentTextarea = row.querySelector('td:nth-child(7) textarea[name="equipment"]'); // Mengambil nilai equipment
+                const componentSelect = row.querySelector('.system-select');
                 
-                // Ambil nilai DMN dan DMP
-                const dmnCell = row.querySelector('td:nth-child(2)');
-                const dmpInput = row.querySelector('td:nth-child(3) input'); // Mengambil input DMP
+                // Perbaikan pengambilan nilai equipment
+                const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
+                const equipmentValue = equipmentTextarea ? equipmentTextarea.value.trim() : '';
                 
+                // Ambil nilai-nilai lain
+                const dmpInput = row.querySelector('td:nth-child(3) input');
                 const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
                 const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
                 const inputBeban = row.querySelector('td:nth-child(4) input');
@@ -491,9 +492,9 @@
                         tanggal: tanggal,
                         status: statusSelect.value,
                         component: componentSelect ? componentSelect.value : null,
-                        equipment: equipmentTextarea ? equipmentTextarea.value.trim() : null,
-                        dmn: dmnCell ? dmnCell.textContent.trim() : 'N/A',
-                        dmp: dmpInput ? dmpInput.value.trim() : 'N/A',
+                        equipment: equipmentValue, // Tambahkan nilai equipment
+                        dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
+                        dmp: dmpInput ? dmpInput.value.trim() : null,
                         deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
                         action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
                         load_value: inputBeban ? parseFloat(inputBeban.value) || null : null,

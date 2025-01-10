@@ -105,7 +105,7 @@
                     </a>
                     <!-- Card 3 -->
                     <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'"
-                        class="bg-yellow-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors">
+                        class="bg-red-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors">
                         <i class="fa-solid fa-cogs text-white text-3xl mr-3"></i>
                         <div class="flex-1">
                             <h3 class="text-white text-md font-medium">JUMLAH MESIN GANGGUAN</h3>

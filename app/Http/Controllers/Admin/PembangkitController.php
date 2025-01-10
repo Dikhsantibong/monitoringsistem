@@ -42,11 +42,9 @@ class PembangkitController extends Controller
             \Log::info('Data yang diterima untuk disimpan:', $request->logs);
             
             foreach ($request->logs as $log) {
-                if (!isset($log['deskripsi'])) {
-                    \Log::error('Deskripsi tidak ditemukan untuk machine_id: ' . $log['machine_id']);
-                    continue;
-                }
-
+                // Pastikan equipment diambil dengan benar dari request
+                $equipment = isset($log['equipment']) ? trim($log['equipment']) : null;
+                
                 $operation = MachineOperation::where('machine_id', $log['machine_id'])
                     ->latest('recorded_at')
                     ->first();
@@ -60,7 +58,7 @@ class PembangkitController extends Controller
                         'tanggal' => $log['tanggal'],
                         'status' => $log['status'],
                         'component' => $log['component'],
-                        'equipment' => $log['equipment'],
+                        'equipment' => $equipment,
                         'deskripsi' => $log['deskripsi'] ?? null,
                         'kronologi' => $log['kronologi'] ?? null,
                         'action_plan' => $log['action_plan'] ?? null,
@@ -225,5 +223,81 @@ class PembangkitController extends Controller
             ->get();
 
         return view('admin.pembangkit.report-print', compact('logs'));
+    }
+
+    public function resetStatus(Request $request)
+    {
+        try {
+            $tanggal = $request->tanggal ?? now()->format('Y-m-d');
+            
+            // Ambil semua log status pada tanggal tersebut
+            $currentLogs = MachineStatusLog::whereDate('tanggal', $tanggal)->get();
+            
+            // Ambil data mesin yang sedang gangguan dan masih dalam periode gangguan
+            $activeIssues = MachineStatusLog::where('status', 'Gangguan')
+                ->where(function($query) use ($tanggal) {
+                    $query->whereNull('target_selesai')
+                        ->orWhereDate('target_selesai', '>=', $tanggal);
+                })
+                ->whereDate('tanggal_mulai', '<=', $tanggal)
+                ->get();
+            
+            // Kumpulkan machine_id yang sedang gangguan
+            $machineIdsWithIssues = $activeIssues->pluck('machine_id')->toArray();
+            
+            // Cek apakah ada input baru dengan status lain untuk mesin yang gangguan
+            $newInputsForIssues = MachineStatusLog::whereIn('machine_id', $machineIdsWithIssues)
+                ->where('status', '!=', 'Gangguan')
+                ->whereDate('tanggal', $tanggal)
+                ->get()
+                ->pluck('machine_id')
+                ->toArray();
+            
+            // Machine IDs yang akan dipertahankan (tidak direset)
+            $preservedMachineIds = array_diff($machineIdsWithIssues, $newInputsForIssues);
+            
+            DB::beginTransaction();
+            
+            foreach ($currentLogs as $log) {
+                // Jika mesin tidak dalam daftar yang dipreservasi, reset datanya
+                if (!in_array($log->machine_id, $preservedMachineIds)) {
+                    // Simpan DMN dan DMP
+                    $dmn = $log->dmn;
+                    $dmp = $log->dmp;
+                    
+                    // Update log dengan nilai default kecuali DMN dan DMP
+                    $log->update([
+                        'status' => 'Operasi',
+                        'component' => null,
+                        'equipment' => '',
+                        'deskripsi' => '',
+                        'kronologi' => '',
+                        'action_plan' => '',
+                        'progres' => '',
+                        'load_value' => '',
+                        'tanggal_mulai' => null,
+                        'target_selesai' => null,
+                        'dmn' => $dmn,
+                        'dmp' => $dmp
+                    ]);
+                }
+            }
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil direset',
+                'preserved_machines' => $preservedMachineIds
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Reset Status Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mereset data: ' . $e->getMessage()
+            ]);
+        }
     }
 }
