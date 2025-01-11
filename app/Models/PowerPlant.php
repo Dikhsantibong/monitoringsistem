@@ -37,6 +37,11 @@ class PowerPlant extends Model
         return session('unit');
     }
 
+    public function scopeByUnitSource($query, $unitSource)
+    {
+        return $query->where('unit_source', $unitSource);
+    }
+
     protected static function boot()
     {
         parent::boot();

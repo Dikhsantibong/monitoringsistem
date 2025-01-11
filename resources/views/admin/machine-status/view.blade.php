@@ -15,7 +15,7 @@
                         aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
@@ -27,7 +27,7 @@
                         aria-controls="desktop-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
@@ -57,10 +57,14 @@
             </div>
         </header>
 
+        <!-- Loading indicator -->
+        <div id="loading" class="loading">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        </div>
+
         <!-- Breadcrumbs -->
         <div class="flex items-center pt-2">
             <x-admin-breadcrumb :breadcrumbs="[
-                // ['name' => 'Dashboard', 'url' => route('admin.dashboard')],
                 ['name' => 'Kesiapan Pembangkit', 'url' => route('admin.pembangkit.ready')],
                 ['name' => 'Status Mesin', 'url' => null]
             ]" />
@@ -72,86 +76,31 @@
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-semibold text-gray-800">Status Mesin</h2>
                     
-                    <!-- Filter Tanggal -->
+                    <!-- Filter Area -->
                     <div class="flex items-center space-x-4">
-                        <input type="date" 
-                               id="filterDate" 
-                               value="{{ $date }}"
-                               class="px-4 py-2 border rounded-lg"
-                               onchange="filterData()">
+                        <div>
+                            <input type="date" 
+                                   id="date-picker" 
+                                   class="border rounded px-3 py-2" 
+                                   value="{{ $date }}"
+                                   onchange="updateTable()">
+                        </div>
+                        
+                        <div class="relative">
+                            <input type="text" 
+                                   id="searchInput" 
+                                   placeholder="Cari unit atau mesin..."
+                                   class="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tab Navigation -->
-                <div class="mb-6">
-                    <div class="border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-4">
-                            @foreach($units as $unit)
-                                <button onclick="switchUnit('{{ $unit }}')" 
-                                        class="tab-btn py-4 px-6 font-medium text-sm {{ $selectedUnit === $unit ? 'active-tab' : 'text-gray-500' }}"
-                                        id="{{ str_replace(' ', '-', strtolower($unit)) }}-tab">
-                                    {{ $unit }}
-                                </button>
-                            @endforeach
-                        </nav>
-                    </div>
-                </div>
-
-                <!-- Tabel Data -->
+                <!-- Content Area -->
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-[#0A749B]">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Mesin</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMN</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMP</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Beban</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Component</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Equipment</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deskripsi</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Kronologi</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Action Plan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($logs as $index => $log)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
-                                    <td class="px-6 py-4">{{ $log->machine->name }}</td>
-                                    <td class="px-6 py-4">{{ $log->dmn ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4">{{ $log->dmp ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4">{{ $log->load_value ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-2 py-1 rounded-full text-xs font-medium
-                                            @switch($log->status)
-                                                @case('Operasi') bg-green-100 text-green-800 @break
-                                                @case('Standby') bg-blue-100 text-blue-800 @break
-                                                @case('Gangguan') bg-red-100 text-red-800 @break
-                                                @case('Pemeliharaan') bg-orange-100 text-orange-800 @break
-                                                @default bg-gray-100 text-gray-800
-                                            @endswitch">
-                                            {{ $log->status }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">{{ $log->component }}</td>
-                                    <td class="px-6 py-4">{{ $log->equipment }}</td>
-                                    <td class="px-6 py-4">{{ $log->deskripsi }}</td>
-                                    <td class="px-6 py-4">{{ $log->kronologi }}</td>
-                                    <td class="px-6 py-4">{{ $log->action_plan }}</td>
-                                    <td class="px-6 py-4">{{ $log->progres }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="12" class="px-6 py-4 text-center text-gray-500">
-                                        Tidak ada data untuk ditampilkan
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    @include('admin.machine-status._table')
                 </div>
             </div>
         </div>
@@ -159,25 +108,99 @@
 </div>
 
 <script>
-function switchUnit(unit) {
-    const date = document.getElementById('filterDate').value;
-    window.location.href = `{{ route('admin.machine-status.view') }}?unit=${encodeURIComponent(unit)}&date=${date}`;
-}
-
 function filterData() {
     const date = document.getElementById('filterDate').value;
-    const urlParams = new URLSearchParams(window.location.search);
-    const unit = urlParams.get('unit') || '{{ $units[0] }}';
-    window.location.href = `{{ route('admin.machine-status.view') }}?unit=${encodeURIComponent(unit)}&date=${date}`;
+    fetchData(date);
 }
 
-// Add dropdown toggle functionality
+function fetchData(date) {
+    console.log('Fetching data:', { date });
+    document.getElementById('loading').classList.add('show');
+
+    fetch(`{{ route('admin.machine-status.view') }}?date=${date}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            const container = document.querySelector('.overflow-x-auto');
+            if (container) {
+                container.innerHTML = data.html;
+            } else {
+                console.error('Container not found');
+            }
+        } else {
+            throw new Error(data.message || 'Terjadi kesalahan saat memuat data');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        const container = document.querySelector('.overflow-x-auto');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-red-500">
+                    Terjadi kesalahan saat memuat data: ${error.message}
+                </div>
+            `;
+        }
+    })
+    .finally(() => {
+        document.getElementById('loading').classList.remove('show');
+    });
+}
+
+// Panggil fetchData saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    const date = document.getElementById('filterDate').value;
+    fetchData(date);
+});
+
+// Fungsi pencarian
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    const searchText = this.value.toLowerCase();
+    const unitContainers = document.querySelectorAll('.bg-white.rounded-lg.shadow.p-6.mb-4');
+    
+    unitContainers.forEach(container => {
+        const unitName = container.querySelector('h1').textContent.toLowerCase();
+        const machineNames = Array.from(container.querySelectorAll('tbody tr td:nth-child(2)')).map(td => td.textContent.toLowerCase());
+        
+        // Cek apakah searchText cocok dengan nama unit atau nama mesin
+        const matchUnit = unitName.includes(searchText);
+        const matchMachine = machineNames.some(name => name.includes(searchText));
+        
+        // Tampilkan/sembunyikan container berdasarkan hasil pencarian
+        if (matchUnit || matchMachine) {
+            container.style.display = '';
+            
+            // Jika mencari mesin spesifik, sembunyikan mesin yang tidak cocok
+            if (!matchUnit && matchMachine) {
+                const rows = container.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const machineName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    row.style.display = machineName.includes(searchText) ? '' : 'none';
+                });
+            } else {
+                // Jika mencari unit, tampilkan semua mesin
+                const rows = container.querySelectorAll('tbody tr');
+                rows.forEach(row => row.style.display = '');
+            }
+        } else {
+            container.style.display = 'none';
+        }
+    });
+});
+
+// Dropdown functionality
 function toggleDropdown() {
     const dropdown = document.getElementById('dropdown');
     dropdown.classList.toggle('hidden');
 }
 
-// Close dropdown when clicking outside
 document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('dropdown');
     const dropdownToggle = document.getElementById('dropdownToggle');
@@ -186,12 +209,59 @@ document.addEventListener('click', function(event) {
         dropdown.classList.add('hidden');
     }
 });
+
+function updateTable() {
+    const date = document.getElementById('date-picker').value;
+    const searchText = document.getElementById('searchInput').value;
+    
+    document.getElementById('loading').classList.add('show');
+    
+    fetch(`{{ route('admin.machine-status.view') }}?date=${date}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const container = document.querySelector('.overflow-x-auto');
+            if (container) {
+                container.innerHTML = data.html;
+                // Terapkan filter pencarian setelah memperbarui tabel
+                if (searchText) {
+                    document.getElementById('searchInput').value = searchText;
+                    document.getElementById('searchInput').dispatchEvent(new Event('keyup'));
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    })
+    .finally(() => {
+        document.getElementById('loading').classList.remove('show');
+    });
+}
 </script>
 
 <style>
-.active-tab {
-    border-bottom: 2px solid #3B82F6;
-    color: #2563EB;
+.loading {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading.show {
+    display: flex;
 }
 </style>
 @endsection 

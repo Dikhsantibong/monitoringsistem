@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\OverdueDiscussionController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\Admin\LaporanDeleteController;
 use App\Http\Controllers\Admin\MachineStatusViewController;
+use App\Http\Controllers\Admin\MachineStatusController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -404,6 +405,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/machine-status/view', [MachineStatusViewController::class, 'index'])
          ->name('admin.machine-status.view');
 });
+
+Route::get('/admin/machine-status/view', [MachineStatusController::class, 'view'])
+    ->name('admin.machine-status.view')
+    ->middleware(['auth']);
 
 
 
