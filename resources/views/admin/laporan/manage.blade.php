@@ -214,7 +214,7 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">BL-{{ str_pad($backlog->id, 4, '0', STR_PAD_LEFT) }}</td>
-                                    <td class="px-6 py-4 border border-gray-200">{{ $backlog->description }}</td>
+                                    <td class="px-6 py-4 border border-gray-200">{{ $backlog->deskripsi }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                             {{ $backlog->status == 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
