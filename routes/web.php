@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\OtherDiscussionController;
 use App\Http\Controllers\Admin\OverdueDiscussionController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\Admin\LaporanDeleteController;
+use App\Http\Controllers\Admin\MachineStatusViewController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -395,6 +396,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->name('admin.laporan.create-backlog');
     Route::post('/admin/laporan/store-backlog', [App\Http\Controllers\Admin\LaporanController::class, 'storeBacklog'])
         ->name('admin.laporan.store-backlog');
+});
+
+Route::middleware(['auth'])->group(function () {
+    // ... route lainnya ...
+    
+    Route::get('/admin/machine-status/view', [MachineStatusViewController::class, 'index'])
+         ->name('admin.machine-status.view');
 });
 
 

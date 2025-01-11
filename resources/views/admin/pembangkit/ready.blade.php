@@ -85,7 +85,13 @@
             <main class="px-6">
                 <!-- Konten Kesiapan Pembangkit -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Kesiapan Pembangkit</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h1 class="text-xl font-semibold text-gray-800">Penyusunan Data Pembangkit</h1>
+                        <a href="{{ route('admin.machine-status.view') }}" 
+                           class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i>Lihat Status Mesin
+                        </a>
+                    </div>
                     <div class="mb-4 flex flex-col lg:flex-row justify-between items-center gap-3">
                         <div class="flex flex-col lg:flex-row gap-y-3 sm:gap-y-3 space-x-4">
                             <input type="date" id="filterDate" value="{{ date('Y-m-d') }}"
