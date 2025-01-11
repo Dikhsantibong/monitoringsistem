@@ -470,11 +470,13 @@ class LaporanController extends Controller
             $serviceRequests = ServiceRequest::orderBy('created_at', 'desc')->get();
             $workOrders = WorkOrder::orderBy('created_at', 'desc')->get();
             $woBacklogs = WoBacklog::orderBy('created_at', 'desc')->get();
+            $backlogs = WoBacklog::orderBy('created_at', 'desc')->get();
 
             return view('admin.laporan.manage', compact(
                 'serviceRequests',
                 'workOrders',
-                'woBacklogs'
+                'woBacklogs',
+                'backlogs'
             ));
         } catch (\Exception $e) {
             \Log::error('Error in manage method: ' . $e->getMessage());

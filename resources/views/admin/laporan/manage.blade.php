@@ -190,7 +190,53 @@
 
             <!-- Backlog Table -->
             <div id="backlog-tab" class="tab-content hidden">
-                <!-- Similar structure but for Backlog -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Manajemen WO Backlog</h3>
+                        <a href="{{ route('admin.laporan.create-backlog') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            <i class="fas fa-plus mr-2"></i>Tambah Backlog
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Backlog</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioritas</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($backlogs as $index => $backlog)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">BL-{{ str_pad($backlog->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                    <td class="px-6 py-4 border border-gray-200">{{ $backlog->description }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {{ $backlog->status == 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                            {{ $backlog->status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $backlog->priority }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
+                                        <button type="button"
+                                                data-delete 
+                                                data-type="backlog" 
+                                                data-id="{{ $backlog->id }}" 
+                                                class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

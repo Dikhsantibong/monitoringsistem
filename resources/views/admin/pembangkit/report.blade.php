@@ -75,22 +75,39 @@
             <!-- Grouping Filter and Table -->
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div class="flex justify-between items-center px-6 py-3">
-                    <form id="filterForm" class="flex items-center">
-                        <input type="date" name="date" id="filterDate" class="border border-gray-300 rounded-md p-2" value="{{ request('date', now()->format('Y-m-d')) }}">
-                        <button type="submit" class="ml-2 bg-blue-500 text-white rounded-md px-4 py-2">Filter</button>
-                    </form>
-                    <div>
-                        <div class="flex justify-end space-x-2">
-                            <a href="{{ route('admin.pembangkit.downloadReport', ['date' => request('date')]) }}" class="bg-green-500 text-white rounded-md px-4 py-2">
-                                <i class="fas fa-download mr-2"></i>Download PDF
-                            </a>
-                            <a href="{{ route('admin.pembangkit.printReport', ['date' => request('date')]) }}" class="bg-yellow-500 text-white rounded-md px-4 py-2">
-                                <i class="fas fa-print mr-2"></i>Print
-                            </a>
-                            <a href="{{ route('admin.pembangkit.ready') }}" class="bg-gray-500 text-white rounded-md px-4 py-2">
-                                <i class="fas fa-home mr-2"></i>Input Pembangkit
-                            </a>
-                        </div>
+                    <div class="flex items-center gap-x-3">
+                        <form id="filterForm" class="flex items-center space-x-2">
+                            <input type="date" name="date" id="filterDate" 
+                                   class="border border-gray-300 rounded-md p-2" 
+                                   value="{{ request('date', now()->format('Y-m-d')) }}">
+                            
+                            <!-- Tambahkan search input -->
+                            <div class="relative">
+                                <input type="text" id="searchInput" 
+                                       placeholder="Cari mesin, unit, atau status..."
+                                       class="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="bg-blue-500 text-white rounded-md px-4 py-2">Filter</button>
+                        </form>
+                    </div>
+                    <div class="flex space-x-2">
+                        
+                        <a href="{{ route('admin.pembangkit.downloadReport', ['date' => request('date')]) }}" 
+                           class="bg-green-500 text-white rounded-md px-4 py-2">
+                            <i class="fas fa-download mr-2"></i>Download PDF
+                        </a>
+                        <a href="{{ route('admin.pembangkit.printReport', ['date' => request('date')]) }}" 
+                           class="bg-yellow-500 text-white rounded-md px-4 py-2">
+                            <i class="fas fa-print mr-2"></i>Print
+                        </a>
+                        <a href="{{ route('admin.pembangkit.ready') }}" 
+                           class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                            <i class="fas fa-home mr-2"></i>Input Pembangkit
+                        </a>
                     </div>
                 </div>
 
@@ -218,6 +235,45 @@
         event.preventDefault(); // Mencegah form dari submit default
         const date = document.getElementById('filterDate').value;
         fetchData(date); // Panggil fungsi untuk mengambil data
+    });
+
+    function searchTable() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const tables = document.querySelectorAll('.report-table tbody tr');
+        let found = false;
+
+        tables.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchInput)) {
+                row.style.display = '';
+                found = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Tampilkan atau sembunyikan pesan "Data tidak ditemukan"
+        let noDataMessage = document.getElementById('noDataMessage');
+        if (!found) {
+            if (!noDataMessage) {
+                noDataMessage = document.createElement('div');
+                noDataMessage.id = 'noDataMessage';
+                noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
+                noDataMessage.textContent = 'DATA TIDAK DITEMUKAN';
+                document.querySelector('#reportTableContainer').appendChild(noDataMessage);
+            }
+        } else if (noDataMessage) {
+            noDataMessage.remove();
+        }
+    }
+
+    // Event listener untuk search input dengan debounce
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            searchTable();
+        }, 300);
     });
 </script>
 @push('scripts')

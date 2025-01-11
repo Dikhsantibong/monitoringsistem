@@ -387,6 +387,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/pembangkit/search', [PembangkitController::class, 'searchMachines'])->name('pembangkit.search');
 });
 
+Route::middleware(['auth', 'admin'])->group(function () {
+    // ... other admin routes ...
+    
+    // Backlog routes
+    Route::get('/admin/laporan/create-backlog', [App\Http\Controllers\Admin\LaporanController::class, 'createBacklog'])
+        ->name('admin.laporan.create-backlog');
+    Route::post('/admin/laporan/store-backlog', [App\Http\Controllers\Admin\LaporanController::class, 'storeBacklog'])
+        ->name('admin.laporan.store-backlog');
+});
+
 
 
     
