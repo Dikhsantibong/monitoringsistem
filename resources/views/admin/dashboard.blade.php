@@ -11,7 +11,26 @@
             height: calc(100vh - 64px);
             /* Sesuaikan tinggi dengan mengurangi tinggi header */
         }
+
+        /* Styling untuk container grafik */
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 500px !important; /* Tinggi container */
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Styling untuk canvas grafik */
+        #srChart, #woChart, #woBacklogChart {
+            max-width: 400px !important;
+            max-height: 400px !important;
+            margin: 0 auto;
+        }
     </style>
+    
 @endpush
 
 @section('content')
@@ -466,8 +485,9 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
+                        align: 'center',
                         labels: {
-                            padding: 20,
+                            padding: 15,
                             boxWidth: 12,
                             font: {
                                 size: 11
@@ -482,7 +502,7 @@
                                         const value = dataset.data[i];
                                         const percentage = ((value / total) * 100).toFixed(1);
                                         return {
-                                            text: `${label} (${value}) - ${percentage}%`,
+                                            text: `${label}: ${value} (${percentage}%)`,
                                             fillStyle: dataset.backgroundColor[i],
                                             strokeStyle: dataset.borderColor[i],
                                             lineWidth: 1,
@@ -509,8 +529,10 @@
                 },
                 layout: {
                     padding: {
+                        left: 20,
+                        right: 20,
                         top: 20,
-                        bottom: 20
+                        bottom: 40
                     }
                 }
             };
