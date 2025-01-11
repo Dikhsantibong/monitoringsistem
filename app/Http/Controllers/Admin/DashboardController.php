@@ -11,6 +11,7 @@ use App\Models\Machine;
 use App\Models\ScoreCardDaily;
 use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
+use App\Models\WoBacklog;
 
 
 class DashboardController extends Controller
@@ -143,9 +144,8 @@ class DashboardController extends Controller
             ],
             'woBacklogData' => [
                 'counts' => [
-                    WorkOrder::where('status', 'Open')->where('priority', 'High')->count(),
-                    WorkOrder::where('status', 'Open')->where('priority', 'Medium')->count(),
-                    WorkOrder::where('status', 'Open')->where('priority', 'Low')->count(),
+                    WoBacklog::where('status', 'Open')
+                            ->count(),
                 ]
             ]
         ];
