@@ -140,6 +140,13 @@ class DashboardController extends Controller
                     WorkOrder::where('status', 'Open')->count(),
                     WorkOrder::where('status', 'Closed')->count(),
                 ]
+            ],
+            'woBacklogData' => [
+                'counts' => [
+                    WorkOrder::where('status', 'Open')->where('priority', 'High')->count(),
+                    WorkOrder::where('status', 'Open')->where('priority', 'Medium')->count(),
+                    WorkOrder::where('status', 'Open')->where('priority', 'Low')->count(),
+                ]
             ]
         ];
 

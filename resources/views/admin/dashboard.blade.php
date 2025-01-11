@@ -180,7 +180,7 @@
                 </div>
 
                 <!-- Tambahkan baris baru untuk diagram SR dan WO -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <!-- Card SR Status -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
@@ -220,6 +220,27 @@
                         <div class="relative" style="height: 300px;">
                             <canvas id="woChart"></canvas>
                             <div id="woStats" class="absolute bottom-0 left-0 text-sm text-gray-600 p-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card WO Backlog Status -->
+                    <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">WO Backlog Status</h3>
+                            <div class="flex space-x-2">
+                                <button onclick="toggleChartType('woBacklogChart', 'pie')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Pie">
+                                    <i class="fas fa-chart-pie"></i>
+                                </button>
+                                <button onclick="toggleChartType('woBacklogChart', 'doughnut')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Donat">
+                                    <i class="fas fa-circle-notch"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="woBacklogChart"></canvas>
+                            <div id="woBacklogStats" class="absolute bottom-0 left-0 text-sm text-gray-600 p-2"></div>
                         </div>
                     </div>
                 </div>
@@ -285,7 +306,7 @@
             });
         });
 
-        let activityChart, meetingChart, srChart, woChart;
+        let activityChart, meetingChart, srChart, woChart, woBacklogChart;
 
         // Inisialisasi charts dengan data sementara
         document.addEventListener('DOMContentLoaded', function() {
@@ -438,13 +459,41 @@
                 }]
             };
 
-            // Konfigurasi untuk chart pie/doughnut
+            // Ganti konfigurasi pieOptions dengan yang lebih optimal
             const pieOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            boxWidth: 12,
+                            font: {
+                                size: 11
+                            },
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    const dataset = data.datasets[0];
+                                    const total = dataset.data.reduce((acc, value) => acc + value, 0);
+                                    
+                                    return data.labels.map((label, i) => {
+                                        const value = dataset.data[i];
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return {
+                                            text: `${label} (${value}) - ${percentage}%`,
+                                            fillStyle: dataset.backgroundColor[i],
+                                            strokeStyle: dataset.borderColor[i],
+                                            lineWidth: 1,
+                                            hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
                     },
                     tooltip: {
                         callbacks: {
@@ -452,49 +501,109 @@
                                 const label = context.label || '';
                                 const value = context.raw || 0;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
+                                const percentage = ((value / total) * 100).toFixed(1);
                                 return `${label}: ${value} (${percentage}%)`;
                             }
                         }
                     }
+                },
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20
+                    }
                 }
             };
 
-            // Inisialisasi SR Chart
+            // Update inisialisasi chart dengan konfigurasi baru
             srChart = new Chart(document.getElementById('srChart'), {
                 type: 'pie',
                 data: srData,
-                options: pieOptions
+                options: {
+                    ...pieOptions,
+                    plugins: {
+                        ...pieOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'Status SR',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
             });
 
-            // Inisialisasi WO Chart
             woChart = new Chart(document.getElementById('woChart'), {
                 type: 'pie',
                 data: woData,
-                options: pieOptions
+                options: {
+                    ...pieOptions,
+                    plugins: {
+                        ...pieOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'Status WO',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
             });
 
-            // Update stats untuk SR
-            const srStats = document.getElementById('srStats');
-            const srOpen = chartData.srData.counts[0];
-            const srClosed = chartData.srData.counts[1];
-            srStats.innerHTML = `Open: ${srOpen} | Closed: ${srClosed}`;
+            woBacklogChart = new Chart(document.getElementById('woBacklogChart'), {
+                type: 'pie',
+                data: woBacklogData,
+                options: {
+                    ...pieOptions,
+                    plugins: {
+                        ...pieOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'WO Backlog Priority',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
 
-            // Update stats untuk WO
-            const woStats = document.getElementById('woStats');
-            const woOpen = chartData.woData.counts[0];
-            const woClosed = chartData.woData.counts[1];
-            woStats.innerHTML = `Open: ${woOpen} | Closed: ${woClosed}`;
+            // Update stats dengan format yang lebih rapi
+            function updateChartStats() {
+                // Update stats untuk SR
+                const srStats = document.getElementById('srStats');
+                const srTotal = srData.datasets[0].data.reduce((a, b) => a + b, 0);
+                srStats.innerHTML = `Total: ${srTotal} | Open: ${srData.datasets[0].data[0]} | Closed: ${srData.datasets[0].data[1]}`;
+
+                // Update stats untuk WO
+                const woStats = document.getElementById('woStats');
+                const woTotal = woData.datasets[0].data.reduce((a, b) => a + b, 0);
+                woStats.innerHTML = `Total: ${woTotal} | Open: ${woData.datasets[0].data[0]} | Closed: ${woData.datasets[0].data[1]}`;
+
+                // Update stats untuk WO Backlog
+                const woBacklogStats = document.getElementById('woBacklogStats');
+                const backlogTotal = woBacklogData.datasets[0].data.reduce((a, b) => a + b, 0);
+                woBacklogStats.innerHTML = `Total: ${backlogTotal} | High: ${woBacklogData.datasets[0].data[0]} | Medium: ${woBacklogData.datasets[0].data[1]} | Low: ${woBacklogData.datasets[0].data[2]}`;
+            }
+
+            // Panggil fungsi update stats setelah chart diinisialisasi
+            updateChartStats();
         });
 
         // Fungsi untuk mengubah tipe chart
         function toggleChartType(chartId, newType) {
             const chart = chartId === 'srChart' ? srChart : 
                          chartId === 'woChart' ? woChart :
+                         chartId === 'woBacklogChart' ? woBacklogChart :
                          chartId === 'activityChart' ? activityChart : meetingChart;
 
-            if (['srChart', 'woChart'].includes(chartId)) {
-                // Untuk chart SR dan WO
+            if (['srChart', 'woChart', 'woBacklogChart'].includes(chartId)) {
+                // Untuk chart SR, WO, dan WO Backlog
                 const data = chart.data;
                 const options = chart.options;
                 chart.destroy();
@@ -507,8 +616,10 @@
 
                 if (chartId === 'srChart') {
                     srChart = newChart;
-                } else {
+                } else if (chartId === 'woChart') {
                     woChart = newChart;
+                } else {
+                    woBacklogChart = newChart;
                 }
             } else {
                 // Existing logic untuk activity dan meeting charts
