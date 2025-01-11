@@ -554,6 +554,26 @@
                 }
             });
 
+            // Update data untuk WO Backlog Chart
+            const woBacklogData = {
+                labels: ['Open'],
+                datasets: [{
+                    data: chartData.woBacklogData.counts,
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.8)'  // Merah untuk Open
+                    ],
+                    borderColor: [
+                        'rgb(239, 68, 68)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+
+            // Update stats untuk WO Backlog
+            const woBacklogStats = document.getElementById('woBacklogStats');
+            const openBacklogs = chartData.woBacklogData.counts[0];
+            woBacklogStats.innerHTML = `Open: ${openBacklogs}`;
+
             woBacklogChart = new Chart(document.getElementById('woBacklogChart'), {
                 type: 'pie',
                 data: woBacklogData,

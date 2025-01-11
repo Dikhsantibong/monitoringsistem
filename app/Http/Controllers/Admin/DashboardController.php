@@ -144,8 +144,7 @@ class DashboardController extends Controller
             ],
             'woBacklogData' => [
                 'counts' => [
-                    WoBacklog::where('status', 'Open')
-                            ->count(),
+                    WoBacklog::where('status', 'Open')->count()
                 ]
             ]
         ];
