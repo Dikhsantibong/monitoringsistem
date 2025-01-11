@@ -88,17 +88,16 @@
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Kesiapan Pembangkit</h2>
                     <div class="mb-4 flex flex-col lg:flex-row justify-between items-center gap-3">
                         <div class="flex flex-col lg:flex-row gap-y-3 sm:gap-y-3 space-x-4">
-                            <input type="date" id="filterDate" value="{{ date('Y-m-d') }}"
-                                class="px-4 py-2 border rounded-lg">
+                            {{-- <input type="date" id="filterDate" value="{{ date('Y-m-d') }}" --}}
+                                {{-- class="px-4 py-2 border rounded-lg"> --}}
 
-                            <div class="flex items-center">
+                            <div class="relative">
                                 <input type="text" id="searchInput" placeholder="Cari mesin, unit, atau status..."
-                                    class="pl-5 pr-4 py-2 border rounded-l-lg"
+                                    class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     onkeyup="if(event.key === 'Enter') searchTables()">
-                                <button onclick="searchTables()"
-                                    class="bg-blue-500 text-white px-3 py-2 rounded-r-lg hover:bg-blue-600">
-                                    <i class="fas fa-search"></i>
-                                </button>
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
                             </div>
                         </div>
 
@@ -117,6 +116,12 @@
                                 </button>
                             </div>
 
+                            <div class="max-w-full">
+                                <a href="{{ route('admin.pembangkit.report') }}" 
+                                   class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                    <i class="fas fa-file-alt mr-2"></i>Report
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -231,10 +236,9 @@
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <textarea 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-80"
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
                                                         style="height: 100px; width: 150px;" 
-                                                        cols="30" 
-                                                        rows="10"
+                                                        placeholder="Masukkan equipment..."
                                                         name="equipment[{{ $machine->id }}]" 
                                                         oninput="autoResize(this)">
                                                     </textarea>
@@ -354,109 +358,96 @@
 <script>
     function searchTables() {
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const filterDate = document.getElementById('filterDate').value;
-
+        
         // Tampilkan loading indicator
-        const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
+        const tables = document.querySelectorAll('.unit-table');
+        tables.forEach(table => {
+            table.style.display = 'none';
+        });
+
         const loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'searchLoading';
         loadingIndicator.className = 'text-center py-4';
         loadingIndicator.innerHTML = `
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <div class="mt-2 text-gray-600">Memuat data...</div>
+            <div class="mt-2 text-gray-600">Mencari data...</div>
         `;
-        mainContent.appendChild(loadingIndicator);
+        document.querySelector('.bg-white.rounded-lg.shadow.p-6').appendChild(loadingIndicator);
 
-        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${filterDate}&search=${searchInput}`)
-            .then(response => response.json())
-            .then(result => {
-                // Hapus loading indicator
-                loadingIndicator.remove();
-
-                if (result.success) {
-                    updateTablesWithSearchResult(result.data);
-                } else {
-                    // Sembunyikan semua tabel
-                    const unitTables = document.getElementsByClassName('unit-table');
-                    Array.from(unitTables).forEach(table => {
-                        table.style.display = 'none';
-                    });
-
-                    // Tampilkan pesan tidak ada data
-                    const noDataMessage = document.createElement('div');
-                    noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
-                    noDataMessage.textContent = 'DATA TIDAK DITEMUKAN';
-                    mainContent.appendChild(noDataMessage);
-                }
-            })
-            .catch(error => {
-                // Hapus loading indicator jika terjadi error
-                loadingIndicator.remove();
-                console.error('Error:', error);
-            });
-    }
-
-    function updateTablesWithSearchResult(data) {
-        const unitTables = document.getElementsByClassName('unit-table');
-        const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
-
-        // Hapus pesan "Data tidak ditemukan" jika ada
-        const existingMessage = mainContent.querySelector('.text-center.py-8');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-
-        // Sembunyikan semua tabel dan baris terlebih dahulu
-        Array.from(unitTables).forEach(table => {
-            table.style.display = 'none';
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => row.style.display = 'none');
-        });
-
-        // Tampilkan hanya data yang sesuai dengan pencarian
-        data.forEach(log => {
-            const machineId = log.machine_id;
-            const row = document.querySelector(`td[data-id="${machineId}"]`)?.closest('tr');
-            const unitTable = row?.closest('.unit-table');
-
-            if (row && unitTable) {
-                unitTable.style.display = '';
-                row.style.display = '';
-
-                // Update nilai-nilai di row
-                const select = row.querySelector('select');
-                const inputKeterangan = row.querySelector('input[type="text"]');
-                const inputBeban = row.querySelector('td:nth-child(4) input');
-
-                if (select) {
-                    select.value = log.status || '';
-                    select.style.backgroundColor = getStatusColor(log.status);
-                }
-                if (inputKeterangan) inputKeterangan.value = log.keterangan || '';
-                if (inputBeban) inputBeban.value = log.load_value || '';
+        // Lakukan pencarian
+        fetch(`{{ route('admin.pembangkit.search') }}?search=${searchInput}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
             }
+        })
+        .then(response => response.json())
+        .then(result => {
+            // Hapus loading indicator
+            document.getElementById('searchLoading')?.remove();
+            
+            // Hapus pesan "tidak ditemukan" sebelumnya jika ada
+            const existingMessage = document.getElementById('noDataMessage');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            if (result.success) {
+                // Sembunyikan semua unit tables terlebih dahulu
+                document.querySelectorAll('.unit-table').forEach(table => {
+                    table.style.display = 'none';
+                });
+
+                // Tampilkan unit tables yang sesuai dengan hasil pencarian
+                result.data.forEach(machine => {
+                    const powerPlantId = machine.power_plant_id;
+                    const unitTable = document.querySelector(`.unit-table[data-power-plant-id="${powerPlantId}"]`);
+                    
+                    if (unitTable) {
+                        // Tampilkan tabel unit
+                        unitTable.style.display = '';
+                        
+                        // Sembunyikan semua baris di tabel ini
+                        const allRows = unitTable.querySelectorAll('tbody tr');
+                        allRows.forEach(row => row.style.display = 'none');
+                        
+                        // Tampilkan hanya baris yang sesuai dengan mesin yang ditemukan
+                        const machineRow = unitTable.querySelector(`td[data-id="${machine.id}"]`)?.closest('tr');
+                        if (machineRow) {
+                            machineRow.style.display = '';
+                        }
+                    }
+                });
+            } else {
+                // Tampilkan pesan tidak ada data
+                const noDataMessage = document.createElement('div');
+                noDataMessage.id = 'noDataMessage';
+                noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
+                noDataMessage.textContent = 'DATA TIDAK DITEMUKAN';
+                document.querySelector('.bg-white.rounded-lg.shadow.p-6').appendChild(noDataMessage);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('searchLoading')?.remove();
+            
+            // Tampilkan pesan error
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'text-center py-8 text-red-600 font-semibold text-lg';
+            errorMessage.textContent = 'Terjadi kesalahan saat mencari data';
+            document.querySelector('.bg-white.rounded-lg.shadow.p-6').appendChild(errorMessage);
         });
     }
 
-    function getStatusColor(status) {
-        const colors = {
-            'Operasi': '#4CAF50',
-            'Standby': '#2196F3',
-            'Gangguan': '#f44336',
-            'Pemeliharaan': '#FF9800',
-            'Mothballed': '#9E9E9E',
-            'Overhaul': '#673AB7'
-        };
-        return colors[status] || '#FFFFFF';
-    }
-
-    // Event listeners
-    document.getElementById('searchInput').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
+    // Event listener untuk search input dengan debounce
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('keyup', function(event) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
             searchTables();
-        }
+        }, 500); // Delay 500ms setelah user selesai mengetik
     });
-
-    document.getElementById('filterDate').addEventListener('change', searchTables);
 </script>
 
 <script>

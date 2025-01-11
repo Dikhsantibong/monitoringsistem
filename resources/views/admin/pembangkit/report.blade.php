@@ -59,6 +59,9 @@
                     </button>
 
                     <h1 class="text-xl font-semibold text-gray-800">Laporan Kesiapan Pembangkit</h1>
+                    
+                    <!-- Tambahkan tombol kembali di sini -->
+                    
                 </div>
             </div>
         </header>
@@ -77,8 +80,17 @@
                         <button type="submit" class="ml-2 bg-blue-500 text-white rounded-md px-4 py-2">Filter</button>
                     </form>
                     <div>
-                        <a href="{{ route('admin.pembangkit.downloadReport', ['date' => request('date')]) }}" class="ml-2 bg-green-500 text-white rounded-md px-4 py-2">Download PDF</a>
-                        <a href="{{ route('admin.pembangkit.printReport', ['date' => request('date')]) }}" class="ml-2 bg-yellow-500 text-white rounded-md px-4 py-2">Print</a>
+                        <div class="flex justify-end space-x-2">
+                            <a href="{{ route('admin.pembangkit.downloadReport', ['date' => request('date')]) }}" class="bg-green-500 text-white rounded-md px-4 py-2">
+                                <i class="fas fa-download mr-2"></i>Download PDF
+                            </a>
+                            <a href="{{ route('admin.pembangkit.printReport', ['date' => request('date')]) }}" class="bg-yellow-500 text-white rounded-md px-4 py-2">
+                                <i class="fas fa-print mr-2"></i>Print
+                            </a>
+                            <a href="{{ route('admin.pembangkit.ready') }}" class="bg-gray-500 text-white rounded-md px-4 py-2">
+                                <i class="fas fa-home mr-2"></i>Input Pembangkit
+                            </a>
+                        </div>
                     </div>
                 </div>
 
