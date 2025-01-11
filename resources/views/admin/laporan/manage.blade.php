@@ -204,6 +204,7 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Backlog</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Backlog</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -215,6 +216,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">BL-{{ str_pad($backlog->id, 4, '0', STR_PAD_LEFT) }}</td>
                                     <td class="px-6 py-4 border border-gray-200">{{ $backlog->deskripsi }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $backlog->tanggal_backlog }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                             {{ $backlog->status == 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
