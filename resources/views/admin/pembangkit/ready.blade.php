@@ -88,17 +88,16 @@
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Kesiapan Pembangkit</h2>
                     <div class="mb-4 flex flex-col lg:flex-row justify-between items-center gap-3">
                         <div class="flex flex-col lg:flex-row gap-y-3 sm:gap-y-3 space-x-4">
-                            <input type="date" id="filterDate" value="{{ date('Y-m-d') }}"
-                                class="px-4 py-2 border rounded-lg">
+                           
 
-                            <div class="flex items-center">
-                                <input type="text" id="searchInput" placeholder="Cari mesin, unit, atau status..."
-                                    class="pl-5 pr-4 py-2 border rounded-l-lg"
-                                    onkeyup="if(event.key === 'Enter') searchTables()">
-                                <button onclick="searchTables()"
-                                    class="bg-blue-500 text-white px-3 py-2 rounded-r-lg hover:bg-blue-600">
-                                    <i class="fas fa-search"></i>
-                                </button>
+                            <div class="relative">
+                                <input type="text" id="searchInput" 
+                                       placeholder="Cari mesin, unit, atau status..."
+                                       class="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                       onkeyup="if(event.key === 'Enter') searchTables()">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
                             </div>
                         </div>
 
