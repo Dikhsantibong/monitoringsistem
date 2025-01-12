@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\PowerPlant;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class OtherDiscussionController extends Controller
 {
@@ -65,12 +66,18 @@ class OtherDiscussionController extends Controller
                 'message' => 'Data berhasil dihapus'
             ]);
                 
-        } catch (\Exception $e) {
+        } catch (ModelNotFoundException $e) {
             DB::rollback();
-            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                'message' => 'Data tidak ditemukan'
+            ], 404);
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error deleting discussion: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data'
             ], 500);
         }
     }
@@ -93,12 +100,18 @@ class OtherDiscussionController extends Controller
                 'message' => 'Data berhasil dihapus'
             ]);
                 
-        } catch (\Exception $e) {
+        } catch (ModelNotFoundException $e) {
             DB::rollback();
-            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                'message' => 'Data tidak ditemukan'
+            ], 404);
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error deleting overdue discussion: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data'
             ], 500);
         }
     }
