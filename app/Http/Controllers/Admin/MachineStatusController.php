@@ -15,11 +15,18 @@ class MachineStatusController extends Controller
     {
         try {
             $date = $request->get('date', now()->format('Y-m-d'));
+            $unitSource = $request->get('unit_source');
             
-            // Ambil data powerplant dengan machines
-            $powerPlants = PowerPlant::with(['machines'])->get();
+            // Query power plants with unit_source filter
+            $powerPlantsQuery = PowerPlant::with(['machines']);
             
-            // Ambil logs untuk tanggal yang dipilih
+            if ($unitSource) {
+                $powerPlantsQuery->where('unit_source', $unitSource);
+            }
+            
+            $powerPlants = $powerPlantsQuery->get();
+            
+            // Get logs for the selected date
             $logs = MachineStatusLog::whereDate('tanggal', $date)->get();
 
             if ($request->ajax()) {

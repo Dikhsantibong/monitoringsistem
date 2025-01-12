@@ -58,12 +58,29 @@
                     
                     <!-- Filter Area -->
                     <div class="flex items-center space-x-4">
+                        <!-- Unit Source Filter -->
+                        <div>
+                            <select id="unit-source" 
+                                class="border rounded px-3 py-2 text-sm"
+                                onchange="updateTable()">
+                                <option value="">Semua Unit</option>
+                                <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
+                                <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Wua Wua</option>
+                                <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Poasia</option>
+                                <option value="mysql_kolaka" {{ request('unit_source') == 'mysql_kolaka' ? 'selected' : '' }}>Kolaka</option>
+                                <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Bau Bau</option>
+                            </select>
+                        </div>
+
+                        <!-- Date Filter -->
                         <div>
                             <input type="date" id="date-picker" 
                                 class="border rounded px-3 py-2 text-sm"
                                 value="{{ $date }}"
                                 onchange="updateTable()">
                         </div>
+                        
+                        <!-- Search -->
                         <div>
                             <input type="text" id="searchInput" 
                                 placeholder="Cari mesin..." 
@@ -97,11 +114,12 @@ document.addEventListener('click', function(event) {
 
 function updateTable() {
     const date = document.getElementById('date-picker').value;
+    const unitSource = document.getElementById('unit-source').value;
     const searchText = document.getElementById('searchInput').value;
     
     document.getElementById('loading').classList.add('show');
     
-    fetch(`{{ route('admin.machine-status.view') }}?date=${date}`, {
+    fetch(`{{ route('admin.machine-status.view') }}?date=${date}&unit_source=${unitSource}`, {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
