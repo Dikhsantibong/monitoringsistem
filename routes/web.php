@@ -423,6 +423,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::delete('/admin/overdue-discussions/{id}', [OtherDiscussionController::class, 'destroyOverdue'])
     ->name('admin.overdue-discussions.destroy');
 
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin'], 'as' => 'admin.'], function () {
+    Route::get('machine-status/view', [MachineStatusController::class, 'view'])->name('machine-status.view');
+});
+
 
 
         

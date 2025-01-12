@@ -21,18 +21,6 @@
                         </svg>
                     </button>
 
-                    <!-- Desktop Menu Toggle -->
-                    <button id="desktop-menu-toggle"
-                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                        aria-controls="desktop-menu" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button>
-
                     <h1 class="text-xl font-semibold text-gray-800">Status Mesin</h1>
                 </div>
 
@@ -62,14 +50,6 @@
             <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
         </div>
 
-        <!-- Breadcrumbs -->
-        <div class="flex items-center pt-2">
-            <x-admin-breadcrumb :breadcrumbs="[
-                ['name' => 'Kesiapan Pembangkit', 'url' => route('admin.pembangkit.ready')],
-                ['name' => 'Status Mesin', 'url' => null]
-            ]" />
-        </div>
-
         <!-- Main Content -->
         <div class="container mx-auto px-4 py-6">
             <div class="bg-white rounded-lg shadow p-6">
@@ -79,26 +59,20 @@
                     <!-- Filter Area -->
                     <div class="flex items-center space-x-4">
                         <div>
-                            <input type="date" 
-                                   id="date-picker" 
-                                   class="border rounded px-3 py-2" 
-                                   value="{{ $date }}"
-                                   onchange="updateTable()">
+                            <input type="date" id="date-picker" 
+                                class="border rounded px-3 py-2 text-sm"
+                                value="{{ $date }}"
+                                onchange="updateTable()">
                         </div>
-                        
-                        <div class="relative">
-                            <input type="text" 
-                                   id="searchInput" 
-                                   placeholder="Cari unit atau mesin..."
-                                   class="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </div>
+                        <div>
+                            <input type="text" id="searchInput" 
+                                placeholder="Cari mesin..." 
+                                class="border rounded px-3 py-2 text-sm">
                         </div>
                     </div>
                 </div>
 
-                <!-- Content Area -->
+                <!-- Table Container -->
                 <div class="overflow-x-auto">
                     @include('admin.machine-status._table')
                 </div>
@@ -108,97 +82,8 @@
 </div>
 
 <script>
-function filterData() {
-    const date = document.getElementById('filterDate').value;
-    fetchData(date);
-}
-
-function fetchData(date) {
-    console.log('Fetching data:', { date });
-    document.getElementById('loading').classList.add('show');
-
-    fetch(`{{ route('admin.machine-status.view') }}?date=${date}`, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            const container = document.querySelector('.overflow-x-auto');
-            if (container) {
-                container.innerHTML = data.html;
-            } else {
-                console.error('Container not found');
-            }
-        } else {
-            throw new Error(data.message || 'Terjadi kesalahan saat memuat data');
-        }
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        const container = document.querySelector('.overflow-x-auto');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center py-4 text-red-500">
-                    Terjadi kesalahan saat memuat data: ${error.message}
-                </div>
-            `;
-        }
-    })
-    .finally(() => {
-        document.getElementById('loading').classList.remove('show');
-    });
-}
-
-// Panggil fetchData saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    const date = document.getElementById('filterDate').value;
-    fetchData(date);
-});
-
-// Fungsi pencarian
-document.getElementById('searchInput').addEventListener('keyup', function(e) {
-    const searchText = this.value.toLowerCase();
-    const unitContainers = document.querySelectorAll('.bg-white.rounded-lg.shadow.p-6.mb-4');
-    
-    unitContainers.forEach(container => {
-        const unitName = container.querySelector('h1').textContent.toLowerCase();
-        const machineNames = Array.from(container.querySelectorAll('tbody tr td:nth-child(2)')).map(td => td.textContent.toLowerCase());
-        
-        // Cek apakah searchText cocok dengan nama unit atau nama mesin
-        const matchUnit = unitName.includes(searchText);
-        const matchMachine = machineNames.some(name => name.includes(searchText));
-        
-        // Tampilkan/sembunyikan container berdasarkan hasil pencarian
-        if (matchUnit || matchMachine) {
-            container.style.display = '';
-            
-            // Jika mencari mesin spesifik, sembunyikan mesin yang tidak cocok
-            if (!matchUnit && matchMachine) {
-                const rows = container.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    const machineName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                    row.style.display = machineName.includes(searchText) ? '' : 'none';
-                });
-            } else {
-                // Jika mencari unit, tampilkan semua mesin
-                const rows = container.querySelectorAll('tbody tr');
-                rows.forEach(row => row.style.display = '');
-            }
-        } else {
-            container.style.display = 'none';
-        }
-    });
-});
-
-// Dropdown functionality
 function toggleDropdown() {
-    const dropdown = document.getElementById('dropdown');
-    dropdown.classList.toggle('hidden');
+    document.getElementById('dropdown').classList.toggle('hidden');
 }
 
 document.addEventListener('click', function(event) {
@@ -229,16 +114,24 @@ function updateTable() {
             const container = document.querySelector('.overflow-x-auto');
             if (container) {
                 container.innerHTML = data.html;
-                // Terapkan filter pencarian setelah memperbarui tabel
                 if (searchText) {
                     document.getElementById('searchInput').value = searchText;
-                    document.getElementById('searchInput').dispatchEvent(new Event('keyup'));
                 }
             }
+        } else {
+            throw new Error(data.message || 'Terjadi kesalahan saat memuat data');
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        const container = document.querySelector('.overflow-x-auto');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-red-500">
+                    Terjadi kesalahan saat memuat data: ${error.message}
+                </div>
+            `;
+        }
     })
     .finally(() => {
         document.getElementById('loading').classList.remove('show');

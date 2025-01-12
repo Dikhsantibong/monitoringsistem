@@ -13,31 +13,41 @@
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <div class="w-full">
+    
                         <h1 class="text-lg font-semibold uppercase mb-2">STATUS MESIN - {{ $powerPlant->name }}</h1>
                         <div class="grid grid-cols-6 gap-4">
+                            @php
+                                $machineCount = $powerPlant->machines->count();
+                                $operasiCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Operasi')->count();
+                                $gangguanCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Gangguan')->count();
+                                $pemeliharaanCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Pemeliharaan')->count();
+                                $standbyCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Standby')->count();
+                                $overhaulCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Overhaul')->count();
+                            @endphp
+                            
                             <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300">
                                 <p class="text-sm text-gray-700 font-medium">Total Mesin</p>
-                                <p class="text-2xl font-bold text-gray-900">{{ $powerPlant->machines->count() }}</p>
+                                <p class="text-2xl font-bold text-gray-900">{{ $machineCount }}</p>
                             </div>
                             <div class="bg-emerald-100 p-4 rounded-lg shadow-md hover:bg-emerald-200 transition duration-300">
                                 <p class="text-sm text-emerald-700 font-medium">Operasi</p>
-                                <p class="text-2xl font-bold text-emerald-900">{{ $logs->where('machine.power_plant_id', $powerPlant->id)->where('status', 'Operasi')->count() }}</p>
+                                <p class="text-2xl font-bold text-emerald-900">{{ $operasiCount }}</p>
                             </div>
                             <div class="bg-rose-100 p-4 rounded-lg shadow-md hover:bg-rose-200 transition duration-300">
                                 <p class="text-sm text-rose-700 font-medium">Gangguan</p>
-                                <p class="text-2xl font-bold text-rose-900">{{ $logs->where('machine.power_plant_id', $powerPlant->id)->where('status', 'Gangguan')->count() }}</p>
+                                <p class="text-2xl font-bold text-rose-900">{{ $gangguanCount }}</p>
                             </div>
                             <div class="bg-amber-100 p-4 rounded-lg shadow-md hover:bg-amber-200 transition duration-300">
                                 <p class="text-sm text-amber-700 font-medium">Pemeliharaan</p>
-                                <p class="text-2xl font-bold text-amber-900">{{ $logs->where('machine.power_plant_id', $powerPlant->id)->where('status', 'Pemeliharaan')->count() }}</p>
+                                <p class="text-2xl font-bold text-amber-900">{{ $pemeliharaanCount }}</p>
                             </div>
                             <div class="bg-sky-100 p-4 rounded-lg shadow-md hover:bg-sky-200 transition duration-300">
                                 <p class="text-sm text-sky-700 font-medium">Standby</p>
-                                <p class="text-2xl font-bold text-sky-900">{{ $logs->where('machine.power_plant_id', $powerPlant->id)->where('status', 'Standby')->count() }}</p>
+                                <p class="text-2xl font-bold text-sky-900">{{ $standbyCount }}</p>
                             </div>
                             <div class="bg-violet-100 p-4 rounded-lg shadow-md hover:bg-violet-200 transition duration-300">
                                 <p class="text-sm text-violet-700 font-medium">Overhaul</p>
-                                <p class="text-2xl font-bold text-violet-900">{{ $logs->where('machine.power_plant_id', $powerPlant->id)->where('status', 'Overhaul')->count() }}</p>
+                                <p class="text-2xl font-bold text-violet-900">{{ $overhaulCount }}</p>
                             </div>
                         </div>
                     </div>
@@ -66,15 +76,16 @@
                         </tr>
                     </thead>
                     <tbody class="text-sm">
-                        @foreach($powerPlant->machines as $index => $machine)
+                        @forelse($powerPlant->machines as $index => $machine)
                             @php
-                                $log = $logs->where('machine_id', $machine->id)->first();
-                                $status = $log->status ?? '-';
+                                $log = $logs->firstWhere('machine_id', $machine->id);
+                                $status = $log?->status ?? '-';
                                 $statusClass = match($status) {
                                     'Operasi' => 'bg-green-100 text-green-800',
                                     'Standby' => 'bg-blue-100 text-blue-800',
                                     'Gangguan' => 'bg-red-100 text-red-800',
                                     'Pemeliharaan' => 'bg-orange-100 text-orange-800',
+                                    'Overhaul' => 'bg-violet-100 text-violet-800',
                                     default => 'bg-gray-100 text-gray-800'
                                 };
                             @endphp
@@ -96,13 +107,19 @@
                                 <td class="px-3 py-2 border-r border-gray-200">{{ $log?->action_plan ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200">{{ $log?->progres ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
-                                    {{ $log?->tanggal_mulai ? date('d/m/Y', strtotime($log->tanggal_mulai)) : '-' }}
+                                    {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                 </td>
                                 <td class="px-3 py-2 text-center">
-                                    {{ $log?->target_selesai ? date('d/m/Y', strtotime($log->target_selesai)) : '-' }}
+                                    {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="14" class="px-3 py-4 text-center text-gray-500">
+                                    Tidak ada data mesin untuk unit ini
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

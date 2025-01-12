@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\UnitGroupService;
-use App\Models\MachineStatusLog;
 use App\Models\PowerPlant;
+use App\Models\MachineStatusLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 use Carbon\Carbon;
 
 class MachineStatusController extends Controller
@@ -14,46 +14,35 @@ class MachineStatusController extends Controller
     public function view(Request $request)
     {
         try {
-            // Set default date ke hari ini jika tidak ada di request
-            $date = $request->get('date', Carbon::today()->format('Y-m-d'));
-            $selectedUnit = $request->get('unit', 'ULPLTD BAU BAU');
+            $date = $request->get('date', now()->format('Y-m-d'));
             
-            // Ambil semua power plant dengan relasi machines dan logs
-            $powerPlants = PowerPlant::with(['machines' => function($query) {
-                $query->orderBy('name');
-            }])->get();
-
+            // Ambil data powerplant dengan machines
+            $powerPlants = PowerPlant::with(['machines'])->get();
+            
             // Ambil logs untuk tanggal yang dipilih
-            $logs = MachineStatusLog::with(['machine.powerPlant'])
-                ->whereDate('tanggal', $date)
-                ->get();
+            $logs = MachineStatusLog::whereDate('tanggal', $date)->get();
 
             if ($request->ajax()) {
+                $html = View::make('admin.machine-status._table', compact('powerPlants', 'date', 'logs'))->render();
+                
                 return response()->json([
                     'success' => true,
-                    'html' => view('admin.machine-status._table', [
-                        'powerPlants' => $powerPlants,
-                        'logs' => $logs,
-                        'date' => $date
-                    ])->render()
+                    'html' => $html
                 ]);
             }
 
-            return view('admin.machine-status.view', compact('powerPlants', 'logs', 'date'));
-
+            return view('admin.machine-status.view', compact('powerPlants', 'date', 'logs'));
+            
         } catch (\Exception $e) {
-            \Log::error('Error in MachineStatusController:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            \Log::error('Error in MachineStatusController@view: ' . $e->getMessage());
+            
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Terjadi kesalahan: ' . $e->getMessage()
                 ], 500);
             }
-
+            
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
