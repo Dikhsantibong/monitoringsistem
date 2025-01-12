@@ -413,6 +413,10 @@ Route::get('/admin/machine-status/view', [MachineStatusController::class, 'view'
 Route::delete('/admin/discussions/{id}', [OtherDiscussionController::class, 'destroy'])
     ->name('admin.discussions.destroy');
 
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('other-discussions', OtherDiscussionController::class);
+});
+
 
 
         
