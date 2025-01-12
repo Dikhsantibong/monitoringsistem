@@ -16,24 +16,45 @@ class MachineStatusController extends Controller
         try {
             $date = $request->get('date', now()->format('Y-m-d'));
             $unitSource = $request->get('unit_source');
+            $searchQuery = $request->get('search');
             
             // Query power plants
             $powerPlantsQuery = PowerPlant::with(['machines']);
             
-            // Filter berdasarkan unit_source hanya jika session unit adalah mysql
+            // Filter berdasarkan unit_source
             if (session('unit') === 'mysql') {
                 if ($unitSource) {
                     $powerPlantsQuery->where('unit_source', $unitSource);
                 }
             } else {
-                // Jika bukan session mysql, hanya tampilkan data sesuai unit_source session
                 $powerPlantsQuery->where('unit_source', session('unit'));
+            }
+            
+            // Filter pencarian untuk power plant
+            if ($searchQuery) {
+                $powerPlantsQuery->where(function($query) use ($searchQuery) {
+                    $query->where('name', 'like', "%{$searchQuery}%")
+                        ->orWhereHas('machines', function($q) use ($searchQuery) {
+                            $q->where('name', 'like', "%{$searchQuery}%");
+                        });
+                });
             }
             
             $powerPlants = $powerPlantsQuery->get();
             
-            // Get logs for the selected date
-            $logs = MachineStatusLog::whereDate('tanggal', $date)->get();
+            // Get logs dengan filter pencarian
+            $logsQuery = MachineStatusLog::whereDate('tanggal', $date);
+            
+            if ($searchQuery) {
+                $logsQuery->where(function($query) use ($searchQuery) {
+                    $query->whereHas('machine', function($q) use ($searchQuery) {
+                        $q->where('name', 'like', "%{$searchQuery}%");
+                    })
+                    ->orWhere('status', 'like', "%{$searchQuery}%");
+                });
+            }
+            
+            $logs = $logsQuery->get();
 
             if ($request->ajax()) {
                 $html = View::make('admin.machine-status._table', compact('powerPlants', 'date', 'logs'))->render();

@@ -60,12 +60,12 @@
                     <div class="flex items-center space-x-4">
                         <!-- Unit Source Filter - hanya tampil untuk session mysql -->
                         @if(session('unit') === 'mysql')
-                        <div>
-                            <label for="unit-source" class="text-sm text-gray-700">Filter Unit:</label>
+                        <div class="flex items-center">
+                            <label for="unit-source" class="text-sm text-gray-700 font-medium mr-2">Filter Unit:</label>
                             <select id="unit-source" 
                                 class="border rounded px-3 py-2 text-sm w-40"
                                 onchange="updateTable()">
-                                <option value="" >Semua Unit</option>
+                                <option value="">Semua Unit</option>
                                 <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
                                 <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Wua Wua</option>
                                 <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Poasia</option>
@@ -73,7 +73,7 @@
                                 <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Bau Bau</option>
                             </select>
                         </div>
-                        @endif  
+                        @endif
 
                         <!-- Date Filter -->
                         <div>
@@ -83,11 +83,12 @@
                                 onchange="updateTable()">
                         </div>
                         
-                        <!-- Search -->
+                        <!-- Search dengan debounce -->
                         <div>
                             <input type="text" id="searchInput" 
-                                placeholder="Cari mesin..." 
-                                class="border rounded px-3 py-2 text-sm">
+                                placeholder="Cari unit/mesin/status..." 
+                                class="border rounded px-3 py-2 text-sm w-64"
+                                value="{{ request('search') }}">
                         </div>
                     </div>
                 </div>
@@ -115,6 +116,15 @@ document.addEventListener('click', function(event) {
     }
 });
 
+let searchTimeout;
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        updateTable();
+    }, 500); // Debounce 500ms
+});
+
 function updateTable() {
     const date = document.getElementById('date-picker').value;
     const unitSource = @json(session('unit')) === 'mysql' ? document.getElementById('unit-source')?.value : null;
@@ -124,6 +134,7 @@ function updateTable() {
     
     const params = new URLSearchParams({
         date: date,
+        search: searchText,
         ...(unitSource && { unit_source: unitSource })
     });
     
@@ -140,9 +151,6 @@ function updateTable() {
             const container = document.querySelector('.overflow-x-auto');
             if (container) {
                 container.innerHTML = data.html;
-                if (searchText) {
-                    document.getElementById('searchInput').value = searchText;
-                }
             }
         } else {
             throw new Error(data.message || 'Terjadi kesalahan saat memuat data');
