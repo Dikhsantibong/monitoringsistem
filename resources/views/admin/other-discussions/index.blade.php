@@ -599,136 +599,60 @@
         });
     });
     function confirmDelete(id) {
-    Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: "Data yang dihapus tidak dapat dikembalikan!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Tampilkan loading
-            Swal.fire({
-                title: 'Menghapus data...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Kirim request delete
-            fetch(`/admin/other-discussions/${id}`, {
-                method: 'DELETE',  // Ubah ke DELETE langsung
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => Promise.reject(err));
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Hapus baris dari tabel
-                const row = document.querySelector(`tr[data-id="${id}"]`);
-                if (row) {
-                    row.remove();
-                }
-                
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Tampilkan loading
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.message,
-                    showConfirmButton: false,
-                    timer: 1500
+                    title: 'Menghapus data...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
                 });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: error.message || 'Terjadi kesalahan saat menghapus data'
-                });
-            });
-        }
-    });
-}
-    // function confirmDelete(id) {
-    //     Swal.fire({
-    //         title: 'Apakah Anda yakin?',
-    //         text: "Data yang dihapus tidak dapat dikembalikan!",
-    //         icon: 'warning',
-    //         showCancelButton: true,
-    //         confirmButtonColor: '#d33',
-    //         cancelButtonColor: '#3085d6',
-    //         confirmButtonText: 'Ya, hapus!',
-    //         cancelButtonText: 'Batal'
-    //     }).then((result) => {
-    //         if (result.isConfirmed) {
-    //             // Tampilkan loading
-    //             Swal.fire({
-    //                 title: 'Menghapus data...',
-    //                 allowOutsideClick: false,
-    //                 didOpen: () => {
-    //                     Swal.showLoading();
-    //                 }
-    //             });
 
-    //             fetch(`/admin/other-discussions/${id}`, {  // Perhatikan perubahan URL
-    //                 method: 'POST',
-    //                 headers: {
-    //                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-    //                     'Accept': 'application/json',
-    //                     'Content-Type': 'application/json'
-    //                 },
-    //                 body: JSON.stringify({
-    //                     _method: 'DELETE'
-    //                 })
-    //             })
-    //             .then(response => {
-    //                 if (!response.ok) {
-    //                     throw new Error('Gagal menghapus data tes');
-    //                 }
-    //                 // return response.json();
-                    
-    //             })
-    //             .then(data => {
-    //                 if (data.success) {
-    //                     // Hapus baris dari tabel
-    //                     const row = document.querySelector(`tr[data-id="${id}"]`);
-    //                     if (row) {
-    //                         row.remove();
-    //                     }
-                        
-    //                     Swal.fire({
-    //                         icon: 'success',
-    //                         title: 'Berhasil!',
-    //                         text: data.message,
-    //                         showConfirmButton: false,
-    //                         timer: 1500
-    //                     });
-    //                 } else {
-    //                     throw new Error(data.message || 'Gagal menghapus data');
-    //                 }
-    //             })
-    //             .catch(error => {
-    //                 console.error('Error:', error);
-    //                 Swal.fire({
-    //                     icon: 'error',
-    //                     title: 'Oops...',
-    //                     text: error.message
-    //                 });
-    //             });
-    //         }
-    //     });
-    // }
+                // Kirim request delete
+                fetch(`/admin/other-discussions/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message || 'Terjadi kesalahan saat menghapus data'
+                    });
+                });
+            }
+        });
+    }
     function switchTab(tab) {
         // Remove active class from all tabs and content
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -878,7 +802,7 @@
         });
     }
 
-    // Fungsi untuk konfirmasi delete data overdue
+    // Fungsi untuk menghapus diskusi overdue (terpisah)
     function confirmDeleteOverdue(id) {
         Swal.fire({
             title: 'Apakah Anda yakin?',
@@ -891,7 +815,6 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Tampilkan loading
                 Swal.fire({
                     title: 'Menghapus data...',
                     allowOutsideClick: false,
@@ -900,80 +823,20 @@
                     }
                 });
 
-                // Pastikan URL menggunakan ID yang benar
                 fetch(`/admin/overdue-discussions/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
                     }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Hapus baris dari tabel
-                        const row = document.querySelector(`tr[data-id="${id}"]`);
-                        if (row) {
-                            row.remove();
-                        }
-                        
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: data.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                    } else {
-                        throw new Error(data.message || 'Gagal menghapus data');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Terjadi kesalahan saat menghapus data: ' + error.message
-                    });
-                });
-            }
-        });
-    }
-
-    // Fungsi untuk update status overdue
-    function updateOverdueStatus(id, status) {
-        Swal.fire({
-            title: 'Apakah Anda yakin?',
-            text: 'Status akan diubah menjadi selesai',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#10B981',
-            cancelButtonColor: '#6B7280',
-            confirmButtonText: 'Ya, selesaikan!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/admin/overdue-discussions/${id}/update-status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ status: status })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Status berhasil diperbarui',
                             icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
                             showConfirmButton: false,
                             timer: 1500
                         }).then(() => {
@@ -985,188 +848,29 @@
                 })
                 .catch(error => {
                     Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Terjadi kesalahan saat mengubah status',
-                        icon: 'error'
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message || 'Terjadi kesalahan saat menghapus data'
                     });
                 });
             }
         });
     }
 
-    // Fungsi filter untuk Unit
-    function filterTableByUnit() {
-        const unit = document.getElementById('unitTableFilter').value;
-        const tables = ['active-content', 'closed-content', 'overdue-content'];
-        let totalVisible = 0;
-
-        tables.forEach(tableId => {
-            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-            let visibleCount = 0;
-
-            rows.forEach(row => {
-                const unitCell = row.querySelector('td:nth-child(4)'); // Sesuaikan dengan posisi kolom unit
-                if (!unit || (unitCell && unitCell.textContent.trim() === unit)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            totalVisible += visibleCount;
-        });
-
-        // Update counter jika ada
-        const counter = document.getElementById('visibleCounter');
-        if (counter) {
-            counter.textContent = totalVisible;
-        }
-    }
-
-    // Fungsi filter untuk Status
-    function filterTableByStatus() {
-        const status = document.getElementById('statusTableFilter').value;
-        const tables = ['active-content', 'closed-content', 'overdue-content'];
-        let totalVisible = 0;
-
-        tables.forEach(tableId => {
-            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-            let visibleCount = 0;
-
-            rows.forEach(row => {
-                const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan posisi kolom status
-                if (!status || (statusCell && statusCell.textContent.trim().includes(status))) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            totalVisible += visibleCount;
-        });
-
-        // Update counter jika ada
-        const counter = document.getElementById('visibleCounter');
-        if (counter) {
-            counter.textContent = totalVisible;
-        }
-    }
-
-    // Fungsi filter untuk Unit di tabel Aktif
-    function filterTableByUnitActive() {
-        const unit = document.getElementById('unitTableFilterActive').value;
-        const rows = document.querySelectorAll('#active-content tbody tr');
-        let totalVisible = 0;
-
-        rows.forEach(row => {
-            const unitCell = row.querySelector('td:nth-child(4)'); // Sesuaikan dengan posisi kolom unit
-            if (!unit || (unitCell && unitCell.textContent.trim() === unit)) {
-                row.style.display = '';
-                totalVisible++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counter jika ada
-        const counter = document.getElementById('visibleCounterActive');
-        if (counter) {
-            counter.textContent = totalVisible;
-        }
-    }
-
-    // Fungsi filter untuk Status di tabel Aktif
-    function filterTableByStatusActive() {
-        const status = document.getElementById('statusTableFilterActive').value;
-        const rows = document.querySelectorAll('#active-content tbody tr');
-        let totalVisible = 0;
-
-        rows.forEach(row => {
-            const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan posisi kolom status
-            if (!status || (statusCell && statusCell.textContent.trim().includes(status))) {
-                row.style.display = '';
-                totalVisible++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counter jika ada
-        const counter = document.getElementById('visibleCounterActive');
-        if (counter) {
-            counter.textContent = totalVisible;
-        }
-    }
-
-    // Fungsi filter untuk Unit di tabel Overdue
-    function filterTableByUnitOverdue() {
-        const unit = document.getElementById('unitTableFilterOverdue').value;
-        const rows = document.querySelectorAll('#overdue-content tbody tr');
-        let totalVisible = 0;
-
-        rows.forEach(row => {
-            const unitCell = row.querySelector('td:nth-child(4)'); // Sesuaikan dengan posisi kolom unit
-            if (!unit || (unitCell && unitCell.textContent.trim() === unit)) {
-                row.style.display = '';
-                totalVisible++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counter jika ada
-        const counter = document.getElementById('visibleCounterOverdue');
-        if (counter) {
-            counter.textContent = totalVisible;
-        }
-    }
-
-    // Fungsi filter untuk Status di tabel Overdue
-    function filterTableByStatusOverdue() {
-        const status = document.getElementById('statusTableFilterOverdue').value;
-        const rows = document.querySelectorAll('#overdue-content tbody tr');
-        let totalVisible = 0;
-
-        rows.forEach(row => {
-            const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan posisi kolom status
-            if (!status || (statusCell && statusCell.textContent.trim().includes(status))) {
-                row.style.display = '';
-                totalVisible++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counter jika ada
-        const counter = document.getElementById('visibleCounterOverdue');
-        if (counter) {
-            counter.textContent = totalVisible;
-        }
-    }
-
+    // Fungsi edit yang terpisah
     function editDiscussion(id) {
-        try {
-            // Tampilkan loading
-            Swal.fire({
-                title: 'Mohon tunggu...',
-                text: 'Membuka form edit...',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    // Langsung redirect tanpa Promise
-                    window.location.href = `/admin/other-discussions/${id}/edit`;
-                }
-            });
-        } catch (error) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Terjadi kesalahan saat membuka form edit',
-                icon: 'error'
-            });
-        }
+        Swal.fire({
+            title: 'Mohon tunggu...',
+            text: 'Membuka form edit...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Redirect ke halaman edit
+        window.location.href = `/admin/other-discussions/${id}/edit`;
     }
 
     // Tambahkan ini untuk handling pesan sukses setelah update

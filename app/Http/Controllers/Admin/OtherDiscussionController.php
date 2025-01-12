@@ -53,18 +53,52 @@ class OtherDiscussionController extends Controller
     {
         try {
             $discussion = OtherDiscussion::findOrFail($id);
+            
+            DB::beginTransaction();
+            
             $discussion->delete();
-
-            // Selalu return response JSON untuk konsistensi
+            
+            DB::commit();
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil dihapus'
             ]);
+                
         } catch (\Exception $e) {
-            \Log::error('Error deleting discussion: ' . $e->getMessage());
+            DB::rollback();
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data'
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyOverdue($id)
+    {
+        try {
+            $discussion = OtherDiscussion::where('id', $id)
+                ->where('status', 'Overdue')
+                ->firstOrFail();
+                
+            DB::beginTransaction();
+            
+            $discussion->delete();
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus'
+            ]);
+                
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
             ], 500);
         }
     }

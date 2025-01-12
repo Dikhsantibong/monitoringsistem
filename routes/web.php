@@ -417,6 +417,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('other-discussions', OtherDiscussionController::class);
 });
 
+Route::delete('/admin/overdue-discussions/{id}', [OtherDiscussionController::class, 'destroyOverdue'])
+    ->name('admin.overdue-discussions.destroy');
+
 
 
         
