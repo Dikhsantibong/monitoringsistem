@@ -257,9 +257,11 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
-                                                <button onclick="editActiveDiscussion({{ $discussion->id }})" class="text-blue-500 hover:text-blue-700">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
+                                                <a href="#" 
+                                                   onclick="editDiscussion({{ $discussion->id }})"
+                                                   class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit text-lg"></i>
+                                                </a>
                                                 
                                                 <!-- Delete -->
                                                 <button onclick="confirmDelete({{ $discussion->id }})"
@@ -444,9 +446,11 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
-                                                <button onclick="editOverdueDiscussion({{ $discussion->id }})" class="text-blue-500 hover:text-blue-700">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
+                                                <a href="#" 
+                                                   onclick="editDiscussion({{ $discussion->id }})"
+                                                   class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit text-lg"></i>
+                                                </a>
                                                 
                                                 <!-- Delete -->
                                                 <button onclick="confirmDeleteOverdue({{ $discussion->id }})"
@@ -609,7 +613,7 @@
                 // Buat form untuk delete request
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/admin/other-discussions/${id}`;
+                form.action = '{{ url("/admin/other-discussions") }}/' + id;
                 
                 const methodInput = document.createElement('input');
                 methodInput.type = 'hidden';
@@ -619,7 +623,7 @@
                 const tokenInput = document.createElement('input');
                 tokenInput.type = 'hidden';
                 tokenInput.name = '_token';
-                tokenInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                tokenInput.value = '{{ csrf_token() }}';
                 
                 form.appendChild(methodInput);
                 form.appendChild(tokenInput);
@@ -631,7 +635,6 @@
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
-                        // Submit form
                         form.submit();
                     }
                 });
@@ -800,10 +803,9 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Buat form untuk delete request
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/admin/overdue-discussions/${id}`;
+                form.action = '{{ url("/admin/overdue-discussions") }}/' + id;
                 
                 const methodInput = document.createElement('input');
                 methodInput.type = 'hidden';
@@ -813,19 +815,17 @@
                 const tokenInput = document.createElement('input');
                 tokenInput.type = 'hidden';
                 tokenInput.name = '_token';
-                tokenInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                tokenInput.value = '{{ csrf_token() }}';
                 
                 form.appendChild(methodInput);
                 form.appendChild(tokenInput);
                 document.body.appendChild(form);
 
-                // Tampilkan loading
                 Swal.fire({
                     title: 'Menghapus data...',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
-                        // Submit form
                         form.submit();
                     }
                 });
@@ -833,14 +833,20 @@
         });
     }
 
-    // Fungsi edit untuk data aktif
-    function editActiveDiscussion(id) {
-        window.location.href = `/admin/other-discussions/active/${id}/edit`;
-    }
+    // Fungsi edit yang terpisah
+    function editDiscussion(id) {
+        Swal.fire({
+            title: 'Mohon tunggu...',
+            text: 'Membuka form edit...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-    // Fungsi edit untuk data overdue
-    function editOverdueDiscussion(id) {
-        window.location.href = `/admin/other-discussions/overdue/${id}/edit`;
+        // Redirect ke halaman edit
+        window.location.href = `/admin/other-discussions/${id}/edit`;
     }
 
     // Tambahkan ini untuk handling pesan sukses setelah update
@@ -864,27 +870,6 @@
         }
     });
 </script>
-@if(session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: "{{ session('success') }}",
-            showConfirmButton: false,
-            timer: 1500
-        });
-    </script>
-@endif
-
-@if(session('error'))
-    <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: "{{ session('error') }}"
-        });
-    </script>
-@endif
 @push('scripts')
 @endpush
 @endsection 

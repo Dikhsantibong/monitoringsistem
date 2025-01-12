@@ -423,39 +423,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::delete('/admin/overdue-discussions/{id}', [OtherDiscussionController::class, 'destroyOverdue'])
     ->name('admin.overdue-discussions.destroy');
 
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    // Route untuk data aktif
-    Route::get('/other-discussions/active/{id}/edit', [OtherDiscussionController::class, 'editActive'])
-        ->name('other-discussions.edit-active');
-    Route::put('/other-discussions/active/{id}', [OtherDiscussionController::class, 'updateActive'])
-        ->name('other-discussions.update-active');
-
-    // Route untuk data overdue
-    Route::get('/other-discussions/overdue/{id}/edit', [OtherDiscussionController::class, 'editOverdue'])
-        ->name('other-discussions.edit-overdue');
-    Route::put('/other-discussions/overdue/{id}', [OtherDiscussionController::class, 'updateOverdue'])
-        ->name('other-discussions.update-overdue');
-
-    // Route resource lainnya
-    Route::resource('other-discussions', OtherDiscussionController::class)
-        ->except(['edit', 'update']);
-});
-
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin'], 'as' => 'admin.'], function () {
     Route::get('machine-status/view', [MachineStatusController::class, 'view'])->name('machine-status.view');
-});
-
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    // Route untuk data aktif dan overdue menggunakan view yang sama
-    Route::get('/other-discussions/active/{id}/edit', [OtherDiscussionController::class, 'editActive'])
-        ->name('other-discussions.edit-active');
-    Route::put('/other-discussions/active/{id}', [OtherDiscussionController::class, 'updateActive'])
-        ->name('other-discussions.update-active');
-
-    Route::get('/other-discussions/overdue/{id}/edit', [OtherDiscussionController::class, 'editOverdue'])
-        ->name('other-discussions.edit-overdue');
-    Route::put('/other-discussions/overdue/{id}', [OtherDiscussionController::class, 'updateOverdue'])
-        ->name('other-discussions.update-overdue');
 });
 
 

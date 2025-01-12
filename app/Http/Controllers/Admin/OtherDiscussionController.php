@@ -210,12 +210,14 @@ class OtherDiscussionController extends Controller
         try {
             $discussion = OtherDiscussion::findOrFail($id);
             $units = PowerPlant::pluck('name')->toArray();
-
+            
+           
             return view('admin.other-discussions.edit', compact('discussion', 'units'));
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat memuat data');
         }
     }
+
 
     public function update(Request $request, $id)
     {
@@ -258,58 +260,6 @@ class OtherDiscussionController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Gagal memperbarui data');
-        }
-    }
-
-    public function editActive($id)
-    {
-        $discussion = OtherDiscussion::findOrFail($id);
-        return view('admin.other-discussions.edit', [
-            'discussion' => $discussion,
-            'isActive' => true
-        ]);
-    }
-
-    public function editOverdue($id)
-    {
-        $discussion = OtherDiscussion::findOrFail($id);
-        return view('admin.other-discussions.edit', [
-            'discussion' => $discussion,
-            'isActive' => false
-        ]);
-    }
-
-    public function updateActive(Request $request, $id)
-    {
-        $discussion = OtherDiscussion::findOrFail($id);
-        // ... validasi dan update logic ...
-        
-        return redirect()
-            ->route('admin.other-discussions.index', ['tab' => 'active'])
-            ->with('success', 'Data berhasil diperbarui');
-    }
-
-    public function updateOverdue(Request $request, $id)
-    {
-        $discussion = OtherDiscussion::findOrFail($id);
-        // ... validasi dan update logic ...
-        
-        return redirect()
-            ->route('admin.other-discussions.index', ['tab' => 'overdue'])
-            ->with('success', 'Data berhasil diperbarui');
-    }
-
-    private function updateDiscussion(Request $request, $id, $type)
-    {
-        try {
-            $discussion = OtherDiscussion::findOrFail($id);
-            // ... validasi dan update logic ...
-            
-            return redirect()
-                ->route('admin.other-discussions.index', ['tab' => $type])
-                ->with('success', 'Data berhasil diperbarui');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memperbarui data');
         }
     }
 }
