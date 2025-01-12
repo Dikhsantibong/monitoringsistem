@@ -397,15 +397,42 @@ class LaporanController extends Controller
             return;
         }
 
-        $expiredWOs = WorkOrder::where('schedule_finish', '<', now())
-            ->where('status', 'Open')
-            ->get();
+        DB::beginTransaction();
+        try {
+            // Ambil WO yang expired, belum di-backlog, dan masih Open
+            $expiredWOs = WorkOrder::where('schedule_finish', '<', now())
+                ->where('status', 'Open')
+                ->where('is_backlogged', false)  // Tambahkan pengecekan flag
+                ->lockForUpdate()  // Mencegah race condition
+                ->get();
 
-        foreach ($expiredWOs as $wo) {
-            if ($wo->moveToBacklog()) {
-                session()->flash('backlog_notification', 
-                    "WO #{$wo->id} telah dipindahkan ke backlog karena melewati jadwal.");
+            foreach ($expiredWOs as $wo) {
+                // Cek apakah sudah ada di backlog
+                $existingBacklog = WoBacklog::where('no_wo', $wo->id)->first();
+                
+                if (!$existingBacklog) {
+                    // Buat backlog baru
+                    WoBacklog::create([
+                        'no_wo' => $wo->id,
+                        'deskripsi' => $wo->description,
+                        'tanggal_backlog' => now(),
+                        'status' => 'Open',
+                        'keterangan' => 'Auto-generated from overdue WO'
+                    ]);
+
+                    // Update flag di work order
+                    $wo->is_backlogged = true;
+                    $wo->save();
+
+                    session()->flash('backlog_notification', 
+                        "WO #{$wo->id} telah dipindahkan ke backlog karena melewati jadwal.");
+                }
             }
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error creating WO Backlog: ' . $e->getMessage());
         }
     }
 
