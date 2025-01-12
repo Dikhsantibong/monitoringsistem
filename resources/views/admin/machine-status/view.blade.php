@@ -61,10 +61,11 @@
                         <!-- Unit Source Filter - hanya tampil untuk session mysql -->
                         @if(session('unit') === 'mysql')
                         <div>
+                            <label for="unit-source" class="text-sm text-gray-700">Filter Unit:</label>
                             <select id="unit-source" 
                                 class="border rounded px-3 py-2 text-sm"
                                 onchange="updateTable()">
-                                <option value="">Semua Unit</option>
+                                <option value="" >Semua Unit</option>
                                 <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
                                 <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Wua Wua</option>
                                 <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Poasia</option>
