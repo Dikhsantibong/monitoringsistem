@@ -613,7 +613,7 @@
                 // Buat form untuk delete request
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/admin/other-discussions/${id}`;
+                form.action = '{{ url("/admin/other-discussions") }}/' + id;
                 
                 const methodInput = document.createElement('input');
                 methodInput.type = 'hidden';
@@ -623,7 +623,7 @@
                 const tokenInput = document.createElement('input');
                 tokenInput.type = 'hidden';
                 tokenInput.name = '_token';
-                tokenInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                tokenInput.value = '{{ csrf_token() }}';
                 
                 form.appendChild(methodInput);
                 form.appendChild(tokenInput);
@@ -635,7 +635,6 @@
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
-                        // Submit form
                         form.submit();
                     }
                 });
@@ -804,10 +803,9 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Buat form untuk delete request
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/admin/overdue-discussions/${id}`;
+                form.action = '{{ url("/admin/overdue-discussions") }}/' + id;
                 
                 const methodInput = document.createElement('input');
                 methodInput.type = 'hidden';
@@ -817,19 +815,17 @@
                 const tokenInput = document.createElement('input');
                 tokenInput.type = 'hidden';
                 tokenInput.name = '_token';
-                tokenInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                tokenInput.value = '{{ csrf_token() }}';
                 
                 form.appendChild(methodInput);
                 form.appendChild(tokenInput);
                 document.body.appendChild(form);
 
-                // Tampilkan loading
                 Swal.fire({
                     title: 'Menghapus data...',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
-                        // Submit form
                         form.submit();
                     }
                 });
@@ -874,27 +870,6 @@
         }
     });
 </script>
-@if(session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: "{{ session('success') }}",
-            showConfirmButton: false,
-            timer: 1500
-        });
-    </script>
-@endif
-
-@if(session('error'))
-    <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: "{{ session('error') }}"
-        });
-    </script>
-@endif
 @push('scripts')
 @endpush
 @endsection 

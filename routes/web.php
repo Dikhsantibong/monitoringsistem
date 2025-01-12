@@ -312,17 +312,20 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
 // Other Discussions Routes
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], function () {
-    Route::get('/other-discussions', [OtherDiscussionController::class, 'index'])->name('other-discussions.index');
-    Route::get('/other-discussions/create', [OtherDiscussionController::class, 'create'])->name('other-discussions.create');
-    Route::post('/other-discussions', [OtherDiscussionController::class, 'store'])->name('other-discussions.store');
+    Route::get('/other-discussions', [OtherDiscussionController::class, 'index'])
+        ->name('other-discussions.index');
+    Route::get('/other-discussions/create', [OtherDiscussionController::class, 'create'])
+        ->name('other-discussions.create');
+    Route::post('/other-discussions', [OtherDiscussionController::class, 'store'])
+        ->name('other-discussions.store');
     Route::get('/other-discussions/{id}/edit', [OtherDiscussionController::class, 'edit'])
-        ->name('other-discussions.edit')
-        ->where('id', '[0-9]+');
+        ->name('other-discussions.edit');
     Route::put('/other-discussions/{id}', [OtherDiscussionController::class, 'update'])
-        ->name('other-discussions.update')
-        ->where('id', '[0-9]+');
-    Route::delete('/other-discussions/{discussion}', [OtherDiscussionController::class, 'destroy'])->name('other-discussions.destroy');
-    Route::post('/other-discussions/{discussion}/update-status', [OtherDiscussionController::class, 'updateStatus'])->name('other-discussions.update-status');
+        ->name('other-discussions.update');
+    Route::delete('/other-discussions/{id}', [OtherDiscussionController::class, 'destroy'])
+        ->name('other-discussions.destroy');
+    Route::post('/other-discussions/{id}/update-status', [OtherDiscussionController::class, 'updateStatus'])
+        ->name('other-discussions.update-status');
 });
 
 // Route untuk overdue discussions
