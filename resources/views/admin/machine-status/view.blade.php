@@ -58,7 +58,8 @@
                     
                     <!-- Filter Area -->
                     <div class="flex items-center space-x-4">
-                        <!-- Unit Source Filter -->
+                        <!-- Unit Source Filter - hanya tampil untuk session mysql -->
+                        @if(session('unit') === 'mysql')
                         <div>
                             <select id="unit-source" 
                                 class="border rounded px-3 py-2 text-sm"
@@ -71,6 +72,7 @@
                                 <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Bau Bau</option>
                             </select>
                         </div>
+                        @endif
 
                         <!-- Date Filter -->
                         <div>
@@ -114,12 +116,17 @@ document.addEventListener('click', function(event) {
 
 function updateTable() {
     const date = document.getElementById('date-picker').value;
-    const unitSource = document.getElementById('unit-source').value;
+    const unitSource = @json(session('unit')) === 'mysql' ? document.getElementById('unit-source')?.value : null;
     const searchText = document.getElementById('searchInput').value;
     
     document.getElementById('loading').classList.add('show');
     
-    fetch(`{{ route('admin.machine-status.view') }}?date=${date}&unit_source=${unitSource}`, {
+    const params = new URLSearchParams({
+        date: date,
+        ...(unitSource && { unit_source: unitSource })
+    });
+    
+    fetch(`{{ route('admin.machine-status.view') }}?${params.toString()}`, {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',

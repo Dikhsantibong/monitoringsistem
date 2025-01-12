@@ -17,11 +17,17 @@ class MachineStatusController extends Controller
             $date = $request->get('date', now()->format('Y-m-d'));
             $unitSource = $request->get('unit_source');
             
-            // Query power plants with unit_source filter
+            // Query power plants
             $powerPlantsQuery = PowerPlant::with(['machines']);
             
-            if ($unitSource) {
-                $powerPlantsQuery->where('unit_source', $unitSource);
+            // Filter berdasarkan unit_source hanya jika session unit adalah mysql
+            if (session('unit') === 'mysql') {
+                if ($unitSource) {
+                    $powerPlantsQuery->where('unit_source', $unitSource);
+                }
+            } else {
+                // Jika bukan session mysql, hanya tampilkan data sesuai unit_source session
+                $powerPlantsQuery->where('unit_source', session('unit'));
             }
             
             $powerPlants = $powerPlantsQuery->get();
