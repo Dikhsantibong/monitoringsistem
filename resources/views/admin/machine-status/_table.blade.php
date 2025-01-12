@@ -69,7 +69,7 @@
                         @foreach($powerPlant->machines as $index => $machine)
                             @php
                                 $log = $logs->where('machine_id', $machine->id)->first();
-                                $status = $log->status ?? 'N/A';
+                                $status = $log->status ?? '-';
                                 $statusClass = match($status) {
                                     'Operasi' => 'bg-green-100 text-green-800',
                                     'Standby' => 'bg-blue-100 text-blue-800',
@@ -81,25 +81,25 @@
                             <tr class="hover:bg-gray-50 border border-gray-200">
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $index + 1 }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200" data-id="{{ $machine->id }}">{{ $machine->name }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmp ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->load_value ?? 'N/A' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmp ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->load_value ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     <span class="px-2 py-1 rounded-full text-xs font-medium {{ $statusClass }}">
                                         {{ $status }}
                                     </span>
                                 </td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->equipment ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->deskripsi ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->kronologi ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->action_plan ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->progres ?? 'N/A' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->equipment ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->deskripsi ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->kronologi ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->action_plan ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->progres ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
-                                    {{ $log?->tanggal_mulai ? date('d/m/Y', strtotime($log->tanggal_mulai)) : 'N/A' }}
+                                    {{ $log?->tanggal_mulai ? date('d/m/Y', strtotime($log->tanggal_mulai)) : '-' }}
                                 </td>
                                 <td class="px-3 py-2 text-center">
-                                    {{ $log?->target_selesai ? date('d/m/Y', strtotime($log->target_selesai)) : 'N/A' }}
+                                    {{ $log?->target_selesai ? date('d/m/Y', strtotime($log->target_selesai)) : '-' }}
                                 </td>
                             </tr>
                         @endforeach
