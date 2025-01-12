@@ -63,7 +63,7 @@
                         <div>
                             <label for="unit-source" class="text-sm text-gray-700">Filter Unit:</label>
                             <select id="unit-source" 
-                                class="border rounded px-3 py-2 text-sm"
+                                class="border rounded px-3 py-2 text-sm w-40"
                                 onchange="updateTable()">
                                 <option value="" >Semua Unit</option>
                                 <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
@@ -73,7 +73,7 @@
                                 <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Bau Bau</option>
                             </select>
                         </div>
-                        @endif
+                        @endif  
 
                         <!-- Date Filter -->
                         <div>
