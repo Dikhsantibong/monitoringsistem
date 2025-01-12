@@ -315,7 +315,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], 
     Route::get('/other-discussions', [OtherDiscussionController::class, 'index'])->name('other-discussions.index');
     Route::get('/other-discussions/create', [OtherDiscussionController::class, 'create'])->name('other-discussions.create');
     Route::post('/other-discussions', [OtherDiscussionController::class, 'store'])->name('other-discussions.store');
-    Route::get('/other-discussions/{id}/edit', [OtherDiscussionController::class, 'edit'])
+    Route::get('/other-discussions/{id}/edit', [OtherDiscussionController::class, 'other_discussions.edit'])
         ->name('other-discussions.edit')
         ->where('id', '[0-9]+');
     Route::put('/other-discussions/{id}', [OtherDiscussionController::class, 'update'])
