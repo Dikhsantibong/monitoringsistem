@@ -50,25 +50,24 @@ class OtherDiscussionController extends Controller
     }
 
     public function destroy($id)
-{
-    try {
-        $discussion = OtherDiscussion::findOrFail($id);
-        $discussion->delete();
+    {
+        try {
+            $discussion = OtherDiscussion::findOrFail($id);
+            $discussion->delete();
 
-        // Selalu return response JSON untuk konsistensi
-        return response()->json([
-            'success' => true,
-            'message' => 'Data berhasil dihapus'
-        ]);
-
-    } catch (\Exception $e) {
-        \Log::error('Error deleting discussion: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal menghapus data'
-        ], 500);
+            // Selalu return response JSON untuk konsistensi
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting discussion: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data'
+            ], 500);
+        }
     }
-}
 
     public function updateStatus(Request $request, OtherDiscussion $discussion)
     {
