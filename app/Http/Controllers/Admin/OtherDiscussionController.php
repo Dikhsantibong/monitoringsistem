@@ -12,7 +12,7 @@ use Carbon\Carbon;
 use App\Models\PowerPlant;
 
 class OtherDiscussionController extends Controller
-{   
+{
     public function index(Request $request)
     {
         try {
@@ -20,16 +20,16 @@ class OtherDiscussionController extends Controller
             $activeDiscussions = OtherDiscussion::where('status', 'Open');
             $closedDiscussions = ClosedDiscussion::query();
             $overdueDiscussions = OverdueDiscussion::query();
-            
+
             // Filter pencarian jika ada
             if ($request->filled('search')) {
                 $search = $request->search;
-                $searchCondition = function($q) use ($search) {
+                $searchCondition = function ($q) use ($search) {
                     $q->where('topic', 'like', "%{$search}%")
-                      ->orWhere('pic', 'like', "%{$search}%")
-                      ->orWhere('unit', 'like', "%{$search}%");
+                        ->orWhere('pic', 'like', "%{$search}%")
+                        ->orWhere('unit', 'like', "%{$search}%");
                 };
-                
+
                 $activeDiscussions->where($searchCondition);
                 $closedDiscussions->where($searchCondition);
                 $overdueDiscussions->where($searchCondition);
@@ -44,38 +44,31 @@ class OtherDiscussionController extends Controller
             ];
 
             return view('admin.other-discussions.index', $data);
-
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat memuat data');
         }
     }
 
     public function destroy($id)
-    {
-        try {
-            $discussion = OtherDiscussion::findOrFail($id);
-            $discussion->delete();
+{
+    try {
+        $discussion = OtherDiscussion::findOrFail($id);
+        $discussion->delete();
 
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data berhasil dihapus'
-                ]);
-            }
+        // Selalu return response JSON untuk konsistensi
+        return response()->json([
+            'success' => true,
+            'message' => 'Data berhasil dihapus'
+        ]);
 
-            return redirect()->route('admin.other-discussions.index')
-                           ->with('success', 'Data berhasil dihapus');
-
-        } catch (\Exception $e) {
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menghapus data'
-                ], 500);
-            }
-            return back()->with('error', 'Gagal menghapus data');
-        }
+    } catch (\Exception $e) {
+        \Log::error('Error deleting discussion: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal menghapus data'
+        ], 500);
     }
+}
 
     public function updateStatus(Request $request, OtherDiscussion $discussion)
     {
@@ -84,7 +77,7 @@ class OtherDiscussionController extends Controller
                 throw new \Exception('Status tidak valid');
             }
 
-            DB::transaction(function() use ($discussion, $request) {
+            DB::transaction(function () use ($discussion, $request) {
                 // Update status diskusi utama
                 $discussion->update(['status' => $request->status]);
 
@@ -117,7 +110,6 @@ class OtherDiscussionController extends Controller
                 'success' => true,
                 'message' => 'Status berhasil diperbarui'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -168,7 +160,6 @@ class OtherDiscussionController extends Controller
             return redirect()
                 ->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil ditambahkan');
-
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
@@ -187,7 +178,7 @@ class OtherDiscussionController extends Controller
         try {
             $discussion = OtherDiscussion::findOrFail($id);
             $units = PowerPlant::pluck('name')->toArray();
-           
+
             return view('admin.other-discussions.edit', compact('discussion', 'units'));
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat memuat data');
@@ -198,7 +189,7 @@ class OtherDiscussionController extends Controller
     {
         try {
             $discussion = OtherDiscussion::findOrFail($id);
-            
+
             $validated = $request->validate([
                 'sr_number' => 'required',
                 'wo_number' => 'required',
@@ -225,7 +216,6 @@ class OtherDiscussionController extends Controller
             return redirect()
                 ->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil diperbarui');
-
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
@@ -238,5 +228,4 @@ class OtherDiscussionController extends Controller
                 ->with('error', 'Gagal memperbarui data');
         }
     }
-
-} 
+}
