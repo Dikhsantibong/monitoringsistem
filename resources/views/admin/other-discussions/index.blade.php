@@ -215,7 +215,7 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($activeDiscussions as $index => $discussion)
-                                    <tr>
+                                    <tr data-id="{{ $discussion->id }}">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
@@ -601,7 +601,7 @@
     function confirmDelete(id) {
         Swal.fire({
             title: 'Apakah Anda yakin?',
-            text: 'Data ini akan dihapus secara permanen',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -610,41 +610,57 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Buat form data untuk mengirim token CSRF
-                const formData = new FormData();
-                formData.append('_token', '{{ csrf_token() }}');
-                formData.append('_method', 'DELETE');
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Menghapus data...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
-                fetch(`/admin/other-discussions/${id}`, {
+                fetch(`/admin/other-discussions/${id}`, {  // Perhatikan perubahan URL
                     method: 'POST',
                     headers: {
-                        'Accept': 'application/json'
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: formData
+                    body: JSON.stringify({
+                        _method: 'DELETE'
+                    })
                 })
                 .then(response => {
                     if (!response.ok) {
-                        return response.json().then(json => Promise.reject(json));
+                        throw new Error('Gagal menghapus data');
                     }
                     return response.json();
                 })
                 .then(data => {
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: data.message || 'Data berhasil dihapus',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(() => {
-                        window.location.reload();
-                    });
+                    if (data.success) {
+                        // Hapus baris dari tabel
+                        const row = document.querySelector(`tr[data-id="${id}"]`);
+                        if (row) {
+                            row.remove();
+                        }
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else {
+                        throw new Error(data.message || 'Gagal menghapus data');
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Terjadi kesalahan saat menghapus data',
-                        icon: 'error'
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message
                     });
                 });
             }
@@ -806,41 +822,61 @@
             text: "Data yang dihapus tidak dapat dikembalikan!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#EF4444',
-            cancelButtonColor: '#6B7280',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Ya, hapus!',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Kirim request delete
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Menghapus data...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Pastikan URL menggunakan ID yang benar
                 fetch(`/admin/overdue-discussions/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
+                        // Hapus baris dari tabel
+                        const row = document.querySelector(`tr[data-id="${id}"]`);
+                        if (row) {
+                            row.remove();
+                        }
+                        
                         Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Data berhasil dihapus',
                             icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
                             showConfirmButton: false,
                             timer: 1500
-                        }).then(() => {
-                            window.location.reload();
                         });
                     } else {
-                        throw new Error(data.message);
+                        throw new Error(data.message || 'Gagal menghapus data');
                     }
                 })
                 .catch(error => {
+                    console.error('Error:', error);
                     Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Terjadi kesalahan saat menghapus data',
-                        icon: 'error'
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Terjadi kesalahan saat menghapus data: ' + error.message
                     });
                 });
             }

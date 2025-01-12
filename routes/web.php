@@ -408,8 +408,11 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/admin/machine-status/view', [MachineStatusController::class, 'view'])
     ->name('admin.machine-status.view')
-    ->middleware(['auth']);
+    ->middleware(['auth', 'json.response']);
+
+Route::delete('/admin/discussions/{id}', [OtherDiscussionController::class, 'destroy'])
+    ->name('admin.discussions.destroy');
 
 
 
-    
+        

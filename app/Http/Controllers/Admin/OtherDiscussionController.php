@@ -321,12 +321,30 @@ class OtherDiscussionController extends Controller
 
     public function destroy($id)
     {
-        $discussion = OtherDiscussion::findOrFail($id);
-        $discussion->delete();
+        try {
+            $discussion = OtherDiscussion::findOrFail($id);
+            $discussion->delete();
 
-        return redirect()
-            ->route('admin.other-discussions.index')
-            ->with('success', 'Data pembahasan berhasil dihapus');
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data pembahasan berhasil dihapus'
+                ]);
+            }
+
+            return redirect()
+                ->route('admin.other-discussions.index')
+                ->with('success', 'Data pembahasan berhasil dihapus');
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'Gagal menghapus data');
+        }
     }
 
     public function updateStatus(Request $request, OtherDiscussion $discussion)

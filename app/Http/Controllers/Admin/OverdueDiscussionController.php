@@ -11,9 +11,10 @@ use DB;
 
 class OverdueDiscussionController extends Controller
 {
-    public function destroy(OverdueDiscussion $discussion)
+    public function destroy($id)
     {
         try {
+            $discussion = OverdueDiscussion::findOrFail($id);
             $discussion->delete();
             
             return response()->json([
@@ -25,7 +26,7 @@ class OverdueDiscussionController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus data'
+                'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
             ], 500);
         }
     }
