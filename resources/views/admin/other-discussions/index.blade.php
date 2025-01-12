@@ -257,11 +257,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
-                                                <a href="#" 
-                                                   onclick="editDiscussion({{ $discussion->id }})"
-                                                   class="text-blue-500 hover:text-blue-700">
-                                                    <i class="fas fa-edit text-lg"></i>
-                                                </a>
+                                                <button onclick="editActiveDiscussion({{ $discussion->id }})" class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
                                                 
                                                 <!-- Delete -->
                                                 <button onclick="confirmDelete({{ $discussion->id }})"
@@ -446,11 +444,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
-                                                <a href="#" 
-                                                   onclick="editDiscussion({{ $discussion->id }})"
-                                                   class="text-blue-500 hover:text-blue-700">
-                                                    <i class="fas fa-edit text-lg"></i>
-                                                </a>
+                                                <button onclick="editOverdueDiscussion({{ $discussion->id }})" class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
                                                 
                                                 <!-- Delete -->
                                                 <button onclick="confirmDeleteOverdue({{ $discussion->id }})"
@@ -837,20 +833,14 @@
         });
     }
 
-    // Fungsi edit yang terpisah
-    function editDiscussion(id) {
-        Swal.fire({
-            title: 'Mohon tunggu...',
-            text: 'Membuka form edit...',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+    // Fungsi edit untuk data aktif
+    function editActiveDiscussion(id) {
+        window.location.href = `/admin/other-discussions/active/${id}/edit`;
+    }
 
-        // Redirect ke halaman edit
-        window.location.href = `/admin/other-discussions/${id}/edit`;
+    // Fungsi edit untuk data overdue
+    function editOverdueDiscussion(id) {
+        window.location.href = `/admin/other-discussions/overdue/${id}/edit`;
     }
 
     // Tambahkan ini untuk handling pesan sukses setelah update

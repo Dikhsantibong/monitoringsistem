@@ -43,7 +43,12 @@
             <h3 class="text-gray-700 text-3xl font-medium">Edit Pembahasan</h3>
 
             <div class="mt-8">
-                <form id="editDiscussionForm" action="{{ route('admin.other-discussions.update', $discussion->id) }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <form id="editDiscussionForm" 
+                    action="{{ isset($isActive) && $isActive 
+                        ? route('admin.other-discussions.update-active', $discussion->id)
+                        : route('admin.other-discussions.update-overdue', $discussion->id) }}" 
+                    method="POST" 
+                    class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                     @csrf
                     @method('PUT')
 
