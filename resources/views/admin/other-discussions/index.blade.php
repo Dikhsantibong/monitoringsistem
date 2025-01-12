@@ -610,55 +610,34 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Buat form untuk delete request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/other-discussions/${id}`;
+                
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '_token';
+                tokenInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                form.appendChild(methodInput);
+                form.appendChild(tokenInput);
+                document.body.appendChild(form);
+
+                // Tampilkan loading
                 Swal.fire({
                     title: 'Menghapus data...',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
+                        // Submit form
+                        form.submit();
                     }
-                });
-
-                fetch(`/admin/other-discussions/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        // Cek jika response bukan JSON
-                        const contentType = response.headers.get('content-type');
-                        if (!contentType || !contentType.includes('application/json')) {
-                            throw new Error('Server error: Silakan coba lagi');
-                        }
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: data.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: error.message || 'Terjadi kesalahan saat menghapus data'
-                    });
                 });
             }
         });
@@ -825,54 +804,34 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Buat form untuk delete request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/overdue-discussions/${id}`;
+                
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '_token';
+                tokenInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                form.appendChild(methodInput);
+                form.appendChild(tokenInput);
+                document.body.appendChild(form);
+
+                // Tampilkan loading
                 Swal.fire({
                     title: 'Menghapus data...',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
+                        // Submit form
+                        form.submit();
                     }
-                });
-
-                fetch(`/admin/overdue-discussions/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        const contentType = response.headers.get('content-type');
-                        if (!contentType || !contentType.includes('application/json')) {
-                            throw new Error('Server error: Silakan coba lagi');
-                        }
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: data.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: error.message || 'Terjadi kesalahan saat menghapus data'
-                    });
                 });
             }
         });
@@ -915,6 +874,27 @@
         }
     });
 </script>
+@if(session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 1500
+        });
+    </script>
+@endif
+
+@if(session('error'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: "{{ session('error') }}"
+        });
+    </script>
+@endif
 @push('scripts')
 @endpush
 @endsection 

@@ -61,24 +61,17 @@ class OtherDiscussionController extends Controller
             
             DB::commit();
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil dihapus'
-            ]);
+            return redirect()
+                ->route('admin.other-discussions.index')
+                ->with('success', 'Data berhasil dihapus');
                 
-        } catch (ModelNotFoundException $e) {
-            DB::rollback();
-            return response()->json([
-                'success' => false,
-                'message' => 'Data tidak ditemukan'
-            ], 404);
         } catch (\Exception $e) {
             DB::rollback();
             \Log::error('Error deleting discussion: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus data'
-            ], 500);
+            
+            return redirect()
+                ->route('admin.other-discussions.index')
+                ->with('error', 'Gagal menghapus data');
         }
     }
 
@@ -95,24 +88,17 @@ class OtherDiscussionController extends Controller
             
             DB::commit();
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil dihapus'
-            ]);
+            return redirect()
+                ->route('admin.other-discussions.index')
+                ->with('success', 'Data berhasil dihapus');
                 
-        } catch (ModelNotFoundException $e) {
-            DB::rollback();
-            return response()->json([
-                'success' => false,
-                'message' => 'Data tidak ditemukan'
-            ], 404);
         } catch (\Exception $e) {
             DB::rollback();
             \Log::error('Error deleting overdue discussion: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus data'
-            ], 500);
+            
+            return redirect()
+                ->route('admin.other-discussions.index')
+                ->with('error', 'Gagal menghapus data');
         }
     }
 
