@@ -86,7 +86,7 @@
                             </svg>
                         </button>
 
-                        <h1 class="text-xl font-semibold text-gray-800">Penyusunan Data Pembangkit</h1>
+                        <h1 class="text-xl font-semibold text-gray-800">Penyusunan Data Pembangki</h1>
                     </div>
 
                     <div id="timer" class="text-lg font-bold text-gray-800">00:00:00</div>
