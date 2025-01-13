@@ -23,75 +23,66 @@ class ScoreCardDailyController extends Controller
 
     public function index()
     {
+        // Ambil data scorecard terbaru
         $scoreCards = ScoreCardDaily::latest()->get();
+        $scorePercentage = 0; // Default value
 
-        // Cek apakah ada data scoreCards
+        // Cek apakah ada data
         if ($scoreCards->isEmpty()) {
             return view('admin.score-card.index', [
                 'scoreCards' => collect([]),
-                'totalScore' => 0,
-                'ketentuanRapat' => [],
-                'averageScore' => 0
+                'scorePercentage' => $scorePercentage
             ]);
         }
 
-        // Menghitung total skor peserta
-        $totalScore = $scoreCards->sum(function ($scoreCard) {
-            try {
-                // Pastikan peserta tidak null dan bisa di-decode
-                $pesertas = json_decode($scoreCard->peserta, true) ?? [];
-                $pesertaScore = is_array($pesertas) ? array_sum(array_column($pesertas, 'skor')) : 0;
-                
-                // Hitung skor ketentuan rapat termasuk waktu mulai dan selesai
-                $ketentuanScore = 
-                    ($scoreCard->skor_waktu_mulai ?? 100) +
-                    ($scoreCard->skor_waktu_selesai ?? 100) +
-                    ($scoreCard->kesiapan_panitia ?? 100) +
-                    ($scoreCard->kesiapan_bahan ?? 100) +
-                    ($scoreCard->aktivitas_luar ?? 100) +
-                    ($scoreCard->gangguan_diskusi ?? 100) +
-                    ($scoreCard->gangguan_keluar_masuk ?? 100) +
-                    ($scoreCard->gangguan_interupsi ?? 100) +
-                    ($scoreCard->ketegasan_moderator ?? 100) +
-                    ($scoreCard->kelengkapan_sr ?? 100);
-                
-                return $pesertaScore + $ketentuanScore;
-            } catch (\Exception $e) {
-                \Log::error('Error calculating score: ' . $e->getMessage());
-                return 0;
-            }
-        });
-
-        // Hitung rata-rata dengan pengecekan
-        $firstCard = $scoreCards->first();
-        $pesertaCount = 0;
-
+        // Ambil scoreCard terbaru
+        $latestScoreCard = $scoreCards->first();
+        
         try {
-            $pesertaCount = count(json_decode($firstCard->peserta, true) ?? []);
-        } catch (\Exception $e) {
-            \Log::error('Error counting peserta: ' . $e->getMessage());
-        }
-
-        $totalItems = $pesertaCount + 10; // 10 adalah jumlah ketentuan rapat
-        $averageScore = $totalItems > 0 ? $totalScore / $totalItems : 0;
-
-        // Menggabungkan ketentuan rapat dengan pengecekan
-        $ketentuanRapat = [];
-        foreach ($scoreCards as $card) {
-            try {
-                $ketentuan = json_decode($card->ketentuan_rapat, true);
-                if (!empty($ketentuan) && is_array($ketentuan)) {
-                    $ketentuanRapat[] = $ketentuan;
-                }
-            } catch (\Exception $e) {
-                \Log::error('Error processing ketentuan rapat: ' . $e->getMessage());
+            // Pastikan data peserta valid
+            $pesertaData = [];
+            if ($latestScoreCard && $latestScoreCard->peserta) {
+                $pesertaData = json_decode($latestScoreCard->peserta, true) ?? [];
             }
+            
+            // 1. Hitung total skor peserta
+            $totalPesertaScore = array_sum(array_column($pesertaData, 'skor'));
+            $jumlahPeserta = count($pesertaData);
+            
+            // 2. Hitung total skor ketentuan rapat dengan null coalescing
+            $totalKetentuanScore = 
+                ($latestScoreCard->skor_waktu_mulai ?? 0) +
+                ($latestScoreCard->skor_waktu_selesai ?? 0) +
+                ($latestScoreCard->kesiapan_panitia ?? 0) +
+                ($latestScoreCard->kesiapan_bahan ?? 0) +
+                ($latestScoreCard->aktivitas_luar ?? 0) +
+                ($latestScoreCard->gangguan_diskusi ?? 0) +
+                ($latestScoreCard->gangguan_keluar_masuk ?? 0) +
+                ($latestScoreCard->gangguan_interupsi ?? 0) +
+                ($latestScoreCard->ketegasan_moderator ?? 0) +
+                ($latestScoreCard->kelengkapan_sr ?? 0);
+
+            // 3. Hitung total keseluruhan
+            $totalActualScore = $totalPesertaScore + $totalKetentuanScore;
+            
+            // 4. Hitung skor maksimum yang mungkin
+            $maxPesertaScore = $jumlahPeserta * 100; // Maksimum 100 per peserta
+            $maxKetentuanScore = 10 * 100; // 10 ketentuan rapat, masing-masing maksimum 100
+            $totalMaxScore = $maxPesertaScore + $maxKetentuanScore;
+            
+            // 5. Hitung persentase (dibulatkan ke 2 desimal)
+            $scorePercentage = $totalMaxScore > 0 ? 
+                round(($totalActualScore / $totalMaxScore) * 100, 2) : 0;
+
+        } catch (\Exception $e) {
+            \Log::error('Error calculating score: ' . $e->getMessage());
+            $scorePercentage = 0;
         }
 
-        // Gabungkan array ketentuan rapat jika ada
-        $ketentuanRapat = !empty($ketentuanRapat) ? array_merge(...$ketentuanRapat) : [];
-
-        return view('admin.score-card.index', compact('scoreCards', 'totalScore', 'ketentuanRapat', 'averageScore'));
+        return view('admin.score-card.index', [
+            'scoreCards' => $scoreCards,
+            'scorePercentage' => $scorePercentage
+        ]);
     }
 
     public function create()

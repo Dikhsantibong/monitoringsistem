@@ -281,8 +281,8 @@ Setiap 3 menit keterlambatan waktu maka skor dikurangi 10.</td>
                                 @endphp
                                 <tr>
                                     <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
-                                    <td class="border p-2 text-center font-bold">{{ $grandTotal }}</td>
-                                    <td class="border p-2">Total dari score peserta dan ketentuan rapat</td>
+                                    <td class="border p-2 text-center font-bold">{{ $scorePercentage }}%</td>
+                                    <td class="border p-2">Persentase dari total score maksimum yang mungkin</td>
                                 </tr>
                             </tbody>
                         </table>
