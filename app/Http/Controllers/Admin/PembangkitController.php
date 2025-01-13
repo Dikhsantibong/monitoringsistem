@@ -39,34 +39,47 @@ class PembangkitController extends Controller
         try {
             DB::beginTransaction();
             
-            \Log::info('Data yang diterima untuk disimpan:', $request->logs);
-            
-            foreach ($request->logs as $log) {
-                // Pastikan equipment diambil dengan benar dari request
-                $equipment = isset($log['equipment']) ? trim($log['equipment']) : null;
-                
-                $operation = MachineOperation::where('machine_id', $log['machine_id'])
-                    ->latest('recorded_at')
-                    ->first();
+            $data = json_decode($request->data, true);
+            \Log::info('Data yang diterima:', $data);
 
-                if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
-                    MachineStatusLog::create([
-                        'machine_id' => $log['machine_id'],
-                        'dmn' => $operation ? $operation->dmn : 0,
-                        'dmp' => $operation ? $operation->dmp : 0,
-                        'load_value' => $log['load_value'],
-                        'tanggal' => $log['tanggal'],
-                        'status' => $log['status'],
-                        'component' => $log['component'],
-                        'equipment' => $equipment,
-                        'deskripsi' => $log['deskripsi'] ?? null,
-                        'kronologi' => $log['kronologi'] ?? null,
-                        'action_plan' => $log['action_plan'] ?? null,
-                        'progres' => $log['progres'] ?? null,
-                        'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
-                        'target_selesai' => $log['target_selesai'] ?? null
-                    ]);
+            foreach ($data as $log) {
+                // Hapus semua data yang ada untuk machine_id dan tanggal yang sama
+                MachineStatusLog::where('machine_id', $log['machine_id'])
+                    ->whereDate('tanggal', date('Y-m-d', strtotime($log['tanggal'])))
+                    ->delete();
+
+                // Proses upload gambar
+                $imagePath = null;
+                $imageKey = "images.{$log['machine_id']}";
+                
+                if ($request->hasFile($imageKey)) {
+                    $image = $request->file($imageKey);
+                    $fileName = time() . '_' . $log['machine_id'] . '.' . $image->getClientOriginalExtension();
+                    $imagePath = $image->storeAs('machine-status', $fileName, 'public');
                 }
+
+                // Buat satu record saja
+                MachineStatusLog::create([
+                    'machine_id' => $log['machine_id'],
+                    'dmn' => $log['dmn'] ?? null,
+                    'dmp' => $log['dmp'] ?? 0,
+                    'load_value' => $log['load_value'] ?? null,
+                    'tanggal' => date('Y-m-d', strtotime($log['tanggal'])),
+                    'status' => $log['status'] ?? null,
+                    'component' => $log['component'] ?? null,
+                    'equipment' => $log['equipment'] ?? null,
+                    'deskripsi' => $log['deskripsi'] ?? null,
+                    'kronologi' => $log['kronologi'] ?? null,
+                    'action_plan' => $log['action_plan'] ?? null,
+                    'progres' => $log['progres'] ?? null,
+                    'image_path' => $imagePath,
+                    'image_description' => $log['image_description'] ?? null,
+                    'tanggal_mulai' => !empty($log['tanggal_mulai']) ? date('Y-m-d', strtotime($log['tanggal_mulai'])) : null,
+                    'target_selesai' => !empty($log['target_selesai']) ? date('Y-m-d', strtotime($log['target_selesai'])) : null,
+                    'unit_source' => 'mysql'
+                ]);
+
+                \Log::info('Data berhasil disimpan untuk machine_id: ' . $log['machine_id']);
             }
             
             DB::commit();
@@ -74,6 +87,7 @@ class PembangkitController extends Controller
                 'success' => true,
                 'message' => 'Data berhasil disimpan'
             ]);
+            
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error saving machine status: ' . $e->getMessage());
@@ -108,8 +122,15 @@ class PembangkitController extends Controller
                 });
             }
             
-            // Tambahkan pengurutan berdasarkan status
             $logs = $query->orderByRaw("CASE WHEN status = 'Gangguan' THEN 0 ELSE 1 END")->get();
+            
+            // Transform data to include image URL
+            $logs = $logs->map(function($log) {
+                if ($log->image_path) {
+                    $log->image_url = asset($log->image_path);
+                }
+                return $log;
+            });
             
             if ($logs->isEmpty()) {
                 return response()->json([

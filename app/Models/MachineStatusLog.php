@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Events\MachineStatusUpdated;
 
+
+
+
 class MachineStatusLog extends Model
 {
     use HasFactory;
@@ -27,6 +30,8 @@ class MachineStatusLog extends Model
         'kronologi',
         'action_plan',
         'progres',
+        'image_path',
+        'image_description',
         'tanggal_mulai',
         'target_selesai',
         'dmn',
@@ -82,15 +87,21 @@ class MachineStatusLog extends Model
         parent::boot();
         
         static::created(function ($machineStatus) {
-            event(new MachineStatusUpdated($machineStatus, 'create'));
+            if (session('unit') !== 'mysql') {
+                event(new MachineStatusUpdated($machineStatus, 'create'));
+            }
         });
 
         static::updated(function ($machineStatus) {
-            event(new MachineStatusUpdated($machineStatus, 'update'));
+            if (session('unit') !== 'mysql') {
+                event(new MachineStatusUpdated($machineStatus, 'update'));
+            }
         });
 
         static::deleted(function ($machineStatus) {
-            event(new MachineStatusUpdated($machineStatus, 'delete'));
+            if (session('unit') !== 'mysql') {
+                event(new MachineStatusUpdated($machineStatus, 'delete'));
+            }
         });
     }
 

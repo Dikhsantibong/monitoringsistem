@@ -16,8 +16,10 @@ class MachineStatusUpdated
 
     public function __construct(MachineStatusLog $machineStatus, string $action)
     {
-        $this->machineStatus = $machineStatus;
-        $this->sourceUnit = session('unit'); // Ambil unit dari session
-        $this->action = $action; // 'create', 'update', atau 'delete'
+        if (session('unit') !== 'mysql') {
+            $this->machineStatus = $machineStatus;
+            $this->sourceUnit = session('unit');
+            $this->action = $action;
+        }
     }
 } 

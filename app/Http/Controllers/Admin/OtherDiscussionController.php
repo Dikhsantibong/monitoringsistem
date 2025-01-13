@@ -222,6 +222,8 @@ class OtherDiscussionController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            DB::beginTransaction();
+            
             $discussion = OtherDiscussion::findOrFail($id);
 
             $validated = $request->validate([
@@ -236,9 +238,38 @@ class OtherDiscussionController extends Controller
                 'next_commitment' => 'required',
                 'pic' => 'required',
                 'deadline' => 'required|date',
+                'status' => 'required|in:Open,Closed'
             ]);
 
+            // Update data diskusi
             $discussion->update($validated);
+
+            // Jika status diubah menjadi Closed
+            if ($validated['status'] === 'Closed') {
+                // Pindahkan ke tabel closed_discussions
+                ClosedDiscussion::create([
+                    'sr_number' => $validated['sr_number'],
+                    'wo_number' => $validated['wo_number'],
+                    'unit' => $validated['unit'],
+                    'topic' => $validated['topic'],
+                    'target' => $validated['target'],
+                    'risk_level' => $validated['risk_level'],
+                    'priority_level' => $validated['priority_level'],
+                    'previous_commitment' => $validated['previous_commitment'],
+                    'next_commitment' => $validated['next_commitment'],
+                    'pic' => $validated['pic'],
+                    'status' => 'Closed',
+                    'deadline' => $validated['deadline'],
+                    'closed_at' => now(),
+                    'original_id' => $discussion->id,
+                    'unit_source' => session('unit', 'default')
+                ]);
+
+                // Hapus dari tabel other_discussions
+                $discussion->delete();
+            }
+
+            DB::commit();
 
             if ($request->ajax()) {
                 return response()->json([
@@ -250,13 +281,18 @@ class OtherDiscussionController extends Controller
             return redirect()
                 ->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil diperbarui');
+
         } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error updating discussion: ' . $e->getMessage());
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Gagal memperbarui data'
                 ], 500);
             }
+            
             return back()
                 ->withInput()
                 ->with('error', 'Gagal memperbarui data');

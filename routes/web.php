@@ -427,6 +427,19 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin'], 'as' => 'a
     Route::get('machine-status/view', [MachineStatusController::class, 'view'])->name('machine-status.view');
 });
 
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    // Route yang sudah ada
+    Route::delete('/overdue-discussions/{id}', [OverdueDiscussionController::class, 'destroy'])
+        ->name('overdue-discussions.destroy');
+    Route::post('/overdue-discussions/{id}/update-status', [OverdueDiscussionController::class, 'updateStatus'])
+        ->name('overdue-discussions.update-status');
+    
+    // Tambahkan route baru untuk pengecekan overdue
+    Route::post('/overdue-discussions/check', [OverdueDiscussionController::class, 'checkAndMoveOverdue'])
+        ->name('overdue-discussions.check')
+        ->middleware('web');
+});
+
 
 
         

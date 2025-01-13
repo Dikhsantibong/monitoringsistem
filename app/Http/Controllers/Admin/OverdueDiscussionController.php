@@ -7,14 +7,14 @@ use App\Models\OverdueDiscussion;
 use App\Models\ClosedDiscussion;
 use App\Models\OtherDiscussion;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use DB;
 
 class OverdueDiscussionController extends Controller
 {
-    public function destroy($id)
+    public function destroy(OverdueDiscussion $discussion)
     {
         try {
-            $discussion = OverdueDiscussion::findOrFail($id);
             $discussion->delete();
             
             return response()->json([
@@ -26,7 +26,7 @@ class OverdueDiscussionController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat menghapus data'
             ], 500);
         }
     }
@@ -37,7 +37,7 @@ class OverdueDiscussionController extends Controller
             $overdueDiscussion = OverdueDiscussion::findOrFail($id);
             $originalDiscussion = OtherDiscussion::findOrFail($overdueDiscussion->original_id);
 
-            // Update status di kedua tabel
+            // Update status menjadi 'Closed' saja
             $overdueDiscussion->update([
                 'status' => 'Closed',
                 'closed_at' => now()
@@ -83,4 +83,81 @@ class OverdueDiscussionController extends Controller
             ], 500);
         }
     }
+
+    public function checkAndMoveOverdue()
+    {
+        try {
+            DB::beginTransaction();
+            
+            \Log::info('Checking for overdue discussions...');
+
+            // Ambil semua diskusi aktif yang sudah melewati deadline
+            $overdueDiscussions = OtherDiscussion::where('status', 'Open')
+                ->where('deadline', '<', Carbon::now()->format('Y-m-d'))
+                ->get();
+
+            \Log::info('Found ' . count($overdueDiscussions) . ' overdue discussions', [
+                'discussions' => $overdueDiscussions->toArray()
+            ]);
+
+            $count = 0;
+            foreach ($overdueDiscussions as $discussion) {
+                try {
+                    // Cek apakah sudah ada di tabel overdue
+                    $existingOverdue = OverdueDiscussion::where('original_id', $discussion->id)->first();
+                    
+                    if (!$existingOverdue) {
+                        // Buat record baru di tabel overdue_discussions dengan status tetap 'Open'
+                        OverdueDiscussion::create([
+                            'sr_number' => $discussion->sr_number,
+                            'wo_number' => $discussion->wo_number,
+                            'unit' => $discussion->unit,
+                            'topic' => $discussion->topic,
+                            'target' => $discussion->target,
+                            'risk_level' => $discussion->risk_level,
+                            'priority_level' => $discussion->priority_level,
+                            'previous_commitment' => $discussion->previous_commitment,
+                            'next_commitment' => $discussion->next_commitment,
+                            'pic' => $discussion->pic,
+                            'status' => 'Open', // Tetap gunakan status 'Open'
+                            'deadline' => $discussion->deadline,
+                            'overdue_at' => now(),
+                            'original_id' => $discussion->id,
+                            'unit_source' => session('unit', 'default')
+                        ]);
+
+                        // Status diskusi asli tetap 'Open'
+                        $discussion->update(['status' => 'Open']);
+                        $count++;
+                        
+                        \Log::info('Successfully moved discussion to overdue', [
+                            'discussion_id' => $discussion->id
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Error processing discussion: ' . $e->getMessage(), [
+                        'discussion_id' => $discussion->id
+                    ]);
+                    continue;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil memindahkan data yang melewati deadline',
+                'count' => $count
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error in checkAndMoveOverdue: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memindahkan data: ' . $e->getMessage()
+            ], 500);
+        }
+    }   
 } 

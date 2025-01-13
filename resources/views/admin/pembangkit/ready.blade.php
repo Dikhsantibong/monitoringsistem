@@ -175,10 +175,13 @@
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Action Plan
                                                 </th>
-                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Progres
                                                 </th>
-                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Gambar
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Tanggal Mulai
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
@@ -284,7 +287,27 @@
                                                             style="height: 100px; width: 300px;" 
                                                             name="progres[{{ $machine->id }}]" 
                                                             oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
-                                                    </td>   
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200">
+                                                        <div class="flex flex-col space-y-2">
+                                                            <input type="file" 
+                                                                   class="hidden" 
+                                                                   name="image[{{ $machine->id }}]" 
+                                                                   id="image_{{ $machine->id }}"
+                                                                   accept="image/*"
+                                                                   onchange="previewImage(this)">
+                                                            <button type="button" 
+                                                                    onclick="document.getElementById('image_{{ $machine->id }}').click()"
+                                                                    class="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600">
+                                                                <i class="fas fa-upload mr-1"></i> Upload
+                                                            </button>
+                                                            <div class="image-preview" id="preview_{{ $machine->id }}"></div>
+                                                            <input type="text" 
+                                                                   class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                                   placeholder="Keterangan gambar..."
+                                                                   name="image_description[{{ $machine->id }}]">
+                                                        </div>
+                                                    </td>
                                                     <td class="px-3 py-2">
                                                         <input type="date" 
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
@@ -470,6 +493,11 @@
 
 <script>
     function saveData() {
+        // Tambahkan flag untuk mencegah multiple submit
+        if (window.isSaving) return;
+        window.isSaving = true;
+
+        const formData = new FormData();
         const data = [];
         const tables = document.querySelectorAll('.unit-table table');
         const tanggal = document.getElementById('filterDate').value;
@@ -479,56 +507,40 @@
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
                 const statusSelect = row.querySelector('select');
-                const componentSelect = row.querySelector('.system-select');
                 
-                // Perbaikan pengambilan nilai equipment
-                const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
-                const equipmentValue = equipmentTextarea ? equipmentTextarea.value.trim() : '';
-                
-                // Ambil nilai-nilai lain
-                const dmpInput = row.querySelector('td:nth-child(3) input');
-                const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
-                const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
-                const inputBeban = row.querySelector('td:nth-child(4) input');
-                const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
-                const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
-                const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
-                const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
-
                 if (statusSelect && statusSelect.value) {
-                    data.push({
+                    const rowData = {
                         machine_id: machineId,
                         tanggal: tanggal,
                         status: statusSelect.value,
-                        component: componentSelect ? componentSelect.value : null,
-                        equipment: equipmentValue, // Tambahkan nilai equipment
+                        component: row.querySelector('.system-select')?.value || null,
+                        equipment: row.querySelector('textarea[name^="equipment"]')?.value.trim() || null,
                         dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
-                        dmp: dmpInput ? dmpInput.value.trim() : null,
-                        deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
-                        action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
-                        load_value: inputBeban ? parseFloat(inputBeban.value) || null : null,
-                        progres: inputProgres ? inputProgres.value.trim() : null,
-                        kronologi: inputKronologi ? inputKronologi.value.trim() : null,
-                        tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
-                        target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
-                    });
+                        dmp: row.querySelector('td:nth-child(3) input')?.value || 0,
+                        deskripsi: row.querySelector(`textarea[name="deskripsi[${machineId}]"]`)?.value.trim() || null,
+                        action_plan: row.querySelector(`textarea[name="action_plan[${machineId}]"]`)?.value.trim() || null,
+                        load_value: parseFloat(row.querySelector('td:nth-child(4) input')?.value) || 0,
+                        progres: row.querySelector(`textarea[name="progres[${machineId}]"]`)?.value.trim() || null,
+                        kronologi: row.querySelector(`textarea[name="kronologi[${machineId}]"]`)?.value.trim() || null,
+                        tanggal_mulai: row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`)?.value || null,
+                        target_selesai: row.querySelector(`input[name="target_selesai[${machineId}]"]`)?.value || null,
+                        image_description: row.querySelector(`input[name="image_description[${machineId}]"]`)?.value.trim() || null
+                    };
+                    
+                    data.push(rowData);
+                    
+                    // Append image file if exists
+                    const imageInput = document.getElementById(`image_${machineId}`);
+                    if (imageInput && imageInput.files[0]) {
+                        formData.append(`images[${machineId}]`, imageInput.files[0]);
+                    }
                 }
             });
         });
         
-        // Debug: Tampilkan data yang akan dikirim
-        console.log('Data yang akan dikirim:', data);
+        formData.append('data', JSON.stringify(data));
 
-        if (data.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Pilih status terlebih dahulu!'
-            });
-            return;
-        }
-
-        // Tampilkan loading indicator
+        // Show loading indicator
         Swal.fire({
             title: 'Menyimpan Data',
             text: 'Mohon tunggu...',
@@ -538,42 +550,39 @@
             }
         });
 
-            fetch('{{ route('admin.pembangkit.save-status') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    logs: data
-                })
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log(result);
-                if (result.success) {
-                    Swal.fire({
-                        icon: 'success',    
-                        title: 'Berhasil',
-                        text: 'Data berhasil disimpan!',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        // Refresh data setelah berhasil simpan
-                        loadData();
-                    });
-                } else {
-                    throw new Error(result.message || 'Gagal menyimpan data');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        fetch('{{ route('admin.pembangkit.save-status') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            window.isSaving = false; // Reset flag
+            if (result.success) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Data berhasil disimpan!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    loadData();
                 });
+            } else {
+                throw new Error(result.message || 'Gagal menyimpan data');
+            }
+        })
+        .catch(error => {
+            window.isSaving = false; // Reset flag
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message
             });
+        });
     }
 
     function confirmReset() {
@@ -993,6 +1002,42 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
         updateComponentOptions(e.target);
     }
 });
+</script>
+
+<script>
+function previewImage(input) {
+    const machineId = input.id.split('_')[1];
+    const preview = document.getElementById(`preview_${machineId}`);
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <div class="relative">
+                    <img src="${e.target.result}" class="w-32 h-32 object-cover rounded">
+                    <button type="button" 
+                            onclick="removeImage('${machineId}')"
+                            class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeImage(machineId) {
+    const input = document.getElementById(`image_${machineId}`);
+    const preview = document.getElementById(`preview_${machineId}`);
+    const description = document.querySelector(`input[name="image_description[${machineId}]"]`);
+    
+    input.value = '';
+    preview.innerHTML = '';
+    description.value = '';
+}
 </script>
 @push('scripts')
 @endpush

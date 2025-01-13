@@ -709,35 +709,42 @@
         });
     }
     function checkAndUpdateOverdueStatus() {
-        const rows = document.querySelectorAll('tr[data-deadline]');
-        const now = new Date();
+        console.log('Checking overdue status...');
         
-        rows.forEach(row => {
-            const deadline = new Date(row.dataset.deadline);
-            if (now > deadline && row.dataset.status === 'Open') {
-                // Kirim request untuk update status ke overdue
-                fetch(`/admin/other-discussions/${row.dataset.id}/update-status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ status: 'Overdue' })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Refresh halaman jika ada perubahan status
-                        window.location.reload();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+        fetch('{{ route('admin.overdue-discussions.check') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Check result:', data);
+            if (data.success) {
+                if (data.count > 0) {
+                    // Tampilkan notifikasi dan refresh halaman
+                    Swal.fire({
+                        title: 'Status Updated',
+                        text: `${data.count} diskusi telah dipindahkan ke Overdue`,
+                        icon: 'info',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            } else {
+                console.error('Error:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking overdue status:', error);
         });
     }
 
-    // Jalankan pengecekan setiap menit
-    setInterval(checkAndUpdateOverdueStatus, 60000);
+    // Jalankan pengecekan setiap 30 detik (untuk testing)
+    setInterval(checkAndUpdateOverdueStatus, 30000);
 
     // Jalankan pengecekan saat halaman dimuat
     document.addEventListener('DOMContentLoaded', checkAndUpdateOverdueStatus);
