@@ -53,40 +53,17 @@ class PembangkitController extends Controller
                 $imageKey = "images.{$log['machine_id']}";
                 
                 if ($request->hasFile($imageKey)) {
-                    try {
-                        $image = $request->file($imageKey);
-                        $fileName = time() . '_' . $log['machine_id'] . '.' . $image->getClientOriginalExtension();
-                        
-                        // Debug: log informasi file
-                        \Log::info('Upload Image Details:', [
-                            'original_name' => $image->getClientOriginalName(),
-                            'size' => $image->getSize(),
-                            'mime' => $image->getMimeType()
-                        ]);
-                        
-                        // Pastikan folder ada
-                        $uploadPath = public_path('machine-status');
-                        if (!file_exists($uploadPath)) {
-                            mkdir($uploadPath, 0775, true);
-                        }
-                        
-                        // Simpan file
-                        $image->move($uploadPath, $fileName);
-                        
-                        // Verifikasi file tersimpan
-                        if (file_exists($uploadPath . '/' . $fileName)) {
-                            \Log::info('File berhasil disimpan di: ' . $uploadPath . '/' . $fileName);
-                        } else {
-                            \Log::error('File gagal disimpan di: ' . $uploadPath . '/' . $fileName);
-                        }
-                        
-                        // Path untuk database
-                        $imagePath = 'machine-status/' . $fileName;
-                        
-                    } catch (\Exception $e) {
-                        \Log::error('Error saat upload gambar: ' . $e->getMessage());
-                        $imagePath = null;
-                    }
+                    $image = $request->file($imageKey);
+                    $fileName = time() . '_' . $log['machine_id'] . '.' . $image->getClientOriginalExtension();
+                    
+                    // Simpan HANYA di storage/app/public/machine-status
+                    $path = $image->storeAs('public/machine-status', $fileName);
+                    
+                    // Path untuk database (ganti public/ dengan storage/)
+                    $imagePath = str_replace('public/', 'storage/', $path);
+                    
+                    \Log::info('File saved at storage path: ' . storage_path('app/' . $path));
+                    \Log::info('Public URL will be: ' . asset($imagePath));
                 } else {
                     \Log::info('Tidak ada file yang diupload untuk machine_id: ' . $log['machine_id']);
                     $imagePath = null;

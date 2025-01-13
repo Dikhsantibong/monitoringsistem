@@ -126,9 +126,10 @@ use Illuminate\Support\Facades\Storage;
                                                 
                                                 <img src="{{ url($imagePath) }}" 
                                                      alt="Status Image" 
-                                                     class="w-12 h-12 object-cover rounded cursor-pointer"
+                                                     class="object-cover rounded cursor-pointer"
                                                      onerror="this.onerror=null; this.src='{{ asset('images/no-image.png') }}'; console.log('Image failed to load: {{ $imagePath }}')"
                                                      onclick="showSingleImage('{{ url($imagePath) }}', '{{ $log->image_description }}')"
+                                                     style="width: auto; height: auto; max-width: 100%; max-height: 100%;"
                                                 >
                                                 
                                                 <!-- Debug info -->

@@ -18,6 +18,36 @@
             width: 100%; /* Memastikan tabel mengambil lebar penuh */
             table-layout: auto; /* Mengizinkan kolom untuk menyesuaikan lebar */
         }
+        /* Style untuk kolom gambar */
+        .image-column {
+            min-width: 300px; /* Tambah lebar minimum */
+            width: 300px;     /* Tambah lebar tetap */
+        }
+        
+        /* Style untuk preview gambar */
+        .image-preview img {
+            max-width: 280px;  /* Tambah lebar maksimum preview */
+            height: auto;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+
+        /* Style untuk input keterangan gambar */
+        .image-column input[type="text"] {
+            width: 280px;     /* Sesuaikan lebar input text */
+            margin-top: 5px;
+        }
+
+        /* Style untuk tombol upload */
+        .image-column button {
+            width: 280px;     /* Sesuaikan lebar button */
+            margin: 5px 0;
+        }
+
+        /* Tambah padding untuk konten dalam kolom */
+        .image-column .flex {
+            padding: 10px;
+        }
     </style>
 @endpush
 
@@ -178,7 +208,7 @@
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Progres
                                                 </th>
-                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B] image-column">
                                                     Gambar
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
@@ -279,7 +309,7 @@
                                                             name="action_plan[{{ $machine->id }}]" 
                                                             oninput="autoResize(this)"></textarea>
                                                     </td>
-                                                    <td class="px-3 py-2">
+                                                    <td class="px-3 py-2 border-r border-gray-200">
                                                         <textarea 
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
                                                             rows="2" 
@@ -288,8 +318,8 @@
                                                             name="progres[{{ $machine->id }}]" 
                                                             oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
                                                     </td>
-                                                    <td class="px-3 py-2 border-r border-gray-200">
-                                                        <div class="flex flex-col space-y-2">
+                                                    <td class="px-3 py-2 border-r border-gray-200 image-column">
+                                                        <div class="flex flex-col space-y-2" style="width: 200px; justify-content: center; align-items: center;">
                                                             <input type="file" 
                                                                    class="hidden" 
                                                                    name="image[{{ $machine->id }}]" 
@@ -297,6 +327,7 @@
                                                                    accept="image/*"
                                                                    onchange="previewImage(this)">
                                                             <button type="button" 
+                                                                    style="width: 200px;"
                                                                     onclick="document.getElementById('image_{{ $machine->id }}').click()"
                                                                     class="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600">
                                                                 <i class="fas fa-upload mr-1"></i> Upload
@@ -340,7 +371,7 @@
 
         // Cek apakah timer sedang berjalan saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
-            const storedStartTime = localStorage.getItem('startTime');
+            const sttdoredStartTime = localStorage.getItem('startTime');
             const storedElapsedTime = localStorage.getItem('elapsedTime');
             const storedIsRunning = localStorage.getItem('isRunning');
 
