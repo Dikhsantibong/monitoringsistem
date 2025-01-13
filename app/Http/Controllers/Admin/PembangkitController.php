@@ -55,7 +55,13 @@ class PembangkitController extends Controller
                 if ($request->hasFile($imageKey)) {
                     $image = $request->file($imageKey);
                     $fileName = time() . '_' . $log['machine_id'] . '.' . $image->getClientOriginalExtension();
-                    $imagePath = $image->storeAs('machine-status', $fileName, 'public');
+                    
+                    // Simpan menggunakan storage facade
+                    $imagePath = $image->storeAs('public/machine-status', $fileName);
+                    // Ubah path untuk disimpan di database
+                    $imagePath = str_replace('public/', 'storage/', $imagePath);
+                    
+                    \Log::info('Saved Image Path: ' . $imagePath);
                 }
 
                 // Buat satu record saja
