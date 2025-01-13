@@ -53,15 +53,43 @@ class PembangkitController extends Controller
                 $imageKey = "images.{$log['machine_id']}";
                 
                 if ($request->hasFile($imageKey)) {
-                    $image = $request->file($imageKey);
-                    $fileName = time() . '_' . $log['machine_id'] . '.' . $image->getClientOriginalExtension();
-                    
-                    // Simpan menggunakan storage facade
-                    $imagePath = $image->storeAs('public/machine-status', $fileName);
-                    // Ubah path untuk disimpan di database
-                    $imagePath = str_replace('public/', 'storage/', $imagePath);
-                    
-                    \Log::info('Saved Image Path: ' . $imagePath);
+                    try {
+                        $image = $request->file($imageKey);
+                        $fileName = time() . '_' . $log['machine_id'] . '.' . $image->getClientOriginalExtension();
+                        
+                        // Debug: log informasi file
+                        \Log::info('Upload Image Details:', [
+                            'original_name' => $image->getClientOriginalName(),
+                            'size' => $image->getSize(),
+                            'mime' => $image->getMimeType()
+                        ]);
+                        
+                        // Pastikan folder ada
+                        $uploadPath = public_path('machine-status');
+                        if (!file_exists($uploadPath)) {
+                            mkdir($uploadPath, 0775, true);
+                        }
+                        
+                        // Simpan file
+                        $image->move($uploadPath, $fileName);
+                        
+                        // Verifikasi file tersimpan
+                        if (file_exists($uploadPath . '/' . $fileName)) {
+                            \Log::info('File berhasil disimpan di: ' . $uploadPath . '/' . $fileName);
+                        } else {
+                            \Log::error('File gagal disimpan di: ' . $uploadPath . '/' . $fileName);
+                        }
+                        
+                        // Path untuk database
+                        $imagePath = 'machine-status/' . $fileName;
+                        
+                    } catch (\Exception $e) {
+                        \Log::error('Error saat upload gambar: ' . $e->getMessage());
+                        $imagePath = null;
+                    }
+                } else {
+                    \Log::info('Tidak ada file yang diupload untuk machine_id: ' . $log['machine_id']);
+                    $imagePath = null;
                 }
 
                 // Buat satu record saja

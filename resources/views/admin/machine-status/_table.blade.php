@@ -115,16 +115,27 @@ use Illuminate\Support\Facades\Storage;
                                         <div class="flex flex-col items-center">
                                             <div class="relative group">
                                                 @php
-                                                    // Pastikan path gambar benar
-                                                    $imagePath = str_replace('storage/', '', $log->image_path);
-                                                    $fullImagePath = Storage::url($imagePath);
+                                                    $imagePath = $log->image_path;
+                                                    $fullUrl = url($imagePath);
+                                                    \Log::info('Attempting to display image:', [
+                                                        'db_path' => $imagePath,
+                                                        'full_url' => $fullUrl,
+                                                        'exists' => file_exists(public_path($imagePath))
+                                                    ]);
                                                 @endphp
-                                                <!-- Tampilkan gambar -->
-                                                <img src="{{ $fullImagePath }}" 
+                                                
+                                                <img src="{{ url($imagePath) }}" 
                                                      alt="Status Image" 
                                                      class="w-12 h-12 object-cover rounded cursor-pointer"
-                                                     onerror="this.onerror=null; this.src='{{ asset('images/no-image.png') }}'"
-                                                     onclick="showSingleImage('{{ $fullImagePath }}', '{{ $log->image_description }}')">
+                                                     onerror="this.onerror=null; this.src='{{ asset('images/no-image.png') }}'; console.log('Image failed to load: {{ $imagePath }}')"
+                                                     onclick="showSingleImage('{{ url($imagePath) }}', '{{ $log->image_description }}')"
+                                                >
+                                                
+                                                <!-- Debug info -->
+                                                <div class="text-xs text-gray-500 mt-1">
+                                                    <div>Path: {{ $imagePath }}</div>
+                                                    <div>Exists: {{ file_exists(public_path($imagePath)) ? 'Yes' : 'No' }}</div>
+                                                </div>
                                             </div>
                                         </div>
                                     @else
