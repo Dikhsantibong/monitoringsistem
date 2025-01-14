@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PowerPlant;
 use App\Models\MachineStatusLog;
+use App\Models\UnitOperationHour;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Carbon\Carbon;
@@ -56,8 +57,13 @@ class MachineStatusController extends Controller
             
             $logs = $logsQuery->get();
 
+            // Get unit operation hours
+            $unitOperationHours = UnitOperationHour::whereDate('tanggal', $date)
+                ->get()
+                ->keyBy('power_plant_id');
+
             if ($request->ajax()) {
-                $html = View::make('admin.machine-status._table', compact('powerPlants', 'date', 'logs'))->render();
+                $html = View::make('admin.machine-status._table', compact('powerPlants', 'date', 'logs', 'unitOperationHours'))->render();
                 
                 return response()->json([
                     'success' => true,
@@ -65,7 +71,7 @@ class MachineStatusController extends Controller
                 ]);
             }
 
-            return view('admin.machine-status.view', compact('powerPlants', 'date', 'logs'));
+            return view('admin.machine-status.view', compact('powerPlants', 'date', 'logs', 'unitOperationHours'));
             
         } catch (\Exception $e) {
             \Log::error('Error in MachineStatusController@view: ' . $e->getMessage());

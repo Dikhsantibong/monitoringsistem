@@ -16,58 +16,59 @@ class OtherDiscussionController extends Controller
 {
     public function index(Request $request)
     {
-        try {
-            // Query dasar dengan eager loading commitments
-            $activeDiscussions = OtherDiscussion::with(['commitments' => function($query) {
-                $query->orderBy('deadline', 'asc');
-            }])->where('status', 'Open');
-            
-            // Query untuk diskusi yang melewati deadline sasaran
-            $targetOverdueDiscussions = OtherDiscussion::with(['commitments' => function($query) {
-                $query->orderBy('deadline', 'asc');
-            }])
-            ->where('status', 'Open')
-            ->where('deadline', '<', now())
-            ->latest();
-
-            // Query untuk diskusi dengan komitmen yang melewati deadline
-            $commitmentOverdueDiscussions = OtherDiscussion::with(['commitments' => function($query) {
-                $query->orderBy('deadline', 'asc');
-            }])
-            ->where('status', 'Open')
-            ->whereHas('commitments', function($query) {
-                $query->where('deadline', '<', now());
-            })
-            ->latest();
-
-            // Filter pencarian jika ada
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $searchCondition = function ($q) use ($search) {
-                    $q->where('topic', 'like', "%{$search}%")
-                        ->orWhere('pic', 'like', "%{$search}%")
-                        ->orWhere('unit', 'like', "%{$search}%");
-                };
-
-                $activeDiscussions->where($searchCondition);
-                $targetOverdueDiscussions->where($searchCondition);
-                $commitmentOverdueDiscussions->where($searchCondition);
-            }
-
-            // Ambil data
-            $data = [
-                'activeDiscussions' => $activeDiscussions->latest()->paginate(10, ['*'], 'active_page'),
-                'targetOverdueDiscussions' => $targetOverdueDiscussions->paginate(10, ['*'], 'target_overdue_page'),
-                'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions->paginate(10, ['*'], 'commitment_overdue_page'),
-                'closedDiscussions' => ClosedDiscussion::latest()->paginate(10, ['*'], 'closed_page'),
-                'units' => PowerPlant::pluck('name')->toArray()
-            ];
-
-            return view('admin.other-discussions.index', $data);
-        } catch (\Exception $e) {
-            \Log::error('Error in index method: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan saat memuat data');
+        $query = OtherDiscussion::with('commitments');
+        
+        // Filter berdasarkan pencarian
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('topic', 'like', "%{$request->search}%")
+                  ->orWhere('pic', 'like', "%{$request->search}%")
+                  ->orWhere('unit', 'like', "%{$request->search}%");
+            });
         }
+
+        // Data aktif (status Open dan belum melewati deadline)
+        $activeDiscussions = clone $query;
+        $activeDiscussions = $activeDiscussions
+            ->where('status', 'Open')
+            ->where(function($q) {
+                $q->where('target_deadline', '>', now())
+                  ->orWhereNull('target_deadline');
+            })
+            ->paginate(10, ['*'], 'active_page');
+
+        // Data yang melewati deadline target
+        $targetOverdueDiscussions = clone $query;
+        $targetOverdueDiscussions = $targetOverdueDiscussions
+            ->where('status', 'Open')
+            ->whereNotNull('target_deadline')
+            ->where('target_deadline', '<', now())
+            ->paginate(10, ['*'], 'target_page');
+
+        // Data yang melewati deadline komitmen
+        $commitmentOverdueDiscussions = clone $query;
+        $commitmentOverdueDiscussions = $commitmentOverdueDiscussions
+            ->where('status', 'Open')
+            ->whereHas('commitments', function($q) {
+                $q->where('deadline', '<', now());
+            })
+            ->paginate(10, ['*'], 'commitment_page');
+
+        // Data selesai
+        $closedDiscussions = ClosedDiscussion::with('commitments')
+            ->orderBy('closed_at', 'desc')
+            ->paginate(10, ['*'], 'closed_page');
+
+        // Ambil data unit untuk filter
+        $units = OtherDiscussion::getUnits();
+
+        return view('admin.other-discussions.index', compact(
+            'activeDiscussions',
+            'targetOverdueDiscussions',
+            'commitmentOverdueDiscussions',
+            'closedDiscussions',
+            'units'
+        ));
     }
 
     public function destroy($id)
@@ -178,7 +179,7 @@ class OtherDiscussionController extends Controller
                 'unit' => $validated['unit'],
                 'topic' => $validated['topic'],
                 'target' => $validated['target'],
-                'deadline' => $validated['target_deadline'],
+                'target_deadline' => $validated['target_deadline'],
                 'risk_level' => $validated['risk_level'],
                 'priority_level' => $validated['priority_level'],
                 'pic' => $validated['pic'],

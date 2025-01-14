@@ -236,7 +236,7 @@
                                         <td class="px-6 py-4">
                                             <div class="mb-1">{{ $discussion->target }}</div>
                                             <div class="text-sm text-gray-500">
-                                                Deadline: {{ \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') }}
+                                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
@@ -554,8 +554,12 @@
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->deadline->format('d/m/Y') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->closed_at->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->closed_at ? \Carbon\Carbon::parse($discussion->closed_at)->format('d/m/Y') : '-' }}
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>

@@ -2,45 +2,64 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Events\OtherDiscussionUpdated;
 
 class ClosedDiscussion extends Model
 {
-    public static $isSyncing = false;
+    use HasFactory;
 
     protected $table = 'closed_discussions';
-    
+    protected static $isSyncing = false;
+
+    // Definisi konstanta untuk risk levels
+    const RISK_LEVELS = [
+        'R' => 'Rendah',
+        'MR' => 'Menengah Rendah',
+        'MT' => 'Menengah Tinggi',
+        'T' => 'Tinggi'
+    ];
+
+    // Definisi konstanta untuk priority levels
+    const PRIORITY_LEVELS = [
+        'Low',
+        'Medium',
+        'High'
+    ];
+
+    // Definisi konstanta untuk status
+    const STATUSES = [
+        'Open',
+        'Closed'
+    ];
+
     protected $fillable = [
         'sr_number',
         'wo_number',
         'unit',
         'topic',
         'target',
+        'target_deadline',
         'risk_level',
         'priority_level',
-        'previous_commitment',
-        'next_commitment',
         'pic',
-        'status',
-        'deadline',
-        'closed_at',
-        'original_id',
-        'unit_source'
+        'status'
     ];
 
-    protected $casts = [
-        'deadline' => 'date:Y-m-d',
-        'closed_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+    protected $dates = [
+        'deadline',
+        'closed_at',
+        'created_at',
+        'updated_at'
     ];
 
     public function getConnectionName()
     {
-        return session('unit');
+        return session('unit', 'mysql');
     }
 
     protected static function boot()
@@ -48,91 +67,69 @@ class ClosedDiscussion extends Model
         parent::boot();
         
         static::created(function ($discussion) {
-            self::syncToUpKendari('create', $discussion);
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'create'));
+                } catch (\Exception $e) {
+                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
+                        'error' => $e->getMessage(),
+                        'discussion_id' => $discussion->id
+                    ]);
+                }
+                static::$isSyncing = false;
+            }
         });
 
         static::updated(function ($discussion) {
-            self::syncToUpKendari('update', $discussion);
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'update'));
+                } catch (\Exception $e) {
+                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
+                        'error' => $e->getMessage(),
+                        'discussion_id' => $discussion->id
+                    ]);
+                }
+                static::$isSyncing = false;
+            }
         });
 
         static::deleted(function ($discussion) {
-            self::syncToUpKendari('delete', $discussion);
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'delete'));
+                } catch (\Exception $e) {
+                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
+                        'error' => $e->getMessage(),
+                        'discussion_id' => $discussion->id
+                    ]);
+                }
+                static::$isSyncing = false;
+            }
         });
     }
 
-    protected static function syncToUpKendari($action, $discussion)
+    public function commitments()
     {
-        if (self::$isSyncing) return;
+        return $this->hasMany(Commitment::class, 'other_discussion_id');
+    }
 
-        try {
-            self::$isSyncing = true;
-            
-            $data = [
-                'id' => $discussion->id,
-                'sr_number' => $discussion->sr_number,
-                'wo_number' => $discussion->wo_number,
-                'unit' => $discussion->unit,
-                'topic' => $discussion->topic,
-                'target' => $discussion->target,
-                'risk_level' => $discussion->risk_level,
-                'priority_level' => $discussion->priority_level,
-                'previous_commitment' => $discussion->previous_commitment,
-                'next_commitment' => $discussion->next_commitment,
-                'pic' => $discussion->pic,
-                'status' => $discussion->status,
-                'deadline' => $discussion->deadline,
-                'closed_at' => $discussion->closed_at,
-                'original_id' => $discussion->original_id,
-                'unit_source' => session('unit'),
-                'created_at' => $discussion->created_at,
-                'updated_at' => $discussion->updated_at
-            ];
-
-            Log::info("Attempting to {$action} Closed Discussion sync", ['data' => $data]);
-
-            $upKendari = DB::connection('mysql')->table('closed_discussions');
-
-            switch($action) {
-                case 'create':
-                    $upKendari->insert($data);
-                    break;
-                case 'update':
-                    $upKendari->where('id', $discussion->id)->update($data);
-                    break;
-                case 'delete':
-                    $upKendari->where('id', $discussion->id)->delete();
-                    break;
-            }
-
-            Log::info("Closed Discussion {$action} sync successful", [
-                'id' => $discussion->id,
-                'unit' => 'poasia'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Closed Discussion {$action} sync failed", [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        } finally {
-            self::$isSyncing = false;
+    // Tambahkan method untuk cek deadline
+    public function isOverdue()
+    {
+        if ($this->target_deadline) {
+            return Carbon::parse($this->target_deadline)->isPast();
         }
+        return false;
     }
 
-    public function setDeadlineAttribute($value)
+    public function hasOverdueCommitments()
     {
-        $this->attributes['deadline'] = $value instanceof Carbon 
-            ? $value->format('Y-m-d') 
-            : Carbon::parse($value)->format('Y-m-d');
-    }
-
-    public function getDeadlineAttribute($value)
-    {
-        return $value ? Carbon::parse($value) : null;
-    }
-
-    public function originalDiscussion()
-    {
-        return $this->belongsTo(OtherDiscussion::class, 'original_id');
+        return $this->commitments()
+            ->where('deadline', '<', Carbon::now())
+            ->exists();
     }
 } 
