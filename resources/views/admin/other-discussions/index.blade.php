@@ -125,35 +125,49 @@
                     </form>
                 </div>
 
-                <!-- Tab Navigation -->
-                <div class="mb-6">
-                    <div class="border-b border-gray-200">
-                        <nav class="-mb-px flex">
-                            <button onclick="switchTab('active')" 
-                                    class="tab-btn active-tab py-4 px-6 font-medium text-sm"
-                                    id="active-tab">
-                                Data Aktif
-                            </button>
-                            <button onclick="switchTab('overdue')" 
-                                    class="tab-btn py-4 px-6 font-medium text-sm"
-                                    id="overdue-tab">
-                                Melewati Deadline
-                                @if($overdueDiscussions->total() > 0)
-                                    <span class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
-                                        {{ $overdueDiscussions->total() }}
-                                    </span>
-                                @endif
-                            </button>
-                            <button onclick="switchTab('closed')" 
-                                    class="tab-btn py-4 px-6 font-medium text-sm"
-                                    id="closed-tab">
-                                Data Selesai
-                            </button>
-                        </nav>
-                    </div>
+                <!-- Tab Navigation (tambahkan setelah bagian filter) -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="active-tab" 
+                                onclick="switchTab('active')"
+                                class="tab-btn border-b-2 py-4 px-1 text-sm font-medium">
+                            Data Aktif
+                            <span class="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">
+                                {{ $activeDiscussions->total() }}
+                            </span>
+                        </button>
+
+                        <button id="target-overdue-tab" 
+                                onclick="switchTab('target-overdue')"
+                                class="tab-btn border-b-2 py-4 px-1 text-sm font-medium">
+                            Melewati Deadline Sasaran
+                            <span class="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 rounded-full">
+                                {{ $targetOverdueDiscussions->total() }}
+                            </span>
+                        </button>
+
+                        <button id="commitment-overdue-tab" 
+                                onclick="switchTab('commitment-overdue')"
+                                class="tab-btn border-b-2 py-4 px-1 text-sm font-medium">
+                            Melewati Deadline Komitmen
+                            <span class="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-600 rounded-full">
+                                {{ $commitmentOverdueDiscussions->total() }}
+                            </span>
+                        </button>
+
+                        <button id="closed-tab" 
+                                onclick="switchTab('closed')"
+                                class="tab-btn border-b-2 py-4 px-1 text-sm font-medium">
+                            Data Selesai
+                            <span class="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-600 rounded-full">
+                                {{ $closedDiscussions->total() }}
+                            </span>
+                        </button>
+                    </nav>
                 </div>
 
-                <!-- Tabel Data Aktif -->
+                <!-- Tab Contents -->
+                <!-- Active Discussions Tab -->
                 <div id="active-content" class="tab-content">
                     <div class="overflow-x-auto shadow-md rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -184,10 +198,10 @@
                                         </div>
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Target</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
                                         <div class="flex items-center justify-between">
@@ -208,7 +222,6 @@
                                             </div>
                                         </div>
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
                             </thead>
@@ -220,7 +233,12 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-normal border border-gray-200 max-w-[400px] break-words">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-normal border border-gray-200 max-w-[400px] break-words">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4">
+                                            <div class="mb-1">{{ $discussion->target }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                Deadline: {{ \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') }}
+                                            </div>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded
                                                 @if($discussion->risk_level == 'R') bg-green-100 text-green-800
@@ -240,18 +258,19 @@
                                                 {{ $discussion->priority_level }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4">
-                                            @foreach($discussion->commitments as $commitment)
-                                            <div class="mb-2 p-2 border rounded">
-                                                <div>{{ $commitment->description }}</div>
-                                                <div class="text-sm text-gray-500">
-                                                    Deadline: {{ $commitment->deadline }}
-                                                    <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                                        {{ $commitment->status }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            @endforeach
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                                @foreach($discussion->commitments as $commitment)
+                                                    <div class="mb-2 p-2 border rounded">
+                                                        <div class="text-sm">{{ $commitment->description }}</div>
+                                                        <div class="text-xs text-gray-500">
+                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-500">Tidak ada komitmen</span>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->pic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
@@ -263,7 +282,6 @@
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
@@ -302,6 +320,176 @@
                     </div>
                 </div>
 
+                <!-- Target Overdue Tab -->
+                <div id="target-overdue-content" class="tab-content hidden">
+                    <div class="overflow-x-auto shadow-md rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-red-600">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($targetOverdueDiscussions as $index => $discussion)
+                                    <tr class="hover:bg-red-50">
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                                @foreach($discussion->commitments as $commitment)
+                                                    <div class="mb-2 p-2 border rounded">
+                                                        <div class="text-sm">{{ $commitment->description }}</div>
+                                                        <div class="text-xs text-gray-500">
+                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-500">Tidak ada komitmen</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->pic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <span class="px-2 py-1 rounded text-sm bg-red-100 text-red-800">
+                                                Melewati Deadline
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
+                                            {{ \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') }}
+                                            <div class="text-xs text-red-600">
+                                                ({{ \Carbon\Carbon::parse($discussion->deadline)->diffForHumans() }})
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <div class="flex items-center space-x-3">
+                                                <a href="#" onclick="editDiscussion({{ $discussion->id }})" 
+                                                   class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button onclick="confirmDelete({{ $discussion->id }})"
+                                                        class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                <button onclick="updateStatus({{ $discussion->id }}, 'Closed')"
+                                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm">
+                                                    Selesai
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="11" class="px-6 py-4 text-center text-gray-500">
+                                            Tidak ada diskusi yang melewati deadline sasaran
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4">
+                        {{ $targetOverdueDiscussions->links() }}
+                    </div>
+                </div>
+
+                <!-- Commitment Overdue Tab -->
+                <div id="commitment-overdue-content" class="tab-content hidden">
+                    <div class="overflow-x-auto shadow-md rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-yellow-600">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen yang Terlambat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($commitmentOverdueDiscussions as $index => $discussion)
+                                    <tr class="hover:bg-yellow-50">
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                                @foreach($discussion->commitments as $commitment)
+                                                    <div class="mb-2 p-2 border rounded {{ $commitment->deadline < now() ? 'border-yellow-500 bg-yellow-50' : '' }}">
+                                                        <div class="text-sm">{{ $commitment->description }}</div>
+                                                        <div class="text-xs {{ $commitment->deadline < now() ? 'text-yellow-600' : 'text-gray-500' }}">
+                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                                            @if(\Carbon\Carbon::parse($commitment->deadline) < now())
+                                                                <span class="ml-2 text-yellow-600">
+                                                                    (Terlambat {{ \Carbon\Carbon::parse($commitment->deadline)->diffForHumans() }})
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-500">Tidak ada komitmen</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->pic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <span class="px-2 py-1 rounded text-sm bg-yellow-100 text-yellow-800">
+                                                Komitmen Terlambat
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <div class="flex items-center space-x-3 text-sm">
+                                                <a href="#" onclick="editDiscussion({{ $discussion->id }})" 
+                                                   class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button onclick="confirmDelete({{ $discussion->id }})"
+                                                        class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                <button onclick="updateStatus({{ $discussion->id }}, 'Closed')"
+                                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm">
+                                                    Selesai
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="10" class="px-6 py-4 text-center text-gray-500">
+                                            Tidak ada diskusi dengan komitmen yang melewati deadline
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4">
+                        {{ $commitmentOverdueDiscussions->links() }}
+                    </div>
+                </div>
+
                 <!-- Tabel Data Selesai -->
                 <div id="closed-content" class="tab-content hidden">
                     <div class="overflow-x-auto shadow-md rounded-lg">
@@ -326,44 +514,48 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($closedDiscussions as $index => $discussion)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->sr_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->wo_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words">{{ $discussion->target }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
                                                 {{ $discussion->risk_level }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 rounded text-sm bg-purple-100 text-purple-800">
                                                 {{ $discussion->priority_level }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4">
-                                            @foreach($discussion->commitments as $commitment)
-                                            <div class="mb-2 p-2 border rounded">
-                                                <div>{{ $commitment->description }}</div>
-                                                <div class="text-sm text-gray-500">
-                                                    Deadline: {{ $commitment->deadline }}
-                                                    <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                                        {{ $commitment->status }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            @endforeach
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                                @foreach($discussion->commitments as $commitment)
+                                                    <div class="mb-2 p-2 border rounded">
+                                                        <div>{{ $commitment->description }}</div>
+                                                        <div class="text-sm text-gray-500">
+                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                                            <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                                {{ $commitment->status }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-500">Tidak ada komitmen</span>
+                                            @endif
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->pic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->pic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 rounded text-sm 
                                                 {{ $discussion->status === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->deadline->format('d/m/Y') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->closed_at->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->deadline->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->closed_at->format('d/m/Y') }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -377,137 +569,6 @@
                     </div>
                     <div class="mt-4">
                         {{ $closedDiscussions->appends(request()->except('closed_page'))->links() }}
-                    </div>
-                </div>
-
-                <!-- Tambahkan section untuk tabel overdue -->
-                <div id="overdue-content" class="tab-content hidden">
-                    <div class="overflow-x-auto shadow-md rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-red-600">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        <div class="flex items-center justify-between">
-                                            <span>Unit</span>
-                                            <div class="relative">
-                                                <select id="unitTableFilterOverdue" name="unit" onchange="filterTableByUnitOverdue()" 
-                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="">Semua</option>
-                                                    @foreach($units as $unit)
-                                                        <option value="{{ $unit }}" class="text-gray-700" {{ request('unit') == $unit ? 'selected' : '' }}>
-                                                            {{ $unit }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        <div class="flex items-center justify-between">
-                                            <span>Status</span>
-                                            <div class="relative">
-                                                <select id="statusTableFilterOverdue" name="status" onchange="filterTableByStatusOverdue()" 
-                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="">Semua</option>
-                                                    <option value="Open" {{ request('status') == 'Open' ? 'selected' : '' }} class="text-gray-700"></option>Open</option>
-                                                    <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }} class="text-gray-700">Closed</option>
-                                                    <option value="Overdue" {{ request('status') == 'Overdue' ? 'selected' : '' }} class="text-gray-700">Overdue</option>
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tanggal Selesai</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($overdueDiscussions as $index => $discussion)
-                                    <tr class="hover:bg-red-50">
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->sr_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->wo_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->target }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->risk_level }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->priority_level }}</td>
-                                        <td class="px-6 py-4">
-                                            @foreach($discussion->commitments as $commitment)
-                                            <div class="mb-2 p-2 border rounded">
-                                                <div>{{ $commitment->description }}</div>
-                                                <div class="text-sm text-gray-500">
-                                                    Deadline: {{ $commitment->deadline }}
-                                                    <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                                        {{ $commitment->status }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->pic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 rounded text-sm 
-                                                @if($discussion->status == 'Open') bg-yellow-500 @elseif($discussion->status == 'Closed') bg-green-500 @elseif($discussion->status == 'Overdue') bg-red-500 @endif text-white">
-                                                {{ $discussion->status }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $discussion->deadline->format('d/m/Y') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $discussion->closed_at ? $discussion->closed_at->format('d/m/Y') : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <div class="flex items-center space-x-3">
-                                                <!-- Edit -->
-                                                <a href="#" 
-                                                   onclick="editDiscussion({{ $discussion->id }})"
-                                                   class="text-blue-500 hover:text-blue-700">
-                                                    <i class="fas fa-edit text-lg"></i>
-                                                </a>
-                                                
-                                                <!-- Delete -->
-                                                <button onclick="confirmDeleteOverdue({{ $discussion->id }})"
-                                                        class="text-red-500 hover:text-red-700">
-                                                    <i class="fas fa-trash text-lg"></i>
-                                                </button>
-
-                                                <!-- Status Closed -->
-                                                {{-- <button onclick="updateOverdueStatus({{ $discussion->id }}, 'Closed')"
-                                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center">
-                                                    <i class="fas fa-check-circle mr-1.5"></i> Selesai
-                                                </button> --}}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="14" class="px-6 py-4 text-center text-gray-500">
-                                            Tidak ada data yang melewati deadline
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">
-                        {{ $overdueDiscussions->appends(request()->except('overdue_page'))->links() }}
                     </div>
                 </div>
             </div>
@@ -671,24 +732,25 @@
             }
         });
     }
-    function switchTab(tab) {
-        // Remove active class from all tabs and content
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active-tab', 'border-blue-500', 'text-blue-600');
-            btn.classList.add('text-gray-500');
-        });
-        
+    function switchTab(tabName) {
+        // Sembunyikan semua konten tab
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.add('hidden');
         });
         
-        // Add active class to selected tab and show content
-        const selectedTab = document.getElementById(`${tab}-tab`);
-        const selectedContent = document.getElementById(`${tab}-content`);
+        // Hapus kelas aktif dari semua tab
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('border-blue-500', 'text-blue-600');
+            btn.classList.add('border-transparent', 'text-gray-500');
+        });
         
-        selectedTab.classList.add('active-tab', 'border-blue-500', 'text-blue-600');
-        selectedTab.classList.remove('text-gray-500');
-        selectedContent.classList.remove('hidden');
+        // Tampilkan konten tab yang dipilih
+        document.getElementById(`${tabName}-content`).classList.remove('hidden');
+        
+        // Aktifkan tab yang dipilih
+        const selectedTab = document.getElementById(`${tabName}-tab`);
+        selectedTab.classList.remove('border-transparent', 'text-gray-500');
+        selectedTab.classList.add('border-blue-500', 'text-blue-600');
     }
     function updateStatus(id, status) {
         const statusText = status === 'Closed' ? 'selesai' : 'overdue';
@@ -905,6 +967,11 @@
                 window.history.replaceState({}, document.title, newUrl);
             });
         }
+    });
+
+    // Set tab aktif saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        switchTab('active');
     });
 </script>
 @push('scripts')

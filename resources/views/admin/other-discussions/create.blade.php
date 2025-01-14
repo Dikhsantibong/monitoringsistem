@@ -197,7 +197,7 @@
                        
 
                         <!-- Komitmen -->
-                        <div class="mb-4 md:col-span-2">
+                        <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2">
                                 Komitmen <span class="text-red-500">*</span>
                             </label>
@@ -259,22 +259,6 @@
                                 @endforeach
                             </select>
                             @error('status')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Deadline -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="deadline">
-                                Deadline <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" 
-                                   name="deadline" 
-                                   id="deadline" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('deadline') }}"
-                                   required>
-                            @error('deadline')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>

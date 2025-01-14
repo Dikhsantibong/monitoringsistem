@@ -17,10 +17,28 @@ class OtherDiscussionController extends Controller
     public function index(Request $request)
     {
         try {
-            // Query dasar
-            $activeDiscussions = OtherDiscussion::with('commitments')->where('status', 'Open');
-            $closedDiscussions = ClosedDiscussion::query();
-            $overdueDiscussions = OverdueDiscussion::query();
+            // Query dasar dengan eager loading commitments
+            $activeDiscussions = OtherDiscussion::with(['commitments' => function($query) {
+                $query->orderBy('deadline', 'asc');
+            }])->where('status', 'Open');
+            
+            // Query untuk diskusi yang melewati deadline sasaran
+            $targetOverdueDiscussions = OtherDiscussion::with(['commitments' => function($query) {
+                $query->orderBy('deadline', 'asc');
+            }])
+            ->where('status', 'Open')
+            ->where('deadline', '<', now())
+            ->latest();
+
+            // Query untuk diskusi dengan komitmen yang melewati deadline
+            $commitmentOverdueDiscussions = OtherDiscussion::with(['commitments' => function($query) {
+                $query->orderBy('deadline', 'asc');
+            }])
+            ->where('status', 'Open')
+            ->whereHas('commitments', function($query) {
+                $query->where('deadline', '<', now());
+            })
+            ->latest();
 
             // Filter pencarian jika ada
             if ($request->filled('search')) {
@@ -32,20 +50,22 @@ class OtherDiscussionController extends Controller
                 };
 
                 $activeDiscussions->where($searchCondition);
-                $closedDiscussions->where($searchCondition);
-                $overdueDiscussions->where($searchCondition);
+                $targetOverdueDiscussions->where($searchCondition);
+                $commitmentOverdueDiscussions->where($searchCondition);
             }
 
             // Ambil data
             $data = [
                 'activeDiscussions' => $activeDiscussions->latest()->paginate(10, ['*'], 'active_page'),
-                'closedDiscussions' => $closedDiscussions->latest()->paginate(10, ['*'], 'closed_page'),
-                'overdueDiscussions' => $overdueDiscussions->latest()->paginate(10, ['*'], 'overdue_page'),
+                'targetOverdueDiscussions' => $targetOverdueDiscussions->paginate(10, ['*'], 'target_overdue_page'),
+                'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions->paginate(10, ['*'], 'commitment_overdue_page'),
+                'closedDiscussions' => ClosedDiscussion::latest()->paginate(10, ['*'], 'closed_page'),
                 'units' => PowerPlant::pluck('name')->toArray()
             ];
 
             return view('admin.other-discussions.index', $data);
         } catch (\Exception $e) {
+            \Log::error('Error in index method: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data');
         }
     }
@@ -180,18 +200,20 @@ class OtherDiscussionController extends Controller
 
             DB::beginTransaction();
 
-            // Buat diskusi baru
+            // Buat diskusi baru dengan nilai default untuk field yang diperlukan
             $discussion = OtherDiscussion::create([
                 'sr_number' => $validated['sr_number'],
                 'wo_number' => $validated['wo_number'],
                 'unit' => $validated['unit'],
                 'topic' => $validated['topic'],
                 'target' => $validated['target'],
-                'target_deadline' => $validated['target_deadline'],
+                'deadline' => $validated['target_deadline'],
                 'risk_level' => $validated['risk_level'],
                 'priority_level' => $validated['priority_level'],
                 'pic' => $validated['pic'],
-                'status' => 'Open'
+                'status' => 'Open',
+                'previous_commitment' => '-', // Tambahkan nilai default
+                'next_commitment' => '-'      // Tambahkan nilai default
             ]);
 
             // Simpan komitmen
@@ -203,10 +225,10 @@ class OtherDiscussionController extends Controller
             }
 
             DB::commit();
-
             return redirect()
                 ->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil ditambahkan');
+
         } catch (\Exception $e) {
             DB::rollback();
             return back()

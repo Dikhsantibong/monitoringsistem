@@ -123,6 +123,6 @@ class OtherDiscussion extends Model
 
     public function commitments()
     {
-        return $this->hasMany(Commitment::class);
+        return $this->hasMany(Commitment::class, 'other_discussion_id');
     }
 } 
