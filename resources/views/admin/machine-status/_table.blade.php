@@ -41,7 +41,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-6 gap-4">
+                        <div class="grid grid-cols-7 gap-4">
                             @php
                                 $machineCount = $powerPlant->machines->count();
                                 $operasiCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Operasi')->count();
@@ -49,6 +49,7 @@
                                 $pemeliharaanCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Pemeliharaan')->count();
                                 $standbyCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Standby')->count();
                                 $overhaulCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Overhaul')->count();
+                                $mothballedCount = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Mothballed')->count();
                             @endphp
                             
                             <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300">
@@ -74,6 +75,10 @@
                             <div class="bg-violet-100 p-4 rounded-lg shadow-md hover:bg-violet-200 transition duration-300">
                                 <p class="text-sm text-violet-700 font-medium">Overhaul</p>
                                 <p class="text-2xl font-bold text-violet-900">{{ $overhaulCount }}</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300">
+                                <p class="text-sm text-gray-700 font-medium">Mothballed</p>
+                                <p class="text-2xl font-bold text-gray-900">{{ $mothballedCount }}</p>
                             </div>
                         </div>
                     </div>
