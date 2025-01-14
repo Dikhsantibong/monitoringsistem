@@ -32,12 +32,9 @@
                                         }
                                         return 0;
                                     });
-                                $totalHOP = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                    ->sum(function($log) {
-                                        return (float) $log->hop_value;
-                                    });
                                 
-                                $hopStatus = $totalHOP < 7 ? 'siaga' : 'aman';
+                                $hopData = $totalHopByPlant[$powerPlant->id] ?? ['value' => 0, 'status' => 'siaga'];
+                                $hopClass = $hopData['status'] === 'aman' ? 'text-green-600' : 'text-red-600';
                             @endphp
                             
                             <div class="bg-green-50 p-3 rounded-lg">
@@ -54,9 +51,9 @@
                             </div>
                             <div class="bg-orange-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total HOP:</p>
-                                <p class="text-xl font-bold text-orange-700">{{ number_format($totalHOP, 1) }} Hari</p>
-                                <p class="text-sm font-medium {{ $hopStatus === 'siaga' ? 'text-red-600' : 'text-green-600' }}">
-                                    Status: {{ ucfirst($hopStatus) }}
+                                <p class="text-xl font-bold text-orange-700">{{ number_format($hopData['value'], 1) }} Hari</p>
+                                <p class="text-sm font-medium {{ $hopClass }}">
+                                    Status: {{ ucfirst($hopData['status']) }}
                                 </p>
                             </div>
                         </div>
@@ -175,6 +172,8 @@
                     </tbody>
                 </table>
             </div>
+
+            
         </div>
     @endforeach
 @endif 

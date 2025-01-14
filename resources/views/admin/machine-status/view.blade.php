@@ -21,6 +21,18 @@
                         </svg>
                     </button>
 
+                    <!-- Desktop Menu Toggle -->
+                    <button id="desktop-menu-toggle"
+                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+
                     <h1 class="text-xl font-semibold text-gray-800">Status Mesin</h1>
                 </div>
 
@@ -102,6 +114,7 @@
     </div>
 </div>
 
+<script src="{{ asset('js/toggle.js') }}"></script>
 <script>
 function toggleDropdown() {
     document.getElementById('dropdown').classList.toggle('hidden');
@@ -171,6 +184,17 @@ function updateTable() {
         document.getElementById('loading').classList.remove('show');
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Desktop menu toggle
+    const desktopMenuToggle = document.getElementById('desktop-menu-toggle');
+    const sidebar = document.querySelector('.sidebar'); // Sesuaikan dengan class sidebar Anda
+    
+    desktopMenuToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        document.getElementById('main-content').classList.toggle('sidebar-collapsed');
+    });
+});
 </script>
 
 <style>
@@ -189,6 +213,23 @@ function updateTable() {
 
 .loading.show {
     display: flex;
+}
+
+.sidebar {
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+}
+
+#main-content {
+    transition: margin-left 0.3s ease;
+}
+
+#main-content.sidebar-collapsed {
+    margin-left: 0;
 }
 </style>
 @endsection 

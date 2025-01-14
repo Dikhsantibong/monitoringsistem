@@ -172,34 +172,66 @@
                             @enderror
                         </div>
 
-                        <!-- Komitmen Sebelum -->
+                        <!-- Komitmen -->
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="previous_commitment">
-                                Komitmen Sebelum <span class="text-red-500">*</span>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">
+                                Komitmen <span class="text-red-500">*</span>
                             </label>
-                            <textarea name="previous_commitment" 
-                                      id="previous_commitment" 
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      required
-                                      rows="3">{{ old('previous_commitment', $discussion->previous_commitment) }}</textarea>
-                            @error('previous_commitment')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Komitmen Selanjutnya -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="next_commitment">
-                                Komitmen Selanjutnya <span class="text-red-500">*</span>
-                            </label>
-                            <textarea name="next_commitment" 
-                                      id="next_commitment" 
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      required
-                                      rows="3">{{ old('next_commitment', $discussion->next_commitment) }}</textarea>
-                            @error('next_commitment')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
+                            <div id="commitments-container">
+                                @if($discussion->commitments->count() > 0)
+                                    @foreach($discussion->commitments as $index => $commitment)
+                                        <div class="commitment-entry mb-3">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <textarea 
+                                                        name="commitments[]" 
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        required
+                                                        rows="2"
+                                                    >{{ old('commitments.'.$index, $commitment->description) }}</textarea>
+                                                </div>
+                                                <div>
+                                                    <input 
+                                                        type="date" 
+                                                        name="commitment_deadlines[]" 
+                                                        value="{{ old('commitment_deadlines.'.$index, $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '') }}"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        required
+                                                    >
+                                                </div>
+                                            </div>
+                                            <button type="button" class="remove-commitment mt-2 text-red-500 hover:text-red-700">
+                                                <i class="fas fa-trash"></i> Hapus
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="commitment-entry mb-3">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <textarea 
+                                                    name="commitments[]" 
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    required
+                                                    rows="2"
+                                                    placeholder="Masukkan komitmen"
+                                                ></textarea>
+                                            </div>
+                                            <div>
+                                                <input 
+                                                    type="date" 
+                                                    name="commitment_deadlines[]" 
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    required
+                                                >
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                            <button type="button" id="add-commitment" class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                <i class="fas fa-plus"></i> Tambah Komitmen
+                            </button>
                         </div>
 
                         <!-- PIC -->
@@ -235,20 +267,7 @@
                         </div>
 
                         <!-- Deadline -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="deadline">
-                                Deadline <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" 
-                                   name="deadline" 
-                                   id="deadline" 
-                                   value="{{ old('deadline', $discussion->deadline ? date('Y-m-d', strtotime($discussion->deadline)) : '') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   required>
-                            @error('deadline')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        
                     </div>
 
                     <!-- Tombol Submit -->
@@ -321,6 +340,50 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
             }
         });
     });
+});
+
+// Script untuk menangani penambahan dan penghapusan komitmen
+document.getElementById('add-commitment').addEventListener('click', function() {
+    const container = document.getElementById('commitments-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'commitment-entry mb-3';
+    newEntry.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <textarea 
+                    name="commitments[]" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required
+                    rows="2"
+                    placeholder="Masukkan komitmen"
+                ></textarea>
+            </div>
+            <div>
+                <input 
+                    type="date" 
+                    name="commitment_deadlines[]" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required
+                >
+            </div>
+        </div>
+        <button type="button" class="remove-commitment mt-2 text-red-500 hover:text-red-700">
+            <i class="fas fa-trash"></i> Hapus
+        </button>
+    `;
+    container.appendChild(newEntry);
+});
+
+// Event delegation untuk tombol hapus komitmen
+document.getElementById('commitments-container').addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-commitment') || e.target.closest('.remove-commitment')) {
+        const entry = e.target.closest('.commitment-entry');
+        if (document.querySelectorAll('.commitment-entry').length > 1) {
+            entry.remove();
+        } else {
+            alert('Minimal harus ada satu komitmen');
+        }
+    }
 });
 </script>
 @endpush

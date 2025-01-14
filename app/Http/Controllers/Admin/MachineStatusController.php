@@ -41,10 +41,12 @@ class MachineStatusController extends Controller
                 });
             }
             
+            
             $powerPlants = $powerPlantsQuery->get();
             
             // Get logs dengan filter pencarian
-            $logsQuery = MachineStatusLog::whereDate('tanggal', $date);
+            $logsQuery = MachineStatusLog::with(['machine', 'powerPlant'])
+                ->whereDate('tanggal', $date);
             
             if ($searchQuery) {
                 $logsQuery->where(function($query) use ($searchQuery) {
@@ -57,13 +59,40 @@ class MachineStatusController extends Controller
             
             $logs = $logsQuery->get();
 
-            // Get unit operation hours
-            $unitOperationHours = UnitOperationHour::whereDate('tanggal', $date)
-                ->get()
-                ->keyBy('power_plant_id');
+            // Get unit operation hours dengan eager loading powerPlant
+            $hopQuery = UnitOperationHour::with('powerPlant')
+                ->whereDate('tanggal', $date);
+
+            // Filter berdasarkan unit_source jika ada
+            if ($unitSource) {
+                $hopQuery->where('unit_source', $unitSource);
+            } elseif (session('unit') !== 'mysql') {
+                $hopQuery->where('unit_source', session('unit'));
+            }
+
+            // Ambil data HOP dan kelompokkan berdasarkan power_plant_id
+            $unitOperationHours = $hopQuery->get()->mapWithKeys(function ($item) {
+                return [$item->power_plant_id => $item];
+            });
+
+            // Hitung total HOP untuk setiap pembangkit
+            $totalHopByPlant = [];
+            foreach ($powerPlants as $powerPlant) {
+                $hop = $unitOperationHours->get($powerPlant->id);
+                $totalHopByPlant[$powerPlant->id] = [
+                    'value' => $hop ? $hop->hop_value : 0,
+                    'status' => $hop && $hop->hop_value >= 7 ? 'aman' : 'siaga'
+                ];
+            }
 
             if ($request->ajax()) {
-                $html = View::make('admin.machine-status._table', compact('powerPlants', 'date', 'logs', 'unitOperationHours'))->render();
+                $html = View::make('admin.machine-status._table', compact(
+                    'powerPlants', 
+                    'date', 
+                    'logs', 
+                    'unitOperationHours',
+                    'totalHopByPlant'
+                ))->render();
                 
                 return response()->json([
                     'success' => true,
@@ -71,7 +100,13 @@ class MachineStatusController extends Controller
                 ]);
             }
 
-            return view('admin.machine-status.view', compact('powerPlants', 'date', 'logs', 'unitOperationHours'));
+            return view('admin.machine-status.view', compact(
+                'powerPlants', 
+                'date', 
+                'logs', 
+                'unitOperationHours',
+                'totalHopByPlant'
+            ));
             
         } catch (\Exception $e) {
             \Log::error('Error in MachineStatusController@view: ' . $e->getMessage());
