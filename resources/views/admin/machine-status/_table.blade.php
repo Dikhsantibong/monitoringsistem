@@ -12,9 +12,35 @@
             <!-- Judul dan Informasi Unit -->
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-4">
-                    <div class="w-full">
+                    <div class="w-full">    
     
                         <h1 class="text-lg font-semibold uppercase mb-2">STATUS MESIN - {{ $powerPlant->name }}</h1>
+                        
+                        <!-- Tambahkan informasi total DMN, DMP, dan Beban -->
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            @php
+                                $totalDMN = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                    ->sum(fn($log) => (float) $log->dmn);
+                                $totalDMP = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                    ->sum(fn($log) => (float) $log->dmp);
+                                $totalBeban = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                    ->sum(fn($log) => (float) $log->load_value);
+                            @endphp
+                            
+                            <div class="bg-blue-50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600">Total Daya Mampu:</p>
+                                <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 1) }} MW</p>
+                            </div>
+                            <div class="bg-green-50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600">Total Daya Terpasang:</p>
+                                <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 1) }} MW</p>
+                            </div>
+                            <div class="bg-purple-50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600">Total Beban:</p>
+                                <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 1) }} MW</p>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-6 gap-4">
                             @php
                                 $machineCount = $powerPlant->machines->count();
@@ -55,15 +81,16 @@
             </div>
 
             <!-- Tabel -->
+            
             <div class="table-responsive">
                 <table class="min-w-full bg-white">
                     <thead>
                         <tr>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">No</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Mesin</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">DMN</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">DMP</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Beban</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Mampu (MW)</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Terpasang (MW)</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Beban (MW)</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Status</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Component</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Equipment</th>
