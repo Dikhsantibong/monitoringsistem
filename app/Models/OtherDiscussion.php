@@ -8,6 +8,7 @@ use App\Events\OtherDiscussionUpdated;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use App\Models\PowerPlant;
+use App\Models\Commitment;
 
 class OtherDiscussion extends Model
 {
@@ -43,15 +44,11 @@ class OtherDiscussion extends Model
         'unit',
         'topic',
         'target',
+        'target_deadline',
         'risk_level',
         'priority_level',
-        'previous_commitment',
-        'next_commitment',
         'pic',
-        'status',
-        'deadline',
-        'closed_at',
-        'unit_source'
+        'status'
     ];
 
     protected $dates = [
@@ -122,5 +119,10 @@ class OtherDiscussion extends Model
             ->distinct()
             ->pluck('name')
             ->toArray();
+    }
+
+    public function commitments()
+    {
+        return $this->hasMany(Commitment::class);
     }
 } 

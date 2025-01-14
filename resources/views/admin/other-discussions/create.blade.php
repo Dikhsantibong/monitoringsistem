@@ -134,6 +134,21 @@
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
+                         <!-- Sasaran Deadline -->
+                         <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="target_deadline">
+                                Deadline Sasaran <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" 
+                                   name="target_deadline" 
+                                   id="target_deadline" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   value="{{ old('target_deadline') }}"
+                                   required>
+                            @error('target_deadline')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <!-- Tingkat Resiko -->
                         <div class="mb-4">
@@ -179,34 +194,35 @@
                             @enderror
                         </div>
 
-                        <!-- Komitmen Sebelum -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="previous_commitment">
-                                Komitmen Sebelum <span class="text-red-500">*</span>
-                            </label>
-                            <textarea name="previous_commitment" 
-                                      id="previous_commitment" 
-                                      rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      required>{{ old('previous_commitment') }}</textarea>
-                            @error('previous_commitment')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
+                       
 
-                        <!-- Komitmen Selanjutnya -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="next_commitment">
-                                Komitmen Selanjutnya <span class="text-red-500">*</span>
+                        <!-- Komitmen -->
+                        <div class="mb-4 md:col-span-2">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">
+                                Komitmen <span class="text-red-500">*</span>
                             </label>
-                            <textarea name="next_commitment" 
-                                      id="next_commitment" 
-                                      rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      required>{{ old('next_commitment') }}</textarea>
-                            @error('next_commitment')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
+                            <div id="commitments-container">
+                                <div class="commitment-entry flex items-center gap-4 mb-2">
+                                    <div class="flex-1">
+                                        <textarea name="commitments[]" 
+                                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                  rows="2"
+                                                  required>{{ old('commitments.0') }}</textarea>
+                                    </div>
+                                    <div class="flex-none">
+                                        <input type="date" 
+                                               name="commitment_deadlines[]" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               value="{{ old('commitment_deadlines.0') }}"
+                                               required>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" 
+                                    onclick="addCommitment()"
+                                    class="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
+                                <i class="fas fa-plus mr-2"></i> Tambah Komitmen
+                            </button>
                         </div>
 
                         <!-- PIC -->
@@ -360,6 +376,36 @@ document.getElementById('createDiscussionForm').addEventListener('submit', funct
         });
     });
 @endif
+
+function addCommitment() {
+    const container = document.getElementById('commitments-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'commitment-entry flex items-center gap-4 mb-2';
+    newEntry.innerHTML = `
+        <div class="flex-1">
+            <textarea name="commitments[]" 
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      rows="2"
+                      required></textarea>
+        </div>
+        <div class="flex-none">
+            <input type="date" 
+                   name="commitment_deadlines[]" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                   required>
+        </div>
+        <button type="button" 
+                onclick="removeCommitment(this)"
+                class="text-red-500 hover:text-red-700">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(newEntry);
+}
+
+function removeCommitment(button) {
+    button.closest('.commitment-entry').remove();
+}
 </script>
 @push('scripts')
 @endpush

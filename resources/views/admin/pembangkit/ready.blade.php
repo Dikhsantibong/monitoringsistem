@@ -135,8 +135,21 @@
                     @foreach ($units as $unit)
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
                             <div class="overflow-auto">
-                                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ $unit->name }}</h2>
-                     
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-lg font-semibold text-gray-800">{{ $unit->name }}</h2>
+                                    <!-- Tambahkan input HOP di sini -->
+                                    <div class="flex items-center gap-x-2">
+                                        <label for="hop_{{ $unit->id }}" class="text-sm font-medium text-gray-700">HOP:</label>
+                                        <input type="number" 
+                                               id="hop_{{ $unit->id }}" 
+                                               name="hop_{{ $unit->id }}"
+                                               class="w-24 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               placeholder="Masukkan HOP"
+                                               min="0"
+                                               value="{{ old('hop_' . $unit->id) }}">
+                                        <span class="text-sm text-gray-600">hari</span>
+                                    </div>
+                                </div>
                                 <!-- Tabel Status Pembangkit -->
                                 <div class="table-responsive">
                                     <table class="min-w-full bg-white">
@@ -149,13 +162,13 @@
                                                     Mesin
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    DMN
+                                                    Daya Terpasang (MW)
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    DMP
+                                                    Daya Mampu (MW)
                                                 </th>
                                                 <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Beban
+                                                    Beban (MW)
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Status
@@ -193,12 +206,12 @@
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                         {{ $loop->iteration }}
                                                     </td>
-                                                    <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
-                                                        {{ $machine->name }}
-                                                    </td>   
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12" style="width: 100px;">
                                                         {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
                                                     </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
+                                                        {{ $machine->name }}
+                                                    </td>   
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                         <input type="number" 
                                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
@@ -470,11 +483,28 @@
 
 <script>
     function saveData() {
-        const data = [];
+        const data = {
+            logs: [],
+            hops: []
+        };
         const tables = document.querySelectorAll('.unit-table table');
         const tanggal = document.getElementById('filterDate').value;
 
         tables.forEach(table => {
+            const unitTable = table.closest('.unit-table');
+            const powerPlantId = unitTable.querySelector('input[id^="hop_"]').id.split('_')[1];
+            const hopValue = unitTable.querySelector(`input[id="hop_${powerPlantId}"]`).value;
+
+            // Tambahkan data HOP
+            if (hopValue) {
+                data.hops.push({
+                    power_plant_id: powerPlantId,
+                    tanggal: tanggal,
+                    hop_value: hopValue
+                });
+            }
+
+            // Tambahkan data status mesin (kode yang sudah ada)
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
@@ -496,9 +526,10 @@
                 const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
 
                 if (statusSelect && statusSelect.value) {
-                    data.push({
+                    data.logs.push({
                         machine_id: machineId,
                         tanggal: tanggal,
+                        hop: hopValue,
                         status: statusSelect.value,
                         component: componentSelect ? componentSelect.value : null,
                         equipment: equipmentValue, // Tambahkan nilai equipment
@@ -515,65 +546,35 @@
                 }
             });
         });
-        
-        // Debug: Tampilkan data yang akan dikirim
-        console.log('Data yang akan dikirim:', data);
 
-        if (data.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Pilih status terlebih dahulu!'
-            });
-            return;
-        }
-
-        // Tampilkan loading indicator
-        Swal.fire({
-            title: 'Menyimpan Data',
-            text: 'Mohon tunggu...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-            fetch('{{ route('admin.pembangkit.save-status') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    logs: data
-                })
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log(result);
-                if (result.success) {
-                    Swal.fire({
-                        icon: 'success',    
-                        title: 'Berhasil',
-                        text: 'Data berhasil disimpan!',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        // Refresh data setelah berhasil simpan
-                        loadData();
-                    });
-                } else {
-                    throw new Error(result.message || 'Gagal menyimpan data');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        // Kirim data ke server
+        fetch('{{ route('admin.pembangkit.save-status') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Data berhasil disimpan!'
                 });
+            } else {
+                throw new Error(result.message);
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message
             });
+        });
     }
 
     function confirmReset() {
@@ -733,6 +734,16 @@
         resetForm();
 
         tables.forEach(table => {
+            const unitTable = table.closest('.unit-table');
+            const unitId = unitTable.querySelector('input[id^="hop_"]').id.split('_')[1];
+            const hopInput = unitTable.querySelector(`input[id="hop_${unitId}"]`);
+            
+            // Update nilai HOP jika ada
+            const unitData = data.find(d => d.unit_id == unitId);
+            if (unitData && unitData.hop) {
+                hopInput.value = unitData.hop;
+            }
+
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');

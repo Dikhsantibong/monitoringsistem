@@ -187,8 +187,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Target</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Previous Commitment</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Next Commitment</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
                                         <div class="flex items-center justify-between">
@@ -241,8 +240,19 @@
                                                 {{ $discussion->priority_level }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->previous_commitment }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->next_commitment }}</td>
+                                        <td class="px-6 py-4">
+                                            @foreach($discussion->commitments as $commitment)
+                                            <div class="mb-2 p-2 border rounded">
+                                                <div>{{ $commitment->description }}</div>
+                                                <div class="text-sm text-gray-500">
+                                                    Deadline: {{ $commitment->deadline }}
+                                                    <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                        {{ $commitment->status }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->pic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded
@@ -306,8 +316,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Sebelum</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Selanjutnya</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
@@ -333,8 +342,19 @@
                                                 {{ $discussion->priority_level }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->previous_commitment }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->next_commitment }}</td>
+                                        <td class="px-6 py-4">
+                                            @foreach($discussion->commitments as $commitment)
+                                            <div class="mb-2 p-2 border rounded">
+                                                <div>{{ $commitment->description }}</div>
+                                                <div class="text-sm text-gray-500">
+                                                    Deadline: {{ $commitment->deadline }}
+                                                    <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                        {{ $commitment->status }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->pic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 py-1 rounded text-sm 
@@ -394,8 +414,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Sebelum</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen Selanjutnya</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
                                         <div class="flex items-center justify-between">
@@ -432,8 +451,19 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->target }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->risk_level }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->priority_level }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->previous_commitment }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->next_commitment }}</td>
+                                        <td class="px-6 py-4">
+                                            @foreach($discussion->commitments as $commitment)
+                                            <div class="mb-2 p-2 border rounded">
+                                                <div>{{ $commitment->description }}</div>
+                                                <div class="text-sm text-gray-500">
+                                                    Deadline: {{ $commitment->deadline }}
+                                                    <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                        {{ $commitment->status }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $discussion->pic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 py-1 rounded text-sm 

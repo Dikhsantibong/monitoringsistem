@@ -11,6 +11,7 @@ use App\Models\MachineStatusLog;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use PDF;
+use App\Models\UnitOperationHour;
 
 class PembangkitController extends Controller
 {
@@ -28,10 +29,11 @@ class PembangkitController extends Controller
         $machines = Machine::with('issues', 'metrics')->get();
         $operations = MachineOperation::all();
         
-        // Ambil status log hari ini
+        // Ambil status log dan HOP hari ini
         $todayLogs = MachineStatusLog::whereDate('tanggal', Carbon::today())->get();
+        $todayHops = UnitOperationHour::whereDate('tanggal', Carbon::today())->get();
 
-        return view('admin.pembangkit.ready', compact('units', 'machines', 'operations', 'todayLogs'));
+        return view('admin.pembangkit.ready', compact('units', 'machines', 'operations', 'todayLogs', 'todayHops'));
     }
 
     public function saveStatus(Request $request)
@@ -39,8 +41,21 @@ class PembangkitController extends Controller
         try {
             DB::beginTransaction();
             
-            \Log::info('Data yang diterima untuk disimpan:', $request->logs);
-            
+            // Simpan data HOP
+            foreach ($request->hops as $hopData) {
+                UnitOperationHour::updateOrCreate(
+                    [
+                        'power_plant_id' => $hopData['power_plant_id'],
+                        'tanggal' => $hopData['tanggal']
+                    ],
+                    [
+                        'hop_value' => $hopData['hop_value'],
+                        'unit_source' => session('unit')
+                    ]
+                );
+            }
+
+            // Simpan data status mesin (kode yang sudah ada)
             foreach ($request->logs as $log) {
                 // Pastikan equipment diambil dengan benar dari request
                 $equipment = isset($log['equipment']) ? trim($log['equipment']) : null;
@@ -76,7 +91,7 @@ class PembangkitController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error saving machine status: ' . $e->getMessage());
+            \Log::error('Error saving data: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan data: ' . $e->getMessage()
@@ -88,39 +103,21 @@ class PembangkitController extends Controller
     {
         try {
             $tanggal = $request->tanggal;
-            $search = $request->search;
             
-            $query = MachineStatusLog::with(['machine.powerPlant'])
-                ->when($tanggal, function($q) use ($tanggal) {
-                    return $q->whereDate('tanggal', $tanggal);
-                });
-                
-            if ($search) {
-                $query->where(function($q) use ($search) {
-                    $q->whereHas('machine.powerPlant', function($q) use ($search) {
-                        $q->where('name', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('machine', function($q) use ($search) {
-                        $q->where('name', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhere('status', 'LIKE', "%{$search}%")
-                    ->orWhere('deskripsi', 'LIKE', "%{$search}%");
-                });
-            }
+            // Ambil data HOP
+            $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
             
-            // Tambahkan pengurutan berdasarkan status
-            $logs = $query->orderByRaw("CASE WHEN status = 'Gangguan' THEN 0 ELSE 1 END")->get();
-            
-            if ($logs->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak ditemukan'
-                ]);
-            }
+            // Ambil data status mesin (kode yang sudah ada)
+            $logs = MachineStatusLog::with(['machine.powerPlant'])
+                ->whereDate('tanggal', $tanggal)
+                ->get();
             
             return response()->json([
                 'success' => true,
-                'data' => $logs
+                'data' => [
+                    'logs' => $logs,
+                    'hops' => $hops
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -18,7 +18,7 @@ class OtherDiscussionController extends Controller
     {
         try {
             // Query dasar
-            $activeDiscussions = OtherDiscussion::where('status', 'Open');
+            $activeDiscussions = OtherDiscussion::with('commitments')->where('status', 'Open');
             $closedDiscussions = ClosedDiscussion::query();
             $overdueDiscussions = OverdueDiscussion::query();
 
@@ -169,39 +169,49 @@ class OtherDiscussionController extends Controller
                 'unit' => 'required',
                 'topic' => 'required',
                 'target' => 'required',
+                'target_deadline' => 'required|date',
                 'risk_level' => 'required',
                 'priority_level' => 'required',
-                'previous_commitment' => 'required',
-                'next_commitment' => 'required',
+                'commitments' => 'required|array|min:1',
+                'commitment_deadlines' => 'required|array|min:1',
+                'commitment_deadlines.*' => 'required|date',
                 'pic' => 'required',
-                'deadline' => 'required|date',
             ]);
 
-            // Tambahkan status default
-            $validated['status'] = 'Open';
+            DB::beginTransaction();
 
-            OtherDiscussion::create($validated);
+            // Buat diskusi baru
+            $discussion = OtherDiscussion::create([
+                'sr_number' => $validated['sr_number'],
+                'wo_number' => $validated['wo_number'],
+                'unit' => $validated['unit'],
+                'topic' => $validated['topic'],
+                'target' => $validated['target'],
+                'target_deadline' => $validated['target_deadline'],
+                'risk_level' => $validated['risk_level'],
+                'priority_level' => $validated['priority_level'],
+                'pic' => $validated['pic'],
+                'status' => 'Open'
+            ]);
 
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data berhasil ditambahkan'
+            // Simpan komitmen
+            foreach ($request->commitments as $index => $commitment) {
+                $discussion->commitments()->create([
+                    'description' => $commitment,
+                    'deadline' => $request->commitment_deadlines[$index]
                 ]);
             }
+
+            DB::commit();
 
             return redirect()
                 ->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil ditambahkan');
         } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menambahkan data'
-                ], 500);
-            }
+            DB::rollback();
             return back()
                 ->withInput()
-                ->with('error', 'Gagal menambahkan data');
+                ->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
         }
     }
 
@@ -232,70 +242,48 @@ class OtherDiscussionController extends Controller
                 'unit' => 'required',
                 'topic' => 'required',
                 'target' => 'required',
+                'target_deadline' => 'required|date',
                 'risk_level' => 'required',
                 'priority_level' => 'required',
-                'previous_commitment' => 'required',
-                'next_commitment' => 'required',
+                'commitments' => 'required|array|min:1',
+                'commitment_deadlines' => 'required|array|min:1',
+                'commitment_deadlines.*' => 'required|date',
                 'pic' => 'required',
-                'deadline' => 'required|date',
                 'status' => 'required|in:Open,Closed'
             ]);
 
-            // Update data diskusi
-            $discussion->update($validated);
+            // Update diskusi
+            $discussion->update([
+                'sr_number' => $validated['sr_number'],
+                'wo_number' => $validated['wo_number'],
+                'unit' => $validated['unit'],
+                'topic' => $validated['topic'],
+                'target' => $validated['target'],
+                'target_deadline' => $validated['target_deadline'],
+                'risk_level' => $validated['risk_level'],
+                'priority_level' => $validated['priority_level'],
+                'pic' => $validated['pic'],
+                'status' => $validated['status']
+            ]);
 
-            // Jika status diubah menjadi Closed
-            if ($validated['status'] === 'Closed') {
-                // Pindahkan ke tabel closed_discussions
-                ClosedDiscussion::create([
-                    'sr_number' => $validated['sr_number'],
-                    'wo_number' => $validated['wo_number'],
-                    'unit' => $validated['unit'],
-                    'topic' => $validated['topic'],
-                    'target' => $validated['target'],
-                    'risk_level' => $validated['risk_level'],
-                    'priority_level' => $validated['priority_level'],
-                    'previous_commitment' => $validated['previous_commitment'],
-                    'next_commitment' => $validated['next_commitment'],
-                    'pic' => $validated['pic'],
-                    'status' => 'Closed',
-                    'deadline' => $validated['deadline'],
-                    'closed_at' => now(),
-                    'original_id' => $discussion->id,
-                    'unit_source' => session('unit', 'default')
+            // Update komitmen
+            // Hapus komitmen lama
+            $discussion->commitments()->delete();
+            
+            // Tambah komitmen baru
+            foreach ($request->commitments as $index => $commitment) {
+                $discussion->commitments()->create([
+                    'description' => $commitment,
+                    'deadline' => $request->commitment_deadlines[$index]
                 ]);
-
-                // Hapus dari tabel other_discussions
-                $discussion->delete();
             }
 
             DB::commit();
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data berhasil diperbarui'
-                ]);
-            }
-
-            return redirect()
-                ->route('admin.other-discussions.index')
-                ->with('success', 'Data berhasil diperbarui');
+            return redirect()->route('admin.other-discussions.index')->with('success', 'Data berhasil diperbarui');
 
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error updating discussion: ' . $e->getMessage());
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal memperbarui data'
-                ], 500);
-            }
-            
-            return back()
-                ->withInput()
-                ->with('error', 'Gagal memperbarui data');
+            return back()->withInput()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
     }
 }

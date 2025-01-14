@@ -17,27 +17,47 @@
                         <h1 class="text-lg font-semibold uppercase mb-2">STATUS MESIN - {{ $powerPlant->name }}</h1>
                         
                         <!-- Tambahkan informasi total DMN, DMP, dan Beban -->
-                        <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="grid grid-cols-4 gap-4 mb-4">
                             @php
-                                $totalDMN = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                    ->sum(fn($log) => (float) $log->dmn);
                                 $totalDMP = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
                                     ->sum(fn($log) => (float) $log->dmp);
+                                
+                                $totalDMN = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                    ->sum(fn($log) => (float) $log->dmn);
+                                
                                 $totalBeban = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                    ->sum(fn($log) => (float) $log->load_value);
+                                    ->sum(function($log) {
+                                        if ($log->status === 'Operasi') {
+                                            return (float) $log->load_value;
+                                        }
+                                        return 0;
+                                    });
+                                $totalHOP = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                    ->sum(function($log) {
+                                        return (float) $log->hop_value;
+                                    });
+                                
+                                $hopStatus = $totalHOP < 7 ? 'siaga' : 'aman';
                             @endphp
                             
-                            <div class="bg-blue-50 p-3 rounded-lg">
-                                <p class="text-sm text-gray-600">Total Daya Mampu:</p>
-                                <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 1) }} MW</p>
-                            </div>
                             <div class="bg-green-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total Daya Terpasang:</p>
                                 <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 1) }} MW</p>
                             </div>
+                            <div class="bg-blue-50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600">Total Daya Mampu:</p>
+                                <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 1) }} MW</p>
+                            </div>
                             <div class="bg-purple-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total Beban:</p>
                                 <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 1) }} MW</p>
+                            </div>
+                            <div class="bg-orange-50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600">Total HOP:</p>
+                                <p class="text-xl font-bold text-orange-700">{{ number_format($totalHOP, 1) }} Hari</p>
+                                <p class="text-sm font-medium {{ $hopStatus === 'siaga' ? 'text-red-600' : 'text-green-600' }}">
+                                    Status: {{ ucfirst($hopStatus) }}
+                                </p>
                             </div>
                         </div>
 
@@ -93,8 +113,8 @@
                         <tr>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">No</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Mesin</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Mampu (MW)</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Terpasang (MW)</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Mampu (MW)</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Beban (MW)</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Status</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Component</th>
@@ -124,8 +144,8 @@
                             <tr class="hover:bg-gray-50 border border-gray-200">
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $index + 1 }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200" data-id="{{ $machine->id }}">{{ $machine->name }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmp ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->load_value ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     <span class="px-2 py-1 rounded-full text-xs font-medium {{ $statusClass }}">

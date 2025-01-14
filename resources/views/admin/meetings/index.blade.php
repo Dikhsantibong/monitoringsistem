@@ -70,19 +70,71 @@
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-semibold text-gray-800">Score Card Daily</h2>
                             <div class="flex items-center gap-4">
-                                <!-- Filter Tanggal -->
+                                <!-- Filter Unit - hanya tampil untuk session mysql -->
+                                @if(session('unit') === 'mysql')
                                 <div class="flex items-center">
-                                    <label for="tanggal-filter" class="text-gray-700 text-sm font-bold mr-2">Pilih Tanggal:</label>
-                                    <select id="tanggal-filter" 
-                                            class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]">
-                                        @foreach($availableDates as $date)
-                                            <option value="{{ $date }}" 
-                                                {{ $date == $selectedDate ? 'selected' : '' }}>
-                                                {{ \Carbon\Carbon::parse($date)->format('d F Y') }}
-                                            </option>
-                                        @endforeach
+                                    <label for="unit-source" class="text-gray-700 text-sm font-bold mr-2">Filter Unit:</label>
+                                    <select id="unit-source" 
+                                        class="border rounded-md px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        onchange="updateData()">
+                                        <option value="">Semua Unit</option>
+                                        <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
+                                        <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Wua Wua</option>
+                                        <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Poasia</option>
+                                        <option value="mysql_kolaka" {{ request('unit_source') == 'mysql_kolaka' ? 'selected' : '' }}>Kolaka</option>
+                                        <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Bau Bau</option>
                                     </select>
                                 </div>
+                                @endif
+
+                                <!-- Filter Tanggal dengan Datepicker -->
+                                <div class="flex items-center">
+                                    <label for="tanggal-filter" class="text-gray-700 text-sm font-bold mr-2">Pilih Tanggal:</label>
+                                    <div class="relative">
+                                        <input type="text" 
+                                               id="tanggal-filter" 
+                                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+                                               placeholder="Pilih tanggal"
+                                               value="{{ $selectedDate }}"
+                                               data-available-dates='@json($availableDates)'>
+                                        <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+                                            <i class="fas fa-calendar text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dropdown untuk Tanggal Tersedia -->
+                                <div class="relative">
+                                    <button id="availableDatesDropdown" 
+                                            class="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <span>Tanggal Tersedia</span>
+                                        <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Dropdown Content -->
+                                    <div id="availableDatesList" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                        <div class="py-1 max-h-60 overflow-auto" role="menu">
+                                            <div class="px-4 py-2 text-sm text-gray-700 border-b">
+                                                <input type="text" 
+                                                       id="dateSearch" 
+                                                       class="w-full px-2 py-1 border rounded-md" 
+                                                       placeholder="Cari tanggal...">
+                                            </div>
+                                            <div id="datesList">
+                                                @foreach($availableDates as $date)
+                                                <a href="#" 
+                                                   class="date-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
+                                                   data-date="{{ $date }}">
+                                                    {{ \Carbon\Carbon::parse($date)->isoFormat('dddd, D MMMM Y') }}
+                                                </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Search -->
                                 <div class="relative">
                                     <input type="text" id="search-input" 
@@ -486,5 +538,138 @@
                     window.open(printUrl, '_blank');
                 }
                 </script>
+
+                <!-- Tambahkan script ini -->
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Inisialisasi Flatpickr
+                    const flatpickrInstance = flatpickr("#tanggal-filter", {
+                        locale: "id",
+                        dateFormat: "Y-m-d",
+                        enable: availableDates,
+                        disableMobile: "true",
+                        onChange: function(selectedDates, dateStr) {
+                            updateData(dateStr);
+                        }
+                    });
+
+                    // Toggle dropdown
+                    const dropdown = document.getElementById('availableDatesDropdown');
+                    const datesList = document.getElementById('availableDatesList');
+                    
+                    dropdown.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        datesList.classList.toggle('hidden');
+                    });
+
+                    // Tutup dropdown ketika klik di luar
+                    document.addEventListener('click', function(e) {
+                        if (!datesList.contains(e.target) && !dropdown.contains(e.target)) {
+                            datesList.classList.add('hidden');
+                        }
+                    });
+
+                    // Search functionality
+                    const searchInput = document.getElementById('dateSearch');
+                    const dateOptions = document.querySelectorAll('.date-option');
+
+                    searchInput.addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        
+                        dateOptions.forEach(option => {
+                            const text = option.textContent.toLowerCase();
+                            option.style.display = text.includes(searchTerm) ? '' : 'none';
+                        });
+                    });
+
+                    // Handle date selection from dropdown
+                    dateOptions.forEach(option => {
+                        option.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const selectedDate = this.dataset.date;
+                            flatpickrInstance.setDate(selectedDate);
+                            datesList.classList.add('hidden');
+                            updateData(selectedDate);
+                        });
+                    });
+
+                    // Function to update data
+                    function updateData(dateStr) {
+                        showLoader();
+                        
+                        const unitSource = document.getElementById('unit-source')?.value || '';
+                        const selectedDate = dateStr || document.getElementById('tanggal-filter').value;
+                        
+                        const params = new URLSearchParams({
+                            tanggal: selectedDate,
+                            unit_source: unitSource
+                        });
+                        
+                        const newUrl = new URL(window.location.href);
+                        params.forEach((value, key) => {
+                            newUrl.searchParams.set(key, value);
+                        });
+                        window.history.pushState({}, '', newUrl);
+                        
+                        fetch(`{{ route('admin.meetings') }}?${params.toString()}`, {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html'
+                            }
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            const dynamicContent = document.querySelector('#dynamic-content');
+                            if (dynamicContent) {
+                                dynamicContent.innerHTML = html;
+                            }
+                            hideLoader();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Gagal memuat data. Silakan coba lagi.');
+                            hideLoader();
+                        });
+                    }
+                });
+                </script>
+                @push('scripts')
+                    
+                @endpush
+
+                <style>
+                /* Style untuk dropdown */
+                .date-option {
+                    transition: background-color 0.2s;
+                }
+
+                .date-option:hover {
+                    background-color: #f3f4f6;
+                }
+
+                /* Scrollbar styling */
+                #datesList {
+                    scrollbar-width: thin;
+                    scrollbar-color: #888 #f1f1f1;
+                }
+
+                #datesList::-webkit-scrollbar {
+                    width: 6px;
+                }
+
+                #datesList::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                }
+
+                #datesList::-webkit-scrollbar-thumb {
+                    background: #888;
+                    border-radius: 3px;
+                }
+
+                #datesList::-webkit-scrollbar-thumb:hover {
+                    background: #555;
+                }
+                </style>
             @endsection
 

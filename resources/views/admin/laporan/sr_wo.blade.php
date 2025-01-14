@@ -169,7 +169,7 @@
                                             <tr class="odd:bg-white even:bg-gray-100">
                                                 <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $sr->id }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $sr->description }}</td>
+                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                         {{ $sr->status }}
@@ -232,7 +232,7 @@
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID WO</th>
-                                            <th class="py-2 px-4 border-b">Deskripsi</th>
+                                            <th class="py-2 px-4 border-b" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">
                                                 <div class="flex items-center justify-between">
                                                     <span>Status</span>
@@ -267,7 +267,7 @@
                                             <tr class="odd:bg-white even:bg-gray-100" data-id="{{ $wo->id }}">
                                                 <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $wo->description }}</td>
+                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200" data-column="status">
                                                     <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'Comp' ? 'blue-500' : ($wo->status == 'APPR' ? 'yellow-500' : ($wo->status == 'WAPPR' ? 'purple-500' : 'gray-500')))) }} text-white rounded-full px-2 py-1">
                                                         {{ $wo->status }}

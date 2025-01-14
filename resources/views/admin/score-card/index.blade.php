@@ -278,10 +278,18 @@ Setiap 3 menit keterlambatan waktu maka skor dikurangi 10.</td>
                                     
                                     // Total keseluruhan
                                     $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+
+                                    // Hitung total skor maksimum
+                                    $maxScorePeserta = $pesertaCount * 100; // Asumsi setiap peserta memiliki skor maksimum 100
+                                    $maxScoreKetentuan = 100 * 8; // Asumsi ada 8 ketentuan dengan skor maksimum 100
+                                    $maxGrandTotal = $maxScorePeserta + $maxScoreKetentuan;
+
+                                    // Hitung persentase
+                                    $scorePercentage = $maxGrandTotal > 0 ? ($grandTotal / $maxGrandTotal) * 100 : 0;
                                 @endphp
                                 <tr>
                                     <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
-                                    <td class="border p-2 text-center font-bold">{{ $scorePercentage }}%</td>
+                                    <td class="border p-2 text-center font-bold">{{ number_format($scorePercentage, 2) }}%</td>
                                     <td class="border p-2">Persentase dari total score maksimum yang mungkin</td>
                                 </tr>
                             </tbody>

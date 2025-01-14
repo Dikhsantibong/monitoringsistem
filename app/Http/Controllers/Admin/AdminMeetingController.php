@@ -11,6 +11,7 @@ use App\Models\Attendance; // Ambil model Attendance
 use App\Models\ServiceRequest; // Ambil model ServiceRequest
 use App\Models\WoBacklog; // Ambil model WoBacklog
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AdminMeetingController extends Controller
 {
@@ -18,53 +19,76 @@ class AdminMeetingController extends Controller
     {
         try {
             $selectedDate = request('tanggal', now()->format('Y-m-d'));
+            $unitSource = request('unit_source');
             
-            $scoreCards = ScoreCardDaily::whereDate('tanggal', $selectedDate)
+            \Log::info('Request parameters:', [
+                'date' => $selectedDate,
+                'unit' => $unitSource
+            ]);
+            
+            $query = ScoreCardDaily::orderBy('tanggal', 'desc');
+            
+            // Filter berdasarkan unit jika ada
+            if ($unitSource && session('unit') === 'mysql') {
+                $query->where('unit_source', $unitSource);
+                \Log::info('Applying unit filter:', ['unit' => $unitSource]);
+            }
+            
+            // Query untuk data score card dengan tanggal yang dipilih
+            $scoreCards = $query->whereDate('tanggal', $selectedDate)
                 ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($scoreCard) {
-                    $peserta = json_decode($scoreCard->peserta, true) ?? [];
-                    $formattedPeserta = [];
-                    
-                    foreach ($peserta as $jabatan => $data) {
-                        $formattedPeserta[] = [
-                            'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
-                            'awal' => $data['awal'] ?? '0',
-                            'akhir' => $data['akhir'] ?? '0',
-                            'skor' => $data['skor'] ?? '0',
-                            'keterangan' => $data['keterangan'] ?? null
-                        ];
-                    }
-
-                    return [
-                        'id' => $scoreCard->id,
-                        'tanggal' => $scoreCard->tanggal,
-                        'lokasi' => $scoreCard->lokasi,
-                        'peserta' => $formattedPeserta,
-                        'waktu_mulai' => $scoreCard->waktu_mulai,
-                        'waktu_selesai' => $scoreCard->waktu_selesai,
-                        'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-                        'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                        'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                        'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
-                        'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
-                        'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
-                        'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                        'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
-                        'keterangan' => $scoreCard->keterangan
+                ->get();
+            
+            \Log::info('Query results:', ['count' => $scoreCards->count()]);
+            
+            $scoreCards = $scoreCards->map(function ($scoreCard) {
+                $peserta = json_decode($scoreCard->peserta, true) ?? [];
+                $formattedPeserta = [];
+                
+                foreach ($peserta as $jabatan => $data) {
+                    $formattedPeserta[] = [
+                        
+                        'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
+                        'awal' => $data['awal'] ?? '0',
+                        'akhir' => $data['akhir'] ?? '0',
+                        'skor' => $data['skor'] ?? '0',
+                        'keterangan' => $data['keterangan'] ?? null
                     ];
-                });
+                }
 
-            $availableDates = ScoreCardDaily::orderBy('tanggal', 'desc')
-                ->pluck('tanggal')
-                ->unique()
-                ->values();
+                return [
+                    'id' => $scoreCard->id,
+                    'tanggal' => $scoreCard->tanggal,
+                    'lokasi' => $scoreCard->lokasi,
+                    'peserta' => $formattedPeserta,
+                    'waktu_mulai' => $scoreCard->waktu_mulai,
+                    'waktu_selesai' => $scoreCard->waktu_selesai,
+                    'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                    'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                    'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                    'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                    'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                    'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                    'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                    'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+                    'keterangan' => $scoreCard->keterangan
+                ];
+            });
 
             if (request()->ajax()) {
                 return view('admin.meetings._table', [
                     'scoreCards' => $scoreCards
                 ])->render();
             }
+
+            // Ambil tanggal yang tersedia setelah filter unit
+            $availableDates = $query->pluck('tanggal')
+                ->unique()
+                ->map(function($date) {
+                    return Carbon::parse($date)->format('Y-m-d');
+                })
+                ->values()
+                ->toArray();
 
             return view('admin.meetings.index', [
                 'scoreCards' => $scoreCards,
