@@ -204,7 +204,7 @@
     @if(isset($data) && isset($date))
         <div class="header">
             <h2>SCORE CARD DAILY</h2>
-            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+            <p>Tanggal: {{ is_string($date) ? \Carbon\Carbon::parse($date)->format('d F Y') : $date->format('d F Y') }}</p>
             <p>Lokasi: {{ $data['lokasi'] }}</p>
             <p>Waktu: {{ \Carbon\Carbon::parse($data['waktu_mulai'])->format('H:i') }} - 
                      {{ \Carbon\Carbon::parse($data['waktu_selesai'])->format('H:i') }}</p>
@@ -213,7 +213,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 5%">No</th>
+                    <th style="width: 5%">No</th>   
                     <th style="width: 27%">Peserta</th>
                     <th style="width: 10%">Awal</th>
                     <th style="width: 10%">Akhir</th>
@@ -337,7 +337,7 @@
         
         <div class="header">
             <h2>DAFTAR HADIR RAPAT</h2>
-            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+            <p>Tanggal: {{ is_string($date) ? \Carbon\Carbon::parse($date)->format('d F Y') : $date->format('d F Y') }}</p>
         </div>
 
         <table class="attendance-table">

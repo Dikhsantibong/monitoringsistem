@@ -1,6 +1,3 @@
-@php
-use Illuminate\Support\Facades\Storage;
-@endphp
 @if($powerPlants->isEmpty())
     <div class="text-center py-4 text-gray-500">
         Tidak ada data untuk ditampilkan
@@ -74,7 +71,6 @@ use Illuminate\Support\Facades\Storage;
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Kronologi</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Action Plan</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Progress</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Gambar</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Tanggal Mulai</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Target Selesai</th>
                         </tr>
@@ -110,39 +106,6 @@ use Illuminate\Support\Facades\Storage;
                                 <td class="px-3 py-2 border-r border-gray-200">{{ $log?->kronologi ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200">{{ $log?->action_plan ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200">{{ $log?->progres ?? '-' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">
-                                    @if($log && $log->image_path)
-                                        <div class="flex flex-col items-center">
-                                            <div class="relative group">
-                                                @php
-                                                    $imagePath = $log->image_path;
-                                                    $fullUrl = url($imagePath);
-                                                    \Log::info('Attempting to display image:', [
-                                                        'db_path' => $imagePath,
-                                                        'full_url' => $fullUrl,
-                                                        'exists' => file_exists(public_path($imagePath))
-                                                    ]);
-                                                @endphp
-                                                
-                                                <img src="{{ url($imagePath) }}" 
-                                                     alt="Status Image" 
-                                                     class="object-cover rounded cursor-pointer"
-                                                     onerror="this.onerror=null; this.src='{{ asset('images/no-image.png') }}'; console.log('Image failed to load: {{ $imagePath }}')"
-                                                     onclick="showSingleImage('{{ url($imagePath) }}', '{{ $log->image_description }}')"
-                                                     style="width: auto; height: auto; max-width: 100%; max-height: 100%;"
-                                                >
-                                                
-                                                <!-- Debug info -->
-                                                <div class="text-xs text-gray-500 mt-1">
-                                                    <div>Path: {{ $imagePath }}</div>
-                                                    <div>Exists: {{ file_exists(public_path($imagePath)) ? 'Yes' : 'No' }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <span class="text-gray-400">-</span>
-                                    @endif
-                                </td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                 </td>
@@ -152,7 +115,7 @@ use Illuminate\Support\Facades\Storage;
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="15" class="px-3 py-4 text-center text-gray-500">
+                                <td colspan="14" class="px-3 py-4 text-center text-gray-500">
                                     Tidak ada data mesin untuk unit ini
                                 </td>
                             </tr>
@@ -163,38 +126,3 @@ use Illuminate\Support\Facades\Storage;
         </div>
     @endforeach
 @endif 
-
-<script>
-function showSingleImage(imagePath, description) {
-    let html = `
-        <div class="relative">
-            <img src="${imagePath}" 
-                 class="max-h-[70vh] mx-auto" 
-                 alt="Machine Status Image">
-            ${description ? `
-                <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-3">
-                    ${description}
-                </div>
-            ` : ''}
-        </div>
-    `;
-
-    Swal.fire({
-        html: html,
-        width: '80%',
-        showCloseButton: true,
-        showConfirmButton: false,
-        imageAlt: 'Machine Status Image'
-    });
-}
-</script>
-
-@push('styles')
-<style>
-.swal2-popup img {
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-}
-</style>
-@endpush 
