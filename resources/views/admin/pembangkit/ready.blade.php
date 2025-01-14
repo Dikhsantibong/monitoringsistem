@@ -206,12 +206,12 @@
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                         {{ $loop->iteration }}
                                                     </td>
-                                                    <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12" style="width: 100px;">
-                                                        {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
-                                                    </td>
                                                     <td class="px-3 py-2 border-r border-gray-200 text-gray-800" data-id="{{ $machine->id }}">
                                                         {{ $machine->name }}
                                                     </td>   
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12" style="width: 100px;">
+                                                        {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
+                                                    </td>
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                         <input type="number" 
                                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"

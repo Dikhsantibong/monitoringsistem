@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use App\Models\PowerPlant;
 use App\Models\Commitment;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class OtherDiscussion extends Model
 {
@@ -95,6 +97,38 @@ class OtherDiscussion extends Model
                 }
                 static::$isSyncing = false;
             }
+
+            // Cek jika status berubah menjadi 'Closed'
+            if ($discussion->isDirty('status') && $discussion->status === 'Closed') {
+                try {
+                    DB::beginTransaction();
+                    
+                    // Pindahkan data ke tabel closed_discussions
+                    ClosedDiscussion::create([
+                        'sr_number' => $discussion->sr_number,
+                        'wo_number' => $discussion->wo_number,
+                        'unit' => $discussion->unit,
+                        'topic' => $discussion->topic,
+                        'target' => $discussion->target,
+                        'risk_level' => $discussion->risk_level,
+                        'priority_level' => $discussion->priority_level,
+                        'previous_commitment' => $discussion->commitments()->where('type', 'previous')->pluck('description')->first(),
+                        'next_commitment' => $discussion->commitments()->where('type', 'next')->pluck('description')->first(),
+                        'pic' => $discussion->pic,
+                        'status' => 'Closed',
+                        'deadline' => $discussion->target_deadline,
+                        'closed_at' => Carbon::now(),
+                        'original_id' => $discussion->id,
+                        'unit_source' => session('unit')
+                    ]);
+
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    \Log::error('Error moving discussion to closed: ' . $e->getMessage());
+                    throw $e;
+                }
+            }
         });
 
         static::deleted(function ($discussion) {
@@ -124,5 +158,21 @@ class OtherDiscussion extends Model
     public function commitments()
     {
         return $this->hasMany(Commitment::class, 'other_discussion_id');
+    }
+
+    // Tambahkan method untuk cek deadline
+    public function isOverdue()
+    {
+        if ($this->target_deadline) {
+            return Carbon::parse($this->target_deadline)->isPast();
+        }
+        return false;
+    }
+
+    public function hasOverdueCommitments()
+    {
+        return $this->commitments()
+            ->where('deadline', '<', Carbon::now())
+            ->exists();
     }
 } 

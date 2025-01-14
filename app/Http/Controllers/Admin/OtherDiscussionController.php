@@ -122,41 +122,12 @@ class OtherDiscussionController extends Controller
         }
     }
 
-    public function updateStatus(Request $request, OtherDiscussion $discussion)
+    public function updateStatus(Request $request)
     {
         try {
-            if (!in_array($request->status, ['Closed', 'Overdue'])) {
-                throw new \Exception('Status tidak valid');
-            }
-
-            DB::transaction(function () use ($discussion, $request) {
-                // Update status diskusi utama
-                $discussion->update(['status' => $request->status]);
-
-                // Data untuk tabel terkait
-                $commonData = [
-                    'sr_number' => $discussion->sr_number,
-                    'wo_number' => $discussion->wo_number,
-                    'unit' => $discussion->unit,
-                    'topic' => $discussion->topic,
-                    'target' => $discussion->target,
-                    'risk_level' => $discussion->risk_level,
-                    'priority_level' => $discussion->priority_level,
-                    'previous_commitment' => $discussion->previous_commitment,
-                    'next_commitment' => $discussion->next_commitment,
-                    'pic' => $discussion->pic,
-                    'deadline' => $discussion->deadline,
-                    'original_id' => $discussion->id,
-                    'status' => $request->status
-                ];
-
-                // Buat record baru sesuai status
-                if ($request->status === 'Closed') {
-                    ClosedDiscussion::create($commonData + ['closed_at' => now()]);
-                } else {
-                    OverdueDiscussion::create($commonData + ['overdue_at' => now()]);
-                }
-            });
+            $discussion = OtherDiscussion::findOrFail($request->discussion_id);
+            $discussion->status = $request->status;
+            $discussion->save();
 
             return response()->json([
                 'success' => true,
@@ -165,8 +136,8 @@ class OtherDiscussionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengubah status'
-            ], 500);
+                'message' => 'Gagal memperbarui status: ' . $e->getMessage()
+            ]);
         }
     }
 

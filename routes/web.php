@@ -440,6 +440,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->middleware('web');
 });
 
+Route::post('/other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
+    ->name('admin.other-discussions.update-status');
 
 
+
+    
         

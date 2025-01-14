@@ -973,6 +973,49 @@
     document.addEventListener('DOMContentLoaded', function() {
         switchTab('active');
     });
+
+    function updateStatus(selectElement) {
+        const discussionId = selectElement.dataset.id;
+        const newStatus = selectElement.value;
+
+        fetch(`{{ route('admin.other-discussions.update-status') }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                discussion_id: discussionId,
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Berhasil Diperbarui',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    if (newStatus === 'Closed') {
+                        // Reload halaman untuk memperbarui tampilan
+                        window.location.reload();
+                    }
+                });
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: error.message
+            });
+        });
+    }
 </script>
 @push('scripts')
 @endpush
