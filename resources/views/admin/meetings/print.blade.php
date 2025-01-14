@@ -578,7 +578,7 @@
                         <td>{{ $discussion->next_commitment }}</td>
                         <td>{{ $discussion->pic }}</td>
                         <td>{{ $discussion->status }}</td>
-                        <td>{{ $discussion->deadline ? $discussion->deadline->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}</td>
                     </tr>
                 @empty
                     <tr>
