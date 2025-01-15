@@ -285,8 +285,8 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
-                                                <a href="#" 
-                                                   onclick="editDiscussion({{ $discussion->id }})"
+                                                <a href="{{ route('admin.other-discussions.edit', $discussion->id) }}" 
+                                                   onclick="editDiscussion({{ $discussion->id }}); return false;"
                                                    class="text-blue-500 hover:text-blue-700">
                                                     <i class="fas fa-edit text-lg"></i>
                                                 </a>
@@ -938,6 +938,7 @@
 
     // Fungsi edit yang terpisah
     function editDiscussion(id) {
+        // Tampilkan loading
         Swal.fire({
             title: 'Mohon tunggu...',
             text: 'Membuka form edit...',
@@ -945,11 +946,9 @@
             showConfirmButton: false,
             didOpen: () => {
                 Swal.showLoading();
+                window.location.href = "{{ url('/admin/other-discussions') }}/" + id + "/edit";
             }
         });
-
-        // Redirect ke halaman edit
-        window.location.href = `/admin/other-discussions/${id}/edit`;
     }
 
     // Tambahkan ini untuk handling pesan sukses setelah update

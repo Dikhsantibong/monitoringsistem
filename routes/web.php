@@ -29,6 +29,7 @@ use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\Admin\LaporanDeleteController;
 use App\Http\Controllers\Admin\MachineStatusViewController;
 use App\Http\Controllers\Admin\MachineStatusController;
+use App\Http\Controllers\Admin\OtherDiscussionEditController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -417,7 +418,18 @@ Route::delete('/admin/discussions/{id}', [OtherDiscussionController::class, 'des
     ->name('admin.discussions.destroy');
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('other-discussions', OtherDiscussionController::class);
+    Route::resource('other-discussions', OtherDiscussionController::class)
+        ->names([
+            'index' => 'other-discussions.index',
+            'create' => 'other-discussions.create',
+            'store' => 'other-discussions.store',
+            'edit' => 'other-discussions.edit',
+            'update' => 'other-discussions.update',
+            'destroy' => 'other-discussions.destroy'
+        ]);
+        
+    Route::post('other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
+        ->name('other-discussions.update-status');
 });
 
 Route::delete('/admin/overdue-discussions/{id}', [OtherDiscussionController::class, 'destroyOverdue'])
@@ -442,6 +454,26 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
 Route::post('/other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
     ->name('admin.other-discussions.update-status');
+
+Route::get('/admin/other-discussions/{id}/edit', [OtherDiscussionEditController::class, 'edit'])
+    ->name('admin.other-discussions.edit');
+
+Route::put('/admin/other-discussions/{id}', [OtherDiscussionEditController::class, 'update'])
+    ->name('admin.other-discussions.update');
+
+Route::resource('other-discussions', OtherDiscussionController::class)
+    ->except(['edit', 'update']);
+
+Route::post('other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
+    ->name('admin.other-discussions.update-status');
+
+Route::group(['prefix' => 'admin', 'middleware' => ['auth'], 'as' => 'admin.'], function () {
+    // Pastikan namespace lengkap
+    Route::get('other-discussions/{id}/edit', [OtherDiscussionEditController::class, 'edit'])
+        ->name('other-discussions.edit');
+    Route::put('other-discussions/{id}', [OtherDiscussionEditController::class, 'update'])
+        ->name('other-discussions.update');
+});
 
 
 

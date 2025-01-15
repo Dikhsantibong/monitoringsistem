@@ -211,15 +211,8 @@ class OtherDiscussionController extends Controller
 
     public function edit($id)
     {
-        try {
-            $discussion = OtherDiscussion::findOrFail($id);
-            $units = PowerPlant::pluck('name')->toArray();
-            
-           
-            return view('admin.other-discussions.edit', compact('discussion', 'units'));
-        } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan saat memuat data');
-        }
+        $discussion = OtherDiscussion::findOrFail($id);
+        return view('admin.other-discussions.edit', compact('discussion'));
     }
 
 
