@@ -32,7 +32,12 @@
                     
                     <!-- Search dan Tombol Tambah -->
                     <div class="mb-4 flex flex-row gap-3 justify-end">
-                        <div class="flex items-center">
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('admin.machine-monitor') }}" 
+                               class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Kembali
+                            </a>
                             <a href="{{ route('admin.power-plants.create') }}"
                                 class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
                                 <i class="fas fa-plus mr-2"></i>
