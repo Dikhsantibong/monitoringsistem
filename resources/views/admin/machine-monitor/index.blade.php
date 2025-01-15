@@ -123,26 +123,30 @@
                     <!-- Status Mesin -->
                     <div class="bg-white rounded-lg shadow p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">Status Mesin</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-80 overflow-y-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 max-h-80 overflow-y-auto">
                             @foreach ($machines as $machine)
                                 @php
                                     $statusLog = $machine->statusLogs()->latest()->first(); // Ambil status terbaru
                                 @endphp
-                                <div class="flex flex-col p-4 border rounded-lg hover:bg-gray-50 relative">
-                                    <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
-                                    <p class="text-sm text-gray-500">Kode: {{ $machine->code }}</p>
-                                    <p class="text-sm text-gray-500">Asal Unit: {{ $statusLog->powerPlant->name ?? 'N/A' }}</p>
-                                    <span class="px-3 py-1 rounded-full text-sm font-medium
-                                    {{ $statusLog && $statusLog->status === 'START'
-                                        ? 'bg-green-100 text-green-800'
-                                        : ($statusLog && $statusLog->status === 'STOP'
-                                            ? 'bg-red-100 text-red-800'
-                                            : 'bg-yellow-100 text-yellow-800') }}">
-                                    {{ $statusLog->status ?? 'N/A' }}
-                                </span>
-                                    <div class="flex items-center mt-2 absolute bottom-0 right-0 m-4">
-                                       
-                                        <i class="fas fa-cog text-xl ml-2"></i>
+                                <div class="flex justify-between p-4 border rounded-lg hover:bg-gray-50">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h3 class="font-medium text-gray-800">{{ $machine->name }}</h3>
+                                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                                            {{ $statusLog && $statusLog->status === 'START'
+                                                ? 'bg-green-100 text-green-800'
+                                                : ($statusLog && $statusLog->status === 'STOP'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-yellow-100 text-yellow-800') }}">
+                                                {{ $statusLog->status ?? 'N/A' }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1">
+                                            <p class="text-sm text-gray-500">Kode: {{ $machine->code }} | Unit: {{ $statusLog->powerPlant->name ?? 'N/A' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-cog text-xl text-gray-500"></i>
                                     </div>
                                 </div>
                             @endforeach
