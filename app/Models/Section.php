@@ -4,11 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Support\Facades\Log;
 
 class Section extends Model
 {
-    protected $fillable = ['department_id', 'name'];
+    use HasFactory;
+
+    protected $fillable = [
+        'department_id',
+        'name'
+    ];
+
+    protected $with = ['pics']; // Eager load pics by default
 
     public function department()
     {
@@ -17,6 +24,19 @@ class Section extends Model
 
     public function pics()
     {
-        return $this->hasMany(Pic::class);
+        return $this->hasMany(Pic::class)->orderBy('name');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($section) {
+            Log::info('Section retrieved:', [
+                'id' => $section->id,
+                'name' => $section->name,
+                'department_id' => $section->department_id
+            ]);
+        });
     }
 } 

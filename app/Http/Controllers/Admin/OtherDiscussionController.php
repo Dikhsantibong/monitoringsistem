@@ -134,37 +134,38 @@ class OtherDiscussionController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'sr_number' => 'nullable|numeric',
-            'wo_number' => 'nullable|numeric',
-            'unit' => 'required|string',
-            'equipment' => 'required|string',
-            'problem' => 'required|string',
-            'root_cause' => 'required|string',
-            'corrective_action' => 'required|string',
-            'preventive_action' => 'required|string',
-            'commitments' => 'required|array',
-            'commitment_deadlines' => 'required|array',
-            'commitment_pics' => 'required|array',
-            'commitments.*' => 'required|string',
-            'commitment_deadlines.*' => 'required|date',
-            'commitment_pics.*' => 'required|exists:pics,id'
-        ]);
-
         try {
+            $validated = $request->validate([
+                'sr_number' => 'required',
+                'wo_number' => 'required',
+                'unit' => 'required',
+                'topic' => 'required',
+                'target' => 'required',
+                'target_deadline' => 'required|date',
+                'risk_level' => 'required',
+                'priority_level' => 'required',
+                'commitments' => 'required|array|min:1',
+                'commitment_deadlines' => 'required|array|min:1',
+                'commitment_deadlines.*' => 'required|date',
+                'pic' => 'required',
+            ]);
+
             DB::beginTransaction();
 
-            // Simpan diskusi
+            // Buat diskusi baru dengan nilai default untuk field yang diperlukan
             $discussion = OtherDiscussion::create([
-                'sr_number' => $request->sr_number,
-                'wo_number' => $request->wo_number,
-                'unit' => $request->unit,
-                'equipment' => $request->equipment,
-                'problem' => $request->problem,
-                'root_cause' => $request->root_cause,
-                'corrective_action' => $request->corrective_action,
-                'preventive_action' => $request->preventive_action,
-                'created_by' => auth()->id()
+                'sr_number' => $validated['sr_number'],
+                'wo_number' => $validated['wo_number'],
+                'unit' => $validated['unit'],
+                'topic' => $validated['topic'],
+                'target' => $validated['target'],
+                'target_deadline' => $validated['target_deadline'],
+                'risk_level' => $validated['risk_level'],
+                'priority_level' => $validated['priority_level'],
+                'pic' => $validated['pic'],
+                'status' => 'Open',
+                'previous_commitment' => '-', // Tambahkan nilai default
+                'next_commitment' => '-'      // Tambahkan nilai default
             ]);
 
             // Simpan komitmen
@@ -172,21 +173,20 @@ class OtherDiscussionController extends Controller
                 $discussion->commitments()->create([
                     'description' => $commitment,
                     'deadline' => $request->commitment_deadlines[$index],
-                    'pic_id' => $request->commitment_pics[$index]
+                    'pic' => $request->commitment_pics[$index]
                 ]);
             }
 
             DB::commit();
-
             return redirect()
                 ->route('admin.other-discussions.index')
-                ->with('success', 'Pembahasan berhasil ditambahkan');
+                ->with('success', 'Data berhasil ditambahkan');
 
         } catch (\Exception $e) {
             DB::rollback();
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
         }
     }
 
@@ -255,4 +255,4 @@ class OtherDiscussionController extends Controller
             return back()->withInput()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
     }
-}
+}   

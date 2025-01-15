@@ -120,41 +120,22 @@
                             @enderror
                         </div>
 
-                        <!-- Sasaran dengan PIC -->
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 md:col-span-2">
-                            <div class="md:col-span-8">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">
-                                    Sasaran <span class="text-red-500">*</span>
-                                </label>
-                                <textarea name="target" 
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                          rows="3"
-                                          placeholder="Masukkan sasaran"
-                                          required>{{ old('target') }}</textarea>
-                            </div>
-                            <div class="md:col-span-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">
-                                    PIC Sasaran
-                                </label>
-                                <div class="space-y-2">
-                                    <select id="department_target" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="">Pilih Bagian</option>
-                                        @foreach(\App\Models\Department::orderBy('name')->get() as $department)
-                                            <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <select name="pic_target_id" 
-                                            id="section_pic_target" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            disabled>
-                                        <option value="">Pilih Seksi dan PIC</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <!-- Sasaran -->
+                        <div class="mb-4 md:col-span-2">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="target">
+                                Sasaran <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="target" 
+                                      id="target" 
+                                      rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                      required>{{ old('target') }}</textarea>
+                            @error('target')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
                         </div>
-
-                        <!-- Sasaran Deadline -->
-                        <div class="mb-4">
+                         <!-- Sasaran Deadline -->
+                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="target_deadline">
                                 Deadline Sasaran <span class="text-red-500">*</span>
                             </label>
@@ -165,6 +146,22 @@
                                    value="{{ old('target_deadline') }}"
                                    required>
                             @error('target_deadline')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- PIC -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
+                                PIC <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   name="pic" 
+                                   id="pic" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   value="{{ old('pic') }}"
+                                   required>
+                            @error('pic')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
@@ -213,92 +210,34 @@
                             @enderror
                         </div>
 
-                        <!-- Dropdown Bertingkat -->
-                        <div class="mb-4">
-                            
+                       
 
-                            
-
-                            <!-- Level 3: PIC -->
-                                {{-- <div class="mt-4">
-                                    <label class="block text-gray-700 text-sm font-bold mb-2">
-                                        Pilih PIC
-                                    </label>
-                                    <select name="pic_id" id="pic" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="">Pilih PIC</option>
-                                        @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
-                                            <option value="{{ $pic->id }}" data-section="{{ $pic->section_id }}">
-                                                {{ $pic->name }} ({{ $pic->position }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div> --}}
-                        </div>
-
-                        <!-- Komitmen dengan PIC dan Status -->
+                        <!-- Komitmen -->
                         <div class="mb-4 md:col-span-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2">
                                 Komitmen <span class="text-red-500">*</span>
                             </label>
                             <div id="commitments-container">
                                 <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
-                                    <div class="md:col-span-8">
-                                        <!-- Header Section -->
-                                        <div class="flex justify-between items-center mb-2">
-                                            <!-- Status Badge -->
-                                            <div class="flex items-center">
-                                                <span class="text-sm font-medium mr-2">Status:</span>
-                                                <select name="commitment_status[]" 
-                                                        class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                        onchange="updateStatusStyle(this); updateCommitmentFormat(this);">
-                                                    <option value="open">Open</option>
-                                                    <option value="closed">Closed</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <!-- Deadline Input -->
-                                            <div class="flex items-center">
-                                                <span class="text-sm font-medium mr-2">Deadline:</span>
-                                                <input type="date" 
-                                                       name="commitment_deadlines[]" 
-                                                       class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                       required>
-                                            </div>
-                                        </div>
-
-                                        <!-- Commitment Textarea -->
-                                        <div class="relative">
-                                            <textarea name="commitments[]" 
-                                                      class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                      rows="3"
-                                                      placeholder="Masukkan komitmen"
-                                                      required></textarea>
-                                        </div>
+                                    <div class="md:col-span-8 relative">
+                                        <input type="date" 
+                                               name="commitment_deadlines[]" 
+                                               class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
+                                               value="{{ old('commitment_deadlines.0') }}"
+                                               required>
+                                        <textarea name="commitments[]" 
+                                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                  rows="3"
+                                                  placeholder="Masukkan komitmen"
+                                                  required>{{ old('commitments.0') }}</textarea>
                                     </div>
-
-                                    <!-- PIC Selection -->
-                                    <div class="md:col-span-3">
-                                        <div class="space-y-2">
-                                            <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md">
-                                                <option value="">Pilih Bagian</option>
-                                                @foreach(\App\Models\Department::orderBy('name')->get() as $department)
-                                                    <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <select name="commitment_pics[]" 
-                                                    class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md">
-                                                <option value="">Pilih Seksi dan PIC</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Delete Button -->
-                                    <div class="md:col-span-1 flex items-center">
-                                        <button type="button" 
-                                                onclick="removeCommitment(this)"
-                                                class="text-red-500 hover:text-red-700">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <div class="md:col-span-4">
+                                        <input type="text"
+                                               name="commitment_pics[]"
+                                               placeholder="Masukkan PIC"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               value="{{ old('commitment_pics.0') }}"
+                                               required>
                                     </div>
                                 </div>
                             </div>
@@ -307,22 +246,6 @@
                                     class="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
                                 <i class="fas fa-plus mr-2"></i> Tambah Komitmen
                             </button>
-                        </div>
-
-                        <!-- PIC -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
-                                PIC <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   name="pic" 
-                                   id="pic" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('pic') }}"
-                                   required>
-                            @error('pic')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Status -->
@@ -347,10 +270,8 @@
                             @enderror
                         </div>
 
-                        <!-- Dropdown untuk PIC Komitmen -->
+                  
                         
-                        <!-- Dropdown untuk PIC Sasaran -->
-                       
 
                     </div>
 
@@ -456,57 +377,24 @@ function addCommitment() {
     const newEntry = document.createElement('div');
     newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
     newEntry.innerHTML = `
-        <div class="md:col-span-8">
-            <!-- Header Section -->
-            <div class="flex justify-between items-center mb-2">
-                <!-- Status Badge -->
-                <div class="flex items-center">
-                    <span class="text-sm font-medium mr-2">Status:</span>
-                    <select name="commitment_status[]" 
-                            class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="updateStatusStyle(this); updateCommitmentFormat(this);">
-                        <option value="open">Open</option>
-                        <option value="closed">Closed</option>
-                    </select>
-                </div>
-                
-                <!-- Deadline Input -->
-                <div class="flex items-center">
-                    <span class="text-sm font-medium mr-2">Deadline:</span>
-                    <input type="date" 
-                           name="commitment_deadlines[]" 
-                           class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                           required>
-                </div>
-            </div>
-
-            <!-- Commitment Textarea -->
-            <div class="relative">
-                <textarea name="commitments[]" 
-                          class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          rows="3"
-                          placeholder="Masukkan komitmen"
-                          required></textarea>
-            </div>
+        <div class="md:col-span-8 relative">
+            <input type="date" 
+                   name="commitment_deadlines[]" 
+                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
+                   required>
+            <textarea name="commitments[]" 
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      rows="3"
+                      placeholder="Masukkan komitmen"
+                      required></textarea>
         </div>
-        
-        <!-- PIC Selection -->
         <div class="md:col-span-3">
-            <div class="space-y-2">
-                <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="">Pilih Bagian</option>
-                    @foreach(\App\Models\Department::orderBy('name')->get() as $department)
-                        <option value="{{ $department->id }}">{{ $department->name }}</option>
-                    @endforeach
-                </select>
-                <select name="commitment_pics[]" 
-                        class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="">Pilih Seksi dan PIC</option>
-                </select>
-            </div>
+            <input type="text"
+                   name="commitment_pics[]"
+                   placeholder="Masukkan PIC"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                   required>
         </div>
-        
-        <!-- Delete Button -->
         <div class="md:col-span-1 flex items-center">
             <button type="button" 
                     onclick="removeCommitment(this)"
@@ -516,297 +404,12 @@ function addCommitment() {
         </div>
     `;
     container.appendChild(newEntry);
-    
-    // Initialize status style
-    const statusSelect = newEntry.querySelector('.status-select');
-    updateStatusStyle(statusSelect);
 }
-
-function updateSections(departmentSelect, index) {
-    const row = departmentSelect.closest('.commitment-entry');
-    const sectionSelect = row.querySelector('.section-select');
-    const picSelect = row.querySelector('.pic-select');
-    
-    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
-    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-
-    if (departmentSelect.value) {
-        fetch(`/api/sections/${departmentSelect.value}`)
-            .then(response => response.json())
-            .then(sections => {
-                console.log('Sections:', sections); // Debug
-                sections.forEach(section => {
-                    sectionSelect.add(new Option(section.name, section.id));
-                });
-                sectionSelect.disabled = false;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-}
-
-function updatePics(sectionSelect, index) {
-    const row = sectionSelect.closest('.commitment-entry');
-    const picSelect = row.querySelector('.pic-select');
-    
-    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-
-    if (sectionSelect.value) {
-        fetch(`/api/pics/${sectionSelect.value}`)
-            .then(response => response.json())
-            .then(pics => {
-                console.log('PICs:', pics); // Debug
-                pics.forEach(pic => {
-                    picSelect.add(new Option(`${pic.name} (${pic.position})`, pic.id));
-                });
-                picSelect.disabled = false;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-}
-
-// Inisialisasi event listeners saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi dropdown untuk komitmen pertama
-    const firstDepartmentSelect = document.querySelector('.department-select');
-    if (firstDepartmentSelect) {
-        firstDepartmentSelect.addEventListener('change', function() {
-            updateSections(this, 0);
-        });
-    }
-
-    const firstSectionSelect = document.querySelector('.section-select');
-    if (firstSectionSelect) {
-        firstSectionSelect.addEventListener('change', function() {
-            updatePics(this, 0);
-        });
-    }
-});
 
 function removeCommitment(button) {
     button.closest('.commitment-entry').remove();
 }
-
-document.getElementById('department').addEventListener('change', function() {
-    const departmentId = this.value;
-    const sectionPicSelect = document.getElementById('section-pic');
-    
-    // Reset dan disable dropdown seksi-pic
-    sectionPicSelect.innerHTML = '<option value="">Pilih Seksi dan PIC</option>';
-    sectionPicSelect.disabled = true;
-
-    if (departmentId) {
-        // Tambahkan loading state
-        sectionPicSelect.disabled = true;
-        
-        // Fetch data dari API
-        fetch(`/api/sections-with-pics/${departmentId}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(sections => {
-                console.log('Data sections:', sections); // Debug
-                
-                if (sections.length > 0) {
-                    sections.forEach(section => {
-                        if (section.pics && section.pics.length > 0) {
-                            const optgroup = document.createElement('optgroup');
-                            optgroup.label = section.name;
-                            
-                            section.pics.forEach(pic => {
-                                const option = document.createElement('option');
-                                option.value = pic.id;
-                                option.textContent = `${pic.name} (${pic.position})`;
-                                optgroup.appendChild(option);
-                            });
-                            
-                            sectionPicSelect.appendChild(optgroup);
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                // Hapus loading state
-                sectionPicSelect.disabled = false;
-            });
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const departmentSelect = document.getElementById('department');
-    const sectionSelect = document.getElementById('section');
-    const picSelect = document.getElementById('pic');
-
-    // Sembunyikan semua opsi section dan pic awalnya
-    hideAllOptions(sectionSelect);
-    hideAllOptions(picSelect);
-
-    // Event listener untuk department
-    departmentSelect.addEventListener('change', function() {
-        const departmentId = this.value;
-        
-        // Reset dan sembunyikan semua opsi
-        hideAllOptions(sectionSelect);
-        hideAllOptions(picSelect);
-        
-        // Tampilkan section yang sesuai dengan department
-        if (departmentId) {
-            const sectionOptions = sectionSelect.querySelectorAll('option[data-department="' + departmentId + '"]');
-            sectionOptions.forEach(option => option.style.display = '');
-        }
-        
-        // Reset pilihan
-        sectionSelect.value = '';
-        picSelect.value = '';
-    });
-
-    // Event listener untuk section
-    sectionSelect.addEventListener('change', function() {
-        const sectionId = this.value;
-        
-        // Reset dan sembunyikan semua opsi PIC
-        hideAllOptions(picSelect);
-        
-        // Tampilkan PIC yang sesuai dengan section
-        if (sectionId) {
-            const picOptions = picSelect.querySelectorAll('option[data-section="' + sectionId + '"]');
-            picOptions.forEach(option => option.style.display = '');
-        }
-        
-        // Reset pilihan PIC
-        picSelect.value = '';
-    });
-
-    // Fungsi untuk menyembunyikan semua opsi kecuali default
-    function hideAllOptions(select) {
-        const options = select.querySelectorAll('option:not(:first-child)');
-        options.forEach(option => option.style.display = 'none');
-    }
-});
-
-// Fungsi untuk mengupdate dropdown Seksi dan PIC
-function updateSectionAndPic(departmentSelect, targetSelect) {
-    const departmentId = departmentSelect.value;
-    const sectionPicSelect = targetSelect ? 
-        document.getElementById(targetSelect) : 
-        departmentSelect.closest('div').querySelector('.section-pic-select');
-    
-    // Debug log
-    console.log('Department selected:', departmentId);
-    
-    // Reset dropdown
-    sectionPicSelect.innerHTML = '<option value="">Pilih Seksi dan PIC</option>';
-    
-    if (!departmentId) {
-        return;
-    }
-
-    // Tampilkan loading
-    sectionPicSelect.innerHTML = '<option value="">Loading...</option>';
-    
-    // Fetch data
-    fetch(`/api/sections-with-pics/${departmentId}`)
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Data received:', data);
-            
-            // Reset dropdown
-            sectionPicSelect.innerHTML = '<option value="">Pilih Seksi dan PIC</option>';
-            
-            // Populate dropdown
-            data.forEach(section => {
-                if (section.pics && section.pics.length > 0) {
-                    const group = document.createElement('optgroup');
-                    group.label = section.name;
-                    
-                    section.pics.forEach(pic => {
-                        const option = document.createElement('option');
-                        option.value = pic.id;
-                        option.textContent = `${pic.name} (${pic.position})`;
-                        group.appendChild(option);
-                    });
-                    
-                    sectionPicSelect.appendChild(group);
-                }
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            sectionPicSelect.innerHTML = '<option value="">Error loading data</option>';
-        });
-}
-
-// Event listener untuk PIC Sasaran
-document.getElementById('department_target').addEventListener('change', function() {
-    console.log('Department target changed');
-    updateSectionAndPic(this, 'section_pic_target');
-});
-
-// Event listener untuk PIC Komitmen
-document.addEventListener('change', function(e) {
-    if (e.target.classList.contains('department-select')) {
-        console.log('Department commitment changed');
-        updateSectionAndPic(e.target);
-    }
-});
-
-// Inisialisasi saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded');
-    
-    // Enable semua dropdown
-    document.querySelectorAll('.section-pic-select').forEach(select => {
-        select.disabled = false;
-    });
-});
-
-// Fungsi untuk mengupdate style status
-function updateStatusStyle(select) {
-    const status = select.value;
-    // Reset class
-    select.className = 'status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ';
-    
-    // Add status-specific styling
-    if (status === 'open') {
-        select.classList.add('bg-yellow-100', 'text-yellow-800', 'border', 'border-yellow-300');
-    } else if (status === 'closed') {
-        select.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-300');
-    }
-}
-
-// Initialize status styles on page load
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.status-select').forEach(select => {
-        updateStatusStyle(select);
-        updateCommitmentFormat(select);
-    });
-});
-
-// Fungsi untuk memformat teks komitmen dengan status
-function updateCommitmentFormat(statusSelect) {
-    const commitmentEntry = statusSelect.closest('.commitment-entry');
-    const textarea = commitmentEntry.querySelector('.commitment-text');
-    const status = statusSelect.value.toUpperCase();
-    
-    // Hanya update status di textarea jika diperlukan
-    let commitmentText = textarea.value;
-    if (!commitmentText.includes('[STATUS:')) {
-        textarea.value = commitmentText;
-    }
-}
-</script>   
+</script>
 @push('scripts')
 @endpush
 @endsection 

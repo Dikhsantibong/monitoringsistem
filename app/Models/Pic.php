@@ -3,14 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Log;
 
 class Pic extends Model
 {
-    protected $fillable = ['name', 'position', 'section_id'];
+    use HasFactory;
 
-    public function commitments()
+    protected $fillable = [
+        'section_id',
+        'name',
+        'position',
+        'department',
+        'section'
+    ];
+
+    protected static function boot()
     {
-        return $this->hasMany(Commitment::class);
+        parent::boot();
+
+        static::retrieved(function ($pic) {
+            Log::info('PIC retrieved:', [
+                'id' => $pic->id,
+                'name' => $pic->name,
+                'section_id' => $pic->section_id
+            ]);
+        });
     }
 
     public function section()
