@@ -475,6 +475,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth'], 'as' => 'admin.'], 
         ->name('other-discussions.update');
 });
 
+// Tambahkan route fallback untuk debugging
+Route::fallback(function () {
+    return response()->json(['error' => 'Route tidak ditemukan'], 404);
+});
+
 
 
     

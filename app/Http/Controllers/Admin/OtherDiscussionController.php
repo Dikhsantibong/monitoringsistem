@@ -134,45 +134,59 @@ class OtherDiscussionController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'sr_number' => 'nullable|numeric',
+            'wo_number' => 'nullable|numeric',
+            'unit' => 'required|string',
+            'equipment' => 'required|string',
+            'problem' => 'required|string',
+            'root_cause' => 'required|string',
+            'corrective_action' => 'required|string',
+            'preventive_action' => 'required|string',
+            'commitments' => 'required|array',
+            'commitment_deadlines' => 'required|array',
+            'commitment_pics' => 'required|array',
+            'commitments.*' => 'required|string',
+            'commitment_deadlines.*' => 'required|date',
+            'commitment_pics.*' => 'required|exists:pics,id'
+        ]);
+
         try {
-            $validated = $request->validate([
-                'sr_number' => 'required',
-                'wo_number' => 'required',
-                'unit' => 'required',
-                'topic' => 'required',
-                'target' => 'required',
-                'target_deadline' => 'required|date',
-                'risk_level' => 'required',
-                'priority_level' => 'required',
-                'commitments' => 'required|array|min:1',
-                'commitment_deadlines' => 'required|array|min:1',
-                'commitment_deadlines.*' => 'required|date',
-                'pic' => 'required',
+            DB::beginTransaction();
+
+            // Simpan diskusi
+            $discussion = OtherDiscussion::create([
+                'sr_number' => $request->sr_number,
+                'wo_number' => $request->wo_number,
+                'unit' => $request->unit,
+                'equipment' => $request->equipment,
+                'problem' => $request->problem,
+                'root_cause' => $request->root_cause,
+                'corrective_action' => $request->corrective_action,
+                'preventive_action' => $request->preventive_action,
+                'created_by' => auth()->id()
             ]);
 
-            DB::transaction(function () use ($request, $discussion) {
-                // Simpan discussion
-                $discussion = OtherDiscussion::create($request->except('commitments', 'commitment_deadlines', 'commitment_pics'));
-                
-                // Simpan commitments dengan PIC
-                foreach ($request->commitments as $index => $commitment) {
-                    $discussion->commitments()->create([
-                        'description' => $commitment,
-                        'deadline' => $request->commitment_deadlines[$index],
-                        'pic_id' => $request->commitment_pics[$index]
-                    ]);
-                }
-            });
+            // Simpan komitmen
+            foreach ($request->commitments as $index => $commitment) {
+                $discussion->commitments()->create([
+                    'description' => $commitment,
+                    'deadline' => $request->commitment_deadlines[$index],
+                    'pic_id' => $request->commitment_pics[$index]
+                ]);
+            }
+
+            DB::commit();
 
             return redirect()
                 ->route('admin.other-discussions.index')
-                ->with('success', 'Data berhasil ditambahkan');
+                ->with('success', 'Pembahasan berhasil ditambahkan');
 
         } catch (\Exception $e) {
             DB::rollback();
             return back()
                 ->withInput()
-                ->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 

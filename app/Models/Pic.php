@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pic extends Model
 {
-    protected $fillable = ['name', 'position', 'department'];
+    protected $fillable = ['name', 'position', 'section_id'];
 
     public function commitments()
     {

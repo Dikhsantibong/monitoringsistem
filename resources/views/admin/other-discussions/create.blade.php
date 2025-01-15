@@ -120,22 +120,41 @@
                             @enderror
                         </div>
 
-                        <!-- Sasaran -->
-                        <div class="mb-4 md:col-span-2">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="target">
-                                Sasaran <span class="text-red-500">*</span>
-                            </label>
-                            <textarea name="target" 
-                                      id="target" 
-                                      rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      required>{{ old('target') }}</textarea>
-                            @error('target')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
+                        <!-- Sasaran dengan PIC -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 md:col-span-2">
+                            <div class="md:col-span-8">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    Sasaran <span class="text-red-500">*</span>
+                                </label>
+                                <textarea name="target" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                          rows="3"
+                                          placeholder="Masukkan sasaran"
+                                          required>{{ old('target') }}</textarea>
+                            </div>
+                            <div class="md:col-span-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    PIC Sasaran
+                                </label>
+                                <div class="space-y-2">
+                                    <select id="department_target" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">Pilih Bagian</option>
+                                        @foreach(\App\Models\Department::orderBy('name')->get() as $department)
+                                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select name="pic_target_id" 
+                                            id="section_pic_target" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            disabled>
+                                        <option value="">Pilih Seksi dan PIC</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                         <!-- Sasaran Deadline -->
-                         <div class="mb-4">
+
+                        <!-- Sasaran Deadline -->
+                        <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="target_deadline">
                                 Deadline Sasaran <span class="text-red-500">*</span>
                             </label>
@@ -194,9 +213,29 @@
                             @enderror
                         </div>
 
-                       
+                        <!-- Dropdown Bertingkat -->
+                        <div class="mb-4">
+                            
 
-                        <!-- Komitmen -->
+                            
+
+                            <!-- Level 3: PIC -->
+                                {{-- <div class="mt-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                                        Pilih PIC
+                                    </label>
+                                    <select name="pic_id" id="pic" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">Pilih PIC</option>
+                                        @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
+                                            <option value="{{ $pic->id }}" data-section="{{ $pic->section_id }}">
+                                                {{ $pic->name }} ({{ $pic->position }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div> --}}
+                        </div>
+
+                        <!-- Komitmen dengan PIC -->
                         <div class="mb-4 md:col-span-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2">
                                 Komitmen <span class="text-red-500">*</span>
@@ -207,32 +246,26 @@
                                         <input type="date" 
                                                name="commitment_deadlines[]" 
                                                class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                                               value="{{ old('commitment_deadlines.0') }}"
                                                required>
                                         <textarea name="commitments[]" 
                                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                   rows="3"
                                                   placeholder="Masukkan komitmen"
-                                                  required>{{ old('commitments.0') }}</textarea>
+                                                  required></textarea>
                                     </div>
                                     <div class="md:col-span-3">
-                                        <!-- Dropdown Bertingkat untuk PIC -->
+                                        <!-- Dropdown PIC untuk setiap komitmen -->
                                         <div class="space-y-2">
-                                            <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                    onchange="updateSections(this, 0)">
-                                                <option value="">Pilih Bagian/Unit</option>
+                                            <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="">Pilih Bagian</option>
                                                 @foreach(\App\Models\Department::orderBy('name')->get() as $department)
                                                     <option value="{{ $department->id }}">{{ $department->name }}</option>
                                                 @endforeach
                                             </select>
-                                            <select class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                    onchange="updatePics(this, 0)" disabled>
-                                                <option value="">Pilih Seksi</option>
-                                            </select>
                                             <select name="commitment_pics[]" 
-                                                    class="pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                    required disabled>
-                                                <option value="">Pilih PIC</option>
+                                                    class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    disabled>
+                                                <option value="">Pilih Seksi dan PIC</option>
                                             </select>
                                         </div>
                                     </div>
@@ -290,8 +323,10 @@
                             @enderror
                         </div>
 
-                  
+                        <!-- Dropdown untuk PIC Komitmen -->
                         
+                        <!-- Dropdown untuk PIC Sasaran -->
+                       
 
                     </div>
 
@@ -412,21 +447,15 @@ function addCommitment() {
         </div>
         <div class="md:col-span-3">
             <div class="space-y-2">
-                <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        onchange="updateSections(this, ${commitmentCount})">
-                    <option value="">Pilih Bagian/Unit</option>
+                <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option value="">Pilih Bagian</option>
                     @foreach(\App\Models\Department::orderBy('name')->get() as $department)
                         <option value="{{ $department->id }}">{{ $department->name }}</option>
                     @endforeach
                 </select>
-                <select class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        onchange="updatePics(this, ${commitmentCount})" disabled>
-                    <option value="">Pilih Seksi</option>
-                </select>
                 <select name="commitment_pics[]" 
-                        class="pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        required disabled>
-                    <option value="">Pilih PIC</option>
+                        class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option value="">Pilih Seksi dan PIC</option>
                 </select>
             </div>
         </div>
@@ -446,39 +475,22 @@ function updateSections(departmentSelect, index) {
     const sectionSelect = row.querySelector('.section-select');
     const picSelect = row.querySelector('.pic-select');
     
-    // Reset dan disable dropdown
     sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
     picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-    
-    // Enable/disable dropdown seksi berdasarkan pilihan department
+
     if (departmentSelect.value) {
-        sectionSelect.disabled = false;
-        
-        // Fetch data seksi
-        fetch(`/api/sections/${departmentSelect.value}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(sections => {
-            sections.forEach(section => {
-                sectionSelect.add(new Option(section.name, section.id));
+        fetch(`/api/sections/${departmentSelect.value}`)
+            .then(response => response.json())
+            .then(sections => {
+                console.log('Sections:', sections); // Debug
+                sections.forEach(section => {
+                    sectionSelect.add(new Option(section.name, section.id));
+                });
+                sectionSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            sectionSelect.disabled = true;
-        });
-    } else {
-        sectionSelect.disabled = true;
-        picSelect.disabled = true;
     }
 }
 
@@ -486,37 +498,21 @@ function updatePics(sectionSelect, index) {
     const row = sectionSelect.closest('.commitment-entry');
     const picSelect = row.querySelector('.pic-select');
     
-    // Reset dan disable dropdown PIC
     picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-    
-    // Enable/disable dropdown PIC berdasarkan pilihan seksi
+
     if (sectionSelect.value) {
-        picSelect.disabled = false;
-        
-        // Fetch data PIC
-        fetch(`/api/pics/${sectionSelect.value}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(pics => {
-            pics.forEach(pic => {
-                picSelect.add(new Option(`${pic.name} (${pic.position})`, pic.id));
+        fetch(`/api/pics/${sectionSelect.value}`)
+            .then(response => response.json())
+            .then(pics => {
+                console.log('PICs:', pics); // Debug
+                pics.forEach(pic => {
+                    picSelect.add(new Option(`${pic.name} (${pic.position})`, pic.id));
+                });
+                picSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            picSelect.disabled = true;
-        });
-    } else {
-        picSelect.disabled = true;
     }
 }
 
@@ -541,7 +537,203 @@ document.addEventListener('DOMContentLoaded', function() {
 function removeCommitment(button) {
     button.closest('.commitment-entry').remove();
 }
-</script>
+
+document.getElementById('department').addEventListener('change', function() {
+    const departmentId = this.value;
+    const sectionPicSelect = document.getElementById('section-pic');
+    
+    // Reset dan disable dropdown seksi-pic
+    sectionPicSelect.innerHTML = '<option value="">Pilih Seksi dan PIC</option>';
+    sectionPicSelect.disabled = true;
+
+    if (departmentId) {
+        // Tambahkan loading state
+        sectionPicSelect.disabled = true;
+        
+        // Fetch data dari API
+        fetch(`/api/sections-with-pics/${departmentId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(sections => {
+                console.log('Data sections:', sections); // Debug
+                
+                if (sections.length > 0) {
+                    sections.forEach(section => {
+                        if (section.pics && section.pics.length > 0) {
+                            const optgroup = document.createElement('optgroup');
+                            optgroup.label = section.name;
+                            
+                            section.pics.forEach(pic => {
+                                const option = document.createElement('option');
+                                option.value = pic.id;
+                                option.textContent = `${pic.name} (${pic.position})`;
+                                optgroup.appendChild(option);
+                            });
+                            
+                            sectionPicSelect.appendChild(optgroup);
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // Hapus loading state
+                sectionPicSelect.disabled = false;
+            });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const departmentSelect = document.getElementById('department');
+    const sectionSelect = document.getElementById('section');
+    const picSelect = document.getElementById('pic');
+
+    // Sembunyikan semua opsi section dan pic awalnya
+    hideAllOptions(sectionSelect);
+    hideAllOptions(picSelect);
+
+    // Event listener untuk department
+    departmentSelect.addEventListener('change', function() {
+        const departmentId = this.value;
+        
+        // Reset dan sembunyikan semua opsi
+        hideAllOptions(sectionSelect);
+        hideAllOptions(picSelect);
+        
+        // Tampilkan section yang sesuai dengan department
+        if (departmentId) {
+            const sectionOptions = sectionSelect.querySelectorAll('option[data-department="' + departmentId + '"]');
+            sectionOptions.forEach(option => option.style.display = '');
+        }
+        
+        // Reset pilihan
+        sectionSelect.value = '';
+        picSelect.value = '';
+    });
+
+    // Event listener untuk section
+    sectionSelect.addEventListener('change', function() {
+        const sectionId = this.value;
+        
+        // Reset dan sembunyikan semua opsi PIC
+        hideAllOptions(picSelect);
+        
+        // Tampilkan PIC yang sesuai dengan section
+        if (sectionId) {
+            const picOptions = picSelect.querySelectorAll('option[data-section="' + sectionId + '"]');
+            picOptions.forEach(option => option.style.display = '');
+        }
+        
+        // Reset pilihan PIC
+        picSelect.value = '';
+    });
+
+    // Fungsi untuk menyembunyikan semua opsi kecuali default
+    function hideAllOptions(select) {
+        const options = select.querySelectorAll('option:not(:first-child)');
+        options.forEach(option => option.style.display = 'none');
+    }
+});
+
+// Fungsi untuk mengupdate dropdown Seksi dan PIC
+async function updateSectionAndPic(departmentSelect, targetSelect) {
+    const departmentId = departmentSelect.value;
+    const sectionPicSelect = targetSelect ? 
+        document.getElementById(targetSelect) : 
+        departmentSelect.closest('div').querySelector('.section-pic-select');
+    
+    console.log('Updating sections for department:', departmentId); // Debug log
+    
+    // Reset dropdown
+    sectionPicSelect.innerHTML = '<option value="">Pilih Seksi dan PIC</option>';
+    sectionPicSelect.disabled = true;
+
+    if (!departmentId) {
+        sectionPicSelect.disabled = false;
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/sections-with-pics/${departmentId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        console.log('Response status:', response.status); // Debug log
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const sections = await response.json();
+        console.log('Received sections:', sections); // Debug log
+
+        if (sections && sections.length > 0) {
+            sections.forEach(section => {
+                if (section.pics && section.pics.length > 0) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = section.name;
+                    
+                    section.pics.forEach(pic => {
+                        const option = document.createElement('option');
+                        option.value = pic.id;
+                        option.textContent = `${pic.name} (${pic.position})`;
+                        optgroup.appendChild(option);
+                    });
+                    
+                    sectionPicSelect.appendChild(optgroup);
+                }
+            });
+        } else {
+            const option = document.createElement('option');
+            option.textContent = 'Tidak ada PIC tersedia untuk seksi ini';
+            sectionPicSelect.appendChild(option);
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        const option = document.createElement('option');
+        option.textContent = 'Error: Gagal memuat data. Silakan coba lagi.';
+        sectionPicSelect.appendChild(option);
+    } finally {
+        sectionPicSelect.disabled = false;
+    }
+}
+
+// Event listener untuk PIC Sasaran
+document.getElementById('department_target')?.addEventListener('change', function() {
+    updateSectionAndPic(this, 'section_pic_target');
+});
+
+// Event listener untuk PIC Komitmen
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('department-select')) {
+        updateSectionAndPic(e.target);
+    }
+});
+
+// Inisialisasi saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug log untuk memastikan script berjalan
+    console.log('Script initialized');
+    
+    // Cek CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+    } else {
+        console.log('CSRF token found');
+    }
+});
+</script>   
 @push('scripts')
 @endpush
 @endsection 
