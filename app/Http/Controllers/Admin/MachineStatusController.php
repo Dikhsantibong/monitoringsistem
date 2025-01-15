@@ -20,7 +20,12 @@ class MachineStatusController extends Controller
             $searchQuery = $request->get('search');
             
             // Query power plants
-            $powerPlantsQuery = PowerPlant::with(['machines']);
+            $powerPlantsQuery = PowerPlant::with(['machines' => function($query) {
+                $query->with(['statusLogs' => function($query) {
+                    $query->where('tanggal', '>=', now()->subDays(30))
+                          ->orderBy('tanggal', 'desc');
+                }]);
+            }]);
             
             // Filter berdasarkan unit_source
             if (session('unit') === 'mysql') {
@@ -31,7 +36,7 @@ class MachineStatusController extends Controller
                 $powerPlantsQuery->where('unit_source', session('unit'));
             }
             
-            // Filter pencarian untuk power plant
+            // Filter pencarian
             if ($searchQuery) {
                 $powerPlantsQuery->where(function($query) use ($searchQuery) {
                     $query->where('name', 'like', "%{$searchQuery}%")
@@ -41,8 +46,14 @@ class MachineStatusController extends Controller
                 });
             }
             
-            
             $powerPlants = $powerPlantsQuery->get();
+            
+            // Hitung statistik downtime untuk setiap mesin
+            foreach ($powerPlants as $powerPlant) {
+                foreach ($powerPlant->machines as $machine) {
+                    $machine->downtime_stats = $this->calculateDowntimeStats($machine);
+                }
+            }
             
             // Get logs dengan filter pencarian
             $logsQuery = MachineStatusLog::with(['machine', 'powerPlant'])
@@ -59,23 +70,20 @@ class MachineStatusController extends Controller
             
             $logs = $logsQuery->get();
 
-            // Get unit operation hours dengan eager loading powerPlant
+            // Get dan hitung HOP
             $hopQuery = UnitOperationHour::with('powerPlant')
                 ->whereDate('tanggal', $date);
 
-            // Filter berdasarkan unit_source jika ada
             if ($unitSource) {
                 $hopQuery->where('unit_source', $unitSource);
             } elseif (session('unit') !== 'mysql') {
                 $hopQuery->where('unit_source', session('unit'));
             }
 
-            // Ambil data HOP dan kelompokkan berdasarkan power_plant_id
             $unitOperationHours = $hopQuery->get()->mapWithKeys(function ($item) {
                 return [$item->power_plant_id => $item];
             });
 
-            // Hitung total HOP untuk setiap pembangkit
             $totalHopByPlant = [];
             foreach ($powerPlants as $powerPlant) {
                 $hop = $unitOperationHours->get($powerPlant->id);
@@ -120,5 +128,60 @@ class MachineStatusController extends Controller
             
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Menghitung statistik downtime untuk sebuah mesin
+     */
+    private function calculateDowntimeStats($machine)
+    {
+        $stats = [
+            'total_downtime' => 0,
+            'current_downtime' => null,
+            'is_down' => false
+        ];
+
+        $statusLogs = $machine->statusLogs()
+            ->where('status', 'STOP')
+            ->where('tanggal', '>=', now()->subDays(30))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        foreach ($statusLogs as $log) {
+            $startTime = Carbon::parse($log->tanggal);
+            
+            // Hitung waktu selesai
+            if ($log->target_selesai) {
+                $endTime = Carbon::parse($log->target_selesai);
+                if ($endTime->isFuture()) {
+                    $endTime = now();
+                }
+            } else {
+                $nextLog = $machine->statusLogs()
+                    ->where('tanggal', '>', $log->tanggal)
+                    ->orderBy('tanggal', 'asc')
+                    ->first();
+                $endTime = $nextLog ? Carbon::parse($nextLog->tanggal) : now();
+            }
+            
+            $duration = $startTime->diffInHours($endTime, true);
+            $stats['total_downtime'] += $duration;
+
+            // Jika ini adalah log terbaru dan statusnya STOP
+            if ($log === $statusLogs->first()) {
+                $stats['is_down'] = true;
+                $stats['current_downtime'] = [
+                    'duration' => $duration,
+                    'component' => $log->component,
+                    'equipment' => $log->equipment,
+                    'deskripsi' => $log->deskripsi,
+                    'progres' => $log->progres,
+                    'start_time' => $startTime,
+                    'target_selesai' => $log->target_selesai
+                ];
+            }
+        }
+
+        return $stats;
     }
 } 

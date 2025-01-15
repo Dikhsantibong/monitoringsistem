@@ -150,22 +150,6 @@
                             @enderror
                         </div>
 
-                        <!-- PIC -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
-                                PIC <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   name="pic" 
-                                   id="pic" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('pic') }}"
-                                   required>
-                            @error('pic')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
                         <!-- Tingkat Resiko -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="risk_level">
@@ -231,13 +215,24 @@
                                                   placeholder="Masukkan komitmen"
                                                   required>{{ old('commitments.0') }}</textarea>
                                     </div>
-                                    <div class="md:col-span-4">
-                                        <input type="text"
-                                               name="commitment_pics[]"
-                                               placeholder="Masukkan PIC"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                               value="{{ old('commitment_pics.0') }}"
-                                               required>
+                                    <div class="md:col-span-3">
+                                        <select name="commitment_pics[]"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                required>
+                                            <option value="">Pilih PIC</option>
+                                            @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
+                                                <option value="{{ $pic->id }}">
+                                                    {{ $pic->name }} - {{ $pic->position }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-1 flex items-center">
+                                        <button type="button" 
+                                                onclick="removeCommitment(this)"
+                                                class="text-red-500 hover:text-red-700">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -246,6 +241,22 @@
                                     class="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
                                 <i class="fas fa-plus mr-2"></i> Tambah Komitmen
                             </button>
+                        </div>
+
+                        <!-- PIC -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
+                                PIC <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   name="pic" 
+                                   id="pic" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   value="{{ old('pic') }}"
+                                   required>
+                            @error('pic')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Status -->
@@ -389,11 +400,16 @@ function addCommitment() {
                       required></textarea>
         </div>
         <div class="md:col-span-3">
-            <input type="text"
-                   name="commitment_pics[]"
-                   placeholder="Masukkan PIC"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                   required>
+            <select name="commitment_pics[]"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required>
+                <option value="">Pilih PIC</option>
+                @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
+                    <option value="{{ $pic->id }}">
+                        {{ $pic->name }} - {{ $pic->position }}
+                    </option>
+                @endforeach
+            </select>
         </div>
         <div class="md:col-span-1 flex items-center">
             <button type="button" 

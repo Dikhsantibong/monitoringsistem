@@ -16,6 +16,7 @@ class PowerPlant extends Model
     protected $table = 'power_plants';
 
     protected $fillable = [
+        'id',
         'name',
         'latitude',
         'longitude',

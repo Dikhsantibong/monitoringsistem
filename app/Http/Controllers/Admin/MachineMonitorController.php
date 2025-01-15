@@ -45,10 +45,41 @@ class MachineMonitorController extends Controller
 
         // Menghitung uptime/downtime untuk setiap mesin
         $uptime = $machines->map(function($machine) {
+            // Ambil log status mesin dalam 24 jam terakhir
+            $logs = MachineStatusLog::where('machine_id', $machine->id)
+                ->where('tanggal', '>=', Carbon::now()->subDay())
+                ->get();
+            
+            $totalTime = 0;
+            $uptimeMinutes = 0;
+            
+            if ($logs->count() > 0) {
+                foreach ($logs as $index => $log) {
+                    $startTime = Carbon::parse($log->tanggal);
+                    $endTime = isset($logs[$index + 1]) 
+                        ? Carbon::parse($logs[$index + 1]->tanggal) 
+                        : Carbon::now();
+                    
+                    $duration = $startTime->diffInMinutes($endTime);
+                    $totalTime += $duration;
+                    
+                    if ($log->status === 'START' || $log->status === 'PARALLEL') {
+                        $uptimeMinutes += $duration;
+                    }
+                }
+                
+                $uptimePercentage = $totalTime > 0 ? ($uptimeMinutes / $totalTime) * 100 : 0;
+                $downtimePercentage = $totalTime > 0 ? 100 - $uptimePercentage : 0;
+            } else {
+                // Jika tidak ada log, gunakan status terakhir mesin
+                $uptimePercentage = $machine->status === 'START' ? 100 : 0;
+                $downtimePercentage = $machine->status === 'STOP' ? 100 : 0;
+            }
+            
             return [
                 'name' => $machine->name,
-                'uptime' => $machine->status === 'START' ? 100 : 0,
-                'downtime' => $machine->status === 'STOP' ? 100 : 0,
+                'uptime' => round($uptimePercentage, 2),
+                'downtime' => round($downtimePercentage, 2),
             ];
         });
 

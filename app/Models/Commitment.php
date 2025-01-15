@@ -22,4 +22,9 @@ class Commitment extends Model
     {
         return $this->belongsTo(OtherDiscussion::class, 'other_discussion_id');
     }
+
+    public function pic()
+    {
+        return $this->belongsTo(Pic::class);
+    }
 } 

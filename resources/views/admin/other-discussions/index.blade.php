@@ -178,12 +178,11 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran & Deadline</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
@@ -226,8 +225,8 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         <div class="text-sm">{{ $commitment->description }}</div>
-                                                        <div class="flex justify-between text-xs text-gray-500">
-                                                            <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                        <div class="text-xs text-gray-500">
+                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
                                                         </div>
                                                     </div>
                                                 @endforeach
@@ -239,15 +238,17 @@
                                             @if($discussion->commitments && $discussion->commitments->count() > 0)
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
-                                                        <span class="text-sm">{{ $commitment->pic }}</span>
+                                                        @if($commitment->pic)
+                                                            <div class="text-sm">{{ $commitment->pic->name }}</div>
+                                                            <div class="text-xs text-gray-500">{{ $commitment->pic->position }}</div>
+                                                        @else
+                                                            <span class="text-gray-500">-</span>
+                                                        @endif
                                                     </div>
                                                 @endforeach
                                             @else
                                                 <span class="text-gray-500">-</span>
                                             @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            {{ $discussion->pic }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded
@@ -363,7 +364,12 @@
                                             @if($discussion->commitments && $discussion->commitments->count() > 0)
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
-                                                        <span class="text-sm">{{ $commitment->pic }}</span>
+                                                        @if($commitment->pic)
+                                                            <div class="text-sm">{{ $commitment->pic->name }}</div>
+                                                            <div class="text-xs text-gray-500">{{ $commitment->pic->position }}</div>
+                                                        @else
+                                                            <span class="text-gray-500">-</span>
+                                                        @endif
                                                     </div>
                                                 @endforeach
                                             @else
@@ -445,63 +451,12 @@
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <span class="px-2 py-1 text-sm rounded
-                                                @if($discussion->risk_level == 'R') bg-green-100 text-green-800
-                                                @elseif($discussion->risk_level == 'MR') bg-yellow-100 text-yellow-800  
-                                                @elseif($discussion->risk_level == 'MT') bg-orange-100 text-orange-800
-                                                @elseif($discussion->risk_level == 'T') bg-red-100 text-red-800
-                                                @endif">
-                                                {{ $discussion->risk_level }}
+                                            <span class="px-2 py-1 text-sm rounded text-sm bg-red-100 text-red-800">
+                                                Melewati Deadline
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <span class="px-2 py-1 text-sm rounded
-                                                @if($discussion->priority_level == 'Low') bg-green-100 text-green-800
-                                                @elseif($discussion->priority_level == 'Medium') bg-yellow-100 text-yellow-800
-                                                @elseif($discussion->priority_level == 'High') bg-red-100 text-red-800
-                                                @endif">
-                                                {{ $discussion->priority_level }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
-                                                @foreach($discussion->commitments as $commitment)
-                                                    <div class="mb-2 p-2 border rounded">
-                                                        <div class="text-sm">{{ $commitment->description }}</div>
-                                                        <div class="text-xs text-gray-500">
-                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            @else
-                                                <span class="text-gray-500">Tidak ada komitmen</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
-                                                @foreach($discussion->commitments as $commitment)
-                                                    <div class="mb-2 p-2 border rounded">
-                                                        <span class="text-sm">{{ $commitment->pic }}</span>
-                                                    </div>
-                                                @endforeach
-                                            @else
-                                                <span class="text-gray-500">-</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            {{ $discussion->pic }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <span class="px-2 py-1 text-sm rounded
-                                                @if($discussion->status == 'Open') bg-blue-100 text-blue-800
-                                                @elseif($discussion->status == 'Closed') bg-green-100 text-green-800
-                                                @elseif($discussion->status == 'Overdue') bg-red-100 text-red-800
-                                                @endif">
-                                                {{ $discussion->status }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <div class="flex items-center space-x-3">
+                                            <div class="flex items-center space-x-3 text-sm">
                                                 <a href="#" onclick="editDiscussion({{ $discussion->id }})" 
                                                    class="text-blue-500 hover:text-blue-700">
                                                     <i class="fas fa-edit"></i>
@@ -519,7 +474,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="13" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="10" class="px-6 py-4 text-center text-gray-500">
                                             Tidak ada diskusi dengan komitmen yang melewati deadline
                                         </td>
                                     </tr>
@@ -546,10 +501,10 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Pembahasan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tanggal Selesai</th>
                                 </tr>
                             </thead>
@@ -576,8 +531,8 @@
                                             @if($discussion->commitments && $discussion->commitments->count() > 0)
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
-                                                        <div class="text-sm">{{ $commitment->description }}</div>
-                                                        <div class="text-xs text-gray-500">
+                                                        <div>{{ $commitment->description }}</div>
+                                                        <div class="text-sm text-gray-500">
                                                             Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
                                                             <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
                                                                 {{ $commitment->status }}
@@ -605,7 +560,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="13" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="14" class="px-6 py-4 text-center text-gray-500">
                                             Tidak ada data selesai
                                         </td>
                                     </tr>

@@ -192,12 +192,16 @@
                                                       required>{{ old('commitments.'.$index, $commitment->description) }}</textarea>
                                         </div>
                                         <div class="md:col-span-3">
-                                            <input type="text"
-                                                   name="commitment_pics[]"
-                                                   placeholder="Masukkan PIC"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                   value="{{ old('commitment_pics.'.$index, $commitment->pic) }}"
-                                                   required>
+                                            <select name="commitment_pics[]"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    required>
+                                                <option value="">Pilih PIC</option>
+                                                @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
+                                                    <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                        {{ $pic->name }} - {{ $pic->position }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <div class="md:col-span-1 flex items-center">
                                             @if(!$loop->first)
@@ -212,26 +216,10 @@
                                 @endforeach
                             </div>
                             <button type="button" 
-                                    onclick="addCommitment()"
+                                    id="add-commitment"
                                     class="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
                                 <i class="fas fa-plus mr-2"></i> Tambah Komitmen
                             </button>
-                        </div>
-
-                        <!-- PIC -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
-                                PIC <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   name="pic" 
-                                   id="pic" 
-                                   value="{{ old('pic', $discussion->pic) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   required>
-                            @error('pic')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Status -->
@@ -340,31 +328,40 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     });
 });
 
-// Script untuk menangani penambahan dan penghapusan komitmen
+// Script untuk menangani penambahan komitmen
 document.getElementById('add-commitment').addEventListener('click', function() {
     const container = document.getElementById('commitments-container');
     const newEntry = document.createElement('div');
-    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-3 gap-4 mb-2';
+    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
+    
+    // Dapatkan daftar PIC untuk dropdown
+    const picOptions = `
+        <option value="">Pilih PIC</option>
+        @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
+            <option value="{{ $pic->id }}">{{ $pic->name }} - {{ $pic->position }}</option>
+        @endforeach
+    `;
+
     newEntry.innerHTML = `
-        <div>
+        <div class="md:col-span-8 relative">
+            <input type="date" 
+                   name="commitment_deadlines[]" 
+                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
+                   required>
             <textarea name="commitments[]" 
                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      rows="2"
+                      rows="3"
                       placeholder="Masukkan komitmen"
                       required></textarea>
         </div>
-        <div>
-            <input type="date" 
-                   name="commitment_deadlines[]" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                   required>
+        <div class="md:col-span-3">
+            <select name="commitment_pics[]"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required>
+                ${picOptions}
+            </select>
         </div>
-        <div class="flex gap-2">
-            <input type="text"
-                   name="commitment_pics[]"
-                   placeholder="Masukkan PIC"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                   required>
+        <div class="md:col-span-1 flex items-center">
             <button type="button" 
                     onclick="removeCommitment(this)"
                     class="text-red-500 hover:text-red-700">
@@ -388,4 +385,4 @@ document.getElementById('commitments-container').addEventListener('click', funct
 });
 </script>
 @endpush
-@endsection 
+@endsection         
