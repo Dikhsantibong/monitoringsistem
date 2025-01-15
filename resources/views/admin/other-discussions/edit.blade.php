@@ -196,11 +196,69 @@
                                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                     required>
                                                 <option value="">Pilih PIC</option>
-                                                @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
-                                                    <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                        {{ $pic->name }} - {{ $pic->position }}
-                                                    </option>
-                                                @endforeach
+                                                
+                                                <!-- Unit Pembangkitan -->
+                                                <optgroup label="UNIT PEMBANGKITAN">
+                                                    @foreach(\App\Models\Pic::where('department', 'UNIT PEMBANGKITAN')->get() as $pic)
+                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                            {{ $pic->name }} - {{ $pic->position }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+
+                                                <!-- Seksi HSE -->
+                                                <optgroup label="HSE">
+                                                    @foreach(\App\Models\Pic::where('department', 'HSE')->orderBy('section')->get() as $pic)
+                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                            {{ $pic->name }} - {{ $pic->section }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+
+                                                <!-- Bagian Operasi -->
+                                                <optgroup label="BAGIAN OPERASI">
+                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN OPERASI')->orderBy('section')->get() as $pic)
+                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                            {{ $pic->name }} - {{ $pic->section }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+
+                                                <!-- Bagian Pemeliharaan -->
+                                                <optgroup label="BAGIAN PEMELIHARAAN">
+                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN PEMELIHARAAN')->orderBy('section')->get() as $pic)
+                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                            {{ $pic->name }} - {{ $pic->section }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+
+                                                <!-- Bagian Enjiniring -->
+                                                <optgroup label="BAGIAN ENJINIRING & QUALITY ASSURANCE">
+                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN ENJINIRING & QUALITY ASSURANCE')->orderBy('section')->get() as $pic)
+                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                            {{ $pic->name }} - {{ $pic->section }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+
+                                                <!-- Bagian Business Support -->
+                                                <optgroup label="BAGIAN BUSINESS SUPPORT">
+                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN BUSINESS SUPPORT')->orderBy('section')->get() as $pic)
+                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                            {{ $pic->name }} - {{ $pic->section }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+
+                                                <!-- Unit Layanan PLTD -->
+                                                <optgroup label="UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL">
+                                                    @foreach(\App\Models\Pic::where('department', 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL')->orderBy('section')->get() as $pic)
+                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
+                                                            {{ $pic->name }} - {{ $pic->section }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
                                             </select>
                                         </div>
                                         <div class="md:col-span-1 flex items-center">
@@ -253,6 +311,42 @@
                             @error('target_deadline')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
+                        </div>
+
+                        <!-- Dropdown untuk memilih PIC -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <!-- Level 1: Pilih Bagian/Unit -->
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    Pilih Bagian/Unit
+                                </label>
+                                <select id="department" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option value="">Pilih Bagian/Unit</option>
+                                    @foreach(\App\Models\Department::orderBy('name')->get() as $department)
+                                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Level 2: Pilih Seksi -->
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    Pilih Seksi
+                                </label>
+                                <select id="section" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" disabled>
+                                    <option value="">Pilih Seksi</option>
+                                </select>
+                            </div>
+
+                            <!-- Level 3: Pilih PIC -->
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    Pilih PIC
+                                </label>
+                                <select name="pic_id" id="pic" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" disabled>
+                                    <option value="">Pilih PIC</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Deadline -->
@@ -383,6 +477,150 @@ document.getElementById('commitments-container').addEventListener('click', funct
         }
     }
 });
+
+document.getElementById('department').addEventListener('change', function() {
+    const departmentId = this.value;
+    const sectionSelect = document.getElementById('section');
+    const picSelect = document.getElementById('pic');
+    
+    // Reset dan disable dropdown seksi dan PIC
+    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
+    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
+    sectionSelect.disabled = !departmentId;
+    picSelect.disabled = true;
+
+    if (departmentId) {
+        // Fetch sections berdasarkan department
+        fetch(`/api/sections/${departmentId}`)
+            .then(response => response.json())
+            .then(sections => {
+                sections.forEach(section => {
+                    const option = new Option(section.name, section.id);
+                    sectionSelect.add(option);
+                });
+                sectionSelect.disabled = false;
+            });
+    }
+});
+
+document.getElementById('section').addEventListener('change', function() {
+    const sectionId = this.value;
+    const picSelect = document.getElementById('pic');
+    
+    // Reset dan disable dropdown PIC
+    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
+    picSelect.disabled = !sectionId;
+
+    if (sectionId) {
+        // Fetch PICs berdasarkan section
+        fetch(`/api/pics/${sectionId}`)
+            .then(response => response.json())
+            .then(pics => {
+                pics.forEach(pic => {
+                    const option = new Option(`${pic.name} (${pic.position})`, pic.id);
+                    picSelect.add(option);
+                });
+                picSelect.disabled = false;
+            });
+    }
+});
+
+// Fungsi untuk menambah komitmen baru dengan dropdown PIC bertingkat
+function addCommitment() {
+    const container = document.getElementById('commitments-container');
+    const commitmentCount = container.children.length;
+    
+    const newEntry = document.createElement('div');
+    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-4';
+    newEntry.innerHTML = `
+        <div class="md:col-span-8 relative">
+            <input type="date" 
+                   name="commitment_deadlines[]" 
+                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
+                   required>
+            <textarea name="commitments[]" 
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      rows="3"
+                      placeholder="Masukkan komitmen"
+                      required></textarea>
+        </div>
+        <div class="md:col-span-3">
+            <!-- Nested dropdowns for PIC selection -->
+            <div class="space-y-2">
+                <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        onchange="updateSections(this, ${commitmentCount})">
+                    <option value="">Pilih Bagian/Unit</option>
+                    @foreach(\App\Models\Department::orderBy('name')->get() as $department)
+                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                    @endforeach
+                </select>
+                <select class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        onchange="updatePics(this, ${commitmentCount})" disabled>
+                    <option value="">Pilih Seksi</option>
+                </select>
+                <select name="commitment_pics[]" 
+                        class="pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        required disabled>
+                    <option value="">Pilih PIC</option>
+                </select>
+            </div>
+        </div>
+        <div class="md:col-span-1 flex items-center">
+            <button type="button" 
+                    onclick="removeCommitment(this)"
+                    class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(newEntry);
+}
+
+// Fungsi untuk update sections berdasarkan department yang dipilih
+function updateSections(departmentSelect, index) {
+    const row = departmentSelect.closest('.commitment-entry');
+    const sectionSelect = row.querySelector('.section-select');
+    const picSelect = row.querySelector('.pic-select');
+    
+    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
+    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
+    sectionSelect.disabled = !departmentSelect.value;
+    picSelect.disabled = true;
+
+    if (departmentSelect.value) {
+        fetch(`/api/sections/${departmentSelect.value}`)
+            .then(response => response.json())
+            .then(sections => {
+                sections.forEach(section => {
+                    const option = new Option(section.name, section.id);
+                    sectionSelect.add(option);
+                });
+                sectionSelect.disabled = false;
+            });
+    }
+}
+
+// Fungsi untuk update PICs berdasarkan section yang dipilih
+function updatePics(sectionSelect, index) {
+    const row = sectionSelect.closest('.commitment-entry');
+    const picSelect = row.querySelector('.pic-select');
+    
+    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
+    picSelect.disabled = !sectionSelect.value;
+
+    if (sectionSelect.value) {
+        fetch(`/api/pics/${sectionSelect.value}`)
+            .then(response => response.json())
+            .then(pics => {
+                pics.forEach(pic => {
+                    const option = new Option(`${pic.name} (${pic.position})`, pic.id);
+                    picSelect.add(option);
+                });
+                picSelect.disabled = false;
+            });
+    }
+}
 </script>
 @endpush
 @endsection         

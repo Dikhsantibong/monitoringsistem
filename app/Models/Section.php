@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Section extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['department_id', 'name'];
 
-    public function sections()
+    public function department()
     {
-        return $this->hasMany(Section::class);
+        return $this->belongsTo(Department::class);
     }
 
     public function pics()

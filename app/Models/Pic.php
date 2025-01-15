@@ -12,4 +12,9 @@ class Pic extends Model
     {
         return $this->hasMany(Commitment::class);
     }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
 } 

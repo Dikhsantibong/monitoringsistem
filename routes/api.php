@@ -14,4 +14,20 @@ Route::get('/machine-operations', function (Request $request) {
     }
 
     return $query->get();
+});
+
+Route::get('/sections/{department}', function ($department) {
+    return response()->json(
+        \App\Models\Section::where('department_id', $department)
+            ->orderBy('name')
+            ->get()
+    );
+});
+
+Route::get('/pics/{section}', function ($section) {
+    return response()->json(
+        \App\Models\Pic::where('section_id', $section)
+            ->orderBy('name')
+            ->get()
+    );
 }); 
