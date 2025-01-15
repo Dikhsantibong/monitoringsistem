@@ -184,7 +184,7 @@
                                             <input type="date" 
                                                    name="commitment_deadlines[]" 
                                                    class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                                                   value="{{ old('commitment_deadlines.'.$index, $commitment->deadline->format('Y-m-d')) }}"
+                                                   value="{{ old('commitment_deadlines.'.$index, $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '') }}"
                                                    required>
                                             <textarea name="commitments[]" 
                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -327,30 +327,30 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
 });
 
 // Script untuk menangani penambahan dan penghapusan komitmen
-function addCommitment() {
+document.getElementById('add-commitment').addEventListener('click', function() {
     const container = document.getElementById('commitments-container');
     const newEntry = document.createElement('div');
-    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
+    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-3 gap-4 mb-2';
     newEntry.innerHTML = `
-        <div class="md:col-span-8 relative">
-            <input type="date" 
-                   name="commitment_deadlines[]" 
-                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                   required>
+        <div>
             <textarea name="commitments[]" 
                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      rows="3"
+                      rows="2"
                       placeholder="Masukkan komitmen"
                       required></textarea>
         </div>
-        <div class="md:col-span-3">
+        <div>
+            <input type="date" 
+                   name="commitment_deadlines[]" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                   required>
+        </div>
+        <div class="flex gap-2">
             <input type="text"
                    name="commitment_pics[]"
                    placeholder="Masukkan PIC"
                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                    required>
-        </div>
-        <div class="md:col-span-1 flex items-center">
             <button type="button" 
                     onclick="removeCommitment(this)"
                     class="text-red-500 hover:text-red-700">
@@ -359,7 +359,7 @@ function addCommitment() {
         </div>
     `;
     container.appendChild(newEntry);
-}
+});
 
 // Event delegation untuk tombol hapus komitmen
 document.getElementById('commitments-container').addEventListener('click', function(e) {
