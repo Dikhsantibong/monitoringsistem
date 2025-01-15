@@ -263,8 +263,9 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         <div class="text-sm">{{ $commitment->description }}</div>
-                                                        <div class="text-xs text-gray-500">
-                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                                        <div class="flex justify-between text-xs text-gray-500">
+                                                            <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                            <span>PIC: {{ $commitment->pic }}</span>
                                                         </div>
                                                     </div>
                                                 @endforeach

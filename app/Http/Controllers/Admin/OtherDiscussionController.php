@@ -192,7 +192,8 @@ class OtherDiscussionController extends Controller
             foreach ($request->commitments as $index => $commitment) {
                 $discussion->commitments()->create([
                     'description' => $commitment,
-                    'deadline' => $request->commitment_deadlines[$index]
+                    'deadline' => $request->commitment_deadlines[$index],
+                    'pic' => $request->commitment_pics[$index]
                 ]);
             }
 
@@ -261,7 +262,8 @@ class OtherDiscussionController extends Controller
             foreach ($request->commitments as $index => $commitment) {
                 $discussion->commitments()->create([
                     'description' => $commitment,
-                    'deadline' => $request->commitment_deadlines[$index]
+                    'deadline' => $request->commitment_deadlines[$index],
+                    'pic' => $request->commitment_pics[$index]
                 ]);
             }
 

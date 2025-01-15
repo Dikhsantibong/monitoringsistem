@@ -150,6 +150,22 @@
                             @enderror
                         </div>
 
+                        <!-- PIC -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
+                                PIC <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   name="pic" 
+                                   id="pic" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   value="{{ old('pic') }}"
+                                   required>
+                            @error('pic')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Tingkat Resiko -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="risk_level">
@@ -197,23 +213,30 @@
                        
 
                         <!-- Komitmen -->
-                        <div class="mb-4">
+                        <div class="mb-4 md:col-span-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2">
                                 Komitmen <span class="text-red-500">*</span>
                             </label>
                             <div id="commitments-container">
-                                <div class="commitment-entry flex items-center gap-4 mb-2">
-                                    <div class="flex-1">
-                                        <textarea name="commitments[]" 
-                                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                  rows="2"
-                                                  required>{{ old('commitments.0') }}</textarea>
-                                    </div>
-                                    <div class="flex-none">
+                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
+                                    <div class="md:col-span-8 relative">
                                         <input type="date" 
                                                name="commitment_deadlines[]" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
                                                value="{{ old('commitment_deadlines.0') }}"
+                                               required>
+                                        <textarea name="commitments[]" 
+                                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                  rows="3"
+                                                  placeholder="Masukkan komitmen"
+                                                  required>{{ old('commitments.0') }}</textarea>
+                                    </div>
+                                    <div class="md:col-span-4">
+                                        <input type="text"
+                                               name="commitment_pics[]"
+                                               placeholder="Masukkan PIC"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               value="{{ old('commitment_pics.0') }}"
                                                required>
                                     </div>
                                 </div>
@@ -223,22 +246,6 @@
                                     class="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
                                 <i class="fas fa-plus mr-2"></i> Tambah Komitmen
                             </button>
-                        </div>
-
-                        <!-- PIC -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
-                                PIC <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   name="pic" 
-                                   id="pic" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('pic') }}"
-                                   required>
-                            @error('pic')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Status -->
@@ -262,6 +269,10 @@
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
+
+                  
+                        
+
                     </div>
 
                     <!-- Tombol Submit -->
@@ -364,25 +375,33 @@ document.getElementById('createDiscussionForm').addEventListener('submit', funct
 function addCommitment() {
     const container = document.getElementById('commitments-container');
     const newEntry = document.createElement('div');
-    newEntry.className = 'commitment-entry flex items-center gap-4 mb-2';
+    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
     newEntry.innerHTML = `
-        <div class="flex-1">
-            <textarea name="commitments[]" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      rows="2"
-                      required></textarea>
-        </div>
-        <div class="flex-none">
+        <div class="md:col-span-8 relative">
             <input type="date" 
                    name="commitment_deadlines[]" 
+                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
+                   required>
+            <textarea name="commitments[]" 
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      rows="3"
+                      placeholder="Masukkan komitmen"
+                      required></textarea>
+        </div>
+        <div class="md:col-span-3">
+            <input type="text"
+                   name="commitment_pics[]"
+                   placeholder="Masukkan PIC"
                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                    required>
         </div>
-        <button type="button" 
-                onclick="removeCommitment(this)"
-                class="text-red-500 hover:text-red-700">
-            <i class="fas fa-trash"></i>
-        </button>
+        <div class="md:col-span-1 flex items-center">
+            <button type="button" 
+                    onclick="removeCommitment(this)"
+                    class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
     `;
     container.appendChild(newEntry);
 }

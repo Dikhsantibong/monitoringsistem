@@ -9,6 +9,7 @@ class Commitment extends Model
     protected $fillable = [
         'description',
         'deadline',
+        'pic',
         'status',
         'other_discussion_id'
     ];
