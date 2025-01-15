@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory; // Tambahkan ini
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Department extends Model
 {
-    use HasFactory; // Tambahkan ini jika diperlukan
+    use HasFactory;
     
     protected $fillable = ['name'];
 

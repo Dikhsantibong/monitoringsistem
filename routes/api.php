@@ -36,39 +36,32 @@ Route::get('/pics/{section}', function ($section) {
 });
 
 Route::get('/sections-with-pics/{department}', function ($department) {
-    Log::info('API Request received for department:', ['department_id' => $department]);
-    
     try {
-        // Ambil sections dengan pics
-        $sections = Section::where('department_id', $department)
-            ->with('pics')
-            ->get()
-            ->map(function ($section) {
-                return [
-                    'id' => $section->id,
-                    'name' => $section->name,
-                    'pics' => $section->pics->map(function ($pic) {
-                        return [
-                            'id' => $pic->id,
-                            'name' => $pic->name,
-                            'position' => $pic->position
-                        ];
-                    })
-                ];
-            });
+        // Query langsung untuk debugging
+        $sections = Section::where('department_id', $department)->get();
+        $result = [];
 
-        Log::info('Sections data:', ['sections' => $sections->toArray()]);
-        
-        return response()->json($sections);
+        foreach ($sections as $section) {
+            $pics = Pic::where('section_id', $section->id)->get();
+            $result[] = [
+                'id' => $section->id,
+                'name' => $section->name,
+                'pics' => $pics->map(function ($pic) {
+                    return [
+                        'id' => $pic->id,
+                        'name' => $pic->name,
+                        'position' => $pic->position
+                    ];
+                })
+            ];
+        }
+
+        return response()->json($result);
     } catch (\Exception $e) {
-        Log::error('Error in API:', [
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+        \Log::error('Error in sections-with-pics:', [
+            'department_id' => $department,
+            'error' => $e->getMessage()
         ]);
-        
-        return response()->json([
-            'error' => 'Terjadi kesalahan saat mengambil data',
-            'message' => $e->getMessage()
-        ], 500);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
-})->name('api.sections-with-pics'); 
+}); 

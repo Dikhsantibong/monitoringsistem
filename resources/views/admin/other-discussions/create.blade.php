@@ -235,40 +235,64 @@
                                 </div> --}}
                         </div>
 
-                        <!-- Komitmen dengan PIC -->
+                        <!-- Komitmen dengan PIC dan Status -->
                         <div class="mb-4 md:col-span-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2">
                                 Komitmen <span class="text-red-500">*</span>
                             </label>
                             <div id="commitments-container">
                                 <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
-                                    <div class="md:col-span-8 relative">
-                                        <input type="date" 
-                                               name="commitment_deadlines[]" 
-                                               class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                                               required>
-                                        <textarea name="commitments[]" 
-                                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                  rows="3"
-                                                  placeholder="Masukkan komitmen"
-                                                  required></textarea>
+                                    <div class="md:col-span-8">
+                                        <!-- Header Section -->
+                                        <div class="flex justify-between items-center mb-2">
+                                            <!-- Status Badge -->
+                                            <div class="flex items-center">
+                                                <span class="text-sm font-medium mr-2">Status:</span>
+                                                <select name="commitment_status[]" 
+                                                        class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        onchange="updateStatusStyle(this); updateCommitmentFormat(this);">
+                                                    <option value="open">Open</option>
+                                                    <option value="closed">Closed</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Deadline Input -->
+                                            <div class="flex items-center">
+                                                <span class="text-sm font-medium mr-2">Deadline:</span>
+                                                <input type="date" 
+                                                       name="commitment_deadlines[]" 
+                                                       class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                       required>
+                                            </div>
+                                        </div>
+
+                                        <!-- Commitment Textarea -->
+                                        <div class="relative">
+                                            <textarea name="commitments[]" 
+                                                      class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                      rows="3"
+                                                      placeholder="Masukkan komitmen"
+                                                      required></textarea>
+                                        </div>
                                     </div>
+
+                                    <!-- PIC Selection -->
                                     <div class="md:col-span-3">
-                                        <!-- Dropdown PIC untuk setiap komitmen -->
                                         <div class="space-y-2">
-                                            <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                            <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md">
                                                 <option value="">Pilih Bagian</option>
                                                 @foreach(\App\Models\Department::orderBy('name')->get() as $department)
                                                     <option value="{{ $department->id }}">{{ $department->name }}</option>
                                                 @endforeach
                                             </select>
                                             <select name="commitment_pics[]" 
-                                                    class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                    disabled>
+                                                    class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md">
                                                 <option value="">Pilih Seksi dan PIC</option>
                                             </select>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Delete Button -->
                                     <div class="md:col-span-1 flex items-center">
                                         <button type="button" 
                                                 onclick="removeCommitment(this)"
@@ -429,36 +453,60 @@ document.getElementById('createDiscussionForm').addEventListener('submit', funct
 
 function addCommitment() {
     const container = document.getElementById('commitments-container');
-    const commitmentCount = container.children.length;
-    
     const newEntry = document.createElement('div');
     newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
     newEntry.innerHTML = `
-        <div class="md:col-span-8 relative">
-            <input type="date" 
-                   name="commitment_deadlines[]" 
-                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                   required>
-            <textarea name="commitments[]" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      rows="3"
-                      placeholder="Masukkan komitmen"
-                      required></textarea>
+        <div class="md:col-span-8">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Status Badge -->
+                <div class="flex items-center">
+                    <span class="text-sm font-medium mr-2">Status:</span>
+                    <select name="commitment_status[]" 
+                            class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            onchange="updateStatusStyle(this); updateCommitmentFormat(this);">
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                
+                <!-- Deadline Input -->
+                <div class="flex items-center">
+                    <span class="text-sm font-medium mr-2">Deadline:</span>
+                    <input type="date" 
+                           name="commitment_deadlines[]" 
+                           class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           required>
+                </div>
+            </div>
+
+            <!-- Commitment Textarea -->
+            <div class="relative">
+                <textarea name="commitments[]" 
+                          class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          rows="3"
+                          placeholder="Masukkan komitmen"
+                          required></textarea>
+            </div>
         </div>
+        
+        <!-- PIC Selection -->
         <div class="md:col-span-3">
             <div class="space-y-2">
-                <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="">Pilih Bagian</option>
                     @foreach(\App\Models\Department::orderBy('name')->get() as $department)
                         <option value="{{ $department->id }}">{{ $department->name }}</option>
                     @endforeach
                 </select>
                 <select name="commitment_pics[]" 
-                        class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        class="section-pic-select w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="">Pilih Seksi dan PIC</option>
                 </select>
             </div>
         </div>
+        
+        <!-- Delete Button -->
         <div class="md:col-span-1 flex items-center">
             <button type="button" 
                     onclick="removeCommitment(this)"
@@ -468,6 +516,10 @@ function addCommitment() {
         </div>
     `;
     container.appendChild(newEntry);
+    
+    // Initialize status style
+    const statusSelect = newEntry.querySelector('.status-select');
+    updateStatusStyle(statusSelect);
 }
 
 function updateSections(departmentSelect, index) {
@@ -642,97 +694,118 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Fungsi untuk mengupdate dropdown Seksi dan PIC
-async function updateSectionAndPic(departmentSelect, targetSelect) {
+function updateSectionAndPic(departmentSelect, targetSelect) {
     const departmentId = departmentSelect.value;
     const sectionPicSelect = targetSelect ? 
         document.getElementById(targetSelect) : 
         departmentSelect.closest('div').querySelector('.section-pic-select');
     
-    console.log('Updating sections for department:', departmentId); // Debug log
+    // Debug log
+    console.log('Department selected:', departmentId);
     
     // Reset dropdown
     sectionPicSelect.innerHTML = '<option value="">Pilih Seksi dan PIC</option>';
-    sectionPicSelect.disabled = true;
-
+    
     if (!departmentId) {
-        sectionPicSelect.disabled = false;
         return;
     }
 
-    try {
-        const response = await fetch(`/api/sections-with-pics/${departmentId}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-
-        console.log('Response status:', response.status); // Debug log
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const sections = await response.json();
-        console.log('Received sections:', sections); // Debug log
-
-        if (sections && sections.length > 0) {
-            sections.forEach(section => {
+    // Tampilkan loading
+    sectionPicSelect.innerHTML = '<option value="">Loading...</option>';
+    
+    // Fetch data
+    fetch(`/api/sections-with-pics/${departmentId}`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data received:', data);
+            
+            // Reset dropdown
+            sectionPicSelect.innerHTML = '<option value="">Pilih Seksi dan PIC</option>';
+            
+            // Populate dropdown
+            data.forEach(section => {
                 if (section.pics && section.pics.length > 0) {
-                    const optgroup = document.createElement('optgroup');
-                    optgroup.label = section.name;
+                    const group = document.createElement('optgroup');
+                    group.label = section.name;
                     
                     section.pics.forEach(pic => {
                         const option = document.createElement('option');
                         option.value = pic.id;
                         option.textContent = `${pic.name} (${pic.position})`;
-                        optgroup.appendChild(option);
+                        group.appendChild(option);
                     });
                     
-                    sectionPicSelect.appendChild(optgroup);
+                    sectionPicSelect.appendChild(group);
                 }
             });
-        } else {
-            const option = document.createElement('option');
-            option.textContent = 'Tidak ada PIC tersedia untuk seksi ini';
-            sectionPicSelect.appendChild(option);
-        }
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        const option = document.createElement('option');
-        option.textContent = 'Error: Gagal memuat data. Silakan coba lagi.';
-        sectionPicSelect.appendChild(option);
-    } finally {
-        sectionPicSelect.disabled = false;
-    }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            sectionPicSelect.innerHTML = '<option value="">Error loading data</option>';
+        });
 }
 
 // Event listener untuk PIC Sasaran
-document.getElementById('department_target')?.addEventListener('change', function() {
+document.getElementById('department_target').addEventListener('change', function() {
+    console.log('Department target changed');
     updateSectionAndPic(this, 'section_pic_target');
 });
 
 // Event listener untuk PIC Komitmen
 document.addEventListener('change', function(e) {
     if (e.target.classList.contains('department-select')) {
+        console.log('Department commitment changed');
         updateSectionAndPic(e.target);
     }
 });
 
 // Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
-    // Debug log untuk memastikan script berjalan
-    console.log('Script initialized');
+    console.log('Page loaded');
     
-    // Cek CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfToken) {
-        console.error('CSRF token not found');
-    } else {
-        console.log('CSRF token found');
-    }
+    // Enable semua dropdown
+    document.querySelectorAll('.section-pic-select').forEach(select => {
+        select.disabled = false;
+    });
 });
+
+// Fungsi untuk mengupdate style status
+function updateStatusStyle(select) {
+    const status = select.value;
+    // Reset class
+    select.className = 'status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ';
+    
+    // Add status-specific styling
+    if (status === 'open') {
+        select.classList.add('bg-yellow-100', 'text-yellow-800', 'border', 'border-yellow-300');
+    } else if (status === 'closed') {
+        select.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-300');
+    }
+}
+
+// Initialize status styles on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.status-select').forEach(select => {
+        updateStatusStyle(select);
+        updateCommitmentFormat(select);
+    });
+});
+
+// Fungsi untuk memformat teks komitmen dengan status
+function updateCommitmentFormat(statusSelect) {
+    const commitmentEntry = statusSelect.closest('.commitment-entry');
+    const textarea = commitmentEntry.querySelector('.commitment-text');
+    const status = statusSelect.value.toUpperCase();
+    
+    // Hanya update status di textarea jika diperlukan
+    let commitmentText = textarea.value;
+    if (!commitmentText.includes('[STATUS:')) {
+        textarea.value = commitmentText;
+    }
+}
 </script>   
 @push('scripts')
 @endpush
