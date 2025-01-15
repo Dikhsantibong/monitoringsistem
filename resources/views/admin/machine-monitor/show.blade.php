@@ -390,15 +390,15 @@
     pointer-events: none;
 }
 
-.overflow-x-auto::before {
+/* .overflow-x-auto::before {
     left: 0;
     background: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0));
-}
+} */
 
-.overflow-x-auto::after {
+/* .overflow-x-auto::after {
     right: 0;
     background: linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0));
-}
+} */
 
 .pagination {
     display: flex;
