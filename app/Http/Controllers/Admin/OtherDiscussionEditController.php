@@ -33,10 +33,15 @@ class OtherDiscussionEditController extends Controller
                 'risk_level' => 'required|string',
                 'priority_level' => 'required|string',
                 'pic' => 'required|string',
+                'status' => 'required|in:Open,Closed',
                 'commitments' => 'required|array',
                 'commitment_deadlines' => 'required|array',
                 'target_deadline' => 'required|date'
             ]);
+
+            if ($validated['status'] === 'Closed' && $discussion->status !== 'Closed') {
+                $validated['closed_at'] = now();
+            }
 
             $discussion->update($validated);
 
@@ -45,7 +50,8 @@ class OtherDiscussionEditController extends Controller
             foreach ($request->commitments as $index => $commitment) {
                 $discussion->commitments()->create([
                     'description' => $commitment,
-                    'deadline' => $request->commitment_deadlines[$index]
+                    'deadline' => $request->commitment_deadlines[$index],
+                    'pic' => $request->commitment_pics[$index] ?? null
                 ]);
             }
 

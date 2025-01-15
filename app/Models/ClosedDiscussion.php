@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +46,13 @@ class ClosedDiscussion extends Model
         'risk_level',
         'priority_level',
         'pic',
-        'status'
+        'status',
+        'closed_at',
+        'original_id',
+        'unit_source',
+        'commitments',
+        'created_at',
+        'updated_at'
     ];
 
     protected $dates = [

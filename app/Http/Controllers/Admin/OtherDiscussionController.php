@@ -14,60 +14,42 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class OtherDiscussionController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = OtherDiscussion::with('commitments');
-        
-        // Filter berdasarkan pencarian
-        if ($request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('topic', 'like', "%{$request->search}%")
-                  ->orWhere('pic', 'like', "%{$request->search}%")
-                  ->orWhere('unit', 'like', "%{$request->search}%");
-            });
-        }
-
-        // Data aktif (status Open dan belum melewati deadline)
-        $activeDiscussions = clone $query;
-        $activeDiscussions = $activeDiscussions
-            ->where('status', 'Open')
-            ->where(function($q) {
-                $q->where('target_deadline', '>', now())
-                  ->orWhereNull('target_deadline');
-            })
+        // Data aktif
+        $activeDiscussions = OtherDiscussion::active()
+            ->with('commitments')
             ->paginate(10, ['*'], 'active_page');
-
-        // Data yang melewati deadline target
-        $targetOverdueDiscussions = clone $query;
-        $targetOverdueDiscussions = $targetOverdueDiscussions
-            ->where('status', 'Open')
-            ->whereNotNull('target_deadline')
-            ->where('target_deadline', '<', now())
+        
+        // Data melewati target
+        $targetOverdueDiscussions = OtherDiscussion::targetOverdue()
+            ->with('commitments')
             ->paginate(10, ['*'], 'target_page');
-
-        // Data yang melewati deadline komitmen
-        $commitmentOverdueDiscussions = clone $query;
-        $commitmentOverdueDiscussions = $commitmentOverdueDiscussions
-            ->where('status', 'Open')
-            ->whereHas('commitments', function($q) {
-                $q->where('deadline', '<', now());
-            })
+        
+        // Data melewati komitmen
+        $commitmentOverdueDiscussions = OtherDiscussion::commitmentOverdue()
+            ->with('commitments')
             ->paginate(10, ['*'], 'commitment_page');
-
+        
         // Data selesai
-        $closedDiscussions = ClosedDiscussion::with('commitments')
-            ->orderBy('closed_at', 'desc')
+        $closedDiscussions = OtherDiscussion::closed()
+            ->with('commitments')
             ->paginate(10, ['*'], 'closed_page');
 
-        // Ambil data unit untuk filter
-        $units = OtherDiscussion::getUnits();
+        // Hitung total untuk badge
+        $counts = [
+            'active' => OtherDiscussion::active()->count(),
+            'target_overdue' => OtherDiscussion::targetOverdue()->count(),
+            'commitment_overdue' => OtherDiscussion::commitmentOverdue()->count(),
+            'closed' => OtherDiscussion::closed()->count()
+        ];
 
         return view('admin.other-discussions.index', compact(
             'activeDiscussions',
             'targetOverdueDiscussions',
             'commitmentOverdueDiscussions',
             'closedDiscussions',
-            'units'
+            'counts'
         ));
     }
 
@@ -125,21 +107,19 @@ class OtherDiscussionController extends Controller
 
     public function updateStatus(Request $request)
     {
-        try {
-            $discussion = OtherDiscussion::findOrFail($request->discussion_id);
-            $discussion->status = $request->status;
-            $discussion->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Status berhasil diperbarui'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal memperbarui status: ' . $e->getMessage()
-            ]);
+        $discussion = OtherDiscussion::findOrFail($request->discussion_id);
+        $discussion->status = $request->status;
+        
+        if ($request->status === 'Closed') {
+            $discussion->closed_at = now();
         }
+        
+        $discussion->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil diperbarui'
+        ]);
     }
 
     public function create()

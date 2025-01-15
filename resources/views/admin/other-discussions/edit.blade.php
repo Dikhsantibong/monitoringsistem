@@ -237,15 +237,32 @@
                         <!-- Status -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
-                                Status
+                                Status <span class="text-red-500">*</span>
                             </label>
                             <select name="status" 
                                     id="status" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                                    required>
                                 <option value="Open" {{ old('status', $discussion->status) === 'Open' ? 'selected' : '' }}>Open</option>
                                 <option value="Closed" {{ old('status', $discussion->status) === 'Closed' ? 'selected' : '' }}>Closed</option>
                             </select>
                             @error('status')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Target Deadline -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="target_deadline">
+                                Target Deadline <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" 
+                                   name="target_deadline" 
+                                   id="target_deadline" 
+                                   value="{{ old('target_deadline', $discussion->target_deadline ? date('Y-m-d', strtotime($discussion->target_deadline)) : '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   required>
+                            @error('target_deadline')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
@@ -277,10 +294,8 @@
 document.getElementById('editDiscussionForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const form = this;
-    const formData = new FormData(form);
+    const formData = new FormData(this);
     
-    // Tampilkan loading
     Swal.fire({
         title: 'Mohon tunggu...',
         text: 'Sedang menyimpan data',
@@ -294,34 +309,33 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     fetch('{{ route('admin.other-discussions.update', $discussion->id) }}', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
         },
         body: formData
     })
-    
+    .then(response => response.json())
     .then(data => {
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: 'Data berhasil diperbarui',
-            showConfirmButton: false,
-            timer: 1500
-        }).then(() => {
-            window.location.href = '{{ route('admin.other-discussions.index') }}?success=true';
-        }); 
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = '{{ route('admin.other-discussions.index') }}';
+            });
+        } else {
+            throw new Error(data.message);
+        }
     })
     .catch(error => {
-        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error!',
             text: error.message || 'Terjadi kesalahan saat menyimpan data',
             confirmButtonText: 'Coba Lagi'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Submit form secara normal jika fetch gagal
-                form.submit();
-            }
         });
     });
 });

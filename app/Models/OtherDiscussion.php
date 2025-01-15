@@ -46,11 +46,12 @@ class OtherDiscussion extends Model
         'unit',
         'topic',
         'target',
-        'target_deadline',
         'risk_level',
         'priority_level',
         'pic',
-        'status'
+        'status',
+        'closed_at',
+        'target_deadline'
     ];
 
     protected $dates = [
@@ -101,31 +102,11 @@ class OtherDiscussion extends Model
             // Cek jika status berubah menjadi 'Closed'
             if ($discussion->isDirty('status') && $discussion->status === 'Closed') {
                 try {
-                    DB::beginTransaction();
-                    
-                    // Pindahkan data ke tabel closed_discussions
-                    ClosedDiscussion::create([
-                        'sr_number' => $discussion->sr_number,
-                        'wo_number' => $discussion->wo_number,
-                        'unit' => $discussion->unit,
-                        'topic' => $discussion->topic,
-                        'target' => $discussion->target,
-                        'risk_level' => $discussion->risk_level,
-                        'priority_level' => $discussion->priority_level,
-                        'previous_commitment' => $discussion->commitments()->where('type', 'previous')->pluck('description')->first(),
-                        'next_commitment' => $discussion->commitments()->where('type', 'next')->pluck('description')->first(),
-                        'pic' => $discussion->pic,
-                        'status' => 'Closed',
-                        'deadline' => $discussion->target_deadline,
-                        'closed_at' => Carbon::now(),
-                        'original_id' => $discussion->id,
-                        'unit_source' => session('unit')
-                    ]);
-
-                    DB::commit();
+                    // Update closed_at timestamp
+                    $discussion->closed_at = Carbon::now();
+                    $discussion->save();
                 } catch (\Exception $e) {
-                    DB::rollBack();
-                    \Log::error('Error moving discussion to closed: ' . $e->getMessage());
+                    Log::error('Error updating closed timestamp: ' . $e->getMessage());
                     throw $e;
                 }
             }
@@ -174,5 +155,30 @@ class OtherDiscussion extends Model
         return $this->commitments()
             ->where('deadline', '<', Carbon::now())
             ->exists();
+    }
+
+    // Tambahkan scope untuk memfilter diskusi
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'Open');
+    }
+
+    public function scopeClosed($query)
+    {
+        return $query->where('status', 'Closed');
+    }
+
+    public function scopeTargetOverdue($query)
+    {
+        return $query->where('status', 'Open')
+                    ->where('target_deadline', '<', Carbon::now());
+    }
+
+    public function scopeCommitmentOverdue($query)
+    {
+        return $query->where('status', 'Open')
+                    ->whereHas('commitments', function($q) {
+                        $q->where('deadline', '<', Carbon::now());
+                    });
     }
 } 
