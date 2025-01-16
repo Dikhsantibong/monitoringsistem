@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -169,6 +168,9 @@
                                     <option value="4">BAGIAN BUSINESS SUPPORT</option>
                                     <option value="5">HSE</option>
                                     <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
+                                    @if(session('database_name') === 'mysql_wua_wua')
+                                    <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA</option>
+                                    @endif
                                 </select>
 
                                 <select name="section_id" 
@@ -282,6 +284,9 @@
                                                 <option value="4">BAGIAN BUSINESS SUPPORT</option>
                                                 <option value="5">HSE</option>
                                                 <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
+                                                @if(session('database_name') === 'mysql_wua_wua')
+                                                <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA</option>
+                                                @endif
                                             </select>
 
                                             <select name="commitment_section_ids[]" 
@@ -448,6 +453,20 @@ function addCommitment() {
     const newEntry = document.createElement('div');
     newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
     
+    let departmentOptions = `
+        <option value="">Pilih Bagian</option>
+        <option value="1">BAGIAN OPERASI</option>
+        <option value="2">BAGIAN PEMELIHARAAN</option>
+        <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
+        <option value="4">BAGIAN BUSINESS SUPPORT</option>
+        <option value="5">HSE</option>
+        <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>`;
+    
+    // Tambahkan opsi tambahan jika session adalah mysql_wua_wua
+    @if(session('database_name') === 'mysql_wua_wua')
+    departmentOptions += `<option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA</option>`;
+    @endif
+
     newEntry.innerHTML = `
         <div class="md:col-span-8">
             <!-- Header Section -->
@@ -483,7 +502,22 @@ function addCommitment() {
             </div>
         </div>
         
-        <!-- ... kode dropdown bagian dan seksi ... -->
+        <div class="md:col-span-4">
+            <div class="relative">
+                <select name="commitment_department_ids[]" 
+                        class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                        onchange="updateCommitmentSections(this)"
+                        required>
+                    ${departmentOptions}
+                </select>
+
+                <select name="commitment_section_ids[]" 
+                        class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        required>
+                    <option value="">Pilih Seksi</option>
+                </select>
+            </div>
+        </div>
     `;
     
     container.appendChild(newEntry);
@@ -530,6 +564,9 @@ const sectionsData = {
         {id: 15, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA'},
         {id: 16, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL POASIA'},
         {id: 17, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA-WUA'}
+    ],
+    '7': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA (hanya untuk session mysql_wua_wua)
+        {id: 18, name: 'SEKSI OPERASI DAN PEMELIHARAAN LANGARA'}
     ]
 };
 
@@ -579,74 +616,6 @@ function updateCommitmentSections(departmentSelect) {
     });
     
     sectionSelect.disabled = false;
-}
-
-// Update fungsi addCommitment()
-function addCommitment() {
-    const container = document.getElementById('commitments-container');
-    const newEntry = document.createElement('div');
-    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
-    
-    newEntry.innerHTML = `
-        <div class="md:col-span-8">
-            <!-- Header Section dengan Status dan Deadline tetap sama -->
-            <div class="flex justify-between items-center mb-2">
-                <div class="flex items-center">
-                    <span class="text-sm font-medium mr-2">Status:</span>
-                    <select name="commitment_status[]" 
-                            class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="updateCommitmentStatus(this)">
-                        <option value="open">Open</option>
-                        <option value="closed">Closed</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-center">
-                    <span class="text-sm font-medium mr-2">Deadline:</span>
-                    <input type="date" 
-                           name="commitment_deadlines[]" 
-                           class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                           required>
-                </div>
-            </div>
-
-            <div class="relative">
-                <textarea name="commitments[]" 
-                          class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          rows="3"
-                          placeholder="Masukkan komitmen"
-                          required></textarea>
-            </div>
-        </div>
-        <div class="md:col-span-4">
-            <div class="relative">
-                <select name="commitment_department_ids[]" 
-                        class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
-                        onchange="updateCommitmentSections(this)"
-                        required>
-                    <option value="">Pilih Bagian</option>
-                    <option value="1">BAGIAN OPERASI</option>
-                    <option value="2">BAGIAN PEMELIHARAAN</option>
-                    <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
-                    <option value="4">BAGIAN BUSINESS SUPPORT</option>
-                    <option value="5">HSE</option>
-                    <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
-                </select>
-
-                <select name="commitment_section_ids[]" 
-                        class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        required>
-                    <option value="">Pilih Seksi</option>
-                </select>
-            </div>
-        </div>
-    `;
-    
-    container.appendChild(newEntry);
-    
-    // Initialize status
-    const statusSelect = newEntry.querySelector('.status-select');
-    updateCommitmentStatus(statusSelect);
 }
 
 // Initialize semua dropdown saat halaman dimuat
