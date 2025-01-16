@@ -162,10 +162,10 @@
                                                     Mesin
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Daya Terpasang (MW)
+                                                    Daya Mampu Slim (MW)
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Daya Mampu (MW)
+                                                    Daya Mampu Pasok (MW)
                                                 </th>
                                                 <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Beban (MW)
@@ -224,6 +224,7 @@
                                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
                                                                step="0.01"
                                                                min="0"
+                                                               style="width: 100px;"
                                                                value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
                                                                placeholder="Masukkan beban...">
                                                     </td>
