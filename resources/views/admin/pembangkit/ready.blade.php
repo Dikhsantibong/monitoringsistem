@@ -486,88 +486,57 @@
 
 <script>
     function saveData() {
-        const data = {
-            logs: [],
-            hops: []
-        };
-        const tables = document.querySelectorAll('.unit-table table');
-        const tanggal = document.getElementById('filterDate').value;
-
-        tables.forEach(table => {
-            const unitTable = table.closest('.unit-table');
-            const powerPlantId = unitTable.querySelector('input[id^="hop_"]').id.split('_')[1];
-            const hopValue = unitTable.querySelector(`input[id="hop_${powerPlantId}"]`).value;
-
-            // Tambahkan data HOP
-            if (hopValue) {
-                data.hops.push({
-                    power_plant_id: powerPlantId,
-                    tanggal: tanggal,
-                    hop_value: hopValue
-                });
+        Swal.fire({
+            title: 'Menyimpan Data',
+            text: 'Mohon tunggu...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
+        });
 
-            // Tambahkan data status mesin (kode yang sudah ada)
+        const data = [];
+        const tables = document.querySelectorAll('.unit-table');
+        
+        tables.forEach(table => {
             const rows = table.querySelectorAll('tbody tr');
+            
             rows.forEach(row => {
-                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+                const machineId = row.querySelector('td[data-id]')?.dataset?.id;
+                if (!machineId) return;
+
                 const statusSelect = row.querySelector('select');
-                const componentSelect = row.querySelector('.system-select');
-                
-                // Perbaikan pengambilan nilai equipment
-                const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
-                const equipmentValue = equipmentTextarea ? equipmentTextarea.value.trim() : '';
-                
-                // Ambil nilai-nilai lain
-                const dmpInput = row.querySelector('td:nth-child(3) input');
-                const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
-                const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
-                const inputBeban = row.querySelector('td:nth-child(4) input');
-                const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
-                const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
-                const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
-                const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
+                if (!statusSelect?.value) return;
 
-                // Perbaiki selector untuk input beban
-                const loadInput = row.querySelector('td:nth-child(5) input[type="number"]'); // Sesuaikan dengan posisi kolom beban
-                const loadValue = loadInput ? parseFloat(loadInput.value) || 0 : 0;
+                // Persiapkan data untuk dikirim
+                const rowData = {
+                    machine_id: machineId,
+                    tanggal: document.getElementById('filterDate').value,
+                    status: statusSelect.value,
+                    dmn: parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0,
+                    dmp: parseFloat(row.querySelector('td:nth-child(3)').textContent) || 0,
+                    load_value: parseFloat(row.querySelector('input[type="number"]')?.value) || 0,
+                    component: row.querySelector('.system-select')?.value || null,
+                    equipment: row.querySelector('textarea[name^="equipment"]')?.value || null,
+                    deskripsi: row.querySelector(`textarea[name="deskripsi[${machineId}]"]`)?.value || null,
+                    kronologi: row.querySelector(`textarea[name="kronologi[${machineId}]"]`)?.value || null,
+                    action_plan: row.querySelector(`textarea[name="action_plan[${machineId}]"]`)?.value || null,
+                    progres: row.querySelector(`textarea[name="progres[${machineId}]"]`)?.value || null,
+                    tanggal_mulai: row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`)?.value || null,
+                    target_selesai: row.querySelector(`input[name="target_selesai[${machineId}]"]`)?.value || null
+                };
 
-                // Debug log untuk memastikan nilai beban terambil
-                console.log('Load value for machine', machineId, ':', loadValue);
-
-                if (statusSelect && statusSelect.value) {
-                    data.logs.push({
-                        machine_id: machineId,
-                        tanggal: tanggal,
-                        hop: hopValue,
-                        status: statusSelect.value,
-                        component: componentSelect ? componentSelect.value : null,
-                        equipment: equipmentValue,
-                        dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
-                        dmp: dmpInput ? dmpInput.value.trim() : null,
-                        load_value: loadValue, // Pastikan nilai load_value selalu terisi
-                        deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
-                        action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
-                        progres: inputProgres ? inputProgres.value.trim() : null,
-                        kronologi: inputKronologi ? inputKronologi.value.trim() : null,
-                        tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
-                        target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
-                    });
-                }
+                data.push(rowData);
             });
         });
 
-        // Debug log untuk melihat data yang akan dikirim
-        console.log('Data yang akan dikirim:', data);
-
-        // Kirim data ke server
-        fetch('{{ route('admin.pembangkit.save-status') }}', {
+        fetch('{{ route("admin.pembangkit.save-status") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ data })
         })
         .then(response => response.json())
         .then(result => {
@@ -575,17 +544,23 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
-                    text: 'Data berhasil disimpan!'
+                    text: 'Data berhasil disimpan',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    // Refresh data setelah simpan
+                    location.reload();
                 });
             } else {
                 throw new Error(result.message);
             }
         })
         .catch(error => {
+            console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: error.message
+                title: 'Gagal',
+                text: error.message || 'Terjadi kesalahan saat menyimpan data'
             });
         });
     }

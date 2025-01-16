@@ -41,61 +41,60 @@ class PembangkitController extends Controller
         try {
             DB::beginTransaction();
             
-            // Simpan data HOP
-            foreach ($request->hops as $hopData) {
-                UnitOperationHour::updateOrCreate(
+            $data = $request->input('data');
+            if (empty($data)) {
+                throw new \Exception('Data kosong');
+            }
+
+            foreach ($data as $item) {
+                // Validasi data yang diperlukan
+                if (empty($item['machine_id']) || empty($item['tanggal'])) {
+                    continue;
+                }
+
+                // Pastikan nilai numerik valid
+                $dmnValue = is_numeric($item['dmn']) ? $item['dmn'] : 0;
+                $dmpValue = is_numeric($item['dmp']) ? $item['dmp'] : 0;
+                $loadValue = is_numeric($item['load_value']) ? $item['load_value'] : 0;
+
+                // Gunakan updateOrCreate untuk menghindari duplikasi
+                MachineStatusLog::updateOrCreate(
                     [
-                        'power_plant_id' => $hopData['power_plant_id'],
-                        'tanggal' => $hopData['tanggal']
+                        'machine_id' => $item['machine_id'],
+                        'tanggal' => $item['tanggal']
                     ],
                     [
-                        'hop_value' => $hopData['hop_value'],
-                        'unit_source' => session('unit')
+                        'status' => $item['status'] ?? 'Operasi',
+                        'dmn' => $dmnValue,
+                        'dmp' => $dmpValue,
+                        'load_value' => $loadValue,
+                        'component' => $item['component'] ?? null,
+                        'equipment' => $item['equipment'] ?? null,
+                        'deskripsi' => $item['deskripsi'] ?? null,
+                        'kronologi' => $item['kronologi'] ?? null,
+                        'action_plan' => $item['action_plan'] ?? null,
+                        'progres' => $item['progres'] ?? null,
+                        'tanggal_mulai' => !empty($item['tanggal_mulai']) ? $item['tanggal_mulai'] : null,
+                        'target_selesai' => !empty($item['target_selesai']) ? $item['target_selesai'] : null,
+                        'unit_source' => $item['unit_source'] ?? session('unit', 'mysql')
                     ]
                 );
             }
 
-            // Simpan data status mesin (kode yang sudah ada)
-            foreach ($request->logs as $log) {
-                // Pastikan equipment diambil dengan benar dari request
-                $equipment = isset($log['equipment']) ? trim($log['equipment']) : null;
-                
-                $operation = MachineOperation::where('machine_id', $log['machine_id'])
-                    ->latest('recorded_at')
-                    ->first();
-
-                if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
-                    MachineStatusLog::create([
-                        'machine_id' => $log['machine_id'],
-                        'dmn' => $operation ? $operation->dmn : 0,
-                        'dmp' => $operation ? $operation->dmp : 0,
-                        'load_value' => $log['load_value'],
-                        'tanggal' => $log['tanggal'],
-                        'status' => $log['status'],
-                        'component' => $log['component'],
-                        'equipment' => $equipment,
-                        'deskripsi' => $log['deskripsi'] ?? null,
-                        'kronologi' => $log['kronologi'] ?? null,
-                        'action_plan' => $log['action_plan'] ?? null,
-                        'progres' => $log['progres'] ?? null,
-                        'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
-                        'target_selesai' => $log['target_selesai'] ?? null
-                    ]);
-                }
-            }
-            
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil disimpan'
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error saving data: ' . $e->getMessage());
+            \Log::error('Error saving status: ' . $e->getMessage());
+            \Log::error('Data yang diterima: ' . json_encode($request->all()));
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan data: ' . $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 

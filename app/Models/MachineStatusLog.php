@@ -24,19 +24,17 @@ class MachineStatusLog extends Model
         'machine_id',
         'tanggal',
         'status',
+        'dmn',
+        'dmp',
+        'load_value',
         'component',
         'equipment',
         'deskripsi',
         'kronologi',
         'action_plan',
         'progres',
-        'image_path',
-        'image_description',
         'tanggal_mulai',
         'target_selesai',
-        'dmn',
-        'dmp',
-        'load_value',
         'unit_source'
     ];
 
