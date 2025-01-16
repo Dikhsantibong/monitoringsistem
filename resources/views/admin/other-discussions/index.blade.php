@@ -336,7 +336,11 @@
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            {{ $discussion->target_pic ?? '-' }}
+                                            @if($discussion->department_id && $discussion->section_id)
+                                                {{ $discussion->pic }}
+                                            @else
+                                                -
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded
@@ -462,7 +466,11 @@
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            {{ $discussion->target_pic ?? '-' }}
+                                            @if($discussion->department_id && $discussion->section_id)
+                                                {{ $discussion->pic }}
+                                            @else
+                                                -
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded text-sm bg-red-100 text-red-800">
@@ -505,7 +513,7 @@
                 <div id="closed-content" class="tab-content hidden">
                     <div class="overflow-x-auto shadow-md rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-[#0A749B]">
+                            <thead class="bg-green-600">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
@@ -514,7 +522,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC</th>
@@ -525,15 +533,24 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($closedDiscussions as $index => $discussion)
-                                    <tr>
+                                    <tr class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words border border-gray-200">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            {{ $discussion->target_pic ?? '-' }}
+                                            <div class="mb-1">{{ $discussion->target }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->department_id && $discussion->section_id)
+                                                {{ $discussion->pic }}
+                                            @else
+                                                -
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">

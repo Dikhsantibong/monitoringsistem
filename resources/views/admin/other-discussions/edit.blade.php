@@ -203,7 +203,7 @@
                             </label>
                             <div id="commitments-container">
                                 @foreach($discussion->commitments as $commitment)
-                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
+                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-6 gap-4 mb-4 p-4 border rounded-lg">
                                     <div class="md:col-span-8">
                                         <div class="flex justify-between items-center mb-2">
                                             <div class="flex items-center">
@@ -250,7 +250,8 @@
 
                                             <select name="commitment_section_ids[]" 
                                                     class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                    required>
+                                                    required
+                                                    data-selected="{{ $commitment->section_id }}">
                                                 <option value="">Pilih Seksi</option>
                                             </select>
                                         </div>
@@ -377,26 +378,65 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateCommitmentSections(departmentSelect) {
-    const commitmentEntry = departmentSelect.closest('.commitment-entry');
-    const sectionSelect = commitmentEntry.querySelector('.section-select');
+    const sectionSelect = departmentSelect.parentElement.querySelector('.section-select');
+    const selectedSectionId = sectionSelect.dataset.selected;
+    const departmentId = departmentSelect.value;
+    
+    // Kosongkan dropdown seksi
     sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
     
-    const departmentId = departmentSelect.value;
-    if (!departmentId) {
-        sectionSelect.disabled = true;
-        return;
-    }
+    if (departmentId) {
+        // Data mapping seksi untuk setiap departemen
+        const sections = {
+            '1': [ // BAGIAN OPERASI
+                {id: 1, name: 'SEKSI OPERASI PLTD'},
+                {id: 2, name: 'SEKSI OPERASI PLTG/U'},
+                {id: 3, name: 'SEKSI OPERASI PLTA/M'}
+            ],
+            '2': [ // BAGIAN PEMELIHARAAN
+                {id: 4, name: 'SEKSI PERENCANAAN PENGENDALIAN PEMELIHARAAN'},
+                {id: 5, name: 'SEKSI INVENTORI KONTROL & GUDANG'}
+            ],
+            '3': [ // BAGIAN ENJINIRING & QUALITY ASSURANCE
+                {id: 6, name: 'SEKSI SYSTEM OWNER'},
+                {id: 7, name: 'SEKSI CONDITION BASED MAINTENANCE'},
+                {id: 8, name: 'SEKSI MMRK'}
+            ],
+            '4': [ // BAGIAN BUSINESS SUPPORT
+                {id: 9, name: 'SEKSI SDM, UMUM & CSR'},
+                {id: 10, name: 'SEKSI KEUANGAN'},
+                {id: 11, name: 'SEKSI LOGISTIK'}
+            ],
+            '5': [ // HSE
+                {id: 12, name: 'SEKSI K3'},
+                {id: 13, name: 'SEKSI LINGKUNGAN'},
+                {id: 14, name: 'SEKSI KEAMANAN'}
+            ],
+            '6': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL
+                {id: 15, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA'},
+                {id: 16, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL RAHA'},
+                {id: 17, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WANGI-WANGI'},
+                {id: 18, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAUBAU'}
+            ]
+        };
 
-    const sections = sectionsData[departmentId] || [];
-    sections.forEach(section => {
-        const option = document.createElement('option');
-        option.value = section.id;
-        option.textContent = section.name;
-        sectionSelect.appendChild(option);
-    });
-    
-    sectionSelect.disabled = false;
+        // Tambahkan opsi seksi sesuai departemen yang dipilih
+        sections[departmentId].forEach(section => {
+            const option = document.createElement('option');
+            option.value = section.id;
+            option.textContent = section.name;
+            option.selected = section.id == selectedSectionId;
+            sectionSelect.appendChild(option);
+        });
+    }
 }
+
+// Initialize sections untuk setiap komitmen saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.department-select').forEach(select => {
+        updateCommitmentSections(select);
+    });
+});
 
 // Fungsi untuk mengupdate status komitmen
 function updateCommitmentStatus(statusSelect) {

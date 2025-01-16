@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\OtherDiscussion;
+use App\Models\Commitment;
 use Illuminate\Http\Request;
 
 class OtherDiscussionEditController extends Controller
@@ -11,7 +12,8 @@ class OtherDiscussionEditController extends Controller
     public function edit($id)
     {
         try {
-            $discussion = OtherDiscussion::findOrFail($id);
+            // Load discussion dengan relasi commitments
+            $discussion = OtherDiscussion::with('commitments')->findOrFail($id);
             return view('admin.other-discussions.edit', compact('discussion'));
         } catch (\Exception $e) {
             return redirect()->route('admin.other-discussions.index')
@@ -30,40 +32,61 @@ class OtherDiscussionEditController extends Controller
                 'unit' => 'required|string',
                 'topic' => 'required|string',
                 'target' => 'required|string',
+                'target_deadline' => 'required|date',
+                'department_id' => 'nullable|numeric',
+                'section_id' => 'nullable|numeric',
                 'risk_level' => 'required|string',
                 'priority_level' => 'required|string',
-                'pic' => 'required|string',
                 'status' => 'required|in:Open,Closed',
                 'commitments' => 'required|array',
                 'commitment_deadlines' => 'required|array',
-                'target_deadline' => 'required|date'
+                'commitment_department_ids' => 'required|array',
+                'commitment_section_ids' => 'required|array',
+                'commitment_status' => 'required|array'
             ]);
 
+            // Update status closed_at jika status berubah menjadi Closed
             if ($validated['status'] === 'Closed' && $discussion->status !== 'Closed') {
                 $validated['closed_at'] = now();
             }
 
-            $discussion->update($validated);
+            // Update discussion
+            $discussion->update([
+                'sr_number' => $validated['sr_number'],
+                'wo_number' => $validated['wo_number'],
+                'unit' => $validated['unit'],
+                'topic' => $validated['topic'],
+                'target' => $validated['target'],
+                'target_deadline' => $validated['target_deadline'],
+                'department_id' => $validated['department_id'],
+                'section_id' => $validated['section_id'],
+                'risk_level' => $validated['risk_level'],
+                'priority_level' => $validated['priority_level'],
+                'status' => $validated['status'],
+                'closed_at' => $validated['closed_at'] ?? $discussion->closed_at
+            ]);
 
-            // Update komitmen
-            $discussion->commitments()->delete(); // Hapus komitmen lama
+            // Hapus komitmen lama
+            $discussion->commitments()->delete();
+
+            // Buat komitmen baru
             foreach ($request->commitments as $index => $commitment) {
                 $discussion->commitments()->create([
                     'description' => $commitment,
                     'deadline' => $request->commitment_deadlines[$index],
-                    'pic' => $request->commitment_pics[$index] ?? null
+                    'department_id' => $request->commitment_department_ids[$index],
+                    'section_id' => $request->commitment_section_ids[$index],
+                    'status' => $request->commitment_status[$index]
                 ]);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil diperbarui'
-            ]);
+            return redirect()->route('admin.other-discussions.index')
+                ->with('success', 'Data berhasil diperbarui');
+
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 } 
