@@ -21,7 +21,9 @@ class WorkOrder extends Model
         'priority',
         'schedule_start',
         'schedule_finish',
-        'unit_source'
+        'unit_source',
+        'is_active',
+        'is_backlogged'
     ];
 
     public function isExpired()

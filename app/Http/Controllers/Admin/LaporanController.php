@@ -40,9 +40,10 @@ class LaporanController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            // Query untuk Work Orders
+            // Query untuk Work Orders yang masih aktif
             $workOrders = WorkOrder::query()
                 ->select('id', 'description', 'status', 'created_at', 'priority', 'schedule_start', 'schedule_finish')
+                ->where('is_active', true)
                 ->when($request->filled(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
                     return $query->whereBetween('created_at', [
                         $request->tanggal_mulai . ' 00:00:00',
@@ -392,7 +393,7 @@ class LaporanController extends Controller
 
     private function checkExpiredWO()
     {
-        // Hanya jalankan jika bukan request update status
+        // Skip jika request update status
         if (request()->is('*/update-wo-status/*')) {
             return;
         }
@@ -402,8 +403,8 @@ class LaporanController extends Controller
             // Ambil WO yang expired, belum di-backlog, dan masih Open
             $expiredWOs = WorkOrder::where('schedule_finish', '<', now())
                 ->where('status', 'Open')
-                ->where('is_backlogged', false)  // Tambahkan pengecekan flag
-                ->lockForUpdate()  // Mencegah race condition
+                ->where('is_backlogged', false)
+                ->lockForUpdate()
                 ->get();
 
             foreach ($expiredWOs as $wo) {
@@ -420,12 +421,15 @@ class LaporanController extends Controller
                         'keterangan' => 'Auto-generated from overdue WO'
                     ]);
 
-                    // Update flag di work order
-                    $wo->is_backlogged = true;
-                    $wo->save();
+                    // Update flag di work order dan ubah status menjadi tidak aktif
+                    $wo->update([
+                        'is_backlogged' => true,
+                        'status' => 'WAPPR', // atau status lain yang sesuai
+                        'is_active' => false // tambahkan kolom baru ini
+                    ]);
 
                     session()->flash('backlog_notification', 
-                        "WO #{$wo->id} telah dipindahkan ke backlog karena melewati jadwal.");
+                        "WO #{$wo->id} telah ditambahkan ke backlog karena melewati jadwal.");
                 }
             }
             

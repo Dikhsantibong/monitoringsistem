@@ -269,9 +269,14 @@
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
                                                 <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200" data-column="status">
-                                                    <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'Comp' ? 'blue-500' : ($wo->status == 'APPR' ? 'yellow-500' : ($wo->status == 'WAPPR' ? 'purple-500' : 'gray-500')))) }} text-white rounded-full px-2 py-1">
+                                                    <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
                                                         {{ $wo->status }}
                                                     </span>
+                                                    @if($wo->is_backlogged)
+                                                        <span class="ml-2 text-xs bg-gray-200 text-gray-700 rounded-full px-2 py-1">
+                                                            In Backlog
+                                                        </span>
+                                                    @endif
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
