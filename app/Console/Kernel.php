@@ -17,8 +17,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // Jalankan pengecekan setiap hari jam 00:01
-        $schedule->command('discussions:check-overdue')->dailyAt('00:01');
+        $schedule->command('commitments:check-overdue')->daily();
+         // Jalankan pengecekan setiap hari jam 00:01
+         $schedule->command('discussions:check-overdue')->dailyAt('00:01');
     }
 
     /**

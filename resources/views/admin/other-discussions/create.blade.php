@@ -167,10 +167,9 @@
                                     <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
                                     <option value="4">BAGIAN BUSINESS SUPPORT</option>
                                     <option value="5">HSE</option>
-                                    <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
-                                    @if(session('database_name') === 'mysql_wua_wua')
-                                    <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA</option>
-                                    @endif
+                                    <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU</option>
+                                    <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA</option>
+                                    <option value="8">UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA</option>
                                 </select>
 
                                 <select name="section_id" 
@@ -283,10 +282,9 @@
                                                 <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
                                                 <option value="4">BAGIAN BUSINESS SUPPORT</option>
                                                 <option value="5">HSE</option>
-                                                <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
-                                                @if(session('database_name') === 'mysql_wua_wua')
-                                                <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA</option>
-                                                @endif
+                                                <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU</option>
+                                                <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA</option>
+                                                <option value="8">UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA</option>
                                             </select>
 
                                             <select name="commitment_section_ids[]" 
@@ -451,7 +449,7 @@ function updateCommitmentStatus(statusSelect) {
 function addCommitment() {
     const container = document.getElementById('commitments-container');
     const newEntry = document.createElement('div');
-    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
+    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative';
     
     let departmentOptions = `
         <option value="">Pilih Bagian</option>
@@ -460,13 +458,20 @@ function addCommitment() {
         <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
         <option value="4">BAGIAN BUSINESS SUPPORT</option>
         <option value="5">HSE</option>
-        <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>`;
-    
-    @if(session('database_name') === 'mysql_wua_wua')
-    departmentOptions += `<option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA</option>`;
-    @endif
+        <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU</option>
+        <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA</option>
+        <option value="8">UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA</option>
+    `;
 
     newEntry.innerHTML = `
+        <!-- Tombol Hapus dengan posisi yang diperbaiki -->
+        <button type="button" 
+                onclick="removeCommitment(this)" 
+                class="absolute right-0 top-0 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center focus:outline-none shadow-md transform hover:scale-110 transition-transform duration-200"
+                style="margin-top: -12px; margin-right: -12px;">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+
         <div class="md:col-span-8">
             <!-- Header Section -->
             <div class="flex justify-between items-center mb-2">
@@ -526,10 +531,50 @@ function addCommitment() {
     updateCommitmentStatus(statusSelect);
 }
 
-// Initialize semua status saat halaman dimuat
+// Tambahkan fungsi untuk menghapus komitmen
+function removeCommitment(button) {
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "Komitmen ini akan dihapus!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const commitmentEntry = button.closest('.commitment-entry');
+            commitmentEntry.remove();
+            
+            Swal.fire(
+                'Terhapus!',
+                'Komitmen telah dihapus.',
+                'success'
+            );
+        }
+    });
+}
+
+// Update fungsi untuk menambahkan tombol hapus ke komitmen yang sudah ada
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.status-select').forEach(select => {
-        updateCommitmentStatus(select);
+    const existingCommitments = document.querySelectorAll('.commitment-entry');
+    existingCommitments.forEach(commitment => {
+        if (!commitment.querySelector('button[onclick="removeCommitment(this)"]')) {
+            // Tambahkan padding dan margin
+            commitment.classList.add('pt-4', 'mb-8');
+            commitment.style.position = 'relative';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.onclick = function() { removeCommitment(this); };
+            deleteButton.className = 'absolute right-0 top-0 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center focus:outline-none shadow-md transform hover:scale-110 transition-transform duration-200';
+            deleteButton.style.marginTop = '-12px';
+            deleteButton.style.marginRight = '-12px';
+            deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            
+            commitment.insertBefore(deleteButton, commitment.firstChild);
+        }
     });
 });
 
@@ -558,14 +603,19 @@ const sectionsData = {
         {id: 12, name: 'SEKSI LINGKUNGAN'},
         {id: 13, name: 'SEKSI K3 & KEAMANAN'}
     ],
-    '6': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL
-        {id: 14, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU-BAU'},
-        {id: 15, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA'},
-        {id: 16, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL POASIA'},
-        {id: 17, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA-WUA'}
+    '6': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU
+        {id: 14, name: 'SEKSI OPERASI DAN PEMELIHARAAN  RAHA'},
+        {id: 15, name: 'SEKSI OPERASI DAN PEMELIHARAAN  WANGI-WANGI'},
+        {id: 16, name: 'SEKSI OPERASI DAN PEMELIHARAAN  WINNING'},
+        {id: 17, name: 'SEKSI OPERASI DAN PEMELIHARAAN  EREKE'}
     ],
-    '7': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA (hanya untuk session mysql_wua_wua)
-        {id: 18, name: 'SEKSI OPERASI DAN PEMELIHARAAN LANGARA'}
+    '7': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA
+        {id: 18, name: 'SEKSI OPERASI DAN PEMELIHARAAN  LANIPA-NIPA'},
+        {id: 19, name: 'SEKSI OPERASI DAN PEMELIHARAAN  SABILAMBO'},
+        {id: 20, name: 'SEKSI OPERASI DAN PEMELIHARAAN  MIKUASI'}
+    ],
+    '8': [ // UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA
+        {id: 21, name: 'SEKSI OPERASI DAN PEMELIHARAAN  LANGAR'}
     ]
 };
 

@@ -185,6 +185,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
                             </thead>
@@ -233,11 +234,15 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         <div class="text-sm">{{ $commitment->description }}</div>
-                                                        <div class="text-xs text-gray-500 flex items-center justify-between">
+                                                        <div class="text-xs text-gray-500 flex items-center justify-between mt-1">
                                                             <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
                                                             <span class="px-2 py-1 rounded-full text-xs
-                                                                {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                                                {{ $commitment->status }}
+                                                                @if(strtoupper($commitment->status) === 'OPEN') 
+                                                                    bg-red-100 text-red-800 border border-red-200
+                                                                @elseif(strtoupper($commitment->status) === 'CLOSED')
+                                                                    bg-green-100 text-green-800 border border-green-200
+                                                                @endif">
+                                                                {{ ucfirst(strtolower($commitment->status)) }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -270,6 +275,9 @@
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}
+                                        </td>   
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <!-- Edit -->
@@ -327,6 +335,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
                             </thead>
@@ -410,6 +419,9 @@
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
                                                 <a href="#" onclick="editDiscussion({{ $discussion->id }})" 
@@ -460,6 +472,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
                             </thead>
@@ -544,6 +557,9 @@
                                                 @endif">
                                                 {{ $discussion->status }}
                                             </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center space-x-3">
@@ -743,6 +759,34 @@
 .active-tab {
     border-bottom-color: #3B82F6;
     color: #2563EB;
+}
+
+/* Tambahkan style untuk memastikan warna background tetap terlihat */
+.status-select option {
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Styling untuk status badge */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+
+.status-badge.open {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+.status-badge.closed {
+    background-color: #D1FAE5;
+    color: #065F46;
+    border: 1px solid #A7F3D0;
 }
 </style>
 
@@ -1117,6 +1161,35 @@
                 text: error.message
             });
         });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusSelects = document.querySelectorAll('.status-select');
+        
+        statusSelects.forEach(select => {
+            // Set warna awal
+            updateStatusStyle(select);
+            
+            // Update warna saat status berubah
+            select.addEventListener('change', function() {
+                updateStatusStyle(this);
+            });
+        });
+    });
+
+    function updateStatusStyle(select) {
+        // Hapus semua class warna yang ada
+        select.classList.remove(
+            'bg-red-100', 'text-red-800', 'border-red-200',
+            'bg-green-100', 'text-green-800', 'border-green-200'
+        );
+        
+        // Tambahkan class sesuai status yang dipilih
+        if (select.value === 'Open') {
+            select.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
+        } else if (select.value === 'Closed') {
+            select.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
+        }
     }
 </script>
 @push('scripts')

@@ -16,20 +16,40 @@ class OtherDiscussionController extends Controller
 {
     public function index()
     {
-        // Data aktif
-        $activeDiscussions = OtherDiscussion::active()
-            ->with('commitments')
+        $search = request('search');
+        $query = OtherDiscussion::with(['commitments' => function($q) {
+            $q->with(['department', 'section']);
+        }]);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('topic', 'like', "%{$search}%")
+                  ->orWhere('unit', 'like', "%{$search}%");
+            });
+        }
+
+        // Ambil diskusi dengan komitmen yang overdue
+        $commitmentOverdueDiscussions = clone $query;
+        $commitmentOverdueDiscussions = $commitmentOverdueDiscussions
+            ->whereHas('commitments', function($q) {
+                $q->where('status', 'Open')
+                  ->where('deadline', '<', Carbon::now()->startOfDay());
+            })
+            ->paginate(10, ['*'], 'commitment_overdue_page');
+
+        // Ambil diskusi aktif (tidak termasuk yang overdue)
+        $activeDiscussions = $query
+            ->whereDoesntHave('commitments', function($q) {
+                $q->where('status', 'Open')
+                  ->where('deadline', '<', Carbon::now()->startOfDay());
+            })
+            ->where('status', 'Open')
             ->paginate(10, ['*'], 'active_page');
         
         // Data melewati target
         $targetOverdueDiscussions = OtherDiscussion::targetOverdue()
             ->with('commitments')
             ->paginate(10, ['*'], 'target_page');
-        
-        // Data melewati komitmen
-        $commitmentOverdueDiscussions = OtherDiscussion::commitmentOverdue()
-            ->with('commitments')
-            ->paginate(10, ['*'], 'commitment_page');
         
         // Data selesai
         $closedDiscussions = OtherDiscussion::closed()
@@ -46,8 +66,8 @@ class OtherDiscussionController extends Controller
 
         return view('admin.other-discussions.index', compact(
             'activeDiscussions',
-            'targetOverdueDiscussions',
             'commitmentOverdueDiscussions',
+            'targetOverdueDiscussions',
             'closedDiscussions',
             'counts'
         ));
@@ -108,7 +128,7 @@ class OtherDiscussionController extends Controller
     public function updateStatus(Request $request)
     {
         $discussion = OtherDiscussion::findOrFail($request->discussion_id);
-        $discussion->status = $request->status;
+        $discussion->status = ucfirst(strtolower($request->status));
         
         if ($request->status === 'Closed') {
             $discussion->closed_at = now();
@@ -231,6 +251,8 @@ class OtherDiscussionController extends Controller
                     $request->commitment_department_ids[$index],
                     $request->commitment_section_ids[$index]
                 );
+
+                $commitment->status = ucfirst(strtolower($request->commitment_status[$index] ?? 'Open'));
 
                 $discussion->commitments()->create([
                     'description' => $commitment,
@@ -366,6 +388,8 @@ class OtherDiscussionController extends Controller
                     $request->commitment_department_ids[$index],
                     $request->commitment_section_ids[$index]
                 );
+
+                $commitment->status = ucfirst(strtolower($request->commitment_status[$index] ?? 'Open'));
 
                 $discussion->commitments()->create([
                     'description' => $commitment,
