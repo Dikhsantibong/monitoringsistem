@@ -233,8 +233,12 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         <div class="text-sm">{{ $commitment->description }}</div>
-                                                        <div class="text-xs text-gray-500">
-                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                                        <div class="text-xs text-gray-500 flex items-center justify-between">
+                                                            <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                            <span class="px-2 py-1 rounded-full text-xs
+                                                                {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                                {{ $commitment->status }}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 @endforeach
@@ -366,8 +370,12 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         <div class="text-sm">{{ $commitment->description }}</div>
-                                                        <div class="text-xs text-gray-500">
-                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                                        <div class="text-xs text-gray-500 flex items-center justify-between">
+                                                            <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                            <span class="px-2 py-1 rounded-full text-xs
+                                                                {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                                {{ $commitment->status }}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 @endforeach
@@ -567,9 +575,10 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         <div>{{ $commitment->description }}</div>
-                                                        <div class="text-sm text-gray-500">
-                                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
-                                                            <span class="ml-2 px-2 py-1 rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                        <div class="text-sm text-gray-500 flex items-center justify-between">
+                                                            <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                            <span class="px-2 py-1 rounded-full text-xs
+                                                                {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
                                                                 {{ $commitment->status }}
                                                             </span>
                                                         </div>

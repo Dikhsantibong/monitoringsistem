@@ -462,7 +462,6 @@ function addCommitment() {
         <option value="5">HSE</option>
         <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>`;
     
-    // Tambahkan opsi tambahan jika session adalah mysql_wua_wua
     @if(session('database_name') === 'mysql_wua_wua')
     departmentOptions += `<option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA WUA</option>`;
     @endif
