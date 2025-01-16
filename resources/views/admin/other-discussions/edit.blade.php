@@ -274,6 +274,7 @@
                             <select name="status" 
                                     id="status" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                                    onchange="validateStatus(this)"
                                     required>
                                 <option value="">Pilih Status</option>
                                 @foreach(\App\Models\OtherDiscussion::STATUSES as $status)
@@ -512,6 +513,15 @@ function addCommitment() {
     // Initialize status
     const statusSelect = newEntry.querySelector('.status-select');
     updateCommitmentStatus(statusSelect);
+    
+    // Tambahkan event listener untuk status komitmen baru
+    const newStatusSelect = newEntry.querySelector('select[name="commitment_status[]"]');
+    newStatusSelect.addEventListener('change', function() {
+        const discussionStatus = document.getElementById('status');
+        if (discussionStatus.value === 'Closed') {
+            validateStatus(discussionStatus);
+        }
+    });
 }
 
 // Initialize semua dropdown saat halaman dimuat
@@ -522,6 +532,60 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.querySelectorAll('.department-select').forEach(select => {
         updateCommitmentSections(select);
+    });
+});
+
+// Fungsi untuk validasi status
+function validateStatus(selectElement) {
+    if (selectElement.value === 'Closed') {
+        const commitmentStatuses = document.querySelectorAll('select[name="commitment_status[]"]');
+        const hasOpenCommitments = Array.from(commitmentStatuses).some(status => status.value === 'open');
+        
+        if (hasOpenCommitments) {
+            Swal.fire({
+                title: 'Peringatan!',
+                text: 'Semua komitmen harus diselesaikan (Closed) sebelum mengubah status pembahasan menjadi Closed',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            selectElement.value = 'Open';
+            return false;
+        }
+    }
+    return true;
+}
+
+// Tambahkan validasi form submit
+document.getElementById('editDiscussionForm').addEventListener('submit', function(e) {
+    const statusSelect = document.getElementById('status');
+    if (statusSelect.value === 'Closed') {
+        const commitmentStatuses = document.querySelectorAll('select[name="commitment_status[]"]');
+        const hasOpenCommitments = Array.from(commitmentStatuses).some(status => status.value === 'open');
+        
+        if (hasOpenCommitments) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Peringatan!',
+                text: 'Semua komitmen harus diselesaikan (Closed) sebelum mengubah status pembahasan menjadi Closed',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            statusSelect.value = 'Open';
+            return false;
+        }
+    }
+});
+
+// Tambahkan event listener untuk status komitmen yang sudah ada
+document.addEventListener('DOMContentLoaded', function() {
+    const commitmentStatuses = document.querySelectorAll('select[name="commitment_status[]"]');
+    commitmentStatuses.forEach(status => {
+        status.addEventListener('change', function() {
+            const discussionStatus = document.getElementById('status');
+            if (discussionStatus.value === 'Closed') {
+                validateStatus(discussionStatus);
+            }
+        });
     });
 });
 </script>
