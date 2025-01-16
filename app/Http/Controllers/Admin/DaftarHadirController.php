@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
-class DaftarHadirController extends Controllerz
+class DaftarHadirController extends Controller
 {
     public function index()
     {
