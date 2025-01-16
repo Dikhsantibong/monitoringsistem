@@ -9,9 +9,15 @@ class Commitment extends Model
     protected $fillable = [
         'description',
         'deadline',
+        'department_id',
+        'section_id',
         'pic',
         'status',
         'other_discussion_id'
+    ];
+
+    protected $attributes = [
+        'status' => 'open'
     ];
 
     protected $dates = [

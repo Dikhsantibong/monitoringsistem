@@ -46,12 +46,15 @@ class OtherDiscussion extends Model
         'unit',
         'topic',
         'target',
+        'target_deadline',
+        'department_id',
+        'section_id',
+        'pic',
         'risk_level',
         'priority_level',
-        'pic',
         'status',
-        'closed_at',
-        'target_deadline'
+        'previous_commitment',
+        'next_commitment'
     ];
 
     protected $dates = [

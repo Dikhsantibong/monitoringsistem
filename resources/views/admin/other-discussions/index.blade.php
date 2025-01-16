@@ -239,8 +239,7 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         @if($commitment->pic)
-                                                            <div class="text-sm">{{ $commitment->pic->name }}</div>
-                                                            <div class="text-xs text-gray-500">{{ $commitment->pic->position }}</div>
+                                                            <div class="text-sm">{{ $commitment->pic }}</div>
                                                         @else
                                                             <span class="text-gray-500">-</span>
                                                         @endif
@@ -365,8 +364,7 @@
                                                 @foreach($discussion->commitments as $commitment)
                                                     <div class="mb-2 p-2 border rounded">
                                                         @if($commitment->pic)
-                                                            <div class="text-sm">{{ $commitment->pic->name }}</div>
-                                                            <div class="text-xs text-gray-500">{{ $commitment->pic->position }}</div>
+                                                            <div class="text-sm">{{ $commitment->pic }}</div>
                                                         @else
                                                             <span class="text-gray-500">-</span>
                                                         @endif
