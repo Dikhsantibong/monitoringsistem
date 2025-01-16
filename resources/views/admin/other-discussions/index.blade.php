@@ -179,6 +179,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
@@ -189,17 +190,24 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($activeDiscussions as $index => $discussion)
-                                    <tr data-id="{{ $discussion->id }}">
+                                    <tr>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-normal border border-gray-200 max-w-[400px] break-words">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <div class="mb-1">{{ $discussion->target }}</div>
                                             <div class="text-sm text-gray-500">
                                                 Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
                                             </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->department_id && $discussion->section_id)
+                                                {{ $discussion->pic }}
+                                            @else
+                                                -
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded
@@ -283,7 +291,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="13" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="14" class="px-6 py-4 text-center text-gray-500">
                                             Tidak ada data aktif
                                         </td>
                                     </tr>
@@ -308,6 +316,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
@@ -326,6 +335,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->target_pic ?? '-' }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded
                                                 @if($discussion->risk_level == 'R') bg-green-100 text-green-800
@@ -430,6 +442,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
@@ -448,6 +461,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->target_pic ?? '-' }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 text-sm rounded text-sm bg-red-100 text-red-800">
                                                 Melewati Deadline
@@ -497,6 +513,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen</th>
@@ -515,6 +532,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[400px] break-words border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            {{ $discussion->target_pic ?? '-' }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
                                                 {{ $discussion->risk_level }}

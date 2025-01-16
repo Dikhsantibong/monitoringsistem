@@ -58,9 +58,6 @@
                                    id="sr_number" 
                                    value="{{ old('sr_number', $discussion->sr_number) }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            @error('sr_number')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- No WO -->
@@ -73,9 +70,6 @@
                                    id="wo_number" 
                                    value="{{ old('wo_number', $discussion->wo_number) }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            @error('wo_number')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Unit -->
@@ -88,15 +82,15 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                     required>
                                 <option value="">Pilih Unit</option>
-                                @foreach(\App\Models\OtherDiscussion::getUnits() as $unit)
-                                    <option value="{{ $unit }}" {{ old('unit', $discussion->unit) == $unit ? 'selected' : '' }}>
-                                        {{ $unit }}
+                                @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
+                                    @php
+                                        $shortName = Str::limit($powerPlant->name, 50, '');
+                                    @endphp
+                                    <option value="{{ $shortName }}" {{ old('unit', $discussion->unit) == $shortName ? 'selected' : '' }}>
+                                        {{ $powerPlant->name }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('unit')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Topik -->
@@ -110,24 +104,60 @@
                                    value="{{ old('topic', $discussion->topic) }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                    required>
-                            @error('topic')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Sasaran -->
-                        <div class="mb-4">
+                        <div class="mb-4 md:col-span-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="target">
                                 Sasaran <span class="text-red-500">*</span>
                             </label>
                             <textarea name="target" 
                                       id="target" 
+                                      rows="3"
                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      required
-                                      rows="3">{{ old('target', $discussion->target) }}</textarea>
-                            @error('target')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
+                                      required>{{ old('target', $discussion->target) }}</textarea>
+                        </div>
+
+                        <!-- Deadline Sasaran -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="target_deadline">
+                                Deadline Sasaran <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" 
+                                   name="target_deadline" 
+                                   id="target_deadline" 
+                                   value="{{ old('target_deadline', $discussion->target_deadline ? date('Y-m-d', strtotime($discussion->target_deadline)) : '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   required>
+                        </div>
+
+                        <!-- PIC -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="pic">
+                                PIC <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select name="department_id" 
+                                        id="department_select" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                                        onchange="updateSections(this.value)"
+                                        required>
+                                    <option value="">Pilih Bagian</option>
+                                    <option value="1" {{ old('department_id', $discussion->department_id) == 1 ? 'selected' : '' }}>BAGIAN OPERASI</option>
+                                    <option value="2" {{ old('department_id', $discussion->department_id) == 2 ? 'selected' : '' }}>BAGIAN PEMELIHARAAN</option>
+                                    <option value="3" {{ old('department_id', $discussion->department_id) == 3 ? 'selected' : '' }}>BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
+                                    <option value="4" {{ old('department_id', $discussion->department_id) == 4 ? 'selected' : '' }}>BAGIAN BUSINESS SUPPORT</option>
+                                    <option value="5" {{ old('department_id', $discussion->department_id) == 5 ? 'selected' : '' }}>HSE</option>
+                                    <option value="6" {{ old('department_id', $discussion->department_id) == 6 ? 'selected' : '' }}>UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
+                                </select>
+
+                                <select name="section_id" 
+                                        id="section_select" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        required>
+                                    <option value="">Pilih Seksi</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Tingkat Resiko -->
@@ -146,9 +176,6 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('risk_level')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Tingkat Prioritas -->
@@ -167,114 +194,72 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('priority_level')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Komitmen -->
                         <div class="mb-4 md:col-span-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2">
-                                Komitmen <span class="text-red-500">*</span>
+                                Komitmen
                             </label>
                             <div id="commitments-container">
-                                @foreach($discussion->commitments as $index => $commitment)
-                                    <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
-                                        <div class="md:col-span-8 relative">
-                                            <input type="date" 
-                                                   name="commitment_deadlines[]" 
-                                                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                                                   value="{{ old('commitment_deadlines.'.$index, $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '') }}"
-                                                   required>
+                                @foreach($discussion->commitments as $commitment)
+                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
+                                    <div class="md:col-span-8">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <div class="flex items-center">
+                                                <span class="text-sm font-medium mr-2">Status:</span>
+                                                <select name="commitment_status[]" 
+                                                        class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        onchange="updateCommitmentStatus(this)">
+                                                    <option value="open" {{ $commitment->status == 'open' ? 'selected' : '' }}>Open</option>
+                                                    <option value="closed" {{ $commitment->status == 'closed' ? 'selected' : '' }}>Closed</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="flex items-center">
+                                                <span class="text-sm font-medium mr-2">Deadline:</span>
+                                                <input type="date" 
+                                                       name="commitment_deadlines[]" 
+                                                       value="{{ $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '' }}"
+                                                       class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                       required>
+                                            </div>
+                                        </div>
+
+                                        <div class="relative">
                                             <textarea name="commitments[]" 
-                                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                      class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
-                                                      required>{{ old('commitments.'.$index, $commitment->description) }}</textarea>
-                                        </div>
-                                        <div class="md:col-span-3">
-                                            <select name="commitment_pics[]"
-                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                    required>
-                                                <option value="">Pilih PIC</option>
-                                                
-                                                <!-- Unit Pembangkitan -->
-                                                <optgroup label="UNIT PEMBANGKITAN">
-                                                    @foreach(\App\Models\Pic::where('department', 'UNIT PEMBANGKITAN')->get() as $pic)
-                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                            {{ $pic->name }} - {{ $pic->position }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-
-                                                <!-- Seksi HSE -->
-                                                <optgroup label="HSE">
-                                                    @foreach(\App\Models\Pic::where('department', 'HSE')->orderBy('section')->get() as $pic)
-                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                            {{ $pic->name }} - {{ $pic->section }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-
-                                                <!-- Bagian Operasi -->
-                                                <optgroup label="BAGIAN OPERASI">
-                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN OPERASI')->orderBy('section')->get() as $pic)
-                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                            {{ $pic->name }} - {{ $pic->section }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-
-                                                <!-- Bagian Pemeliharaan -->
-                                                <optgroup label="BAGIAN PEMELIHARAAN">
-                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN PEMELIHARAAN')->orderBy('section')->get() as $pic)
-                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                            {{ $pic->name }} - {{ $pic->section }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-
-                                                <!-- Bagian Enjiniring -->
-                                                <optgroup label="BAGIAN ENJINIRING & QUALITY ASSURANCE">
-                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN ENJINIRING & QUALITY ASSURANCE')->orderBy('section')->get() as $pic)
-                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                            {{ $pic->name }} - {{ $pic->section }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-
-                                                <!-- Bagian Business Support -->
-                                                <optgroup label="BAGIAN BUSINESS SUPPORT">
-                                                    @foreach(\App\Models\Pic::where('department', 'BAGIAN BUSINESS SUPPORT')->orderBy('section')->get() as $pic)
-                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                            {{ $pic->name }} - {{ $pic->section }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-
-                                                <!-- Unit Layanan PLTD -->
-                                                <optgroup label="UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL">
-                                                    @foreach(\App\Models\Pic::where('department', 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL')->orderBy('section')->get() as $pic)
-                                                        <option value="{{ $pic->id }}" {{ old('commitment_pics.'.$index, $commitment->pic_id) == $pic->id ? 'selected' : '' }}>
-                                                            {{ $pic->name }} - {{ $pic->section }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-                                            </select>
-                                        </div>
-                                        <div class="md:col-span-1 flex items-center">
-                                            @if(!$loop->first)
-                                                <button type="button" 
-                                                        onclick="removeCommitment(this)"
-                                                        class="text-red-500 hover:text-red-700">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            @endif
+                                                      required>{{ $commitment->description }}</textarea>
                                         </div>
                                     </div>
+                                    <div class="md:col-span-4">
+                                        <div class="relative">
+                                            <select name="commitment_department_ids[]" 
+                                                    class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                                                    onchange="updateCommitmentSections(this)"
+                                                    required>
+                                                <option value="">Pilih Bagian</option>
+                                                <option value="1" {{ $commitment->department_id == 1 ? 'selected' : '' }}>BAGIAN OPERASI</option>
+                                                <option value="2" {{ $commitment->department_id == 2 ? 'selected' : '' }}>BAGIAN PEMELIHARAAN</option>
+                                                <option value="3" {{ $commitment->department_id == 3 ? 'selected' : '' }}>BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
+                                                <option value="4" {{ $commitment->department_id == 4 ? 'selected' : '' }}>BAGIAN BUSINESS SUPPORT</option>
+                                                <option value="5" {{ $commitment->department_id == 5 ? 'selected' : '' }}>HSE</option>
+                                                <option value="6" {{ $commitment->department_id == 6 ? 'selected' : '' }}>UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
+                                            </select>
+
+                                            <select name="commitment_section_ids[]" 
+                                                    class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    required>
+                                                <option value="">Pilih Seksi</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                                 @endforeach
                             </div>
                             <button type="button" 
-                                    id="add-commitment"
+                                    onclick="addCommitment()"
                                     class="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
                                 <i class="fas fa-plus mr-2"></i> Tambah Komitmen
                             </button>
@@ -289,68 +274,14 @@
                                     id="status" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                     required>
-                                <option value="Open" {{ old('status', $discussion->status) === 'Open' ? 'selected' : '' }}>Open</option>
-                                <option value="Closed" {{ old('status', $discussion->status) === 'Closed' ? 'selected' : '' }}>Closed</option>
+                                <option value="">Pilih Status</option>
+                                @foreach(\App\Models\OtherDiscussion::STATUSES as $status)
+                                    <option value="{{ $status }}" {{ old('status', $discussion->status) == $status ? 'selected' : '' }}>
+                                        {{ $status }}
+                                    </option>
+                                @endforeach
                             </select>
-                            @error('status')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
                         </div>
-
-                        <!-- Target Deadline -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="target_deadline">
-                                Target Deadline <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" 
-                                   name="target_deadline" 
-                                   id="target_deadline" 
-                                   value="{{ old('target_deadline', $discussion->target_deadline ? date('Y-m-d', strtotime($discussion->target_deadline)) : '') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   required>
-                            @error('target_deadline')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Dropdown untuk memilih PIC -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <!-- Level 1: Pilih Bagian/Unit -->
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2">
-                                    Pilih Bagian/Unit
-                                </label>
-                                <select id="department" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                    <option value="">Pilih Bagian/Unit</option>
-                                    @foreach(\App\Models\Department::orderBy('name')->get() as $department)
-                                        <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Level 2: Pilih Seksi -->
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2">
-                                    Pilih Seksi
-                                </label>
-                                <select id="section" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" disabled>
-                                    <option value="">Pilih Seksi</option>
-                                </select>
-                            </div>
-
-                            <!-- Level 3: Pilih PIC -->
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2">
-                                    Pilih PIC
-                                </label>
-                                <select name="pic_id" id="pic" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" disabled>
-                                    <option value="">Pilih PIC</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Deadline -->
-                        
                     </div>
 
                     <!-- Tombol Submit -->
@@ -373,254 +304,186 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.getElementById('editDiscussionForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    Swal.fire({
-        title: 'Mohon tunggu...',
-        text: 'Sedang menyimpan data',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+// Data sections
+const sectionsData = {
+    '1': [ // BAGIAN OPERASI
+        {id: 1, name: 'SEKSI RENDAL OP & NIAGA'},
+        {id: 2, name: 'SEKSI BAHAN BAKAR'},
+        {id: 3, name: 'SEKSI OUTAGE MGT'}
+    ],
+    '2': [ // BAGIAN PEMELIHARAAN
+        {id: 4, name: 'SEKSI PERENCANAAN PENGENDALIAN PEMELIHARAAN'},
+        {id: 5, name: 'SEKSI INVENTORI KONTROL & GUDANG'}
+    ],
+    '3': [ // BAGIAN ENJINIRING & QUALITY ASSURANCE
+        {id: 6, name: 'SEKSI SYSTEM OWNER'},
+        {id: 7, name: 'SEKSI CONDITION BASED MAINTENANCE'},
+        {id: 8, name: 'SEKSI MMRK'}
+    ],
+    '4': [ // BAGIAN BUSINESS SUPPORT
+        {id: 9, name: 'SEKSI SDM, UMUM & CSR'},
+        {id: 10, name: 'SEKSI KEUANGAN'},
+        {id: 11, name: 'SEKSI PENGADAAN'}
+    ],
+    '5': [ // HSE
+        {id: 12, name: 'SEKSI LINGKUNGAN'},
+        {id: 13, name: 'SEKSI K3 & KEAMANAN'}
+    ],
+    '6': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL
+        {id: 14, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU-BAU'},
+        {id: 15, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA'},
+        {id: 16, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL POASIA'},
+        {id: 17, name: 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA-WUA'}
+    ]
+};
 
-    fetch('{{ route('admin.other-discussions.update', $discussion->id) }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: data.message,
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                window.location.href = '{{ route('admin.other-discussions.index') }}';
-            });
-        } else {
-            throw new Error(data.message);
-        }
-    })
-    .catch(error => {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: error.message || 'Terjadi kesalahan saat menyimpan data',
-            confirmButtonText: 'Coba Lagi'
-        });
+function updateSections(departmentId) {
+    const sectionSelect = document.getElementById('section_select');
+    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
+    
+    if (!departmentId) {
+        sectionSelect.disabled = true;
+        return;
+    }
+
+    const sections = sectionsData[departmentId] || [];
+    sections.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section.id;
+        option.textContent = section.name;
+        sectionSelect.appendChild(option);
     });
+    
+    sectionSelect.disabled = false;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    const departmentSelect = document.getElementById('department_select');
+    updateSections(departmentSelect.value);
+    
+    // Set selected section if exists
+    const currentSectionId = '{{ $discussion->section_id }}';
+    if (currentSectionId) {
+        const sectionSelect = document.getElementById('section_select');
+        const options = sectionSelect.options;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === currentSectionId) {
+                options[i].selected = true;
+                break;
+            }
+        }
+    }
 });
 
-// Script untuk menangani penambahan komitmen
-document.getElementById('add-commitment').addEventListener('click', function() {
+function updateCommitmentSections(departmentSelect) {
+    const commitmentEntry = departmentSelect.closest('.commitment-entry');
+    const sectionSelect = commitmentEntry.querySelector('.section-select');
+    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
+    
+    const departmentId = departmentSelect.value;
+    if (!departmentId) {
+        sectionSelect.disabled = true;
+        return;
+    }
+
+    const sections = sectionsData[departmentId] || [];
+    sections.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section.id;
+        option.textContent = section.name;
+        sectionSelect.appendChild(option);
+    });
+    
+    sectionSelect.disabled = false;
+}
+
+// Fungsi untuk mengupdate status komitmen
+function updateCommitmentStatus(statusSelect) {
+    const status = statusSelect.value;
+    statusSelect.className = 'status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ' + 
+        (status === 'open' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 
+         'bg-green-100 text-green-800 border border-green-300');
+}
+
+// Fungsi untuk menambah komitmen baru
+function addCommitment() {
     const container = document.getElementById('commitments-container');
     const newEntry = document.createElement('div');
     newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2';
     
-    // Dapatkan daftar PIC untuk dropdown
-    const picOptions = `
-        <option value="">Pilih PIC</option>
-        @foreach(\App\Models\Pic::orderBy('name')->get() as $pic)
-            <option value="{{ $pic->id }}">{{ $pic->name }} - {{ $pic->position }}</option>
-        @endforeach
-    `;
-
     newEntry.innerHTML = `
-        <div class="md:col-span-8 relative">
-            <input type="date" 
-                   name="commitment_deadlines[]" 
-                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                   required>
-            <textarea name="commitments[]" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      rows="3"
-                      placeholder="Masukkan komitmen"
-                      required></textarea>
+        <div class="md:col-span-8">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center">
+                    <span class="text-sm font-medium mr-2">Status:</span>
+                    <select name="commitment_status[]" 
+                            class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            onchange="updateCommitmentStatus(this)">
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center">
+                    <span class="text-sm font-medium mr-2">Deadline:</span>
+                    <input type="date" 
+                           name="commitment_deadlines[]" 
+                           class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           required>
+                </div>
+            </div>
+
+            <div class="relative">
+                <textarea name="commitments[]" 
+                          class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          rows="3"
+                          placeholder="Masukkan komitmen"
+                          required></textarea>
+            </div>
         </div>
-        <div class="md:col-span-3">
-            <select name="commitment_pics[]"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    required>
-                ${picOptions}
-            </select>
-        </div>
-        <div class="md:col-span-1 flex items-center">
-            <button type="button" 
-                    onclick="removeCommitment(this)"
-                    class="text-red-500 hover:text-red-700">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-    `;
-    container.appendChild(newEntry);
-});
-
-// Event delegation untuk tombol hapus komitmen
-document.getElementById('commitments-container').addEventListener('click', function(e) {
-    if (e.target.classList.contains('remove-commitment') || e.target.closest('.remove-commitment')) {
-        const entry = e.target.closest('.commitment-entry');
-        if (document.querySelectorAll('.commitment-entry').length > 1) {
-            entry.remove();
-        } else {
-            alert('Minimal harus ada satu komitmen');
-        }
-    }
-});
-
-document.getElementById('department').addEventListener('change', function() {
-    const departmentId = this.value;
-    const sectionSelect = document.getElementById('section');
-    const picSelect = document.getElementById('pic');
-    
-    // Reset dan disable dropdown seksi dan PIC
-    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
-    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-    sectionSelect.disabled = !departmentId;
-    picSelect.disabled = true;
-
-    if (departmentId) {
-        // Fetch sections berdasarkan department
-        fetch(`/api/sections/${departmentId}`)
-            .then(response => response.json())
-            .then(sections => {
-                sections.forEach(section => {
-                    const option = new Option(section.name, section.id);
-                    sectionSelect.add(option);
-                });
-                sectionSelect.disabled = false;
-            });
-    }
-});
-
-document.getElementById('section').addEventListener('change', function() {
-    const sectionId = this.value;
-    const picSelect = document.getElementById('pic');
-    
-    // Reset dan disable dropdown PIC
-    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-    picSelect.disabled = !sectionId;
-
-    if (sectionId) {
-        // Fetch PICs berdasarkan section
-        fetch(`/api/pics/${sectionId}`)
-            .then(response => response.json())
-            .then(pics => {
-                pics.forEach(pic => {
-                    const option = new Option(`${pic.name} (${pic.position})`, pic.id);
-                    picSelect.add(option);
-                });
-                picSelect.disabled = false;
-            });
-    }
-});
-
-// Fungsi untuk menambah komitmen baru dengan dropdown PIC bertingkat
-function addCommitment() {
-    const container = document.getElementById('commitments-container');
-    const commitmentCount = container.children.length;
-    
-    const newEntry = document.createElement('div');
-    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-4';
-    newEntry.innerHTML = `
-        <div class="md:col-span-8 relative">
-            <input type="date" 
-                   name="commitment_deadlines[]" 
-                   class="absolute top-2 right-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white z-10"
-                   required>
-            <textarea name="commitments[]" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      rows="3"
-                      placeholder="Masukkan komitmen"
-                      required></textarea>
-        </div>
-        <div class="md:col-span-3">
-            <!-- Nested dropdowns for PIC selection -->
-            <div class="space-y-2">
-                <select class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        onchange="updateSections(this, ${commitmentCount})">
-                    <option value="">Pilih Bagian/Unit</option>
-                    @foreach(\App\Models\Department::orderBy('name')->get() as $department)
-                        <option value="{{ $department->id }}">{{ $department->name }}</option>
-                    @endforeach
+        <div class="md:col-span-4">
+            <div class="relative">
+                <select name="commitment_department_ids[]" 
+                        class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                        onchange="updateCommitmentSections(this)"
+                        required>
+                    <option value="">Pilih Bagian</option>
+                    <option value="1">BAGIAN OPERASI</option>
+                    <option value="2">BAGIAN PEMELIHARAAN</option>
+                    <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
+                    <option value="4">BAGIAN BUSINESS SUPPORT</option>
+                    <option value="5">HSE</option>
+                    <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
                 </select>
-                <select class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        onchange="updatePics(this, ${commitmentCount})" disabled>
+
+                <select name="commitment_section_ids[]" 
+                        class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        required>
                     <option value="">Pilih Seksi</option>
-                </select>
-                <select name="commitment_pics[]" 
-                        class="pic-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        required disabled>
-                    <option value="">Pilih PIC</option>
                 </select>
             </div>
         </div>
-        <div class="md:col-span-1 flex items-center">
-            <button type="button" 
-                    onclick="removeCommitment(this)"
-                    class="text-red-500 hover:text-red-700">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
     `;
     
     container.appendChild(newEntry);
-}
-
-// Fungsi untuk update sections berdasarkan department yang dipilih
-function updateSections(departmentSelect, index) {
-    const row = departmentSelect.closest('.commitment-entry');
-    const sectionSelect = row.querySelector('.section-select');
-    const picSelect = row.querySelector('.pic-select');
     
-    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
-    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-    sectionSelect.disabled = !departmentSelect.value;
-    picSelect.disabled = true;
-
-    if (departmentSelect.value) {
-        fetch(`/api/sections/${departmentSelect.value}`)
-            .then(response => response.json())
-            .then(sections => {
-                sections.forEach(section => {
-                    const option = new Option(section.name, section.id);
-                    sectionSelect.add(option);
-                });
-                sectionSelect.disabled = false;
-            });
-    }
+    // Initialize status
+    const statusSelect = newEntry.querySelector('.status-select');
+    updateCommitmentStatus(statusSelect);
 }
 
-// Fungsi untuk update PICs berdasarkan section yang dipilih
-function updatePics(sectionSelect, index) {
-    const row = sectionSelect.closest('.commitment-entry');
-    const picSelect = row.querySelector('.pic-select');
+// Initialize semua dropdown saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.status-select').forEach(select => {
+        updateCommitmentStatus(select);
+    });
     
-    picSelect.innerHTML = '<option value="">Pilih PIC</option>';
-    picSelect.disabled = !sectionSelect.value;
-
-    if (sectionSelect.value) {
-        fetch(`/api/pics/${sectionSelect.value}`)
-            .then(response => response.json())
-            .then(pics => {
-                pics.forEach(pic => {
-                    const option = new Option(`${pic.name} (${pic.position})`, pic.id);
-                    picSelect.add(option);
-                });
-                picSelect.disabled = false;
-            });
-    }
-}
+    document.querySelectorAll('.department-select').forEach(select => {
+        updateCommitmentSections(select);
+    });
+});
 </script>
 @endpush
 @endsection         
