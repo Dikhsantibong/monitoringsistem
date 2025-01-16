@@ -480,6 +480,10 @@ Route::fallback(function () {
     return response()->json(['error' => 'Route tidak ditemukan'], 404);
 });
 
+Route::get('/attendance/error', function () {
+    return view('admin.daftar_hadir.error');
+})->name('attendance.error');
+
 
 
     

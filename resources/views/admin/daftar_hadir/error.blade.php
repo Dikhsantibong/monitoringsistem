@@ -5,12 +5,12 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">Absensi Berhasil</div>
+                <div class="card-header">Error Absensi</div>
 
                 <div class="card-body text-center">
-                    @if(session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
                         </div>
                     @endif
                     <a href="{{ route('home') }}" class="btn btn-primary">Kembali ke Beranda</a>
