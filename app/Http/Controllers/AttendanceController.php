@@ -37,30 +37,29 @@ class AttendanceController extends Controller
     public function rekapitulasi(Request $request)
     {
         try {
-            // Validasi input
-            $request->validate([
-                'tanggal_awal' => 'nullable|date',
-                'tanggal_akhir' => 'nullable|date'
-            ]);
-
-            // Mendapatkan data kehadiran berdasarkan rentang tanggal
             $attendances = Attendance::query();
 
             if ($request->filled(['tanggal_awal', 'tanggal_akhir'])) {
-                $attendances->whereDate('time', '>=', $request->tanggal_awal)
-                            ->whereDate('time', '<=', $request->tanggal_akhir);
+                // Konversi tanggal ke WITA
+                $tanggalAwal = Carbon::parse($request->tanggal_awal)->setTimezone('Asia/Makassar')->startOfDay();
+                $tanggalAkhir = Carbon::parse($request->tanggal_akhir)->setTimezone('Asia/Makassar')->endOfDay();
+
+                $attendances->whereBetween('time', [$tanggalAwal, $tanggalAkhir]);
             } else {
-                // Default tampilkan bulan ini
-                $attendances->whereMonth('time', now()->month)
-                            ->whereYear('time', now()->year);
+                // Default tampilkan bulan ini dalam WITA
+                $now = now()->setTimezone('Asia/Makassar');
+                $attendances->whereMonth('time', $now->month)
+                           ->whereYear('time', $now->year);
             }
 
-            $attendances = $attendances->get(); // Ambil data kehadiran
+            $attendances = $attendances->get();
 
-            // Hitung statistik
+            // Hitung statistik dengan waktu WITA
             $totalKehadiran = $attendances->count();
             $tepatWaktu = $attendances->filter(function($item) {
-                return Carbon::parse($item->time)->format('H:i:s') <= '08:00:00';
+                return Carbon::parse($item->time)
+                            ->setTimezone('Asia/Makassar')
+                            ->format('H:i:s') <= '08:00:00';
             })->count();
             
             $terlambat = $totalKehadiran - $tepatWaktu;
@@ -144,28 +143,27 @@ class AttendanceController extends Controller
                 'position' => 'required|string',
                 'division' => 'required|string',
                 'token' => 'required|string',
-                'signature' => 'required|string' // Validasi untuk data tanda tangan
+                'signature' => 'required|string'
             ]);
 
-            // Validasi format base64 signature
-            if (!preg_match('/^data:image\/png;base64,/', $request->signature)) {
-                throw new \Exception('Format tanda tangan tidak valid');
-            }
+            // Set timezone ke WITA
+            $now = now()->setTimezone('Asia/Makassar');
 
             // Debug log
             \Log::info('Processing attendance with signature', [
                 'name' => $request->name,
-                'signature_length' => strlen($request->signature)
+                'signature_length' => strlen($request->signature),
+                'time' => $now->format('Y-m-d H:i:s')
             ]);
 
-            // Buat record attendance
+            // Buat record attendance dengan waktu WITA
             $attendance = Attendance::create([
                 'name' => $request->name,
                 'position' => $request->position,
                 'division' => $request->division,
                 'token' => $request->token,
-                'time' => now(),
-                'signature' => $request->signature // Data base64 dari SignaturePad
+                'time' => $now,
+                'signature' => $request->signature
             ]);
 
             return redirect()->route('attendance.success')
@@ -174,8 +172,8 @@ class AttendanceController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error saving attendance: ' . $e->getMessage());
             return back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan absensi: ' . $e->getMessage());
+                ->with('error', 'Gagal menyimpan absensi. Silakan coba lagi.')
+                ->withInput();
         }
     }
 

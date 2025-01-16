@@ -64,7 +64,7 @@
 
                     <!-- Menampilkan Tanggal di bawah judul -->
                     <p class="text-gray-700 mb-4">
-                        Tanggal: {{ \Carbon\Carbon::now()->format('l, d F Y') }}
+                        Tanggal: {{ \Carbon\Carbon::now()->setTimezone('Asia/Makassar')->isoFormat('dddd, D MMMM Y') }}
                     </p>
 
                     <!-- Input Pencarian -->
@@ -139,10 +139,10 @@
                                             {{ $attendance->position }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ \Carbon\Carbon::parse($attendance->time)->format('d M Y') }}
+                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('d M Y') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ \Carbon\Carbon::parse($attendance->time)->format('H:i:s') }}
+                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('H:i:s') }} WITA
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">
                                             @if($attendance->signature)
