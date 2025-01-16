@@ -455,11 +455,10 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
@@ -472,7 +471,12 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <div class="mb-1">{{ $discussion->target }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                            </div>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             @if($discussion->department_id && $discussion->section_id)
                                                 {{ $discussion->pic }}
@@ -481,30 +485,84 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <span class="px-2 py-1 text-sm rounded text-sm bg-red-100 text-red-800">
-                                                Melewati Deadline
+                                            <span class="px-2 py-1 text-sm rounded
+                                                @if($discussion->risk_level == 'R') bg-green-100 text-green-800
+                                                @elseif($discussion->risk_level == 'MR') bg-yellow-100 text-yellow-800  
+                                                @elseif($discussion->risk_level == 'MT') bg-orange-100 text-orange-800
+                                                @elseif($discussion->risk_level == 'T') bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $discussion->risk_level }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <div class="flex items-center space-x-3 text-sm">
-                                                <a href="#" onclick="editDiscussion({{ $discussion->id }})" 
+                                            <span class="px-2 py-1 text-sm rounded
+                                                @if($discussion->priority_level == 'Low') bg-green-100 text-green-800
+                                                @elseif($discussion->priority_level == 'Medium') bg-yellow-100 text-yellow-800
+                                                @elseif($discussion->priority_level == 'High') bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $discussion->priority_level }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                                @foreach($discussion->commitments as $commitment)
+                                                    <div class="mb-2 p-2 border rounded">
+                                                        <div class="text-sm">{{ $commitment->description }}</div>
+                                                        <div class="text-xs text-gray-500 flex items-center justify-between">
+                                                            <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                            <span class="px-2 py-1 rounded-full text-xs
+                                                                {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                                {{ $commitment->status }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-500">Tidak ada komitmen</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                                @foreach($discussion->commitments as $commitment)
+                                                    <div class="mb-2 p-2 border rounded">
+                                                        @if($commitment->pic)
+                                                            <div class="text-sm">{{ $commitment->pic }}</div>
+                                                        @else
+                                                            <span class="text-gray-500">-</span>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-500">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                            <span class="px-2 py-1 text-sm rounded
+                                                @if($discussion->status == 'Open') bg-blue-100 text-blue-800
+                                                @elseif($discussion->status == 'Closed') bg-green-100 text-green-800
+                                                @elseif($discussion->status == 'Overdue') bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $discussion->status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <div class="flex items-center space-x-3">
+                                                <a href="{{ route('admin.other-discussions.edit', $discussion->id) }}" 
+                                                   onclick="editDiscussion({{ $discussion->id }}); return false;"
                                                    class="text-blue-500 hover:text-blue-700">
-                                                    <i class="fas fa-edit"></i>
+                                                    <i class="fas fa-edit text-lg"></i>
                                                 </a>
+                                                
                                                 <button onclick="confirmDelete({{ $discussion->id }})"
                                                         class="text-red-500 hover:text-red-700">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                                <button onclick="updateStatus({{ $discussion->id }}, 'Closed')"
-                                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm">
-                                                    Selesai
+                                                    <i class="fas fa-trash text-lg"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="13" class="px-6 py-4 text-center text-gray-500">
                                             Tidak ada diskusi dengan komitmen yang melewati deadline
                                         </td>
                                     </tr>
