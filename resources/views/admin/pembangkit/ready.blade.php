@@ -210,20 +210,22 @@
                                                         {{ $machine->name }}
                                                     </td>   
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12" style="width: 100px;">
-                                                        {{ $operations->where('machine_id', $machine->id)->first()->dmn ?? 'N/A' }}
+                                                        {{ $operations->where('machine_id', $machine->id)->first()->dmp ?? 'N/A' }}
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                         <input type="number" 
                                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                               style="width: 100px;"     value="{{ $operations->where('machine_id', $machine->id)->first()->dmp ?? '0' }}"
+                                                               style="width: 100px;"     value="{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? '0' }}"
                                                             placeholder="Masukkan DMP...">
                                                     </td>
                                                     <td class="px-2 py-2 border-r border-gray-200">
                                                         <input type="number" 
-                                                               class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
-                                                               style="width: 100px;"
-                                                            value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
-                                                            placeholder="Masukkan beban...">
+                                                               name="load_value[{{ $machine->id }}]"
+                                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                               step="0.01"
+                                                               min="0"
+                                                               value="{{ $operations->where('machine_id', $machine->id)->first()->load_value ?? '0' }}"
+                                                               placeholder="Masukkan beban...">
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
@@ -525,6 +527,13 @@
                 const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
                 const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
 
+                // Perbaiki selector untuk input beban
+                const loadInput = row.querySelector('td:nth-child(5) input[type="number"]'); // Sesuaikan dengan posisi kolom beban
+                const loadValue = loadInput ? parseFloat(loadInput.value) || 0 : 0;
+
+                // Debug log untuk memastikan nilai beban terambil
+                console.log('Load value for machine', machineId, ':', loadValue);
+
                 if (statusSelect && statusSelect.value) {
                     data.logs.push({
                         machine_id: machineId,
@@ -532,12 +541,12 @@
                         hop: hopValue,
                         status: statusSelect.value,
                         component: componentSelect ? componentSelect.value : null,
-                        equipment: equipmentValue, // Tambahkan nilai equipment
+                        equipment: equipmentValue,
                         dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
                         dmp: dmpInput ? dmpInput.value.trim() : null,
+                        load_value: loadValue, // Pastikan nilai load_value selalu terisi
                         deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
                         action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
-                        load_value: inputBeban ? parseFloat(inputBeban.value) || null : null,
                         progres: inputProgres ? inputProgres.value.trim() : null,
                         kronologi: inputKronologi ? inputKronologi.value.trim() : null,
                         tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
@@ -546,6 +555,9 @@
                 }
             });
         });
+
+        // Debug log untuk melihat data yang akan dikirim
+        console.log('Data yang akan dikirim:', data);
 
         // Kirim data ke server
         fetch('{{ route('admin.pembangkit.save-status') }}', {
