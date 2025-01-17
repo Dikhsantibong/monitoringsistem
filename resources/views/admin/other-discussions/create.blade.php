@@ -395,29 +395,23 @@ document.getElementById('createDiscussionForm').addEventListener('submit', funct
 
 // Handle response messages
 @if(session('success'))
-    document.addEventListener('DOMContentLoaded', function() {
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: "{{ session('success') }}",
-            showConfirmButton: false,
-            timer: 1500
-        }).then(() => {
-            window.location.href = "{{ route('admin.other-discussions.index') }}";
-        });
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: "{{ session('success') }}",
+        showConfirmButton: false,
+        timer: 1500
+    }).then(() => {
+        window.location.href = "{{ route('admin.other-discussions.index') }}";
     });
 @endif
 
 @if(session('error'))
-    document.addEventListener('DOMContentLoaded', function() {
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: "{{ session('error') }}",
-            confirmButtonText: 'Tutup'
-        }).then(() => {
-            submitButton.disabled = false;
-        });
+    Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: "{{ session('error') }}",
+        confirmButtonText: 'Tutup'
     });
 @endif
 

@@ -21,117 +21,49 @@ class OtherDiscussionController extends Controller
         $status = request('status');
         $unitSource = request('unit_source');
 
-        // Base query dengan relasi
-        $query = OtherDiscussion::with(['commitments' => function($q) {
-            $q->with(['department', 'section']);
-        }]);
-
-        // Filter berdasarkan pencarian
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('topic', 'like', "%{$search}%")
-                  ->orWhere('unit', 'like', "%{$search}%")
-                  ->orWhere('pic', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter berdasarkan status
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        // Filter berdasarkan unit
+        // Ambil daftar nama unit dari power_plants berdasarkan unit_source
+        $powerPlantNames = [];
         if ($unitSource) {
             $powerPlantNames = DB::table('power_plants')
                 ->where('unit_source', $unitSource)
                 ->pluck('name')
                 ->toArray();
-                
-            $query->whereIn('unit', $powerPlantNames);
         }
 
-        // Ambil diskusi dengan komitmen yang overdue
-        $commitmentOverdueDiscussions = clone $query;
-        $commitmentOverdueDiscussions = $commitmentOverdueDiscussions
-            ->whereHas('commitments', function($q) {
-                $q->where('status', 'Open')
-                  ->where('deadline', '<', Carbon::now()->startOfDay());
-            })
-            ->paginate(10, ['*'], 'commitment_overdue_page');
+        // Base query untuk semua tab
+        $baseQuery = OtherDiscussion::with(['commitments' => function($q) {
+            $q->with(['department', 'section']);
+        }])
+        ->when($search, function($q) use ($search) {
+            $q->where(function($q) use ($search) {
+                $q->where('topic', 'like', "%{$search}%")
+                  ->orWhere('unit', 'like', "%{$search}%")
+                  ->orWhere('pic', 'like', "%{$search}%");
+            });
+        })
+        ->when($unitSource, function($q) use ($powerPlantNames) {
+            $q->whereIn('unit', $powerPlantNames);
+        });
 
-        // Ambil diskusi aktif (tidak termasuk yang overdue)
-        $activeDiscussions = $query
-            ->whereDoesntHave('commitments', function($q) {
-                $q->where('status', 'Open')
-                  ->where('deadline', '<', Carbon::now()->startOfDay());
-            })
-            ->where('status', 'Open')
+        // Query untuk setiap tab dengan filter yang sama
+        $activeDiscussions = (clone $baseQuery)
+            ->active()
             ->paginate(10, ['*'], 'active_page');
-        
-        // Data melewati target
-        $targetOverdueDiscussions = OtherDiscussion::targetOverdue()
-            ->with('commitments')
-            ->when($search, function($q) use ($search) {
-                $q->where(function($q) use ($search) {
-                    $q->where('topic', 'like', "%{$search}%")
-                      ->orWhere('unit', 'like', "%{$search}%")
-                      ->orWhere('pic', 'like', "%{$search}%");
-                });
-            })
-            ->when($status, function($q) use ($status) {
-                $q->where('status', $status);
-            })
-            ->when($unitSource, function($q) use ($unitSource) {
-                $powerPlantNames = DB::table('power_plants')
-                    ->where('unit_source', $unitSource)
-                    ->pluck('name')
-                    ->toArray();
-                    
-                $q->whereIn('unit', $powerPlantNames);
-            })
+
+        $targetOverdueDiscussions = (clone $baseQuery)
+            ->targetOverdue()
             ->paginate(10, ['*'], 'target_page');
-        
-        // Data selesai
-        $closedDiscussions = OtherDiscussion::closed()
-            ->with('commitments')
-            ->when($search, function($q) use ($search) {
-                $q->where(function($q) use ($search) {
-                    $q->where('topic', 'like', "%{$search}%")
-                      ->orWhere('unit', 'like', "%{$search}%")
-                      ->orWhere('pic', 'like', "%{$search}%");
-                });
-            })
-            ->when($status, function($q) use ($status) {
-                $q->where('status', $status);
-            })
-            ->when($unitSource, function($q) use ($unitSource) {
-                $powerPlantNames = DB::table('power_plants')
-                    ->where('unit_source', $unitSource)
-                    ->pluck('name')
-                    ->toArray();
-                    
-                $q->whereIn('unit', $powerPlantNames);
-            })
+
+        $commitmentOverdueDiscussions = (clone $baseQuery)
+            ->commitmentOverdue()
+            ->paginate(10, ['*'], 'commitment_page');
+
+        $closedDiscussions = (clone $baseQuery)
+            ->closed()
             ->paginate(10, ['*'], 'closed_page');
 
-        // Hitung total untuk badge dengan mempertimbangkan filter
-        $baseCountQuery = OtherDiscussion::query()
-            ->when($search, function($q) use ($search) {
-                $q->where(function($q) use ($search) {
-                    $q->where('topic', 'like', "%{$search}%")
-                      ->orWhere('unit', 'like', "%{$search}%")
-                      ->orWhere('pic', 'like', "%{$search}%");
-                });
-            })
-            ->when($unitSource, function($q) use ($unitSource) {
-                $powerPlantNames = DB::table('power_plants')
-                    ->where('unit_source', $unitSource)
-                    ->pluck('name')
-                    ->toArray();
-                    
-                $q->whereIn('unit', $powerPlantNames);
-            });
-
+        // Hitung total untuk badge
+        $baseCountQuery = (clone $baseQuery);
         $counts = [
             'active' => (clone $baseCountQuery)->active()->count(),
             'target_overdue' => (clone $baseCountQuery)->targetOverdue()->count(),
