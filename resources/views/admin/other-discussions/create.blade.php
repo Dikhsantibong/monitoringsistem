@@ -245,9 +245,10 @@
                                                 <span class="text-sm font-medium mr-2">Status:</span>
                                                 <select name="commitment_status[]" 
                                                         class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                        onchange="updateCommitmentStatus(this)">
-                                                    <option value="open">Open</option>
-                                                    <option value="closed">Closed</option>
+                                                        onchange="updateStatusStyle(this)"
+                                                        required>
+                                                    <option value="Open">Open</option>
+                                                    <option value="Closed">Closed</option>
                                                 </select>
                                             </div>
                                             
@@ -480,9 +481,10 @@ function addCommitment() {
                     <span class="text-sm font-medium mr-2">Status:</span>
                     <select name="commitment_status[]" 
                             class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="updateCommitmentStatus(this)">
-                        <option value="open">Open</option>
-                        <option value="closed">Closed</option>
+                            onchange="updateStatusStyle(this)"
+                            required>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
                     </select>
                 </div>
                 
@@ -675,6 +677,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.querySelectorAll('.department-select').forEach(select => {
         updateCommitmentSections(select);
+    });
+});
+
+// Tambahkan fungsi updateStatusStyle
+function updateStatusStyle(select) {
+    select.classList.remove(
+        'bg-red-100', 'text-red-800', 'border-red-200',
+        'bg-green-100', 'text-green-800', 'border-green-200'
+    );
+    
+    if (select.value === 'Open') {
+        select.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
+    } else if (select.value === 'Closed') {
+        select.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
+    }
+}
+
+// Inisialisasi style untuk status yang sudah ada
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.status-select').forEach(select => {
+        updateStatusStyle(select);
     });
 });
 </script>

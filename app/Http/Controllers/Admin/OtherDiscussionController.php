@@ -188,7 +188,6 @@ class OtherDiscussionController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validasi data utama
             $validated = $request->validate([
                 'sr_number' => 'required',
                 'wo_number' => 'required',
@@ -196,24 +195,23 @@ class OtherDiscussionController extends Controller
                 'topic' => 'required',
                 'target' => 'required',
                 'target_deadline' => 'required|date',
-                'department_id' => 'required',
-                'section_id' => 'required',
+                'department_id' => 'required|exists:departments,id',
+                'section_id' => 'required|exists:sections,id',
                 'risk_level' => 'required',
                 'priority_level' => 'required',
                 'commitments' => 'required|array|min:1',
                 'commitment_deadlines' => 'required|array|min:1',
                 'commitment_deadlines.*' => 'required|date',
                 'commitment_department_ids' => 'required|array|min:1',
-                'commitment_department_ids.*' => 'required', // Tambahkan validasi per item
+                'commitment_department_ids.*' => 'required',
                 'commitment_section_ids' => 'required|array|min:1',
-                'commitment_section_ids.*' => 'required', // Tambahkan validasi per item
+                'commitment_section_ids.*' => 'required',
                 'commitment_status' => 'required|array|min:1',
-                'commitment_status.*' => 'required|in:open,closed' // Tambahkan validasi per item
+                'commitment_status.*' => 'required|in:Open,Closed'
             ], [
                 'section_id.required' => 'Seksi harus dipilih',
                 'commitment_section_ids.*.required' => 'Seksi harus dipilih untuk setiap komitmen',
-                'commitment_department_ids.*.required' => 'Bagian harus dipilih untuk setiap komitmen',
-                'commitment_status.*.required' => 'Status harus dipilih untuk setiap komitmen'
+                'commitment_status.*.in' => 'Status komitmen harus Open atau Closed'
             ]);
 
             DB::beginTransaction();
@@ -234,33 +232,28 @@ class OtherDiscussionController extends Controller
                 'pic' => $pic,
                 'risk_level' => $validated['risk_level'],
                 'priority_level' => $validated['priority_level'],
-                'status' => 'Open', // Set default status
-                'previous_commitment' => '-',
-                'next_commitment' => '-'
+                'status' => 'Open'
             ]);
 
             // Simpan komitmen
-            foreach ($request->commitments as $index => $commitment) {
+            foreach ($request->commitments as $index => $commitmentText) {
                 if (empty($request->commitment_department_ids[$index]) || 
                     empty($request->commitment_section_ids[$index])) {
                     throw new \Exception('Bagian dan Seksi harus diisi untuk semua komitmen');
                 }
 
-                // Generate PIC untuk setiap komitmen
                 $commitmentPic = $this->generatePicString(
                     $request->commitment_department_ids[$index],
                     $request->commitment_section_ids[$index]
                 );
 
-                $commitment->status = ucfirst(strtolower($request->commitment_status[$index] ?? 'Open'));
-
                 $discussion->commitments()->create([
-                    'description' => $commitment,
+                    'description' => $commitmentText,
                     'deadline' => $request->commitment_deadlines[$index],
                     'department_id' => $request->commitment_department_ids[$index],
                     'section_id' => $request->commitment_section_ids[$index],
                     'pic' => $commitmentPic,
-                    'status' => $request->commitment_status[$index] ?? 'open'
+                    'status' => $request->commitment_status[$index] ?? 'Open'
                 ]);
             }
 
