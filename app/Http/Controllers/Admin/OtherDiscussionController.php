@@ -188,6 +188,11 @@ class OtherDiscussionController extends Controller
     public function store(Request $request)
     {
         try {
+            // Log semua request yang masuk
+            \Log::info('Incoming request data:', $request->all());
+
+            DB::beginTransaction();
+
             $validated = $request->validate([
                 'sr_number' => 'required',
                 'wo_number' => 'required',
@@ -195,7 +200,7 @@ class OtherDiscussionController extends Controller
                 'topic' => 'required',
                 'target' => 'required',
                 'target_deadline' => 'required|date',
-                'department_id' => 'required|in:1,2,3,4,5,6',
+                'department_id' => 'required|exists:departments,id',
                 'section_id' => 'required|exists:sections,id',
                 'risk_level' => 'required',
                 'priority_level' => 'required',
@@ -203,19 +208,16 @@ class OtherDiscussionController extends Controller
                 'commitment_deadlines' => 'required|array|min:1',
                 'commitment_deadlines.*' => 'required|date',
                 'commitment_department_ids' => 'required|array|min:1',
-                'commitment_department_ids.*' => 'required|in:1,2,3,4,5,6',
+                'commitment_department_ids.*' => 'required',
                 'commitment_section_ids' => 'required|array|min:1',
-                'commitment_section_ids.*' => 'required|exists:sections,id',
+                'commitment_section_ids.*' => 'required',
                 'commitment_status' => 'required|array|min:1',
                 'commitment_status.*' => 'required|in:Open,Closed'
             ], [
-                'department_id.in' => 'Bagian yang dipilih tidak valid',
-                'section_id.exists' => 'Seksi yang dipilih tidak valid',
-                'commitment_department_ids.*.in' => 'Bagian yang dipilih tidak valid untuk komitmen',
-                'commitment_section_ids.*.exists' => 'Seksi yang dipilih tidak valid untuk komitmen'
+                'section_id.required' => 'Seksi harus dipilih',
+                'commitment_section_ids.*.required' => 'Seksi harus dipilih untuk setiap komitmen',
+                'commitment_status.*.in' => 'Status komitmen harus Open atau Closed'
             ]);
-
-            DB::beginTransaction();
 
             // Generate PIC dari department dan section
             $pic = $this->generatePicString($validated['department_id'], $validated['section_id']);
@@ -236,39 +238,65 @@ class OtherDiscussionController extends Controller
                 'status' => 'Open'
             ]);
 
+            // Log sebelum menyimpan commitments
+            \Log::info('Preparing to save commitments:', [
+                'commitments' => $request->commitments,
+                'deadlines' => $request->commitment_deadlines,
+                'departments' => $request->commitment_department_ids,
+                'sections' => $request->commitment_section_ids,
+                'status' => $request->commitment_status
+            ]);
+
             // Simpan komitmen
-            foreach ($request->commitments as $index => $commitmentText) {
-                if (empty($request->commitment_department_ids[$index]) || 
-                    empty($request->commitment_section_ids[$index])) {
-                    throw new \Exception('Bagian dan Seksi harus diisi untuk semua komitmen');
+            if ($request->has('commitments')) {
+                foreach ($request->commitments as $key => $commitment) {
+                    $picName = $this->getPICName(
+                        $request->commitment_department_ids[$key], 
+                        $request->commitment_section_ids[$key]
+                    );
+
+                    // Log setiap commitment sebelum disimpan
+                    \Log::info('Saving commitment #' . ($key + 1), [
+                        'description' => $commitment,
+                        'deadline' => $request->commitment_deadlines[$key],
+                        'department_id' => $request->commitment_department_ids[$key],
+                        'section_id' => $request->commitment_section_ids[$key],
+                        'status' => $request->commitment_status[$key] ?? 'Open',
+                        'pic' => $picName
+                    ]);
+
+                    $savedCommitment = $discussion->commitments()->create([
+                        'description' => $commitment,
+                        'deadline' => $request->commitment_deadlines[$key],
+                        'department_id' => $request->commitment_department_ids[$key],
+                        'section_id' => $request->commitment_section_ids[$key],
+                        'status' => $request->commitment_status[$key] ?? 'Open',
+                        'pic' => $picName
+                    ]);
+
+                    // Log setelah commitment disimpan
+                    \Log::info('Commitment saved:', $savedCommitment->toArray());
                 }
-
-                $commitmentPic = $this->generatePicString(
-                    $request->commitment_department_ids[$index],
-                    $request->commitment_section_ids[$index]
-                );
-
-                $discussion->commitments()->create([
-                    'description' => $commitmentText,
-                    'deadline' => $request->commitment_deadlines[$index],
-                    'department_id' => $request->commitment_department_ids[$index],
-                    'section_id' => $request->commitment_section_ids[$index],
-                    'pic' => $commitmentPic,
-                    'status' => $request->commitment_status[$index] ?? 'Open'
-                ]);
             }
 
             DB::commit();
+            \Log::info('Transaction committed successfully');
+
             return redirect()
                 ->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil ditambahkan');
 
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error creating discussion: ' . $e->getMessage());
+            \Log::error('Error creating discussion:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            
             return back()
                 ->withInput()
-                ->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
