@@ -279,8 +279,9 @@ class OtherDiscussionController extends Controller
             DB::commit();
             \Log::info('Transaction committed successfully');
 
-            session()->flash('success', 'Data berhasil ditambahkan');
-            return redirect()->route('admin.other-discussions.index');
+            return redirect()
+                ->route('admin.other-discussions.index')
+                ->with('success', 'Data berhasil ditambahkan');
 
         } catch (\Exception $e) {
             DB::rollback();

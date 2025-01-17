@@ -681,4 +681,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @push('scripts')
 @endpush
-@endsection 
+@endsection     
