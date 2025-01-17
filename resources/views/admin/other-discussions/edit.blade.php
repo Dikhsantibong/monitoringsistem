@@ -339,6 +339,10 @@ function updateSections(departmentId) {
     });
     
     sectionSelect.disabled = false;
+
+    // Debug
+    console.log('Department ID:', departmentId);
+    console.log('Available sections:', sections);
 }
 
 // Fungsi untuk menambah komitmen baru
@@ -465,6 +469,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+});
+
+// Inisialisasi sections jika department sudah dipilih
+document.addEventListener('DOMContentLoaded', function() {
+    const departmentSelect = document.getElementById('department_select');
+    if (departmentSelect.value) {
+        updateSections(departmentSelect.value);
+        
+        // Jika ada nilai section yang lama, pilih itu
+        const oldSectionId = '{{ old("section_id", $discussion->section_id) }}';
+        if (oldSectionId) {
+            const sectionSelect = document.getElementById('section_select');
+            if (sectionSelect) {
+                sectionSelect.value = oldSectionId;
+            }
+        }
+    }
 });
 </script>
 @endpush
