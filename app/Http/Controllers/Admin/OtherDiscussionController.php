@@ -195,7 +195,7 @@ class OtherDiscussionController extends Controller
                 'topic' => 'required',
                 'target' => 'required',
                 'target_deadline' => 'required|date',
-                'department_id' => 'required|exists:departments,id',
+                'department_id' => 'required|in:1,2,3,4,5,6',
                 'section_id' => 'required|exists:sections,id',
                 'risk_level' => 'required',
                 'priority_level' => 'required',
@@ -203,15 +203,16 @@ class OtherDiscussionController extends Controller
                 'commitment_deadlines' => 'required|array|min:1',
                 'commitment_deadlines.*' => 'required|date',
                 'commitment_department_ids' => 'required|array|min:1',
-                'commitment_department_ids.*' => 'required',
+                'commitment_department_ids.*' => 'required|in:1,2,3,4,5,6',
                 'commitment_section_ids' => 'required|array|min:1',
-                'commitment_section_ids.*' => 'required',
+                'commitment_section_ids.*' => 'required|exists:sections,id',
                 'commitment_status' => 'required|array|min:1',
                 'commitment_status.*' => 'required|in:Open,Closed'
             ], [
-                'section_id.required' => 'Seksi harus dipilih',
-                'commitment_section_ids.*.required' => 'Seksi harus dipilih untuk setiap komitmen',
-                'commitment_status.*.in' => 'Status komitmen harus Open atau Closed'
+                'department_id.in' => 'Bagian yang dipilih tidak valid',
+                'section_id.exists' => 'Seksi yang dipilih tidak valid',
+                'commitment_department_ids.*.in' => 'Bagian yang dipilih tidak valid untuk komitmen',
+                'commitment_section_ids.*.exists' => 'Seksi yang dipilih tidak valid untuk komitmen'
             ]);
 
             DB::beginTransaction();
