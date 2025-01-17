@@ -196,40 +196,46 @@
                             </select>
                         </div>
 
-                        <!-- Komitmen -->
+                        <!-- Komitmen dengan Status -->
                         <div class="mb-4 md:col-span-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2">
-                                Komitmen
+                                Komitmen <span class="text-red-500">*</span>
                             </label>
                             <div id="commitments-container">
                                 @foreach($discussion->commitments as $commitment)
-                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-6 gap-4 mb-4 p-4 border rounded-lg">
+                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
                                     <div class="md:col-span-8">
+                                        <!-- Header Section with Status and Deadline -->
                                         <div class="flex justify-between items-center mb-2">
+                                            <!-- Status Badge -->
                                             <div class="flex items-center">
                                                 <span class="text-sm font-medium mr-2">Status:</span>
                                                 <select name="commitment_status[]" 
                                                         class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                        onchange="updateCommitmentStatus(this)">
-                                                    <option value="open" {{ $commitment->status == 'open' ? 'selected' : '' }}>Open</option>
-                                                    <option value="closed" {{ $commitment->status == 'closed' ? 'selected' : '' }}>Closed</option>
+                                                        onchange="updateStatusStyle(this)"
+                                                        required>
+                                                    <option value="Open" {{ $commitment->status == 'Open' ? 'selected' : '' }}>Open</option>
+                                                    <option value="Closed" {{ $commitment->status == 'Closed' ? 'selected' : '' }}>Closed</option>
                                                 </select>
                                             </div>
                                             
+                                            <!-- Deadline Input -->
                                             <div class="flex items-center">
                                                 <span class="text-sm font-medium mr-2">Deadline:</span>
                                                 <input type="date" 
                                                        name="commitment_deadlines[]" 
-                                                       value="{{ $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '' }}"
                                                        class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                       value="{{ $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '' }}"
                                                        required>
                                             </div>
                                         </div>
 
+                                        <!-- Commitment Textarea -->
                                         <div class="relative">
                                             <textarea name="commitments[]" 
                                                       class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
+                                                      placeholder="Masukkan komitmen"
                                                       required>{{ $commitment->description }}</textarea>
                                         </div>
                                     </div>
@@ -240,12 +246,12 @@
                                                     onchange="updateCommitmentSections(this)"
                                                     required>
                                                 <option value="">Pilih Bagian</option>
-                                                <option value="1" {{ $commitment->department_id == 1 ? 'selected' : '' }}>BAGIAN OPERASI</option>
-                                                <option value="2" {{ $commitment->department_id == 2 ? 'selected' : '' }}>BAGIAN PEMELIHARAAN</option>
-                                                <option value="3" {{ $commitment->department_id == 3 ? 'selected' : '' }}>BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
-                                                <option value="4" {{ $commitment->department_id == 4 ? 'selected' : '' }}>BAGIAN BUSINESS SUPPORT</option>
-                                                <option value="5" {{ $commitment->department_id == 5 ? 'selected' : '' }}>HSE</option>
-                                                <option value="6" {{ $commitment->department_id == 6 ? 'selected' : '' }}>UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL</option>
+                                                @foreach(\App\Models\Department::all() as $department)
+                                                    <option value="{{ $department->id }}" 
+                                                            {{ $commitment->department_id == $department->id ? 'selected' : '' }}>
+                                                        {{ $department->name }}
+                                                    </option>
+                                                @endforeach
                                             </select>
 
                                             <select name="commitment_section_ids[]" 

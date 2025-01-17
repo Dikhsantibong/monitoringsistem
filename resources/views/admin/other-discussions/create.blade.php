@@ -52,7 +52,7 @@
                         <!-- No SR -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_number">
-                                No SR
+                                Ket: No. SR/No. Pembahasan
                             </label>
                             <input type="number" 
                                    name="sr_number" 
@@ -67,7 +67,7 @@
                         <!-- No WO -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_number">
-                                No WO
+                                Ket: No. WO/No. Pembahasan
                             </label>
                             <input type="number" 
                                    name="wo_number" 
