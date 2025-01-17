@@ -794,6 +794,27 @@
     color: #065F46;
     border: 1px solid #A7F3D0;
 }
+
+/* Animasi untuk SweetAlert */
+.animated {
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -20px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.fadeInDown {
+    animation-name: fadeInDown;
+}
 </style>
 
 <script src="{{ asset('js/toggle.js') }}"></script>
@@ -1222,6 +1243,53 @@
             select.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
         }
     }
+
+    // Cek flash message success dari session
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true,
+            position: 'center',
+            didOpen: () => {
+                // Hapus session setelah alert ditampilkan
+                @php session()->forget('success') @endphp
+            },
+            willClose: () => {
+                // Bersihkan URL dari parameter success
+                const url = new URL(window.location);
+                url.searchParams.delete('success');
+                window.history.replaceState({}, '', url);
+            }
+        });
+    @endif
+
+    // Cek flash message error dari session
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: "{{ session('error') }}",
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true,
+            position: 'center',
+            didOpen: () => {
+                // Hapus session setelah alert ditampilkan
+                @php session()->forget('error') @endphp
+            },
+            willClose: () => {
+                // Bersihkan URL dari parameter error
+                const url = new URL(window.location);
+                url.searchParams.delete('error');
+                window.history.replaceState({}, '', url);
+            }
+        });
+    @endif
+
 </script>
 @push('scripts')
 @endpush
