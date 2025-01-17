@@ -202,14 +202,14 @@
                             </label>
                             <div id="commitments-container">
                                 @foreach($discussion->commitments as $commitment)
-                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative">
+                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative" data-commitment-id="{{ $commitment->id }}">
                                     <div class="md:col-span-8">
                                         <!-- Header Section with Status and Deadline -->
                                         <div class="flex justify-between items-center mb-2">
                                             <!-- Status Badge -->
                                             <div class="flex items-center">
                                                 <span class="text-sm font-medium mr-2">Status:</span>
-                                                <select name="commitment_status[]" 
+                                                <select name="commitment_status[{{ $commitment->id }}]" 
                                                         class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                         onchange="updateStatusStyle(this)"
                                                         required>
@@ -222,7 +222,7 @@
                                             <div class="flex items-center">
                                                 <span class="text-sm font-medium mr-2">Deadline:</span>
                                                 <input type="date" 
-                                                       name="commitment_deadlines[]" 
+                                                       name="commitment_deadlines[{{ $commitment->id }}]" 
                                                        value="{{ $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '' }}"
                                                        class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                        required>
@@ -231,15 +231,15 @@
 
                                         <!-- Commitment Textarea -->
                                         <div class="relative">
-                                            <textarea name="commitments[]" 
+                                            <textarea name="commitments[{{ $commitment->id }}]" 
                                                       class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
-                                                      required>{{ $commitment->commitment }}</textarea>
+                                                      required>{{ old('commitments.'.$commitment->id, $commitment->description) }}</textarea>
                                         </div>
                                     </div>
                                     <div class="md:col-span-4">
                                         <div class="relative">
-                                            <select name="commitment_department_ids[]" 
+                                            <select name="commitment_department_ids[{{ $commitment->id }}]" 
                                                     class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
                                                     onchange="updateCommitmentSections(this)"
                                                     required>
@@ -251,7 +251,7 @@
                                                 @endforeach
                                             </select>
 
-                                            <select name="commitment_section_ids[]" 
+                                            <select name="commitment_section_ids[{{ $commitment->id }}]" 
                                                     class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                     data-selected="{{ $commitment->section_id }}"
                                                     required>
@@ -347,6 +347,10 @@ function addCommitment() {
     const newEntry = document.createElement('div');
     newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative';
     
+    // Menggunakan timestamp sebagai identifier sementara untuk komitmen baru
+    const tempId = 'new_' + Date.now();
+    newEntry.dataset.commitmentId = tempId;
+    
     let departmentOptions = `<option value="">Pilih Bagian</option>`;
     @foreach(\App\Models\Department::all() as $department)
         departmentOptions += `<option value="{{ $department->id }}">{{ $department->name }}</option>`;
@@ -367,7 +371,7 @@ function addCommitment() {
                 <!-- Status Badge -->
                 <div class="flex items-center">
                     <span class="text-sm font-medium mr-2">Status:</span>
-                    <select name="commitment_status[]" 
+                    <select name="new_commitment_status[]" 
                             class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                             onchange="updateStatusStyle(this)"
                             required>
@@ -380,7 +384,7 @@ function addCommitment() {
                 <div class="flex items-center">
                     <span class="text-sm font-medium mr-2">Deadline:</span>
                     <input type="date" 
-                           name="commitment_deadlines[]" 
+                           name="new_commitment_deadlines[]" 
                            class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                            required>
                 </div>
@@ -388,7 +392,7 @@ function addCommitment() {
 
             <!-- Commitment Textarea -->
             <div class="relative">
-                <textarea name="commitments[]" 
+                <textarea name="new_commitments[]" 
                           class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                           rows="3"
                           placeholder="Masukkan komitmen"
@@ -398,14 +402,14 @@ function addCommitment() {
         
         <div class="md:col-span-4">
             <div class="relative">
-                <select name="commitment_department_ids[]" 
+                <select name="new_commitment_department_ids[]" 
                         class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
                         onchange="updateCommitmentSections(this)"
                         required>
                     ${departmentOptions}
                 </select>
 
-                <select name="commitment_section_ids[]" 
+                <select name="new_commitment_section_ids[]" 
                         class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                         required>
                     <option value="">Pilih Seksi</option>
