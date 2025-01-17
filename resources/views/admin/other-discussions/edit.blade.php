@@ -202,7 +202,7 @@
                             </label>
                             <div id="commitments-container">
                                 @foreach($discussion->commitments as $commitment)
-                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-2">
+                                <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative">
                                     <div class="md:col-span-8">
                                         <!-- Header Section with Status and Deadline -->
                                         <div class="flex justify-between items-center mb-2">
@@ -223,8 +223,8 @@
                                                 <span class="text-sm font-medium mr-2">Deadline:</span>
                                                 <input type="date" 
                                                        name="commitment_deadlines[]" 
-                                                       class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                        value="{{ $commitment->deadline ? date('Y-m-d', strtotime($commitment->deadline)) : '' }}"
+                                                       class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                        required>
                                             </div>
                                         </div>
@@ -234,8 +234,7 @@
                                             <textarea name="commitments[]" 
                                                       class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
-                                                      placeholder="Masukkan komitmen"
-                                                      required>{{ $commitment->description }}</textarea>
+                                                      required>{{ $commitment->commitment }}</textarea>
                                         </div>
                                     </div>
                                     <div class="md:col-span-4">
@@ -246,8 +245,7 @@
                                                     required>
                                                 <option value="">Pilih Bagian</option>
                                                 @foreach(\App\Models\Department::all() as $department)
-                                                    <option value="{{ $department->id }}" 
-                                                            {{ $commitment->department_id == $department->id ? 'selected' : '' }}>
+                                                    <option value="{{ $department->id }}" {{ $commitment->department_id == $department->id ? 'selected' : '' }}>
                                                         {{ $department->name }}
                                                     </option>
                                                 @endforeach
@@ -343,7 +341,89 @@ function updateSections(departmentId) {
     sectionSelect.disabled = false;
 }
 
-// Fungsi untuk update sections pada komitmen
+// Fungsi untuk menambah komitmen baru
+function addCommitment() {
+    const container = document.getElementById('commitments-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative';
+    
+    let departmentOptions = `<option value="">Pilih Bagian</option>`;
+    @foreach(\App\Models\Department::all() as $department)
+        departmentOptions += `<option value="{{ $department->id }}">{{ $department->name }}</option>`;
+    @endforeach
+
+    newEntry.innerHTML = `
+        <!-- Tombol Hapus -->
+        <button type="button" 
+                onclick="removeCommitment(this)" 
+                class="absolute right-0 top-0 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center focus:outline-none shadow-md transform hover:scale-110 transition-transform duration-200"
+                style="margin-top: -12px; margin-right: -12px;">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+
+        <div class="md:col-span-8">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Status Badge -->
+                <div class="flex items-center">
+                    <span class="text-sm font-medium mr-2">Status:</span>
+                    <select name="commitment_status[]" 
+                            class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            onchange="updateStatusStyle(this)"
+                            required>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                
+                <!-- Deadline Input -->
+                <div class="flex items-center">
+                    <span class="text-sm font-medium mr-2">Deadline:</span>
+                    <input type="date" 
+                           name="commitment_deadlines[]" 
+                           class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           required>
+                </div>
+            </div>
+
+            <!-- Commitment Textarea -->
+            <div class="relative">
+                <textarea name="commitments[]" 
+                          class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          rows="3"
+                          placeholder="Masukkan komitmen"
+                          required></textarea>
+            </div>
+        </div>
+        
+        <div class="md:col-span-4">
+            <div class="relative">
+                <select name="commitment_department_ids[]" 
+                        class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                        onchange="updateCommitmentSections(this)"
+                        required>
+                    ${departmentOptions}
+                </select>
+
+                <select name="commitment_section_ids[]" 
+                        class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        required>
+                    <option value="">Pilih Seksi</option>
+                </select>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newEntry);
+}
+
+// Fungsi untuk menghapus komitmen
+function removeCommitment(button) {
+    const commitmentEntry = button.closest('.commitment-entry');
+    commitmentEntry.remove();
+}
+
+// Fungsi untuk update sections
 function updateCommitmentSections(departmentSelect) {
     const commitmentEntry = departmentSelect.closest('.commitment-entry');
     const sectionSelect = commitmentEntry.querySelector('.section-select');
@@ -366,34 +446,17 @@ function updateCommitmentSections(departmentSelect) {
     sectionSelect.disabled = false;
 }
 
-// Inisialisasi saat halaman dimuat
+// Inisialisasi sections untuk komitmen yang sudah ada
 document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi section untuk PIC utama
-    const departmentSelect = document.getElementById('department_select');
-    if (departmentSelect.value) {
-        updateSections(departmentSelect.value);
-        // Set nilai section yang sudah ada
-        const currentSectionId = '{{ $discussion->section_id }}';
-        if (currentSectionId) {
-            setTimeout(() => {
-                const sectionSelect = document.getElementById('section_select');
-                sectionSelect.value = currentSectionId;
-            }, 100);
-        }
-    }
-
-    // Inisialisasi sections untuk setiap komitmen
-    document.querySelectorAll('.commitment-entry').forEach(commitmentEntry => {
-        const departmentSelect = commitmentEntry.querySelector('.department-select');
-        const sectionSelect = commitmentEntry.querySelector('.section-select');
-        
-        if (departmentSelect.value) {
-            updateCommitmentSections(departmentSelect);
-            // Set nilai section yang sudah ada untuk komitmen
-            const commitmentSectionId = sectionSelect.getAttribute('data-selected');
-            if (commitmentSectionId) {
+    document.querySelectorAll('.department-select').forEach(select => {
+        if (select.value) {
+            updateCommitmentSections(select);
+            const commitmentEntry = select.closest('.commitment-entry');
+            const sectionSelect = commitmentEntry.querySelector('.section-select');
+            const selectedSectionId = sectionSelect.dataset.selected;
+            if (selectedSectionId) {
                 setTimeout(() => {
-                    sectionSelect.value = commitmentSectionId;
+                    sectionSelect.value = selectedSectionId;
                 }, 100);
             }
         }
