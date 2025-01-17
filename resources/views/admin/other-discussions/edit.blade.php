@@ -487,6 +487,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Fungsi untuk memvalidasi status
+function validateStatus(select) {
+    const statusValue = select.value;
+    const commitmentEntries = document.querySelectorAll('.commitment-entry');
+
+    // Cek apakah ada komitmen yang berstatus "Open"
+    let hasOpenCommitments = false;
+    commitmentEntries.forEach(entry => {
+        const statusSelect = entry.querySelector('select[name^="commitment_status"]');
+        if (statusSelect.value === 'Open') {
+            hasOpenCommitments = true;
+        }
+    });
+
+    // Jika ada komitmen yang berstatus "Open", kembalikan status ke "Open"
+    if (statusValue === 'Closed' && hasOpenCommitments) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan!',
+            text: 'Anda tidak dapat mengubah status menjadi "Closed" sebelum semua komitmen berstatus "Closed".',
+            confirmButtonText: 'OK'
+        });
+        select.value = 'Open'; // Kembalikan ke "Open" jika ada komitmen yang masih "Open"
+    }
+}
 </script>
 @endpush
 @endsection         
