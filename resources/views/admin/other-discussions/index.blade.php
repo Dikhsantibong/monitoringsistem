@@ -92,36 +92,42 @@
                         </div>
 
                         <!-- Filter Unit -->
-                        {{-- <div>
-                            <label for="unit-filter" class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                            <select id="unitTableFilter" name="unit" onchange="filterTableByUnit()" 
-                                    class="block w-full border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                <option value="">Semua</option>
-                                @foreach($units as $unit)
-                                    <option value="{{ $unit }}" {{ request('unit') == $unit ? 'selected' : '' }}>
-                                        {{ $unit }}
-                                    </option>
-                                @endforeach
+                        @if(session('unit') === 'mysql')
+                        <div>
+                            <label for="unit-source" class="block text-sm font-medium text-gray-700 mb-1">Filter Unit</label>
+                            <select id="unit-source" 
+                                    name="unit_source"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    onchange="this.form.submit()">
+                                <option value="">Semua Unit</option>
+                                <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
+                                <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Unit Wua Wua</option>
+                                <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Unit Poasia</option>
+                                <option value="mysql_kolaka" {{ request('unit_source') == 'mysql_kolaka' ? 'selected' : '' }}>Unit Kolaka</option>
+                                <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Unit Bau Bau</option>
                             </select>
-                        </div> --}}
+                        </div>
+                        @endif
 
                         <!-- Filter Status -->
-                        {{-- <div>
-                            <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select id="statusTableFilter" name="status" onchange="filterTableByStatus()" 
-                                    class="block w-full border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                <option value="">Semua</option>
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select name="status" 
+                                    id="status"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    onchange="this.form.submit()">
+                                <option value="">Semua Status</option>
                                 <option value="Open" {{ request('status') == 'Open' ? 'selected' : '' }}>Open</option>
                                 <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
-                                <option value="Overdue" {{ request('status') == 'Overdue' ? 'selected' : '' }}>Overdue</option>
                             </select>
                         </div>
 
-                        <div class="flex items-center justify-end">
+                        <!-- Submit Button -->
+                        <div class="flex items-end">
                             <button type="submit" class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
                                 <i class="fas fa-filter mr-2"></i> Filter
                             </button>
-                        </div> --}}
+                        </div>
                     </form>
                 </div>
 
@@ -835,6 +841,31 @@
                 document.getElementById('statusTableFilter').value = '';
             });
         });
+
+        // Auto submit form when filter changes
+        const unitSourceSelect = document.getElementById('unit-source');
+        if (unitSourceSelect) {
+            unitSourceSelect.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
+
+        const statusSelect = document.getElementById('status');
+        if (statusSelect) {
+            statusSelect.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
+
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.form.submit();
+                }, 500);
+            });
+        }
     });
     function confirmDelete(id) {
         Swal.fire({

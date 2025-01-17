@@ -18,15 +18,36 @@ class OtherDiscussionController extends Controller
     public function index()
     {
         $search = request('search');
+        $status = request('status');
+        $unitSource = request('unit_source');
+
+        // Base query dengan relasi
         $query = OtherDiscussion::with(['commitments' => function($q) {
             $q->with(['department', 'section']);
         }]);
 
+        // Filter berdasarkan pencarian
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('topic', 'like', "%{$search}%")
-                  ->orWhere('unit', 'like', "%{$search}%");
+                  ->orWhere('unit', 'like', "%{$search}%")
+                  ->orWhere('pic', 'like', "%{$search}%");
             });
+        }
+
+        // Filter berdasarkan status
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Filter berdasarkan unit
+        if ($unitSource) {
+            $powerPlantNames = DB::table('power_plants')
+                ->where('unit_source', $unitSource)
+                ->pluck('name')
+                ->toArray();
+                
+            $query->whereIn('unit', $powerPlantNames);
         }
 
         // Ambil diskusi dengan komitmen yang overdue
@@ -50,19 +71,72 @@ class OtherDiscussionController extends Controller
         // Data melewati target
         $targetOverdueDiscussions = OtherDiscussion::targetOverdue()
             ->with('commitments')
+            ->when($search, function($q) use ($search) {
+                $q->where(function($q) use ($search) {
+                    $q->where('topic', 'like', "%{$search}%")
+                      ->orWhere('unit', 'like', "%{$search}%")
+                      ->orWhere('pic', 'like', "%{$search}%");
+                });
+            })
+            ->when($status, function($q) use ($status) {
+                $q->where('status', $status);
+            })
+            ->when($unitSource, function($q) use ($unitSource) {
+                $powerPlantNames = DB::table('power_plants')
+                    ->where('unit_source', $unitSource)
+                    ->pluck('name')
+                    ->toArray();
+                    
+                $q->whereIn('unit', $powerPlantNames);
+            })
             ->paginate(10, ['*'], 'target_page');
         
         // Data selesai
         $closedDiscussions = OtherDiscussion::closed()
             ->with('commitments')
+            ->when($search, function($q) use ($search) {
+                $q->where(function($q) use ($search) {
+                    $q->where('topic', 'like', "%{$search}%")
+                      ->orWhere('unit', 'like', "%{$search}%")
+                      ->orWhere('pic', 'like', "%{$search}%");
+                });
+            })
+            ->when($status, function($q) use ($status) {
+                $q->where('status', $status);
+            })
+            ->when($unitSource, function($q) use ($unitSource) {
+                $powerPlantNames = DB::table('power_plants')
+                    ->where('unit_source', $unitSource)
+                    ->pluck('name')
+                    ->toArray();
+                    
+                $q->whereIn('unit', $powerPlantNames);
+            })
             ->paginate(10, ['*'], 'closed_page');
 
-        // Hitung total untuk badge
+        // Hitung total untuk badge dengan mempertimbangkan filter
+        $baseCountQuery = OtherDiscussion::query()
+            ->when($search, function($q) use ($search) {
+                $q->where(function($q) use ($search) {
+                    $q->where('topic', 'like', "%{$search}%")
+                      ->orWhere('unit', 'like', "%{$search}%")
+                      ->orWhere('pic', 'like', "%{$search}%");
+                });
+            })
+            ->when($unitSource, function($q) use ($unitSource) {
+                $powerPlantNames = DB::table('power_plants')
+                    ->where('unit_source', $unitSource)
+                    ->pluck('name')
+                    ->toArray();
+                    
+                $q->whereIn('unit', $powerPlantNames);
+            });
+
         $counts = [
-            'active' => OtherDiscussion::active()->count(),
-            'target_overdue' => OtherDiscussion::targetOverdue()->count(),
-            'commitment_overdue' => OtherDiscussion::commitmentOverdue()->count(),
-            'closed' => OtherDiscussion::closed()->count()
+            'active' => (clone $baseCountQuery)->active()->count(),
+            'target_overdue' => (clone $baseCountQuery)->targetOverdue()->count(),
+            'commitment_overdue' => (clone $baseCountQuery)->commitmentOverdue()->count(),
+            'closed' => (clone $baseCountQuery)->closed()->count()
         ];
 
         return view('admin.other-discussions.index', compact(
