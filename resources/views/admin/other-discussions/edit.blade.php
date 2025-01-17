@@ -309,20 +309,17 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-// Data sections untuk komitmen
-const sectionsData = {
-    @foreach(\App\Models\Department::with('sections')->get() as $department)
-        '{{ $department->id }}': [
-            @foreach($department->sections as $section)
-                {id: {{ $section->id }}, name: '{{ $section->name }}'},
-            @endforeach
-        ],
-    @endforeach
-};
+// Simpan data sections dalam cache
+const sectionsData = @json(\App\Models\Department::with('sections')->get()->mapWithKeys(function($dept) {
+    return [$dept->id => $dept->sections->map(function($section) {
+        return ['id' => $section->id, 'name' => $section->name];
+    })];
+}));
 
-// Fungsi untuk update sections pada PIC utama
-function updateSections(departmentId) {
-    const sectionSelect = document.getElementById('section_select');
+// Fungsi untuk update sections yang dioptimasi
+function updateSections(departmentId, sectionSelect, selectedSectionId = null) {
+    if (!sectionSelect) return;
+    
     sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
     
     if (!departmentId) {
@@ -335,86 +332,68 @@ function updateSections(departmentId) {
         const option = document.createElement('option');
         option.value = section.id;
         option.textContent = section.name;
+        if (selectedSectionId && selectedSectionId == section.id) {
+            option.selected = true;
+        }
         sectionSelect.appendChild(option);
     });
     
     sectionSelect.disabled = false;
-
-    // Debug
-    console.log('Department ID:', departmentId);
-    console.log('Available sections:', sections);
 }
 
-// Fungsi untuk menambah komitmen baru
+// Fungsi untuk menambah komitmen yang dioptimasi
 function addCommitment() {
     const container = document.getElementById('commitments-container');
-    const newEntry = document.createElement('div');
-    newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative';
-    
-    // Menggunakan timestamp sebagai identifier sementara untuk komitmen baru
     const tempId = 'new_' + Date.now();
-    newEntry.dataset.commitmentId = tempId;
     
-    let departmentOptions = `<option value="">Pilih Bagian</option>`;
-    @foreach(\App\Models\Department::all() as $department)
-        departmentOptions += `<option value="{{ $department->id }}">{{ $department->name }}</option>`;
-    @endforeach
+    const template = `
+        <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative" data-commitment-id="${tempId}">
+            <button type="button" 
+                    onclick="removeCommitment(this)" 
+                    class="absolute right-0 top-0 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fas fa-trash-alt"></i>
+            </button>
 
-    newEntry.innerHTML = `
-        <!-- Tombol Hapus -->
-        <button type="button" 
-                onclick="removeCommitment(this)" 
-                class="absolute right-0 top-0 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center focus:outline-none shadow-md transform hover:scale-110 transition-transform duration-200"
-                style="margin-top: -12px; margin-right: -12px;">
-            <i class="fas fa-trash-alt"></i>
-        </button>
-
-        <div class="md:col-span-8">
-            <!-- Header Section -->
-            <div class="flex justify-between items-center mb-2">
-                <!-- Status Badge -->
-                <div class="flex items-center">
-                    <span class="text-sm font-medium mr-2">Status:</span>
-                    <select name="new_commitment_status[]" 
-                            class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="updateStatusStyle(this)"
-                            required>
-                        <option value="Open">Open</option>
-                        <option value="Closed">Closed</option>
-                    </select>
+            <div class="md:col-span-8">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center">
+                        <span class="text-sm font-medium mr-2">Status:</span>
+                        <select name="new_commitment_status[]" 
+                                class="status-select text-sm px-3 py-1.5 rounded-md"
+                                required>
+                            <option value="Open">Open</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <span class="text-sm font-medium mr-2">Deadline:</span>
+                        <input type="date" 
+                               name="new_commitment_deadlines[]" 
+                               class="text-sm px-3 py-1.5 border rounded-md"
+                               required>
+                    </div>
                 </div>
-                
-                <!-- Deadline Input -->
-                <div class="flex items-center">
-                    <span class="text-sm font-medium mr-2">Deadline:</span>
-                    <input type="date" 
-                           name="new_commitment_deadlines[]" 
-                           class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                           required>
-                </div>
-            </div>
 
-            <!-- Commitment Textarea -->
-            <div class="relative">
                 <textarea name="new_commitments[]" 
-                          class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          class="commitment-text w-full px-3 py-2 border rounded-md"
                           rows="3"
-                          placeholder="Masukkan komitmen"
                           required></textarea>
             </div>
-        </div>
-        
-        <div class="md:col-span-4">
-            <div class="relative">
+            
+            <div class="md:col-span-4">
                 <select name="new_commitment_department_ids[]" 
-                        class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                        class="department-select w-full px-3 py-2 border rounded-md mb-2"
                         onchange="updateCommitmentSections(this)"
                         required>
-                    ${departmentOptions}
+                    <option value="">Pilih Bagian</option>
+                    ${Object.keys(sectionsData).map(deptId => `
+                        <option value="${deptId}">${document.querySelector('#department_select option[value="' + deptId + '"]')?.text || ''}</option>
+                    `).join('')}
                 </select>
 
                 <select name="new_commitment_section_ids[]" 
-                        class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        class="section-select w-full px-3 py-2 border rounded-md"
                         required>
                     <option value="">Pilih Seksi</option>
                 </select>
@@ -422,97 +401,64 @@ function addCommitment() {
         </div>
     `;
     
-    container.appendChild(newEntry);
+    container.insertAdjacentHTML('beforeend', template);
+}
+
+// Event listener yang dioptimasi
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi sections untuk PIC utama
+    const departmentSelect = document.getElementById('department_select');
+    const sectionSelect = document.getElementById('section_select');
+    
+    if (departmentSelect && sectionSelect) {
+        departmentSelect.addEventListener('change', function() {
+            updateSections(this.value, sectionSelect);
+        });
+        
+        if (departmentSelect.value) {
+            updateSections(departmentSelect.value, sectionSelect, '{{ old("section_id", $discussion->section_id) }}');
+        }
+    }
+
+    // Inisialisasi sections untuk komitmen yang sudah ada
+    document.querySelectorAll('.department-select').forEach(select => {
+        const sectionSelect = select.closest('.commitment-entry').querySelector('.section-select');
+        if (select.value) {
+            updateSections(select.value, sectionSelect, sectionSelect.dataset.selected);
+        }
+    });
+});
+
+// Fungsi untuk validasi status yang dioptimasi
+function validateStatus(select) {
+    const hasOpenCommitments = Array.from(document.querySelectorAll('.status-select'))
+        .some(statusSelect => statusSelect.value === 'Open');
+
+    if (select.value === 'Closed' && hasOpenCommitments) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan!',
+            text: 'Semua komitmen harus Closed sebelum mengubah status menjadi Closed',
+            confirmButtonText: 'OK'
+        });
+        select.value = 'Open';
+        return false;
+    }
+    return true;
 }
 
 // Fungsi untuk menghapus komitmen
 function removeCommitment(button) {
-    const commitmentEntry = button.closest('.commitment-entry');
-    commitmentEntry.remove();
+    button.closest('.commitment-entry').remove();
 }
 
-// Fungsi untuk update sections
-function updateCommitmentSections(departmentSelect) {
-    const commitmentEntry = departmentSelect.closest('.commitment-entry');
-    const sectionSelect = commitmentEntry.querySelector('.section-select');
-    sectionSelect.innerHTML = '<option value="">Pilih Seksi</option>';
-    
-    const departmentId = departmentSelect.value;
-    if (!departmentId) {
-        sectionSelect.disabled = true;
-        return;
-    }
-
-    const sections = sectionsData[departmentId] || [];
-    sections.forEach(section => {
-        const option = document.createElement('option');
-        option.value = section.id;
-        option.textContent = section.name;
-        sectionSelect.appendChild(option);
-    });
-    
-    sectionSelect.disabled = false;
-}
-
-// Inisialisasi sections untuk komitmen yang sudah ada
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.department-select').forEach(select => {
-        if (select.value) {
-            updateCommitmentSections(select);
-            const commitmentEntry = select.closest('.commitment-entry');
-            const sectionSelect = commitmentEntry.querySelector('.section-select');
-            const selectedSectionId = sectionSelect.dataset.selected;
-            if (selectedSectionId) {
-                setTimeout(() => {
-                    sectionSelect.value = selectedSectionId;
-                }, 100);
-            }
-        }
-    });
-});
-
-// Inisialisasi sections jika department sudah dipilih
-document.addEventListener('DOMContentLoaded', function() {
-    const departmentSelect = document.getElementById('department_select');
-    if (departmentSelect.value) {
-        updateSections(departmentSelect.value);
-        
-        // Jika ada nilai section yang lama, pilih itu
-        const oldSectionId = '{{ old("section_id", $discussion->section_id) }}';
-        if (oldSectionId) {
-            const sectionSelect = document.getElementById('section_select');
-            if (sectionSelect) {
-                sectionSelect.value = oldSectionId;
-            }
-        }
+// Submit handler yang dioptimasi
+document.getElementById('editDiscussionForm').addEventListener('submit', function(e) {
+    const status = document.getElementById('status').value;
+    if (status === 'Closed' && !validateStatus(document.getElementById('status'))) {
+        e.preventDefault();
     }
 });
-
-// Fungsi untuk memvalidasi status
-function validateStatus(select) {
-    const statusValue = select.value;
-    const commitmentEntries = document.querySelectorAll('.commitment-entry');
-
-    // Cek apakah ada komitmen yang berstatus "Open"
-    let hasOpenCommitments = false;
-    commitmentEntries.forEach(entry => {
-        const statusSelect = entry.querySelector('select[name^="commitment_status"]');
-        if (statusSelect.value === 'Open') {
-            hasOpenCommitments = true;
-        }
-    });
-
-    // Jika ada komitmen yang berstatus "Open", kembalikan status ke "Open"
-    if (statusValue === 'Closed' && hasOpenCommitments) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan!',
-            text: 'Anda tidak dapat mengubah status menjadi "Closed" sebelum semua komitmen berstatus "Closed".',
-            confirmButtonText: 'OK'
-        });
-        select.value = 'Open'; // Kembalikan ke "Open" jika ada komitmen yang masih "Open"
-    }
-}
 </script>
 @endpush
 @endsection         
