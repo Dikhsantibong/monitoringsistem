@@ -47,6 +47,7 @@ class OtherDiscussion extends Model
         'topic',
         'target',
         'target_deadline',
+        'deadline',
         'department_id',
         'section_id',
         'pic',

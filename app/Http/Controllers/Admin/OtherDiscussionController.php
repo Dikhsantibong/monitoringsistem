@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\PowerPlant;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 
 class OtherDiscussionController extends Controller
 {
@@ -188,35 +189,36 @@ class OtherDiscussionController extends Controller
     public function store(Request $request)
     {
         try {
-            // Log semua request yang masuk
-            \Log::info('Incoming request data:', $request->all());
+            // Debug log untuk melihat data yang dikirim
+            \Log::info('Data yang dikirim:', [
+                'department_ids' => $request->commitment_department_ids,
+                'all_data' => $request->all()
+            ]);
 
-            DB::beginTransaction();
+            // Ambil semua department_id yang valid dari database
+            $validDepartmentIds = \App\Models\Department::pluck('id')->toArray();
+            \Log::info('Department ID yang valid:', $validDepartmentIds);
 
             $validated = $request->validate([
-                'sr_number' => 'required',
-                'wo_number' => 'required',
-                'unit' => 'required',
-                'topic' => 'required',
-                'target' => 'required',
+                'sr_number' => 'nullable|string|max:20',
+                'wo_number' => 'nullable|string|max:20',
+                'unit' => 'required|string|max:255',
+                'topic' => 'required|string|max:255',
+                'target' => 'required|string',
                 'target_deadline' => 'required|date',
-                'department_id' => 'required|exists:departments,id',
-                'section_id' => 'required|exists:sections,id',
-                'risk_level' => 'required',
-                'priority_level' => 'required',
+                'department_id' => 'nullable|integer|exists:departments,id',
+                'section_id' => 'nullable|integer|exists:sections,id',
+                'risk_level' => 'required|in:R,MR,MT,T',
+                'priority_level' => 'required|in:Low,Medium,High',
                 'commitments' => 'required|array|min:1',
                 'commitment_deadlines' => 'required|array|min:1',
                 'commitment_deadlines.*' => 'required|date',
                 'commitment_department_ids' => 'required|array|min:1',
-                'commitment_department_ids.*' => 'required',
+                'commitment_department_ids.*' => 'required|integer|exists:departments,id',
                 'commitment_section_ids' => 'required|array|min:1',
-                'commitment_section_ids.*' => 'required',
+                'commitment_section_ids.*' => 'required|integer|exists:sections,id',
                 'commitment_status' => 'required|array|min:1',
                 'commitment_status.*' => 'required|in:Open,Closed'
-            ], [
-                'section_id.required' => 'Seksi harus dipilih',
-                'commitment_section_ids.*.required' => 'Seksi harus dipilih untuk setiap komitmen',
-                'commitment_status.*.in' => 'Status komitmen harus Open atau Closed'
             ]);
 
             // Generate PIC dari department dan section
@@ -230,6 +232,7 @@ class OtherDiscussionController extends Controller
                 'topic' => $validated['topic'],
                 'target' => $validated['target'],
                 'target_deadline' => $validated['target_deadline'],
+                'deadline' => $validated['target_deadline'],
                 'department_id' => $validated['department_id'],
                 'section_id' => $validated['section_id'],
                 'pic' => $pic,
@@ -250,13 +253,13 @@ class OtherDiscussionController extends Controller
             // Simpan komitmen
             if ($request->has('commitments')) {
                 foreach ($request->commitments as $key => $commitment) {
-                    $picName = $this->getPICName(
+                    // Generate PIC name untuk komitmen
+                    $picName = $this->generatePicString(
                         $request->commitment_department_ids[$key], 
                         $request->commitment_section_ids[$key]
                     );
 
-                    // Log setiap commitment sebelum disimpan
-                    \Log::info('Saving commitment #' . ($key + 1), [
+                    $discussion->commitments()->create([
                         'description' => $commitment,
                         'deadline' => $request->commitment_deadlines[$key],
                         'department_id' => $request->commitment_department_ids[$key],
@@ -264,18 +267,6 @@ class OtherDiscussionController extends Controller
                         'status' => $request->commitment_status[$key] ?? 'Open',
                         'pic' => $picName
                     ]);
-
-                    $savedCommitment = $discussion->commitments()->create([
-                        'description' => $commitment,
-                        'deadline' => $request->commitment_deadlines[$key],
-                        'department_id' => $request->commitment_department_ids[$key],
-                        'section_id' => $request->commitment_section_ids[$key],
-                        'status' => $request->commitment_status[$key] ?? 'Open',
-                        'pic' => $picName
-                    ]);
-
-                    // Log setelah commitment disimpan
-                    \Log::info('Commitment saved:', $savedCommitment->toArray());
                 }
             }
 
@@ -432,5 +423,48 @@ class OtherDiscussionController extends Controller
             return back()->withInput()
                 ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
+    }
+
+    private function getPICName($departmentId, $sectionId)
+    {
+        // Array untuk mapping department
+        $departments = [
+            '1' => 'BAGIAN OPERASI',
+            '2' => 'BAGIAN PEMELIHARAAN',
+            '3' => 'BAGIAN ENJINIRING & QUALITY ASSURANCE',
+            '4' => 'BAGIAN BUSINESS SUPPORT',
+            '5' => 'HSE',
+            '6' => 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU',
+            '7' => 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA',
+            '8' => 'UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA'
+        ];
+
+        // Array untuk mapping section
+        $sections = [
+            '1' => 'SEKSI RENDAL OP & NIAGA',
+            '2' => 'SEKSI BAHAN BAKAR',
+            '3' => 'SEKSI OUTAGE MGT',
+            '4' => 'SEKSI PERENCANAAN PENGENDALIAN PEMELIHARAAN',
+            '5' => 'SEKSI INVENTORI KONTROL & GUDANG',
+            '6' => 'SEKSI SYSTEM OWNER',
+            '7' => 'SEKSI CONDITION BASED MAINTENANCE',
+            '8' => 'SEKSI MMRK',
+            '9' => 'SEKSI SDM, UMUM & CSR',
+            '10' => 'SEKSI KEUANGAN',
+            '11' => 'SEKSI PENGADAAN',
+            '12' => 'SEKSI LINGKUNGAN',
+            '13' => 'SEKSI K3 & KEAMANAN',
+            '14' => 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU-BAU',
+            '15' => 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA',
+            '16' => 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL POASIA',
+            '17' => 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA-WUA'
+        ];
+
+        // Ambil nama department dan section
+        $departmentName = $departments[$departmentId] ?? '';
+        $sectionName = $sections[$sectionId] ?? '';
+
+        // Gabungkan department dan section
+        return $departmentName . ' - ' . $sectionName;
     }
 }   

@@ -161,15 +161,13 @@
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
                                         onchange="updateSections(this.value)"
                                         required>
-                                    <option value="">Pilih Bagian</option>
-                                    <option value="1">BAGIAN OPERASI</option>
-                                    <option value="2">BAGIAN PEMELIHARAAN</option>
-                                    <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
-                                    <option value="4">BAGIAN BUSINESS SUPPORT</option>
-                                    <option value="5">HSE</option>
-                                    <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU</option>
-                                    <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA</option>
-                                    <option value="8">UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA</option>
+                                    <option value="">Pilih Departemen</option>
+                                    @foreach(\App\Models\Department::all() as $department)
+                                        <option value="{{ $department->id }}" 
+                                                {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                            {{ $department->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
 
                                 <select name="section_id" 
@@ -278,14 +276,9 @@
                                                     onchange="updateCommitmentSections(this)"
                                                     required>
                                                 <option value="">Pilih Bagian</option>
-                                                <option value="1">BAGIAN OPERASI</option>
-                                                <option value="2">BAGIAN PEMELIHARAAN</option>
-                                                <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
-                                                <option value="4">BAGIAN BUSINESS SUPPORT</option>
-                                                <option value="5">HSE</option>
-                                                <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU</option>
-                                                <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA</option>
-                                                <option value="8">UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA</option>
+                                                @foreach(\App\Models\Department::all() as $department)
+                                                    <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                                @endforeach
                                             </select>
 
                                             <select name="commitment_section_ids[]" 
@@ -452,20 +445,13 @@ function addCommitment() {
     const newEntry = document.createElement('div');
     newEntry.className = 'commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative';
     
-    let departmentOptions = `
-        <option value="">Pilih Bagian</option>
-        <option value="1">BAGIAN OPERASI</option>
-        <option value="2">BAGIAN PEMELIHARAAN</option>
-        <option value="3">BAGIAN ENJINIRING & QUALITY ASSURANCE</option>
-        <option value="4">BAGIAN BUSINESS SUPPORT</option>
-        <option value="5">HSE</option>
-        <option value="6">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU</option>
-        <option value="7">UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA</option>
-        <option value="8">UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA</option>
-    `;
+    let departmentOptions = `<option value="">Pilih Bagian</option>`;
+    @foreach(\App\Models\Department::all() as $department)
+        departmentOptions += `<option value="{{ $department->id }}">{{ $department->name }}</option>`;
+    @endforeach
 
     newEntry.innerHTML = `
-        <!-- Tombol Hapus dengan posisi yang diperbaiki -->
+        <!-- Tombol Hapus -->
         <button type="button" 
                 onclick="removeCommitment(this)" 
                 class="absolute right-0 top-0 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center focus:outline-none shadow-md transform hover:scale-110 transition-transform duration-200"
@@ -580,45 +566,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Data sections
+// Data sections berdasarkan department
 const sectionsData = {
-    '1': [ // BAGIAN OPERASI
-        {id: 1, name: 'SEKSI RENDAL OP & NIAGA'},
-        {id: 2, name: 'SEKSI BAHAN BAKAR'},
-        {id: 3, name: 'SEKSI OUTAGE MGT'}
-    ],
-    '2': [ // BAGIAN PEMELIHARAAN
-        {id: 4, name: 'SEKSI PERENCANAAN PENGENDALIAN PEMELIHARAAN'},
-        {id: 5, name: 'SEKSI INVENTORI KONTROL & GUDANG'}
-    ],
-    '3': [ // BAGIAN ENJINIRING & QUALITY ASSURANCE
-        {id: 6, name: 'SEKSI SYSTEM OWNER'},
-        {id: 7, name: 'SEKSI CONDITION BASED MAINTENANCE'},
-        {id: 8, name: 'SEKSI MMRK'}
-    ],
-    '4': [ // BAGIAN BUSINESS SUPPORT
-        {id: 9, name: 'SEKSI SDM, UMUM & CSR'},
-        {id: 10, name: 'SEKSI KEUANGAN'},
-        {id: 11, name: 'SEKSI PENGADAAN'}
-    ],
-    '5': [ // HSE
-        {id: 12, name: 'SEKSI LINGKUNGAN'},
-        {id: 13, name: 'SEKSI K3 & KEAMANAN'}
-    ],
-    '6': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL BAU BAU
-        {id: 14, name: 'SEKSI OPERASI DAN PEMELIHARAAN  RAHA'},
-        {id: 15, name: 'SEKSI OPERASI DAN PEMELIHARAAN  WANGI-WANGI'},
-        {id: 16, name: 'SEKSI OPERASI DAN PEMELIHARAAN  WINNING'},
-        {id: 17, name: 'SEKSI OPERASI DAN PEMELIHARAAN  EREKE'}
-    ],
-    '7': [ // UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL KOLAKA
-        {id: 18, name: 'SEKSI OPERASI DAN PEMELIHARAAN  LANIPA-NIPA'},
-        {id: 19, name: 'SEKSI OPERASI DAN PEMELIHARAAN  SABILAMBO'},
-        {id: 20, name: 'SEKSI OPERASI DAN PEMELIHARAAN  MIKUASI'}
-    ],
-    '8': [ // UNIT LAYANAN PUSAT TENAGA LISTRIK DIESEL WUA WUA
-        {id: 21, name: 'SEKSI OPERASI DAN PEMELIHARAAN  LANGAR'}
-    ]
+    @foreach(\App\Models\Department::with('sections')->get() as $department)
+        '{{ $department->id }}': [
+            @foreach($department->sections as $section)
+                {id: {{ $section->id }}, name: '{{ $section->name }}'},
+            @endforeach
+        ],
+    @endforeach
 };
 
 function updateSections(departmentId) {
@@ -639,13 +595,39 @@ function updateSections(departmentId) {
     });
     
     sectionSelect.disabled = false;
+
+    // Debug
+    console.log('Department ID:', departmentId);
+    console.log('Available sections:', sections);
 }
 
-// Initialize
+// Initialize sections if department is pre-selected
 document.addEventListener('DOMContentLoaded', function() {
     const departmentSelect = document.getElementById('department_select');
-    updateSections(departmentSelect.value);
+    if (departmentSelect.value) {
+        updateSections(departmentSelect.value);
+        
+        // If there's an old section value, select it
+        const oldSectionId = '{{ old("section_id") }}';
+        if (oldSectionId) {
+            const sectionSelect = document.getElementById('section_select');
+            if (sectionSelect) {
+                sectionSelect.value = oldSectionId;
+            }
+        }
+    }
 });
+
+// Data sections untuk komitmen
+const commitmentSectionsData = {
+    @foreach(\App\Models\Department::with('sections')->get() as $department)
+        '{{ $department->id }}': [
+            @foreach($department->sections as $section)
+                {id: {{ $section->id }}, name: '{{ $section->name }}'},
+            @endforeach
+        ],
+    @endforeach
+};
 
 function updateCommitmentSections(departmentSelect) {
     const commitmentEntry = departmentSelect.closest('.commitment-entry');
@@ -658,7 +640,7 @@ function updateCommitmentSections(departmentSelect) {
         return;
     }
 
-    const sections = sectionsData[departmentId] || [];
+    const sections = commitmentSectionsData[departmentId] || [];
     sections.forEach(section => {
         const option = document.createElement('option');
         option.value = section.id;
@@ -667,16 +649,18 @@ function updateCommitmentSections(departmentSelect) {
     });
     
     sectionSelect.disabled = false;
+
+    // Debug
+    console.log('Department ID:', departmentId);
+    console.log('Available sections:', sections);
 }
 
-// Initialize semua dropdown saat halaman dimuat
+// Inisialisasi sections untuk komitmen yang sudah ada
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.status-select').forEach(select => {
-        updateCommitmentStatus(select);
-    });
-    
     document.querySelectorAll('.department-select').forEach(select => {
-        updateCommitmentSections(select);
+        if (select.value) {
+            updateCommitmentSections(select);
+        }
     });
 });
 

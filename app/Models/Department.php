@@ -20,4 +20,13 @@ class Department extends Model
     {
         return $this->hasMany(Pic::class);
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::retrieved(function ($department) {
+            \Log::info('Department retrieved:', $department->toArray());
+        });
+    }
 }

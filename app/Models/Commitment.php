@@ -13,6 +13,7 @@ class Commitment extends Model
         'status',
         'department_id',
         'section_id',
+        'pic',
         'other_discussion_id'
     ];
 
