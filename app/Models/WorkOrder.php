@@ -28,6 +28,8 @@ class WorkOrder extends Model
         'is_backlogged'
     ];
 
+    public $incrementing = false;
+
     public function isExpired()
     {
         return Carbon::parse($this->schedule_finish)->isPast() && $this->status == 'Open';
@@ -51,78 +53,100 @@ class WorkOrder extends Model
 
     public function getConnectionName()
     {
-        return session('unit');
+        return session('unit', 'mysql');
     }
 
     protected static function boot()
     {
         parent::boot();
         
-        // Handle Created Event
         static::created(function ($workOrder) {
-            self::syncToUpKendari('create', $workOrder);
+            self::syncData('create', $workOrder);
         });
 
-        // Handle Updated Event
         static::updated(function ($workOrder) {
-            self::syncToUpKendari('update', $workOrder);
+            self::syncData('update', $workOrder);
         });
 
-        // Handle Deleted Event
         static::deleted(function ($workOrder) {
-            self::syncToUpKendari('delete', $workOrder);
+            self::syncData('delete', $workOrder);
         });
     }
 
-    protected static function syncToUpKendari($action, $workOrder)
+    protected static function syncData($action, $workOrder)
     {
         if (self::$isSyncing) return;
 
         try {
             self::$isSyncing = true;
             
+            $powerPlant = PowerPlant::find($workOrder->power_plant_id);
+            if (!$powerPlant) {
+                throw new \Exception('Power Plant not found');
+            }
+
             $data = [
                 'id' => $workOrder->id,
                 'description' => $workOrder->description,
+                'type' => $workOrder->type,
                 'status' => $workOrder->status,
                 'priority' => $workOrder->priority,
                 'schedule_start' => $workOrder->schedule_start,
                 'schedule_finish' => $workOrder->schedule_finish,
-                'unit_source' => session('unit'),
-                'created_at' => $workOrder->created_at,
-                'updated_at' => $workOrder->updated_at
+                'power_plant_id' => $workOrder->power_plant_id,
+                'unit_source' => $powerPlant->unit_source,
+                'is_active' => $workOrder->is_active,
+                'is_backlogged' => $workOrder->is_backlogged,
+                'created_at' => now(),
+                'updated_at' => now()
             ];
 
-            Log::info("Attempting to {$action} WO sync", ['data' => $data]);
+            $currentConnection = session('unit', 'mysql');
+            $targetConnection = $currentConnection === 'mysql' 
+                ? PowerPlant::getConnectionByUnitSource($powerPlant->unit_source)
+                : 'mysql';
 
-            $upKendari = DB::connection('mysql')->table('work_orders');
+            Log::info("Current connection: {$currentConnection}, Target connection: {$targetConnection}");
+
+            $targetDB = DB::connection($targetConnection);
+
+            Log::info("Attempting to {$action} WO sync", [
+                'data' => $data,
+                'current_connection' => $currentConnection,
+                'target_connection' => $targetConnection
+            ]);
 
             switch($action) {
                 case 'create':
-                    $upKendari->insert($data);
+                    $targetDB->table('work_orders')->insert($data);
                     break;
                     
                 case 'update':
-                    $upKendari->where('id', $workOrder->id)
-                             ->update($data);
+                    $targetDB->table('work_orders')
+                            ->where('id', $workOrder->id)
+                            ->update($data);
                     break;
                     
                 case 'delete':
-                    $upKendari->where('id', $workOrder->id)
-                             ->delete();
+                    $targetDB->table('work_orders')
+                            ->where('id', $workOrder->id)
+                            ->delete();
                     break;
             }
 
-            Log::info("Work Order {$action} sync successful", [
+            Log::info("WO Sync successful", [
                 'id' => $workOrder->id,
-                'unit' => 'poasia'
+                'unit' => $powerPlant->unit_source,
+                'action' => $action
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Work Order {$action} sync failed", [
+            Log::error("WO Sync failed", [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'workOrder' => $workOrder->toArray()
             ]);
+            throw $e;
         } finally {
             self::$isSyncing = false;
         }
@@ -132,4 +156,6 @@ class WorkOrder extends Model
     {
         return $this->belongsTo(PowerPlant::class);
     }
+
+   
 } 

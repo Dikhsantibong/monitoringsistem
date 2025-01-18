@@ -27,83 +27,96 @@ class WoBacklog extends Model
 
     public function getConnectionName()
     {
-        return session('unit');
-    }
-
-    public function powerPlant()
-    {
-        return $this->belongsTo(PowerPlant::class);
+        return session('unit', 'mysql');
     }
 
     protected static function boot()
     {
         parent::boot();
         
-        // Handle Created Event
         static::created(function ($woBacklog) {
-            self::syncToUpKendari('create', $woBacklog);
+            self::syncData('create', $woBacklog);
         });
 
-        // Handle Updated Event
         static::updated(function ($woBacklog) {
-            self::syncToUpKendari('update', $woBacklog);
+            self::syncData('update', $woBacklog);
         });
 
-        // Handle Deleted Event
         static::deleted(function ($woBacklog) {
-            self::syncToUpKendari('delete', $woBacklog);
+            self::syncData('delete', $woBacklog);
         });
     }
 
-    protected static function syncToUpKendari($action, $woBacklog)
+    protected static function syncData($action, $woBacklog)
     {
         if (self::$isSyncing) return;
 
         try {
             self::$isSyncing = true;
             
+            $powerPlant = PowerPlant::find($woBacklog->power_plant_id);
+            if (!$powerPlant) {
+                throw new \Exception('Power Plant not found');
+            }
+
             $data = [
                 'no_wo' => $woBacklog->no_wo,
                 'deskripsi' => $woBacklog->deskripsi,
                 'tanggal_backlog' => $woBacklog->tanggal_backlog,
                 'keterangan' => $woBacklog->keterangan,
                 'status' => $woBacklog->status,
-                'unit_source' => session('unit'),
                 'power_plant_id' => $woBacklog->power_plant_id,
-                'created_at' => $woBacklog->created_at,
-                'updated_at' => $woBacklog->updated_at
+                'unit_source' => $powerPlant->unit_source,
+                'created_at' => now(),
+                'updated_at' => now()
             ];
 
-            Log::info("Attempting to {$action} WO Backlog sync", ['data' => $data]);
+            $currentConnection = session('unit', 'mysql');
+            $targetConnection = $currentConnection === 'mysql' 
+                ? PowerPlant::getConnectionByUnitSource($powerPlant->unit_source)
+                : 'mysql';
 
-            $upKendari = DB::connection('mysql')->table('wo_backlog');
+            Log::info("Current connection: {$currentConnection}, Target connection: {$targetConnection}");
+
+            $targetDB = DB::connection($targetConnection);
+
+            Log::info("Attempting to {$action} WO Backlog sync", [
+                'data' => $data,
+                'current_connection' => $currentConnection,
+                'target_connection' => $targetConnection
+            ]);
 
             switch($action) {
                 case 'create':
-                    $upKendari->insert($data);
+                    $targetDB->table('wo_backlog')->insert($data);
                     break;
                     
                 case 'update':
-                    $upKendari->where('no_wo', $woBacklog->no_wo)
-                             ->update($data);
+                    $targetDB->table('wo_backlog')
+                            ->where('no_wo', $woBacklog->no_wo)
+                            ->update($data);
                     break;
                     
                 case 'delete':
-                    $upKendari->where('no_wo', $woBacklog->no_wo)
-                             ->delete();
+                    $targetDB->table('wo_backlog')
+                            ->where('no_wo', $woBacklog->no_wo)
+                            ->delete();
                     break;
             }
 
-            Log::info("WO Backlog {$action} sync successful", [
+            Log::info("WO Backlog Sync successful", [
                 'no_wo' => $woBacklog->no_wo,
-                'unit' => 'poasia'
+                'unit' => $powerPlant->unit_source,
+                'action' => $action
             ]);
 
         } catch (\Exception $e) {
-            Log::error("WO Backlog {$action} sync failed", [
+            Log::error("WO Backlog Sync failed", [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'woBacklog' => $woBacklog->toArray()
             ]);
+            throw $e;
         } finally {
             self::$isSyncing = false;
         }

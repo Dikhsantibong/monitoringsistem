@@ -132,5 +132,33 @@ class PowerPlant extends Model
     {
         return $this->hasMany(WoBacklog::class);
     }
+
+    // Mendapatkan koneksi database berdasarkan unit_source
+    public static function getConnectionByUnitSource($unitSource)
+    {
+        $unitConnections = [
+            'mysql_poasia' => 'mysql_poasia',
+            'mysql_kolaka' => 'mysql_kolaka',
+            'mysql_bau_bau' => 'mysql_bau_bau',
+            'mysql_wua_wua' => 'mysql_wua_wua',
+            'mysql' => 'u478221055_up_kendari'
+        ];
+
+        return $unitConnections[$unitSource] ?? 'mysql';
+    }
+
+    // Mendapatkan nama database berdasarkan unit_source
+    public static function getDatabaseNameByUnitSource($unitSource)
+    {
+        $databases = [
+            'mysql_poasia' => 'u478221055_ulpltd_poasia',
+            'mysql_kolaka' => 'u478221055_ulpltd_kolaka',
+            'mysql_bau_bau' => 'u478221055_ulpltd_bau_bau',
+            'mysql_wua_wua' => 'u478221055_ulpltd_wua_wua',
+            'mysql' => 'u478221055_up_kendari'
+        ];
+
+        return $databases[$unitSource] ?? 'u478221055_up_kendari';
+    }
 }
 

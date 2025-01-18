@@ -106,6 +106,8 @@ class LaporanController extends Controller
     public function storeSR(Request $request)
     {
         try {
+            DB::beginTransaction();
+
             $validatedData = $request->validate([
                 'sr_id' => 'required|numeric',
                 'description' => 'required',
@@ -114,29 +116,34 @@ class LaporanController extends Controller
                 'downtime' => 'required',
                 'tipe_sr' => 'required',
                 'priority' => 'required',
-                'unit' => 'required' // validasi unit
+                'unit' => 'required'
             ]);
 
-            // Ambil power plant berdasarkan ID yang dipilih
+            // Ambil power plant dan unit source
             $powerPlant = PowerPlant::findOrFail($request->unit);
+            
+            // Tentukan koneksi database berdasarkan session atau input
+            $connection = session('unit') ?? 'mysql';
+            
+            // Buat Service Request
+            $serviceRequest = new ServiceRequest();
+            $serviceRequest->setConnection($connection);
+            $serviceRequest->id = $validatedData['sr_id'];
+            $serviceRequest->description = $validatedData['description'];
+            $serviceRequest->status = $validatedData['status'];
+            $serviceRequest->downtime = $validatedData['downtime'];
+            $serviceRequest->tipe_sr = $validatedData['tipe_sr'];
+            $serviceRequest->priority = $validatedData['priority'];
+            $serviceRequest->power_plant_id = $powerPlant->id;
+            $serviceRequest->save();
 
-            $sr = new ServiceRequest();
-            $sr->id = $request->sr_id;
-            $sr->description = $request->description;
-            $sr->status = $request->status;
-            $sr->created_at = $request->tanggal;
-            $sr->downtime = $request->downtime;
-            $sr->tipe_sr = $request->tipe_sr;
-            $sr->priority = $request->priority;
-            $sr->unit_source = $powerPlant->unit_source; // Set unit_source dari power plant
-            $sr->power_plant_id = $powerPlant->id; // Set power_plant_id
-            $sr->save();
+            DB::commit();
+            return redirect()->route('admin.laporan.sr_wo')->with('success', 'Service Request berhasil ditambahkan');
 
-            return redirect()->route('admin.laporan.sr_wo')->with('success', 'SR berhasil ditambahkan');
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            DB::rollback();
+            Log::error('Error in storeSR method: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
     
@@ -145,26 +152,28 @@ class LaporanController extends Controller
     public function storeWO(Request $request)
     {
         try {
-            // Validasi input
+            DB::beginTransaction();
+
             $validatedData = $request->validate([
-                'wo_id' => 'required|numeric|unique:work_orders,id', // Tambahkan unique validation
+                'wo_id' => 'required|numeric',
                 'description' => 'required',
                 'type' => 'required',
                 'status' => 'required',
                 'priority' => 'required',
                 'schedule_start' => 'required|date',
                 'schedule_finish' => 'required|date',
-                'unit' => 'required'
+                'unit' => 'required' // validasi unit
             ]);
 
-            // Cek apakah WO dengan ID tersebut sudah ada
-            $existingWO = WorkOrder::find($validatedData['wo_id']);
-            if ($existingWO) {
-                return back()->with('error', 'ID WO sudah digunakan');
-            }
-
-            // Buat Work Order baru
+            // Ambil power plant berdasarkan ID yang dipilih
+            $powerPlant = PowerPlant::findOrFail($request->unit);
+            
+            // Tentukan koneksi database berdasarkan session atau input
+            $connection = session('unit') ?? 'mysql';
+            
+            // Buat Work Order
             $workOrder = new WorkOrder();
+            $workOrder->setConnection($connection);
             $workOrder->id = $validatedData['wo_id'];
             $workOrder->description = $validatedData['description'];
             $workOrder->type = $validatedData['type'];
@@ -172,14 +181,17 @@ class LaporanController extends Controller
             $workOrder->priority = $validatedData['priority'];
             $workOrder->schedule_start = $validatedData['schedule_start'];
             $workOrder->schedule_finish = $validatedData['schedule_finish'];
-            $workOrder->power_plant_id = $validatedData['unit'];
+            $workOrder->power_plant_id = $powerPlant->id;
             $workOrder->is_active = true;
+            $workOrder->is_backlogged = false;
             $workOrder->save();
 
+            DB::commit();
             return redirect()->route('admin.laporan.sr_wo')->with('success', 'Work Order berhasil ditambahkan');
 
         } catch (\Exception $e) {
-            \Log::error('Error in storeWO method: ' . $e->getMessage());
+            DB::rollback();
+            Log::error('Error in storeWO method: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -343,31 +355,41 @@ class LaporanController extends Controller
     public function storeWOBacklog(Request $request)
     {
         try {
-            // Validasi input
-            $validated = $request->validate([
-                'no_wo' => 'required|string|max:255|unique:wo_backlog,no_wo',
-                'deskripsi' => 'required|string',
+            DB::beginTransaction();
+
+            $validatedData = $request->validate([
+                'no_wo' => 'required',
+                'deskripsi' => 'required',
                 'tanggal_backlog' => 'required|date',
-                'keterangan' => 'nullable|string'
+                'keterangan' => 'required',
+                'status' => 'required',
+                'unit' => 'required' // validasi unit
             ]);
 
-            // Buat record baru
-            $woBacklog = WoBacklog::create([
-                'no_wo' => $request->no_wo,
-                'deskripsi' => $request->deskripsi,
-                'tanggal_backlog' => $request->tanggal_backlog,
-                'keterangan' => $request->keterangan
-            ]);
+            // Ambil power plant berdasarkan ID yang dipilih
+            $powerPlant = PowerPlant::findOrFail($request->unit);
+            
+            // Tentukan koneksi database berdasarkan session atau input
+            $connection = session('unit') ?? 'mysql';
+            
+            // Buat WO Backlog
+            $woBacklog = new WoBacklog();
+            $woBacklog->setConnection($connection);
+            $woBacklog->no_wo = $validatedData['no_wo'];
+            $woBacklog->deskripsi = $validatedData['deskripsi'];
+            $woBacklog->tanggal_backlog = $validatedData['tanggal_backlog'];
+            $woBacklog->keterangan = $validatedData['keterangan'];
+            $woBacklog->status = $validatedData['status'];
+            $woBacklog->power_plant_id = $powerPlant->id;
+            $woBacklog->save();
 
-            return redirect()
-                ->route('admin.laporan.sr_wo')
-                ->with('success', 'WO Backlog berhasil ditambahkan');
+            DB::commit();
+            return redirect()->route('admin.laporan.sr_wo')->with('success', 'WO Backlog berhasil ditambahkan');
 
         } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            DB::rollback();
+            Log::error('Error in storeWoBacklog method: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 

@@ -27,29 +27,31 @@ class ServiceRequest extends Model
     {
         parent::boot();
         
-        // Handle Created Event
         static::created(function ($serviceRequest) {
-            self::syncToUpKendari('create', $serviceRequest);
+            self::syncData('create', $serviceRequest);
         });
 
-        // Handle Updated Event
         static::updated(function ($serviceRequest) {
-            self::syncToUpKendari('update', $serviceRequest);
+            self::syncData('update', $serviceRequest);
         });
 
-        // Handle Deleted Event
         static::deleted(function ($serviceRequest) {
-            self::syncToUpKendari('delete', $serviceRequest);
+            self::syncData('delete', $serviceRequest);
         });
     }
 
-    protected static function syncToUpKendari($action, $serviceRequest)
+    protected static function syncData($action, $serviceRequest)
     {
         if (self::$isSyncing) return;
 
         try {
             self::$isSyncing = true;
             
+            $powerPlant = PowerPlant::find($serviceRequest->power_plant_id);
+            if (!$powerPlant) {
+                throw new \Exception('Power Plant not found');
+            }
+
             $data = [
                 'id' => $serviceRequest->id,
                 'description' => $serviceRequest->description,
@@ -57,38 +59,49 @@ class ServiceRequest extends Model
                 'downtime' => $serviceRequest->downtime,
                 'tipe_sr' => $serviceRequest->tipe_sr,
                 'priority' => $serviceRequest->priority,
-                'unit_source' => session('unit'),
+                'power_plant_id' => $serviceRequest->power_plant_id,
+                'unit_source' => $powerPlant->unit_source,
                 'created_at' => $serviceRequest->created_at,
                 'updated_at' => $serviceRequest->updated_at
             ];
 
-            Log::info("Attempting to {$action} sync", ['data' => $data]);
+            // Jika input dari UP Kendari, sync ke unit lokal
+            if (session('unit') === 'mysql') {
+                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+                $targetDB = DB::connection($targetConnection);
+            } 
+            // Jika input dari unit lokal, sync ke UP Kendari
+            else {
+                $targetDB = DB::connection('mysql');
+            }
 
-            $upKendari = DB::connection('mysql')->table('service_requests');
+            Log::info("Attempting to {$action} sync", ['data' => $data]);
 
             switch($action) {
                 case 'create':
-                    $upKendari->insert($data);
+                    $targetDB->table('service_requests')->insert($data);
                     break;
                     
                 case 'update':
-                    $upKendari->where('id', $serviceRequest->id)
-                             ->update($data);
+                    $targetDB->table('service_requests')
+                            ->where('id', $serviceRequest->id)
+                            ->update($data);
                     break;
                     
                 case 'delete':
-                    $upKendari->where('id', $serviceRequest->id)
-                             ->delete();
+                    $targetDB->table('service_requests')
+                            ->where('id', $serviceRequest->id)
+                            ->delete();
                     break;
             }
 
-            Log::info("{$action} sync successful", [
+            Log::info("Sync successful", [
                 'id' => $serviceRequest->id,
-                'unit' => 'poasia'
+                'unit' => $powerPlant->unit_source
             ]);
 
         } catch (\Exception $e) {
-            Log::error("{$action} sync failed", [
+            Log::error("Sync failed", [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
