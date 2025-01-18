@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Models\PowerPlant;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use App\Events\OtherDiscussionUpdated;
 
 class OtherDiscussionController extends Controller
 {
@@ -355,7 +356,8 @@ class OtherDiscussionController extends Controller
             
             $discussion = OtherDiscussion::findOrFail($id);
 
-            $validated = $request->validate([
+            // Validasi request
+            $request->validate([
                 'sr_number' => 'required',
                 'wo_number' => 'required',
                 'unit' => 'required',
@@ -374,41 +376,43 @@ class OtherDiscussionController extends Controller
                 'commitment_section_ids' => 'required|array|min:1',
                 'commitment_section_ids.*' => 'required',
                 'commitment_status' => 'required|array|min:1',
-                'commitment_status.*' => 'required|in:open,closed',
+                'commitment_status.*' => 'required|in:Open,Closed',
                 'status' => 'required|in:Open,Closed'
             ]);
 
-            // Generate PIC dari department dan section
-            $pic = $this->generatePicString($validated['department_id'], $validated['section_id']);
+            // Generate PIC
+            $pic = $this->getPICName($request->department_id, $request->section_id);
 
             // Update diskusi
-            $discussion->update([
-                'sr_number' => $validated['sr_number'],
-                'wo_number' => $validated['wo_number'],
-                'unit' => $validated['unit'],
-                'topic' => $validated['topic'],
-                'target' => $validated['target'],
-                'target_deadline' => $validated['target_deadline'],
-                'department_id' => $validated['department_id'],
-                'section_id' => $validated['section_id'],
+            $discussion->fill([
+                'sr_number' => $request->sr_number,
+                'wo_number' => $request->wo_number,
+                'unit' => $request->unit,
+                'topic' => $request->topic,
+                'target' => $request->target,
+                'target_deadline' => $request->target_deadline,
+                'department_id' => $request->department_id,
+                'section_id' => $request->section_id,
                 'pic' => $pic,
-                'risk_level' => $validated['risk_level'],
-                'priority_level' => $validated['priority_level'],
-                'status' => $validated['status']
+                'risk_level' => $request->risk_level,
+                'priority_level' => $request->priority_level,
+                'status' => $request->status
             ]);
+
+            if ($request->status === 'Closed' && !$discussion->closed_at) {
+                $discussion->closed_at = now();
+            }
+
+            $discussion->saveQuietly();
 
             // Update komitmen
             $discussion->commitments()->delete();
             
-            // Tambah komitmen baru
             foreach ($request->commitments as $index => $commitment) {
-                // Generate PIC untuk setiap komitmen
-                $commitmentPic = $this->generatePicString(
+                $commitmentPic = $this->getPICName(
                     $request->commitment_department_ids[$index],
                     $request->commitment_section_ids[$index]
                 );
-
-                $commitment->status = ucfirst(strtolower($request->commitment_status[$index] ?? 'Open'));
 
                 $discussion->commitments()->create([
                     'description' => $commitment,
@@ -416,16 +420,23 @@ class OtherDiscussionController extends Controller
                     'department_id' => $request->commitment_department_ids[$index],
                     'section_id' => $request->commitment_section_ids[$index],
                     'pic' => $commitmentPic,
-                    'status' => $request->commitment_status[$index] ?? 'open'
+                    'status' => $request->commitment_status[$index]
                 ]);
             }
 
             DB::commit();
+
+            event(new OtherDiscussionUpdated($discussion, 'update'));
+
             return redirect()->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil diperbarui');
 
         } catch (\Exception $e) {
             DB::rollback();
+            \Log::error('Error updating discussion:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->withInput()
                 ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }

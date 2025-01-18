@@ -8,6 +8,7 @@ use App\Models\Commitment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\PicGeneratorService;
+use App\Events\OtherDiscussionUpdated;
 
 class OtherDiscussionEditController extends Controller
 {
@@ -34,37 +35,62 @@ class OtherDiscussionEditController extends Controller
 
     public function update(Request $request, $id)
     {
-        DB::beginTransaction();
-        
         try {
+            DB::beginTransaction();
+            
             $discussion = OtherDiscussion::findOrFail($id);
             
-            // Validasi input
+            // Validasi request menggunakan method validateDiscussion
             $validated = $this->validateDiscussion($request);
             
+            // Generate PIC
+            $pic = $this->picGenerator->generate(
+                $validated['department_id'],
+                $validated['section_id']
+            );
+
             // Update discussion
-            $this->updateDiscussion($discussion, $validated);
-            
-            // Update commitments
+            $discussion->fill([
+                'sr_number' => $validated['sr_number'],
+                'wo_number' => $validated['wo_number'],
+                'unit' => $validated['unit'],
+                'topic' => $validated['topic'],
+                'target' => $validated['target'],
+                'target_deadline' => $validated['target_deadline'],
+                'department_id' => $validated['department_id'],
+                'section_id' => $validated['section_id'],
+                'pic' => $pic,
+                'risk_level' => $validated['risk_level'],
+                'priority_level' => $validated['priority_level'],
+                'status' => $validated['status']
+            ]);
+
+            // Set closed_at jika status Closed
+            if ($validated['status'] === 'Closed' && !$discussion->closed_at) {
+                $discussion->closed_at = now();
+            }
+
+            $discussion->saveQuietly();
+
+            // Update komitmen
             $this->updateCommitments($discussion, $request);
             
             DB::commit();
+
+            // Trigger event secara manual
+            event(new OtherDiscussionUpdated($discussion, 'update'));
             
-            return redirect()
-                ->route('admin.other-discussions.index')
+            return redirect()->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil diperbarui');
                 
         } catch (\Exception $e) {
             DB::rollback();
             \Log::error('Error updating discussion:', [
-                'id' => $id,
-                'error' => $e->getMessage(),
+                'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
-            return back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan saat memperbarui data');
+            return back()->withInput()
+                ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
     }
 

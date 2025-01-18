@@ -321,8 +321,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], 
         ->name('other-discussions.store');
     Route::get('/other-discussions/{id}/edit', [OtherDiscussionController::class, 'edit'])
         ->name('other-discussions.edit');
-    Route::put('/other-discussions/{id}', [OtherDiscussionController::class, 'update'])
-        ->name('other-discussions.update');
+    Route::put('/other-discussions/{id}', [OtherDiscussionEditController::class, 'update'])
+        ->name('admin.other-discussions.update');
     Route::delete('/other-discussions/{id}', [OtherDiscussionController::class, 'destroy'])
         ->name('other-discussions.destroy');
     Route::post('/other-discussions/{id}/update-status', [OtherDiscussionController::class, 'updateStatus'])
