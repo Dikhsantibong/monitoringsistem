@@ -781,14 +781,31 @@ async function generateNoPembahasan() {
     }
 
     try {
-        const response = await fetch(`/api/generate-no-pembahasan?unit=${encodeURIComponent(unitSelect.value)}`);
+        // Tampilkan loading
+        Swal.fire({
+            title: 'Generating...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        });
+
+        const response = await fetch(`/generate-no-pembahasan?unit=${encodeURIComponent(unitSelect.value)}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
         const data = await response.json();
+        console.log('Response data:', data); // Debug log
         
-        if (!response.ok) {
-            throw new Error(data.message || 'Gagal generate nomor pembahasan');
-        }
+        // Tutup loading
+        Swal.close();
         
-        if (data.success) {
+        if (data.success && data.no_pembahasan) {
             noPembahasanInput.value = data.no_pembahasan;
             Swal.fire({
                 icon: 'success',
@@ -801,16 +818,18 @@ async function generateNoPembahasan() {
             throw new Error(data.message || 'Gagal generate nomor pembahasan');
         }
     } catch (error) {
-        console.error('Error generating no pembahasan:', error);
+        console.error('Error details:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
             text: error.message || 'Gagal generate nomor pembahasan'
         });
+        // Reset input jika gagal
+        noPembahasanInput.value = '';
     }
 }
 
-// Fungsi validasi form sebelum submit
+// Fungsi validasi form
 function validateForm() {
     const noPembahasan = document.getElementById('no_pembahasan').value;
     const unit = document.getElementById('unit').value;
@@ -845,6 +864,11 @@ function validateForm() {
 
     return true;
 }
+
+// Reset no_pembahasan saat unit berubah
+document.getElementById('unit').addEventListener('change', function() {
+    document.getElementById('no_pembahasan').value = '';
+});
 </script>
 @endpush
 </script>

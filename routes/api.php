@@ -20,7 +20,7 @@ Route::get('/pics/{section}', function ($section) {
         ->get(['id', 'name', 'position']);
 }); 
 
-Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan']); 
+Route::get('/generate-no-pembahasan', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'generateNoPembahasan']);
 
 Route::get('/generate-numbers', [OtherDiscussionController::class, 'generateNumbers']); 
 Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])

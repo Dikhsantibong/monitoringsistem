@@ -196,7 +196,7 @@ class OtherDiscussionController extends Controller
     public function store(Request $request)
     {
         try {
-            DB::beginTransaction();
+            \Log::info('Storing discussion with data:', $request->all());
             
             $validated = $request->validate([
                 'sr_number' => 'required',
@@ -489,7 +489,10 @@ class OtherDiscussionController extends Controller
         try {
             $unit = $request->query('unit');
             
-            \Log::info('Generating no pembahasan for unit: ' . $unit);
+            \Log::info('Request received for generating no pembahasan', [
+                'unit' => $unit,
+                'request' => $request->all()
+            ]);
             
             if (empty($unit)) {
                 throw new \Exception('Unit is required');
@@ -497,14 +500,22 @@ class OtherDiscussionController extends Controller
             
             $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
             
-            \Log::info('Generated no pembahasan: ' . $noPembahasan);
+            \Log::info('Successfully generated no pembahasan', [
+                'unit' => $unit,
+                'no_pembahasan' => $noPembahasan
+            ]);
             
             return response()->json([
                 'success' => true,
                 'no_pembahasan' => $noPembahasan
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error generating no pembahasan: ' . $e->getMessage());
+            \Log::error('Failed to generate no pembahasan', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'unit' => $unit ?? null
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

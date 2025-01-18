@@ -215,22 +215,47 @@ class OtherDiscussion extends Model
     // Method untuk generate nomor pembahasan
     public static function generateNoPembahasan($unit)
     {
-        $year = date('Y');
-        $month = date('m');
-        
-        // Ambil nomor urut terakhir untuk unit dan bulan ini
-        $lastDiscussion = self::where('no_pembahasan', 'like', "$unit/$year/$month/%")
-            ->orderBy('no_pembahasan', 'desc')
-            ->first();
+        try {
+            $year = date('Y');
+            $month = date('m');
             
-        if ($lastDiscussion) {
-            $lastNumber = (int) substr($lastDiscussion->no_pembahasan, -4);
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
+            \Log::info('Generating no pembahasan', [
+                'unit' => $unit,
+                'year' => $year,
+                'month' => $month
+            ]);
+            
+            // Pastikan unit tidak kosong
+            if (empty($unit)) {
+                throw new \Exception('Unit tidak boleh kosong');
+            }
+            
+            // Ambil nomor urut terakhir untuk unit dan bulan ini
+            $lastDiscussion = self::where('no_pembahasan', 'like', "$unit/$year/$month/%")
+                ->orderBy('no_pembahasan', 'desc')
+                ->first();
+                
+            \Log::info('Last discussion found:', ['last_discussion' => $lastDiscussion]);
+            
+            if ($lastDiscussion) {
+                $lastNumber = (int) substr($lastDiscussion->no_pembahasan, -4);
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+            
+            // Format: UNIT/TAHUN/BULAN/NOMOR URUT (4 digit)
+            $noPembahasan = sprintf("%s/%s/%s/%04d", $unit, $year, $month, $nextNumber);
+            
+            \Log::info('Generated no pembahasan:', ['no_pembahasan' => $noPembahasan]);
+            
+            return $noPembahasan;
+        } catch (\Exception $e) {
+            \Log::error('Error in generateNoPembahasan:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
-        
-        // Format: UNIT/TAHUN/BULAN/NOMOR URUT (4 digit)
-        return sprintf("%s/%s/%s/%04d", $unit, $year, $month, $nextNumber);
     }
 } 

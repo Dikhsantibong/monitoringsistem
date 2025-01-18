@@ -480,6 +480,8 @@ Route::fallback(function () {
     return response()->json(['error' => 'Route tidak ditemukan'], 404);
 });
 
+Route::get('/generate-no-pembahasan', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'generateNoPembahasan'])->name('generate.no-pembahasan');
+
 
 
     
