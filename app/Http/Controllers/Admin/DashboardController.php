@@ -12,6 +12,8 @@ use App\Models\ScoreCardDaily;
 use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
 use App\Models\WoBacklog;
+use App\Models\OtherDiscussion;
+use App\Models\Commitment;
 
 
 class DashboardController extends Controller
@@ -145,6 +147,18 @@ class DashboardController extends Controller
             'woBacklogData' => [
                 'counts' => [
                     WoBacklog::where('status', 'Open')->count()
+                ]
+            ],
+            'otherDiscussionData' => [
+                'counts' => [
+                    OtherDiscussion::where('status', 'Open')->count(),
+                    OtherDiscussion::where('status', 'Closed')->count()
+                ]
+            ],
+            'commitmentData' => [
+                'counts' => [
+                    Commitment::where('status', 'Open')->count(),
+                    Commitment::where('status', 'Closed')->count()
                 ]
             ]
         ];

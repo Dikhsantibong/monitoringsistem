@@ -110,13 +110,55 @@ class PembangkitController extends Controller
         try {
             $tanggal = $request->tanggal;
             
-            // Ambil data HOP
-            $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
-            
-            // Ambil data status mesin (kode yang sudah ada)
+            // Ambil data status mesin untuk tanggal yang diminta
             $logs = MachineStatusLog::with(['machine.powerPlant'])
                 ->whereDate('tanggal', $tanggal)
                 ->get();
+            
+            // Jika tidak ada data untuk tanggal yang diminta, 
+            // ambil data terakhir untuk setiap mesin
+            if ($logs->isEmpty()) {
+                $logs = MachineStatusLog::with(['machine.powerPlant'])
+                    ->whereIn('id', function($query) use ($tanggal) {
+                        $query->selectRaw('MAX(id)')
+                            ->from('machine_status_logs')
+                            ->where('tanggal', '<', $tanggal)
+                            ->groupBy('machine_id');
+                    })
+                    ->get()
+                    ->map(function ($lastLog) use ($tanggal) {
+                        // Buat salinan data dengan tanggal yang baru
+                        $newLog = $lastLog->replicate();
+                        $newLog->tanggal = $tanggal;
+                        
+                        // Simpan log baru ke database
+                        $newLog->save();
+                        
+                        return $newLog;
+                    });
+            }
+
+            // Ambil data HOP dengan cara yang sama
+            $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
+            if ($hops->isEmpty()) {
+                $hops = UnitOperationHour::whereIn('id', function($query) use ($tanggal) {
+                    $query->selectRaw('MAX(id)')
+                        ->from('unit_operation_hours')
+                        ->where('tanggal', '<', $tanggal)
+                        ->groupBy('power_plant_id');
+                })
+                ->get()
+                ->map(function ($lastHop) use ($tanggal) {
+                    // Buat salinan data dengan tanggal yang baru
+                    $newHop = $lastHop->replicate();
+                    $newHop->tanggal = $tanggal;
+                    
+                    // Simpan hop baru ke database
+                    $newHop->save();
+                    
+                    return $newHop;
+                });
+            }
             
             return response()->json([
                 'success' => true,

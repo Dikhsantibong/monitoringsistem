@@ -17,10 +17,12 @@ class WorkOrder extends Model
     protected $fillable = [
         'id',
         'description',
+        'type',
         'status',
         'priority',
         'schedule_start',
         'schedule_finish',
+        'power_plant_id',
         'unit_source',
         'is_active',
         'is_backlogged'
@@ -124,5 +126,10 @@ class WorkOrder extends Model
         } finally {
             self::$isSyncing = false;
         }
+    }
+
+    public function powerPlant()
+    {
+        return $this->belongsTo(PowerPlant::class);
     }
 } 

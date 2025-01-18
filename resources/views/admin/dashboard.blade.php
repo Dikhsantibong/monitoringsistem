@@ -264,6 +264,51 @@
                     </div>
                 </div>
 
+                <!-- Tambahkan baris baru untuk diagram Pembahasan dan Komitmen -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Card Pembahasan Lain-lain Status -->
+                    <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Status Pembahasan Lain-lain</h3>
+                            <div class="flex space-x-2">
+                                <button onclick="toggleChartType('otherDiscussionChart', 'pie')" 
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Pie">
+                                    <i class="fas fa-chart-pie"></i>
+                                </button>
+                                <button onclick="toggleChartType('otherDiscussionChart', 'doughnut')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Donat">
+                                    <i class="fas fa-circle-notch"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="otherDiscussionChart"></canvas>
+                            <div id="otherDiscussionStats" class="absolute bottom-0 left-0 text-sm text-gray-600 p-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card Komitmen Status -->
+                    <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Status Komitmen</h3>
+                            <div class="flex space-x-2">
+                                <button onclick="toggleChartType('commitmentChart', 'pie')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Pie">
+                                    <i class="fas fa-chart-pie"></i>
+                                </button>
+                                <button onclick="toggleChartType('commitmentChart', 'doughnut')"
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Donat">
+                                    <i class="fas fa-circle-notch"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="commitmentChart"></canvas>
+                            <div id="commitmentStats" class="absolute bottom-0 left-0 text-sm text-gray-600 p-2"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Recent Activities Table -->
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
@@ -325,7 +370,7 @@
             });
         });
 
-        let activityChart, meetingChart, srChart, woChart, woBacklogChart;
+        let activityChart, meetingChart, srChart, woChart, woBacklogChart, otherDiscussionChart, commitmentChart;
 
         // Inisialisasi charts dengan data sementara
         document.addEventListener('DOMContentLoaded', function() {
@@ -615,6 +660,80 @@
                 }
             });
 
+            // Data untuk Other Discussion Chart
+            const otherDiscussionData = {
+                labels: ['Open', 'Closed'],
+                datasets: [{
+                    data: chartData.otherDiscussionData.counts,
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.8)', // Merah untuk Open
+                        'rgba(14, 165, 233, 0.8)'  // Biru langit untuk Closed
+                    ],
+                    borderColor: [
+                        'rgb(239, 68, 68)',
+                        'rgb(14, 165, 233)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+
+            // Data untuk Commitment Chart
+            const commitmentData = {
+                labels: ['Open', 'Closed'],
+                datasets: [{
+                    data: chartData.commitmentData.counts,
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.8)', // Merah untuk Open
+                        'rgba(14, 165, 233, 0.8)'  // Biru langit untuk Closed
+                    ],
+                    borderColor: [
+                        'rgb(239, 68, 68)',
+                        'rgb(14, 165, 233)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+
+            // Inisialisasi Other Discussion Chart
+            otherDiscussionChart = new Chart(document.getElementById('otherDiscussionChart'), {
+                type: 'pie',
+                data: otherDiscussionData,
+                options: {
+                    ...pieOptions,
+                    plugins: {
+                        ...pieOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'Status Pembahasan Lain-lain',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Inisialisasi Commitment Chart
+            commitmentChart = new Chart(document.getElementById('commitmentChart'), {
+                type: 'pie',
+                data: commitmentData,
+                options: {
+                    ...pieOptions,
+                    plugins: {
+                        ...pieOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'Status Komitmen',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+
             // Update stats dengan format yang lebih rapi
             function updateChartStats() {
                 // Update stats untuk SR
@@ -631,6 +750,16 @@
                 const woBacklogStats = document.getElementById('woBacklogStats');
                 const backlogTotal = woBacklogData.datasets[0].data.reduce((a, b) => a + b, 0);
                 woBacklogStats.innerHTML = `Total: ${backlogTotal} | High: ${woBacklogData.datasets[0].data[0]} | Medium: ${woBacklogData.datasets[0].data[1]} | Low: ${woBacklogData.datasets[0].data[2]}`;
+
+                // Update stats untuk Other Discussion
+                const otherDiscussionStats = document.getElementById('otherDiscussionStats');
+                const otherDiscussionTotal = otherDiscussionData.datasets[0].data.reduce((a, b) => a + b, 0);
+                otherDiscussionStats.innerHTML = `Total: ${otherDiscussionTotal} | Open: ${otherDiscussionData.datasets[0].data[0]} | Closed: ${otherDiscussionData.datasets[0].data[1]}`;
+
+                // Update stats untuk Commitment
+                const commitmentStats = document.getElementById('commitmentStats');
+                const commitmentTotal = commitmentData.datasets[0].data.reduce((a, b) => a + b, 0);
+                commitmentStats.innerHTML = `Total: ${commitmentTotal} | Open: ${commitmentData.datasets[0].data[0]} | Closed: ${commitmentData.datasets[0].data[1]}`;
             }
 
             // Panggil fungsi update stats setelah chart diinisialisasi
@@ -642,9 +771,11 @@
             const chart = chartId === 'srChart' ? srChart : 
                          chartId === 'woChart' ? woChart :
                          chartId === 'woBacklogChart' ? woBacklogChart :
+                         chartId === 'otherDiscussionChart' ? otherDiscussionChart :
+                         chartId === 'commitmentChart' ? commitmentChart :
                          chartId === 'activityChart' ? activityChart : meetingChart;
 
-            if (['srChart', 'woChart', 'woBacklogChart'].includes(chartId)) {
+            if (['srChart', 'woChart', 'woBacklogChart', 'otherDiscussionChart', 'commitmentChart'].includes(chartId)) {
                 // Untuk chart SR, WO, dan WO Backlog
                 const data = chart.data;
                 const options = chart.options;
@@ -660,8 +791,12 @@
                     srChart = newChart;
                 } else if (chartId === 'woChart') {
                     woChart = newChart;
-                } else {
+                } else if (chartId === 'woBacklogChart') {
                     woBacklogChart = newChart;
+                } else if (chartId === 'otherDiscussionChart') {
+                    otherDiscussionChart = newChart;
+                } else {
+                    commitmentChart = newChart;
                 }
             } else {
                 // Existing logic untuk activity dan meeting charts

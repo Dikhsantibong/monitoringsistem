@@ -9,6 +9,7 @@ use App\Models\WorkOrder;
 use App\Models\SRWO;
 use App\Models\WoBacklog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PowerPlant;
 
 class LaporanController extends Controller
 {
@@ -18,14 +19,14 @@ class LaporanController extends Controller
             // Cek WO yang expired dan pindahkan ke backlog
             $this->checkExpiredWO();
 
-            // Query untuk Service Requests
-            $serviceRequests = ServiceRequest::query()
-                ->select('id', 'description', 'status', 'created_at', 'downtime', 'tipe_sr', 'priority')
+            // Query untuk Service Requests dengan eager loading powerPlant
+            $serviceRequests = ServiceRequest::with('powerPlant')
+                ->select('id', 'description', 'status', 'created_at', 'downtime', 'tipe_sr', 'priority', 'unit_source', 'power_plant_id')
                 ->when($request->filled(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
                     return $query->whereBetween('created_at', [
                         $request->tanggal_mulai . ' 00:00:00',
                         $request->tanggal_akhir . ' 23:59:59'
-                    ]);
+                    ]); 
                 })
                 ->when($request->filled('searchSR'), function ($query) use ($request) {
                     return $query->where(function($q) use ($request) {
@@ -40,9 +41,10 @@ class LaporanController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            // Query untuk Work Orders yang masih aktif
-            $workOrders = WorkOrder::query()
-                ->select('id', 'description', 'status', 'created_at', 'priority', 'schedule_start', 'schedule_finish')
+            // Query untuk Work Orders dengan eager loading powerPlant
+            $workOrders = WorkOrder::with('powerPlant')
+                ->select('id', 'description', 'status', 'created_at', 'priority', 'type',
+                        'schedule_start', 'schedule_finish', 'power_plant_id')
                 ->where('is_active', true)
                 ->when($request->filled(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
                     return $query->whereBetween('created_at', [
@@ -62,9 +64,9 @@ class LaporanController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            // Query untuk WO Backlog
-            $woBacklogs = WoBacklog::query()
-                ->select('id', 'no_wo', 'deskripsi', 'tanggal_backlog', 'keterangan', 'status', 'created_at')
+            // Query untuk WO Backlog dengan eager loading powerPlant
+            $woBacklogs = WoBacklog::with('powerPlant')
+                ->select('id', 'no_wo', 'deskripsi', 'tanggal_backlog', 'keterangan', 'status', 'created_at', 'unit_source', 'power_plant_id')
                 ->when($request->filled(['tanggal_mulai', 'tanggal_akhir']), function ($query) use ($request) {
                     return $query->whereBetween('created_at', [
                         $request->tanggal_mulai . ' 00:00:00',
@@ -103,30 +105,39 @@ class LaporanController extends Controller
     // Tambah method untuk handle SR
     public function storeSR(Request $request)
     {
-        $validated = $request->validate([
-            'sr_id' => 'required|numeric|unique:service_requests,id',
-            'description' => 'required',
-            'status' => 'required',
-            'tanggal' => 'required|date',
-            'downtime' => 'required',
-            'tipe_sr' => 'required',
-            'priority' => 'required'
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'sr_id' => 'required|numeric',
+                'description' => 'required',
+                'status' => 'required',
+                'tanggal' => 'required|date',
+                'downtime' => 'required',
+                'tipe_sr' => 'required',
+                'priority' => 'required',
+                'unit' => 'required' // validasi unit
+            ]);
 
-        ServiceRequest::create([
-            'id' => $request->sr_id,
-            'description' => $request->description,
-            'status' => $request->status,
-            'created_at' => $request->tanggal,
-            'downtime' => $request->downtime,
-            'tipe_sr' => $request->tipe_sr,
-            'priority' => $request->priority
-        ]);
+            // Ambil power plant berdasarkan ID yang dipilih
+            $powerPlant = PowerPlant::findOrFail($request->unit);
 
-        return redirect()
-                ->route('admin.laporan.sr_wo')
-                ->with('success', 'service Request berhasil di tambahkan berhasil ditambahkan');
-        
+            $sr = new ServiceRequest();
+            $sr->id = $request->sr_id;
+            $sr->description = $request->description;
+            $sr->status = $request->status;
+            $sr->created_at = $request->tanggal;
+            $sr->downtime = $request->downtime;
+            $sr->tipe_sr = $request->tipe_sr;
+            $sr->priority = $request->priority;
+            $sr->unit_source = $powerPlant->unit_source; // Set unit_source dari power plant
+            $sr->power_plant_id = $powerPlant->id; // Set power_plant_id
+            $sr->save();
+
+            return redirect()->route('admin.laporan.sr_wo')->with('success', 'SR berhasil ditambahkan');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
     
 
@@ -134,34 +145,42 @@ class LaporanController extends Controller
     public function storeWO(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'wo_id' => 'required|numeric|unique:work_orders,id',
+            // Validasi input
+            $validatedData = $request->validate([
+                'wo_id' => 'required|numeric|unique:work_orders,id', // Tambahkan unique validation
                 'description' => 'required',
-                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
-                'priority' => 'required|in:emergency,normal,outage,urgent',
+                'type' => 'required',
+                'status' => 'required',
+                'priority' => 'required',
                 'schedule_start' => 'required|date',
-                'schedule_finish' => 'required|date|after_or_equal:schedule_start',
+                'schedule_finish' => 'required|date',
+                'unit' => 'required'
             ]);
+
+            // Cek apakah WO dengan ID tersebut sudah ada
+            $existingWO = WorkOrder::find($validatedData['wo_id']);
+            if ($existingWO) {
+                return back()->with('error', 'ID WO sudah digunakan');
+            }
 
             // Buat Work Order baru
-            WorkOrder::create([
-                'id' => $request->wo_id,
-                'description' => $request->description,
-                'status' => $request->status,  // Gunakan status dari request
-                'priority' => $request->priority,
-                'schedule_start' => $request->schedule_start,
-                'schedule_finish' => $request->schedule_finish,
-            ]);
+            $workOrder = new WorkOrder();
+            $workOrder->id = $validatedData['wo_id'];
+            $workOrder->description = $validatedData['description'];
+            $workOrder->type = $validatedData['type'];
+            $workOrder->status = $validatedData['status'];
+            $workOrder->priority = $validatedData['priority'];
+            $workOrder->schedule_start = $validatedData['schedule_start'];
+            $workOrder->schedule_finish = $validatedData['schedule_finish'];
+            $workOrder->power_plant_id = $validatedData['unit'];
+            $workOrder->is_active = true;
+            $workOrder->save();
 
-            return redirect()
-                ->route('admin.laporan.sr_wo')
-                ->with('success', 'Work Order berhasil ditambahkan');
-       
-                 } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('admin.laporan.sr_wo')->with('success', 'Work Order berhasil ditambahkan');
+
+        } catch (\Exception $e) {
+            \Log::error('Error in storeWO method: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -302,7 +321,10 @@ class LaporanController extends Controller
 
     public function createSR()
     {
-        return view('admin.laporan.create_sr');
+        // Ambil data power plants
+        $powerPlants = PowerPlant::all();
+        
+        return view('admin.laporan.create_sr', compact('powerPlants'));
     }
 
     public function createWOBacklog()
@@ -312,7 +334,10 @@ class LaporanController extends Controller
 
     public function createWO()
     {
-        return view('admin.laporan.create_wo'); // Ganti dengan nama view yang sesuai
+        // Ambil data power plants
+        $powerPlants = PowerPlant::all();
+        
+        return view('admin.laporan.create_wo', compact('powerPlants'));
     }
 
     public function storeWOBacklog(Request $request)

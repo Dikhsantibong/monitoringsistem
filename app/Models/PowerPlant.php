@@ -114,5 +114,23 @@ class PowerPlant extends Model
             self::$isSyncing = false;
         }
     }
+
+    // Relasi dengan ServiceRequest
+    public function serviceRequests()
+    {
+        return $this->hasMany(ServiceRequest::class);
+    }
+
+    // Relasi dengan WorkOrder
+    public function workOrders()
+    {
+        return $this->hasMany(WorkOrder::class);
+    }
+
+    // Relasi dengan WoBacklog
+    public function woBacklogs()
+    {
+        return $this->hasMany(WoBacklog::class);
+    }
 }
 

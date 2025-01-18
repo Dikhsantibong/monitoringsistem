@@ -12,7 +12,7 @@ class ServiceRequest extends Model
     
     protected $fillable = [
         'id', 'description', 'status', 'created_at', 'downtime', 
-        'tipe_sr', 'priority', 'unit_source'
+        'tipe_sr', 'priority', 'unit_source', 'power_plant_id'
     ];
 
     public $incrementing = false;
@@ -95,5 +95,10 @@ class ServiceRequest extends Model
         } finally {
             self::$isSyncing = false;
         }
+    }
+
+    public function powerPlant()
+    {
+        return $this->belongsTo(PowerPlant::class);
     }
 }   

@@ -138,6 +138,7 @@
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID SR</th>
+                                            <th class="py-2 px-4 border-b">Unit</th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">
                                                 <div class="flex items-center justify-between">
@@ -169,6 +170,19 @@
                                             <tr class="odd:bg-white even:bg-gray-100">
                                                 <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $sr->id }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    @if($sr->powerPlant)
+                                                        {{ $sr->powerPlant->name }}
+                                                    @elseif($sr->unit_source)
+                                                        @php
+                                                            $unitName = str_replace('mysql_', '', $sr->unit_source);
+                                                            $unitName = ucfirst($unitName);
+                                                        @endphp
+                                                        {{ $unitName }}
+                                                    @else
+                                                        Unit tidak tersedia
+                                                    @endif
+                                                </td>
                                                 <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
@@ -232,7 +246,9 @@
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID WO</th>
-                                            <th class="py-2 px-4 border-b" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Deskripsi</th>
+                                            <th class="py-2 px-4 border-b">Unit</th>
+                                            <th class="py-2 px-4 border-b">Type</th>
+                                            <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">
                                                 <div class="flex items-center justify-between">
                                                     <span>Status</span>
@@ -267,7 +283,27 @@
                                             <tr class="odd:bg-white even:bg-gray-100" data-id="{{ $wo->id }}">
                                                 <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
-                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    @if($wo->powerPlant)
+                                                        {{ $wo->powerPlant->name }}
+                                                    @else
+                                                        Unit tidak tersedia
+                                                    @endif
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    <span class="px-2 py-1 rounded-full text-xs
+                                                        {{ $wo->type == 'CM' ? 'bg-blue-100 text-blue-600' : 
+                                                           ($wo->type == 'PM' ? 'bg-green-100 text-green-600' : 
+                                                           ($wo->type == 'PDM' ? 'bg-yellow-100 text-yellow-600' : 
+                                                           ($wo->type == 'PAM' ? 'bg-purple-100 text-purple-600' : 
+                                                           ($wo->type == 'OH' ? 'bg-red-100 text-red-600' : 
+                                                           ($wo->type == 'EJ' ? 'bg-indigo-100 text-indigo-600' : 
+                                                           ($wo->type == 'EM' ? 'bg-gray-100 text-gray-600' : 
+                                                           'bg-gray-100 text-gray-600')))))) }}">
+                                                        {{ $wo->type }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px;">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200" data-column="status">
                                                     <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
                                                         {{ $wo->status }}
@@ -335,6 +371,7 @@
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">No WO</th>
+                                            <th class="py-2 px-4 border-b">Unit</th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Tanggal Backlog</th>
                                             <th class="py-2 px-4 border-b">Keterangan</th>
@@ -364,6 +401,19 @@
                                             <tr class="odd:bg-white even:bg-gray-100">
                                                 <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $backlog->no_wo }}</td>
+                                                <td class="py-2 px-4 border border-gray-200">
+                                                    @if($backlog->powerPlant)
+                                                        {{ $backlog->powerPlant->name }}
+                                                    @elseif($backlog->unit_source)
+                                                        @php
+                                                            $unitName = str_replace('mysql_', '', $backlog->unit_source);
+                                                            $unitName = ucfirst($unitName);
+                                                        @endphp
+                                                        {{ $unitName }}
+                                                    @else
+                                                        Unit tidak tersedia
+                                                    @endif
+                                                </td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $backlog->deskripsi }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $backlog->created_at }}</td>
                                                 <td class="py-2 px-4 border border-gray-200">{{ $backlog->keterangan ?? 'N/A' }}</td>
@@ -1128,4 +1178,5 @@
 </script>
 @push('scripts')
 @endpush
+    
     

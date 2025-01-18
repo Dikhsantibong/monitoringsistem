@@ -21,12 +21,18 @@ class WoBacklog extends Model
         'tanggal_backlog',
         'keterangan',
         'status',
-        'unit_source'
+        'unit_source',
+        'power_plant_id'
     ];
 
     public function getConnectionName()
     {
         return session('unit');
+    }
+
+    public function powerPlant()
+    {
+        return $this->belongsTo(PowerPlant::class);
     }
 
     protected static function boot()
@@ -62,7 +68,8 @@ class WoBacklog extends Model
                 'tanggal_backlog' => $woBacklog->tanggal_backlog,
                 'keterangan' => $woBacklog->keterangan,
                 'status' => $woBacklog->status,
-                'unit_source' => session('unit'),   
+                'unit_source' => session('unit'),
+                'power_plant_id' => $woBacklog->power_plant_id,
                 'created_at' => $woBacklog->created_at,
                 'updated_at' => $woBacklog->updated_at
             ];

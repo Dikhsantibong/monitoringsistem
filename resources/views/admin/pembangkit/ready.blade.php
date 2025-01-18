@@ -391,100 +391,71 @@
         `;
         mainContent.appendChild(loadingIndicator);
 
-        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${filterDate}&search=${searchInput}`)
-            .then(response => response.json())
-            .then(result => {
-                // Hapus loading indicator
-                loadingIndicator.remove();
-
-                if (result.success) {
-                    updateTablesWithSearchResult(result.data);
-                } else {
-                    // Sembunyikan semua tabel
-                    const unitTables = document.getElementsByClassName('unit-table');
-                    Array.from(unitTables).forEach(table => {
-                        table.style.display = 'none';
-                    });
-
-                    // Tampilkan pesan tidak ada data
-                    const noDataMessage = document.createElement('div');
-                    noDataMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
-                    noDataMessage.textContent = 'DATA TIDAK DITEMUKAN';
-                    mainContent.appendChild(noDataMessage);
-                }
-            })
-            .catch(error => {
-                // Hapus loading indicator jika terjadi error
-                loadingIndicator.remove();
-                console.error('Error:', error);
-            });
-    }
-
-    function updateTablesWithSearchResult(data) {
+        // Sembunyikan semua tabel dan baris terlebih dahulu
         const unitTables = document.getElementsByClassName('unit-table');
-        const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
+        Array.from(unitTables).forEach(table => {
+            const unitName = table.querySelector('h2').textContent.toLowerCase();
+            const shouldShowUnit = unitName.includes(searchInput);
+            let hasMatchingMachine = false;
 
-        // Hapus pesan "Data tidak ditemukan" jika ada
-        const existingMessage = mainContent.querySelector('.text-center.py-8');
+            // Cek setiap baris mesin dalam tabel
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const machineName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const machineMatches = machineName.includes(searchInput);
+                
+                if (machineMatches || shouldShowUnit) {
+                    row.style.display = '';
+                    hasMatchingMachine = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Tampilkan/sembunyikan tabel berdasarkan hasil pencarian
+            table.style.display = (hasMatchingMachine || shouldShowUnit) ? '' : 'none';
+        });
+
+        // Hapus loading indicator
+        loadingIndicator.remove();
+
+        // Tampilkan pesan jika tidak ada hasil
+        const existingMessage = mainContent.querySelector('.no-results-message');
         if (existingMessage) {
             existingMessage.remove();
         }
 
-        // Sembunyikan semua tabel dan baris terlebih dahulu
-        Array.from(unitTables).forEach(table => {
-            table.style.display = 'none';
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => row.style.display = 'none');
-        });
-
-        // Tampilkan hanya data yang sesuai dengan pencarian
-        data.forEach(log => {
-            const machineId = log.machine_id;
-            const row = document.querySelector(`td[data-id="${machineId}"]`)?.closest('tr');
-            const unitTable = row?.closest('.unit-table');
-
-            if (row && unitTable) {
-                unitTable.style.display = '';
-                row.style.display = '';
-
-                // Update nilai-nilai di row
-                const select = row.querySelector('select');
-                const inputKeterangan = row.querySelector('input[type="text"]');
-                const inputBeban = row.querySelector('td:nth-child(4) input');
-
-                if (select) {
-                    select.value = log.status || '';
-                    select.style.backgroundColor = getStatusColor(log.status);
-                }
-                if (inputKeterangan) inputKeterangan.value = log.keterangan || '';
-                if (inputBeban) inputBeban.value = log.load_value || '';
-            }
-        });
+        const visibleTables = Array.from(unitTables).filter(table => table.style.display !== 'none');
+        if (visibleTables.length === 0) {
+            const noResultsMessage = document.createElement('div');
+            noResultsMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg no-results-message';
+            noResultsMessage.textContent = 'DATA TIDAK DITEMUKAN';
+            mainContent.appendChild(noResultsMessage);
+        }
     }
 
-    function getStatusColor(status) {
-        const colors = {
-            'Operasi': '#4CAF50',
-            'Standby': '#2196F3',
-            'Gangguan': '#f44336',
-            'Pemeliharaan': '#FF9800',
-            'Mothballed': '#9E9E9E',
-            'Overhaul': '#673AB7'
-        };
-        return colors[status] || '#FFFFFF';
-    }
-
-    // Event listeners
-    document.getElementById('searchInput').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
+    // Event listener untuk input pencarian
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchValue = this.value.trim();
+        if (searchValue.length >= 1) { // Mulai pencarian setelah 1 karakter
             searchTables();
+        } else {
+            // Tampilkan semua data jika input kosong
+            const unitTables = document.getElementsByClassName('unit-table');
+            Array.from(unitTables).forEach(table => {
+                table.style.display = '';
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => row.style.display = '');
+            });
+
+            // Hapus pesan tidak ada hasil jika ada
+            const noResultsMessage = document.querySelector('.no-results-message');
+            if (noResultsMessage) {
+                noResultsMessage.remove();
+            }
         }
     });
 
-    document.getElementById('filterDate').addEventListener('change', searchTables);
-</script>
-
-<script>
     function saveData() {
         const data = {
             logs: [],
@@ -715,14 +686,18 @@
             }
         });
 
+        // Simpan tanggal terakhir di localStorage
+        localStorage.setItem('lastLoadedDate', tanggal);
+
         fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`)
             .then(response => response.json())
             .then(result => {
                 Swal.close();
                 if (result.success) {
+                    // Simpan data di localStorage
+                    localStorage.setItem('lastLoadedData', JSON.stringify(result.data));
                     updateFormWithData(result.data);
                 } else {
-                    resetForm();
                     Swal.fire({
                         icon: 'info',
                         title: 'Informasi',
@@ -741,10 +716,81 @@
             });
     }
 
+    // Tambahkan event listener untuk DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cek apakah ada data tersimpan
+        const lastLoadedDate = localStorage.getItem('lastLoadedDate');
+        const lastLoadedData = localStorage.getItem('lastLoadedData');
+        
+        if (lastLoadedDate) {
+            // Set tanggal filter ke tanggal terakhir
+            document.getElementById('filterDate').value = lastLoadedDate;
+        }
+        
+        if (lastLoadedData) {
+            // Tampilkan data yang tersimpan
+            updateFormWithData(JSON.parse(lastLoadedData));
+        } else {
+            // Jika tidak ada data tersimpan, load data baru
+            loadData();
+        }
+    });
+
+    // Tambahkan event listener untuk beforeunload
+    window.addEventListener('beforeunload', function() {
+        // Simpan semua data form yang belum disimpan
+        const formData = collectFormData();
+        localStorage.setItem('unsavedFormData', JSON.stringify(formData));
+    });
+
+    // Fungsi untuk mengumpulkan data form
+    function collectFormData() {
+        const formData = {
+            logs: [],
+            hops: []
+        };
+        
+        // Kumpulkan data dari form
+        const tables = document.querySelectorAll('.unit-table table');
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                // Kumpulkan data dari setiap baris
+                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+                const status = row.querySelector('select').value;
+                // ... tambahkan pengumpulan data lainnya
+                
+                formData.logs.push({
+                    machine_id: machineId,
+                    status: status,
+                    // ... tambahkan data lainnya
+                });
+            });
+        });
+        
+        return formData;
+    }
+
+    // Fungsi untuk memulihkan data form yang belum tersimpan
+    function restoreUnsavedData() {
+        const unsavedData = localStorage.getItem('unsavedFormData');
+        if (unsavedData) {
+            const formData = JSON.parse(unsavedData);
+            updateFormWithData(formData);
+            // Hapus data yang sudah dipulihkan
+            localStorage.removeItem('unsavedFormData');
+        }
+    }
+
     // Fungsi untuk mengupdate form dengan data
     function updateFormWithData(data) {
         const tables = document.querySelectorAll('.unit-table table');
         resetForm();
+
+        // Jika tidak ada data logs, keluar dari fungsi
+        if (!data.logs || data.logs.length === 0) {
+            return;
+        }
 
         tables.forEach(table => {
             const unitTable = table.closest('.unit-table');
@@ -752,39 +798,41 @@
             const hopInput = unitTable.querySelector(`input[id="hop_${unitId}"]`);
             
             // Update nilai HOP jika ada
-            const unitData = data.find(d => d.unit_id == unitId);
-            if (unitData && unitData.hop) {
-                hopInput.value = unitData.hop;
+            const unitHop = data.hops?.find(h => h.power_plant_id == unitId);
+            if (unitHop) {
+                hopInput.value = unitHop.hop_value || '';
             }
 
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-                const machineData = data.find(d => d.machine_id == machineId);
+                const machineData = data.logs.find(d => d.machine_id == machineId);
 
                 if (machineData) {
                     // Update status
                     const statusSelect = row.querySelector('select');
-                    if (statusSelect && machineData.status) {
-                        statusSelect.value = machineData.status;
-                        statusSelect.style.backgroundColor = getStatusColor(machineData.status);
+                    if (statusSelect) {
+                        statusSelect.value = machineData.status || '';
+                        if (machineData.status) {
+                            statusSelect.style.backgroundColor = getStatusColor(machineData.status);
+                        }
                     }
 
                     // Update component
                     const componentSelect = row.querySelector('.system-select');
-                    if (componentSelect && machineData.component) {
-                        componentSelect.value = machineData.component;
+                    if (componentSelect) {
+                        componentSelect.value = machineData.component || '';
                     }
 
                     // Update equipment
-                    const equipmentTextarea = row.querySelector('td:nth-child(7) textarea[name="equipment"]');
-                    if (equipmentTextarea && machineData.equipment) {
-                        equipmentTextarea.value = machineData.equipment;
+                    const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
+                    if (equipmentTextarea) {
+                        equipmentTextarea.value = machineData.equipment || '';
                         autoResize(equipmentTextarea);
                     }
 
-                    // Update kolom lainnya
-                    const inputBeban = row.querySelector('td:nth-child(4) input');
+                    // Update beban
+                    const inputBeban = row.querySelector('input[name^="load_value"]');
                     if (inputBeban) {
                         inputBeban.value = machineData.load_value || '';
                     }
@@ -793,41 +841,44 @@
                     const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
                     if (inputDeskripsi) {
                         inputDeskripsi.value = machineData.deskripsi || '';
+                        autoResize(inputDeskripsi);
                     }
 
                     // Update kronologi
                     const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
                     if (inputKronologi) {
                         inputKronologi.value = machineData.kronologi || '';
+                        autoResize(inputKronologi);
                     }
 
                     // Update action plan
                     const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
                     if (inputActionPlan) {
                         inputActionPlan.value = machineData.action_plan || '';
+                        autoResize(inputActionPlan);
                     }
 
                     // Update progres
                     const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
                     if (inputProgres) {
                         inputProgres.value = machineData.progres || '';
+                        autoResize(inputProgres);
                     }
 
-                    // Update tanggal mulai
+                    // Update tanggal mulai dan target selesai
                     const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
                     if (inputTanggalMulai) {
                         inputTanggalMulai.value = machineData.tanggal_mulai || '';
                     }
 
-                    // Update target selesai
                     const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
                     if (inputTargetSelesai) {
                         inputTargetSelesai.value = machineData.target_selesai || '';
                     }
 
-                    // Update DMN dan DMP (sebagai text saja, karena readonly)
-                    const dmnCell = row.querySelector('td:nth-child(2)');
-                    const dmpCell = row.querySelector('td:nth-child(3)');
+                    // Update DMN dan DMP
+                    const dmnCell = row.querySelector('td:nth-child(3)');
+                    const dmpCell = row.querySelector('td:nth-child(4)');
                     if (dmnCell) dmnCell.textContent = machineData.dmn || 'N/A';
                     if (dmpCell) dmpCell.textContent = machineData.dmp || 'N/A';
                 }

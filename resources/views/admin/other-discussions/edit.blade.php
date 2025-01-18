@@ -259,6 +259,12 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <!-- Remove Button -->
+                                    <button type="button" 
+                                            onclick="removeCommitment(this)"
+                                            class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </div>
                                 @endforeach
                             </div>

@@ -125,6 +125,16 @@
                 <option value="urgent">Urgent</option>
             </select>
         </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="unit">
+                Unit
+            </label>
+            <select name="unit" id="unit" class="w-full px-3 py-2 border rounded-lg" required>
+                @foreach($powerPlants as $powerPlant)
+                    <option value="{{ $powerPlant->id }}">{{ $powerPlant->name }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="flex justify-end space-x-4">
             <a href="{{ route('admin.laporan.sr_wo') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i> Kembali
