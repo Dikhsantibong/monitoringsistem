@@ -196,6 +196,27 @@ class OtherDiscussionController extends Controller
     public function store(Request $request)
     {
         try {
+            DB::beginTransaction();
+            
+            $validated = $request->validate([
+                'sr_number' => 'required',
+                'no_pembahasan' => 'required',
+                'unit' => 'required',
+                'topic' => 'required',
+                'target' => 'required',
+                'target_deadline' => 'required|date',
+                'department_id' => 'required',
+                'section_id' => 'required',
+                'risk_level' => 'required',
+                'priority_level' => 'required',
+                'status' => 'required|in:Open,Closed',
+                'commitments' => 'required|array',
+                'commitment_deadlines' => 'required|array',
+                'commitment_department_ids' => 'required|array',
+                'commitment_section_ids' => 'required|array',
+                'commitment_status' => 'required|array'
+            ]);
+
             // Debug log untuk melihat data yang dikirim
             \Log::info('Data yang dikirim:', [
                 'department_ids' => $request->commitment_department_ids,
@@ -206,35 +227,13 @@ class OtherDiscussionController extends Controller
             $validDepartmentIds = \App\Models\Department::pluck('id')->toArray();
             \Log::info('Department ID yang valid:', $validDepartmentIds);
 
-            $validated = $request->validate([
-                'sr_number' => 'nullable|string|max:20',
-                'wo_number' => 'nullable|string|max:20',
-                'unit' => 'required|string|max:255',
-                'topic' => 'required|string|max:255',
-                'target' => 'required|string',
-                'target_deadline' => 'required|date',
-                'department_id' => 'nullable|integer|exists:departments,id',
-                'section_id' => 'nullable|integer|exists:sections,id',
-                'risk_level' => 'required|in:R,MR,MT,T',
-                'priority_level' => 'required|in:Low,Medium,High',
-                'commitments' => 'required|array|min:1',
-                'commitment_deadlines' => 'required|array|min:1',
-                'commitment_deadlines.*' => 'required|date',
-                'commitment_department_ids' => 'required|array|min:1',
-                'commitment_department_ids.*' => 'required|integer|exists:departments,id',
-                'commitment_section_ids' => 'required|array|min:1',
-                'commitment_section_ids.*' => 'required|integer|exists:sections,id',
-                'commitment_status' => 'required|array|min:1',
-                'commitment_status.*' => 'required|in:Open,Closed'
-            ]);
-
             // Generate PIC dari department dan section
             $pic = $this->generatePicString($validated['department_id'], $validated['section_id']);
 
             // Buat diskusi baru
             $discussion = OtherDiscussion::create([
                 'sr_number' => $validated['sr_number'],
-                'wo_number' => $validated['wo_number'],
+                'no_pembahasan' => $validated['no_pembahasan'],
                 'unit' => $validated['unit'],
                 'topic' => $validated['topic'],
                 'target' => $validated['target'],
@@ -245,7 +244,7 @@ class OtherDiscussionController extends Controller
                 'pic' => $pic,
                 'risk_level' => $validated['risk_level'],
                 'priority_level' => $validated['priority_level'],
-                'status' => 'Open'
+                'status' => $validated['status']
             ]);
 
             // Log sebelum menyimpan commitments
@@ -483,5 +482,72 @@ class OtherDiscussionController extends Controller
 
         // Gabungkan department dan section
         return $departmentName . ' - ' . $sectionName;
+    }
+
+    public function generateNoPembahasan(Request $request)
+    {
+        try {
+            $unit = $request->query('unit');
+            
+            \Log::info('Generating no pembahasan for unit: ' . $unit);
+            
+            if (empty($unit)) {
+                throw new \Exception('Unit is required');
+            }
+            
+            $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
+            
+            \Log::info('Generated no pembahasan: ' . $noPembahasan);
+            
+            return response()->json([
+                'success' => true,
+                'no_pembahasan' => $noPembahasan
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error generating no pembahasan: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function generateNumbers(Request $request)
+    {
+        try {
+            $unit = $request->query('unit');
+            
+            // Generate no pembahasan
+            $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
+            
+            // Generate SR number (format: SR/TAHUN/BULAN/NOMOR URUT)
+            $year = date('Y');
+            $month = date('m');
+            
+            // Ambil nomor urut SR terakhir untuk bulan ini
+            $lastSR = OtherDiscussion::where('sr_number', 'like', "SR/$year/$month/%")
+                ->orderBy('sr_number', 'desc')
+                ->first();
+                
+            if ($lastSR) {
+                $lastNumber = (int) substr($lastSR->sr_number, -4);
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+            
+            $srNumber = sprintf("SR/%s/%s/%04d", $year, $month, $nextNumber);
+            
+            return response()->json([
+                'success' => true,
+                'no_pembahasan' => $noPembahasan,
+                'sr_number' => $srNumber
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 }   

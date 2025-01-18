@@ -45,36 +45,46 @@
             <h3 class="text-gray-700 text-3xl font-medium">Tambah Pembahasan Baru</h3>
 
             <div class="mt-8">
-                <form id="createDiscussionForm" action="{{ route('admin.other-discussions.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <form id="createDiscussionForm" action="{{ route('admin.other-discussions.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onsubmit="return validateForm()">
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- No SR -->
+                        <!-- No SR (manual input) -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_number">
-                                Ket: No. SR/No. Pembahasan
+                                No SR <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" 
-                                   name="sr_number" 
-                                   id="sr_number" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('sr_number') }}">
+                            <div class="flex gap-2">
+                                <input type="text" 
+                                       name="sr_number" 
+                                       id="sr_number" 
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                       required>
+                            </div>
                             @error('sr_number')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- No WO -->
+                        <!-- No Pembahasan dengan tombol generate -->
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_number">
-                                Ket: No. WO/No. Pembahasan
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="no_pembahasan">
+                                No Pembahasan <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" 
-                                   name="wo_number" 
-                                   id="wo_number" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('wo_number') }}">
-                            @error('wo_number')
+                            <div class="flex gap-2">
+                                <input type="text" 
+                                       name="no_pembahasan" 
+                                       id="no_pembahasan" 
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-100"
+                                       required
+                                       readonly>
+                                <button type="button" 
+                                        onclick="generateNoPembahasan()" 
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
+                                    <i class="fas fa-sync-alt mr-2"></i> Generate No
+                                </button>
+                            </div>
+                            @error('no_pembahasan')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
@@ -678,6 +688,165 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStatusStyle(select);
     });
 });
+
+// Tambahkan script untuk auto-generate nomor pembahasan
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const unitSelect = document.getElementById('unit');
+    const noPembahasanInput = document.getElementById('no_pembahasan');
+
+    // Generate no pembahasan saat unit dipilih
+    unitSelect.addEventListener('change', async function() {
+        if (this.value) {
+            try {
+                const response = await fetch(`/api/generate-no-pembahasan?unit=${encodeURIComponent(this.value)}`);
+                const data = await response.json();
+                if (data.success) {
+                    noPembahasanInput.value = data.no_pembahasan;
+                }
+            } catch (error) {
+                console.error('Error generating no pembahasan:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Gagal generate nomor pembahasan'
+                });
+            }
+        } else {
+            noPembahasanInput.value = '';
+        }
+    });
+});
+
+// Fungsi validasi form sebelum submit
+function validateForm() {
+    const noPembahasan = document.getElementById('no_pembahasan').value;
+    const unit = document.getElementById('unit').value;
+    const srNumber = document.getElementById('sr_number').value;
+
+    if (!unit) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan pilih unit terlebih dahulu'
+        });
+        return false;
+    }
+
+    if (!noPembahasan) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan generate nomor pembahasan terlebih dahulu'
+        });
+        return false;
+    }
+
+    if (!srNumber) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan isi nomor SR'
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Jika ada unit yang sudah terpilih saat halaman dimuat (misalnya karena old value)
+window.addEventListener('load', function() {
+    const unitSelect = document.getElementById('unit');
+    if (unitSelect.value) {
+        unitSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+@endpush
+
+@push('scripts')
+<script>
+async function generateNoPembahasan() {
+    const unitSelect = document.getElementById('unit');
+    const noPembahasanInput = document.getElementById('no_pembahasan');
+
+    if (!unitSelect.value) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan pilih unit terlebih dahulu'
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/generate-no-pembahasan?unit=${encodeURIComponent(unitSelect.value)}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal generate nomor pembahasan');
+        }
+        
+        if (data.success) {
+            noPembahasanInput.value = data.no_pembahasan;
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Nomor pembahasan berhasil digenerate',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else {
+            throw new Error(data.message || 'Gagal generate nomor pembahasan');
+        }
+    } catch (error) {
+        console.error('Error generating no pembahasan:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Gagal generate nomor pembahasan'
+        });
+    }
+}
+
+// Fungsi validasi form sebelum submit
+function validateForm() {
+    const noPembahasan = document.getElementById('no_pembahasan').value;
+    const unit = document.getElementById('unit').value;
+    const srNumber = document.getElementById('sr_number').value;
+
+    if (!unit) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan pilih unit terlebih dahulu'
+        });
+        return false;
+    }
+
+    if (!noPembahasan) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan generate nomor pembahasan terlebih dahulu'
+        });
+        return false;
+    }
+
+    if (!srNumber) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan isi nomor SR'
+        });
+        return false;
+    }
+
+    return true;
+}
+</script>
+@endpush
 </script>
 @push('scripts')
 @endpush

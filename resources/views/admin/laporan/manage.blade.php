@@ -103,6 +103,7 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioritas</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -119,6 +120,9 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $sr->priority }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        {{ optional($sr->powerPlant)->name ?? 'Unit tidak tersedia' }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
                                                 data-delete 
@@ -147,14 +151,15 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <!-- Similar structure as SR table but for WO -->
                             <thead>
                                 <tr>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID WO</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioritas</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -165,12 +170,27 @@
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}</td>
                                     <td class="px-6 py-4 border border-gray-200">{{ $wo->description }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            {{ $wo->type == 'CM' ? 'bg-blue-100 text-blue-600' : 
+                                               ($wo->type == 'PM' ? 'bg-green-100 text-green-600' : 
+                                               ($wo->type == 'PDM' ? 'bg-yellow-100 text-yellow-600' : 
+                                               ($wo->type == 'PAM' ? 'bg-purple-100 text-purple-600' : 
+                                               ($wo->type == 'OH' ? 'bg-red-100 text-red-600' : 
+                                               ($wo->type == 'EJ' ? 'bg-indigo-100 text-indigo-600' : 
+                                               'bg-gray-100 text-gray-600'))))) }}">
+                                            {{ $wo->type }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                             {{ $wo->status == 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $wo->status }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $wo->priority }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        {{ optional($wo->powerPlant)->name ?? 'Unit tidak tersedia' }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
                                                 data-delete 
@@ -206,6 +226,7 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Backlog</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
@@ -222,6 +243,9 @@
                                             {{ $backlog->status == 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             {{ $backlog->status }}
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        {{ optional($backlog->powerPlant)->name ?? 'Unit tidak tersedia' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $backlog->keterangan }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">

@@ -57,7 +57,7 @@
         <!-- Breadcrumbs -->
         <div class="mt-3">
             <x-admin-breadcrumb :breadcrumbs="[
-                ['name' => 'Dashboard', 'url' => route('admin.dashboard')],
+                // ['name' => 'Dashboard', 'url' => route('admin.dashboard')],
                 ['name' => 'Pembahasan Lain-lain', 'url' => null]
             ]" />
         </div>
@@ -181,7 +181,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
@@ -200,7 +200,7 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
@@ -330,7 +330,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
@@ -350,7 +350,7 @@
                                     <tr class="hover:bg-red-50">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
@@ -468,7 +468,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
@@ -487,7 +487,7 @@
                                     <tr class="hover:bg-yellow-50">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
@@ -605,7 +605,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No WO</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
@@ -624,7 +624,7 @@
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->wo_number }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">

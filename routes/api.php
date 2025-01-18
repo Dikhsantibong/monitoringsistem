@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\SectionController;
+use App\Http\Controllers\Api\OtherDiscussionController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::get('sections/{department}', [SectionController::class, 'getSections'])
     ->name('api.sections.index'); 
@@ -17,3 +19,11 @@ Route::get('/pics/{section}', function ($section) {
         ->orderBy('name')
         ->get(['id', 'name', 'position']);
 }); 
+
+Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan']); 
+
+Route::get('/generate-numbers', [OtherDiscussionController::class, 'generateNumbers']); 
+Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
+    ->name('api.generate-no-pembahasan');
+    Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
+    ->name('api.generate-no-pembahasan');

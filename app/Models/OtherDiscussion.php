@@ -41,9 +41,31 @@ class OtherDiscussion extends Model
         'Closed'
     ];
 
+    // Tambahkan konstanta untuk kode unit
+    const UNIT_CODES = [
+        'mysql' => [
+            'UP KENDARI' => 'UPKD',
+            'ULPLTD POASIA' => 'POAS',
+            'ULPLTD WUA-WUA' => 'WUAS',
+            'ULPLTD KOLAKA' => 'KOLA'
+        ],
+        'mysql_bau_bau' => [
+            'ULPLTD BAU-BAU' => 'BAUS'
+        ],
+        'mysql_poasia' => [
+            'ULPLTD POASIA' => 'POAS'
+        ],
+        'mysql_kola' => [
+            'ULPLTD KOLAKA' => 'KOLA'
+        ],
+        'mysql_WUA' => [
+            'ULPLTD WUA-WUA' => 'WUAS'
+        ]
+    ];
+
     protected $fillable = [
         'sr_number',
-        'wo_number',
+        'no_pembahasan',
         'unit',
         'topic',
         'target',
@@ -188,5 +210,27 @@ class OtherDiscussion extends Model
         return static::withoutEvents(function () use ($options) {
             return $this->save($options);
         });
+    }
+
+    // Method untuk generate nomor pembahasan
+    public static function generateNoPembahasan($unit)
+    {
+        $year = date('Y');
+        $month = date('m');
+        
+        // Ambil nomor urut terakhir untuk unit dan bulan ini
+        $lastDiscussion = self::where('no_pembahasan', 'like', "$unit/$year/$month/%")
+            ->orderBy('no_pembahasan', 'desc')
+            ->first();
+            
+        if ($lastDiscussion) {
+            $lastNumber = (int) substr($lastDiscussion->no_pembahasan, -4);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        
+        // Format: UNIT/TAHUN/BULAN/NOMOR URUT (4 digit)
+        return sprintf("%s/%s/%s/%04d", $unit, $year, $month, $nextNumber);
     }
 } 
