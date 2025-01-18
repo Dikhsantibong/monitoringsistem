@@ -216,40 +216,58 @@ class OtherDiscussion extends Model
     public static function generateNoPembahasan($unit)
     {
         try {
-            $year = date('Y');
-            $month = date('m');
+            // Definisi kode unit
+            $unitCodes = [
+                'mysql' => 'UPKD',         // UP KENDARI
+                'mysql_poasia' => 'POAS',  // ULPLTD POASIA
+                'mysql_wua_wua' => 'WUAS', // ULPLTD WUA-WUA
+                'mysql_kolaka' => 'KOLA',  // ULPLTD KOLAKA
+                'mysql_bau_bau' => 'BAUS'  // ULPLTD BAU-BAU
+            ];
+
+            // Cari unit_source berdasarkan nama unit yang dipilih
+            $powerPlant = PowerPlant::where('name', 'like', '%' . $unit . '%')->first();
             
-            \Log::info('Generating no pembahasan', [
-                'unit' => $unit,
-                'year' => $year,
-                'month' => $month
-            ]);
-            
-            // Pastikan unit tidak kosong
-            if (empty($unit)) {
-                throw new \Exception('Unit tidak boleh kosong');
+            if (!$powerPlant) {
+                throw new \Exception('Unit tidak ditemukan');
             }
-            
-            // Ambil nomor urut terakhir untuk unit dan bulan ini
-            $lastDiscussion = self::where('no_pembahasan', 'like', "$unit/$year/$month/%")
+
+            \Log::info('Found power plant:', [
+                'unit' => $unit,
+                'unit_source' => $powerPlant->unit_source
+            ]);
+
+            // Ambil kode unit berdasarkan unit_source
+            if (!isset($unitCodes[$powerPlant->unit_source])) {
+                throw new \Exception('Kode unit tidak ditemukan untuk unit source ini');
+            }
+
+            $unitCode = $unitCodes[$powerPlant->unit_source];
+
+            // Ambil nomor urut terakhir untuk kode unit ini
+            $lastDiscussion = self::where('no_pembahasan', 'like', $unitCode . '%')
                 ->orderBy('no_pembahasan', 'desc')
                 ->first();
-                
-            \Log::info('Last discussion found:', ['last_discussion' => $lastDiscussion]);
-            
+
             if ($lastDiscussion) {
+                // Ekstrak nomor dari format UPKD0001
                 $lastNumber = (int) substr($lastDiscussion->no_pembahasan, -4);
                 $nextNumber = $lastNumber + 1;
             } else {
                 $nextNumber = 1;
             }
+
+            // Format: UPKD0001, POAS0001, dll
+            $noPembahasan = sprintf("%s%04d", $unitCode, $nextNumber);
             
-            // Format: UNIT/TAHUN/BULAN/NOMOR URUT (4 digit)
-            $noPembahasan = sprintf("%s/%s/%s/%04d", $unit, $year, $month, $nextNumber);
-            
-            \Log::info('Generated no pembahasan:', ['no_pembahasan' => $noPembahasan]);
-            
+            \Log::info('Generated no pembahasan:', [
+                'no_pembahasan' => $noPembahasan,
+                'unit_code' => $unitCode,
+                'next_number' => $nextNumber
+            ]);
+
             return $noPembahasan;
+
         } catch (\Exception $e) {
             \Log::error('Error in generateNoPembahasan:', [
                 'error' => $e->getMessage(),

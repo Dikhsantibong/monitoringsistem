@@ -488,22 +488,18 @@ class OtherDiscussionController extends Controller
     {
         try {
             $unit = $request->query('unit');
+            $currentSession = session('unit', 'mysql');
             
-            \Log::info('Request received for generating no pembahasan', [
+            \Log::info('Generating no pembahasan', [
                 'unit' => $unit,
-                'request' => $request->all()
+                'session' => $currentSession
             ]);
             
             if (empty($unit)) {
-                throw new \Exception('Unit is required');
+                throw new \Exception('Unit tidak boleh kosong');
             }
             
             $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
-            
-            \Log::info('Successfully generated no pembahasan', [
-                'unit' => $unit,
-                'no_pembahasan' => $noPembahasan
-            ]);
             
             return response()->json([
                 'success' => true,
@@ -512,8 +508,7 @@ class OtherDiscussionController extends Controller
         } catch (\Exception $e) {
             \Log::error('Failed to generate no pembahasan', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'unit' => $unit ?? null
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
