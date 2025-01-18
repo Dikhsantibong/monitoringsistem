@@ -18,6 +18,7 @@ class OtherDiscussion extends Model
 
     protected $table = 'other_discussions';
     protected static $isSyncing = false;
+    protected static $isUpdatingClosedAt = false;
 
     // Definisi konstanta untuk risk levels
     const RISK_LEVELS = [
@@ -79,39 +80,36 @@ class OtherDiscussion extends Model
                 static::$isSyncing = true;
                 try {
                     event(new OtherDiscussionUpdated($discussion, 'create'));
-                } catch (\Exception $e) {
-                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
-                        'error' => $e->getMessage(),
-                        'discussion_id' => $discussion->id
-                    ]);
+                } finally {
+                    static::$isSyncing = false;
                 }
-                static::$isSyncing = false;
             }
         });
 
         static::updated(function ($discussion) {
-            if (!static::$isSyncing) {
+            // Cek jika status berubah menjadi 'Closed'
+            if ($discussion->isDirty('status') && 
+                $discussion->status === 'Closed' && 
+                !static::$isUpdatingClosedAt) {
+                
+                static::$isUpdatingClosedAt = true;
+                try {
+                    DB::transaction(function() use ($discussion) {
+                        $discussion->closed_at = Carbon::now();
+                        $discussion->saveQuietly(); // Menggunakan saveQuietly() untuk menghindari trigger events
+                    });
+                } finally {
+                    static::$isUpdatingClosedAt = false;
+                }
+            }
+
+            // Trigger event update hanya jika bukan update closed_at
+            if (!static::$isSyncing && !static::$isUpdatingClosedAt) {
                 static::$isSyncing = true;
                 try {
                     event(new OtherDiscussionUpdated($discussion, 'update'));
-                } catch (\Exception $e) {
-                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
-                        'error' => $e->getMessage(),
-                        'discussion_id' => $discussion->id
-                    ]);
-                }
-                static::$isSyncing = false;
-            }
-
-            // Cek jika status berubah menjadi 'Closed'
-            if ($discussion->isDirty('status') && $discussion->status === 'Closed') {
-                try {
-                    // Update closed_at timestamp
-                    $discussion->closed_at = Carbon::now();
-                    $discussion->save();
-                } catch (\Exception $e) {
-                    Log::error('Error updating closed timestamp: ' . $e->getMessage());
-                    throw $e;
+                } finally {
+                    static::$isSyncing = false;
                 }
             }
         });
@@ -121,13 +119,9 @@ class OtherDiscussion extends Model
                 static::$isSyncing = true;
                 try {
                     event(new OtherDiscussionUpdated($discussion, 'delete'));
-                } catch (\Exception $e) {
-                    Log::error("Failed to trigger OtherDiscussionUpdated event", [
-                        'error' => $e->getMessage(),
-                        'discussion_id' => $discussion->id
-                    ]);
+                } finally {
+                    static::$isSyncing = false;
                 }
-                static::$isSyncing = false;
             }
         });
     }
@@ -184,5 +178,15 @@ class OtherDiscussion extends Model
                     ->whereHas('commitments', function($q) {
                         $q->where('deadline', '<', Carbon::now());
                     });
+    }
+
+    /**
+     * Save the model without triggering any events
+     */
+    public function saveQuietly(array $options = [])
+    {
+        return static::withoutEvents(function () use ($options) {
+            return $this->save($options);
+        });
     }
 } 

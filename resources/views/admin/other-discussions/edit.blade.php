@@ -332,7 +332,7 @@ function updateSections(departmentId, sectionSelect, selectedSectionId = null) {
         const option = document.createElement('option');
         option.value = section.id;
         option.textContent = section.name;
-        if (selectedSectionId && selectedSectionId == section.id) {
+        if (selectedSectionId && String(selectedSectionId) === String(section.id)) {
             option.selected = true;
         }
         sectionSelect.appendChild(option);
@@ -341,67 +341,13 @@ function updateSections(departmentId, sectionSelect, selectedSectionId = null) {
     sectionSelect.disabled = false;
 }
 
-// Fungsi untuk menambah komitmen yang dioptimasi
-function addCommitment() {
-    const container = document.getElementById('commitments-container');
-    const tempId = 'new_' + Date.now();
+// Fungsi khusus untuk update sections pada komitmen
+function updateCommitmentSections(departmentSelect) {
+    const commitmentEntry = departmentSelect.closest('.commitment-entry');
+    const sectionSelect = commitmentEntry.querySelector('.section-select');
+    const selectedSectionId = sectionSelect.dataset.selected;
     
-    const template = `
-        <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative" data-commitment-id="${tempId}">
-            <button type="button" 
-                    onclick="removeCommitment(this)" 
-                    class="absolute right-0 top-0 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-
-            <div class="md:col-span-8">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center">
-                        <span class="text-sm font-medium mr-2">Status:</span>
-                        <select name="new_commitment_status[]" 
-                                class="status-select text-sm px-3 py-1.5 rounded-md"
-                                required>
-                            <option value="Open">Open</option>
-                            <option value="Closed">Closed</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <span class="text-sm font-medium mr-2">Deadline:</span>
-                        <input type="date" 
-                               name="new_commitment_deadlines[]" 
-                               class="text-sm px-3 py-1.5 border rounded-md"
-                               required>
-                    </div>
-                </div>
-
-                <textarea name="new_commitments[]" 
-                          class="commitment-text w-full px-3 py-2 border rounded-md"
-                          rows="3"
-                          required></textarea>
-            </div>
-            
-            <div class="md:col-span-4">
-                <select name="new_commitment_department_ids[]" 
-                        class="department-select w-full px-3 py-2 border rounded-md mb-2"
-                        onchange="updateCommitmentSections(this)"
-                        required>
-                    <option value="">Pilih Bagian</option>
-                    ${Object.keys(sectionsData).map(deptId => `
-                        <option value="${deptId}">${document.querySelector('#department_select option[value="' + deptId + '"]')?.text || ''}</option>
-                    `).join('')}
-                </select>
-
-                <select name="new_commitment_section_ids[]" 
-                        class="section-select w-full px-3 py-2 border rounded-md"
-                        required>
-                    <option value="">Pilih Seksi</option>
-                </select>
-            </div>
-        </div>
-    `;
-    
-    container.insertAdjacentHTML('beforeend', template);
+    updateSections(departmentSelect.value, sectionSelect, selectedSectionId);
 }
 
 // Event listener yang dioptimasi
@@ -424,7 +370,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.department-select').forEach(select => {
         const sectionSelect = select.closest('.commitment-entry').querySelector('.section-select');
         if (select.value) {
-            updateSections(select.value, sectionSelect, sectionSelect.dataset.selected);
+            const selectedSectionId = sectionSelect.dataset.selected;
+            updateSections(select.value, sectionSelect, selectedSectionId);
         }
     });
 });
