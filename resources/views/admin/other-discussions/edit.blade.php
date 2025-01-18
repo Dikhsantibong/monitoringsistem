@@ -381,7 +381,10 @@ function validateStatus(select) {
     const hasOpenCommitments = Array.from(document.querySelectorAll('.status-select'))
         .some(statusSelect => statusSelect.value === 'Open');
 
-    if (select.value === 'Closed' && hasOpenCommitments) {
+    const hasOpenNewCommitments = Array.from(document.querySelectorAll('select[name^="new_commitment_status"]'))
+        .some(statusSelect => statusSelect.value === 'Open');
+
+    if (select.value === 'Closed' && (hasOpenCommitments || hasOpenNewCommitments)) {
         Swal.fire({
             icon: 'warning',
             title: 'Peringatan!',
@@ -406,6 +409,83 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
         e.preventDefault();
     }
 });
+
+// Fungsi untuk menambah komitmen baru
+function addCommitment() {
+    const container = document.getElementById('commitments-container');
+    const newId = 'new_' + Date.now(); // Generate unique ID untuk komitmen baru
+    
+    const template = `
+        <div class="commitment-entry grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 pt-4 relative border-t border-gray-200">
+            <div class="md:col-span-8">
+                <!-- Header Section with Status and Deadline -->
+                <div class="flex justify-between items-center mb-2">
+                    <!-- Status Badge -->
+                    <div class="flex items-center">
+                        <span class="text-sm font-medium mr-2">Status:</span>
+                        <select name="new_commitment_status[]" 
+                                class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                required>
+                            <option value="Open" selected>Open</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Deadline Input -->
+                    <div class="flex items-center">
+                        <span class="text-sm font-medium mr-2">Deadline:</span>
+                        <input type="date" 
+                               name="new_commitment_deadlines[]" 
+                               class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Commitment Textarea -->
+                <div class="relative">
+                    <textarea name="new_commitments[]" 
+                              class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              rows="3"
+                              required
+                              placeholder="Masukkan komitmen baru"></textarea>
+                </div>
+            </div>
+            <div class="md:col-span-4">
+                <div class="relative">
+                    <select name="new_commitment_department_ids[]" 
+                            class="department-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                            onchange="updateCommitmentSections(this)"
+                            required>
+                        <option value="">Pilih Bagian</option>
+                        ${generateDepartmentOptions()}
+                    </select>
+
+                    <select name="new_commitment_section_ids[]" 
+                            class="section-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            required>
+                        <option value="">Pilih Seksi</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Remove Button -->
+            <button type="button" 
+                    onclick="removeCommitment(this)"
+                    class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', template);
+}
+
+// Helper function untuk generate department options
+function generateDepartmentOptions() {
+    const departments = @json(\App\Models\Department::all());
+    return departments.map(dept => 
+        `<option value="${dept.id}">${dept.name}</option>`
+    ).join('');
+}
 </script>
 @endpush
-@endsection         
+@endsection             
