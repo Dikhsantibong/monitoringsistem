@@ -358,7 +358,7 @@ class OtherDiscussionController extends Controller
             // Validasi request
             $request->validate([
                 'sr_number' => 'required',
-                'wo_number' => 'required',
+            
                 'unit' => 'required',
                 'topic' => 'required',
                 'target' => 'required',
@@ -385,7 +385,7 @@ class OtherDiscussionController extends Controller
             // Update diskusi
             $discussion->fill([
                 'sr_number' => $request->sr_number,
-                'wo_number' => $request->wo_number,
+                
                 'unit' => $request->unit,
                 'topic' => $request->topic,
                 'target' => $request->target,

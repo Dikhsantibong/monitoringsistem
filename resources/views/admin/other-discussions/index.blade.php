@@ -92,7 +92,7 @@
                         </div>
 
                         <!-- Filter Unit -->
-                        @if(session('unit') === 'mysql')
+                        {{-- @if(session('unit') === 'mysql')
                         <div>
                             <label for="unit-source" class="block text-sm font-medium text-gray-700 mb-1">Filter Unit</label>
                             <select id="unit-source" 
@@ -107,10 +107,10 @@
                                 <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Unit Bau Bau</option>
                             </select>
                         </div>
-                        @endif
+                        @endif --}}
 
                         <!-- Filter Status -->
-                        <div>
+                        {{-- <div>
                             <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                             <select name="status" 
                                     id="status"
@@ -127,7 +127,7 @@
                             <button type="submit" class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
                                 <i class="fas fa-filter mr-2"></i> Filter
                             </button>
-                        </div>
+                        </div> --}}
                     </form>
                 </div>
 

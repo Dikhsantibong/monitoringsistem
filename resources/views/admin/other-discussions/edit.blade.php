@@ -51,25 +51,27 @@
                         <!-- No SR -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_number">
-                                No SR
+                                No SR <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" 
+                            <input type="text" 
                                    name="sr_number" 
                                    id="sr_number" 
                                    value="{{ old('sr_number', $discussion->sr_number) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                   required>
                         </div>
 
-                        <!-- No WO -->
+                        <!-- No Pembahasan (read-only) -->
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="wo_number">
-                                No WO
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="no_pembahasan">
+                                No Pembahasan
                             </label>
-                            <input type="number" 
-                                   name="wo_number" 
-                                   id="wo_number" 
-                                   value="{{ old('wo_number', $discussion->wo_number) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <input type="text" 
+                                   name="no_pembahasan" 
+                                   id="no_pembahasan" 
+                                   value="{{ old('no_pembahasan', $discussion->no_pembahasan) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-100"
+                                   readonly>
                         </div>
 
                         <!-- Unit -->
@@ -83,10 +85,7 @@
                                     required>
                                 <option value="">Pilih Unit</option>
                                 @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
-                                    @php
-                                        $shortName = Str::limit($powerPlant->name, 50, '');
-                                    @endphp
-                                    <option value="{{ $shortName }}" {{ old('unit', $discussion->unit) == $shortName ? 'selected' : '' }}>
+                                    <option value="{{ $powerPlant->name }}" {{ old('unit', $discussion->unit) == $powerPlant->name ? 'selected' : '' }}>
                                         {{ $powerPlant->name }}
                                     </option>
                                 @endforeach

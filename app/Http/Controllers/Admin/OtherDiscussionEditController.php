@@ -52,7 +52,6 @@ class OtherDiscussionEditController extends Controller
             // Update discussion
             $discussion->fill([
                 'sr_number' => $validated['sr_number'],
-                'wo_number' => $validated['wo_number'],
                 'unit' => $validated['unit'],
                 'topic' => $validated['topic'],
                 'target' => $validated['target'],
@@ -98,7 +97,6 @@ class OtherDiscussionEditController extends Controller
     {
         return $request->validate([
             'sr_number' => 'nullable|numeric',
-            'wo_number' => 'nullable|numeric',
             'unit' => 'required|string|max:255',
             'topic' => 'required|string|max:255',
             'target' => 'required|string',
@@ -134,7 +132,6 @@ class OtherDiscussionEditController extends Controller
 
         $discussion->update([
             'sr_number' => $validated['sr_number'],
-            'wo_number' => $validated['wo_number'],
             'unit' => $validated['unit'],
             'topic' => $validated['topic'],
             'target' => $validated['target'],
