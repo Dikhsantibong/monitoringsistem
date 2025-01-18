@@ -532,7 +532,7 @@
         <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
         
         <div class="header">
-            <h2>CATATAN RAPAT</h2>
+            <h2>PEMBAHASAN LAIN-LAIN</h2>
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
 
@@ -541,15 +541,15 @@
                 <tr>
                     <th style="width: 3%">No</th>
                     <th style="width: 7%">No SR</th>
-                    <th style="width: 7%">No WO</th>
-                    <th style="width: 10%">Unit</th>
-                    <th style="width: 15%">Topik</th>
-                    <th style="width: 15%">Target</th>
-                    <th style="width: 7%">Risk Level</th>
-                    <th style="width: 7%">Priority</th>
-                    <th style="width: 10%">Previous</th>
-                    <th style="width: 10%">Next</th>
-                    <th style="width: 5%">PIC</th>
+                    <th style="width: 7%">No Pembahasan</th>
+                    <th style="width: 7%">Unit</th>
+                    <th style="width: 10%">Topik</th>
+                    <th style="width: 10%">Sasaran</th>
+                    <th style="width: 7%">PIC Sasaran</th>
+                    <th style="width: 5%">Tingkat Resiko</th>
+                    <th style="width: 5%">Tingkat Prioritas</th>
+                    <th style="width: 15%">Komitmen & Deadline</th>
+                    <th style="width: 7%">PIC Komitmen</th>
                     <th style="width: 7%">Status</th>
                     <th style="width: 7%">Deadline</th>
                 </tr>
@@ -568,43 +568,51 @@
                     <tr>
                         <td style="text-align: center;">{{ $no++ }}</td>
                         <td>{{ $discussion->sr_number ?? '-' }}</td>
-                        <td>{{ $discussion->wo_number ?? '-' }}</td>
+                        <td>{{ $discussion->no_pembahasan ?? '-' }}</td>
                         <td>{{ $discussion->unit }}</td>
                         <td>{{ $discussion->topic }}</td>
-                        <td>{{ $discussion->target }}</td>
-                        <td>{{ $discussion->risk_level }}</td>
-                        <td>{{ $discussion->priority_level }}</td>
-                        <td>{{ $discussion->previous_commitment }}</td>
-                        <td>{{ $discussion->next_commitment }}</td>
-                        <td>{{ $discussion->pic }}</td>
-                        <td>{{ $discussion->status }}</td>
+                        <td>
+                            <div>{{ $discussion->target }}</div>
+                            <div style="font-size: 10px; color: #666;">
+                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                            </div>
+                        </td>
+                        <td>{{ $discussion->pic ?? '-' }}</td>
+                        <td style="text-align: center;">{{ $discussion->risk_level }}</td>
+                        <td style="text-align: center;">{{ $discussion->priority_level }}</td>
+                        <td>
+                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                @foreach($discussion->commitments as $commitment)
+                                    <div style="margin-bottom: 5px; padding: 3px; border: 1px solid #ddd;">
+                                        <div>{{ $commitment->description }}</div>
+                                        <div style="font-size: 10px; color: #666;">
+                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td>
+                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                @foreach($discussion->commitments as $commitment)
+                                    <div style="margin-bottom: 5px;">
+                                        {{ $commitment->pic ?? '-' }}
+                                    </div>
+                                @endforeach
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td style="text-align: center;">{{ $discussion->status }}</td>
                         <td>{{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="13" style="text-align: center; height: 50px;">Tidak ada catatan untuk tanggal ini</td>
+                        <td colspan="13" style="text-align: center;">Tidak ada pembahasan untuk tanggal ini</td>
                     </tr>
                 @endforelse
-
-                @if($discussions->count() < 10)
-                    @for($i = $discussions->count() + 1; $i <= 10; $i++)
-                        <tr>
-                            <td style="text-align: center;">{{ $i }}</td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                            <td style="height: 50px;"></td>
-                        </tr>
-                    @endfor
-                @endif
             </tbody>
         </table>
     </div>
