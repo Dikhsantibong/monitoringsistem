@@ -113,9 +113,10 @@
 
                         <div class="flex space-x-4">
                             <div class="max-w-full">
-                                <button onclick="confirmReset()"
-                                    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                                    <i class="fas fa-refresh mr-2"></i>Reset
+                                <button id="refreshButton" 
+                                        onclick="loadData()"
+                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                    <i class="fas fa-redo mr-2"></i>Muat Ulang
                                 </button>
                             </div>
 
@@ -125,7 +126,6 @@
                                     <i class="fas fa-save mr-2"></i>Simpan
                                 </button>
                             </div>
-
                         </div>
                     </div>
 
@@ -457,6 +457,16 @@
     });
 
     function saveData() {
+        // Tampilkan loading indicator saat mulai menyimpan
+        Swal.fire({
+            title: 'Menyimpan Data',
+            text: 'Mohon tunggu...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         const data = {
             logs: [],
             hops: []
@@ -531,7 +541,6 @@
         // Debug log untuk melihat data yang akan dikirim
         console.log('Data yang akan dikirim:', data);
 
-        // Kirim data ke server
         fetch('{{ route('admin.pembangkit.save-status') }}', {
             method: 'POST',
             headers: {
@@ -546,7 +555,12 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
-                    text: 'Data berhasil disimpan!'
+                    text: 'Data berhasil disimpan!',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    // Setelah pesan sukses, muat ulang data
+                    loadData();
                 });
             } else {
                 throw new Error(result.message);
@@ -675,218 +689,200 @@
     // Fungsi untuk memuat data
     function loadData() {
         const tanggal = document.getElementById('filterDate').value;
+        const refreshButton = document.getElementById('refreshButton');
+        
+        // Nonaktifkan tombol dan tambahkan animasi
+        refreshButton.disabled = true;
+        const icon = refreshButton.querySelector('.fa-sync-alt');
+        icon.classList.add('fa-spin');
 
         // Tampilkan loading indicator
         Swal.fire({
             title: 'Memuat Data',
-            text: 'Mohon tunggu...',
+            text: 'Mohon tunggu sebentar...',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
             }
         });
 
-        // Simpan tanggal terakhir di localStorage
-        localStorage.setItem('lastLoadedDate', tanggal);
+        // Log URL yang akan dipanggil
+        console.log('Fetching data from:', `{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`);
 
-        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`)
-            .then(response => response.json())
-            .then(result => {
-                Swal.close();
-                if (result.success) {
-                    // Simpan data di localStorage
-                    localStorage.setItem('lastLoadedData', JSON.stringify(result.data));
-                    updateFormWithData(result.data);
-                } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Informasi',
-                        text: result.message || 'Tidak ada data untuk tanggal ini'
-                    });
+        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+        })
+        .then(response => {
+            // Log response status
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(result => {
+            // Log hasil response
+            console.log('Response data:', result);
+            
+            if (result.success) {
+                // Pastikan data ada sebelum update form
+                if (!result.data) {
+                    throw new Error('Data tidak ditemukan');
                 }
-            })
-            .catch(error => {
-                Swal.close();
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan saat mengambil data!'
-                });
-            });
-    }
-
-    // Tambahkan event listener untuk DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek apakah ada data tersimpan
-        const lastLoadedDate = localStorage.getItem('lastLoadedDate');
-        const lastLoadedData = localStorage.getItem('lastLoadedData');
-        
-        if (lastLoadedDate) {
-            // Set tanggal filter ke tanggal terakhir
-            document.getElementById('filterDate').value = lastLoadedDate;
-        }
-        
-        if (lastLoadedData) {
-            // Tampilkan data yang tersimpan
-            updateFormWithData(JSON.parse(lastLoadedData));
-        } else {
-            // Jika tidak ada data tersimpan, load data baru
-            loadData();
-        }
-    });
-
-    // Tambahkan event listener untuk beforeunload
-    window.addEventListener('beforeunload', function() {
-        // Simpan semua data form yang belum disimpan
-        const formData = collectFormData();
-        localStorage.setItem('unsavedFormData', JSON.stringify(formData));
-    });
-
-    // Fungsi untuk mengumpulkan data form
-    function collectFormData() {
-        const formData = {
-            logs: [],
-            hops: []
-        };
-        
-        // Kumpulkan data dari form
-        const tables = document.querySelectorAll('.unit-table table');
-        tables.forEach(table => {
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                // Kumpulkan data dari setiap baris
-                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-                const status = row.querySelector('select').value;
-                // ... tambahkan pengumpulan data lainnya
                 
-                formData.logs.push({
-                    machine_id: machineId,
-                    status: status,
-                    // ... tambahkan data lainnya
-                });
+                try {
+                    updateFormWithData(result.data);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Data berhasil dimuat!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } catch (updateError) {
+                    throw new Error(`Error saat update form: ${updateError.message}`);
+                }
+            } else {
+                throw new Error(result.message || 'Gagal memuat data');
+            }
+        })
+        .catch(error => {
+            console.error('Detailed error:', error);
+            
+            // Tampilkan pesan error yang lebih detail
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `Terjadi kesalahan saat memuat data: ${error.message}`,
+                confirmButtonText: 'OK'
             });
+        })
+        .finally(() => {
+            // Aktifkan kembali tombol dan hentikan animasi
+            refreshButton.disabled = false;
+            icon.classList.remove('fa-spin');
         });
-        
-        return formData;
-    }
-
-    // Fungsi untuk memulihkan data form yang belum tersimpan
-    function restoreUnsavedData() {
-        const unsavedData = localStorage.getItem('unsavedFormData');
-        if (unsavedData) {
-            const formData = JSON.parse(unsavedData);
-            updateFormWithData(formData);
-            // Hapus data yang sudah dipulihkan
-            localStorage.removeItem('unsavedFormData');
-        }
     }
 
     // Fungsi untuk mengupdate form dengan data
     function updateFormWithData(data) {
-        const tables = document.querySelectorAll('.unit-table table');
-        resetForm();
-
-        // Jika tidak ada data logs, keluar dari fungsi
-        if (!data.logs || data.logs.length === 0) {
-            return;
+        console.log('Updating form with data:', data);
+        
+        if (!data || (!data.logs && !data.hops)) {
+            console.error('Invalid data structure:', data);
+            throw new Error('Format data tidak valid');
         }
 
+        const tables = document.querySelectorAll('.unit-table table');
+        
         tables.forEach(table => {
-            const unitTable = table.closest('.unit-table');
-            const unitId = unitTable.querySelector('input[id^="hop_"]').id.split('_')[1];
-            const hopInput = unitTable.querySelector(`input[id="hop_${unitId}"]`);
-            
-            // Update nilai HOP jika ada
-            const unitHop = data.hops?.find(h => h.power_plant_id == unitId);
-            if (unitHop) {
-                hopInput.value = unitHop.hop_value || '';
-            }
-
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
-                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-                const machineData = data.logs.find(d => d.machine_id == machineId);
+                try {
+                    const machineId = row.querySelector('td[data-id]')?.getAttribute('data-id');
+                    if (!machineId) {
+                        console.warn('Missing machine ID for row:', row);
+                        return;
+                    }
 
-                if (machineData) {
-                    // Update status
-                    const statusSelect = row.querySelector('select');
-                    if (statusSelect) {
-                        statusSelect.value = machineData.status || '';
-                        if (machineData.status) {
+                    const machineData = data.logs?.find(d => d.machine_id == machineId);
+                    console.log(`Processing machine ${machineId}:`, machineData);
+
+                    if (machineData) {
+                        // Update status
+                        const statusSelect = row.querySelector('select');
+                        if (statusSelect) {
+                            statusSelect.value = machineData.status || '';
                             statusSelect.style.backgroundColor = getStatusColor(machineData.status);
                         }
-                    }
 
-                    // Update component
-                    const componentSelect = row.querySelector('.system-select');
-                    if (componentSelect) {
-                        componentSelect.value = machineData.component || '';
-                    }
+                        // Update load value
+                        const loadInput = row.querySelector('input[name^="load_value"]');
+                        if (loadInput) {
+                            loadInput.value = machineData.load_value || '';
+                        }
 
-                    // Update equipment
-                    const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
-                    if (equipmentTextarea) {
-                        equipmentTextarea.value = machineData.equipment || '';
-                        autoResize(equipmentTextarea);
-                    }
+                        // Update DMN
+                        const dmnInput = row.querySelector('input[type="number"]:nth-of-type(1)');
+                        if (dmnInput) {
+                            dmnInput.value = machineData.dmn || '';
+                        }
 
-                    // Update beban
-                    const inputBeban = row.querySelector('input[name^="load_value"]');
-                    if (inputBeban) {
-                        inputBeban.value = machineData.load_value || '';
-                    }
+                        // Update component
+                        const componentSelect = row.querySelector('.system-select');
+                        if (componentSelect) {
+                            componentSelect.value = machineData.component || '';
+                        }
 
-                    // Update deskripsi
-                    const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
-                    if (inputDeskripsi) {
-                        inputDeskripsi.value = machineData.deskripsi || '';
-                        autoResize(inputDeskripsi);
-                    }
+                        // Update equipment
+                        const equipmentTextarea = row.querySelector(`textarea[name^="equipment"]`);
+                        if (equipmentTextarea) {
+                            equipmentTextarea.value = machineData.equipment || '';
+                        }
 
-                    // Update kronologi
-                    const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
-                    if (inputKronologi) {
-                        inputKronologi.value = machineData.kronologi || '';
-                        autoResize(inputKronologi);
-                    }
+                        // Update deskripsi
+                        const deskripsiTextarea = row.querySelector(`textarea[name^="deskripsi"]`);
+                        if (deskripsiTextarea) {
+                            deskripsiTextarea.value = machineData.deskripsi || '';
+                        }
 
-                    // Update action plan
-                    const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
-                    if (inputActionPlan) {
-                        inputActionPlan.value = machineData.action_plan || '';
-                        autoResize(inputActionPlan);
-                    }
+                        // Update kronologi
+                        const kronologiTextarea = row.querySelector(`textarea[name^="kronologi"]`);
+                        if (kronologiTextarea) {
+                            kronologiTextarea.value = machineData.kronologi || '';
+                        }
 
-                    // Update progres
-                    const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
-                    if (inputProgres) {
-                        inputProgres.value = machineData.progres || '';
-                        autoResize(inputProgres);
-                    }
+                        // Update action plan
+                        const actionPlanTextarea = row.querySelector(`textarea[name^="action_plan"]`);
+                        if (actionPlanTextarea) {
+                            actionPlanTextarea.value = machineData.action_plan || '';
+                        }
 
-                    // Update tanggal mulai dan target selesai
-                    const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
-                    if (inputTanggalMulai) {
-                        inputTanggalMulai.value = machineData.tanggal_mulai || '';
-                    }
+                        // Update progres
+                        const progresTextarea = row.querySelector(`textarea[name^="progres"]`);
+                        if (progresTextarea) {
+                            progresTextarea.value = machineData.progres || '';
+                        }
 
-                    const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
-                    if (inputTargetSelesai) {
-                        inputTargetSelesai.value = machineData.target_selesai || '';
-                    }
+                        // Update dates
+                        const tanggalMulaiInput = row.querySelector(`input[name^="tanggal_mulai"]`);
+                        if (tanggalMulaiInput) {
+                            tanggalMulaiInput.value = machineData.tanggal_mulai || '';
+                        }
 
-                    // Update DMN dan DMP
-                    const dmnCell = row.querySelector('td:nth-child(3)');
-                    const dmpCell = row.querySelector('td:nth-child(4)');
-                    if (dmnCell) dmnCell.textContent = machineData.dmn || 'N/A';
-                    if (dmpCell) dmpCell.textContent = machineData.dmp || 'N/A';
+                        const targetSelesaiInput = row.querySelector(`input[name^="target_selesai"]`);
+                        if (targetSelesaiInput) {
+                            targetSelesaiInput.value = machineData.target_selesai || '';
+                        }
+                    }
+                } catch (rowError) {
+                    console.error('Error processing row:', rowError);
                 }
             });
         });
+
+        // Update HOP values
+        if (data.hops) {
+            data.hops.forEach(hop => {
+                try {
+                    const hopInput = document.getElementById(`hop_${hop.power_plant_id}`);
+                    if (hopInput) {
+                        hopInput.value = hop.hop_value || '';
+                    }
+                } catch (hopError) {
+                    console.error('Error updating HOP:', hopError);
+                }
+            });
+        }
     }
 
-    // Helper function untuk mendapatkan warna status
+    // Helper function untuk warna status
     function getStatusColor(status) {
         const colors = {
             'Operasi': '#4CAF50',
@@ -899,55 +895,13 @@
         return colors[status] || '#FFFFFF';
     }
 
-    // Fungsi reset form yang diperbaiki
-    function resetForm() {
-        const tables = document.querySelectorAll('.unit-table table');
-        tables.forEach(table => {
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const select = row.querySelector('select');
-                const inputBeban = row.querySelector('td:nth-child(4) input');
-                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-
-                // Reset semua input
-                if (select) {
-                    select.value = '';
-                    select.style.backgroundColor = '';
-                }
-                if (inputBeban) {
-                    inputBeban.value = '';
-                }
-
-                // Reset semua textarea
-                const textareas = row.querySelectorAll('textarea');
-                textareas.forEach(textarea => {
-                    textarea.value = '';
-                });
-
-                // Reset target selesai
-                const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
-                if (inputTargetSelesai) {
-                    inputTargetSelesai.value = '';
-                }
-
-                // Reset DMN dan DMP cells
-                const dmnCell = row.querySelector('td:nth-child(2)');
-                const dmpCell = row.querySelector('td:nth-child(3)');
-                if (dmnCell) dmnCell.textContent = 'N/A';
-                if (dmpCell) dmpCell.textContent = 'N/A';
-            });
-        });
-    }
-
-    // Event listener untuk tanggal
-    document.getElementById('filterDate').addEventListener('change', loadData);
-
     // Load data saat halaman dimuat
     document.addEventListener('DOMContentLoaded', function() {
         loadData();
-
-
     });
+
+    // Event listener untuk perubahan tanggal
+    document.getElementById('filterDate').addEventListener('change', loadData);
 </script>
 <script>
     function autoResize(textarea) {
