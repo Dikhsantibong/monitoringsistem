@@ -89,7 +89,7 @@
                                         value="{{ request('tanggal_akhir', date('Y-m-d')) }}"
                                         class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                                 </div>
-                                <button type="button" onclick="updateFilter()" 
+                                <button type="button" onclick="applyDateFilter()" 
                                     class="bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#0A649B] transition-colors flex items-center" 
                                     style="height: 42px;">
                                     <i class="fas fa-filter mr-2"></i> Filter
@@ -177,6 +177,7 @@
                                                     </div>
                                                 </div>
                                             </th>
+                                            <th class="py-2 px-4 border-b">Tanggal</th>
                                             <th class="py-2 px-4 border-b">
                                                 <div class="flex items-center justify-between">
                                                     <span>Downtime</span>
@@ -725,12 +726,10 @@
         }, 500);
     }
 
-    // Filter tanggal
-    function updateFilter() {
-        let baseUrl = window.location.pathname;
-        let tanggalMulai = document.getElementById('tanggal_mulai').value;
-        let tanggalAkhir = document.getElementById('tanggal_akhir').value;
-        let searchValue = document.getElementById('searchInput').value;
+    // Fungsi untuk menerapkan filter tanggal
+    function applyDateFilter() {
+        const tanggalMulai = document.getElementById('tanggal_mulai').value;
+        const tanggalAkhir = document.getElementById('tanggal_akhir').value;
         
         // Validasi tanggal
         if (!tanggalMulai || !tanggalAkhir) {
@@ -742,7 +741,7 @@
             return;
         }
 
-        if (tanggalMulai > tanggalAkhir) {
+        if (new Date(tanggalMulai) > new Date(tanggalAkhir)) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
@@ -750,21 +749,64 @@
             });
             return;
         }
+
+        // Simpan filter yang sedang aktif
+        const currentFilters = {
+            srStatus: document.getElementById('srStatusFilter')?.value || '',
+            srUnit: document.getElementById('srUnitFilter')?.value || '',
+            srDowntime: document.getElementById('srDowntimeFilter')?.value || '',
+            woStatus: document.getElementById('woStatusFilter')?.value || '',
+            woUnit: document.getElementById('woUnitFilter')?.value || '',
+            backlogStatus: document.getElementById('backlogStatusFilter')?.value || '',
+            backlogUnit: document.getElementById('backlogUnitFilter')?.value || ''
+        };
+
+        // Buat URL dengan parameter filter
+        let url = new URL(window.location.href);
+        url.searchParams.set('tanggal_mulai', tanggalMulai);
+        url.searchParams.set('tanggal_akhir', tanggalAkhir);
         
-        // Redirect dengan parameter tanggal dan search jika ada
-        let url = `${baseUrl}?tanggal_mulai=${tanggalMulai}&tanggal_akhir=${tanggalAkhir}`;
-        if (searchValue) {
-            url += `&search=${encodeURIComponent(searchValue)}`;
-        }
-        window.location.href = url;
+        // Tambahkan filter yang sedang aktif ke URL
+        Object.entries(currentFilters).forEach(([key, value]) => {
+            if (value) {
+                url.searchParams.set(key, value);
+            }
+        });
+
+        // Redirect ke URL dengan filter
+        window.location.href = url.toString();
     }
 
-    // Set tanggal default dan search value dari URL parameters
-    window.addEventListener('load', function() {
-        const urlParams = new URLSearchParams(window.location.search);
+    // Fungsi untuk menampilkan semua data
+    function showAllData() {
+        // Reset semua filter
+        document.getElementById('tanggal_mulai').value = '';
+        document.getElementById('tanggal_akhir').value = '';
         
-        // Set tanggal default hanya jika bukan dari tombol "Tampilkan Semua"
-        if (!urlParams.has('show_all') && !urlParams.has('tanggal_mulai') && !urlParams.has('tanggal_akhir')) {
+        // Reset filter dropdown jika ada
+        const filters = [
+            'srStatusFilter', 'srUnitFilter', 'srDowntimeFilter',
+            'woStatusFilter', 'woUnitFilter',
+            'backlogStatusFilter', 'backlogUnitFilter'
+        ];
+        
+        filters.forEach(filterId => {
+            const element = document.getElementById(filterId);
+            if (element) {
+                element.value = '';
+            }
+        });
+
+        // Redirect ke halaman tanpa parameter
+        window.location.href = window.location.pathname;
+    }
+
+    // Event listener untuk mempertahankan filter setelah halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        const url = new URL(window.location.href);
+        
+        // Atur tanggal dari URL atau default
+        if (!url.searchParams.has('tanggal_mulai') && !url.searchParams.has('tanggal_akhir')) {
             const today = new Date();
             const sevenDaysAgo = new Date(today);
             sevenDaysAgo.setDate(today.getDate() - 7);
@@ -772,12 +814,14 @@
             document.getElementById('tanggal_mulai').value = sevenDaysAgo.toISOString().split('T')[0];
             document.getElementById('tanggal_akhir').value = today.toISOString().split('T')[0];
         }
-        
-        // Set search value dari URL jika ada
-        if (urlParams.has('search')) {
-            document.getElementById('searchInput').value = urlParams.get('search');
-            searchTables();
-        }
+
+        // Pertahankan nilai filter dari URL
+        url.searchParams.forEach((value, key) => {
+            const element = document.getElementById(key);
+            if (element) {
+                element.value = value;
+            }
+        });
     });
 
     // Fungsi search
@@ -952,11 +996,6 @@
                 });
             }
         });
-    }
-
-    function showAllData() {
-        // Redirect ke halaman yang sama tanpa parameter tanggal
-        window.location.href = window.location.pathname;
     }
 
     // Fungsi pencarian untuk tabel SR
