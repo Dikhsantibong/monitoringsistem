@@ -10,6 +10,7 @@ use App\Models\SRWO;
 use App\Models\WoBacklog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PowerPlant;
+use Illuminate\Support\Facades\Log;
 
 class LaporanController extends Controller
 {
@@ -162,7 +163,7 @@ class LaporanController extends Controller
                 'priority' => 'required',
                 'schedule_start' => 'required|date',
                 'schedule_finish' => 'required|date',
-                'unit' => 'required' // validasi unit
+                'unit' => 'required'
             ]);
 
             // Ambil power plant berdasarkan ID yang dipilih
@@ -459,31 +460,49 @@ class LaporanController extends Controller
                 $existingBacklog = WoBacklog::where('no_wo', $wo->id)->first();
                 
                 if (!$existingBacklog) {
-                    // Buat backlog baru
-                    WoBacklog::create([
+                    // Generate ID baru untuk WO Backlog
+                    $lastBacklog = WoBacklog::orderBy('id', 'desc')->first();
+                    $newId = $lastBacklog ? $lastBacklog->id + 1 : 1;
+
+                    // Buat WO Backlog baru menggunakan query builder untuk memastikan semua field terisi dengan benar
+                    DB::table('wo_backlog')->insert([
+                        'id' => $newId,
                         'no_wo' => $wo->id,
                         'deskripsi' => $wo->description,
-                        'tanggal_backlog' => now(),
+                        'tanggal_backlog' => now()->format('Y-m-d'), // Format sesuai dengan tipe DATE
+                        'keterangan' => 'Auto-generated from overdue WO',
                         'status' => 'Open',
-                        'keterangan' => 'Auto-generated from overdue WO'
+                        'unit_source' => $wo->getConnection()->getName(),
+                        'power_plant_id' => $wo->power_plant_id,
+                        'created_at' => now(),
+                        'updated_at' => now()
                     ]);
 
-                    // Update flag di work order dan ubah status menjadi tidak aktif
+                    // Update flag di work order dan ubah status
                     $wo->update([
                         'is_backlogged' => true,
-                        'status' => 'WAPPR', // atau status lain yang sesuai
-                        'is_active' => false // tambahkan kolom baru ini
+                        'status' => 'WAPPR',
+                        'is_active' => false
                     ]);
 
+                    // Set notifikasi
                     session()->flash('backlog_notification', 
                         "WO #{$wo->id} telah ditambahkan ke backlog karena melewati jadwal.");
+
+                    \Log::info('WO moved to backlog', [
+                        'wo_id' => $wo->id,
+                        'backlog_id' => $newId,
+                        'connection' => $wo->getConnection()->getName()
+                    ]);
                 }
             }
             
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error creating WO Backlog: ' . $e->getMessage());
+            \Log::error('Error creating WO Backlog: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 

@@ -16,14 +16,18 @@ class WoBacklog extends Model
     protected $table = 'wo_backlog';
 
     protected $fillable = [
+        'id',
         'no_wo',
         'deskripsi',
         'tanggal_backlog',
-        'keterangan',
         'status',
+        'keterangan',
+        'power_plant_id',
         'unit_source',
-        'power_plant_id'
+        'created_at',
+        'updated_at'
     ];
+
 
     public function getConnectionName()
     {
@@ -120,5 +124,9 @@ class WoBacklog extends Model
         } finally {
             self::$isSyncing = false;
         }
+    }
+    public function powerPlant()
+    {
+        return $this->belongsTo(PowerPlant::class);
     }
 }
