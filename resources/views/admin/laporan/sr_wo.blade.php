@@ -89,7 +89,7 @@
                                         value="{{ request('tanggal_akhir', date('Y-m-d')) }}"
                                         class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                                 </div>
-                                <button type="button" onclick="applyDateFilter()" 
+                                <button type="button" onclick="updateFilter()" 
                                     class="bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#0A649B] transition-colors flex items-center" 
                                     style="height: 42px;">
                                     <i class="fas fa-filter mr-2"></i> Filter
@@ -128,7 +128,7 @@
                                         class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
                                     <button onclick="searchSRTable()"
                                         class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                        Search
+                                        <i class="fas fa-search mr-2"></i>Search
                                     </button>
                                 </div>
                             </div>
@@ -266,7 +266,7 @@
                                         class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
                                     <button onclick="searchWOTable()"
                                         class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                        Search
+                                        <i class="fas fa-search mr-2"></i>Search
                                     </button>
                                 </div>
                             </div>
@@ -415,7 +415,7 @@
                                         class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
                                     <button onclick="searchBacklogTable()"
                                         class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                        Search
+                                        <i class="fas fa-search mr-2"></i>Search
                                     </button>
                                 </div>
                             </div>
@@ -726,10 +726,12 @@
         }, 500);
     }
 
-    // Fungsi untuk menerapkan filter tanggal
-    function applyDateFilter() {
-        const tanggalMulai = document.getElementById('tanggal_mulai').value;
-        const tanggalAkhir = document.getElementById('tanggal_akhir').value;
+    // Filter tanggal
+    function updateFilter() {
+        let baseUrl = window.location.pathname;
+        let tanggalMulai = document.getElementById('tanggal_mulai').value;
+        let tanggalAkhir = document.getElementById('tanggal_akhir').value;
+        let searchValue = document.getElementById('searchInput').value;
         
         // Validasi tanggal
         if (!tanggalMulai || !tanggalAkhir) {
@@ -741,7 +743,7 @@
             return;
         }
 
-        if (new Date(tanggalMulai) > new Date(tanggalAkhir)) {
+        if (tanggalMulai > tanggalAkhir) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
@@ -749,64 +751,21 @@
             });
             return;
         }
-
-        // Simpan filter yang sedang aktif
-        const currentFilters = {
-            srStatus: document.getElementById('srStatusFilter')?.value || '',
-            srUnit: document.getElementById('srUnitFilter')?.value || '',
-            srDowntime: document.getElementById('srDowntimeFilter')?.value || '',
-            woStatus: document.getElementById('woStatusFilter')?.value || '',
-            woUnit: document.getElementById('woUnitFilter')?.value || '',
-            backlogStatus: document.getElementById('backlogStatusFilter')?.value || '',
-            backlogUnit: document.getElementById('backlogUnitFilter')?.value || ''
-        };
-
-        // Buat URL dengan parameter filter
-        let url = new URL(window.location.href);
-        url.searchParams.set('tanggal_mulai', tanggalMulai);
-        url.searchParams.set('tanggal_akhir', tanggalAkhir);
         
-        // Tambahkan filter yang sedang aktif ke URL
-        Object.entries(currentFilters).forEach(([key, value]) => {
-            if (value) {
-                url.searchParams.set(key, value);
-            }
-        });
-
-        // Redirect ke URL dengan filter
-        window.location.href = url.toString();
+        // Redirect dengan parameter tanggal dan search jika ada
+        let url = `${baseUrl}?tanggal_mulai=${tanggalMulai}&tanggal_akhir=${tanggalAkhir}`;
+        if (searchValue) {
+            url += `&search=${encodeURIComponent(searchValue)}`;
+        }
+        window.location.href = url;
     }
 
-    // Fungsi untuk menampilkan semua data
-    function showAllData() {
-        // Reset semua filter
-        document.getElementById('tanggal_mulai').value = '';
-        document.getElementById('tanggal_akhir').value = '';
+    // Set tanggal default dan search value dari URL parameters
+    window.addEventListener('load', function() {
+        const urlParams = new URLSearchParams(window.location.search);
         
-        // Reset filter dropdown jika ada
-        const filters = [
-            'srStatusFilter', 'srUnitFilter', 'srDowntimeFilter',
-            'woStatusFilter', 'woUnitFilter',
-            'backlogStatusFilter', 'backlogUnitFilter'
-        ];
-        
-        filters.forEach(filterId => {
-            const element = document.getElementById(filterId);
-            if (element) {
-                element.value = '';
-            }
-        });
-
-        // Redirect ke halaman tanpa parameter
-        window.location.href = window.location.pathname;
-    }
-
-    // Event listener untuk mempertahankan filter setelah halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-        const url = new URL(window.location.href);
-        
-        // Atur tanggal dari URL atau default
-        if (!url.searchParams.has('tanggal_mulai') && !url.searchParams.has('tanggal_akhir')) {
+        // Set tanggal default hanya jika bukan dari tombol "Tampilkan Semua"
+        if (!urlParams.has('show_all') && !urlParams.has('tanggal_mulai') && !urlParams.has('tanggal_akhir')) {
             const today = new Date();
             const sevenDaysAgo = new Date(today);
             sevenDaysAgo.setDate(today.getDate() - 7);
@@ -814,14 +773,12 @@
             document.getElementById('tanggal_mulai').value = sevenDaysAgo.toISOString().split('T')[0];
             document.getElementById('tanggal_akhir').value = today.toISOString().split('T')[0];
         }
-
-        // Pertahankan nilai filter dari URL
-        url.searchParams.forEach((value, key) => {
-            const element = document.getElementById(key);
-            if (element) {
-                element.value = value;
-            }
-        });
+        
+        // Set search value dari URL jika ada
+        if (urlParams.has('search')) {
+            document.getElementById('searchInput').value = urlParams.get('search');
+            searchTables();
+        }
     });
 
     // Fungsi search
@@ -998,77 +955,169 @@
         });
     }
 
+    function showAllData() {
+        // Redirect ke halaman yang sama tanpa parameter tanggal
+        window.location.href = window.location.pathname;
+    }
+
     // Fungsi pencarian untuk tabel SR
     function searchSRTable() {
-        const searchValue = document.getElementById('searchSR').value;
-        
-        // Kirim request AJAX
-        fetch(`${window.location.pathname}?searchSR=${encodeURIComponent(searchValue)}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+        const searchValue = document.getElementById('searchSR').value.toLowerCase();
+        const table = document.getElementById('srTable');
+        const rows = table.getElementsByTagName('tr');
+        let visibleCount = 0;
+
+        // Simpan filter yang sedang aktif
+        const status = document.getElementById('srStatusFilter').value;
+        const unit = document.getElementById('srUnitFilter').value;
+        const downtime = document.getElementById('srDowntimeFilter').value;
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            let found = false;
+            let matchesFilter = true;
+
+            // Cek apakah baris memenuhi kriteria filter
+            if (status) {
+                const statusCell = cells[4].textContent.trim();
+                if (!statusCell.includes(status)) matchesFilter = false;
             }
-        })
-        .then(response => response.text())
-        .then(html => {
-            // Update tabel dengan hasil pencarian
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            document.getElementById('srTable').innerHTML = doc.getElementById('srTable').innerHTML;
-            
-            // Update counter
-            const visibleRows = document.querySelectorAll('#srTable tbody tr:not([style*="display: none"])').length;
-            document.getElementById('srVisibleCount').textContent = visibleRows;
-        });
+            if (unit) {
+                const unitCell = cells[2].textContent.trim();
+                if (!unitCell.includes(unit)) matchesFilter = false;
+            }
+            if (downtime) {
+                const downtimeCell = cells[6].textContent.trim();
+                if (downtime === 'Yes' && downtimeCell === '0') matchesFilter = false;
+                if (downtime === 'No' && downtimeCell !== '0') matchesFilter = false;
+            }
+
+            // Cek apakah baris mengandung kata yang dicari
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
+            if (found && matchesFilter) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+
+        // Update counter
+        document.getElementById('srVisibleCount').textContent = visibleCount;
     }
 
     // Fungsi pencarian untuk tabel WO
     function searchWOTable() {
-        const searchValue = document.getElementById('searchWO').value;
-        
-        fetch(`${window.location.pathname}?searchWO=${encodeURIComponent(searchValue)}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+        const searchValue = document.getElementById('searchWO').value.toLowerCase();
+        const table = document.getElementById('woTable');
+        const rows = table.getElementsByTagName('tr');
+        let visibleCount = 0;
+
+        // Simpan filter yang sedang aktif
+        const status = document.getElementById('woStatusFilter').value;
+        const unit = document.getElementById('woUnitFilter').value;
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            let found = false;
+            let matchesFilter = true;
+
+            // Cek apakah baris memenuhi kriteria filter
+            if (status) {
+                const statusCell = row.querySelector('td[data-column="status"]').textContent.trim();
+                if (!statusCell.includes(status)) matchesFilter = false;
             }
-        })
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            document.getElementById('woTable').innerHTML = doc.getElementById('woTable').innerHTML;
-            
-            const visibleRows = document.querySelectorAll('#woTable tbody tr:not([style*="display: none"])').length;
-            document.getElementById('woVisibleCount').textContent = visibleRows;
-        });
+            if (unit) {
+                const unitCell = cells[2].textContent.trim();
+                if (!unitCell.includes(unit)) matchesFilter = false;
+            }
+
+            // Cek apakah baris mengandung kata yang dicari
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
+            if (found && matchesFilter) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+
+        // Update counter
+        document.getElementById('woVisibleCount').textContent = visibleCount;
     }
 
     // Fungsi pencarian untuk tabel Backlog
     function searchBacklogTable() {
-        const searchValue = document.getElementById('searchBacklog').value;
-        
-        fetch(`${window.location.pathname}?searchBacklog=${encodeURIComponent(searchValue)}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+        const searchValue = document.getElementById('searchBacklog').value.toLowerCase();
+        const table = document.getElementById('backlogTable');
+        const rows = table.getElementsByTagName('tr');
+        let visibleCount = 0;
+
+        // Simpan filter yang sedang aktif
+        const status = document.getElementById('backlogStatusFilter').value;
+        const unit = document.getElementById('backlogUnitFilter').value;
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            let found = false;
+            let matchesFilter = true;
+
+            // Cek apakah baris memenuhi kriteria filter
+            if (status) {
+                const statusCell = cells[5].textContent.trim();
+                if (!statusCell.includes(status)) matchesFilter = false;
             }
-        })
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            document.getElementById('backlogTable').innerHTML = doc.getElementById('backlogTable').innerHTML;
-            
-            const visibleRows = document.querySelectorAll('#backlogTable tbody tr:not([style*="display: none"])').length;
-            document.getElementById('backlogVisibleCount').textContent = visibleRows;
-        });
+            if (unit) {
+                const unitCell = cells[2].textContent.trim();
+                if (!unitCell.includes(unit)) matchesFilter = false;
+            }
+
+            // Cek apakah baris mengandung kata yang dicari
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
+            if (found && matchesFilter) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+
+        // Update counter
+        document.getElementById('backlogVisibleCount').textContent = visibleCount;
     }
 
-    // Event listeners dengan debounce
+    // Event listeners untuk pencarian real-time
     document.addEventListener('DOMContentLoaded', function() {
         const searchInputs = {
             'searchSR': searchSRTable,
-            'searchWO': searchWOTable,
+            'searchWO': searchWOTable,  
             'searchBacklog': searchBacklogTable
         };
 
@@ -1076,12 +1125,22 @@
             const input = document.getElementById(inputId);
             if (input) {
                 const debouncedSearch = debounce(searchFunction, 300);
+                
+                // Event listener untuk input
                 input.addEventListener('input', debouncedSearch);
+                
+                // Event listener untuk tombol Enter
                 input.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         searchFunction();
                     }
                 });
+
+                // Event listener untuk tombol search
+                const searchButton = input.nextElementSibling;
+                if (searchButton) {
+                    searchButton.addEventListener('click', searchFunction);
+                }
             }
         });
     });
