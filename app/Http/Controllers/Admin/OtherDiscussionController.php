@@ -72,13 +72,16 @@ class OtherDiscussionController extends Controller
             'closed' => (clone $baseCountQuery)->closed()->count()
         ];
 
-        return view('admin.other-discussions.index', compact(
-            'activeDiscussions',
-            'commitmentOverdueDiscussions',
-            'targetOverdueDiscussions',
-            'closedDiscussions',
-            'counts'
-        ));
+        $units = ['UP Kendari', 'Unit Wua Wua', 'Unit Poasia', 'Unit Kolaka', 'Unit Bau Bau']; // Sesuaikan dengan data unit yang tersedia
+        
+        return view('admin.other-discussions.index', [
+            'activeDiscussions' => $activeDiscussions,
+            'targetOverdueDiscussions' => $targetOverdueDiscussions,
+            'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions,
+            'closedDiscussions' => $closedDiscussions,
+            'units' => $units,
+            'counts' => $counts
+        ]);
     }
 
     public function destroy($id)
