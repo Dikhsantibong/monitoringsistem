@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
        @include('components.sidebar')
@@ -138,7 +139,25 @@
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID SR</th>
-                                            <th class="py-2 px-4 border-b">Unit</th>
+                                            <th class="py-2 px-4 border-b">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Unit</span>
+                                                    <div class="relative">
+                                                        <select id="srUnitFilter" onchange="filterSRTable()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                            <option value="" class="text-gray-700">Semua</option>
+                                                            @foreach($powerPlants as $unit)
+                                                                <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">
                                                 <div class="flex items-center justify-between">
@@ -158,8 +177,24 @@
                                                     </div>
                                                 </div>
                                             </th>
-                                            <th class="py-2 px-4 border-b">Tanggal</th>
-                                            <th class="py-2 px-4 border-b">Downtime</th>
+                                            <th class="py-2 px-4 border-b">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Downtime</span>
+                                                    <div class="relative">
+                                                        <select id="srDowntimeFilter" onchange="filterSRTable()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                            <option value="" class="text-gray-700">Semua</option>
+                                                            <option value="Yes" class="text-gray-700">Ya</option>
+                                                            <option value="No" class="text-gray-700">Tidak</option>
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th class="py-2 px-4 border-b">Tipe SR</th>
                                             <th class="py-2 px-4 border-b">Priority</th>
                                             <th class="py-2 px-4 border-b">Aksi</th>
@@ -246,7 +281,25 @@
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">ID WO</th>
-                                            <th class="py-2 px-4 border-b">Unit</th>
+                                            <th class="py-2 px-4 border-b">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Unit</span>
+                                                    <div class="relative">
+                                                        <select id="woUnitFilter" onchange="filterWOTable()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                            <option value="" class="text-gray-700">Semua</option>
+                                                            @foreach($powerPlants as $unit)
+                                                                <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th class="py-2 px-4 border-b">Type</th>
                                             <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">
@@ -371,7 +424,25 @@
                                         <tr style="background-color: #0A749B; color: white;">
                                             <th class="py-2 px-4 border-b">No</th>
                                             <th class="py-2 px-4 border-b">No WO</th>
-                                            <th class="py-2 px-4 border-b">Unit</th>
+                                            <th class="py-2 px-4 border-b">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Unit</span>
+                                                    <div class="relative">
+                                                        <select id="backlogUnitFilter" onchange="filterBacklogTable()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                            <option value="" class="text-gray-700">Semua</option>
+                                                            @foreach($powerPlants as $unit)
+                                                                <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th class="py-2 px-4 border-b">Deskripsi</th>
                                             <th class="py-2 px-4 border-b">Tanggal Backlog</th>
                                             <th class="py-2 px-4 border-b">Keterangan</th>
@@ -450,6 +521,7 @@
             </main>
         </div>
     </div>
+    
 
     <!-- Modal SR -->
    
@@ -1121,13 +1193,23 @@
 
     function filterSRTable() {
         const status = document.getElementById('srStatusFilter').value;
+        const unit = document.getElementById('srUnitFilter').value;
+        const downtime = document.getElementById('srDowntimeFilter').value;
         const rows = document.querySelectorAll('#srTable tbody tr');
         let visibleCount = 0;
         
         rows.forEach(row => {
-            const statusCell = row.querySelector('td:nth-child(4)');
-            const statusText = statusCell.textContent.trim();
-            if (!status || statusText.includes(status)) {
+            const statusCell = row.querySelector('td:nth-child(5)');
+            const unitCell = row.querySelector('td:nth-child(3)');
+            const downtimeCell = row.querySelector('td:nth-child(7)');
+            
+            const statusMatch = !status || statusCell.textContent.trim().includes(status);
+            const unitMatch = !unit || unitCell.textContent.trim().includes(unit);
+            const downtimeMatch = !downtime || 
+                (downtime === 'Yes' && downtimeCell.textContent.trim() !== '0') ||
+                (downtime === 'No' && downtimeCell.textContent.trim() === '0');
+            
+            if (statusMatch && unitMatch && downtimeMatch) {
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -1140,13 +1222,18 @@
 
     function filterWOTable() {
         const status = document.getElementById('woStatusFilter').value;
+        const unit = document.getElementById('woUnitFilter').value;
         const rows = document.querySelectorAll('#woTable tbody tr');
         let visibleCount = 0;
         
         rows.forEach(row => {
             const statusCell = row.querySelector('td[data-column="status"]');
-            const statusText = statusCell.textContent.trim();
-            if (!status || statusText.includes(status)) {
+            const unitCell = row.querySelector('td:nth-child(3)');
+            
+            const statusMatch = !status || statusCell.textContent.trim().includes(status);
+            const unitMatch = !unit || unitCell.textContent.trim().includes(unit);
+            
+            if (statusMatch && unitMatch) {
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -1159,13 +1246,18 @@
 
     function filterBacklogTable() {
         const status = document.getElementById('backlogStatusFilter').value;
+        const unit = document.getElementById('backlogUnitFilter').value;
         const rows = document.querySelectorAll('#backlogTable tbody tr');
         let visibleCount = 0;
         
         rows.forEach(row => {
             const statusCell = row.querySelector('td:nth-child(6)');
-            const statusText = statusCell.textContent.trim();
-            if (!status || statusText.includes(status)) {
+            const unitCell = row.querySelector('td:nth-child(3)');
+            
+            const statusMatch = !status || statusCell.textContent.trim().includes(status);
+            const unitMatch = !unit || unitCell.textContent.trim().includes(unit);
+            
+            if (statusMatch && unitMatch) {
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -1178,5 +1270,4 @@
 </script>
 @push('scripts')
 @endpush
-    
     

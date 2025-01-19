@@ -20,6 +20,9 @@ class LaporanController extends Controller
             // Cek WO yang expired dan pindahkan ke backlog
             $this->checkExpiredWO();
 
+            // Ambil data power plants
+            $powerPlants = PowerPlant::all();
+
             // Query untuk Service Requests dengan eager loading powerPlant
             $serviceRequests = ServiceRequest::with('powerPlant')
                 ->select('id', 'description', 'status', 'created_at', 'downtime', 'tipe_sr', 'priority', 'unit_source', 'power_plant_id')
@@ -93,7 +96,8 @@ class LaporanController extends Controller
                 'serviceRequests',
                 'workOrders',
                 'woBacklogs',
-                'backlogNotification'
+                'backlogNotification',
+                'powerPlants'
             ));
 
         } catch (\Exception $e) {
@@ -581,4 +585,3 @@ class LaporanController extends Controller
         }
     }
 }
-
