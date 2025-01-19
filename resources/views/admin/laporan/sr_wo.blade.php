@@ -121,17 +121,29 @@
                                     <i class="fas fa-plus-circle mr-2"></i> Tambah SR
                                 </a>
                             </div>
-                            <!-- Kolom search untuk SR -->
-                            <div class="mb-4">
-                                <div class="flex">
-                                    <input type="text" id="searchSR" placeholder="Cari SR..."
-                                        class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
-                                    <button onclick="searchSRTable()"
-                                        class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                        <i class="fas fa-search mr-2"></i>Search
-                                    </button>
+                            
+                            <!-- Header section dengan search dan counter -->
+                            <div class="flex justify-between items-center mb-4">
+                                <!-- Search dengan style baru -->
+                                <div class="w-1/3">
+                                    <div class="relative">
+                                        <input type="text" 
+                                               id="searchSR" 
+                                               placeholder="Cari SR, unit, atau status..."
+                                               onkeyup="if(event.key === 'Enter') searchSRTable()"
+                                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Counter -->
+                                <div class="text-gray-600">
+                                    Menampilkan <span id="srVisibleCount">0</span> dari <span id="srTotalCount">0</span> data
                                 </div>
                             </div>
+
+                            <!-- Tabel SR -->
                             <div class="overflow-auto max-h-96">
                                 <table id="srTable"
                                     class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
@@ -246,30 +258,40 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mt-4 text-sm text-gray-600">
-                                Menampilkan <span id="srVisibleCount">{{ count($serviceRequests) }}</span> dari total <span id="srTotalCount">{{ count($serviceRequests) }}</span> SR
-                            </div>
                         </div>
 
                         <!-- Card WO -->
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
-                                <a href="{{ route('admin.laporan.create-wo') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                <a href="{{ route('admin.laporan.create-wo') }}" 
+                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-plus-circle mr-2"></i> Tambah WO
                                 </a>
                             </div>
-                            <!-- Kolom search untuk WO -->
-                            <div class="mb-4">
-                                <div class="flex">
-                                    <input type="text" id="searchWO" placeholder="Cari WO..."
-                                        class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
-                                    <button onclick="searchWOTable()"
-                                        class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                        <i class="fas fa-search mr-2"></i>Search
-                                    </button>
+                            
+                            <!-- Header section dengan search dan counter -->
+                            <div class="flex justify-between items-center mb-4">
+                                <!-- Search dengan style baru -->
+                                <div class="w-1/3">
+                                    <div class="relative">
+                                        <input type="text" 
+                                               id="searchWO" 
+                                               placeholder="Cari WO, unit, atau status..."
+                                               onkeyup="if(event.key === 'Enter') searchWOTable()"
+                                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Counter -->
+                                <div class="text-gray-600">
+                                    Menampilkan <span id="woVisibleCount">0</span> dari <span id="woTotalCount">0</span> data
                                 </div>
                             </div>
+
+                            <!-- Tabel WO -->
                             <div class="overflow-auto max-h-96">
                                 @if(session('backlog_notification'))
                                 <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
@@ -395,30 +417,36 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mt-4 text-sm text-gray-600">
-                                Menampilkan <span id="woVisibleCount">{{ count($workOrders) }}</span> dari total <span id="woTotalCount">{{ count($workOrders) }}</span> WO
-                            </div>
                         </div>
 
                         <!-- Tabel Backlog -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            {{-- <div class="flex justify-between items-center mb-4">
+                        <div class="bg-white rounded-lg shadow p-6 mb-4">
+                            <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
-                                <a href="{{ route('admin.laporan.create-wo-backlog') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                    <i class="fas fa-plus-circle mr-2"></i> Tambah WO Backlog
-                                </a>
-                            </div> --}}
-                            <!-- Kolom search untuk Backlog -->
-                            <div class="mb-4">
-                                <div class="flex">
-                                    <input type="text" id="searchBacklog" placeholder="Cari Backlog..."
-                                        class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
-                                    <button onclick="searchBacklogTable()"
-                                        class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                        <i class="fas fa-search mr-2"></i>Search
-                                    </button>
+                            </div>
+                            
+                            <!-- Header section dengan search dan counter -->
+                            <div class="flex justify-between items-center mb-4">
+                                <!-- Search dengan style baru -->
+                                <div class="w-1/3">
+                                    <div class="relative">
+                                        <input type="text" 
+                                               id="searchBacklog" 
+                                               placeholder="Cari backlog, unit, atau status..."
+                                               onkeyup="if(event.key === 'Enter') searchBacklogTable()"
+                                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Counter -->
+                                <div class="text-gray-600">
+                                    Menampilkan <span id="backlogVisibleCount">0</span> dari <span id="backlogTotalCount">0</span> data
                                 </div>
                             </div>
+
+                            <!-- Tabel Backlog -->
                             <div class="overflow-auto max-h-96">
                                 <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                     <thead class="sticky top-0 z-10">
@@ -513,9 +541,6 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                            </div>
-                            <div class="mt-4 text-sm text-gray-600">
-                                Menampilkan <span id="backlogVisibleCount">{{ count($woBacklogs) }}</span> dari total <span id="backlogTotalCount">{{ count($woBacklogs) }}</span> WO Backlog
                             </div>
                         </div>
                     </div>
