@@ -488,12 +488,12 @@ class OtherDiscussionController extends Controller
     public function generateNoPembahasan(Request $request)
     {
         try {
-            Log::info('Mulai generate nomor pembahasan', [
-                'timestamp' => now(),
-                'user' => auth()->user()->name ?? 'System',
-                'url' => request()->url(),
-                'method' => request()->method(),
-                'unit' => $request->input('unit')
+            Log::info('Request received for generate nomor pembahasan', [
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'user' => auth()->user()->name ?? 'Unknown',
+                'unit' => $request->input('unit'),
+                'headers' => $request->headers->all()
             ]);
 
             // Validasi input
@@ -535,11 +535,13 @@ class OtherDiscussionController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Gagal generate nomor pembahasan', [
+            Log::error('Error generating nomor pembahasan', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'file' => $e->getFile()
+                'trace' => $e->getTraceAsString(),
+                'request_url' => $request->fullUrl(),
+                'request_method' => $request->method()
             ]);
 
             return response()->json([

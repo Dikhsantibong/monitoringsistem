@@ -789,11 +789,13 @@ async function generateNoPembahasan() {
         console.log('Memulai generate nomor pembahasan');
         
         const unit = document.getElementById('unit').value;
-        const encodedUnit = encodeURIComponent(unit);
+        // Gunakan URL yang di-generate Laravel
+        const generateUrl = "{{ route('admin.other-discussions.generate-no-pembahasan') }}";
         
+        console.log('Generate URL:', generateUrl);
         console.log('Unit selected:', unit);
 
-        const response = await fetch('/admin/other-discussions/generate-no-pembahasan', {
+        const response = await fetch(generateUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
