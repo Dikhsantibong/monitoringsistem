@@ -9,13 +9,11 @@
                     <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
                         <h2 class="text-2xl font-bold mb-8 text-center text-gray-800">Form Absensi</h2>
                         
-                        @if(session('error'))
-                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                <span class="block sm:inline">{{ session('error') }}</span>
-                            </div>
-                        @endif
+                        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                            <span class="block sm:inline"></span>
+                        </div>
 
-                        <form action="{{ route('attendance.store') }}" method="POST" class="space-y-4" id="attendance-form">
+                        <form id="attendance-form" class="space-y-4">
                             @csrf
                             <input type="hidden" name="token" value="{{ $token }}">
                             
@@ -23,22 +21,19 @@
                             <div class="space-y-2">
                                 <label class="text-gray-600">Nama</label>
                                 <input type="text" name="name" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]"
-                                    value="{{ old('name') }}">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]">
                             </div>
 
                             <div class="space-y-2">
                                 <label class="text-gray-600">Jabatan</label>
                                 <input type="text" name="position" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]"
-                                    value="{{ old('position') }}">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]">
                             </div>
 
                             <div class="space-y-2">
                                 <label class="text-gray-600">Divisi</label>
                                 <input type="text" name="division" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]"
-                                    value="{{ old('division') }}">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]">
                             </div>
 
                             <!-- Signature Pad -->
@@ -55,7 +50,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <input type="hidden" name="signature" id="signature-data" required>
+                                <input type="hidden" name="signature" id="signature-data">
                             </div>
 
                             <button type="submit" class="w-full bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#009BB9] transition duration-300">
@@ -106,18 +101,53 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Form submission
-    document.getElementById('attendance-form').addEventListener('submit', function(e) {
+    // Form submission dengan fetch API
+    document.getElementById('attendance-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
         if (signaturePad.isEmpty()) {
-            e.preventDefault();
-            alert('Mohon isi tanda tangan terlebih dahulu!');
-            return false;
+            showError('Mohon isi tanda tangan terlebih dahulu!');
+            return;
         }
 
         // Save signature data
         const signatureData = signaturePad.toDataURL('image/png');
         document.getElementById('signature-data').value = signatureData;
+
+        try {
+            const formData = new FormData(this);
+            
+            const response = await fetch('{{ route("attendance.store") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = '{{ route("attendance.success") }}';
+            } else {
+                showError(data.message || 'Gagal menyimpan absensi');
+            }
+        } catch (error) {
+            showError('Terjadi kesalahan. Silakan coba lagi.');
+            console.error('Error:', error);
+        }
     });
+
+    function showError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.querySelector('span').textContent = message;
+        errorDiv.classList.remove('hidden');
+        
+        setTimeout(() => {
+            errorDiv.classList.add('hidden');
+        }, 5000);
+    }
 });
 </script>
 @endsection 
