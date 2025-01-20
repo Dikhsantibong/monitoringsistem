@@ -203,10 +203,14 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 border border-gray-200 max-w-[800px]">
-                                            <div class="mb-1 break-words">{{ $discussion->target }}</div>
-                                            <div class="text-sm text-gray-500 break-words">
-                                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                        <td class="px-6 py-4 border border-gray-200">
+                                            <div class="max-w-[400px]">
+                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                                    {{ $discussion->target }}
+                                                </div>
+                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                    Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
@@ -353,7 +357,16 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->target }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">
+                                            <div class="max-w-[400px]">
+                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                                    {{ $discussion->target }}
+                                                </div>
+                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                    Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             @if($discussion->department_id && $discussion->section_id)
                                                 {{ $discussion->pic }}
@@ -491,9 +504,13 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <div class="mb-1">{{ $discussion->target }}</div>
-                                            <div class="text-sm text-gray-500">
-                                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                            <div class="max-w-[400px]">
+                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                                    {{ $discussion->target }}
+                                                </div>
+                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                    Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
@@ -628,9 +645,13 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <div class="mb-1">{{ $discussion->target }}</div>
-                                            <div class="text-sm text-gray-500">
-                                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                            <div class="max-w-[400px]">
+                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                                    {{ $discussion->target }}
+                                                </div>
+                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                    Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
