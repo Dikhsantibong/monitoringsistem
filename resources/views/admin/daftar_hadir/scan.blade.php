@@ -134,8 +134,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(data.message || 'Gagal menyimpan absensi');
             }
         } catch (error) {
-            showError('Terjadi kesalahan. Silakan coba lagi.');
-            console.error('Error:', error);
+            console.error('Submit Error:', error);
+            
+            let errorMessage = 'Terjadi kesalahan saat menyimpan.';
+            
+            if (error.response) {
+                const data = await error.response.json();
+                
+                switch(data.error_type) {
+                    case 'validation_error':
+                        errorMessage = Object.values(data.errors).flat().join('\n');
+                        break;
+                    case 'invalid_token':
+                        errorMessage = 'Token tidak valid atau sudah kadaluarsa';
+                        break;
+                    case 'token_used':
+                        errorMessage = 'Token ini sudah digunakan untuk absensi';
+                        break;
+                    case 'system_error':
+                        errorMessage = data.message;
+                        if (data.debug_info) {
+                            console.error('Debug Info:', data.debug_info);
+                        }
+                        break;
+                    default:
+                        errorMessage = data.message || 'Terjadi kesalahan yang tidak diketahui';
+                }
+            }
+            
+            showError(errorMessage);
         }
     });
 
