@@ -199,9 +199,10 @@
                                 @forelse($activeDiscussions as $index => $discussion)
                                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <div class="flex items-center gap-2">
-                                                {{ $discussion->sr_number }}
+                                                {{ $discussion->no_pembahasan }}
                                                 @if($discussion->created_at->diffInHours(now()) < 24)
                                                     <div class="flex items-center gap-1.5">
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
@@ -215,9 +216,14 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[300px] truncate border border-gray-200 break-words">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 border border-gray-200">
+                                            <div class="w-[300px]">
+                                                <div class="break-words whitespace-pre-line">
+                                                    {{ $discussion->topic }}
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td class="px-6 py-4 border border-gray-200">
                                             <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
@@ -368,9 +374,10 @@
                                 @forelse($targetOverdueDiscussions as $index => $discussion)
                                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <div class="flex items-center gap-2">
-                                                {{ $discussion->sr_number }}
+                                                {{ $discussion->no_pembahasan }}
                                                 @if($discussion->created_at->diffInHours(now()) < 24)
                                                     <div class="flex items-center gap-1.5">
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
@@ -384,10 +391,15 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200 break break-words">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] truncate border border-gray-200">
+                                        <td class="px-6 py-4 border border-gray-200">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 border border-gray-200">
+                                            <div class="w-[300px]">
+                                                <div class="break-words whitespace-pre-line">
+                                                    {{ $discussion->topic }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 border border-gray-200">
                                             <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
                                                     {{ $discussion->target }}
@@ -529,9 +541,10 @@
                                 @forelse($commitmentOverdueDiscussions as $index => $discussion)
                                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <div class="flex items-center gap-2">
-                                                {{ $discussion->sr_number }}
+                                                {{ $discussion->no_pembahasan }}
                                                 @if($discussion->created_at->diffInHours(now()) < 24)
                                                     <div class="flex items-center gap-1.5">
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
@@ -545,10 +558,15 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200 break-words">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] truncate border border-gray-200">
+                                        <td class="px-6 py-4 border border-gray-200">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 border border-gray-200">
+                                            <div class="w-[300px]">
+                                                <div class="break-words whitespace-pre-line">
+                                                    {{ $discussion->topic }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 border border-gray-200">
                                             <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
                                                     {{ $discussion->target }}
@@ -685,9 +703,10 @@
                                 @forelse($closedDiscussions as $index => $discussion)
                                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <div class="flex items-center gap-2">
-                                                {{ $discussion->sr_number }}
+                                                {{ $discussion->no_pembahasan }}
                                                 @if($discussion->created_at->diffInHours(now()) < 24)
                                                     <div class="flex items-center gap-1.5">
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
@@ -701,11 +720,16 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200 break-words">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <div class="w-[400px]"></div>
+                                        <td class="px-6 py-4 border border-gray-200">{{ $discussion->unit }}</td>
+                                        <td class="px-6 py-4 border border-gray-200">
+                                            <div class="w-[300px]">
+                                                <div class="break-words whitespace-pre-line">
+                                                    {{ $discussion->topic }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 border border-gray-200">
+                                            <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
                                                     {{ $discussion->target }}
                                                 </div>
