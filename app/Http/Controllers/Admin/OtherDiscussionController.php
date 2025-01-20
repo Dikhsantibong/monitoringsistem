@@ -47,30 +47,43 @@ class OtherDiscussionController extends Controller
             $q->whereIn('unit', $powerPlantNames);
         });
 
-        // Query untuk setiap tab dengan filter yang sama
+        // Active Discussions - diurutkan berdasarkan created_at terbaru
         $activeDiscussions = (clone $baseQuery)
-            ->active()
+            ->where('status', 'Open')
+            ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'active_page');
 
+        // Target Overdue - diurutkan berdasarkan created_at terbaru
         $targetOverdueDiscussions = (clone $baseQuery)
-            ->targetOverdue()
+            ->where('status', 'Open')
+            ->whereDate('target_deadline', '<', now())
+            ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'target_page');
 
+        // Commitment Overdue - diurutkan berdasarkan created_at terbaru
         $commitmentOverdueDiscussions = (clone $baseQuery)
-            ->commitmentOverdue()
+            ->whereHas('commitments', function ($query) {
+                $query->where('status', 'Open')
+                    ->whereDate('deadline', '<', now());
+            })
+            ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'commitment_page');
 
+        // Closed Discussions - diurutkan berdasarkan created_at terbaru
         $closedDiscussions = (clone $baseQuery)
-            ->closed()
+            ->where('status', 'Closed')
+            ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'closed_page');
 
         // Hitung total untuk badge
         $baseCountQuery = (clone $baseQuery);
         $counts = [
-            'active' => (clone $baseCountQuery)->active()->count(),
-            'target_overdue' => (clone $baseCountQuery)->targetOverdue()->count(),
-            'commitment_overdue' => (clone $baseCountQuery)->commitmentOverdue()->count(),
-            'closed' => (clone $baseCountQuery)->closed()->count()
+            'active' => (clone $baseCountQuery)->where('status', 'Open')->count(),
+            'target_overdue' => (clone $baseCountQuery)->where('status', 'Open')->whereDate('target_deadline', '<', now())->count(),
+            'commitment_overdue' => (clone $baseCountQuery)->whereHas('commitments', function ($query) {
+                $query->where('status', 'Open')->whereDate('deadline', '<', now());
+            })->count(),
+            'closed' => (clone $baseCountQuery)->where('status', 'Closed')->count()
         ];
 
         $units = ['UP Kendari', 'Unit Wua Wua', 'Unit Poasia', 'Unit Kolaka', 'Unit Bau Bau']; // Sesuaikan dengan data unit yang tersedia
