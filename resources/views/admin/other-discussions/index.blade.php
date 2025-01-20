@@ -176,15 +176,15 @@
                 <!-- Active Discussions Tab -->
                 <div id="active-content" class="tab-content">
                     <div class="overflow-x-auto shadow-md rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-[#0A749B]">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
@@ -204,11 +204,11 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 border border-gray-200">
-                                            <div class="max-w-[400px]">
-                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                            <div class="w-[400px]">
+                                                <div class="mb-1 break-words whitespace-pre-line">
                                                     {{ $discussion->target }}
                                                 </div>
-                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                <div class="text-sm text-gray-500 break-words">
                                                     Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
                                                 </div>
                                             </div>
@@ -329,15 +329,15 @@
                 <!-- Target Overdue Tab -->
                 <div id="target-overdue-content" class="tab-content hidden">
                     <div class="overflow-x-auto shadow-md rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-red-600">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Priority Level</th>
@@ -357,12 +357,12 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">
-                                            <div class="max-w-[400px]">
-                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] truncate border border-gray-200">
+                                            <div class="w-[400px]">
+                                                <div class="mb-1 break-words whitespace-pre-line">
                                                     {{ $discussion->target }}
                                                 </div>
-                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                <div class="text-sm text-gray-500 break-words">
                                                     Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
                                                 </div>
                                             </div>
@@ -476,15 +476,15 @@
                 <!-- Commitment Overdue Tab -->
                 <div id="commitment-overdue-content" class="tab-content hidden">
                     <div class="overflow-x-auto shadow-md rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-yellow-600">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
@@ -503,12 +503,12 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <div class="max-w-[400px]">
-                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[400px] truncate border border-gray-200">
+                                            <div class="w-[400px]">
+                                                <div class="mb-1 break-words whitespace-pre-line">
                                                     {{ $discussion->target }}
                                                 </div>
-                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                <div class="text-sm text-gray-500 break-words">
                                                     Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
                                                 </div>
                                             </div>
@@ -617,15 +617,15 @@
                 <!-- Tabel Data Selesai -->
                 <div id="closed-content" class="tab-content hidden">
                     <div class="overflow-x-auto shadow-md rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-green-600">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
@@ -645,11 +645,11 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <div class="max-w-[400px]">
-                                                <div class="mb-1 break-words whitespace-normal overflow-hidden">
+                                            <div class="w-[400px]">
+                                                <div class="mb-1 break-words whitespace-pre-line">
                                                     {{ $discussion->target }}
                                                 </div>
-                                                <div class="text-sm text-gray-500 break-words whitespace-normal">
+                                                <div class="text-sm text-gray-500 break-words">
                                                     Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
                                                 </div>
                                             </div>
@@ -1041,137 +1041,6 @@
     document.addEventListener('DOMContentLoaded', checkAndUpdateOverdueStatus);
 
     // Fungsi update status untuk tombol Selesai
-    function updateStatus(id, status) {
-        Swal.fire({
-            title: 'Apakah Anda yakin?',
-            text: 'Status akan diubah menjadi selesai',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#10B981',
-            cancelButtonColor: '#6B7280',
-            confirmButtonText: 'Ya, selesaikan!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/admin/other-discussions/${id}/update-status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ status: status })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Status berhasil diperbarui',
-                            icon: 'success',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Terjadi kesalahan saat mengubah status',
-                        icon: 'error'
-                    });
-                });
-            }
-        });
-    }
-
-    // Fungsi untuk menghapus diskusi overdue (terpisah)
-    function confirmDeleteOverdue(id) {
-        Swal.fire({
-            title: 'Apakah Anda yakin?',
-            text: "Data yang dihapus tidak dapat dikembalikan!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ url("/admin/overdue-discussions") }}/' + id;
-                
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'DELETE';
-                
-                const tokenInput = document.createElement('input');
-                tokenInput.type = 'hidden';
-                tokenInput.name = '_token';
-                tokenInput.value = '{{ csrf_token() }}';
-                
-                form.appendChild(methodInput);
-                form.appendChild(tokenInput);
-                document.body.appendChild(form);
-
-                Swal.fire({
-                    title: 'Menghapus data...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                        form.submit();
-                    }
-                });
-            }
-        });
-    }
-
-    // Fungsi edit yang terpisah
-    function editDiscussion(id) {
-        // Tampilkan loading
-        Swal.fire({
-            title: 'Mohon tunggu...',
-            text: 'Membuka form edit...',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-                window.location.href = "{{ url('/admin/other-discussions') }}/" + id + "/edit";
-            }
-        });
-    }
-
-    // Tambahkan ini untuk handling pesan sukses setelah update
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek jika ada parameter success di URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const successMessage = urlParams.get('success');
-        
-        if (successMessage) {
-            Swal.fire({
-                title: 'Berhasil!',
-                text: 'Data berhasil diperbarui',
-                icon: 'success',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                // Hapus parameter success dari URL
-                const newUrl = window.location.pathname;
-                window.history.replaceState({}, document.title, newUrl);
-            });
-        }
-    });
-
-    // Set tab aktif saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-        switchTab('active');
-    });
-
     function updateStatus(selectElement) {
         const discussionId = selectElement.dataset.id;
         const newStatus = selectElement.value;
