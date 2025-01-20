@@ -784,64 +784,46 @@ window.addEventListener('load', function() {
 @push('scripts')
 <script>
 async function generateNoPembahasan() {
-    const unitSelect = document.getElementById('unit');
-    const noPembahasanInput = document.getElementById('no_pembahasan');
-
-    if (!unitSelect.value) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan',
-            text: 'Silakan pilih unit terlebih dahulu'
-        });
-        return;
-    }
-
     try {
-        // Tampilkan loading
-        Swal.fire({
-            title: 'Generating...',
-            text: 'Mohon tunggu sebentar',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading()
-            }
+        const unit = document.getElementById('unit').value;
+        const generateUrl = "{{ route('admin.other-discussions.generate-no-pembahasan') }}";
+        
+        // Console log yang aman
+        if (window.location.hostname === 'localhost') {
+            console.log('Debug - Generate URL:', generateUrl);
+            console.log('Debug - Unit:', unit);
+        }
+
+        const response = await fetch(generateUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ unit: unit }),
+            credentials: 'same-origin'
         });
 
-        const response = await fetch(`/generate-no-pembahasan?unit=${encodeURIComponent(unitSelect.value)}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
+        // Log response status tanpa expose detail sensitif
+        if (!response.ok) {
+            throw new Error(`Request failed with status: ${response.status}`);
+        }
 
         const data = await response.json();
-        console.log('Response data:', data); // Debug log
         
-        // Tutup loading
-        Swal.close();
-        
-        if (data.success && data.no_pembahasan) {
-            noPembahasanInput.value = data.no_pembahasan;
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: 'Nomor pembahasan berhasil digenerate',
-                timer: 1500,
-                showConfirmButton: false
-            });
+        if (data.success) {
+            document.getElementById('no_pembahasan').value = data.number;
         } else {
             throw new Error(data.message || 'Gagal generate nomor pembahasan');
         }
     } catch (error) {
-        console.error('Error details:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.message || 'Gagal generate nomor pembahasan'
-        });
-        // Reset input jika gagal
-        noPembahasanInput.value = '';
+        // Log error yang aman
+        Log::channel('daily')->error('JavaScript Error', [
+            'message' => error.message,
+            'timestamp' => new Date().toISOString()
+        ]);
+        alert('Gagal generate nomor pembahasan. Silakan coba lagi.');
     }
 }
 

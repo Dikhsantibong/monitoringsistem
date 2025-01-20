@@ -13,6 +13,7 @@ use App\Models\PowerPlant;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use App\Events\OtherDiscussionUpdated;
+use Illuminate\Support\Facades\Log;
 
 class OtherDiscussionController extends Controller
 {
@@ -489,6 +490,14 @@ class OtherDiscussionController extends Controller
 
     public function generateNoPembahasan(Request $request)
     {
+        // Logging awal request
+        Log::channel('daily')->info('Generate Nomor Pembahasan Request', [
+            'timestamp' => now()->format('Y-m-d H:i:s'),
+            'url' => $request->fullUrl(),
+            'unit' => $request->input('unit'),
+            'user' => auth()->user()->name ?? 'Unknown'
+        ]);
+
         try {
             $unit = $request->query('unit');
             $currentSession = session('unit', 'mysql');
@@ -504,14 +513,24 @@ class OtherDiscussionController extends Controller
             
             $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
             
+            // Logging success
+            Log::channel('daily')->info('Generate Nomor Pembahasan Success', [
+                'timestamp' => now()->format('Y-m-d H:i:s'),
+                'generated_number' => $noPembahasan ?? null,
+                'unit' => $request->input('unit')
+            ]);
+
             return response()->json([
                 'success' => true,
                 'no_pembahasan' => $noPembahasan
             ]);
         } catch (\Exception $e) {
-            \Log::error('Failed to generate no pembahasan', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            // Logging error
+            Log::channel('daily')->error('Generate Nomor Pembahasan Failed', [
+                'timestamp' => now()->format('Y-m-d H:i:s'),
+                'error_message' => $e->getMessage(),
+                'error_line' => $e->getLine(),
+                'error_file' => $e->getFile()
             ]);
             
             return response()->json([
