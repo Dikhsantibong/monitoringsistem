@@ -45,7 +45,11 @@ class OtherDiscussionController extends Controller
             if ($powerPlant) {
                 $q->where('unit', $powerPlant->name);
             }
+        })
+        ->when($status, function($q) use ($status) {
+            $q->where('status', $status);
         });
+
 
         // Active Discussions
         $activeDiscussions = (clone $baseQuery)

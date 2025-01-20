@@ -114,16 +114,22 @@
                         </div>
 
                         <!-- Filter Status -->
-                        {{-- <div>
+                        <div>
                             <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status" 
-                                    id="status"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    onchange="this.form.submit()">
-                                <option value="">Semua Status</option>
-                                <option value="Open" {{ request('status') == 'Open' ? 'selected' : '' }}>Open</option>
-                                <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
-                            </select>
+                            <form id="statusFilterForm" action="{{ route('admin.other-discussions.index') }}" method="GET">
+                                @foreach(request()->except(['status', 'page']) as $key => $value)
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endforeach
+                                
+                                <select id="status-filter" 
+                                        name="status"
+                                        onchange="this.form.submit()"
+                                        class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option value="">Semua Status</option>
+                                    <option value="Open" {{ request('status') == 'Open' ? 'selected' : '' }}>Open</option>
+                                    <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
+                                </select>
+                            </form>
                         </div>
 
                         <!-- Submit Button -->
@@ -131,7 +137,7 @@
                             <button type="submit" class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
                                 <i class="fas fa-filter mr-2"></i> Filter
                             </button>
-                        </div> --}}
+                        </div>
                     </form>
                 </div>
 
@@ -215,7 +221,25 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
+                                        <div class="flex flex-col gap-2">
+                                            <span>Status</span>
+                                            <form id="statusFilterForm" action="{{ route('admin.other-discussions.index') }}" method="GET">
+                                                @foreach(request()->except(['status', 'page']) as $key => $value)
+                                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                                @endforeach
+                                                
+                                                <select id="status-filter" 
+                                                        name="status"
+                                                        onchange="this.form.submit()"
+                                                        class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                    <option value="">Semua Status</option>
+                                                    <option value="Open" {{ request('status') == 'Open' ? 'selected' : '' }}>Open</option>
+                                                    <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
+                                                </select>
+                                            </form>
+                                        </div>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
