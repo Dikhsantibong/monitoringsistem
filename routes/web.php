@@ -482,6 +482,11 @@ Route::fallback(function () {
 
 Route::get('/generate-no-pembahasan', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'generateNoPembahasan'])->name('generate.no-pembahasan');
 
+// Tambahkan route untuk generate nomor pembahasan
+Route::post('/admin/other-discussions/generate-no-pembahasan', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'generateNoPembahasan'])
+    ->name('admin.other-discussions.generate-no-pembahasan')
+    ->middleware(['auth']);
+
 
 
     

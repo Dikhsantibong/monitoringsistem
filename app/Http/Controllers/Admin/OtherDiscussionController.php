@@ -73,16 +73,13 @@ class OtherDiscussionController extends Controller
             'closed' => (clone $baseCountQuery)->closed()->count()
         ];
 
-        $units = ['UP Kendari', 'Unit Wua Wua', 'Unit Poasia', 'Unit Kolaka', 'Unit Bau Bau']; // Sesuaikan dengan data unit yang tersedia
-        
-        return view('admin.other-discussions.index', [
-            'activeDiscussions' => $activeDiscussions,
-            'targetOverdueDiscussions' => $targetOverdueDiscussions,
-            'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions,
-            'closedDiscussions' => $closedDiscussions,
-            'units' => $units,
-            'counts' => $counts
-        ]);
+        return view('admin.other-discussions.index', compact(
+            'activeDiscussions',
+            'commitmentOverdueDiscussions',
+            'targetOverdueDiscussions',
+            'closedDiscussions',
+            'counts'
+        ));
     }
 
     public function destroy($id)
@@ -488,37 +485,49 @@ class OtherDiscussionController extends Controller
         return $departmentName . ' - ' . $sectionName;
     }
 
-    public function generateNoPembahasan()
+    public function generateNoPembahasan(Request $request)
     {
         try {
             Log::info('Mulai generate nomor pembahasan', [
                 'timestamp' => now(),
                 'user' => auth()->user()->name ?? 'System',
                 'url' => request()->url(),
-                'method' => request()->method()
+                'method' => request()->method(),
+                'unit' => $request->input('unit')
             ]);
 
-            // Log request headers
-            Log::info('Request headers:', [
-                'headers' => request()->headers->all()
+            // Validasi input
+            $request->validate([
+                'unit' => 'required|string'
             ]);
 
-            // Ambil nomor terakhir
-            $lastNumber = // kode untuk mendapatkan nomor terakhir
-            Log::info('Data nomor terakhir:', [
-                'last_number' => $lastNumber
-            ]);
+            $unit = $request->input('unit');
+            
+            // Generate nomor berdasarkan unit
+            $prefix = 'PB'; // Prefix untuk pembahasan
+            $year = date('Y');
+            $month = date('m');
+            
+            // Ambil nomor terakhir untuk unit dan bulan ini
+            $lastNumber = OtherDiscussion::where('unit', $unit)
+                ->whereYear('created_at', $year)
+                ->whereMonth('created_at', $month)
+                ->max('no_pembahasan');
+                
+            Log::info('Last number found:', ['last_number' => $lastNumber]);
 
-            // Generate nomor baru
-            $newNumber = // kode generate nomor baru
-            Log::info('Nomor baru digenerate:', [
-                'new_number' => $newNumber
-            ]);
+            // Parse nomor terakhir atau mulai dari 0
+            if ($lastNumber) {
+                $lastSeq = (int) substr($lastNumber, -4);
+                $newSeq = $lastSeq + 1;
+            } else {
+                $newSeq = 1;
+            }
 
-            // Response success
-            Log::info('Berhasil generate nomor pembahasan', [
-                'generated_number' => $newNumber
-            ]);
+            // Format nomor baru
+            $newNumber = sprintf("%s/%s/%s/%04d", $prefix, $unit, $year, $newSeq);
+            
+            Log::info('Nomor baru digenerate:', ['new_number' => $newNumber]);
 
             return response()->json([
                 'success' => true,
