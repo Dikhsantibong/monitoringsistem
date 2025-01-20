@@ -225,7 +225,7 @@ class OtherDiscussion extends Model
                 'mysql_bau_bau' => 'BAUS'  // ULPLTD BAU-BAU
             ];
 
-            // Cari unit_source berdasarkan nama unit yang dipilih
+            // Cari power plant berdasarkan nama unit
             $powerPlant = PowerPlant::where('name', 'like', '%' . $unit . '%')->first();
             
             if (!$powerPlant) {
@@ -249,15 +249,15 @@ class OtherDiscussion extends Model
                 ->orderBy('no_pembahasan', 'desc')
                 ->first();
 
+            // Generate nomor berikutnya
             if ($lastDiscussion) {
-                // Ekstrak nomor dari format UPKD0001
                 $lastNumber = (int) substr($lastDiscussion->no_pembahasan, -4);
                 $nextNumber = $lastNumber + 1;
             } else {
                 $nextNumber = 1;
             }
 
-            // Format: UPKD0001, POAS0001, dll
+            // Format nomor pembahasan (contoh: UPKD0001, POAS0001, dll)
             $noPembahasan = sprintf("%s%04d", $unitCode, $nextNumber);
             
             \Log::info('Generated no pembahasan:', [
@@ -267,9 +267,8 @@ class OtherDiscussion extends Model
             ]);
 
             return $noPembahasan;
-
         } catch (\Exception $e) {
-            \Log::error('Error in generateNoPembahasan:', [
+            \Log::error('Error generating no pembahasan:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

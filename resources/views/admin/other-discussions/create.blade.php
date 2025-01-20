@@ -79,9 +79,9 @@
                                        required
                                        readonly>
                                 <button type="button" 
-                                        onclick="generateNoPembahasan()" 
-                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center">
-                                    <i class="fas fa-sync-alt mr-2"></i> Generate No
+                                        id="generateButton"
+                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                    Generate No
                                 </button>
                             </div>
                             @error('no_pembahasan')
@@ -706,32 +706,56 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Tambahkan script untuk auto-generate nomor pembahasan
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const generateButton = document.getElementById('generateButton');
     const unitSelect = document.getElementById('unit');
-    const noPembahasanInput = document.getElementById('no_pembahasan');
+    
+    if (generateButton) {
+        generateButton.addEventListener('click', async function() {
+            const unit = unitSelect.value;
+            
+            if (!unit) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Silakan pilih unit terlebih dahulu'
+                });
+                return;
+            }
 
-    // Generate no pembahasan saat unit dipilih
-    unitSelect.addEventListener('change', async function() {
-        if (this.value) {
             try {
-                const response = await fetch(`/api/generate-no-pembahasan?unit=${encodeURIComponent(this.value)}`);
+                const response = await fetch("{{ route('admin.other-discussions.generate-no-pembahasan') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ unit: unit })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
                 if (data.success) {
-                    noPembahasanInput.value = data.no_pembahasan;
+                    document.getElementById('no_pembahasan').value = data.number;
+                } else {
+                    throw new Error(data.message || 'Gagal generate nomor pembahasan');
                 }
             } catch (error) {
-                console.error('Error generating no pembahasan:', error);
+                console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Gagal generate nomor pembahasan'
+                    text: 'Gagal generate nomor pembahasan. Silakan coba lagi.'
                 });
             }
-        } else {
-            noPembahasanInput.value = '';
-        }
-    });
+        });
+    }
 });
 
 // Fungsi validasi form sebelum submit
@@ -778,6 +802,96 @@ window.addEventListener('load', function() {
     }
 });
 </script>
+@endpush
+
+@push('scripts')
+<script>
+async function generateNoPembahasan() {
+    try {
+        const unit = document.getElementById('unit').value;
+        const generateUrl = "{{ route('admin.other-discussions.generate-no-pembahasan') }}";
+        
+        // Console log yang aman
+        if (window.location.hostname === 'localhost') {
+            console.log('Debug - Generate URL:', generateUrl);
+            console.log('Debug - Unit:', unit);
+        }
+
+        const response = await fetch(generateUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ unit: unit }),
+            credentials: 'same-origin'
+        });
+
+        // Log response status tanpa expose detail sensitif
+        if (!response.ok) {
+            throw new Error(`Request failed with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('no_pembahasan').value = data.number;
+        } else {
+            throw new Error(data.message || 'Gagal generate nomor pembahasan');
+        }
+    } catch (error) {
+        // Log error yang aman
+        Log::channel('daily')->error('JavaScript Error', [
+            'message' => error.message,
+            'timestamp' => new Date().toISOString()
+        ]);
+        alert('Gagal generate nomor pembahasan. Silakan coba lagi.');
+    }
+}
+
+// Fungsi validasi form
+function validateForm() {
+    const noPembahasan = document.getElementById('no_pembahasan').value;
+    const unit = document.getElementById('unit').value;
+    const srNumber = document.getElementById('sr_number').value;
+
+    if (!unit) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan pilih unit terlebih dahulu'
+        });
+        return false;
+    }
+
+    if (!noPembahasan) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan generate nomor pembahasan terlebih dahulu'
+        });
+        return false;
+    }
+
+    if (!srNumber) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan isi nomor SR'
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Reset no_pembahasan saat unit berubah
+document.getElementById('unit').addEventListener('change', function() {
+    document.getElementById('no_pembahasan').value = '';
+});
+</script>
+@endpush
 
 // Fungsi untuk validasi status
 function validateStatus(select) {
@@ -817,45 +931,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<!-- Letakkan script di akhir content section -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    function generateNoPembahasan() {
-        const unit = document.getElementById('unit').value;
-        const generateUrl = "{{ route('admin.other-discussions.generate-no-pembahasan') }}";
-        
-        fetch(generateUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ unit: unit }),
-            credentials: 'same-origin'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Request failed with status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                document.getElementById('no_pembahasan').value = data.number;
-            } else {
-                throw new Error(data.message || 'Gagal generate nomor pembahasan');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal generate nomor pembahasan. Silakan coba lagi.');
-        });
-    }
-
-    // Attach ke window object
-    window.generateNoPembahasan = generateNoPembahasan;
-});
-</script>
+@push('scripts')
+@endpush
 @endsection     

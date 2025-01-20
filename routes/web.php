@@ -489,9 +489,10 @@ Route::post('/admin/other-discussions/generate-no-pembahasan', [App\Http\Control
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     // Other routes...
-    
-    Route::post('/other-discussions/generate-no-pembahasan', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'generateNoPembahasan'])
-        ->name('admin.other-discussions.generate-no-pembahasan');
+    Route::post('/other-discussions/generate-no-pembahasan', [
+        App\Http\Controllers\Admin\OtherDiscussionController::class, 
+        'generateNoPembahasan'
+    ])->name('admin.other-discussions.generate-no-pembahasan');
 });
 
 

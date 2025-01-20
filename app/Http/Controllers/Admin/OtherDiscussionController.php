@@ -490,53 +490,61 @@ class OtherDiscussionController extends Controller
 
     public function generateNoPembahasan(Request $request)
     {
-        // Logging awal request
-        Log::channel('daily')->info('Generate Nomor Pembahasan Request', [
-            'timestamp' => now()->format('Y-m-d H:i:s'),
-            'url' => $request->fullUrl(),
-            'unit' => $request->input('unit'),
-            'user' => auth()->user()->name ?? 'Unknown'
-        ]);
-
         try {
-            $unit = $request->query('unit');
-            $currentSession = session('unit', 'mysql');
-            
-            \Log::info('Generating no pembahasan', [
-                'unit' => $unit,
-                'session' => $currentSession
+            // Validasi input
+            $request->validate([
+                'unit' => 'required|string'
             ]);
+
+            // Log untuk tracking
+            Log::info('Generating no pembahasan', [
+                'unit' => $request->unit,
+                'user' => auth()->user()->name
+            ]);
+
+            // Generate nomor pembahasan menggunakan model
+            $noPembahasan = OtherDiscussion::generateNoPembahasan($request->unit);
+
+            // Generate SR number
+            $year = date('Y');
+            $month = date('m');
             
-            if (empty($unit)) {
-                throw new \Exception('Unit tidak boleh kosong');
+            // Cari SR number terakhir untuk bulan ini
+            $lastSR = OtherDiscussion::where('sr_number', 'like', "SR/{$year}/{$month}/%")
+                ->orderBy('sr_number', 'desc')
+                ->first();
+
+            if ($lastSR) {
+                $lastNumber = (int) substr($lastSR->sr_number, -4);
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
             }
             
-            $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
-            
-            // Logging success
-            Log::channel('daily')->info('Generate Nomor Pembahasan Success', [
-                'timestamp' => now()->format('Y-m-d H:i:s'),
-                'generated_number' => $noPembahasan ?? null,
-                'unit' => $request->input('unit')
+            $srNumber = sprintf("SR/%s/%s/%04d", $year, $month, $nextNumber);
+
+            // Log hasil generate
+            Log::info('Generated numbers', [
+                'no_pembahasan' => $noPembahasan,
+                'sr_number' => $srNumber
             ]);
 
             return response()->json([
                 'success' => true,
-                'no_pembahasan' => $noPembahasan
+                'number' => $noPembahasan,
+                'sr_number' => $srNumber
             ]);
+
         } catch (\Exception $e) {
-            // Logging error
-            Log::channel('daily')->error('Generate Nomor Pembahasan Failed', [
-                'timestamp' => now()->format('Y-m-d H:i:s'),
-                'error_message' => $e->getMessage(),
-                'error_line' => $e->getLine(),
-                'error_file' => $e->getFile()
+            Log::error('Error generating numbers', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
+                'message' => 'Gagal generate nomor: ' . $e->getMessage()
+            ], 500);
         }
     }
 
