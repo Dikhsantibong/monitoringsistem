@@ -13,6 +13,7 @@ use App\Models\PowerPlant;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use App\Events\OtherDiscussionUpdated;
+use Illuminate\Support\Facades\Log;
 
 class OtherDiscussionController extends Controller
 {
@@ -487,37 +488,55 @@ class OtherDiscussionController extends Controller
         return $departmentName . ' - ' . $sectionName;
     }
 
-    public function generateNoPembahasan(Request $request)
+    public function generateNoPembahasan()
     {
         try {
-            $unit = $request->query('unit');
-            $currentSession = session('unit', 'mysql');
-            
-            \Log::info('Generating no pembahasan', [
-                'unit' => $unit,
-                'session' => $currentSession
+            Log::info('Mulai generate nomor pembahasan', [
+                'timestamp' => now(),
+                'user' => auth()->user()->name ?? 'System',
+                'url' => request()->url(),
+                'method' => request()->method()
             ]);
-            
-            if (empty($unit)) {
-                throw new \Exception('Unit tidak boleh kosong');
-            }
-            
-            $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
-            
+
+            // Log request headers
+            Log::info('Request headers:', [
+                'headers' => request()->headers->all()
+            ]);
+
+            // Ambil nomor terakhir
+            $lastNumber = // kode untuk mendapatkan nomor terakhir
+            Log::info('Data nomor terakhir:', [
+                'last_number' => $lastNumber
+            ]);
+
+            // Generate nomor baru
+            $newNumber = // kode generate nomor baru
+            Log::info('Nomor baru digenerate:', [
+                'new_number' => $newNumber
+            ]);
+
+            // Response success
+            Log::info('Berhasil generate nomor pembahasan', [
+                'generated_number' => $newNumber
+            ]);
+
             return response()->json([
                 'success' => true,
-                'no_pembahasan' => $noPembahasan
+                'number' => $newNumber
             ]);
+
         } catch (\Exception $e) {
-            \Log::error('Failed to generate no pembahasan', [
+            Log::error('Gagal generate nomor pembahasan', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
+                'message' => 'Gagal generate nomor pembahasan: ' . $e->getMessage()
+            ], 500);
         }
     }
 
