@@ -13,7 +13,6 @@ use App\Models\PowerPlant;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use App\Events\OtherDiscussionUpdated;
-use Illuminate\Support\Facades\Log;
 
 class OtherDiscussionController extends Controller
 {
@@ -73,13 +72,16 @@ class OtherDiscussionController extends Controller
             'closed' => (clone $baseCountQuery)->closed()->count()
         ];
 
-        return view('admin.other-discussions.index', compact(
-            'activeDiscussions',
-            'commitmentOverdueDiscussions',
-            'targetOverdueDiscussions',
-            'closedDiscussions',
-            'counts'
-        ));
+        $units = ['UP Kendari', 'Unit Wua Wua', 'Unit Poasia', 'Unit Kolaka', 'Unit Bau Bau']; // Sesuaikan dengan data unit yang tersedia
+        
+        return view('admin.other-discussions.index', [
+            'activeDiscussions' => $activeDiscussions,
+            'targetOverdueDiscussions' => $targetOverdueDiscussions,
+            'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions,
+            'closedDiscussions' => $closedDiscussions,
+            'units' => $units,
+            'counts' => $counts
+        ]);
     }
 
     public function destroy($id)
@@ -488,66 +490,34 @@ class OtherDiscussionController extends Controller
     public function generateNoPembahasan(Request $request)
     {
         try {
-            Log::info('Request received for generate nomor pembahasan', [
-                'url' => $request->fullUrl(),
-                'method' => $request->method(),
-                'user' => auth()->user()->name ?? 'Unknown',
-                'unit' => $request->input('unit'),
-                'headers' => $request->headers->all()
-            ]);
-
-            // Validasi input
-            $request->validate([
-                'unit' => 'required|string'
-            ]);
-
-            $unit = $request->input('unit');
+            $unit = $request->query('unit');
+            $currentSession = session('unit', 'mysql');
             
-            // Generate nomor berdasarkan unit
-            $prefix = 'PB'; // Prefix untuk pembahasan
-            $year = date('Y');
-            $month = date('m');
+            \Log::info('Generating no pembahasan', [
+                'unit' => $unit,
+                'session' => $currentSession
+            ]);
             
-            // Ambil nomor terakhir untuk unit dan bulan ini
-            $lastNumber = OtherDiscussion::where('unit', $unit)
-                ->whereYear('created_at', $year)
-                ->whereMonth('created_at', $month)
-                ->max('no_pembahasan');
-                
-            Log::info('Last number found:', ['last_number' => $lastNumber]);
-
-            // Parse nomor terakhir atau mulai dari 0
-            if ($lastNumber) {
-                $lastSeq = (int) substr($lastNumber, -4);
-                $newSeq = $lastSeq + 1;
-            } else {
-                $newSeq = 1;
+            if (empty($unit)) {
+                throw new \Exception('Unit tidak boleh kosong');
             }
-
-            // Format nomor baru
-            $newNumber = sprintf("%s/%s/%s/%04d", $prefix, $unit, $year, $newSeq);
             
-            Log::info('Nomor baru digenerate:', ['new_number' => $newNumber]);
-
+            $noPembahasan = OtherDiscussion::generateNoPembahasan($unit);
+            
             return response()->json([
                 'success' => true,
-                'number' => $newNumber
+                'no_pembahasan' => $noPembahasan
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Error generating nomor pembahasan', [
+            \Log::error('Failed to generate no pembahasan', [
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-                'request_url' => $request->fullUrl(),
-                'request_method' => $request->method()
+                'trace' => $e->getTraceAsString()
             ]);
-
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor pembahasan: ' . $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage()
+            ], 400);
         }
     }
 

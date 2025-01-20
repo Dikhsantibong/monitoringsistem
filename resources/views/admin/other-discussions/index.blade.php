@@ -182,25 +182,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        <div class="flex items-center justify-between">
-                                            <span>Unit</span>
-                                            <div class="relative">
-                                                <select id="activeUnitFilter" onchange="filterActiveTable()" 
-                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="" class="text-gray-700">Semua</option>
-                                                    @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
-                                                        <option value="{{ $powerPlant->name }}" class="text-gray-700">{{ $powerPlant->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
@@ -208,24 +190,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        <div class="flex items-center justify-between">
-                                            <span>Status</span>
-                                            <div class="relative">
-                                                <select id="activeStatusFilter" onchange="filterActiveTable()" 
-                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="" class="text-gray-700">Semua</option>
-                                                    <option value="Open" class="text-gray-700">Open</option>
-                                                    <option value="Closed" class="text-gray-700">Closed</option>
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
@@ -366,25 +331,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        <div class="flex items-center justify-between">
-                                            <span>Unit</span>
-                                            <div class="relative">
-                                                <select id="targetOverdueUnitFilter" onchange="filterTargetOverdueTable()" 
-                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="" class="text-gray-700">Semua</option>
-                                                    @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
-                                                        <option value="{{ $powerPlant->name }}" class="text-gray-700">{{ $powerPlant->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
@@ -393,24 +340,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        <div class="flex items-center justify-between">
-                                            <span>Status</span>
-                                            <div class="relative">
-                                                <select id="targetOverdueStatusFilter" onchange="filterTargetOverdueTable()" 
-                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="" class="text-gray-700">Semua</option>
-                                                    <option value="Open" class="text-gray-700">Open</option>
-                                                    <option value="Closed" class="text-gray-700">Closed</option>
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
@@ -547,24 +477,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Prioritas</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Komitmen & Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Komitmen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">
-                                        <div class="flex items-center justify-between">
-                                            <span>Status</span>
-                                            <div class="relative">
-                                                <select id="commitmentOverdueStatusFilter" onchange="filterCommitmentOverdueTable()" 
-                                                        class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                    <option value="" class="text-gray-700">Semua</option>
-                                                    <option value="Open" class="text-gray-700">Open</option>
-                                                    <option value="Closed" class="text-gray-700">Closed</option>
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Deadline</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                                 </tr>
@@ -728,12 +641,12 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <span class="px-2 py-1 text-sm bg-blue-100 text-blue-800">
+                                            <span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
                                                 {{ $discussion->risk_level }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <span class="px-2 py-1 text-sm bg-purple-100 text-purple-800">
+                                            <span class="px-2 py-1 rounded text-sm bg-purple-100 text-purple-800">
                                                 {{ $discussion->priority_level }}
                                             </span>
                                         </td>
@@ -757,7 +670,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->pic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                            <span class="px-2 py-1 text-sm 
+                                            <span class="px-2 py-1 rounded text-sm 
                                                 {{ $discussion->status === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                                 {{ $discussion->status }}
                                             </span>
@@ -1107,6 +1020,137 @@
     document.addEventListener('DOMContentLoaded', checkAndUpdateOverdueStatus);
 
     // Fungsi update status untuk tombol Selesai
+    function updateStatus(id, status) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Status akan diubah menjadi selesai',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10B981',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, selesaikan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/other-discussions/${id}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Status berhasil diperbarui',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Terjadi kesalahan saat mengubah status',
+                        icon: 'error'
+                    });
+                });
+            }
+        });
+    }
+
+    // Fungsi untuk menghapus diskusi overdue (terpisah)
+    function confirmDeleteOverdue(id) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ url("/admin/overdue-discussions") }}/' + id;
+                
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '_token';
+                tokenInput.value = '{{ csrf_token() }}';
+                
+                form.appendChild(methodInput);
+                form.appendChild(tokenInput);
+                document.body.appendChild(form);
+
+                Swal.fire({
+                    title: 'Menghapus data...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        form.submit();
+                    }
+                });
+            }
+        });
+    }
+
+    // Fungsi edit yang terpisah
+    function editDiscussion(id) {
+        // Tampilkan loading
+        Swal.fire({
+            title: 'Mohon tunggu...',
+            text: 'Membuka form edit...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+                window.location.href = "{{ url('/admin/other-discussions') }}/" + id + "/edit";
+            }
+        });
+    }
+
+    // Tambahkan ini untuk handling pesan sukses setelah update
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cek jika ada parameter success di URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMessage = urlParams.get('success');
+        
+        if (successMessage) {
+            Swal.fire({
+                title: 'Berhasil!',
+                text: 'Data berhasil diperbarui',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                // Hapus parameter success dari URL
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            });
+        }
+    });
+
+    // Set tab aktif saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        switchTab('active');
+    });
+
     function updateStatus(selectElement) {
         const discussionId = selectElement.dataset.id;
         const newStatus = selectElement.value;
@@ -1178,103 +1222,6 @@
             select.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
         }
     }
-
-    // Update fungsi filter untuk Active Tab
-    function filterActiveTable() {
-        const unitFilter = document.getElementById('activeUnitFilter').value.toLowerCase();
-        const statusFilter = document.getElementById('activeStatusFilter').value;
-        const table = document.querySelector('#active-content table');
-        const rows = table.querySelectorAll('tbody tr');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            const unitCell = row.querySelector('td:nth-child(4)');
-            const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan indeks kolom status
-            
-            const unitMatch = !unitFilter || (unitCell && unitCell.textContent.toLowerCase().includes(unitFilter));
-            const statusMatch = !statusFilter || (statusCell && statusCell.textContent.trim() === statusFilter);
-
-            if (unitMatch && statusMatch) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counter
-        const visibleCounter = document.querySelector('#activeVisibleCount');
-        if (visibleCounter) {
-            visibleCounter.textContent = visibleCount;
-        }
-    }
-
-    // Update fungsi filter untuk Target Overdue Tab
-    function filterTargetOverdueTable() {
-        const unitFilter = document.getElementById('targetOverdueUnitFilter').value.toLowerCase();
-        const statusFilter = document.getElementById('targetOverdueStatusFilter').value;
-        const table = document.querySelector('#target-overdue-content table');
-        const rows = table.querySelectorAll('tbody tr');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            const unitCell = row.querySelector('td:nth-child(4)');
-            const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan indeks kolom status
-            
-            const unitMatch = !unitFilter || (unitCell && unitCell.textContent.toLowerCase().includes(unitFilter));
-            const statusMatch = !statusFilter || (statusCell && statusCell.textContent.trim() === statusFilter);
-
-            if (unitMatch && statusMatch) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counter
-        const visibleCounter = document.querySelector('#targetOverdueVisibleCount');
-        if (visibleCounter) {
-            visibleCounter.textContent = visibleCount;
-        }
-    }
-
-    // Update fungsi filter untuk Commitment Overdue Tab
-    function filterCommitmentOverdueTable() {
-        const unitFilter = document.getElementById('commitmentOverdueUnitFilter').value.toLowerCase();
-        const statusFilter = document.getElementById('commitmentOverdueStatusFilter').value;
-        const table = document.querySelector('#commitment-overdue-content table');
-        const rows = table.querySelectorAll('tbody tr');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            const unitCell = row.querySelector('td:nth-child(4)');
-            const statusCell = row.querySelector('td:nth-child(12)'); // Sesuaikan dengan indeks kolom status
-            
-            const unitMatch = !unitFilter || (unitCell && unitCell.textContent.toLowerCase().includes(unitFilter));
-            const statusMatch = !statusFilter || (statusCell && statusCell.textContent.trim() === statusFilter);
-
-            if (unitMatch && statusMatch) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counter
-        const visibleCounter = document.querySelector('#commitmentOverdueVisibleCount');
-        if (visibleCounter) {
-            visibleCounter.textContent = visibleCount;
-        }
-    }
-
-    // Event listener tetap sama
-    document.addEventListener('DOMContentLoaded', function() {
-        filterActiveTable();
-        filterTargetOverdueTable();
-        filterCommitmentOverdueTable();
-    });
 </script>
 @push('scripts')
 @endpush

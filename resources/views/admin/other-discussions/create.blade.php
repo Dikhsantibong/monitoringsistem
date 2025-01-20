@@ -45,7 +45,6 @@
             <h3 class="text-gray-700 text-3xl font-medium">Tambah Pembahasan Baru</h3>
 
             <div class="mt-8">
-                <meta name="csrf-token" content="{{ csrf_token() }}">
                 <form id="createDiscussionForm" action="{{ route('admin.other-discussions.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onsubmit="return validateForm()">
                     @csrf
 
@@ -785,46 +784,64 @@ window.addEventListener('load', function() {
 @push('scripts')
 <script>
 async function generateNoPembahasan() {
-    try {
-        console.log('Memulai generate nomor pembahasan');
-        
-        const unit = document.getElementById('unit').value;
-        // Gunakan URL yang di-generate Laravel
-        const generateUrl = "{{ route('admin.other-discussions.generate-no-pembahasan') }}";
-        
-        console.log('Generate URL:', generateUrl);
-        console.log('Unit selected:', unit);
+    const unitSelect = document.getElementById('unit');
+    const noPembahasanInput = document.getElementById('no_pembahasan');
 
-        const response = await fetch(generateUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ unit: unit }),
-            credentials: 'same-origin'
+    if (!unitSelect.value) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Silakan pilih unit terlebih dahulu'
+        });
+        return;
+    }
+
+    try {
+        // Tampilkan loading
+        Swal.fire({
+            title: 'Generating...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
         });
 
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Response error:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch(`/generate-no-pembahasan?unit=${encodeURIComponent(unitSelect.value)}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
 
         const data = await response.json();
-        console.log('Response data:', data);
+        console.log('Response data:', data); // Debug log
         
-        if (data.success) {
-            document.getElementById('no_pembahasan').value = data.number;
+        // Tutup loading
+        Swal.close();
+        
+        if (data.success && data.no_pembahasan) {
+            noPembahasanInput.value = data.no_pembahasan;
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Nomor pembahasan berhasil digenerate',
+                timer: 1500,
+                showConfirmButton: false
+            });
         } else {
             throw new Error(data.message || 'Gagal generate nomor pembahasan');
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Gagal generate nomor pembahasan: ' + error.message);
+        console.error('Error details:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Gagal generate nomor pembahasan'
+        });
+        // Reset input jika gagal
+        noPembahasanInput.value = '';
     }
 }
 

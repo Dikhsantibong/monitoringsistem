@@ -23,6 +23,7 @@ Route::get('/pics/{section}', function ($section) {
 Route::get('/generate-no-pembahasan', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'generateNoPembahasan']);
 
 Route::get('/generate-numbers', [OtherDiscussionController::class, 'generateNumbers']); 
-// Route::post('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
-//     ->name('api.generate-no-pembahasan')
-//     ->middleware(['auth:sanctum']);
+Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
+    ->name('api.generate-no-pembahasan');
+    Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
+    ->name('api.generate-no-pembahasan');
