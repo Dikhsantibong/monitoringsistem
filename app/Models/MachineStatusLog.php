@@ -147,4 +147,6 @@ class MachineStatusLog extends Model
             ->whereBetween('created_at', [$this->tanggal_mulai, $this->target_selesai])
             ->exists();
     }
+
+    
 } 

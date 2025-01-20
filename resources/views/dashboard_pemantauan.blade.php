@@ -87,6 +87,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Nama Mesin Unit</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Serial Number</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Tanggal Mulai</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Target Selesai</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -111,10 +113,12 @@
                                             {{ $machine['status'] ?? 'Normal' }}
                                         </span>
                                     </td>
+                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">{{ $machine['tanggal_mulai'] ?? 'tidak ada data'}}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white"> {{ $machine[ 'target_selesai'] ?? 'tidak ada data' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                    <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                         Tidak ada data mesin
                                     </td>
                                 </tr>
@@ -137,7 +141,7 @@
                 </div>
             </div>
 
-            <!-- Progress Pekerjaan -->
+            <!-- Progress Pekerjaan --> 
             <div class="dashboard-card p-4 rounded-lg">
                 <h3 class="text-lg mb-4">Progress Pekerjaan</h3>
                 <div class="h-48">
@@ -220,7 +224,7 @@
                             const tbody = document.querySelector('table tbody');
                             tbody.innerHTML = `
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                    <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                         <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
                                     </td>
                                 </tr>
@@ -244,7 +248,7 @@
                                     const tbody = document.querySelector('table tbody');
                                     tbody.innerHTML = `
                                         <tr>
-                                            <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                            <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                                 Terjadi kesalahan saat memuat data
                                             </td>
                                         </tr>
@@ -267,7 +271,7 @@
             if (!machines || machines.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                        <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                             Tidak ada data mesin dengan status Mothballed
                         </td>
                     </tr>
@@ -280,17 +284,23 @@
                                   machine.status === 'Maintenance' ? 'bg-yellow-500' :
                                   machine.status === 'Overhaul' ? 'bg-red-500' : 'bg-green-500';
 
+                // Tambahkan pengecekan null dengan operator nullish coalescing
+                const tanggalMulai = machine.tanggal_mulai ?? 'N/A';
+                const targetSelesai = machine.target_selesai ?? 'N/A';
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-800">
                         <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${index + 1}</td>
-                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.type}</td>
-                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.unit_name}</td>
-                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.serial_number}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.type ?? 'N/A'}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.unit_name ?? 'N/A'}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${machine.serial_number ?? 'N/A'}</td>
                         <td class="px-4 py-2 whitespace-nowrap border border-gray-200">
                             <span class="px-2 py-1 text-xs rounded-full ${statusClass} text-white">
                                 ${machine.status || 'Normal'}
                             </span>
                         </td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${tanggalMulai}</td>
+                        <td class="px-4 py-2 whitespace-nowrap border border-gray-200 text-white">${targetSelesai}</td>
                     </tr>
                 `;
             });
@@ -321,7 +331,7 @@
                             const tbody = document.querySelector('table tbody');
                             tbody.innerHTML = `
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                    <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                         <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
                                     </td>
                                 </tr>
@@ -345,7 +355,7 @@
                                     const tbody = document.querySelector('table tbody');
                                     tbody.innerHTML = `
                                         <tr>
-                                            <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                            <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                                 Terjadi kesalahan saat memuat data
                                             </td>
                                         </tr>
@@ -385,7 +395,7 @@
                             const tbody = document.querySelector('table tbody');
                             tbody.innerHTML = `
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                    <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                         <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
                                     </td>
                                 </tr>
@@ -409,7 +419,7 @@
                                     const tbody = document.querySelector('table tbody');
                                     tbody.innerHTML = `
                                         <tr>
-                                            <td colspan="5" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
+                                            <td colspan="7" class="px-6 py-4 text-center whitespace-nowrap border border-gray-200 text-white">
                                                 Terjadi kesalahan saat memuat data
                                             </td>
                                         </tr>

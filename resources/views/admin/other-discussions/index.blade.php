@@ -183,7 +183,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
@@ -202,7 +202,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[300px] truncate border border-gray-200 break-words">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 border border-gray-200">
                                             <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
@@ -336,7 +336,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
@@ -356,7 +356,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200 break break-words">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[400px] truncate border border-gray-200">
                                             <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
@@ -483,7 +483,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tingkat Resiko</th>
@@ -502,7 +502,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200 break-words">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[400px] truncate border border-gray-200">
                                             <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
@@ -624,7 +624,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[200px]">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Risk Level</th>
@@ -643,7 +643,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200 break-words">{{ $discussion->topic }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             <div class="w-[400px]">
                                                 <div class="mb-1 break-words whitespace-pre-line">
