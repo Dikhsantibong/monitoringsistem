@@ -216,7 +216,7 @@
         
         document.getElementById('qrModal').classList.remove('hidden');
         
-        fetch('/attendance/generate-qr')
+        fetch('{{ url("/public/attendance/generate-qr") }}')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {

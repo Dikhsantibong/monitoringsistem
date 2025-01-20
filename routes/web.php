@@ -496,9 +496,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])
+    Route::get('/public/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])
         ->name('attendance.generate-qr');
-    Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scan'])
+    Route::get('/public/attendance/scan/{token}', [AttendanceController::class, 'scan'])
         ->name('attendance.scan');
 });
 
