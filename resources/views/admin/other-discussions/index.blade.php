@@ -203,17 +203,12 @@
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->no_pembahasan }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->unit }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap max-w-[200px] truncate border border-gray-200">{{ $discussion->topic }}</td>
-                                        <td class="px-6 py-4 border border-gray-200 max-w-[400px] overflow-hidden text-ellipsis whitespace-nowrap">
-                                            <div class="mb-1">
-                                                {{ $discussion->target }}
-                                            </div>
+                                        <td class="px-6 py-4 whitespace-nowrap border border-gray-200 ">
+                                            <div class="mb-1 ">{{ $discussion->target }}</div>
                                             <div class="text-sm text-gray-500">
                                                 Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
                                             </div>
                                         </td>
-                                        
-                                        
-                                        
                                         <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                             @if($discussion->department_id && $discussion->section_id)
                                                 {{ $discussion->pic }}
