@@ -135,7 +135,7 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validasi request
+            // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string',
                 'position' => 'required|string',
@@ -144,35 +144,48 @@ class AttendanceController extends Controller
                 'signature' => 'required|string'
             ]);
 
-            // Set timezone ke WITA
-            $now = now()->setTimezone('Asia/Makassar');
+            // Cek token
+            $token = AttendanceToken::where('token', $request->token)
+                ->where('expires_at', '>=', now())
+                ->first();
 
-            // Debug log
-            \Log::info('Processing attendance with signature', [
-                'name' => $request->name,
-                'signature_length' => strlen($request->signature),
-                'time' => $now->format('Y-m-d H:i:s')
-            ]);
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token tidak valid atau sudah kadaluarsa'
+                ], 400);
+            }
 
-            // Buat record attendance dengan waktu WITA
+            // Simpan attendance
             $attendance = Attendance::create([
-                'name' => $request->name,
-                'position' => $request->position,
-                'division' => $request->division,
-                'token' => $request->token,
-                'time' => $now,
-                'signature' => $request->signature
+                'name' => $validated['name'],
+                'position' => $validated['position'],
+                'division' => $validated['division'],
+                'token' => $validated['token'],
+                'signature' => $validated['signature'],
+                'time' => now(),
+                'unit_source' => session('unit', 'poasia')
             ]);
 
-            return redirect()->route('attendance.success')
-                ->with('success', 'Absensi berhasil disimpan');
+            return response()->json([
+                'success' => true,
+                'message' => 'Absensi berhasil disimpan',
+                'data' => $attendance
+            ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error saving attendance: ' . $e->getMessage());
-            return back()
-                ->with('error', 'Gagal menyimpan absensi. Silakan coba lagi.')
-                ->withInput();
+            \Log::error('Attendance Store Error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan absensi'
+            ], 500);
         }
+    }
+
+    public function success()
+    {
+        return view('admin.daftar_hadir.success');
     }
 
     // Tambahkan method untuk menampilkan tanda tangan
