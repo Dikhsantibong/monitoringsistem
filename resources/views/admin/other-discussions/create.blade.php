@@ -708,51 +708,31 @@ document.addEventListener('DOMContentLoaded', function() {
 // Tambahkan script untuk auto-generate nomor pembahasan
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function generateNoPembahasan() {
-        // Ambil value unit dari select/input
-        const unitElement = document.getElementById('unit');
-        const unit = unitElement ? unitElement.value : '';
-        
-        console.log('Sending unit:', unit); // Debug
+    const unitSelect = document.getElementById('unit');
+    const noPembahasanInput = document.getElementById('no_pembahasan');
 
-        fetch("{{ route('admin.other-discussions.generate-no-pembahasan') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            // Pastikan format body sesuai dengan yang diharapkan controller
-            body: JSON.stringify({
-                unit: unit
-            }),
-            credentials: 'same-origin'
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.message || `HTTP error! status: ${response.status}`);
+    // Generate no pembahasan saat unit dipilih
+    unitSelect.addEventListener('change', async function() {
+        if (this.value) {
+            try {
+                const response = await fetch(`/api/generate-no-pembahasan?unit=${encodeURIComponent(this.value)}`);
+                const data = await response.json();
+                if (data.success) {
+                    noPembahasanInput.value = data.no_pembahasan;
+                }
+            } catch (error) {
+                console.error('Error generating no pembahasan:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Gagal generate nomor pembahasan'
                 });
             }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                document.getElementById('no_pembahasan').value = data.number;
-            } else {
-                throw new Error(data.message || 'Gagal generate nomor pembahasan');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal generate nomor pembahasan: ' + error.message);
-        });
-    }
-
-    // Attach ke window object
-    window.generateNoPembahasan = generateNoPembahasan;
+        } else {
+            noPembahasanInput.value = '';
+        }
+    });
 });
-</script>
 
 // Fungsi validasi form sebelum submit
 function validateForm() {
@@ -835,6 +815,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+</script>
+
+<!-- Letakkan script di akhir content section -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function generateNoPembahasan() {
+        const unit = document.getElementById('unit').value;
+        const generateUrl = "{{ route('admin.other-discussions.generate-no-pembahasan') }}";
+        
+        fetch(generateUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ unit: unit }),
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('no_pembahasan').value = data.number;
+            } else {
+                throw new Error(data.message || 'Gagal generate nomor pembahasan');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Gagal generate nomor pembahasan. Silakan coba lagi.');
+        });
+    }
+
+    // Attach ke window object
+    window.generateNoPembahasan = generateNoPembahasan;
 });
 </script>
 @endsection     
