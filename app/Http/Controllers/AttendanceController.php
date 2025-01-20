@@ -135,12 +135,6 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            // Log request data
-            \Log::info('Attendance Store Request:', [
-                'request_data' => $request->all(),
-                'session_unit' => session('unit')
-            ]);
-
             // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -150,79 +144,47 @@ class AttendanceController extends Controller
                 'signature' => 'required|string'
             ]);
 
-            // Cek token dan log hasilnya
-            $token = AttendanceToken::where('token', $request->token)
-                ->where('expires_at', '>=', now())
-                ->first();
-
-            \Log::info('Token Check:', [
-                'token_input' => $request->token,
-                'token_found' => $token ? true : false,
-                'token_expires' => $token ? $token->expires_at : null
-            ]);
-
-            if (!$token) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token tidak valid atau sudah kadaluarsa',
-                    'error_type' => 'invalid_token'
-                ], 400);
-            }
-
-            // Cek apakah sudah absen dengan token ini
-            $existingAttendance = Attendance::where('token', $request->token)->first();
-            if ($existingAttendance) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token ini sudah digunakan untuk absensi',
-                    'error_type' => 'token_used'
-                ], 400);
-            }
-
             DB::beginTransaction();
             try {
-                // Simpan attendance
-                $attendance = Attendance::create([
+                // Generate ID baru
+                $lastId = DB::connection(session('unit'))
+                           ->table('attendance')
+                           ->max('id') ?? 0;
+                $newId = $lastId + 1;
+
+                // Simpan attendance dengan ID manual
+                $attendance = DB::connection(session('unit'))
+                              ->table('attendance')
+                              ->insert([
+                    'id' => $newId,
                     'name' => $validated['name'],
                     'position' => $validated['position'],
                     'division' => $validated['division'],
                     'token' => $validated['token'],
                     'signature' => $validated['signature'],
                     'time' => now(),
-                    'unit_source' => session('unit', 'poasia')
+                    'unit_source' => session('unit', 'poasia'),
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
 
                 \Log::info('Attendance Created:', [
-                    'attendance_id' => $attendance->id,
-                    'name' => $attendance->name,
-                    'time' => $attendance->time
+                    'attendance_id' => $newId,
+                    'name' => $validated['name'],
+                    'time' => now()
                 ]);
 
                 DB::commit();
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Absensi berhasil disimpan',
-                    'data' => $attendance
+                    'message' => 'Absensi berhasil disimpan'
                 ]);
 
             } catch (\Exception $e) {
                 DB::rollBack();
                 throw $e;
             }
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::warning('Validation Error:', [
-                'errors' => $e->errors(),
-                'request_data' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Data yang dimasukkan tidak valid',
-                'errors' => $e->errors(),
-                'error_type' => 'validation_error'
-            ], 422);
 
         } catch (\Exception $e) {
             \Log::error('Attendance Store Error:', [
@@ -233,19 +195,14 @@ class AttendanceController extends Controller
                 'request_data' => $request->all()
             ]);
             
-            $errorMessage = config('app.debug') 
-                ? 'Error: ' . $e->getMessage()
-                : 'Terjadi kesalahan saat menyimpan absensi. Silakan coba lagi.';
-            
             return response()->json([
                 'success' => false,
-                'message' => $errorMessage,
-                'error_type' => 'system_error',
-                'debug_info' => config('app.debug') ? [
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'debug_info' => [
                     'error' => $e->getMessage(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine()
-                ] : null
+                ]
             ], 500);
         }
     }
