@@ -215,9 +215,24 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
                                         @foreach ($serviceRequests as $index => $sr)
-                                            <tr class="odd:bg-white even:bg-gray-100">
-                                                <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $sr->id }}</td>
+                                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                                <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
+                                                <td class="px-4 py-2 border border-gray-200">
+                                                    <div class="flex items-center gap-2">
+                                                        {{ $sr->id }}
+                                                        @if($sr->created_at->diffInHours(now()) < 24)
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
+                                                                    New
+                                                                </span>
+                                                                <span class="text-xs text-gray-500">
+                                                                    {{ $sr->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     @if($sr->powerPlant)
                                                         {{ $sr->powerPlant->name }}
@@ -356,9 +371,24 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($workOrders as $index => $wo)
-                                            <tr class="odd:bg-white even:bg-gray-100" data-id="{{ $wo->id }}">
-                                                <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $wo->id }}</td>
+                                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                                <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
+                                                <td class="px-4 py-2 border border-gray-200">
+                                                    <div class="flex items-center gap-2">
+                                                        {{ $wo->id }}
+                                                        @if($wo->created_at->diffInHours(now()) < 24)
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 animate-pulse"></span>
+                                                                    New
+                                                                </span>
+                                                                <span class="text-xs text-gray-500">
+                                                                    {{ $wo->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     @if($wo->powerPlant)
                                                         {{ $wo->powerPlant->name }}
@@ -498,9 +528,24 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
                                         @foreach ($woBacklogs as $index => $backlog)
-                                            <tr class="odd:bg-white even:bg-gray-100">
-                                                <td class="py-2 px-4 border border-gray-200">{{ $index + 1 }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->no_wo }}</td>
+                                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                                <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
+                                                <td class="px-4 py-2 border border-gray-200 ">
+                                                    <div class="flex items-center gap-2">
+                                                        {{ $backlog->id }}
+                                                        @if($backlog->created_at->diffInHours(now()) < 24)
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5 animate-pulse"></span>
+                                                                    New
+                                                                </span>
+                                                                <span class="text-xs text-gray-500">
+                                                                    {{ $backlog->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     @if($backlog->powerPlant)
                                                         {{ $backlog->powerPlant->name }}
@@ -991,12 +1036,11 @@
         const table = document.getElementById('srTable');
         const rows = table.getElementsByTagName('tr');
         let visibleCount = 0;
-        const totalRows = rows.length - 1; // Kurangi 1 untuk header
 
         // Simpan filter yang sedang aktif
-        const status = document.getElementById('srStatusFilter')?.value || '';
-        const unit = document.getElementById('srUnitFilter')?.value || '';
-        const downtime = document.getElementById('srDowntimeFilter')?.value || '';
+        const status = document.getElementById('srStatusFilter').value;
+        const unit = document.getElementById('srUnitFilter').value;
+        const downtime = document.getElementById('srDowntimeFilter').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1004,27 +1048,31 @@
             let found = false;
             let matchesFilter = true;
 
-            // Logika filter
-            if (status && !cells[4].textContent.trim().includes(status)) matchesFilter = false;
-            if (unit && !cells[2].textContent.trim().includes(unit)) matchesFilter = false;
+            // Cek apakah baris memenuhi kriteria filter
+            if (status) {
+                const statusCell = cells[4].textContent.trim();
+                if (!statusCell.includes(status)) matchesFilter = false;
+            }
+            if (unit) {
+                const unitCell = cells[2].textContent.trim();
+                if (!unitCell.includes(unit)) matchesFilter = false;
+            }
             if (downtime) {
-                const downtimeValue = cells[6].textContent.trim();
-                if ((downtime === 'Yes' && downtimeValue === '0') || 
-                    (downtime === 'No' && downtimeValue !== '0')) {
-                    matchesFilter = false;
+                const downtimeCell = cells[6].textContent.trim();
+                if (downtime === 'Yes' && downtimeCell === '0') matchesFilter = false;
+                if (downtime === 'No' && downtimeCell !== '0') matchesFilter = false;
+            }
+
+            // Cek apakah baris mengandung kata yang dicari
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
                 }
             }
 
-            // Logika pencarian
-            if (searchValue) {
-                found = Array.from(cells).some(cell => 
-                    cell.textContent.toLowerCase().includes(searchValue)
-                );
-            } else {
-                found = true;
-            }
-
-            // Tampilkan/sembunyikan baris
+            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
             if (found && matchesFilter) {
                 row.style.display = '';
                 visibleCount++;
@@ -1035,7 +1083,6 @@
 
         // Update counter
         document.getElementById('srVisibleCount').textContent = visibleCount;
-        document.getElementById('srTotalCount').textContent = totalRows;
     }
 
     // Fungsi pencarian untuk tabel WO
@@ -1044,11 +1091,10 @@
         const table = document.getElementById('woTable');
         const rows = table.getElementsByTagName('tr');
         let visibleCount = 0;
-        const totalRows = rows.length - 1; // Kurangi 1 untuk header
 
         // Simpan filter yang sedang aktif
-        const status = document.getElementById('woStatusFilter')?.value || '';
-        const unit = document.getElementById('woUnitFilter')?.value || '';
+        const status = document.getElementById('woStatusFilter').value;
+        const unit = document.getElementById('woUnitFilter').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1056,20 +1102,26 @@
             let found = false;
             let matchesFilter = true;
 
-            // Logika filter
-            if (status && !row.querySelector('td[data-column="status"]').textContent.trim().includes(status)) matchesFilter = false;
-            if (unit && !cells[2].textContent.trim().includes(unit)) matchesFilter = false;
-
-            // Logika pencarian
-            if (searchValue) {
-                found = Array.from(cells).some(cell => 
-                    cell.textContent.toLowerCase().includes(searchValue)
-                );
-            } else {
-                found = true;
+            // Cek apakah baris memenuhi kriteria filter
+            if (status) {
+                const statusCell = row.querySelector('td[data-column="status"]').textContent.trim();
+                if (!statusCell.includes(status)) matchesFilter = false;
+            }
+            if (unit) {
+                const unitCell = cells[2].textContent.trim();
+                if (!unitCell.includes(unit)) matchesFilter = false;
             }
 
-            // Tampilkan/sembunyikan baris
+            // Cek apakah baris mengandung kata yang dicari
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
             if (found && matchesFilter) {
                 row.style.display = '';
                 visibleCount++;
@@ -1080,7 +1132,6 @@
 
         // Update counter
         document.getElementById('woVisibleCount').textContent = visibleCount;
-        document.getElementById('woTotalCount').textContent = totalRows;
     }
 
     // Fungsi pencarian untuk tabel Backlog
@@ -1089,11 +1140,10 @@
         const table = document.getElementById('backlogTable');
         const rows = table.getElementsByTagName('tr');
         let visibleCount = 0;
-        const totalRows = rows.length - 1; // Kurangi 1 untuk header
 
         // Simpan filter yang sedang aktif
-        const status = document.getElementById('backlogStatusFilter')?.value || '';
-        const unit = document.getElementById('backlogUnitFilter')?.value || '';
+        const status = document.getElementById('backlogStatusFilter').value;
+        const unit = document.getElementById('backlogUnitFilter').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1101,20 +1151,26 @@
             let found = false;
             let matchesFilter = true;
 
-            // Logika filter
-            if (status && !cells[5].textContent.trim().includes(status)) matchesFilter = false;
-            if (unit && !cells[2].textContent.trim().includes(unit)) matchesFilter = false;
-
-            // Logika pencarian
-            if (searchValue) {
-                found = Array.from(cells).some(cell => 
-                    cell.textContent.toLowerCase().includes(searchValue)
-                );
-            } else {
-                found = true;
+            // Cek apakah baris memenuhi kriteria filter
+            if (status) {
+                const statusCell = cells[5].textContent.trim();
+                if (!statusCell.includes(status)) matchesFilter = false;
+            }
+            if (unit) {
+                const unitCell = cells[2].textContent.trim();
+                if (!unitCell.includes(unit)) matchesFilter = false;
             }
 
-            // Tampilkan/sembunyikan baris
+            // Cek apakah baris mengandung kata yang dicari
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                if (cellText.includes(searchValue)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
             if (found && matchesFilter) {
                 row.style.display = '';
                 visibleCount++;
@@ -1125,18 +1181,13 @@
 
         // Update counter
         document.getElementById('backlogVisibleCount').textContent = visibleCount;
-        document.getElementById('backlogTotalCount').textContent = totalRows;
     }
 
-    // Inisialisasi saat halaman dimuat
+    // Event listeners untuk pencarian real-time
     document.addEventListener('DOMContentLoaded', function() {
-        // Update initial counts
-        updateTableCounts();
-
-        // Setup event listeners untuk pencarian
         const searchInputs = {
             'searchSR': searchSRTable,
-            'searchWO': searchWOTable,
+            'searchWO': searchWOTable,  
             'searchBacklog': searchBacklogTable
         };
 
@@ -1144,12 +1195,138 @@
             const input = document.getElementById(inputId);
             if (input) {
                 const debouncedSearch = debounce(searchFunction, 300);
+                
+                // Event listener untuk input
                 input.addEventListener('input', debouncedSearch);
+                
+                // Event listener untuk tombol Enter
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchFunction();
+                    }
+                });
+
+                // Event listener untuk tombol search
+                const searchButton = input.nextElementSibling;
+                if (searchButton) {
+                    searchButton.addEventListener('click', searchFunction);
+                }
             }
         });
     });
 
-    // Fungsi untuk menghitung total data di tabel
+    // Tambahkan debounce untuk pencarian real-time
+    const debouncedSRSearch = debounce(() => searchSRTable(), 300);
+    const debouncedWOSearch = debounce(() => searchWOTable(), 300);
+    const debouncedBacklogSearch = debounce(() => searchBacklogTable(), 300);
+
+    document.getElementById('searchSR').addEventListener('input', debouncedSRSearch);
+    document.getElementById('searchWO').addEventListener('input', debouncedWOSearch);
+    document.getElementById('searchBacklog').addEventListener('input', debouncedBacklogSearch);
+
+    // Fungsi untuk memperbarui jumlah data yang ditampilkan
+    function updateTableCounts(tableId, visibleCountId, totalCountId) {
+        const table = document.getElementById(tableId);
+        const rows = table.getElementsByTagName('tr');
+        let visibleCount = 0;
+        let totalCount = 0;
+
+        // Hitung jumlah baris yang terlihat dan total (skip header)
+        for (let i = 1; i < rows.length; i++) {
+            totalCount++;
+            if (rows[i].style.display !== 'none') {
+                visibleCount++;
+            }
+        }
+
+        // Update tampilan jumlah
+        document.getElementById(visibleCountId).textContent = visibleCount;
+        document.getElementById(totalCountId).textContent = totalCount;
+    }
+
+    // Perbaikan fungsi pencarian
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inisialisasi event listeners untuk search
+        const searchInputs = {
+            'searchSR': { tableId: 'srTable', counterId: 'srVisibleCount' },
+            'searchWO': { tableId: 'woTable', counterId: 'woVisibleCount' },
+            'searchBacklog': { tableId: 'backlogTable', counterId: 'backlogVisibleCount' }
+        };
+
+        Object.entries(searchInputs).forEach(([inputId, config]) => {
+            const searchInput = document.getElementById(inputId);
+            if (searchInput) {
+                // Fungsi pencarian untuk setiap tabel
+                const searchTable = () => {
+                    const searchValue = searchInput.value.toLowerCase();
+                    const table = document.getElementById(config.tableId);
+                    const rows = table.getElementsByTagName('tr');
+                    let visibleCount = 0;
+
+                    // Mulai dari index 1 untuk melewati header
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        const cells = row.getElementsByTagName('td');
+                        let found = false;
+
+                        for (let j = 0; j < cells.length; j++) {
+                            const cellText = cells[j].textContent.toLowerCase();
+                            if (cellText.includes(searchValue)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        row.style.display = found ? '' : 'none';
+                        if (found) visibleCount++;
+                    }
+
+                    // Update counter
+                    const counter = document.getElementById(config.counterId);
+                    if (counter) {
+                        counter.textContent = visibleCount;
+                    }
+                };
+
+                // Tambahkan event listeners
+                const debouncedSearch = debounce(searchTable, 300);
+                searchInput.addEventListener('input', debouncedSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchTable();
+                    }
+                });
+
+                // Tambahkan event listener untuk tombol search jika ada
+                const searchButton = searchInput.nextElementSibling;
+                if (searchButton && searchButton.tagName === 'BUTTON') {
+                    searchButton.addEventListener('click', searchTable);
+                }
+            }
+        });
+    });
+
+    // Fungsi untuk reset pencarian
+    function resetSearch(inputId, tableId) {
+        const searchInput = document.getElementById(inputId);
+        if (searchInput) {
+            searchInput.value = '';
+            const table = document.getElementById(tableId);
+            const rows = table.getElementsByTagName('tr');
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+            // Reset counter
+            const counterId = inputId === 'searchSR' ? 'srVisibleCount' :
+                             inputId === 'searchWO' ? 'woVisibleCount' : 'backlogVisibleCount';
+            const counter = document.getElementById(counterId);
+            if (counter) {
+                counter.textContent = rows.length - 1; // -1 untuk header
+            }
+        }
+    }
+
+    // Fungsi untuk memperbarui jumlah data yang ditampilkan
     function updateTableCounts() {
         const tables = [
             { tableId: 'srTable', visibleId: 'srVisibleCount', totalId: 'srTotalCount' },
@@ -1161,26 +1338,26 @@
             const table = document.getElementById(tableId);
             if (table) {
                 const rows = table.getElementsByTagName('tr');
-                const totalRows = rows.length - 1; // Kurangi 1 untuk header
-                let visibleRows = 0;
+                const totalCount = rows.length - 1; // -1 untuk header
+                let visibleCount = 0;
 
-                // Hitung baris yang terlihat (tidak di-hide)
                 for (let i = 1; i < rows.length; i++) {
                     if (rows[i].style.display !== 'none') {
-                        visibleRows++;
+                        visibleCount++;
                     }
                 }
 
-                // Update total data
-                const totalElement = document.getElementById(totalId);
-                if (totalElement) totalElement.textContent = totalRows;
-
-                // Update data yang terlihat
                 const visibleElement = document.getElementById(visibleId);
-                if (visibleElement) visibleElement.textContent = visibleRows;
+                const totalElement = document.getElementById(totalId);
+                
+                if (visibleElement) visibleElement.textContent = visibleCount;
+                if (totalElement) totalElement.textContent = totalCount;
             }
         });
     }
+
+    // Panggil updateTableCounts saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', updateTableCounts);
 
     function filterSRTable() {
         const status = document.getElementById('srStatusFilter').value;
