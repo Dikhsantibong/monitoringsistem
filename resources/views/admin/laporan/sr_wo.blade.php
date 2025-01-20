@@ -532,7 +532,7 @@
                                                 <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="px-4 py-2 border border-gray-200 ">
                                                     <div class="flex items-center gap-2">
-                                                        {{ $backlog->id }}
+                                                        {{ $backlog->no_wo }}
                                                         @if($backlog->created_at->diffInHours(now()) < 24)
                                                             <div class="flex items-center gap-1.5">
                                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
