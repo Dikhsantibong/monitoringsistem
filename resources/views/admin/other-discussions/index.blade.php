@@ -92,22 +92,26 @@
                         </div>
 
                         <!-- Filter Unit -->
-                        {{-- @if(session('unit') === 'mysql')
                         <div>
                             <label for="unit-source" class="block text-sm font-medium text-gray-700 mb-1">Filter Unit</label>
-                            <select id="unit-source" 
-                                    name="unit_source"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    onchange="this.form.submit()">
-                                <option value="">Semua Unit</option>
-                                <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
-                                <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Unit Wua Wua</option>
-                                <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Unit Poasia</option>
-                                <option value="mysql_kolaka" {{ request('unit_source') == 'mysql_kolaka' ? 'selected' : '' }}>Unit Kolaka</option>
-                                <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Unit Bau Bau</option>
-                            </select>
+                            <form id="unitFilterForm" action="{{ route('admin.other-discussions.index') }}" method="GET">
+                                @foreach(request()->except(['unit_source', 'page']) as $key => $value)
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endforeach
+                                
+                                <select id="unit-source" 
+                                        name="unit_source"
+                                        onchange="this.form.submit()"
+                                        class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option value="">Semua Unit</option>
+                                    @foreach($powerPlants as $unit)
+                                        <option value="{{ $unit->unit_source }}" {{ request('unit_source') == $unit->unit_source ? 'selected' : '' }}>
+                                            {{ $unit->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
                         </div>
-                        @endif --}}
 
                         <!-- Filter Status -->
                         {{-- <div>
@@ -182,7 +186,28 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No SR</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No Pembahasan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[150px]">
+                                        <div class="flex flex-col gap-2">
+                                            <span>Unit</span>
+                                            <form id="unitFilterForm" action="{{ route('admin.other-discussions.index') }}" method="GET">
+                                                @foreach(request()->except(['unit_source', 'page']) as $key => $value)
+                                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                                @endforeach
+                                                
+                                                <select id="unit-source" 
+                                                        name="unit_source"
+                                                        onchange="this.form.submit()"
+                                                        class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                    <option value="">Semua Unit</option>
+                                                    @foreach($powerPlants as $unit)
+                                                        <option value="{{ $unit->unit_source }}" {{ request('unit_source') == $unit->unit_source ? 'selected' : '' }}>
+                                                            {{ $unit->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </form>
+                                        </div>
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[300px]">Topik</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase w-[400px]">Sasaran</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">PIC Sasaran</th>

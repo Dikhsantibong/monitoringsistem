@@ -78,7 +78,8 @@ class OtherDiscussion extends Model
         'priority_level',
         'status',
         'previous_commitment',
-        'next_commitment'
+        'next_commitment',
+        'unit_source',
     ];
 
     protected $dates = [

@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 use App\Events\OtherDiscussionUpdated;
 use Illuminate\Support\Facades\Log;
 
+
 class OtherDiscussionController extends Controller
 {
     public function index()
@@ -23,14 +24,10 @@ class OtherDiscussionController extends Controller
         $status = request('status');
         $unitSource = request('unit_source');
 
-        // Ambil daftar nama unit dari power_plants berdasarkan unit_source
-        $powerPlantNames = [];
-        if ($unitSource) {
-            $powerPlantNames = DB::table('power_plants')
-                ->where('unit_source', $unitSource)
-                ->pluck('name')
-                ->toArray();
-        }
+        // Ambil data PowerPlant untuk dropdown filter
+        $powerPlants = PowerPlant::select('name', 'unit_source')
+            ->distinct()
+            ->get();
 
         // Base query untuk semua tab
         $baseQuery = OtherDiscussion::with(['commitments' => function($q) {
@@ -43,24 +40,27 @@ class OtherDiscussionController extends Controller
                   ->orWhere('pic', 'like', "%{$search}%");
             });
         })
-        ->when($unitSource, function($q) use ($powerPlantNames) {
-            $q->whereIn('unit', $powerPlantNames);
+        ->when($unitSource, function($q) use ($unitSource) {
+            $powerPlant = PowerPlant::where('unit_source', $unitSource)->first();
+            if ($powerPlant) {
+                $q->where('unit', $powerPlant->name);
+            }
         });
 
-        // Active Discussions - diurutkan berdasarkan created_at terbaru
+        // Active Discussions
         $activeDiscussions = (clone $baseQuery)
             ->where('status', 'Open')
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'active_page');
 
-        // Target Overdue - diurutkan berdasarkan created_at terbaru
+        // Target Overdue
         $targetOverdueDiscussions = (clone $baseQuery)
             ->where('status', 'Open')
             ->whereDate('target_deadline', '<', now())
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'target_page');
 
-        // Commitment Overdue - diurutkan berdasarkan created_at terbaru
+        // Commitment Overdue
         $commitmentOverdueDiscussions = (clone $baseQuery)
             ->whereHas('commitments', function ($query) {
                 $query->where('status', 'Open')
@@ -69,7 +69,7 @@ class OtherDiscussionController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'commitment_page');
 
-        // Closed Discussions - diurutkan berdasarkan created_at terbaru
+        // Closed Discussions
         $closedDiscussions = (clone $baseQuery)
             ->where('status', 'Closed')
             ->orderBy('created_at', 'desc')
@@ -86,14 +86,12 @@ class OtherDiscussionController extends Controller
             'closed' => (clone $baseCountQuery)->where('status', 'Closed')->count()
         ];
 
-        $units = ['UP Kendari', 'Unit Wua Wua', 'Unit Poasia', 'Unit Kolaka', 'Unit Bau Bau']; // Sesuaikan dengan data unit yang tersedia
-        
         return view('admin.other-discussions.index', [
             'activeDiscussions' => $activeDiscussions,
             'targetOverdueDiscussions' => $targetOverdueDiscussions,
             'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions,
             'closedDiscussions' => $closedDiscussions,
-            'units' => $units,
+            'powerPlants' => $powerPlants,
             'counts' => $counts
         ]);
     }
