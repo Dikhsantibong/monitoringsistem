@@ -18,54 +18,58 @@ use Illuminate\Support\Facades\Log;
 
 class OtherDiscussionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $search = request('search');
-        $status = request('status');
-        $unitSource = request('unit_source');
-
-        // Ambil data PowerPlant untuk dropdown filter
-        $powerPlants = PowerPlant::select('name', 'unit_source')
-            ->distinct()
-            ->get();
+        $search = $request->search;
+        $status = $request->status;
+        $unit = $request->unit;
 
         // Base query untuk semua tab
-        $baseQuery = OtherDiscussion::with(['commitments' => function($q) {
-            $q->with(['department', 'section']);
-        }])
-        ->when($search, function($q) use ($search) {
-            $q->where(function($q) use ($search) {
+        $query = OtherDiscussion::query()
+            ->with(['commitments' => function($q) {
+                $q->with(['department', 'section']);
+            }]);
+
+        // Filter berdasarkan pencarian
+        if ($search) {
+            $query->where(function($q) use ($search) {
                 $q->where('topic', 'like', "%{$search}%")
                   ->orWhere('unit', 'like', "%{$search}%")
                   ->orWhere('pic', 'like', "%{$search}%");
             });
-        })
-        ->when($unitSource, function($q) use ($unitSource) {
-            $powerPlant = PowerPlant::where('unit_source', $unitSource)->first();
-            if ($powerPlant) {
-                $q->where('unit', $powerPlant->name);
-            }
-        })
-        ->when($status, function($q) use ($status) {
-            $q->where('status', $status);
-        });
+        }
 
+        // Filter berdasarkan unit (nama unit)
+        if ($unit) {
+            // Debug log untuk melihat nilai unit yang dipilih
+            \Log::info('Selected unit:', ['unit' => $unit]);
+            
+            $query->where('unit', 'like', "%{$unit}%");
+            
+            // Debug log untuk melihat SQL query yang dijalankan
+            \Log::info('SQL Query:', ['sql' => $query->toSql()]);
+        }
+
+        // Filter berdasarkan status
+        if ($status) {
+            $query->where('status', $status);
+        }
 
         // Active Discussions
-        $activeDiscussions = (clone $baseQuery)
+        $activeDiscussions = (clone $query)
             ->where('status', 'Open')
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'active_page');
 
         // Target Overdue
-        $targetOverdueDiscussions = (clone $baseQuery)
+        $targetOverdueDiscussions = (clone $query)
             ->where('status', 'Open')
             ->whereDate('target_deadline', '<', now())
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'target_page');
 
         // Commitment Overdue
-        $commitmentOverdueDiscussions = (clone $baseQuery)
+        $commitmentOverdueDiscussions = (clone $query)
             ->whereHas('commitments', function ($query) {
                 $query->where('status', 'Open')
                     ->whereDate('deadline', '<', now());
@@ -74,21 +78,20 @@ class OtherDiscussionController extends Controller
             ->paginate(10, ['*'], 'commitment_page');
 
         // Closed Discussions
-        $closedDiscussions = (clone $baseQuery)
+        $closedDiscussions = (clone $query)
             ->where('status', 'Closed')
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'closed_page');
 
-        // Hitung total untuk badge
-        $baseCountQuery = (clone $baseQuery);
-        $counts = [
-            'active' => (clone $baseCountQuery)->where('status', 'Open')->count(),
-            'target_overdue' => (clone $baseCountQuery)->where('status', 'Open')->whereDate('target_deadline', '<', now())->count(),
-            'commitment_overdue' => (clone $baseCountQuery)->whereHas('commitments', function ($query) {
-                $query->where('status', 'Open')->whereDate('deadline', '<', now());
-            })->count(),
-            'closed' => (clone $baseCountQuery)->where('status', 'Closed')->count()
-        ];
+        // Ambil data PowerPlant untuk dropdown filter
+        $powerPlants = PowerPlant::select('name', 'unit_source')
+            ->orderBy('name')
+            ->get();
+
+        // Debug log untuk melihat hasil query
+        \Log::info('Active Discussions Count:', ['count' => $activeDiscussions->count()]);
+        \Log::info('Target Overdue Count:', ['count' => $targetOverdueDiscussions->count()]);
+        \Log::info('Closed Discussions Count:', ['count' => $closedDiscussions->count()]);
 
         return view('admin.other-discussions.index', [
             'activeDiscussions' => $activeDiscussions,
@@ -96,7 +99,14 @@ class OtherDiscussionController extends Controller
             'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions,
             'closedDiscussions' => $closedDiscussions,
             'powerPlants' => $powerPlants,
-            'counts' => $counts
+            'counts' => [
+                'active' => $activeDiscussions->total(),
+                'target_overdue' => $targetOverdueDiscussions->total(),
+                'commitment_overdue' => (clone $query)->whereHas('commitments', function ($query) {
+                    $query->where('status', 'Open')->whereDate('deadline', '<', now());
+                })->count(),
+                'closed' => $closedDiscussions->total()
+            ]
         ]);
     }
 

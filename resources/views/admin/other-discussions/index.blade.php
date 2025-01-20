@@ -150,20 +150,61 @@
                                             <div class="flex flex-col gap-2">
                                                 <span>Unit</span>
                                                 <form id="unitFilterForm" action="{{ route('admin.other-discussions.index') }}" method="GET">
-                                                    @foreach(request()->except(['unit_source', 'page']) as $key => $value)
+                                                    <input type="hidden" name="tab" value="{{ request('tab', 'active') }}">
+                                                    
+                                                    @foreach(request()->except(['unit', 'page', 'tab']) as $key => $value)
                                                         <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                                     @endforeach
                                                     
-                                                    <select id="unit-source" 
-                                                            name="unit_source"
-                                                            onchange="this.form.submit()"
+                                                    <select id="unit" 
+                                                            name="unit" 
+                                                            onchange="this.form.submit()" 
                                                             class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
                                                         <option value="">Semua Unit</option>
-                                                        @foreach($powerPlants as $unit)
-                                                            <option value="{{ $unit->unit_source }}" {{ request('unit_source') == $unit->unit_source ? 'selected' : '' }}>
-                                                                {{ $unit->name }}
-                                                            </option>
-                                                        @endforeach
+                                                        <!-- Unit Kendari -->
+                                                        <optgroup label="UP KENDARI">
+                                                            @foreach($powerPlants->where('unit_source', 'mysql')->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                    {{ $plant->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
+                                                        
+                                                        <!-- Unit Wua-Wua -->
+                                                        <optgroup label="PLTD WUA-WUA">
+                                                            @foreach($powerPlants->where('unit_source', 'mysql_wua_wua')->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                    {{ $plant->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
+                                                        
+                                                        <!-- Unit Poasia -->
+                                                        <optgroup label="PLTD POASIA">
+                                                            @foreach($powerPlants->where('unit_source', 'mysql_poasia')->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                    {{ $plant->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
+                                                        
+                                                        <!-- Unit Kolaka -->
+                                                        <optgroup label="PLTD KOLAKA">
+                                                            @foreach($powerPlants->where('unit_source', 'mysql_kolaka')->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                    {{ $plant->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
+                                                        
+                                                        <!-- Unit Bau-Bau -->
+                                                        <optgroup label="PLTD BAU-BAU">
+                                                            @foreach($powerPlants->where('unit_source', 'mysql_bau_bau')->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                    {{ $plant->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
                                                     </select>
                                                 </form>
                                             </div>
@@ -318,16 +359,58 @@
                                         <div class="flex flex-col gap-2">
                                             <span>Unit</span>
                                             <form id="unitFilterForm" action="{{ route('admin.other-discussions.index') }}" method="GET">
-                                                @foreach(request()->except(['unit_source', 'page']) as $key => $value)
+                                                <input type="hidden" name="tab" value="{{ request('tab', 'target-overdue') }}">
+                                                
+                                                @foreach(request()->except(['unit', 'page', 'tab']) as $key => $value)
                                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                                 @endforeach
-                                                <select id="unit-source" name="unit_source" onchange="this.form.submit()" class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                
+                                                <select id="unit" name="unit" onchange="this.form.submit()" class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
                                                     <option value="">Semua Unit</option>
-                                                    @foreach($powerPlants as $unit)
-                                                        <option value="{{ $unit->unit_source }}" {{ request('unit_source') == $unit->unit_source ? 'selected' : '' }}>
-                                                            {{ $unit->name }}
-                                                        </option>
-                                                    @endforeach
+                                                    <!-- Unit Kendari -->
+                                                    <optgroup label="UP KENDARI">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Wua-Wua -->
+                                                    <optgroup label="PLTD WUA-WUA">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_wua_wua')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Poasia -->
+                                                    <optgroup label="PLTD POASIA">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_poasia')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Kolaka -->
+                                                    <optgroup label="PLTD KOLAKA">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_kolaka')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Bau-Bau -->
+                                                    <optgroup label="PLTD BAU-BAU">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_bau_bau')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
                                                 </select>
                                             </form>
                                         </div>
@@ -630,16 +713,58 @@
                                         <div class="flex flex-col gap-2">
                                             <span>Unit</span>
                                             <form id="unitFilterForm" action="{{ route('admin.other-discussions.index') }}" method="GET">
-                                                @foreach(request()->except(['unit_source', 'page']) as $key => $value)
+                                                <input type="hidden" name="tab" value="{{ request('tab', 'closed') }}">
+                                                
+                                                @foreach(request()->except(['unit', 'page', 'tab']) as $key => $value)
                                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                                 @endforeach
-                                                <select id="unit-source" name="unit_source" onchange="this.form.submit()" class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                
+                                                <select id="unit" name="unit" onchange="this.form.submit()" class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
                                                     <option value="">Semua Unit</option>
-                                                    @foreach($powerPlants as $unit)
-                                                        <option value="{{ $unit->unit_source }}" {{ request('unit_source') == $unit->unit_source ? 'selected' : '' }}>
-                                                            {{ $unit->name }}
-                                                        </option>
-                                                    @endforeach
+                                                    <!-- Unit Kendari -->
+                                                    <optgroup label="UP KENDARI">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Wua-Wua -->
+                                                    <optgroup label="PLTD WUA-WUA">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_wua_wua')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Poasia -->
+                                                    <optgroup label="PLTD POASIA">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_poasia')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Kolaka -->
+                                                    <optgroup label="PLTD KOLAKA">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_kolaka')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    
+                                                    <!-- Unit Bau-Bau -->
+                                                    <optgroup label="PLTD BAU-BAU">
+                                                        @foreach($powerPlants->where('unit_source', 'mysql_bau_bau')->sortBy('name') as $plant)
+                                                            <option value="{{ $plant->name }}" {{ request('unit') == $plant->name ? 'selected' : '' }}>
+                                                                {{ $plant->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
                                                 </select>
                                             </form>
                                         </div>
