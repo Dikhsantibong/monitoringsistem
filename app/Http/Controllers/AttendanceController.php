@@ -85,33 +85,74 @@ class AttendanceController extends Controller
     public function generateQRCode()
     {
         try {
-            $token = 'attendance_' . now()->format('Y-m-d') . '_' . strtolower(Str::random(8));
-
-            // Simpan token di database dengan user_id
-            AttendanceToken::create([
-                'token' => $token,
-                'expires_at' => now()->endOfDay(),
-                'user_id' => auth()->id() // Tambahkan user_id dari user yang login
+            DB::beginTransaction();
+            
+            // Log awal proses
+            Log::info('Mulai generate QR Code', [
+                'user_id' => auth()->id(),
+                'time' => now()
             ]);
-
+            
+            // Generate token
+            $token = 'ATT-' . strtoupper(Str::random(8));
+            
+            // Log token yang dibuat
+            Log::info('Token generated', ['token' => $token]);
+            
+            // Siapkan data untuk token
+            $tokenData = [
+                'token' => $token,
+                'user_id' => auth()->id(),
+                'expires_at' => now()->addHours(24),
+                'unit_source' => session('unit', 'poasia')
+            ];
+            
+            // Log data yang akan disimpan
+            Log::info('Data yang akan disimpan', $tokenData);
+            
+            // Simpan token
+            $attendanceToken = AttendanceToken::create($tokenData);
+            
+            // Log hasil penyimpanan
+            Log::info('Token berhasil disimpan', ['attendance_token_id' => $attendanceToken->id]);
+            
+            // Buat URL untuk QR
             $qrUrl = route('attendance.scan', ['token' => $token]);
-
-            Log::info('Generating QR Code', ['token' => $token, 'url' => $qrUrl]);
-
+            
+            // Log URL yang dibuat
+            Log::info('QR URL generated', ['url' => $qrUrl]);
+            
+            DB::commit();
+            
             return response()->json([
                 'success' => true,
-                'token' => $token,
                 'qr_url' => $qrUrl,
+                'debug_info' => [
+                    'token' => $token,
+                    'expires_at' => $tokenData['expires_at']->toDateTimeString(),
+                    'user_id' => $tokenData['user_id']
+                ]
             ]);
+            
         } catch (\Exception $e) {
-            Log::error('QR Code generation error', [
-                'error' => $e->getMessage(),
+            DB::rollBack();
+            
+            // Log error detail
+            Log::error('QR Code Generation Error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id()
             ]);
-
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate QR Code',
+                'message' => 'Gagal membuat QR Code: ' . $e->getMessage(),
+                'debug_info' => config('app.debug') ? [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ] : null
             ], 500);
         }
     }

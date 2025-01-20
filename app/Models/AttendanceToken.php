@@ -16,10 +16,12 @@ class AttendanceToken extends Model
     protected $table = 'attendance_tokens';
 
     protected $fillable = [
+        'id',
         'token',
-        'expires_at',
         'user_id',
+        'expires_at',
         'unit_source'
+
     ];
 
     protected $dates = ['expires_at'];

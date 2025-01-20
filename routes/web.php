@@ -404,8 +404,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // ... route lainnya ...
-    
     Route::get('/admin/machine-status/view', [MachineStatusViewController::class, 'index'])
          ->name('admin.machine-status.view');
 });
@@ -493,6 +491,13 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
         App\Http\Controllers\Admin\OtherDiscussionController::class, 
         'generateNoPembahasan'
     ])->name('admin.other-discussions.generate-no-pembahasan');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])
+        ->name('attendance.generate-qr');
+    Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scan'])
+        ->name('attendance.scan');
 });
 
 
