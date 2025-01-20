@@ -211,73 +211,29 @@
 
     <script>
     function generateQR() {
-        // Tampilkan loading state
         const container = document.getElementById('qrcode-container');
-        container.innerHTML = '<div class="flex items-center justify-center space-x-2">' +
-            '<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>' +
-            '<span>Generating QR Code...</span>' +
-            '</div>';
+        container.innerHTML = '<div class="text-center">Generating QR Code...</div>';
         
-        // Tampilkan modal
         document.getElementById('qrModal').classList.remove('hidden');
         
-        fetch('/attendance/generate-qr', {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            // Log response status
-            console.log('Response status:', response.status);
-            
-            return response.json().then(data => {
-                if (!response.ok) {
-                    throw new Error(data.message || 'Network response was not ok');
+        fetch('/attendance/generate-qr')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    container.innerHTML = '';
+                    new QRCode(container, {
+                        text: data.qr_url,
+                        width: 256,
+                        height: 256
+                    });
+                } else {
+                    throw new Error('Gagal membuat QR Code');
                 }
-                return data;
+            })
+            .catch(() => {
+                container.innerHTML = '<div class="text-red-500">Gagal membuat QR Code</div>';
+                setTimeout(closeModal, 3000);
             });
-        })
-        .then(data => {
-            console.log('Success response:', data);
-            
-            if (data.success) {
-                // Bersihkan container
-                container.innerHTML = '';
-                
-                // Generate QR baru
-                new QRCode(container, {
-                    text: data.qr_url,
-                    width: 256,
-                    height: 256
-                });
-                
-                // Log debug info jika ada
-                if (data.debug_info) {
-                    console.log('Debug info:', data.debug_info);
-                }
-            } else {
-                throw new Error(data.message || 'Gagal membuat QR Code');
-            }
-        })
-        .catch(error => {
-            console.error('Detailed error:', error);
-            
-            container.innerHTML = `
-                <div class="text-red-500 p-4">
-                    <p class="font-bold">Gagal membuat QR Code</p>
-                    <p class="text-sm">${error.message}</p>
-                    ${error.debug_info ? `<pre class="text-xs mt-2">${JSON.stringify(error.debug_info, null, 2)}</pre>` : ''}
-                </div>
-            `;
-            
-            // Jangan langsung tutup modal agar user bisa melihat error
-            setTimeout(() => {
-                closeModal();
-            }, 5000);
-        });
     }
 
     function closeModal() {

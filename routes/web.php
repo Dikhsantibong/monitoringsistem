@@ -404,6 +404,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    // ... route lainnya ...
+    
     Route::get('/admin/machine-status/view', [MachineStatusViewController::class, 'index'])
          ->name('admin.machine-status.view');
 });
