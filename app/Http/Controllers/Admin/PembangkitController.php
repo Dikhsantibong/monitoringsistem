@@ -114,34 +114,52 @@ class PembangkitController extends Controller
         try {
             $tanggal = $request->tanggal ?? now()->toDateString();
 
+            // Ambil data status mesin untuk tanggal yang dipilih
             $logs = MachineStatusLog::with(['machine.powerPlant'])
                 ->whereDate('tanggal', $tanggal)
-                ->get()
-                ->map(function($log) {
-                    return [
-                        'machine_id' => $log->machine_id,
-                        'tanggal' => $log->tanggal,
-                        'status' => $log->status,
-                        'dmn' => $log->dmn,
-                        'dmp' => $log->dmp,
-                        'load_value' => $log->load_value,
-                        'component' => $log->component,
-                        'equipment' => $log->equipment,
-                        'deskripsi' => $log->deskripsi,
-                        'kronologi' => $log->kronologi,
-                        'action_plan' => $log->action_plan,
-                        'progres' => $log->progres,
-                        'tanggal_mulai' => $log->tanggal_mulai,
-                        'target_selesai' => $log->target_selesai
-                    ];
-                });
+                ->get();
 
+            // Jika tidak ada data untuk tanggal tersebut, ambil data terakhir
+            if ($logs->isEmpty()) {
+                $logs = MachineStatusLog::with(['machine.powerPlant'])
+                    ->whereIn('id', function($query) use ($tanggal) {
+                        $query->selectRaw('MAX(id)')
+                            ->from('machine_status_logs')
+                            ->whereDate('tanggal', '<=', $tanggal)
+                            ->groupBy('machine_id');
+                    })
+                    ->get();
+            }
+
+            // Debug log untuk memeriksa data
+            \Log::info('Data logs yang diambil:', $logs->toArray());
+
+            $formattedLogs = $logs->map(function($log) {
+                return [
+                    'machine_id' => $log->machine_id,
+                    'tanggal' => $log->tanggal,
+                    'status' => $log->status ?? '', // Pastikan status tidak null
+                    'dmn' => $log->dmn,
+                    'dmp' => $log->dmp,
+                    'load_value' => $log->load_value,
+                    'component' => $log->component ?? '', // Pastikan component tidak null
+                    'equipment' => $log->equipment ?? '', // Pastikan equipment tidak null
+                    'deskripsi' => $log->deskripsi,
+                    'kronologi' => $log->kronologi,
+                    'action_plan' => $log->action_plan,
+                    'progres' => $log->progres,
+                    'tanggal_mulai' => $log->tanggal_mulai ? $log->tanggal_mulai->format('Y-m-d') : null,
+                    'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null
+                ];
+            });
+
+            // Ambil data HOP
             $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'logs' => $logs,
+                    'logs' => $formattedLogs,
                     'hops' => $hops
                 ]
             ]);

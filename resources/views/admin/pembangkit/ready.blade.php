@@ -229,24 +229,22 @@
                                                                placeholder="Masukkan beban...">
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
-                                                        <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                        <select name="status[{{ $machine->id }}]" 
                                                             style="width: 100px;"
-                                                            onchange="this.style.backgroundColor = this.options[this.selectedIndex].style.backgroundColor">
-                                                            <option value="" style="background-color: #FFFFFF">Pilih Status</option>
-                                                            <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
-                                                            <option value="Standby" style="background-color: #2196F3">Standby</option>
-                                                            <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
-                                                            <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
-                                                            <option value="Mothballed" style="background-color: #9E9E9E">Mothballed</option>
-                                                            <option value="Overhaul" style="background-color: #673AB7">Overhaul</option>
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
+                                                            <option value="Operasi">Operasi</option>
+                                                            <option value="Standby">Standby</option>
+                                                            <option value="Gangguan">Gangguan</option>
+                                                            <option value="Pemeliharaan">Pemeliharaan</option>
+                                                            <option value="Mothballed">Mothballed</option>
+                                                            <option value="Overhaul">Overhaul</option>
                                                         </select>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
-                                                        <select class="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 system-select"
-                                                                onchange="updateComponentOptions(this)" 
-                                                                name="sistem[{{ $machine->id }}]"
-                                                                style="width: 130px;">
-                                                            <option value="">Pilih Komponen</option>
+                                                        <select name="system[{{ $machine->id }}]" 
+                                                            style="width: 110px;"
+                                                            class="system-select w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
+                                                            <option value="">Pilih System</option>
                                                             <option value="MESIN">MESIN</option>
                                                             <option value="GENERATOR">GENERATOR</option>
                                                             <option value="PANEL_SINKRON">PANEL SINKRON</option>
@@ -255,15 +253,10 @@
                                                         </select>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
-                                                        <textarea 
-                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-80"
-                                                        style="height: 100px; width: 150px;" 
-                                                        cols="30" 
-                                                        rows="10"
-                                                        name="equipment[{{ $machine->id }}]" 
-                                                        oninput="autoResize(this)">
-                                                    </textarea>
-                                                        </select>
+                                                        <textarea name="equipment[{{ $machine->id }}]" 
+                                                        style="width: 200px; height: 100px;"
+                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                        oninput="autoResize(this)"></textarea>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <textarea 
@@ -303,13 +296,13 @@
                                                     </td>   
                                                     <td class="px-3 py-2">
                                                         <input type="date" 
-                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
-                                                            name="tanggal_mulai[{{ $machine->id }}]">
+                                                            name="tanggal_mulai[{{ $machine->id }}]"
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
                                                     </td>
                                                     <td class="px-3 py-2">
                                                         <input type="date" 
-                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800" 
-                                                            name="target_selesai[{{ $machine->id }}]">
+                                                            name="target_selesai[{{ $machine->id }}]"
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -778,53 +771,79 @@
             data.logs.forEach(log => {
                 const row = document.querySelector(`tr[data-machine-id="${log.machine_id}"]`);
                 if (row) {
-                    // Debug log untuk melihat data yang akan diupdate
-                    console.log('Updating machine:', log.machine_id, {
-                        status: log.status,
-                        component: log.component,
-                        equipment: log.equipment
-                    });
+                    // Debug untuk melihat data yang akan diupdate
+                    console.log('Updating machine:', log.machine_id, log);
 
-                    // Update Status - perbaikan selector
-                    const statusSelect = row.querySelector('select[name="status[' + log.machine_id + ']"]');
+                    // Update Status
+                    const statusSelect = row.querySelector(`select[name="status[${log.machine_id}]"]`);
                     if (statusSelect) {
                         statusSelect.value = log.status || '';
-                        statusSelect.style.backgroundColor = getStatusColor(log.status);
+                        statusSelect.dispatchEvent(new Event('change')); // Trigger change event
                         console.log('Status updated:', log.status);
-                    } else {
-                        console.log('Status select not found for machine:', log.machine_id);
                     }
 
-                    // Update Component/System - perbaikan selector
-                    const systemSelect = row.querySelector('select[name="system[' + log.machine_id + ']"]');
-                    if (systemSelect) {
-                        systemSelect.value = log.component || '';
-                        // Trigger change event untuk update component options
-                        systemSelect.dispatchEvent(new Event('change'));
-                        console.log('System updated:', log.component);
+                    // Update Component
+                    const componentSelect = row.querySelector(`select[name="system[${log.machine_id}]"]`);
+                    if (componentSelect) {
+                        componentSelect.value = log.component || '';
+                        componentSelect.dispatchEvent(new Event('change'));
+                        console.log('Component updated:', log.component);
                     }
 
-                    // Update Equipment - perbaikan selector
-                    const equipmentSelect = row.querySelector('select[name="equipment[' + log.machine_id + ']"]');
-                    if (equipmentSelect) {
-                        equipmentSelect.value = log.equipment || '';
+                    // Update Equipment
+                    const equipmentInput = row.querySelector(`textarea[name="equipment[${log.machine_id}]"]`);
+                    if (equipmentInput) {
+                        equipmentInput.value = log.equipment || '';
+                        autoResize(equipmentInput);
                         console.log('Equipment updated:', log.equipment);
                     }
 
-                    // Update numeric inputs
-                    updateInputValue(row, 'input[name="dmn[' + log.machine_id + ']"]', log.dmn);
-                    updateInputValue(row, 'input[name="dmp[' + log.machine_id + ']"]', log.dmp);
-                    updateInputValue(row, 'input[name="load_value[' + log.machine_id + ']"]', log.load_value);
+                    // Update DMN dan DMP
+                    const dmnInput = row.querySelector(`input[name="dmn[${log.machine_id}]"]`);
+                    if (dmnInput) {
+                        dmnInput.value = log.dmn || '0';
+                    }
 
-                    // Update textareas
-                    updateTextareaValue(row, 'textarea[name="deskripsi[' + log.machine_id + ']"]', log.deskripsi);
-                    updateTextareaValue(row, 'textarea[name="kronologi[' + log.machine_id + ']"]', log.kronologi);
-                    updateTextareaValue(row, 'textarea[name="action_plan[' + log.machine_id + ']"]', log.action_plan);
-                    updateTextareaValue(row, 'textarea[name="progres[' + log.machine_id + ']"]', log.progres);
+                    const dmpInput = row.querySelector(`input[name="dmp[${log.machine_id}]"]`);
+                    if (dmpInput) {
+                        dmpInput.value = log.dmp || '0';
+                    }
 
-                    // Update dates
-                    updateInputValue(row, 'input[name="tanggal_mulai[' + log.machine_id + ']"]', log.tanggal_mulai);
-                    updateInputValue(row, 'input[name="target_selesai[' + log.machine_id + ']"]', log.target_selesai);
+                    // Update Load Value
+                    const loadInput = row.querySelector(`input[name="load_value[${log.machine_id}]"]`);
+                    if (loadInput) {
+                        loadInput.value = log.load_value || '0';
+                    }
+
+                    // Update Tanggal
+                    const tanggalMulaiInput = row.querySelector(`input[name="tanggal_mulai[${log.machine_id}]"]`);
+                    if (tanggalMulaiInput && log.tanggal_mulai) {
+                        tanggalMulaiInput.value = log.tanggal_mulai;
+                        console.log('Tanggal Mulai updated:', log.tanggal_mulai);
+                    }
+
+                    const targetSelesaiInput = row.querySelector(`input[name="target_selesai[${log.machine_id}]"]`);
+                    if (targetSelesaiInput && log.target_selesai) {
+                        targetSelesaiInput.value = log.target_selesai;
+                        console.log('Target Selesai updated:', log.target_selesai);
+                    }
+
+                    // Update textarea fields
+                    const textareaFields = {
+                        'deskripsi': log.deskripsi,
+                        'kronologi': log.kronologi,
+                        'action_plan': log.action_plan,
+                        'progres': log.progres
+                    };
+
+                    for (const [field, value] of Object.entries(textareaFields)) {
+                        const textarea = row.querySelector(`textarea[name="${field}[${log.machine_id}]"]`);
+                        if (textarea) {
+                            textarea.value = value || '';
+                            autoResize(textarea);
+                            console.log(`${field} updated:`, value);
+                        }
+                    }
                 }
             });
         }
@@ -835,6 +854,7 @@
                 const hopInput = document.getElementById(`hop_${hop.power_plant_id}`);
                 if (hopInput) {
                     hopInput.value = hop.hop_value || '';
+                    console.log('HOP updated for unit:', hop.power_plant_id, hop.hop_value);
                 }
             });
         }
