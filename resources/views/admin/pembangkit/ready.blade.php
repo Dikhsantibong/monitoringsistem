@@ -202,7 +202,7 @@
                                         <tbody class="text-sm">
                                            
                                             @foreach ($unit->machines as $machine)
-                                                <tr class="hover:bg-gray-50 border border-gray-200">
+                                                <tr class="hover:bg-gray-50 border border-gray-200" data-machine-id="{{ $machine->id }}">
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                         {{ $loop->iteration }}
                                                     </td>
@@ -771,13 +771,17 @@
             return;
         }
 
+        console.log('Memulai update form dengan data:', data); // Debug log
+
         // Update data mesin
         if (data.logs) {
             data.logs.forEach(log => {
                 // Cari baris tabel berdasarkan machine_id
                 const row = document.querySelector(`tr[data-machine-id="${log.machine_id}"]`);
+                console.log('Mencari row untuk machine_id:', log.machine_id, 'Found:', !!row); // Debug log
+
                 if (row) {
-                    // Update status dan warnanya
+                    // Update status
                     const statusSelect = row.querySelector('select[name^="status"]');
                     if (statusSelect) {
                         statusSelect.value = log.status || '';
@@ -805,7 +809,9 @@
                     // Update Component
                     const componentSelect = row.querySelector('.system-select');
                     if (componentSelect) {
-                        componentSelect.value = log.component || '';    
+                        componentSelect.value = log.component || '';
+                        // Trigger change event untuk memperbarui opsi equipment
+                        componentSelect.dispatchEvent(new Event('change'));
                     }
 
                     // Update Equipment
@@ -816,44 +822,46 @@
                     }
 
                     // Update Deskripsi
-                    const deskripsiTextarea = row.querySelector('textarea[name^="deskripsi"]');
+                    const deskripsiTextarea = row.querySelector(`textarea[name="deskripsi[${log.machine_id}]"]`);
                     if (deskripsiTextarea) {
                         deskripsiTextarea.value = log.deskripsi || '';
                         autoResize(deskripsiTextarea);
                     }
 
                     // Update Kronologi
-                    const kronologiTextarea = row.querySelector('textarea[name^="kronologi"]');
+                    const kronologiTextarea = row.querySelector(`textarea[name="kronologi[${log.machine_id}]"]`);
                     if (kronologiTextarea) {
                         kronologiTextarea.value = log.kronologi || '';
                         autoResize(kronologiTextarea);
                     }
 
                     // Update Action Plan
-                    const actionPlanTextarea = row.querySelector('textarea[name^="action_plan"]');
+                    const actionPlanTextarea = row.querySelector(`textarea[name="action_plan[${log.machine_id}]"]`);
                     if (actionPlanTextarea) {
                         actionPlanTextarea.value = log.action_plan || '';
                         autoResize(actionPlanTextarea);
                     }
 
                     // Update Progres
-                    const progresTextarea = row.querySelector('textarea[name^="progres"]');
+                    const progresTextarea = row.querySelector(`textarea[name="progres[${log.machine_id}]"]`);
                     if (progresTextarea) {
                         progresTextarea.value = log.progres || '';
                         autoResize(progresTextarea);
                     }
 
                     // Update Tanggal Mulai
-                    const tanggalMulaiInput = row.querySelector('input[name^="tanggal_mulai"]');
+                    const tanggalMulaiInput = row.querySelector(`input[name="tanggal_mulai[${log.machine_id}]"]`);
                     if (tanggalMulaiInput) {
                         tanggalMulaiInput.value = log.tanggal_mulai || '';
                     }
 
                     // Update Target Selesai
-                    const targetSelesaiInput = row.querySelector('input[name^="target_selesai"]');
+                    const targetSelesaiInput = row.querySelector(`input[name="target_selesai[${log.machine_id}]"]`);
                     if (targetSelesaiInput) {
                         targetSelesaiInput.value = log.target_selesai || '';
                     }
+
+                    console.log('Updated row for machine_id:', log.machine_id); // Debug log
                 }
             });
         }
@@ -867,9 +875,6 @@
                 }
             });
         }
-
-        // Tambahkan console.log untuk debugging
-        console.log('Data yang dimuat:', data);
     }
 
     // Helper functions

@@ -112,58 +112,32 @@ class PembangkitController extends Controller
     public function getStatus(Request $request)
     {
         try {
-            $tanggal = $request->tanggal;
-            
-            // Ambil data status mesin untuk tanggal yang diminta
+            $tanggal = $request->tanggal ?? now()->toDateString();
+
             $logs = MachineStatusLog::with(['machine.powerPlant'])
                 ->whereDate('tanggal', $tanggal)
-                ->get();
-            
-            // Jika tidak ada data untuk tanggal yang diminta, 
-            // ambil data terakhir untuk setiap mesin
-            if ($logs->isEmpty()) {
-                $logs = MachineStatusLog::with(['machine.powerPlant'])
-                    ->whereIn('id', function($query) use ($tanggal) {
-                        $query->selectRaw('MAX(id)')
-                            ->from('machine_status_logs')
-                            ->where('tanggal', '<', $tanggal)
-                            ->groupBy('machine_id');
-                    })
-                    ->get()
-                    ->map(function ($lastLog) use ($tanggal) {
-                        // Buat salinan data dengan tanggal yang baru
-                        $newLog = $lastLog->replicate();
-                        $newLog->tanggal = $tanggal;
-                        
-                        // Simpan log baru ke database
-                        $newLog->save();
-                        
-                        return $newLog;
-                    });
-            }
-
-            // Ambil data HOP dengan cara yang sama
-            $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
-            if ($hops->isEmpty()) {
-                $hops = UnitOperationHour::whereIn('id', function($query) use ($tanggal) {
-                    $query->selectRaw('MAX(id)')
-                        ->from('unit_operation_hours')
-                        ->where('tanggal', '<', $tanggal)
-                        ->groupBy('power_plant_id');
-                })
                 ->get()
-                ->map(function ($lastHop) use ($tanggal) {
-                    // Buat salinan data dengan tanggal yang baru
-                    $newHop = $lastHop->replicate();
-                    $newHop->tanggal = $tanggal;
-                    
-                    // Simpan hop baru ke database
-                    $newHop->save();
-                    
-                    return $newHop;
+                ->map(function($log) {
+                    return [
+                        'machine_id' => $log->machine_id,
+                        'tanggal' => $log->tanggal,
+                        'status' => $log->status,
+                        'dmn' => $log->dmn,
+                        'dmp' => $log->dmp,
+                        'load_value' => $log->load_value,
+                        'component' => $log->component,
+                        'equipment' => $log->equipment,
+                        'deskripsi' => $log->deskripsi,
+                        'kronologi' => $log->kronologi,
+                        'action_plan' => $log->action_plan,
+                        'progres' => $log->progres,
+                        'tanggal_mulai' => $log->tanggal_mulai,
+                        'target_selesai' => $log->target_selesai
+                    ];
                 });
-            }
-            
+
+            $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -171,7 +145,9 @@ class PembangkitController extends Controller
                     'hops' => $hops
                 ]
             ]);
+
         } catch (\Exception $e) {
+            \Log::error('Error dalam getStatus: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
