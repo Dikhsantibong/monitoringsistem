@@ -206,12 +206,34 @@ class HomeController extends Controller
 
     public function getPlantChartData($plantId)
     {
-        $chartData = MachineStatusLog::getChartData($plantId);
-        
-        return response()->json([
-            'dates' => $chartData->pluck('date')->toArray(),
-            'beban' => $chartData->pluck('load')->toArray(),
-            'kapasitas' => $chartData->pluck('capacity')->toArray()
-        ]);
+        try {
+            $endDate = Carbon::now();
+            $startDate = Carbon::now()->subDays(6);
+
+            $chartData = MachineStatusLog::selectRaw('
+                DATE(created_at) as date,
+                SUM(load_value) as total_load,
+                SUM(capacity) as total_capacity
+            ')
+            ->whereHas('machine', function($query) use ($plantId) {
+                $query->where('power_plant_id', $plantId);
+            })
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+            return response()->json([
+                'dates' => $chartData->pluck('date')->map(function($date) {
+                    return Carbon::parse($date)->format('d/m');
+                }),
+                'beban' => $chartData->pluck('total_load'),
+                'kapasitas' => $chartData->pluck('total_capacity')
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in getPlantChartData: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to load chart data'], 500);
+        }
     }
 }

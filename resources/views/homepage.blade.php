@@ -945,6 +945,10 @@
                                             return $machine->statusLogs->first()->dmp ?? 0;
                                         });
                                         $totalDerating = $totalDMN + $totalDMP;
+                                        
+                                        // Hitung persentase derating
+                                        $totalCapacity = $plant->machines->sum('capacity');
+                                        $deratingPercentage = $totalCapacity > 0 ? round(($totalDerating / $totalCapacity) * 100, 2) : 0;
                                     @endphp
                                     <div style="
                                         background: #FEF3C7; 
@@ -953,8 +957,13 @@
                                         border-radius: 8px; 
                                         border: 1px solid #FCD34D;
                                         font-weight: 600;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 5px;
                                     ">
-                                        Derating: {{ $totalDerating }}
+                                        <span>Derating:</span>
+                                        <span>{{ $totalDerating }} MW</span>
+                                        <span>({{ $deratingPercentage }}%)</span>
                                     </div>
                                     <div style="
                                         background: #E0F2FE; 
@@ -1084,7 +1093,7 @@
                                             <span style="color: #FF4560; margin-left: 10px;">● Kapasitas</span>
                                         </div>
                                     </div>
-                                    <div id="chart-{{ $plant->id }}" style="height: 150px;"></div>
+                                    <div id="chart-{{ $plant->id }}" style="height: 200px;"></div>
                                 </div>
 
                                 <button onclick="showAccumulationData({{ $plant->id }})" 
@@ -1142,7 +1151,9 @@
                                     labels: {
                                         style: {
                                             fontSize: '10px'
-                                        }
+                                        },
+                                        rotate: -45,
+                                        rotateAlways: false
                                     }
                                 },
                                 yaxis: {
@@ -1163,11 +1174,47 @@
                                             return val.toFixed(2) + ' MW';
                                         }
                                     }
-                                }
+                                },
+                                legend: {
+                                    position: 'top',
+                                    horizontalAlign: 'right',
+                                    markers: {
+                                        width: 8,
+                                        height: 8,
+                                        radius: 12
+                                    }
+                                },
+                                grid: {
+                                    borderColor: '#f1f1f1',
+                                    padding: {
+                                        top: 10,
+                                        right: 10,
+                                        bottom: 10,
+                                        left: 10
+                                    }
+                                },
+                                responsive: [{
+                                    breakpoint: 480,
+                                    options: {
+                                        chart: {
+                                            height: 200
+                                        },
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }]
                             };
 
+                            // Hapus grafik lama jika ada
+                            document.querySelector("#chart-" + plantId).innerHTML = '';
+                            
                             var chart = new ApexCharts(document.querySelector("#chart-" + plantId), options);
                             chart.render();
+                        })
+                        .catch(error => {
+                            console.error('Error loading chart data:', error);
+                            document.querySelector("#chart-" + plantId).innerHTML = 'Error loading chart data';
                         });
                 }
 
