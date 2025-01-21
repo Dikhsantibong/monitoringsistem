@@ -583,10 +583,7 @@
 
             {{-- Map --}}
             <h1 class="text-2xl font-semibold text-center mt-10  text-[#0A749B]">Peta Pembangkit</h1>
-            <div id="map"
-                style="height: 500px; border-radius: 20px; position: relative; margin: 30px 30px 0; padding: 0; "
-                class="z-0">
-            </div>
+            <div id="map" style="height: 560px; border-radius: 10px; margin-bottom: 20px; margin-left: 40px; margin-right: 40px;"></div>
 
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -808,16 +805,45 @@
                 var chart = new ApexCharts(document.querySelector("#line-chart"), options);
                 chart.render();
 
-                var map = L.map('map', {
-                    zoomControl: true,
-                    scrollWheelZoom: true,
-                    doubleClickZoom: true,
-                    dragging: true,
-                }).setView([-4.0435, 122.4972], 8);
+                var map = L.map('map').setView([-4.0435, 122.4972], 8);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
+
+                // Tambahkan custom info control
+                var info = L.control({position: 'bottomleft'});
+
+                info.onAdd = function (map) {
+                    this._div = L.DomUtil.create('div', 'info');
+                    this._div.innerHTML = `
+                        <div style="
+                            background: rgba(255, 255, 255, 0.9);
+                            padding: 10px;
+                            border-radius: 5px;
+                            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+                            font-size: 12px;
+                            max-width: 200px;
+                        ">
+                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                <img src="{{ asset('images/marker-icon.png') }}" style="height: 20px; margin-right: 5px;">
+                                <span style="color: #0095B7; font-weight: bold;">Informasi Unit</span>
+                            </div>
+                            <p style="margin: 0; color: #666;">
+                                Klik marker untuk melihat detail:
+                            </p>
+                            <ul style="margin: 5px 0 0 15px; padding: 0; color: #666;">
+                                <li>Status Operasi</li>
+                                <li>Beban Unit</li>
+                                <li>DMN & DMP</li>
+                                <li>Trend 7 Hari</li>
+                            </ul>
+                        </div>
+                    `;
+                    return this._div;
+                };
+
+                info.addTo(map);
 
                 // Buat array untuk menyimpan semua koordinat marker
                 var markers = [];
@@ -860,44 +886,42 @@
                                                     'Gangguan' => [
                                                         'bg' => '#FEE2E2',
                                                         'text' => '#DC2626',
-                                                        'border' => '#FCA5A5',
-                                                        'icon' => '⚠️'
+                                                        'border' => '#FCA5A5'
                                                     ],
                                                     'Mothballed' => [
                                                         'bg' => '#FEF3C7',
                                                         'text' => '#D97706',
-                                                        'border' => '#FCD34D',
-                                                        'icon' => '🔒'
+                                                        'border' => '#FCD34D'
                                                     ],
                                                     'Overhaul' => [
                                                         'bg' => '#FFE4B5',
                                                         'text' => '#FF8C00',
-                                                        'border' => '#FFB74D',
-                                                        'icon' => '🔧'
+                                                        'border' => '#FFB74D'
                                                     ],
-                                                    'Pemeliharaan' => [
-                                                        'bg' => '#E0F2FE',
-                                                        'text' => '#0369A1',
-                                                        'border' => '#7DD3FC',
-                                                        'icon' => '🔨'
+                                                    'Start Up' => [
+                                                        'bg' => '#DBEAFE',
+                                                        'text' => '#2563EB',
+                                                        'border' => '#93C5FD'
+                                                    ],
+                                                    'Shutdown' => [
+                                                        'bg' => '#E5E7EB',
+                                                        'text' => '#4B5563',
+                                                        'border' => '#9CA3AF'
                                                     ],
                                                     'Standby' => [
                                                         'bg' => '#F3F4F6',
                                                         'text' => '#6B7280',
-                                                        'border' => '#D1D5DB',
-                                                        'icon' => '⏸️'
+                                                        'border' => '#D1D5DB'
                                                     ],
-                                                    'Operasi' => [
+                                                    'Aktif' => [
                                                         'bg' => '#D1FAE5',
                                                         'text' => '#059669',
-                                                        'border' => '#6EE7B7',
-                                                        'icon' => '✅'
+                                                        'border' => '#6EE7B7'
                                                     ],
                                                     default => [
                                                         'bg' => '#F3F4F6',
                                                         'text' => '#6B7280',
-                                                        'border' => '#D1D5DB',
-                                                        'icon' => '❔'
+                                                        'border' => '#D1D5DB'
                                                     ]
                                                 };
                                             @endphp
@@ -916,7 +940,7 @@
                                                             display: inline-block;
                                                             margin-top: 2px;
                                                         ">
-                                                            {{ $statusStyle['icon'] }} {{ $latestStatus ? $latestStatus->status : 'N/A' }}
+                                                            {{ $latestStatus ? $latestStatus->status : 'N/A' }}
                                                         </span>
                                                     </div>
                                                     <div>
