@@ -686,16 +686,16 @@
             });
     }
 
-    // Fungsi untuk memuat data
+    // Pastikan event listener untuk tombol refresh terpasang dengan benar
+    document.getElementById('refreshButton').addEventListener('click', function() {
+        loadData(); // Panggil fungsi loadData saat tombol diklik
+    });
+
+    // Perbaikan fungsi loadData
     function loadData() {
         const tanggal = document.getElementById('filterDate').value;
         const refreshButton = document.getElementById('refreshButton');
         
-        // Nonaktifkan tombol dan tambahkan animasi
-        refreshButton.disabled = true;
-        const icon = refreshButton.querySelector('.fa-sync-alt');
-        icon.classList.add('fa-spin');
-
         // Tampilkan loading indicator
         Swal.fire({
             title: 'Memuat Data',
@@ -706,183 +706,188 @@
             }
         });
 
-        // Log URL yang akan dipanggil
-        console.log('Fetching data from:', `{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`);
+        // Nonaktifkan tombol selama proses
+        refreshButton.disabled = true;
 
+        // Tambahkan animasi pada ikon
+        const icon = refreshButton.querySelector('i.fas.fa-redo');
+        if (icon) {
+            icon.classList.add('fa-spin');
+        }
+
+        // Lakukan request AJAX
         fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
+            }
         })
         .then(response => {
-            // Log response status
-            console.log('Response status:', response.status);
             if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
-                });
+                throw new Error('Network response was not ok');
             }
             return response.json();
         })
         .then(result => {
-            // Log hasil response
-            console.log('Response data:', result);
-            
             if (result.success) {
-                // Pastikan data ada sebelum update form
-                if (!result.data) {
-                    throw new Error('Data tidak ditemukan');
-                }
+                // Update form dengan data baru
+                updateFormWithData(result.data);
                 
-                try {
-                    updateFormWithData(result.data);
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Data berhasil dimuat!',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                } catch (updateError) {
-                    throw new Error(`Error saat update form: ${updateError.message}`);
-                }
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Data berhasil dimuat!',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             } else {
                 throw new Error(result.message || 'Gagal memuat data');
             }
         })
         .catch(error => {
-            console.error('Detailed error:', error);
-            
-            // Tampilkan pesan error yang lebih detail
+            console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: `Terjadi kesalahan saat memuat data: ${error.message}`,
-                confirmButtonText: 'OK'
+                text: `Gagal memuat data: ${error.message}`
             });
         })
         .finally(() => {
-            // Aktifkan kembali tombol dan hentikan animasi
+            // Aktifkan kembali tombol
             refreshButton.disabled = false;
-            icon.classList.remove('fa-spin');
+            
+            // Hentikan animasi
+            if (icon) {
+                icon.classList.remove('fa-spin');
+            }
         });
     }
 
-    // Fungsi untuk mengupdate form dengan data
+    // Fungsi untuk mengupdate form dengan data baru
     function updateFormWithData(data) {
-        console.log('Updating form with data:', data);
-        
         if (!data || (!data.logs && !data.hops)) {
-            console.error('Invalid data structure:', data);
-            throw new Error('Format data tidak valid');
+            console.error('Data tidak valid:', data);
+            return;
         }
 
-        const tables = document.querySelectorAll('.unit-table table');
-        
-        tables.forEach(table => {
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                try {
-                    const machineId = row.querySelector('td[data-id]')?.getAttribute('data-id');
-                    if (!machineId) {
-                        console.warn('Missing machine ID for row:', row);
-                        return;
+        // Update data mesin
+        if (data.logs) {
+            data.logs.forEach(log => {
+                // Cari baris tabel berdasarkan machine_id
+                const row = document.querySelector(`tr[data-machine-id="${log.machine_id}"]`);
+                if (row) {
+                    // Update status dan warnanya
+                    const statusSelect = row.querySelector('select[name^="status"]');
+                    if (statusSelect) {
+                        statusSelect.value = log.status || '';
+                        statusSelect.style.backgroundColor = getStatusColor(log.status);
                     }
 
-                    const machineData = data.logs?.find(d => d.machine_id == machineId);
-                    console.log(`Processing machine ${machineId}:`, machineData);
-
-                    if (machineData) {
-                        // Update status
-                        const statusSelect = row.querySelector('select');
-                        if (statusSelect) {
-                            statusSelect.value = machineData.status || '';
-                            statusSelect.style.backgroundColor = getStatusColor(machineData.status);
-                        }
-
-                        // Update load value
-                        const loadInput = row.querySelector('input[name^="load_value"]');
-                        if (loadInput) {
-                            loadInput.value = machineData.load_value || '';
-                        }
-
-                        // Update DMN
-                        const dmnInput = row.querySelector('input[type="number"]:nth-of-type(1)');
-                        if (dmnInput) {
-                            dmnInput.value = machineData.dmn || '';
-                        }
-
-                        // Update component
-                        const componentSelect = row.querySelector('.system-select');
-                        if (componentSelect) {
-                            componentSelect.value = machineData.component || '';
-                        }
-
-                        // Update equipment
-                        const equipmentTextarea = row.querySelector(`textarea[name^="equipment"]`);
-                        if (equipmentTextarea) {
-                            equipmentTextarea.value = machineData.equipment || '';
-                        }
-
-                        // Update deskripsi
-                        const deskripsiTextarea = row.querySelector(`textarea[name^="deskripsi"]`);
-                        if (deskripsiTextarea) {
-                            deskripsiTextarea.value = machineData.deskripsi || '';
-                        }
-
-                        // Update kronologi
-                        const kronologiTextarea = row.querySelector(`textarea[name^="kronologi"]`);
-                        if (kronologiTextarea) {
-                            kronologiTextarea.value = machineData.kronologi || '';
-                        }
-
-                        // Update action plan
-                        const actionPlanTextarea = row.querySelector(`textarea[name^="action_plan"]`);
-                        if (actionPlanTextarea) {
-                            actionPlanTextarea.value = machineData.action_plan || '';
-                        }
-
-                        // Update progres
-                        const progresTextarea = row.querySelector(`textarea[name^="progres"]`);
-                        if (progresTextarea) {
-                            progresTextarea.value = machineData.progres || '';
-                        }
-
-                        // Update dates
-                        const tanggalMulaiInput = row.querySelector(`input[name^="tanggal_mulai"]`);
-                        if (tanggalMulaiInput) {
-                            tanggalMulaiInput.value = machineData.tanggal_mulai || '';
-                        }
-
-                        const targetSelesaiInput = row.querySelector(`input[name^="target_selesai"]`);
-                        if (targetSelesaiInput) {
-                            targetSelesaiInput.value = machineData.target_selesai || '';
-                        }
+                    // Update DMN
+                    const dmnInput = row.querySelector('input[name^="dmn"]');
+                    if (dmnInput) {
+                        dmnInput.value = log.dmn || '0';
                     }
-                } catch (rowError) {
-                    console.error('Error processing row:', rowError);
+
+                    // Update DMP
+                    const dmpInput = row.querySelector('input[name^="dmp"]');
+                    if (dmpInput) {
+                        dmpInput.value = log.dmp || '0';
+                    }
+
+                    // Update Load Value
+                    const loadInput = row.querySelector('input[name^="load_value"]');
+                    if (loadInput) {
+                        loadInput.value = log.load_value || '0';
+                    }
+
+                    // Update Component
+                    const componentSelect = row.querySelector('.system-select');
+                    if (componentSelect) {
+                        componentSelect.value = log.component || '';    
+                    }
+
+                    // Update Equipment
+                    const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
+                    if (equipmentTextarea) {
+                        equipmentTextarea.value = log.equipment || '';
+                        autoResize(equipmentTextarea);
+                    }
+
+                    // Update Deskripsi
+                    const deskripsiTextarea = row.querySelector('textarea[name^="deskripsi"]');
+                    if (deskripsiTextarea) {
+                        deskripsiTextarea.value = log.deskripsi || '';
+                        autoResize(deskripsiTextarea);
+                    }
+
+                    // Update Kronologi
+                    const kronologiTextarea = row.querySelector('textarea[name^="kronologi"]');
+                    if (kronologiTextarea) {
+                        kronologiTextarea.value = log.kronologi || '';
+                        autoResize(kronologiTextarea);
+                    }
+
+                    // Update Action Plan
+                    const actionPlanTextarea = row.querySelector('textarea[name^="action_plan"]');
+                    if (actionPlanTextarea) {
+                        actionPlanTextarea.value = log.action_plan || '';
+                        autoResize(actionPlanTextarea);
+                    }
+
+                    // Update Progres
+                    const progresTextarea = row.querySelector('textarea[name^="progres"]');
+                    if (progresTextarea) {
+                        progresTextarea.value = log.progres || '';
+                        autoResize(progresTextarea);
+                    }
+
+                    // Update Tanggal Mulai
+                    const tanggalMulaiInput = row.querySelector('input[name^="tanggal_mulai"]');
+                    if (tanggalMulaiInput) {
+                        tanggalMulaiInput.value = log.tanggal_mulai || '';
+                    }
+
+                    // Update Target Selesai
+                    const targetSelesaiInput = row.querySelector('input[name^="target_selesai"]');
+                    if (targetSelesaiInput) {
+                        targetSelesaiInput.value = log.target_selesai || '';
+                    }
                 }
             });
-        });
+        }
 
-        // Update HOP values
+        // Update data HOP
         if (data.hops) {
             data.hops.forEach(hop => {
-                try {
-                    const hopInput = document.getElementById(`hop_${hop.power_plant_id}`);
-                    if (hopInput) {
-                        hopInput.value = hop.hop_value || '';
-                    }
-                } catch (hopError) {
-                    console.error('Error updating HOP:', hopError);
+                const hopInput = document.getElementById(`hop_${hop.power_plant_id}`);
+                if (hopInput) {
+                    hopInput.value = hop.hop_value || '';
                 }
             });
         }
+
+        // Tambahkan console.log untuk debugging
+        console.log('Data yang dimuat:', data);
     }
 
-    // Helper function untuk warna status
+    // Helper functions
+    function updateInputValue(row, selector, value) {
+        const element = row.querySelector(selector);
+        if (element) {
+            element.value = value || '';
+        }
+    }
+
+    function updateTextareaValue(row, selector, value) {
+        const element = row.querySelector(selector);
+        if (element) {
+            element.value = value || '';
+            autoResize(element);
+        }
+    }
+
     function getStatusColor(status) {
         const colors = {
             'Operasi': '#4CAF50',
@@ -895,7 +900,7 @@
         return colors[status] || '#FFFFFF';
     }
 
-    // Load data saat halaman dimuat
+    // Pastikan fungsi dijalankan saat halaman dimuat
     document.addEventListener('DOMContentLoaded', function() {
         loadData();
     });
