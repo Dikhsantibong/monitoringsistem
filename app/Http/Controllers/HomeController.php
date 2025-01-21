@@ -17,11 +17,14 @@ class HomeController extends Controller
     public function index()
     {
         try {
-            // Ambil data power plant dengan machines
-            $powerPlants = PowerPlant::select('id', 'name', 'latitude', 'longitude')
-                ->with(['machines:id,power_plant_id,name,status,capacity'])
-                ->get();
-            
+            // Eager load machines dan status logs
+            $powerPlants = PowerPlant::with([
+                'machines',
+                'machines.statusLogs' => function($query) {
+                    $query->latest()->take(1);
+                }
+            ])->get();
+
             $markersData = Marker::all();
             // Ambil data status log hari ini
             $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])

@@ -823,15 +823,20 @@
                 var markers = [];
                 var bounds = L.latLngBounds();
 
+                @php
+                    use App\Models\MachineStatusLog;
+                    use Carbon\Carbon;
+                @endphp
+
                 @foreach ($powerPlants as $plant)
                     var markerLatLng = [{{ $plant->latitude }}, {{ $plant->longitude }}];
                     var marker = L.marker(markerLatLng)
                         .addTo(map)
                         .bindPopup(`
-                            <div style="min-width: 300px;">
-                                <h3 style="margin: 0 0 10px 0; text-align: center;">{{ $plant->name }}</h3>
+                            <div style="min-width: 300px; max-width: 600px;">
+                                <h3 style="margin: 0 0 10px 0; text-align: center; color: #0095B7;">{{ $plant->name }}</h3>
                                 
-                                <!-- Info Grid -->
+                                <!-- Info Grid Utama -->
                                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
                                     <div style="background: #f8f9fa; padding: 8px; border-radius: 5px; text-align: center;">
                                         <div style="font-weight: bold; color: #0095B7;">Total Mesin</div>
@@ -843,27 +848,68 @@
                                     </div>
                                 </div>
 
-                                <!-- Grafik Container -->
+                                <!-- Status Mesin Grid -->
+                                <div style="margin: 10px 0;">
+                                    <h4 style="color: #0095B7; margin: 5px 0;">Status Mesin</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 200px; overflow-y: auto;">
+                                        @foreach($plant->machines as $machine)
+                                            @php
+                                                $latestStatus = $machine->statusLogs->first();
+                                            @endphp
+                                            <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #e2e8f0;">
+                                                <div style="font-weight: bold;">{{ $machine->name }}</div>
+                                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; font-size: 0.9em;">
+                                                    <div>
+                                                        <span style="color: #666;">Status:</span>
+                                                        <span class="status-badge {{ 
+                                                            $latestStatus && $latestStatus->status === 'Gangguan' ? 'bg-red-100 text-red-600' :
+                                                            ($latestStatus && $latestStatus->status === 'Mothballed' ? 'bg-yellow-100 text-yellow-600' :
+                                                            ($latestStatus && $latestStatus->status === 'Overhaul' ? 'bg-orange-100 text-orange-600' : 
+                                                            'bg-green-100 text-green-600'))
+                                                        }}">
+                                                            {{ $latestStatus ? $latestStatus->status : 'N/A' }}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span style="color: #666;">Beban:</span>
+                                                        <span>{{ $latestStatus ? $latestStatus->load_value : 0 }} MW</span>
+                                                    </div>
+                                                    <div>
+                                                        <span style="color: #666;">DMN:</span>
+                                                        <span>{{ $latestStatus ? $latestStatus->dmn : 0 }}%</span>
+                                                    </div>
+                                                    <div>
+                                                        <span style="color: #666;">DMP:</span>
+                                                        <span>{{ $latestStatus ? $latestStatus->dmp : 0 }}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <!-- Grafik Trend -->
                                 <div style="margin: 15px 0;">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                        <div style="font-weight: bold; color: #0095B7;">Statistik 7 Hari Terakhir</div>
+                                        <div style="font-weight: bold; color: #0095B7;">Trend 7 Hari Terakhir</div>
                                         <div class="chart-legend" style="font-size: 12px;">
                                             <span style="color: #0095B7;">● Beban</span>
                                             <span style="color: #FF4560; margin-left: 10px;">● Kapasitas</span>
                                         </div>
                                     </div>
-                                    <div id="chart-{{ $plant->id }}" style="height: 200px;"></div>
+                                    <div id="chart-{{ $plant->id }}" style="height: 150px;"></div>
                                 </div>
 
                                 <button onclick="showAccumulationData({{ $plant->id }})" 
                                         style="background: #0095B7; color: white; border: none; 
                                                padding: 8px 15px; border-radius: 5px; 
                                                cursor: pointer; width: 100%; margin-top: 10px;">
-                                    Lihat Detail
+                                    Lihat Detail Lengkap
                                 </button>
                             </div>
                         `, {
-                            maxWidth: 400
+                            maxWidth: 600,
+                            maxHeight: 400
                         });
 
                     // Event listener saat popup dibuka
