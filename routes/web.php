@@ -426,6 +426,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'destroy' => 'other-discussions.destroy'
         ]);
         
+    // Tambahkan route untuk print dan export
+    Route::get('other-discussions/print', [OtherDiscussionController::class, 'print'])
+        ->name('other-discussions.print');
+    
+    Route::get('other-discussions/export/{format}', [OtherDiscussionController::class, 'export'])
+        ->name('other-discussions.export')
+        ->where('format', 'xlsx|pdf');
+        
     Route::post('other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
         ->name('other-discussions.update-status');
 });
@@ -498,6 +506,16 @@ Route::middleware(['auth'])->group(function () {
         ->name('attendance.generate-qr');
     Route::get('/public/attendance/scan/{token}', [AttendanceController::class, 'scan'])
         ->name('attendance.scan');
+});
+
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    // ... route lainnya ...
+    
+    Route::get('other-discussions/show', [OtherDiscussionController::class, 'show'])
+        ->name('other-discussions.show');
+    
+    Route::get('other-discussions/{id}', [OtherDiscussionController::class, 'show_single'])
+        ->name('other-discussions.show_single');
 });
 
 

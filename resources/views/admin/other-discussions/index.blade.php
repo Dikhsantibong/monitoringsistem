@@ -72,30 +72,139 @@
                     </a>
                 </div>
 
+                <!-- Alert Messages -->
+                <div class="mb-4">
+                    @if(session('success'))
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                            <span class="block sm:inline">{{ session('success') }}</span>
+                        </div>
+                    @endif
+
+                    @if(session('warning'))
+                        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+                            <span class="block sm:inline">{{ session('warning') }}</span>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <strong class="font-bold">Error!</strong>
+                            <span class="block sm:inline">{{ session('error') }}</span>
+                            <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <title>Close</title>
+                                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    @endif
+                </div>
+
                 <!-- Filter Section -->
-                <div class="mb-6 bg-white p-4 rounded-lg shadow">
-                    <form action="{{ route('admin.other-discussions.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <!-- Search -->
-                        <div class="relative">
-                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
-                            <div class="relative">
-                                <input type="text" 
-                                       name="search" 
-                                       id="search" 
-                                       placeholder="Cari topik, PIC, unit..."
-                                       value="{{ request('search') }}"
-                                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
+                <div class="mb-6 bg-white p-6 rounded-lg shadow justify-between">
+                    <form action="{{ route('admin.other-discussions.index') }}" method="GET">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+                            <!-- Search Box -->
+                            
+
+                            <!-- Tanggal Mulai -->
+                            <div class="lg:col-span-3">
+                                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
+                                <div class="relative">
+                                    <input type="date" 
+                                           id="start_date" 
+                                           name="start_date" 
+                                           value="{{ request('start_date') }}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Tanggal Akhir -->
+                            <div class="lg:col-span-3">
+                                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
+                                <div class="relative">
+                                    <input type="date" 
+                                           id="end_date" 
+                                           name="end_date" 
+                                           value="{{ request('end_date') }}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="lg:col-span-3 flex gap-2">
+                                <!-- Filter Button -->
+                                <button type="submit" 
+                                        class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                    <i class="fas fa-filter mr-2"></i>
+                                    Filter
+                                </button>
+                                
+                                <!-- Print Button -->
+                                <button onclick="handlePrint()" 
+                                        class="inline-flex justify-center items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                    <i class="fas fa-print mr-2"></i>
+                                    Print
+                                </button>
+                                
+                                <!-- Download Dropdown -->
+                                <div class="relative" x-data="{ open: false }">
+                                    <button type="button" 
+                                            @click="open = !open"
+                                            class="inline-flex justify-center items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
+                                        <i class="fas fa-download mr-2"></i>
+                                        Download
+                                    </button>
+                                    
+                                    <!-- Dropdown Menu -->
+                                    <div x-show="open" 
+                                         @click.away="open = false"
+                                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200"
+                                         style="min-width: 12rem;">
+                                        <div class="py-1">
+                                            <a href="{{ route('admin.other-discussions.export', array_merge(request()->all(), ['format' => 'xlsx'])) }}" 
+                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                                <i class="fas fa-file-excel mr-2 text-green-600"></i>
+                                                Export Excel
+                                            </a>
+                                            <a href="{{ route('admin.other-discussions.export', array_merge(request()->all(), ['format' => 'pdf'])) }}" 
+                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                                <i class="fas fa-file-pdf mr-2 text-red-600"></i>
+                                                Export PDF
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
+
+                        <!-- Reset Filter -->
+                        <div class="mt-4 flex justify-end">
+                            <a href="{{ route('admin.other-discussions.index') }}" 
+                               class="text-sm text-gray-600 hover:text-gray-900">
+                                <i class="fas fa-undo mr-1"></i>
+                                Reset Filter
+                            </a>
+                        </div>
                     </form>
                 </div>
 
                 <!-- Tab Navigation (tambahkan setelah bagian filter) -->
-                <div class="border-b border-gray-200 mb-6">
+                <div class="border-b border-gray-200 mb-6"><div class="lg:col-span-3">
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
+                    <div class="relative">
+                        <input type="text" 
+                               name="search" 
+                               id="search" 
+                               placeholder="Cari t  opik, PIC, unit..."
+                               value="{{ request('search') }}"
+                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button id="active-tab" 
                                 onclick="switchTab('active')"
@@ -1042,11 +1151,17 @@
         const endDate = document.getElementById('end_date');
 
         startDate.addEventListener('change', function() {
-            endDate.min = this.value;
+            if (endDate.value && this.value > endDate.value) {
+                alert('Tanggal mulai tidak boleh lebih besar dari tanggal akhir');
+                this.value = '';
+            }
         });
 
         endDate.addEventListener('change', function() {
-            startDate.max = this.value;
+            if (startDate.value && this.value < startDate.value) {
+                alert('Tanggal akhir tidak boleh lebih kecil dari tanggal mulai');
+                this.value = '';
+            }
         });
 
         // Auto submit saat memilih unit
@@ -1340,6 +1455,36 @@
             detailRow.classList.add('hidden');
             detailRow.classList.remove('animate-fade-in');
             icon.classList.remove('rotate-180');
+        }
+    }
+
+    function handlePrint() {
+        // Dapatkan semua parameter filter
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        const search = document.getElementById('search').value;
+        const unit = document.getElementById('unit')?.value;
+        
+        // Buat URL dengan parameter filter
+        let printUrl = "{{ route('admin.other-discussions.print') }}";
+        const params = new URLSearchParams();
+        
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        if (search) params.append('search', search);
+        if (unit) params.append('unit', unit);
+        
+        // Tambahkan parameter ke URL
+        if (params.toString()) {
+            printUrl += '?' + params.toString();
+        }
+        
+        // Buka tab baru dengan URL print
+        const printWindow = window.open(printUrl, '_blank');
+        
+        // Fokus ke tab baru (opsional, tergantung browser)
+        if (printWindow) {
+            printWindow.focus();
         }
     }
 </script>

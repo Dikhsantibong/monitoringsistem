@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use App\Events\OtherDiscussionUpdated;
 use Illuminate\Support\Facades\Log;
+use PDF;
+use Excel;
+use App\Exports\OtherDiscussionsExport;
 
 
 class OtherDiscussionController extends Controller
@@ -609,6 +612,234 @@ class OtherDiscussionController extends Controller
                 'success' => false,
                 'message' => $e->getMessage()
             ], 400);
+        }
+    }
+
+    public function print(Request $request)
+    {
+        try {
+            $query = OtherDiscussion::query()
+                ->with(['commitments' => function($q) {
+                    $q->with(['department', 'section']);
+                }]);
+
+            // Filter berdasarkan tanggal
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
+            // Filter berdasarkan pencarian
+            if ($request->filled('search')) {
+                $query->where(function($q) use ($request) {
+                    $search = $request->search;
+                    $q->where('topic', 'like', "%{$search}%")
+                      ->orWhere('unit', 'like', "%{$search}%")
+                      ->orWhere('pic', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter berdasarkan unit
+            if ($request->filled('unit')) {
+                $query->where('unit', $request->unit);
+            }
+
+            // Filter berdasarkan status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $discussions = $query->orderBy('created_at', 'desc')->get();
+
+            return view('admin.other-discussions.print', [
+                'discussions' => $discussions,
+                'filters' => [
+                    'start_date' => $request->start_date,
+                    'end_date' => $request->end_date,
+                    'search' => $request->search,
+                    'unit' => $request->unit,
+                    'status' => $request->status
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in print method:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat mencetak data');
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $query = OtherDiscussion::query()
+                ->with(['commitments' => function($q) {
+                    $q->with(['department', 'section']);
+                }]);
+
+            // Filter berdasarkan tanggal
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
+            // Filter berdasarkan pencarian
+            if ($request->filled('search')) {
+                $query->where(function($q) use ($request) {
+                    $search = $request->search;
+                    $q->where('topic', 'like', "%{$search}%")
+                      ->orWhere('unit', 'like', "%{$search}%")
+                      ->orWhere('pic', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter berdasarkan unit
+            if ($request->filled('unit')) {
+                $query->where('unit', $request->unit);
+            }
+
+            // Filter berdasarkan status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $format = $request->format ?? 'xlsx';
+            $fileName = 'pembahasan_lain_' . date('Y-m-d_His');
+
+            if ($format === 'xlsx') {
+                return Excel::download(
+                    new OtherDiscussionsExport($query), 
+                    $fileName . '.xlsx'
+                );
+            } else {
+                $discussions = $query->orderBy('created_at', 'desc')->get();
+                $pdf = PDF::loadView('admin.other-discussions.pdf', [
+                    'discussions' => $discussions,
+                    'filters' => [
+                        'start_date' => $request->start_date,
+                        'end_date' => $request->end_date,
+                        'search' => $request->search,
+                        'unit' => $request->unit,
+                        'status' => $request->status
+                    ]
+                ]);
+
+                return $pdf->download($fileName . '.pdf');
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error in export method:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat mengexport data');
+        }
+    }
+
+    public function show(Request $request)
+    {
+        try {
+            $query = OtherDiscussion::query()
+                ->with(['commitments' => function($q) {
+                    $q->with(['department', 'section']);
+                }]);
+
+            // Filter berdasarkan tanggal
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
+            // Filter berdasarkan pencarian
+            if ($request->filled('search')) {
+                $query->where(function($q) use ($request) {
+                    $search = $request->search;
+                    $q->where('topic', 'like', "%{$search}%")
+                      ->orWhere('unit', 'like', "%{$search}%")
+                      ->orWhere('pic', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter berdasarkan unit
+            if ($request->filled('unit')) {
+                $query->where('unit', $request->unit);
+            }
+
+            // Filter berdasarkan status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $discussions = $query->orderBy('created_at', 'desc')->get();
+
+            if ($discussions->isEmpty()) {
+                return back()->with('warning', 'Tidak ada data yang ditemukan untuk filter yang dipilih');
+            }
+
+            return view('admin.other-discussions.show', [
+                'discussions' => $discussions,
+                'filters' => [
+                    'start_date' => $request->start_date,
+                    'end_date' => $request->end_date,
+                    'search' => $request->search,
+                    'unit' => $request->unit,
+                    'status' => $request->status
+                ]
+            ]);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Database error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan pada database: ' . $e->getMessage());
+        
+        } catch (\InvalidArgumentException $e) {
+            \Log::error('Invalid argument error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Format data tidak valid: ' . $e->getMessage());
+        
+        } catch (\Exception $e) {
+            \Log::error('Unexpected error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan yang tidak terduga: ' . $e->getMessage());
+        }
+    }
+
+    public function show_single($id)
+    {
+        try {
+            $discussion = OtherDiscussion::with(['commitments' => function($q) {
+                $q->with(['department', 'section']);
+            }])->findOrFail($id);
+
+            return view('admin.other-discussions.show_single', [
+                'discussion' => $discussion
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            return back()->with('error', 'Data tidak ditemukan');
+        } catch (\Exception $e) {
+            \Log::error('Error in show_single method:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat menampilkan data');
         }
     }
 }   
