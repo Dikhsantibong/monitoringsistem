@@ -17,7 +17,7 @@
                         <h1 class="text-lg font-semibold uppercase mb-2">STATUS MESIN - {{ $powerPlant->name }}</h1>
                         
                         <!-- Tambahkan informasi total DMN, DMP, dan Beban -->
-                        <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="grid grid-cols-5 gap-4 mb-4">
                             @php
                                 // Filter logs berdasarkan tanggal yang dipilih
                                 $filteredLogs = $logs->filter(function($log) use ($date) {
