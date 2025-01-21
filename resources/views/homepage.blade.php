@@ -945,8 +945,6 @@
                                             return $machine->statusLogs->first()->dmp ?? 0;
                                         });
                                         $totalDerating = $totalDMN + $totalDMP;
-                                        
-                                        // Hitung persentase derating
                                         $totalCapacity = $plant->machines->sum('capacity');
                                         $deratingPercentage = $totalCapacity > 0 ? round(($totalDerating / $totalCapacity) * 100, 2) : 0;
                                     @endphp
@@ -974,6 +972,49 @@
                                         font-weight: 600;
                                     ">
                                         HOP: {{ $plant->hop ?? 0 }}
+                                    </div>
+                                </div>
+
+                                <!-- Status Unit Summary -->
+                                @php
+                                    $unitOperasi = $plant->machines->filter(function($machine) {
+                                        $latestStatus = $machine->statusLogs->first();
+                                        return $latestStatus && $latestStatus->status === 'Operasi';
+                                    })->count();
+
+                                    $unitStandby = $plant->machines->filter(function($machine) {
+                                        $latestStatus = $machine->statusLogs->first();
+                                        return $latestStatus && $latestStatus->status === 'Standby';
+                                    })->count();
+
+                                    $unitAktif = $unitOperasi + $unitStandby; // Gabungan Operasi dan Standby
+
+                                    $unitTidakSiap = $plant->machines->filter(function($machine) {
+                                        $latestStatus = $machine->statusLogs->first();
+                                        return $latestStatus && in_array($latestStatus->status, [
+                                            'Gangguan', 
+                                            'Pemeliharaan', 
+                                            'Mothballed', 
+                                            'Overhaul'
+                                        ]);
+                                    })->count();
+                                @endphp
+                                
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
+                                    <div style="background: #D1FAE5; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #6EE7B7;">
+                                        <div style="font-size: 0.8em; color: #059669;">Unit Aktif</div>
+                                        <div style="font-weight: bold; color: #059669; font-size: 1.2em;">{{ $unitAktif }}</div>
+                                        <div style="font-size: 0.7em; color: #059669;">
+                                            ({{ $unitOperasi }} Operasi, {{ $unitStandby }} Standby)
+                                        </div>
+                                    </div>
+                                    <div style="background: #FEE2E2; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #FCA5A5;">
+                                        <div style="font-size: 0.8em; color: #DC2626;">Tidak Siap Operasi</div>
+                                        <div style="font-weight: bold; color: #DC2626; font-size: 1.2em;">{{ $unitTidakSiap }}</div>
+                                    </div>
+                                    <div style="background: #F3F4F6; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #D1D5DB;">
+                                        <div style="font-size: 0.8em; color: #6B7280;">Total Unit</div>
+                                        <div style="font-weight: bold; color: #6B7280; font-size: 1.2em;">{{ $plant->machines->count() }}</div>
                                     </div>
                                 </div>
 
