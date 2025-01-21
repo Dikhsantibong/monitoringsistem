@@ -771,97 +771,60 @@
             return;
         }
 
-        console.log('Memulai update form dengan data:', data); // Debug log
+        console.log('Data yang diterima:', data); // Debug log
 
         // Update data mesin
         if (data.logs) {
             data.logs.forEach(log => {
-                // Cari baris tabel berdasarkan machine_id
                 const row = document.querySelector(`tr[data-machine-id="${log.machine_id}"]`);
-                console.log('Mencari row untuk machine_id:', log.machine_id, 'Found:', !!row); // Debug log
-
                 if (row) {
-                    // Update status
-                    const statusSelect = row.querySelector('select[name^="status"]');
+                    // Debug log untuk melihat data yang akan diupdate
+                    console.log('Updating machine:', log.machine_id, {
+                        status: log.status,
+                        component: log.component,
+                        equipment: log.equipment
+                    });
+
+                    // Update Status - perbaikan selector
+                    const statusSelect = row.querySelector('select[name="status[' + log.machine_id + ']"]');
                     if (statusSelect) {
                         statusSelect.value = log.status || '';
                         statusSelect.style.backgroundColor = getStatusColor(log.status);
+                        console.log('Status updated:', log.status);
+                    } else {
+                        console.log('Status select not found for machine:', log.machine_id);
                     }
 
-                    // Update DMN
-                    const dmnInput = row.querySelector('input[name^="dmn"]');
-                    if (dmnInput) {
-                        dmnInput.value = log.dmn || '0';
+                    // Update Component/System - perbaikan selector
+                    const systemSelect = row.querySelector('select[name="system[' + log.machine_id + ']"]');
+                    if (systemSelect) {
+                        systemSelect.value = log.component || '';
+                        // Trigger change event untuk update component options
+                        systemSelect.dispatchEvent(new Event('change'));
+                        console.log('System updated:', log.component);
                     }
 
-                    // Update DMP
-                    const dmpInput = row.querySelector('input[name^="dmp"]');
-                    if (dmpInput) {
-                        dmpInput.value = log.dmp || '0';
+                    // Update Equipment - perbaikan selector
+                    const equipmentSelect = row.querySelector('select[name="equipment[' + log.machine_id + ']"]');
+                    if (equipmentSelect) {
+                        equipmentSelect.value = log.equipment || '';
+                        console.log('Equipment updated:', log.equipment);
                     }
 
-                    // Update Load Value
-                    const loadInput = row.querySelector('input[name^="load_value"]');
-                    if (loadInput) {
-                        loadInput.value = log.load_value || '0';
-                    }
+                    // Update numeric inputs
+                    updateInputValue(row, 'input[name="dmn[' + log.machine_id + ']"]', log.dmn);
+                    updateInputValue(row, 'input[name="dmp[' + log.machine_id + ']"]', log.dmp);
+                    updateInputValue(row, 'input[name="load_value[' + log.machine_id + ']"]', log.load_value);
 
-                    // Update Component
-                    const componentSelect = row.querySelector('.system-select');
-                    if (componentSelect) {
-                        componentSelect.value = log.component || '';
-                        // Trigger change event untuk memperbarui opsi equipment
-                        componentSelect.dispatchEvent(new Event('change'));
-                    }
+                    // Update textareas
+                    updateTextareaValue(row, 'textarea[name="deskripsi[' + log.machine_id + ']"]', log.deskripsi);
+                    updateTextareaValue(row, 'textarea[name="kronologi[' + log.machine_id + ']"]', log.kronologi);
+                    updateTextareaValue(row, 'textarea[name="action_plan[' + log.machine_id + ']"]', log.action_plan);
+                    updateTextareaValue(row, 'textarea[name="progres[' + log.machine_id + ']"]', log.progres);
 
-                    // Update Equipment
-                    const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
-                    if (equipmentTextarea) {
-                        equipmentTextarea.value = log.equipment || '';
-                        autoResize(equipmentTextarea);
-                    }
-
-                    // Update Deskripsi
-                    const deskripsiTextarea = row.querySelector(`textarea[name="deskripsi[${log.machine_id}]"]`);
-                    if (deskripsiTextarea) {
-                        deskripsiTextarea.value = log.deskripsi || '';
-                        autoResize(deskripsiTextarea);
-                    }
-
-                    // Update Kronologi
-                    const kronologiTextarea = row.querySelector(`textarea[name="kronologi[${log.machine_id}]"]`);
-                    if (kronologiTextarea) {
-                        kronologiTextarea.value = log.kronologi || '';
-                        autoResize(kronologiTextarea);
-                    }
-
-                    // Update Action Plan
-                    const actionPlanTextarea = row.querySelector(`textarea[name="action_plan[${log.machine_id}]"]`);
-                    if (actionPlanTextarea) {
-                        actionPlanTextarea.value = log.action_plan || '';
-                        autoResize(actionPlanTextarea);
-                    }
-
-                    // Update Progres
-                    const progresTextarea = row.querySelector(`textarea[name="progres[${log.machine_id}]"]`);
-                    if (progresTextarea) {
-                        progresTextarea.value = log.progres || '';
-                        autoResize(progresTextarea);
-                    }
-
-                    // Update Tanggal Mulai
-                    const tanggalMulaiInput = row.querySelector(`input[name="tanggal_mulai[${log.machine_id}]"]`);
-                    if (tanggalMulaiInput) {
-                        tanggalMulaiInput.value = log.tanggal_mulai || '';
-                    }
-
-                    // Update Target Selesai
-                    const targetSelesaiInput = row.querySelector(`input[name="target_selesai[${log.machine_id}]"]`);
-                    if (targetSelesaiInput) {
-                        targetSelesaiInput.value = log.target_selesai || '';
-                    }
-
-                    console.log('Updated row for machine_id:', log.machine_id); // Debug log
+                    // Update dates
+                    updateInputValue(row, 'input[name="tanggal_mulai[' + log.machine_id + ']"]', log.tanggal_mulai);
+                    updateInputValue(row, 'input[name="target_selesai[' + log.machine_id + ']"]', log.target_selesai);
                 }
             });
         }
@@ -882,6 +845,9 @@
         const element = row.querySelector(selector);
         if (element) {
             element.value = value || '';
+            console.log('Updated input:', selector, 'with value:', value);
+        } else {
+            console.log('Element not found:', selector);
         }
     }
 
@@ -890,6 +856,9 @@
         if (element) {
             element.value = value || '';
             autoResize(element);
+            console.log('Updated textarea:', selector, 'with value:', value);
+        } else {
+            console.log('Element not found:', selector);
         }
     }
 
