@@ -57,15 +57,19 @@ class PembangkitController extends Controller
 
             // Simpan data status mesin
             foreach ($request->logs as $log) {
-                // Pastikan equipment diambil dengan benar dari request
                 $equipment = isset($log['equipment']) ? trim($log['equipment']) : null;
                 
                 $operation = MachineOperation::where('machine_id', $log['machine_id'])
                     ->latest('recorded_at')
                     ->first();
 
+                // Cek status untuk menentukan nilai DMP
+                $dmp = $operation ? $operation->dmp : 0;
+                if (in_array($log['status'], ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])) {
+                    $dmp = 0; // Set DMP ke 0 untuk status tertentu
+                }
+
                 if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
-                    // Cek dan update atau buat data baru
                     MachineStatusLog::updateOrCreate(
                         [
                             'machine_id' => $log['machine_id'],
@@ -73,7 +77,7 @@ class PembangkitController extends Controller
                         ],
                         [
                             'dmn' => $operation ? $operation->dmn : 0,
-                            'dmp' => $operation ? $operation->dmp : 0,
+                            'dmp' => $dmp, // Gunakan nilai DMP yang sudah ditentukan
                             'load_value' => $log['load_value'],
                             'status' => $log['status'],
                             'component' => $log['component'],

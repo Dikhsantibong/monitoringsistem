@@ -159,8 +159,8 @@
                             <tr class="hover:bg-gray-50 border border-gray-200">
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $index + 1 }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200" data-id="{{ $machine->id }}">{{ $machine->name }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmp ?? '-' }}</td> 
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmp ?? '-' }}</td> 
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->load_value ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     <span class="px-2 py-1 rounded-full text-xs font-medium {{ $statusClass }}">
