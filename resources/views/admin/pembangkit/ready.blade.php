@@ -232,12 +232,13 @@
                                                         <select name="status[{{ $machine->id }}]" 
                                                             style="width: 100px;"
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
-                                                            <option value="Operasi">Operasi</option>
-                                                            <option value="Standby">Standby</option>
-                                                            <option value="Gangguan">Gangguan</option>
-                                                            <option value="Pemeliharaan">Pemeliharaan</option>
-                                                            <option value="Mothballed">Mothballed</option>
-                                                            <option value="Overhaul">Overhaul</option>
+                                                            <option value="" style="background-color: #FFFFFF">Pilih Status</option>
+                                                            <option value="Operasi" style="background-color: #4CAF50">Operasi</option>
+                                                            <option value="Standby" style="background-color: #2196F3">Standby</option>
+                                                            <option value="Gangguan" style="background-color: #f44336">Gangguan</option>
+                                                            <option value="Pemeliharaan" style="background-color: #FF9800">Pemeliharaan</option>
+                                                            <option value="Mothballed" style="background-color: #9E9E9E">Mothballed</option>
+                                                            <option value="Overhaul" style="background-color: #673AB7">Overhaul</option>
                                                         </select>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
@@ -774,11 +775,12 @@
                     // Debug untuk melihat data yang akan diupdate
                     console.log('Updating machine:', log.machine_id, log);
 
-                    // Update Status
+                    // Update Status dan warnanya
                     const statusSelect = row.querySelector(`select[name="status[${log.machine_id}]"]`);
                     if (statusSelect) {
                         statusSelect.value = log.status || '';
-                        statusSelect.dispatchEvent(new Event('change')); // Trigger change event
+                        statusSelect.style.backgroundColor = getStatusColor(log.status);
+                        statusSelect.style.color = ['Operasi', 'Standby'].includes(log.status) ? 'black' : 'white';
                         console.log('Status updated:', log.status);
                     }
 
@@ -883,15 +885,22 @@
     }
 
     function getStatusColor(status) {
-        const colors = {
-            'Operasi': '#4CAF50',
-            'Standby': '#2196F3',
-            'Gangguan': '#f44336',
-            'Pemeliharaan': '#FF9800',
-            'Mothballed': '#9E9E9E',
-            'Overhaul': '#673AB7'
-        };
-        return colors[status] || '#FFFFFF';
+        switch (status) {
+            case 'Operasi':
+                return '#4CAF50'; // Hijau
+            case 'Standby':
+                return '#2196F3'; // Kuning
+            case 'Gangguan':
+                return '#f44336'; // Merah
+            case 'Pemeliharaan':
+                return '#FF9800'; // Biru
+            case 'Mothballed':
+                return '#9E9E9E'; // Ungu
+            case 'Overhaul':
+                return '#673AB7'; // Orange
+            default:
+                return '#FFFFFF'; // Default tanpa warna
+        }
     }
 
     // Pastikan fungsi dijalankan saat halaman dimuat
