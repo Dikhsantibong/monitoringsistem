@@ -538,9 +538,12 @@
                     <!-- Content wrapper -->
                     <div class="relative z-10 mt-16">
                         <!-- Header -->
-                        <h2 class="text-9xl font-bold mb-8 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000; line-height: 1;">
-                            M<i class="fas fa-helmet-safety"></i>NDAY
-                            <span class="text-6xl block -mt-2">MONITORING DAILY</span>
+                        <h2 class="text-9xl font-bold mb-8 text-center" style="color: #FFCC00; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); line-height: 1;">
+                            M<span style="display: inline-flex; align-items: center;"><i class="fas fa-cog fa-spin" style="color: #333333;"></i></span>NDAY
+                            <span class="text-6xl block mt-2" style="color: #FFCC00; font-weight: 600; letter-spacing: 2px;">
+                                MONITORING DAILY
+                                <span class="block text-3xl mt-1" style="color: #FFFFFF; letter-spacing: 1px;">UP KENDARI</span>
+                            </span>
                         </h2>
                         <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
                             <div>
