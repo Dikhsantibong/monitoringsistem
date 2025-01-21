@@ -2,30 +2,37 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\Exportable;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Carbon\Carbon;
 
-class OtherDiscussionsExport implements FromQuery, WithHeadings, WithMapping
+class OtherDiscussionsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
 {
-    use Exportable;
+    protected $discussions;
 
-    protected $query;
-
-    public function __construct($query)
+    public function __construct($discussions)
     {
-        $this->query = $query;
+        $this->discussions = $discussions;
     }
 
-    public function query()
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    public function collection()
     {
-        return $this->query;
+        return collect($this->discussions);
     }
 
+    /**
+     * @return array
+     */
     public function headings(): array
     {
         return [
+            'No',
             'No SR',
             'No Pembahasan',
             'Unit',
@@ -34,53 +41,37 @@ class OtherDiscussionsExport implements FromQuery, WithHeadings, WithMapping
             'PIC',
             'Status',
             'Deadline',
-            'Komitmen',
-            'PIC Komitmen',
-            'Deadline Komitmen',
-            'Status Komitmen'
+            'Komitmen'
         ];
     }
 
+    /**
+     * @param mixed $discussion
+     * @return array
+     */
     public function map($discussion): array
     {
-        $rows = [];
-        
-        // Jika tidak ada komitmen, tampilkan satu baris
-        if ($discussion->commitments->isEmpty()) {
-            $rows[] = [
-                $discussion->sr_number,
-                $discussion->no_pembahasan,
-                $discussion->unit,
-                $discussion->topic,
-                $discussion->target,
-                $discussion->pic,
-                $discussion->status,
-                $discussion->target_deadline ? date('d/m/Y', strtotime($discussion->target_deadline)) : '-',
-                '-',
-                '-',
-                '-',
-                '-'
-            ];
-        } else {
-            // Jika ada komitmen, tampilkan satu baris untuk setiap komitmen
-            foreach ($discussion->commitments as $commitment) {
-                $rows[] = [
-                    $discussion->sr_number,
-                    $discussion->no_pembahasan,
-                    $discussion->unit,
-                    $discussion->topic,
-                    $discussion->target,
-                    $discussion->pic,
-                    $discussion->status,
-                    $discussion->target_deadline ? date('d/m/Y', strtotime($discussion->target_deadline)) : '-',
-                    $commitment->description,
-                    $commitment->pic,
-                    $commitment->deadline ? date('d/m/Y', strtotime($commitment->deadline)) : '-',
-                    $commitment->status
-                ];
-            }
-        }
+        $commitments = collect($discussion->commitments)->map(function($commitment) {
+            return sprintf(
+                "%s (PIC: %s, Deadline: %s, Status: %s)",
+                $commitment->description ?? '-',
+                $commitment->pic ?? '-',
+                $commitment->deadline ? Carbon::parse($commitment->deadline)->format('d/m/Y') : '-',
+                $commitment->status ?? '-'
+            );
+        })->join("\n");
 
-        return $rows;
+        return [
+            $discussion->id ?? '-',
+            $discussion->sr_number ?? '-',
+            $discussion->no_pembahasan ?? '-',
+            $discussion->unit ?? '-',
+            $discussion->topic ?? '-',
+            $discussion->target ?? '-',
+            $discussion->pic ?? '-',
+            $discussion->status ?? '-',
+            $discussion->target_deadline ? Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-',
+            $commitments
+        ];
     }
 } 

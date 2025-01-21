@@ -162,7 +162,7 @@
                                          class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200"
                                          style="min-width: 12rem;">
                                         <div class="py-1">
-                                            <a href="{{ route('admin.other-discussions.export', array_merge(request()->all(), ['format' => 'xlsx'])) }}" 
+                                            <a href="{{ route('admin.other-discussions.export.xlsx', request()->query()) }}" 
                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                                                 <i class="fas fa-file-excel mr-2 text-green-600"></i>
                                                 Export Excel
@@ -383,6 +383,44 @@
                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
+
+                                                <!-- Tombol Download -->
+                                                <div class="relative" x-data="{ isOpen: false }">
+                                                    <button @click="isOpen = !isOpen"
+                                                            class="text-green-600 hover:text-green-800 focus:outline-none"
+                                                            title="Download">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    
+                                                    <!-- Dropdown Menu -->
+                                                    <div x-show="isOpen"
+                                                         @click.away="isOpen = false"
+                                                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200">
+                                                        <div class="py-1">
+                                                            <!-- Print -->
+                                                            <a href="{{ route('admin.other-discussions.print.single', $discussion->id) }}" 
+                                                               target="_blank"
+                                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                <i class="fas fa-print mr-2"></i>
+                                                                Print
+                                                            </a>
+                                                            
+                                                            <!-- Export PDF -->
+                                                            <a href="{{ route('admin.other-discussions.export.single', ['id' => $discussion->id, 'format' => 'pdf']) }}" 
+                                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                <i class="fas fa-file-pdf mr-2 text-red-600"></i>
+                                                                Export PDF
+                                                            </a>
+                                                            
+                                                            <!-- Export Excel -->
+                                                            <a href="{{ route('admin.other-discussions.export.single', ['id' => $discussion->id, 'format' => 'xlsx']) }}" 
+                                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                <i class="fas fa-file-excel mr-2 text-green-600"></i>
+                                                                Export Excel
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                                 <!-- Tombol Delete -->
                                                 <button onclick="confirmDelete('{{ $discussion->id }}')"

@@ -43,12 +43,17 @@
                             @endphp
                             
                             <div class="bg-green-50 p-3 rounded-lg">
-                                <p class="text-sm text-gray-600">Total Daya Terpasang:</p>
+                                <p class="text-sm text-gray-600">DMP:</p>
                                 <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 1) }} MW</p>
                             </div>
                             <div class="bg-blue-50 p-3 rounded-lg">
-                                <p class="text-sm text-gray-600">Total Daya Mampu:</p>
+                                <p class="text-sm text-gray-600">DMN:</p>
                                 <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 1) }} MW</p>
+                            </div>
+                            
+                            <div class="bg-red-50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600">Derating:</p>
+                                <p class="text-xl font-bold text-red-700">{{ number_format($totalDMN - $totalDMP, 1) }} MW</p>
                             </div>
                             <div class="bg-purple-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total Beban:</p>

@@ -15,8 +15,10 @@ use Illuminate\Validation\ValidationException;
 use App\Events\OtherDiscussionUpdated;
 use Illuminate\Support\Facades\Log;
 use PDF;
-use Excel;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\OtherDiscussionsExport;
+use App\Exports\SingleOtherDiscussionExport;
+
 
 
 class OtherDiscussionController extends Controller
@@ -841,5 +843,70 @@ class OtherDiscussionController extends Controller
             ]);
             return back()->with('error', 'Terjadi kesalahan saat menampilkan data');
         }
+    }
+
+    public function exportExcel(Request $request)
+    {
+        try {
+            $query = OtherDiscussion::query()
+                ->with(['commitments' => function($q) {
+                    $q->with(['department', 'section']);
+                }]);
+
+            // Terapkan filter yang sama seperti di index
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+            if ($request->filled('search')) {
+                $query->where(function($q) use ($request) {
+                    $q->where('topic', 'like', "%{$request->search}%")
+                      ->orWhere('unit', 'like', "%{$request->search}%")
+                      ->orWhere('pic', 'like', "%{$request->search}%");
+                });
+            }
+            if ($request->filled('unit')) {
+                $query->where('unit', $request->unit);
+            }
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $discussions = $query->orderBy('created_at', 'desc')->get();
+            $fileName = 'pembahasan_lain_' . now()->format('Y-m-d_His') . '.xlsx';
+
+            return Excel::download(new OtherDiscussionsExport($discussions), $fileName);
+
+        } catch (\Exception $e) {
+            \Log::error('Error exporting excel:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat mengexport data: ' . $e->getMessage());
+        }
+    }
+
+    public function printSingle($id)
+    {
+        $discussion = OtherDiscussion::with('commitments')->findOrFail($id);
+        return view('admin.other-discussions.print-single', compact('discussion'));
+    }
+
+    public function exportSingle($id, $format)
+    {
+        $discussion = OtherDiscussion::with('commitments')->findOrFail($id);
+        
+        if ($format === 'pdf') {
+            $pdf = PDF::loadView('admin.other-discussions.export-single-pdf', compact('discussion'));
+            return $pdf->download('pembahasan-' . $discussion->no_pembahasan . '.pdf');
+        }
+        
+        if ($format === 'xlsx') {
+            return Excel::download(new SingleOtherDiscussionExport($discussion), 'pembahasan-' . $discussion->no_pembahasan . '.xlsx');
+        }
+        
+        abort(404);
     }
 }   
