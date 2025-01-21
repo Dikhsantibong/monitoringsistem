@@ -148,5 +148,37 @@ class MachineStatusLog extends Model
             ->exists();
     }
 
-    
+    public static function getChartData($powerPlantId)
+    {
+        $lastWeek = Carbon::now()->subWeek();
+        $today = Carbon::now();
+
+        \Log::info('Getting chart data for power plant:', [
+            'powerPlantId' => $powerPlantId,
+            'dateRange' => [$lastWeek, $today]
+        ]);
+
+        $data = static::query()
+            ->join('machines', 'machines.id', '=', 'machine_status_logs.machine_id')
+            ->where('machines.power_plant_id', $powerPlantId)
+            ->whereBetween('tanggal', [$lastWeek, $today])
+            ->select(
+                DB::raw('DATE(tanggal) as date'),
+                DB::raw('AVG(load_value) as avg_load'),
+                DB::raw('SUM(machines.capacity) as total_capacity')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        \Log::info('Chart data retrieved:', ['data' => $data]);
+
+        return $data->map(function ($item) {
+            return [
+                'date' => Carbon::parse($item->date)->format('D'),
+                'load' => round($item->avg_load, 2),
+                'capacity' => round($item->total_capacity, 2)
+            ];
+        });
+    }
 } 

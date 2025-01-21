@@ -22,7 +22,7 @@ class HomeController extends Controller
                 ->with(['machines:id,power_plant_id,name,status,capacity'])
                 ->get();
             
-            $markers = Marker::all();
+            $markersData = Marker::all();
             // Ambil data status log hari ini
             $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
                 ->select(
@@ -71,18 +71,35 @@ class HomeController extends Controller
             $active_units_data = $monthlyData->pluck('count')->map(function($item) { return rand(1, $item); })->toArray();
             
             // Sederhanakan data marker
-            $markers = [];
-            foreach ($powerPlants as $plant) {
-                $markers[] = [
-                    'id' => $plant->id,
-                    'name' => $plant->name,
-                    'latitude' => $plant->latitude,
-                    'longitude' => $plant->longitude,
-                    'total_machines' => $plant->machines->count(),
-                    'active_machines' => $plant->machines->where('status', 'Aktif')->count(),
-                    'total_capacity' => $plant->machines->sum('capacity')
+            $markers = $markersData->map(function($marker) {
+                // Ambil data chart dari MachineStatusLog
+                $chartData = MachineStatusLog::getChartData($marker->id);
+                
+                return [
+                    // Data dari Marker
+                    'id' => $marker->id,
+                    'name' => $marker->name,
+                    'latitude' => $marker->getLatitudeAttribute(),
+                    'longitude' => $marker->getLongitudeAttribute(),
+                    'mesin' => $marker->mesin,
+                    'capacity' => $marker->capacity,
+                    'status' => $marker->status,
+                    'DMN' => $marker->DMN,
+                    'DMP' => $marker->DMP,
+                    'Beban' => $marker->Beban,
+                    'HOP' => $marker->HOP,
+                    
+                    // Data tambahan untuk grafik
+                    'chart_data' => [
+                        'dates' => $chartData->pluck('date')->toArray(),
+                        'beban' => $chartData->pluck('load')->toArray(),
+                        'kapasitas' => $chartData->pluck('capacity')->toArray()
+                    ]
                 ];
-            }
+            })->toArray(); // Konversi ke array
+
+            // Debug dengan format array yang benar
+            \Log::info('Markers data:', ['count' => count($markers)]);
 
             // Hitung total statistik
             $total_capacity = $powerPlants->sum(function($plant) {
@@ -95,20 +112,6 @@ class HomeController extends Controller
 
             \Log::info('Data markers:', $markers); // Debug log
 
-            $markers = Marker::all()->map(function($marker) {
-                $data = [
-                    'id' => $marker->id,
-                    'name' => $marker->name,
-                    'latitude' => $marker->lat,
-                    'longitude' => $marker->lng,
-                    'total_machines' => 1,
-                    'active_machines' => $marker->status == 'Aktif' ? 1 : 0,
-                    'total_capacity' => (float) $marker->capacity
-                ];
-                \Log::info("Processing marker: ", $data);
-                return $data;
-            })->toArray();
-
             // Ambil data untuk live unit operational
             $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
                 ->whereIn('status', ['Gangguan', 'Mothballed', 'Overhaul'])
@@ -116,7 +119,7 @@ class HomeController extends Controller
                 ->get();
 
             return view('homepage', compact(
-                'markers',
+                'powerPlants',
                 'total_capacity',
                 'total_units',
                 'active_units',
@@ -134,8 +137,8 @@ class HomeController extends Controller
             ));
 
         } catch (\Exception $e) {
-            \Log::error('Error in index: ' . $e->getMessage());
-            return view('homepage')->with('error', 'Terjadi kesalahan saat memuat data');
+            \Log::error('Error in HomeController@index: ' . $e->getMessage());
+            return view('homepage', ['error' => 'Terjadi kesalahan saat memuat data.']);
         }
     }
 
@@ -196,5 +199,16 @@ class HomeController extends Controller
                 'status' => 'error'
             ], 500);
         }
+    }
+
+    public function getPlantChartData($plantId)
+    {
+        $chartData = MachineStatusLog::getChartData($plantId);
+        
+        return response()->json([
+            'dates' => $chartData->pluck('date')->toArray(),
+            'beban' => $chartData->pluck('load')->toArray(),
+            'kapasitas' => $chartData->pluck('capacity')->toArray()
+        ]);
     }
 }

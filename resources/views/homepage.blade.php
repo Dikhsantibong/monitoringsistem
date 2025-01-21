@@ -823,38 +823,158 @@
                 var markers = [];
                 var bounds = L.latLngBounds();
 
-                @foreach ($markers as $marker)
-                    var markerLatLng = [{{ $marker['latitude'] }}, {{ $marker['longitude'] }}];
+                @foreach ($powerPlants as $plant)
+                    var markerLatLng = [{{ $plant->latitude }}, {{ $plant->longitude }}];
                     var marker = L.marker(markerLatLng)
                         .addTo(map)
                         .bindPopup(`
-                            <div style="min-width: 200px;">
-                                <h3 style="margin: 0 0 10px 0;">{{ $marker['name'] }}</h3>
-                                <p style="margin: 5px 0;">
-                                    <strong>Total Mesin:</strong> {{ $marker['total_machines'] }}<br>
-                                    <strong>Mesin Aktif:</strong> {{ $marker['active_machines'] }}<br>
-                                    <strong>Total Kapasitas:</strong> {{ $marker['total_capacity'] }} MW
-                                </p>
-                                <button onclick="showAccumulationData({{ $marker['id'] }})" 
+                            <div style="min-width: 300px;">
+                                <h3 style="margin: 0 0 10px 0; text-align: center;">{{ $plant->name }}</h3>
+                                
+                                <!-- Info Grid -->
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                                    <div style="background: #f8f9fa; padding: 8px; border-radius: 5px; text-align: center;">
+                                        <div style="font-weight: bold; color: #0095B7;">Total Mesin</div>
+                                        <div>{{ $plant->machines->count() }}</div>
+                                    </div>
+                                    <div style="background: #f8f9fa; padding: 8px; border-radius: 5px; text-align: center;">
+                                        <div style="font-weight: bold; color: #0095B7;">Mesin Aktif</div>
+                                        <div>{{ $plant->machines->where('status', 'Aktif')->count() }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Grafik Container -->
+                                <div style="margin: 15px 0;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <div style="font-weight: bold; color: #0095B7;">Statistik 7 Hari Terakhir</div>
+                                        <div class="chart-legend" style="font-size: 12px;">
+                                            <span style="color: #0095B7;">● Beban</span>
+                                            <span style="color: #FF4560; margin-left: 10px;">● Kapasitas</span>
+                                        </div>
+                                    </div>
+                                    <div id="chart-{{ $plant->id }}" style="height: 200px;"></div>
+                                </div>
+
+                                <button onclick="showAccumulationData({{ $plant->id }})" 
                                         style="background: #0095B7; color: white; border: none; 
-                                               padding: 5px 10px; border-radius: 4px; 
-                                               cursor: pointer; width: 100%;">
-                                    Lihat Detail Gangguan
+                                               padding: 8px 15px; border-radius: 5px; 
+                                               cursor: pointer; width: 100%; margin-top: 10px;">
+                                    Lihat Detail
                                 </button>
                             </div>
-                        `);
-                    
-                    // Tambahkan koordinat marker ke bounds
-                    bounds.extend(markerLatLng);
-                    markers.push(marker);
+                        `, {
+                            maxWidth: 400
+                        });
+
+                    // Event listener saat popup dibuka
+                    marker.on('popupopen', function() {
+                        setTimeout(() => {
+                            createLineChart({{ $plant->id }});
+                        }, 100);
+                    });
                 @endforeach
 
-                // Sesuaikan tampilan peta agar mencakup semua marker
-                if (markers.length > 0) {
-                    map.fitBounds(bounds, {
-                        padding: [50, 50], // Tambahkan padding agar marker tidak terlalu dekat dengan tepi
-                        maxZoom: 12 // Batasi zoom maksimal
-                    });
+                function createLineChart(plantId) {
+                    // Ambil data dari controller melalui AJAX
+                    fetch(`/get-plant-chart-data/${plantId}`)
+                        .then(response => response.json())
+                        .then(chartData => {
+                            var options = {
+                                series: [{
+                                    name: 'Beban',
+                                    data: chartData.beban
+                                }, {
+                                    name: 'Kapasitas',
+                                    data: chartData.kapasitas
+                                }],
+                                chart: {
+                                    type: 'line',
+                                    height: 200,
+                                    toolbar: {
+                                        show: false
+                                    },
+                                    animations: {
+                                        enabled: true,
+                                        easing: 'easeinout',
+                                        speed: 800
+                                    }
+                                },
+                                stroke: {
+                                    curve: 'smooth',
+                                    width: [3, 2]
+                                },
+                                colors: ['#0095B7', '#FF4560'],
+                                xaxis: {
+                                    categories: chartData.dates,
+                                    labels: {
+                                        style: {
+                                            fontSize: '10px'
+                                        }
+                                    }
+                                },
+                                yaxis: {
+                                    title: {
+                                        text: 'MW'
+                                    },
+                                    labels: {
+                                        formatter: function(val) {
+                                            return val.toFixed(1);
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    shared: true,
+                                    intersect: false,
+                                    y: {
+                                        formatter: function(val) {
+                                            return val.toFixed(2) + ' MW';
+                                        }
+                                    }
+                                }
+                            };
+
+                            var chart = new ApexCharts(document.querySelector("#chart-" + plantId), options);
+                            chart.render();
+                        });
+                }
+
+                function createDonutChart(type, markerId, value) {
+                    var options = {
+                        series: [value],
+                        chart: {
+                            type: 'radialBar',
+                            height: 120,
+                            width: 120
+                        },
+                        plotOptions: {
+                            radialBar: {
+                                hollow: {
+                                    size: '70%'
+                                },
+                                dataLabels: {
+                                    show: true,
+                                    name: {
+                                        show: true,
+                                        fontSize: '14px',
+                                        offsetY: -10
+                                    },
+                                    value: {
+                                        show: true,
+                                        fontSize: '16px',
+                                        offsetY: 2,
+                                        formatter: function(val) {
+                                            return val + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        labels: [type.toUpperCase()],
+                        colors: [type === 'dmn' ? '#0095B7' : '#FF4560']
+                    };
+
+                    var chart = new ApexCharts(document.querySelector(`#${type}-chart-${markerId}`), options);
+                    chart.render();
                 }
 
                 document.addEventListener('DOMContentLoaded', function() {

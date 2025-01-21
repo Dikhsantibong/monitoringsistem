@@ -105,7 +105,20 @@
                     <form action="{{ route('admin.other-discussions.index') }}" method="GET">
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
                             <!-- Search Box -->
-                            
+                            <div class="lg:col-span-3">
+                                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
+                                <div class="relative">
+                                    <input type="text" 
+                                           name="search" 
+                                           id="search" 
+                                           placeholder="Cari t  opik, PIC, unit..."
+                                           value="{{ request('search') }}"
+                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Tanggal Mulai -->
                             <div class="lg:col-span-3">
@@ -132,28 +145,21 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="lg:col-span-3 flex gap-2">
-                                <!-- Filter Button -->
-                                <button type="submit" 
-                                        class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                    <i class="fas fa-filter mr-2"></i>
-                                    Filter
-                                </button>
-                                
+                            <div class="lg:col-span-3 flex justify-end gap-2">
                                 <!-- Print Button -->
                                 <button onclick="handlePrint()" 
-                                        class="inline-flex justify-center items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                                    <i class="fas fa-print mr-2"></i>
-                                    Print
+                                        class="inline-flex justify-center items-center p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors" 
+                                        title="Print">
+                                    <i class="fas fa-print"></i>
                                 </button>
                                 
                                 <!-- Download Dropdown -->
                                 <div class="relative" x-data="{ open: false }">
                                     <button type="button" 
                                             @click="open = !open"
-                                            class="inline-flex justify-center items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
-                                        <i class="fas fa-download mr-2"></i>
-                                        Download
+                                            class="inline-flex justify-center items-center p-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors" 
+                                            title="Download">
+                                        <i class="fas fa-download"></i>
                                     </button>
                                     
                                     <!-- Dropdown Menu -->
@@ -192,17 +198,7 @@
                 <!-- Tab Navigation (tambahkan setelah bagian filter) -->
                 <div class="border-b border-gray-200 mb-6"><div class="lg:col-span-3">
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
-                    <div class="relative">
-                        <input type="text" 
-                               name="search" 
-                               id="search" 
-                               placeholder="Cari t  opik, PIC, unit..."
-                               value="{{ request('search') }}"
-                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                    </div>
+    
                 </div>
 
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
