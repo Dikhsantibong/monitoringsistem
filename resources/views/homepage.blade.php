@@ -932,9 +932,42 @@
                     var marker = L.marker(markerLatLng)
                         .addTo(map)
                         .bindPopup(`
-                            <div style="min-width: 300px; max-width: 600px;">
+                            <div style="min-width: 350px;">
                                 <h3 style="margin: 0 0 10px 0; text-align: center; color: #0095B7;">{{ $plant->name }}</h3>
                                 
+                                <!-- Info Derating dan HOP -->
+                                <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; font-size: 0.9em;">
+                                    @php
+                                        $totalDMN = $plant->machines->sum(function($machine) {
+                                            return $machine->statusLogs->first()->dmn ?? 0;
+                                        });
+                                        $totalDMP = $plant->machines->sum(function($machine) {
+                                            return $machine->statusLogs->first()->dmp ?? 0;
+                                        });
+                                        $totalDerating = $totalDMN + $totalDMP;
+                                    @endphp
+                                    <div style="
+                                        background: #FEF3C7; 
+                                        color: #D97706; 
+                                        padding: 4px 10px; 
+                                        border-radius: 8px; 
+                                        border: 1px solid #FCD34D;
+                                        font-weight: 600;
+                                    ">
+                                        Derating: {{ $totalDerating }}
+                                    </div>
+                                    <div style="
+                                        background: #E0F2FE; 
+                                        color: #0369A1; 
+                                        padding: 4px 10px; 
+                                        border-radius: 8px; 
+                                        border: 1px solid #7DD3FC;
+                                        font-weight: 600;
+                                    ">
+                                        HOP: {{ $plant->hop ?? 0 }}
+                                    </div>
+                                </div>
+
                                 <!-- Info Grid Utama -->
                                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
                                     <div style="background: #f8f9fa; padding: 8px; border-radius: 5px; text-align: center;">
