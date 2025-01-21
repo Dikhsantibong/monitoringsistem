@@ -6,88 +6,67 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
+            font-size: 12px;
+            line-height: 1.4;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .logo {
-            max-width: 150px;
+            max-width: 80px;
             margin-bottom: 10px;
-        }
-        .title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 20px;
-        }
-        .section {
-            margin-bottom: 20px;
-        }
-        .section-title {
-            font-weight: bold;
-            background-color: #f3f4f6;
-            padding: 5px 10px;
-            margin-bottom: 10px;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 150px auto;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .label {
-            font-weight: bold;
-            color: #374151;
-        }
-        .value {
-            color: #1f2937;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         th, td {
-            border: 1px solid #e5e7eb;
-            padding: 8px 12px;
+            border: 0.5px solid #000;
+            padding: 5px;
             text-align: left;
+            font-size: 10px;
         }
         th {
-            background-color: #f3f4f6;
+            background-color: #f4f4f4;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 10px;
+        }
+        .info-grid {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 14px;
             font-weight: bold;
+            margin-bottom: 10px;
+            background-color: #f4f4f4;
+            padding: 5px;
         }
         .status-badge {
             display: inline-block;
             padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            border-radius: 10px;
+            font-size: 10px;
         }
         .status-open {
-            background-color: #fee2e2;
-            color: #991b1b;
+            background-color: #ffecec;
+            color: #dc3545;
         }
         .status-closed {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
+            background-color: #e8f5e9;
+            color: #28a745;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <img src="{{ public_path('images/logo.png') }}" alt="Logo" class="logo">
+        <img src="{{ public_path('images/navlog1.png') }}" alt="Logo PLN" class="logo">
+        <h2>PT PLN NP UP KENDARI</h2>
         <div class="title">Detail Pembahasan</div>
         <div class="subtitle">No. Pembahasan: {{ $discussion->no_pembahasan }}</div>
     </div>
@@ -101,7 +80,7 @@
             <div class="label">Unit:</div>
             <div class="value">{{ $discussion->unit }}</div>
 
-            <div class="label">Topik:</div>
+            <div class="label">Topik:</div> 
             <div class="value">{{ $discussion->topic }}</div>
 
             <div class="label">Status:</div>
@@ -141,21 +120,21 @@
         <table>
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Deskripsi</th>
-                    <th>PIC</th>
-                    <th>Deadline</th>
-                    <th>Status</th>
+                    <th width="5%">No</th>
+                    <th width="40%">Deskripsi</th>
+                    <th width="20%">PIC</th>
+                    <th width="15%">Deadline</th>
+                    <th width="20%">Status</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($discussion->commitments as $index => $commitment)
                 <tr>
-                    <td>{{ $index + 1 }}</td>
+                    <td align="center">{{ $index + 1 }}</td>
                     <td>{{ $commitment->description }}</td>
                     <td>{{ $commitment->pic }}</td>
-                    <td>{{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }}</td>
-                    <td>
+                    <td align="center">{{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }}</td>
+                    <td align="center">
                         <span class="status-badge {{ $commitment->status === 'Open' ? 'status-open' : 'status-closed' }}">
                             {{ $commitment->status }}
                         </span>
@@ -172,4 +151,4 @@
         <p>Sistem Monitoring Pembahasan</p>
     </div>
 </body>
-</html> 
+</html>
