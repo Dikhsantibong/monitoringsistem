@@ -30,6 +30,7 @@
                                 $totalDMN = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
                                     ->sum(fn($log) => (float) $log->dmn);
                                 
+                                
                                 $totalBeban = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
                                     ->sum(function($log) {
                                         if ($log->status === 'Operasi') {
@@ -53,7 +54,14 @@
                             
                             <div class="bg-red-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Derating:</p>
-                                <p class="text-xl font-bold text-red-700">{{ number_format($totalDMN - $totalDMP, 1) }} MW</p>
+                                <p class="text-xl font-bold text-red-700">
+                                    {{ number_format($totalDMN - $totalDMP, 1) }} MW 
+                                    @if($totalDMN > 0)
+                                        ({{ number_format((($totalDMN - $totalDMP) / $totalDMN) * 100, 1) }}%)
+                                    @else
+                                        (0%)
+                                    @endif
+                                </p>
                             </div>
                             <div class="bg-purple-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total Beban:</p>

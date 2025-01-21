@@ -94,6 +94,25 @@
                     </div>
                     <div class="mb-4 flex flex-col lg:flex-row justify-between items-center gap-3">
                         <div class="flex flex-col lg:flex-row gap-y-3 sm:gap-y-3 space-x-4">
+                            <!-- Filter Unit -->
+                            @if(session('unit') === 'mysql')
+                            <div class="flex items-center">
+                                <label for="unit-source" class="text-sm text-gray-700 font-medium mr-2">Filter Unit:</label>
+                                <select id="unit-source" 
+                                        class="border rounded px-3 py-2 text-sm w-40"
+                                        onchange="loadData()">
+                                    <option value="">Semua Unit</option>
+                                    @forelse($powerPlants as $plant)
+                                        <option value="{{ $plant->unit_source }}" {{ request('unit_source') == $plant->unit_source ? 'selected' : '' }}>
+                                            {{ $plant->name }}
+                                        </option>
+                                    @empty
+                                        <option value="" disabled>Tidak ada unit tersedia</option>
+                                    @endforelse
+                                </select>
+                            </div>
+                            @endif
+
                             <input type="date" id="filterDate" value="{{ date('Y-m-d') }}"
                                 class="px-4 py-2 border rounded-lg">
 
@@ -132,12 +151,11 @@
                     <!-- Search Bar -->
                     <h1 class="text-lg font-semibold uppercase mb-5">KESIAPAN PEMBANGKIT UP KENDARI ( MEGAWATT )</h1>
 
-                    @foreach ($units as $unit)
+                    @forelse ($units as $unit)
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
                             <div class="overflow-auto">
                                 <div class="flex justify-between items-center mb-4">
                                     <h2 class="text-lg font-semibold text-gray-800">{{ $unit->name }}</h2>
-                                    <!-- Tambahkan input HOP di sini -->
                                     <div class="flex items-center gap-x-2">
                                         <label for="hop_{{ $unit->id }}" class="text-sm font-medium text-gray-700">HOP:</label>
                                         <input type="number" 
@@ -150,7 +168,6 @@
                                         <span class="text-sm text-gray-600">hari</span>
                                     </div>
                                 </div>
-                                <!-- Tabel Status Pembangkit -->
                                 <div class="table-responsive">
                                     <table class="min-w-full bg-white">
                                         <thead>
@@ -200,8 +217,7 @@
                                             </tr>
                                         </thead>
                                         <tbody class="text-sm">
-                                           
-                                            @foreach ($unit->machines as $machine)
+                                            @forelse($unit->machines as $machine)
                                                 <tr class="hover:bg-gray-50 border border-gray-200">
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
                                                         {{ $loop->iteration }}
@@ -312,13 +328,23 @@
                                                             name="target_selesai[{{ $machine->id }}]">
                                                     </td>
                                                 </tr>
-                                            @endforeach
+                                            @empty
+                                                <tr>
+                                                    <td colspan="14" class="px-3 py-4 text-center text-gray-500">
+                                                        Tidak ada data mesin untuk unit ini
+                                                    </td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <div class="bg-white rounded-lg shadow p-6 mb-4">
+                            <p class="text-center text-gray-500">Tidak ada data unit yang tersedia</p>
+                        </div>
+                    @endforelse
                 </div>
             </main>
         </div>
@@ -457,19 +483,11 @@
     });
 
     function saveData() {
-        // Tampilkan loading indicator saat mulai menyimpan
-        Swal.fire({
-            title: 'Menyimpan Data',
-            text: 'Mohon tunggu...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
+        const unitSource = document.getElementById('unit-source')?.value || '';
         const data = {
             logs: [],
-            hops: []
+            hops: [],
+            unit_source: unitSource
         };
         const tables = document.querySelectorAll('.unit-table table');
         const tanggal = document.getElementById('filterDate').value;
@@ -689,12 +707,13 @@
     // Fungsi untuk memuat data
     function loadData() {
         const tanggal = document.getElementById('filterDate').value;
+        const unitSource = document.getElementById('unit-source')?.value || '';
         const refreshButton = document.getElementById('refreshButton');
         
         // Nonaktifkan tombol dan tambahkan animasi
         refreshButton.disabled = true;
-        const icon = refreshButton.querySelector('.fa-sync-alt');
-        icon.classList.add('fa-spin');
+        const icon = refreshButton.querySelector('.fa-redo');
+        if (icon) icon.classList.add('fa-spin');
 
         // Tampilkan loading indicator
         Swal.fire({
@@ -706,10 +725,12 @@
             }
         });
 
-        // Log URL yang akan dipanggil
-        console.log('Fetching data from:', `{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`);
+        const params = new URLSearchParams({
+            tanggal: tanggal,
+            unit_source: unitSource
+        });
 
-        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`, {
+        fetch(`{{ route('admin.pembangkit.get-status') }}?${params.toString()}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',

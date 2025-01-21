@@ -17,23 +17,32 @@ class PembangkitController extends Controller
 {
     public function ready()
     {
-        $units = PowerPlant::orderByRaw("
-            CASE 
-                WHEN name LIKE 'PLTU%' THEN 1
-                WHEN name LIKE 'PLTM%' THEN 2
-                WHEN name LIKE 'PLTD%' THEN 3
-                WHEN name LIKE 'PLTMG%' THEN 4
-                ELSE 5
-            END
-        ")->get();
-        $machines = Machine::with('issues', 'metrics')->get();
-        $operations = MachineOperation::all();
+        $unitSource = session('unit');
         
-        // Ambil status log dan HOP hari ini
+        // Ambil data PowerPlant dengan eager loading machines
+        $powerPlants = PowerPlant::with('machines')
+            ->when($unitSource === 'mysql', function($query) {
+                return $query->where('unit_source', '!=', 'mysql');
+            })
+            ->get();
+
+        // Ambil units langsung dari PowerPlant
+        $units = $powerPlants;
+
+        // Ambil data terkait lainnya
+        $machines = Machine::with(['issues', 'metrics'])->get();
+        $operations = MachineOperation::all();
         $todayLogs = MachineStatusLog::whereDate('tanggal', Carbon::today())->get();
         $todayHops = UnitOperationHour::whereDate('tanggal', Carbon::today())->get();
 
-        return view('admin.pembangkit.ready', compact('units', 'machines', 'operations', 'todayLogs', 'todayHops'));
+        return view('admin.pembangkit.ready', compact(
+            'powerPlants',
+            'units',
+            'machines',
+            'operations',
+            'todayLogs',
+            'todayHops'
+        ));
     }
 
     public function saveStatus(Request $request)
@@ -344,5 +353,19 @@ class PembangkitController extends Controller
                 'message' => 'Gagal mereset data: ' . $e->getMessage()
             ]);
         }
+    }
+
+    public function showReadyPage()
+    {
+        $unitSource = session('unit');
+        $powerPlants = PowerPlant::where('unit_source', $unitSource)->get();
+        
+        // Ambil semua unit yang terkait dengan power plants
+        $units = $powerPlants->flatMap(function($plant) {
+            return $plant->machines; // Asumsi bahwa relasi machines sudah ada di model PowerPlant
+        });
+
+        // Pastikan untuk mengembalikan view dengan variabel yang benar
+        return view('admin.pembangkit.ready', compact('powerPlants', 'units'));
     }
 }
