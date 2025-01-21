@@ -207,33 +207,63 @@ class HomeController extends Controller
     public function getPlantChartData($plantId)
     {
         try {
+            \Log::info('Starting getPlantChartData', ['plant_id' => $plantId]);
+            
             $endDate = Carbon::now();
             $startDate = Carbon::now()->subDays(6);
 
-            $chartData = MachineStatusLog::selectRaw('
-                DATE(created_at) as date,
-                SUM(load_value) as total_load,
-                SUM(capacity) as total_capacity
-            ')
-            ->whereHas('machine', function($query) use ($plantId) {
-                $query->where('power_plant_id', $plantId);
-            })
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+            $query = MachineStatusLog::query()
+                ->join('machines', 'machines.id', '=', 'machine_status_logs.machine_id')
+                ->where('machines.power_plant_id', $plantId)
+                ->whereBetween('machine_status_logs.created_at', [$startDate, $endDate])
+                ->selectRaw('
+                    DATE(machine_status_logs.created_at) as date,
+                    COALESCE(SUM(machine_status_logs.load_value), 0) as total_load,
+                    COALESCE(SUM(machines.capacity), 0) as total_capacity
+                ')
+                ->groupBy('date')
+                ->orderBy('date');
 
-            return response()->json([
+            \Log::info('Query:', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
+
+            $chartData = $query->get();
+
+            if ($chartData->isEmpty()) {
+                \Log::warning('No data found for plant', ['plant_id' => $plantId]);
+                return response()->json([
+                    'dates' => [],
+                    'beban' => [],
+                    'kapasitas' => []
+                ]);
+            }
+
+            $formattedData = [
                 'dates' => $chartData->pluck('date')->map(function($date) {
                     return Carbon::parse($date)->format('d/m');
-                }),
-                'beban' => $chartData->pluck('total_load'),
-                'kapasitas' => $chartData->pluck('total_capacity')
-            ]);
+                })->values()->all(),
+                'beban' => $chartData->pluck('total_load')->map(function($value) {
+                    return (float) $value;
+                })->values()->all(),
+                'kapasitas' => $chartData->pluck('total_capacity')->map(function($value) {
+                    return (float) $value;
+                })->values()->all()
+            ];
+
+            \Log::info('Successfully retrieved chart data', ['data' => $formattedData]);
+
+            return response()->json($formattedData);
 
         } catch (\Exception $e) {
-            \Log::error('Error in getPlantChartData: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to load chart data'], 500);
+            \Log::error('Error in getPlantChartData', [
+                'plant_id' => $plantId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to load chart data',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

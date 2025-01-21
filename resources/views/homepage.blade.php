@@ -1117,10 +1117,31 @@
                 @endforeach
 
                 function createLineChart(plantId) {
-                    // Ambil data dari controller melalui AJAX
-                    fetch(`/get-plant-chart-data/${plantId}`)
-                        .then(response => response.json())
+                    const chartContainer = document.querySelector("#chart-" + plantId);
+                    
+                    // Tampilkan loading state
+                    chartContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Loading chart data...</div>';
+
+                    // Gunakan route() helper dari Laravel untuk membuat URL yang benar
+                    const url = "{{ route('plant.chart.data', ['plantId' => ':plantId']) }}".replace(':plantId', plantId);
+
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => {
+                                    throw new Error(text || 'Network response was not ok');
+                                });
+                            }
+                            return response.json();
+                        })
                         .then(chartData => {
+                            console.log('Chart Data:', chartData); // Debug log
+
+                            if (!chartData.dates || !chartData.beban || !chartData.kapasitas ||
+                                chartData.dates.length === 0) {
+                                throw new Error('No data available for this period');
+                            }
+
                             var options = {
                                 series: [{
                                     name: 'Beban',
@@ -1193,28 +1214,30 @@
                                         left: 10
                                     }
                                 },
-                                responsive: [{
-                                    breakpoint: 480,
-                                    options: {
-                                        chart: {
-                                            height: 200
-                                        },
-                                        legend: {
-                                            position: 'bottom'
-                                        }
-                                    }
-                                }]
+                                noData: {
+                                    text: 'No data available',
+                                    align: 'center',
+                                    verticalAlign: 'middle'
+                                }
                             };
 
-                            // Hapus grafik lama jika ada
-                            document.querySelector("#chart-" + plantId).innerHTML = '';
+                            // Hapus loading state
+                            chartContainer.innerHTML = '';
                             
-                            var chart = new ApexCharts(document.querySelector("#chart-" + plantId), options);
+                            var chart = new ApexCharts(chartContainer, options);
                             chart.render();
                         })
                         .catch(error => {
-                            console.error('Error loading chart data:', error);
-                            document.querySelector("#chart-" + plantId).innerHTML = 'Error loading chart data';
+                            console.error('Error details:', error);
+                            chartContainer.innerHTML = `
+                                <div style="text-align: center; padding: 20px; color: #DC2626;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>Error loading chart data</div>
+                                    <div style="font-size: 0.8em; margin-top: 5px;">${error.message}</div>
+                                </div>
+                            `;
                         });
                 }
 

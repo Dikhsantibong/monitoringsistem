@@ -526,7 +526,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 Route::get('/admin/other-discussions/{id}/print', [OtherDiscussionController::class, 'printSingle'])->name('admin.other-discussions.print.single');
 Route::get('/admin/other-discussions/{id}/export/{format}', [OtherDiscussionController::class, 'exportSingle'])->name('admin.other-discussions.export.single');
 
-Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData']);
+Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData'])->name('plant.chart.data');
 
 
 
