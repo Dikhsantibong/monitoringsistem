@@ -855,32 +855,87 @@
                                         @foreach($plant->machines as $machine)
                                             @php
                                                 $latestStatus = $machine->statusLogs->first();
+                                                // Tentukan warna background dan teks berdasarkan status
+                                                $statusStyle = match($latestStatus->status ?? '') {
+                                                    'Gangguan' => [
+                                                        'bg' => '#FEE2E2',
+                                                        'text' => '#DC2626',
+                                                        'border' => '#FCA5A5',
+                                                        'icon' => '⚠️'
+                                                    ],
+                                                    'Mothballed' => [
+                                                        'bg' => '#FEF3C7',
+                                                        'text' => '#D97706',
+                                                        'border' => '#FCD34D',
+                                                        'icon' => '🔒'
+                                                    ],
+                                                    'Overhaul' => [
+                                                        'bg' => '#FFE4B5',
+                                                        'text' => '#FF8C00',
+                                                        'border' => '#FFB74D',
+                                                        'icon' => '🔧'
+                                                    ],
+                                                    'Pemeliharaan' => [
+                                                        'bg' => '#E0F2FE',
+                                                        'text' => '#0369A1',
+                                                        'border' => '#7DD3FC',
+                                                        'icon' => '🔨'
+                                                    ],
+                                                    'Standby' => [
+                                                        'bg' => '#F3F4F6',
+                                                        'text' => '#6B7280',
+                                                        'border' => '#D1D5DB',
+                                                        'icon' => '⏸️'
+                                                    ],
+                                                    'Operasi' => [
+                                                        'bg' => '#D1FAE5',
+                                                        'text' => '#059669',
+                                                        'border' => '#6EE7B7',
+                                                        'icon' => '✅'
+                                                    ],
+                                                    default => [
+                                                        'bg' => '#F3F4F6',
+                                                        'text' => '#6B7280',
+                                                        'border' => '#D1D5DB',
+                                                        'icon' => '❔'
+                                                    ]
+                                                };
                                             @endphp
-                                            <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #e2e8f0;">
-                                                <div style="font-weight: bold;">{{ $machine->name }}</div>
+                                            <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid {{ $statusStyle['border'] }};">
+                                                <div style="font-weight: bold; color: {{ $statusStyle['text'] }};">{{ $machine->name }}</div>
                                                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; font-size: 0.9em;">
                                                     <div>
                                                         <span style="color: #666;">Status:</span>
-                                                        <span class="status-badge {{ 
-                                                            $latestStatus && $latestStatus->status === 'Gangguan' ? 'bg-red-100 text-red-600' :
-                                                            ($latestStatus && $latestStatus->status === 'Mothballed' ? 'bg-yellow-100 text-yellow-600' :
-                                                            ($latestStatus && $latestStatus->status === 'Overhaul' ? 'bg-orange-100 text-orange-600' : 
-                                                            'bg-green-100 text-green-600'))
-                                                        }}">
-                                                            {{ $latestStatus ? $latestStatus->status : 'N/A' }}
+                                                        <span style="
+                                                            background: {{ $statusStyle['bg'] }}; 
+                                                            color: {{ $statusStyle['text'] }}; 
+                                                            padding: 2px 8px;
+                                                            border-radius: 12px;
+                                                            font-size: 0.85em;
+                                                            border: 1px solid {{ $statusStyle['border'] }};
+                                                            display: inline-block;
+                                                            margin-top: 2px;
+                                                        ">
+                                                            {{ $statusStyle['icon'] }} {{ $latestStatus ? $latestStatus->status : 'N/A' }}
                                                         </span>
                                                     </div>
                                                     <div>
                                                         <span style="color: #666;">Beban:</span>
-                                                        <span>{{ $latestStatus ? $latestStatus->load_value : 0 }} MW</span>
+                                                        <span style="color: {{ $statusStyle['text'] }}; font-weight: 600;">
+                                                            {{ $latestStatus ? $latestStatus->load_value : 0 }} MW
+                                                        </span>
                                                     </div>
                                                     <div>
                                                         <span style="color: #666;">DMN:</span>
-                                                        <span>{{ $latestStatus ? $latestStatus->dmn : 0 }}%</span>
+                                                        <span style="color: {{ $statusStyle['text'] }}; font-weight: 600;">
+                                                            {{ $latestStatus ? $latestStatus->dmn : 0 }}%
+                                                        </span>
                                                     </div>
                                                     <div>
                                                         <span style="color: #666;">DMP:</span>
-                                                        <span>{{ $latestStatus ? $latestStatus->dmp : 0 }}%</span>
+                                                        <span style="color: {{ $statusStyle['text'] }}; font-weight: 600;">
+                                                            {{ $latestStatus ? $latestStatus->dmp : 0 }}%
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
