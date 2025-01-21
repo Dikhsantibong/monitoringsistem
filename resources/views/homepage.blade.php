@@ -24,6 +24,8 @@
         .desktop-menu {
             display: flex;
             align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         .desktop-menu a {
@@ -433,6 +435,34 @@
                 padding: 120px 0;
             }
         }
+
+        /* Navbar container styles */
+        .nav-background .container {
+            max-width: 1200px; /* Sesuaikan dengan kebutuhan */
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Logo and menu container */
+        .flex.justify-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem; /* Tambahkan gap antara logo dan menu */
+        }
+
+        /* Menu items container */
+        .hidden.md\:flex.items-center {
+            flex: 1; /* Tambahkan ini */
+            justify-content: center; /* Tambahkan ini */
+        }
+
+        .hidden.md\:flex.items-center ul {
+            display: flex;
+            justify-content: center; /* Tambahkan ini */
+            align-items: center;
+            width: 100%; /* Tambahkan ini */
+        }
     </style>
 @endsection
 
@@ -456,7 +486,7 @@
                             </div>
 
                             <!-- Menu Desktop -->
-                            <div class="hidden md:flex items-center">
+                            <div class="hidden md:flex items-center ">
                                 <ul class="flex space-x-8">
                                     <li><a href="#" class="nav-link">Home</a></li>
                                     <li><a href="#map" class="nav-link">Peta Pembangkit</a></li>
@@ -508,8 +538,9 @@
                     <!-- Content wrapper -->
                     <div class="relative z-10 mt-16">
                         <!-- Header -->
-                        <h2 class="text-6xl font-bold mb-8 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000;">
-                            M<i class="fas fa-helmet-safety"></i>NDAY <br>MONITORING DAILY
+                        <h2 class="text-9xl font-bold mb-8 text-center" style="color: #FFFF00; text-shadow: 1px 1px 2px #000000; line-height: 1;">
+                            M<i class="fas fa-helmet-safety"></i>NDAY
+                            <span class="text-6xl block -mt-2">MONITORING DAILY</span>
                         </h2>
                         <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
                             <div>

@@ -109,19 +109,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center">
-                                <label for="unit-source" class="text-sm text-gray-700 font-medium mr-2">Filter Unit:</label>
-                                <select id="unit-source" 
-                                        class="border rounded px-3 py-2 text-sm w-60"
-                                        onchange="filterByUnit(this.value)">
-                                    <option value="">Semua Unit</option>
-                                    <option value="mysql">UP KENDARI</option>
-                                    <option value="mysql_bau_bau">ULPLTD BAU BAU</option>
-                                    <option value="mysql_poasia">ULPLTD POASIA</option>
-                                    <option value="mysql_wua_wua">ULPLTD WUA WUA</option>
-                                    <option value="mysql_kolaka">ULPLTD KOLAKA</option>
-                                </select>
-                            </div>
                         </div>
 
                         <div class="flex space-x-4">
@@ -144,9 +131,6 @@
 
                     <!-- Search Bar -->
                     <h1 class="text-lg font-semibold uppercase mb-5">KESIAPAN PEMBANGKIT UP KENDARI ( MEGAWATT )</h1>
-
-                    <!-- Filter Unit -->
-                   
 
                     @foreach ($units as $unit)
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
@@ -1036,94 +1020,6 @@ function deleteRow(button) {
 document.getElementById('systemTableBody').addEventListener('change', function(e) {
     if (e.target.classList.contains('system-select')) {
         updateComponentOptions(e.target);
-    }
-});
-</script>
-
-<script>
-function filterByUnit(unitSource) {
-    // Tampilkan loading indicator
-    const mainContent = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
-    const loadingIndicator = document.createElement('div');
-    loadingIndicator.className = 'text-center py-4';
-    loadingIndicator.innerHTML = `
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <div class="mt-2 text-gray-600">Memuat data...</div>
-    `;
-    mainContent.appendChild(loadingIndicator);
-
-    // Sembunyikan semua unit tables terlebih dahulu
-    const unitTables = document.getElementsByClassName('unit-table');
-    let hasVisibleTable = false;
-
-    Array.from(unitTables).forEach(table => {
-        const unitName = table.querySelector('h2').textContent.toLowerCase();
-        let shouldShow = false;
-
-        // Logika filter berdasarkan unit_source
-        switch(unitSource) {
-            case 'mysql':
-                shouldShow = unitName.includes('pltu moramo') || 
-                           unitName.includes('pltmg kendari') || 
-                           unitName.includes('up kendari');
-                break;
-            case 'mysql_bau_bau':
-                shouldShow = unitName.includes('bau bau') || 
-                           unitName.includes('pasarwajo') || 
-                           unitName.includes('winning') ||
-                           unitName.includes('raha') ||
-                           unitName.includes('wangi-wangi') ||
-                           unitName.includes('ereke');
-                break;
-            case 'mysql_poasia':
-                shouldShow = unitName.includes('poasia');
-                break;
-            case 'mysql_wua_wua':
-                shouldShow = unitName.includes('wua wua') ||
-                           unitName.includes('langara');
-                break;
-            case 'mysql_kolaka':
-                shouldShow = unitName.includes('kolaka') ||
-                           unitName.includes('lanipa') ||
-                           unitName.includes('ladumpi') ||
-                           unitName.includes('sabilambo') ||
-                           unitName.includes('mikuasi');
-                break;
-            default:
-                shouldShow = true; // Tampilkan semua jika tidak ada filter
-        }
-
-        table.style.display = shouldShow ? '' : 'none';
-        if (shouldShow) hasVisibleTable = true;
-    });
-
-    // Hapus loading indicator
-    loadingIndicator.remove();
-
-    // Tampilkan pesan jika tidak ada data yang sesuai
-    const existingMessage = document.querySelector('.no-results-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-
-    if (!hasVisibleTable) {
-        const noResultsMessage = document.createElement('div');
-        noResultsMessage.className = 'text-center py-8 text-gray-600 font-semibold text-lg no-results-message';
-        noResultsMessage.textContent = 'Tidak ada data untuk unit yang dipilih';
-        mainContent.appendChild(noResultsMessage);
-    }
-}
-
-// Pastikan fungsi loadData() tetap berjalan seperti sebelumnya
-document.addEventListener('DOMContentLoaded', function() {
-    loadData();
-    
-    // Tambahkan event listener untuk filter unit
-    const unitSourceSelect = document.getElementById('unit-source');
-    if (unitSourceSelect) {
-        unitSourceSelect.addEventListener('change', function() {
-            filterByUnit(this.value);
-        });
     }
 });
 </script>
