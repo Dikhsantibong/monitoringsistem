@@ -17,8 +17,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "realrashid/sweet-alert": "^7.2",
-        "maatwebsite/excel": "^3.2",
-        "psr/simple-cache": "^2.0"
+        "maatwebsite/excel": "^3.1.48",
+        "psr/simple-cache": "^3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -75,8 +75,15 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "disable-tls": true
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packagist.org"
+        }
+    ]
 }

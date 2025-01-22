@@ -117,16 +117,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/create', [AdminMeetingController::class, 'create'])->name('meetings.create');
         Route::post('/upload', [AdminMeetingController::class, 'upload'])->name('meetings.upload');
         Route::get('/print', [AdminMeetingController::class, 'print'])->name('meetings.print');
+        Route::get('/download-pdf', [AdminMeetingController::class, 'downloadPDF'])->name('meetings.download-pdf');
         Route::get('/{meeting}', [AdminMeetingController::class, 'show'])->name('meetings.show');
         Route::get('/export', [AdminMeetingController::class, 'export'])->name('meetings.export');
         Route::get('/user/daily-meeting', [UserController::class, 'dailyMeeting'])->name('user.daily-meeting');
         Route::get('/admin/score-card/data', [AdminMeetingController::class, 'getScoreCardData'])->name('admin.score-card.data');
         Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
         Route::get('/admin/meetings/print', [AdminMeetingController::class, 'print'])
-        ->name('admin.meetings.print');
-        Route::get('/admin/meetings/download-pdf', [AdminMeetingController::class, 'downloadPDF'])->name('admin.meetings.download-pdf');
-        Route::get('/admin/meetings/download-excel', [AdminMeetingController::class, 'downloadExcel'])->name('admin.meetings.download-excel');
-        
+        ->name('admin.meetings.print'); 
     });
 
     Route::prefix('users')->group(function () {
@@ -527,6 +525,8 @@ Route::get('/admin/other-discussions/{id}/print', [OtherDiscussionController::cl
 Route::get('/admin/other-discussions/{id}/export/{format}', [OtherDiscussionController::class, 'exportSingle'])->name('admin.other-discussions.export.single');
 
 Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData'])->name('plant.chart.data');
+
+
 
 
 

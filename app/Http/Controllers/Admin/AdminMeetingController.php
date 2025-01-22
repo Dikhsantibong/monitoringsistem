@@ -12,6 +12,7 @@ use App\Models\ServiceRequest; // Ambil model ServiceRequest
 use App\Models\WoBacklog; // Ambil model WoBacklog
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminMeetingController extends Controller
 {
@@ -346,7 +347,7 @@ class AdminMeetingController extends Controller
                 'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
                 'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
                 'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 'Data tidak tersedia', // Tambahkan default value
                 'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 0
             ];
 
@@ -366,6 +367,80 @@ class AdminMeetingController extends Controller
         } catch (\Exception $e) {
             \Log::error('Print error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data print');
+        }
+    }
+
+    public function downloadPDF(Request $request)
+    {
+        try {
+            $date = $request->get('tanggal');
+            \Log::info('Attempting to download PDF for date: ' . $date);
+            
+            // Ambil data score card
+            $scoreCard = ScoreCardDaily::whereDate('tanggal', $date)
+                ->latest()
+                ->first();
+
+            if (!$scoreCard) {
+                \Log::warning('No score card found for date: ' . $date);
+                return back()->with('error', 'Data tidak ditemukan untuk tanggal tersebut');
+            }
+
+            \Log::info('Score card found, processing data...');
+
+            // Format data peserta
+            $peserta = json_decode($scoreCard->peserta, true) ?? [];
+            $formattedPeserta = [];
+            
+            foreach ($peserta as $jabatan => $data) {
+                $formattedPeserta[] = [
+                    'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
+                    'awal' => $data['awal'] ?? '0',
+                    'akhir' => $data['akhir'] ?? '0',
+                    'skor' => $data['skor'] ?? '0',
+                    'keterangan' => $data['keterangan'] ?? ''
+                ];
+            }
+
+            // Data untuk view
+            $data = [
+                'lokasi' => $scoreCard->lokasi,
+                'waktu_mulai' => $scoreCard->waktu_mulai,
+                'waktu_selesai' => $scoreCard->waktu_selesai,
+                'peserta' => $formattedPeserta,
+                'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai,
+                'skor_waktu_selesai' => $scoreCard->skor_waktu_selesai
+                
+            ];
+
+            \Log::info('Loading PDF view...');
+
+            // Generate PDF
+            $pdf = PDF::loadView('admin.meetings.print', [
+                'date' => $date,
+                'data' => $data,
+                'signatures' => [] // Tambahkan signatures jika diperlukan
+            ]);
+            
+            // Set paper size dan orientation
+            $pdf->setPaper('a4', 'portrait');
+            
+            \Log::info('PDF generated successfully, initiating download...');
+
+            // Download PDF dengan nama yang sesuai
+            return $pdf->download('score_card_' . $date . '.pdf');
+
+        } catch (\Exception $e) {
+            \Log::error('Error in downloadPDF: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return back()->with('error', 'Gagal mengunduh PDF. Error: ' . $e->getMessage());
         }
     }
 }

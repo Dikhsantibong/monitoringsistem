@@ -105,13 +105,7 @@
 
                                 <!-- Dropdown untuk Tanggal Tersedia -->
                                 <div class="relative">
-                                    <button id="availableDatesDropdown" 
-                                            class="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                        <span>Tanggal Tersedia</span>
-                                        <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
+                                    
 
                                     <!-- Dropdown Content -->
                                     <div id="availableDatesList" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
@@ -318,99 +312,9 @@
                     window.open(printUrl, '_blank');
                 }
 
-                function downloadPDF() {
-                    Swal.fire({
-                        title: 'Generating PDF...',
-                        text: 'Please wait...', 
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
+                
 
-                    const element = document.querySelector('.bg-white.rounded-lg.shadow.mb-6');
-                    const opt = {
-                        margin: 1,
-                        filename: `score_card_${document.querySelector('#tanggal-filter').value}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2 },
-                        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-                    };
-
-                    html2pdf().set(opt).from(element).save()
-                        .then(() => {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success',
-                                text: 'PDF berhasil diunduh',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        })
-                        .catch(err => {
-                            console.error('PDF Error:', err);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Gagal mengunduh PDF'
-                            });
-                        });
-                }
-
-                function downloadExcel() {
-                    try {
-                        // Ambil data dari tabel
-                        const table = document.querySelector('table');
-                        const rows = Array.from(table.querySelectorAll('tr'));
-                        
-                        // Konversi data tabel ke array
-                        const data = rows.map(row => {
-                            return Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent.trim());
-                        });
-
-                        // Tambahkan header informasi
-                        const tanggal = document.querySelector('#tanggal-filter option:checked').text;
-                        const lokasi = document.querySelector('.bg-gray-50 .grid-cols-2 div:last-child').textContent.replace('Lokasi:', '').trim();
-                        
-                        const header = [
-                            ['Score Card Daily'],
-                            ['Tanggal:', tanggal],
-                            ['Lokasi:', lokasi],
-                            [] // Baris kosong
-                        ];
-
-                        // Gabungkan header dan data
-                        const finalData = [...header, ...data];
-
-                        // Buat workbook baru
-                        const wb = XLSX.utils.book_new();
-                        const ws = XLSX.utils.aoa_to_sheet(finalData);
-
-                        // Styling untuk header
-                        ws['!cols'] = [{ wch: 10 }, { wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 30 }];
-
-                        // Tambahkan worksheet ke workbook
-                        XLSX.utils.book_append_sheet(wb, ws, 'Score Card');
-
-                        // Download file
-                        XLSX.writeFile(wb, `score_card_${document.querySelector('#tanggal-filter').value}.xlsx`);
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: 'Excel berhasil diunduh',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                    } catch (error) {
-                        console.error('Excel Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Gagal mengunduh Excel'
-                        });
-                    }
-                }
+                
                 </script>
 
                 @push('scripts')

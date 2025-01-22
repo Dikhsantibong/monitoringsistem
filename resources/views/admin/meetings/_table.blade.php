@@ -7,6 +7,13 @@
             Print
         </button>
 
+        <!-- Tambahkan tombol Download PDF -->
+        <button onclick="downloadPDF()" 
+                class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
+            <i class="fas fa-download mr-2"></i>
+            Download PDF
+        </button>
+
         <script>
         function printTable() {
             const dateSelect = document.querySelector('#tanggal-filter');
@@ -29,17 +36,27 @@
                 printWindow.print();
             }
         }
+
+        // Tambahkan fungsi downloadPDF
+        function downloadPDF() {
+            const dateSelect = document.querySelector('#tanggal-filter');
+            const date = dateSelect.value;
+            
+            if (!date) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Pilih tanggal terlebih dahulu'
+                });
+                return;
+            }
+
+            // Pastikan nama route sesuai dengan yang didefinisikan di web.php
+            const downloadUrl = "{{ route('admin.meetings.download-pdf') }}?tanggal=" + encodeURIComponent(date);
+            window.location.href = downloadUrl;
+        }
         </script>
-        <button onclick="downloadPDF()" 
-                class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
-            <i class="fas fa-file-pdf mr-2"></i>
-            PDF
-        </button>
-        <button onclick="downloadExcel()" 
-                class="inline-flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
-            <i class="fas fa-file-excel mr-2"></i>
-            Excel
-        </button>
+       
     </div>
 </div>
 

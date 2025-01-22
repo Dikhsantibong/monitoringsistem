@@ -329,6 +329,10 @@
                 </tr>
             </tbody>
         </table>
+    @else
+        <div class="error">
+            Data tidak lengkap untuk generate PDF
+        </div>
     @endif
 
     <!-- Halaman kedua - Daftar Hadir (dipindah ke sini) -->
