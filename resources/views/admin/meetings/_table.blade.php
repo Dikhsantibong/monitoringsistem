@@ -51,7 +51,6 @@
                 return;
             }
 
-            // Pastikan nama route sesuai dengan yang didefinisikan di web.php
             const downloadUrl = "{{ route('admin.meetings.download-pdf') }}?tanggal=" + encodeURIComponent(date);
             window.location.href = downloadUrl;
         }

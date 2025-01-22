@@ -382,7 +382,6 @@ class AdminMeetingController extends Controller
                 ->first();
 
             if (!$scoreCard) {
-                \Log::warning('No score card found for date: ' . $date);
                 return back()->with('error', 'Data tidak ditemukan untuk tanggal tersebut');
             }
 
@@ -400,8 +399,19 @@ class AdminMeetingController extends Controller
                 ];
             }
 
+            // Hitung total score
+            $totalScorePeserta = collect($formattedPeserta)->sum('skor');
+            $totalScoreKetentuan = 
+                ($scoreCard->kesiapan_panitia ?? 100) +
+                ($scoreCard->kesiapan_bahan ?? 100) +
+                ($scoreCard->aktivitas_luar ?? 100);
+            
+            $totalScore = ($totalScorePeserta + $totalScoreKetentuan) / 
+                (count($formattedPeserta) + 3); // 3 adalah jumlah kriteria tambahan
+
             // Data untuk view
             $data = [
+                'tanggal' => $date,
                 'lokasi' => $scoreCard->lokasi,
                 'waktu_mulai' => $scoreCard->waktu_mulai,
                 'waktu_selesai' => $scoreCard->waktu_selesai,
@@ -409,40 +419,13 @@ class AdminMeetingController extends Controller
                 'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 100,
                 'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 100,
                 'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 100,
-                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 100,
-                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 100,
-                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 100,
-                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 100,
-                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 100,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 100
+                'total_score' => number_format($totalScore, 2)
             ];
-
-            // Ambil data kehadiran
-            $attendances = Attendance::whereDate('created_at', $date)->get();
-            
-            // Ambil data logs mesin
-            $logs = MachineStatusLog::whereDate('created_at', $date)
-                ->with(['machine.powerPlant'])
-                ->get();
-            
-            // Ambil data service requests
-            $serviceRequests = ServiceRequest::whereDate('created_at', $date)->get();
-            
-            // Ambil data WO Backlog
-            $woBacklogs = WoBacklog::whereDate('created_at', $date)->get();
 
             \Log::info('Loading PDF view...');
 
             // Generate PDF
-            $pdf = PDF::loadView('admin.meetings.print', [
-                'date' => $date,
-                'data' => $data,
-                'attendances' => $attendances,
-                'logs' => $logs,
-                'serviceRequests' => $serviceRequests,
-                'woBacklogs' => $woBacklogs,
-                'signatures' => [] // Tambahkan signatures jika diperlukan
-            ]);
+            $pdf = PDF::loadView('admin.meetings.score-card-pdf', compact('data'));
             
             // Set paper size dan orientation
             $pdf->setPaper('a4', 'portrait');
