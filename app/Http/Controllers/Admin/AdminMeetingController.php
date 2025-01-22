@@ -10,9 +10,14 @@ use App\Models\MachineStatusLog; // Ambil model MachineStatusLog
 use App\Models\Attendance; // Ambil model Attendance
 use App\Models\ServiceRequest; // Ambil model ServiceRequest
 use App\Models\WoBacklog; // Ambil model WoBacklog
+use App\Models\OtherDiscussion;
+use App\Models\ClosedDiscussion;
+use App\Models\OverdueDiscussion;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\WorkOrder;
+
 
 class AdminMeetingController extends Controller
 {
@@ -376,7 +381,12 @@ class AdminMeetingController extends Controller
             $date = $request->get('tanggal');
             \Log::info('Attempting to download PDF for date: ' . $date);
             
-            // Ambil data score card
+            // Get logo path
+            $logoPath = public_path('logo/navlog1.png');
+            $logoData = base64_encode(file_get_contents($logoPath));
+            $logoSrc = 'data:image/png;base64,' . $logoData;
+
+            // 1. Score Card Daily
             $scoreCard = ScoreCardDaily::whereDate('tanggal', $date)
                 ->latest()
                 ->first();
@@ -388,7 +398,6 @@ class AdminMeetingController extends Controller
             // Format data peserta
             $peserta = json_decode($scoreCard->peserta, true) ?? [];
             $formattedPeserta = [];
-            
             foreach ($peserta as $jabatan => $data) {
                 $formattedPeserta[] = [
                     'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
@@ -399,19 +408,48 @@ class AdminMeetingController extends Controller
                 ];
             }
 
-            // Hitung total score
-            $totalScorePeserta = collect($formattedPeserta)->sum('skor');
-            $totalScoreKetentuan = 
-                ($scoreCard->kesiapan_panitia ?? 100) +
-                ($scoreCard->kesiapan_bahan ?? 100) +
-                ($scoreCard->aktivitas_luar ?? 100);
-            
-            $totalScore = ($totalScorePeserta + $totalScoreKetentuan) / 
-                (count($formattedPeserta) + 3); // 3 adalah jumlah kriteria tambahan
+            // 2. Daftar Hadir
+            $attendances = Attendance::whereDate('created_at', $date)
+                ->orderBy('created_at')
+                ->get();
 
-            // Data untuk view
+            // 3. Status Pembangkit
+            $machineStatuses = MachineStatusLog::whereDate('created_at', $date)
+                ->with(['machine.powerPlant'])
+                ->orderBy('machine_id')
+                ->orderBy('created_at')
+                ->get();
+
+            // 4. Service Requests
+            $serviceRequests = ServiceRequest::whereDate('created_at', $date)
+                ->orderBy('priority', 'desc')
+                ->orderBy('created_at')
+                ->get();
+
+            // 5. Work Orders
+            $workOrders = WorkOrder::whereDate('created_at', $date)
+                ->orderBy('created_at')
+                ->get();
+
+            // 6. Work Order Backlog
+            $woBacklogs = WoBacklog::whereDate('created_at', $date)
+                ->orderBy('created_at')
+                ->get();
+
+            // 7. Other Discussions (Pembahasan Lain)
+            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)->get();
+            $closedDiscussions = ClosedDiscussion::whereDate('created_at', $date)->get();
+            $overdueDiscussions = OverdueDiscussion::whereDate('created_at', $date)->get();
+
+            // Gabungkan semua diskusi
+            $discussions = collect()
+                ->concat($otherDiscussions)
+                ->concat($closedDiscussions)
+                ->concat($overdueDiscussions)
+                ->sortBy('created_at');
+
+            // Data untuk Score Card
             $data = [
-                'tanggal' => $date,
                 'lokasi' => $scoreCard->lokasi,
                 'waktu_mulai' => $scoreCard->waktu_mulai,
                 'waktu_selesai' => $scoreCard->waktu_selesai,
@@ -419,25 +457,47 @@ class AdminMeetingController extends Controller
                 'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 100,
                 'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 100,
                 'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 100,
-                'total_score' => number_format($totalScore, 2)
+                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 100,
+                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 100,
+                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 100,
+                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 100,
+                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 100,
+                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 100
             ];
 
-            \Log::info('Loading PDF view...');
+            // 8. Signatures (jika ada)
+            $signatures = [
+                'Operasi' => null,
+                'Pemeliharaan' => null,
+                'Enjiniring' => null,
+                'Manajer' => null
+            ];
 
-            // Generate PDF
-            $pdf = PDF::loadView('admin.meetings.score-card-pdf', compact('data'));
+            \Log::info('Loading PDF view with data...');
+
+            // Generate PDF dengan semua data yang diperlukan
+            $pdf = PDF::loadView('admin.meetings.score-card-pdf', compact(
+                'date',
+                'data',
+                'attendances',
+                'machineStatuses',
+                'serviceRequests',
+                'workOrders',
+                'woBacklogs',
+                'discussions',
+                'signatures',
+                'logoSrc'
+            ));
             
-            // Set paper size dan orientation
             $pdf->setPaper('a4', 'portrait');
             
             \Log::info('PDF generated successfully, initiating download...');
 
-            // Download PDF dengan nama yang sesuai
             return $pdf->download('score_card_' . $date . '.pdf');
 
         } catch (\Exception $e) {
             \Log::error('Error in downloadPDF: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error($e->getTraceAsString());
             return back()->with('error', 'Gagal mengunduh PDF. Error: ' . $e->getMessage());
         }
     }
