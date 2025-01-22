@@ -386,8 +386,6 @@ class AdminMeetingController extends Controller
                 return back()->with('error', 'Data tidak ditemukan untuk tanggal tersebut');
             }
 
-            \Log::info('Score card found, processing data...');
-
             // Format data peserta
             $peserta = json_decode($scoreCard->peserta, true) ?? [];
             $formattedPeserta = [];
@@ -408,17 +406,30 @@ class AdminMeetingController extends Controller
                 'waktu_mulai' => $scoreCard->waktu_mulai,
                 'waktu_selesai' => $scoreCard->waktu_selesai,
                 'peserta' => $formattedPeserta,
-                'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-                'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
-                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
-                'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
-                'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai,
-                'skor_waktu_selesai' => $scoreCard->skor_waktu_selesai
-                
+                'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 100,
+                'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 100,
+                'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 100,
+                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 100,
+                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 100,
+                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 100,
+                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 100,
+                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 100,
+                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 100
             ];
+
+            // Ambil data kehadiran
+            $attendances = Attendance::whereDate('created_at', $date)->get();
+            
+            // Ambil data logs mesin
+            $logs = MachineStatusLog::whereDate('created_at', $date)
+                ->with(['machine.powerPlant'])
+                ->get();
+            
+            // Ambil data service requests
+            $serviceRequests = ServiceRequest::whereDate('created_at', $date)->get();
+            
+            // Ambil data WO Backlog
+            $woBacklogs = WoBacklog::whereDate('created_at', $date)->get();
 
             \Log::info('Loading PDF view...');
 
@@ -426,6 +437,10 @@ class AdminMeetingController extends Controller
             $pdf = PDF::loadView('admin.meetings.print', [
                 'date' => $date,
                 'data' => $data,
+                'attendances' => $attendances,
+                'logs' => $logs,
+                'serviceRequests' => $serviceRequests,
+                'woBacklogs' => $woBacklogs,
                 'signatures' => [] // Tambahkan signatures jika diperlukan
             ]);
             
