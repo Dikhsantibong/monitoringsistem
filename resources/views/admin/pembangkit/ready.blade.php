@@ -197,6 +197,9 @@
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
                                                     Target Selesai
                                                 </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                    Gambar
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody class="text-sm">
@@ -304,6 +307,21 @@
                                                         <input type="date" 
                                                             name="target_selesai[{{ $machine->id }}]"
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
+                                                    </td>
+                                                    <td class="px-3 py-2 text-center">
+                                                        <div class="flex flex-col items-center gap-2">
+                                                            <input type="file" 
+                                                                id="image_{{ $machine->id }}"
+                                                                class="hidden image-upload"
+                                                                accept="image/*"
+                                                                data-machine-id="{{ $machine->id }}">
+                                                            <button type="button" 
+                                                                class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                                                                onclick="document.getElementById('image_{{ $machine->id }}').click()">
+                                                                Upload Gambar
+                                                            </button>
+                                                            <div id="preview_{{ $machine->id }}" class="image-preview mt-2"></div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -1032,4 +1050,97 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
 });
 </script>
 @push('scripts')
+<script>
+    // Existing scripts ...
+
+    // Image upload handling
+    document.querySelectorAll('.image-upload').forEach(input => {
+        const machineId = input.dataset.machineId;
+        
+        // Load existing image if any
+        const savedImage = localStorage.getItem(`machine_image_${machineId}`);
+        if (savedImage) {
+            showImage(machineId, savedImage);
+        }
+        
+        input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5000000) { // 5MB limit
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Ukuran gambar terlalu besar. Maksimal 5MB'
+                    });
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    showImage(machineId, imageData);
+                    localStorage.setItem(`machine_image_${machineId}`, imageData);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+
+    function showImage(machineId, imageData) {
+        const previewDiv = document.getElementById(`preview_${machineId}`);
+        previewDiv.innerHTML = `
+            <div class="relative">
+                <img src="${imageData}" 
+                     alt="Preview" 
+                     class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
+                     onclick="showLargeImage('${imageData}')"
+                     title="Klik untuk memperbesar">
+                <button type="button"
+                        onclick="deleteImage('${machineId}')"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+    }
+
+    function showLargeImage(imageData) {
+        Swal.fire({
+            imageUrl: imageData,
+            imageAlt: 'Gambar Mesin',
+            width: '80%',
+            padding: '20px',
+            showConfirmButton: false,
+            showCloseButton: true,
+            customClass: {
+                image: 'max-h-[80vh] w-auto'
+            }
+        });
+    }
+
+    function deleteImage(machineId) {
+        Swal.fire({
+            title: 'Hapus Gambar?',
+            text: "Gambar akan dihapus permanen",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem(`machine_image_${machineId}`);
+                document.getElementById(`preview_${machineId}`).innerHTML = '';
+                Swal.fire(
+                    'Terhapus!',
+                    'Gambar telah dihapus.',
+                    'success'
+                );
+            }
+        });
+    }
+</script>
 @endpush

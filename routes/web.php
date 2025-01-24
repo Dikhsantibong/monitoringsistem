@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\LaporanDeleteController;
 use App\Http\Controllers\Admin\MachineStatusViewController;
 use App\Http\Controllers\Admin\MachineStatusController;
 use App\Http\Controllers\Admin\OtherDiscussionEditController;
+use App\Http\Controllers\Admin\AdminPembangkitController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -90,6 +91,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/report', [PembangkitController::class, 'report'])->name('pembangkit.report');
         Route::get('/report/download', [PembangkitController::class, 'downloadReport'])->name('pembangkit.report.download');
         Route::get('/report/print', [PembangkitController::class, 'printReport'])->name('pembangkit.report.print');
+        Route::post('/upload-image', [AdminPembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
     });
 
     Route::prefix('laporan')->group(function () {

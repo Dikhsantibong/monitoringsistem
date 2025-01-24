@@ -140,6 +140,7 @@
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Progress</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Tanggal Mulai</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Target Selesai</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Gambar</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm">
@@ -179,10 +180,15 @@
                                 <td class="px-3 py-2 text-center">
                                     {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                 </td>
+                                <td class="px-3 py-2 text-center">
+                                    <div id="image_container_{{ $machine->id }}" class="flex justify-center">
+                                        <!-- Gambar akan ditampilkan di sini -->
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="14" class="px-3 py-4 text-center text-gray-500">
+                                <td colspan="15" class="px-3 py-4 text-center text-gray-500">
                                     Tidak ada data mesin untuk unit ini
                                 </td>
                             </tr>
@@ -194,4 +200,56 @@
             
         </div>
     @endforeach
-@endif 
+@endif
+
+<script>
+// Fungsi untuk menampilkan gambar besar
+function showLargeImage(imageData) {
+    Swal.fire({
+        imageUrl: imageData,
+        imageAlt: 'Gambar Mesin',
+        width: '80%',
+        padding: '20px',
+        showConfirmButton: false,
+        showCloseButton: true,
+        customClass: {
+            image: 'max-h-[80vh] w-auto'
+        }
+    });
+}
+
+// Fungsi untuk memuat dan menampilkan gambar
+function loadAndDisplayImage(machineId) {
+    const imageData = localStorage.getItem(`machine_image_${machineId}`);
+    const container = document.getElementById(`image_container_${machineId}`);
+    
+    if (imageData && container) {
+        container.innerHTML = `
+            <img src="${imageData}" 
+                 alt="Machine Image" 
+                 class="w-20 h-20 object-cover rounded cursor-pointer"
+                 onclick="showLargeImage('${imageData}')"
+                 title="Klik untuk memperbesar">
+        `;
+    } else if (container) {
+        container.innerHTML = '<span class="text-gray-400">Tidak ada gambar</span>';
+    }
+}
+
+// Memuat gambar saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    @foreach($powerPlants as $powerPlant)
+        @foreach($powerPlant->machines as $machine)
+            loadAndDisplayImage({{ $machine->id }});
+        @endforeach
+    @endforeach
+});
+
+// Mendengarkan perubahan di localStorage
+window.addEventListener('storage', function(e) {
+    if (e.key && e.key.startsWith('machine_image_')) {
+        const machineId = e.key.split('_')[2];
+        loadAndDisplayImage(machineId);
+    }
+});
+</script> 
