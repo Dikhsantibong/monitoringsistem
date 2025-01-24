@@ -32,7 +32,7 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
-                    <h1 class="text-xl font-semibold text-gray-800">Pembahasan Lain</h1>
+                    <h1 class="text-xl font-semibold text-gray-800">Pembahasan Lain-lain</h1>
                 </div>
 
                 @include('components.timer')
