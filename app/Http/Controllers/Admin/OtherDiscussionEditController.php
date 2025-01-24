@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\PicGeneratorService;
 use App\Events\OtherDiscussionUpdated;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class OtherDiscussionEditController extends Controller
 {
@@ -43,6 +45,22 @@ class OtherDiscussionEditController extends Controller
             // Validasi request menggunakan method validateDiscussion
             $validated = $this->validateDiscussion($request);
             
+            // Handle file upload
+            if ($request->hasFile('document')) {
+                // Hapus dokumen lama jika ada
+                if ($discussion->document_path) {
+                    Storage::disk('public')->delete($discussion->document_path);
+                }
+
+                $file = $request->file('document');
+                $originalName = $file->getClientOriginalName();
+                
+                // Upload dokumen baru
+                $path = $file->store('discussion-documents', 'public');
+                $discussion->document_path = $path;
+                $discussion->document_description = $originalName;
+            }
+
             // Generate PIC
             $pic = $this->picGenerator->generate(
                 $validated['department_id'],

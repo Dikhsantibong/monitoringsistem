@@ -364,14 +364,59 @@
                                         </td>
                                         <td class="px-4 py-3 text-sm">
                                             @if($discussion->document_path)
-                                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
-                                                   target="_blank"
-                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                                    <i class="fas fa-file-alt"></i>
-                                                    <span class="text-xs truncate max-w-[150px]">
-                                                        {{ basename($discussion->document_path) }}
-                                                    </span>
-                                                </a>
+                                                <div class="relative group">
+                                                    <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                       target="_blank"
+                                                       class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                                        @php
+                                                            $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
+                                                            $iconClass = 'fa-file-alt';
+                                                            $iconColor = 'text-blue-500';
+                                                            
+                                                            if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                                $iconClass = 'fa-file-image';
+                                                                $iconColor = 'text-green-500';
+                                                            } elseif (strtolower($extension) === 'pdf') {
+                                                                $iconClass = 'fa-file-pdf';
+                                                                $iconColor = 'text-red-500';
+                                                            } elseif (in_array(strtolower($extension), ['doc', 'docx'])) {
+                                                                $iconClass = 'fa-file-word';
+                                                                $iconColor = 'text-blue-500';
+                                                            }
+
+                                                            // Get original file name from document_description if it exists
+                                                            $fileName = $discussion->document_description ?: basename($discussion->document_path);
+                                                        @endphp
+                                                        <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
+                                                        <span class="text-xs truncate max-w-[150px]">
+                                                            {{ $fileName }}
+                                                        </span>
+                                                    </a>
+                                                    
+                                                    <!-- Preview Container -->
+                                                    <div class="hidden group-hover:block absolute z-50 transform -translate-y-1/2 right-full mr-2 bg-white rounded-lg shadow-lg p-2 border">
+                                                        @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
+                                                            <img src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                                 alt="Preview" 
+                                                                 class="max-w-[300px] h-auto rounded">
+                                                        @elseif(strtolower($extension) === 'pdf')
+                                                            <iframe src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                                    class="w-[500px] h-[300px] rounded"
+                                                                    title="PDF Preview"></iframe>
+                                                        @elseif(in_array(strtolower($extension), ['doc', 'docx']))
+                                                            <div class="w-[200px] p-4 text-center">
+                                                                <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
+                                                                <p class="text-sm text-gray-600">{{ $fileName }}</p>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if($discussion->document_description)
+                                                            <div class="mt-2 p-2 bg-gray-50 rounded text-sm">
+                                                                <p class="text-gray-600">{{ $discussion->document_description }}</p>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             @else
                                                 <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
                                             @endif
@@ -645,14 +690,59 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm">
                                         @if($discussion->document_path)
-                                            <a href="{{ asset('storage/' . $discussion->document_path) }}" 
-                                               target="_blank"
-                                               class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                                <i class="fas fa-file-alt"></i>
-                                                <span class="text-xs truncate max-w-[150px]">
-                                                    {{ basename($discussion->document_path) }}
-                                                </span>
-                                            </a>
+                                            <div class="relative group">
+                                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                   target="_blank"
+                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                                    @php
+                                                        $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
+                                                        $iconClass = 'fa-file-alt';
+                                                        $iconColor = 'text-blue-500';
+                                                        
+                                                        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                            $iconClass = 'fa-file-image';
+                                                            $iconColor = 'text-green-500';
+                                                        } elseif (strtolower($extension) === 'pdf') {
+                                                            $iconClass = 'fa-file-pdf';
+                                                            $iconColor = 'text-red-500';
+                                                        } elseif (in_array(strtolower($extension), ['doc', 'docx'])) {
+                                                            $iconClass = 'fa-file-word';
+                                                            $iconColor = 'text-blue-500';
+                                                        }
+
+                                                        // Get original file name from document_description if it exists
+                                                        $fileName = $discussion->document_description ?: basename($discussion->document_path);
+                                                    @endphp
+                                                    <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
+                                                    <span class="text-xs truncate max-w-[150px]">
+                                                        {{ $fileName }}
+                                                    </span>
+                                                </a>
+                                                
+                                                <!-- Preview Container -->
+                                                <div class="hidden group-hover:block absolute z-50 transform -translate-y-1/2 right-full mr-2 bg-white rounded-lg shadow-lg p-2 border">
+                                                    @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
+                                                        <img src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                             alt="Preview" 
+                                                             class="max-w-[300px] h-auto rounded">
+                                                    @elseif(strtolower($extension) === 'pdf')
+                                                        <iframe src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                                class="w-[500px] h-[300px] rounded"
+                                                                title="PDF Preview"></iframe>
+                                                    @elseif(in_array(strtolower($extension), ['doc', 'docx']))
+                                                        <div class="w-[200px] p-4 text-center">
+                                                            <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
+                                                            <p class="text-sm text-gray-600">{{ $fileName }}</p>
+                                                        </div>
+                                                    @endif
+                                                    
+                                                    @if($discussion->document_description)
+                                                        <div class="mt-2 p-2 bg-gray-50 rounded text-sm">
+                                                            <p class="text-gray-600">{{ $discussion->document_description }}</p>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         @else
                                             <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
                                         @endif
@@ -903,14 +993,59 @@
                                     </td>
                                     <td class="px-6 py-3 text-sm">
                                         @if($discussion->document_path)
-                                            <a href="{{ asset('storage/' . $discussion->document_path) }}" 
-                                               target="_blank"
-                                               class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                                <i class="fas fa-file-alt"></i>
-                                                <span class="text-xs truncate max-w-[150px]">
-                                                    {{ basename($discussion->document_path) }}
-                                                </span>
-                                            </a>
+                                            <div class="relative group">
+                                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                   target="_blank"
+                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                                    @php
+                                                        $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
+                                                        $iconClass = 'fa-file-alt';
+                                                        $iconColor = 'text-blue-500';
+                                                        
+                                                        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                            $iconClass = 'fa-file-image';
+                                                            $iconColor = 'text-green-500';
+                                                        } elseif (strtolower($extension) === 'pdf') {
+                                                            $iconClass = 'fa-file-pdf';
+                                                            $iconColor = 'text-red-500';
+                                                        } elseif (in_array(strtolower($extension), ['doc', 'docx'])) {
+                                                            $iconClass = 'fa-file-word';
+                                                            $iconColor = 'text-blue-500';
+                                                        }
+
+                                                        // Get original file name from document_description if it exists
+                                                        $fileName = $discussion->document_description ?: basename($discussion->document_path);
+                                                    @endphp
+                                                    <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
+                                                    <span class="text-xs truncate max-w-[150px]">
+                                                        {{ $fileName }}
+                                                    </span>
+                                                </a>
+                                                
+                                                <!-- Preview Container -->
+                                                <div class="hidden group-hover:block absolute z-50 transform -translate-y-1/2 right-full mr-2 bg-white rounded-lg shadow-lg p-2 border">
+                                                    @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
+                                                        <img src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                             alt="Preview" 
+                                                             class="max-w-[300px] h-auto rounded">
+                                                    @elseif(strtolower($extension) === 'pdf')
+                                                        <iframe src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                                class="w-[500px] h-[300px] rounded"
+                                                                title="PDF Preview"></iframe>
+                                                    @elseif(in_array(strtolower($extension), ['doc', 'docx']))
+                                                        <div class="w-[200px] p-4 text-center">
+                                                            <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
+                                                            <p class="text-sm text-gray-600">{{ $fileName }}</p>
+                                                        </div>
+                                                    @endif
+                                                    
+                                                    @if($discussion->document_description)
+                                                        <div class="mt-2 p-2 bg-gray-50 rounded text-sm">
+                                                            <p class="text-gray-600">{{ $discussion->document_description }}</p>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         @else
                                             <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
                                         @endif
@@ -1149,14 +1284,59 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm">
                                         @if($discussion->document_path)
-                                            <a href="{{ asset('storage/' . $discussion->document_path) }}" 
-                                               target="_blank"
-                                               class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                                <i class="fas fa-file-alt"></i>
-                                                <span class="text-xs truncate max-w-[150px]">
-                                                    {{ basename($discussion->document_path) }}
-                                                </span>
-                                            </a>
+                                            <div class="relative group">
+                                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                   target="_blank"
+                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                                    @php
+                                                        $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
+                                                        $iconClass = 'fa-file-alt';
+                                                        $iconColor = 'text-blue-500';
+                                                        
+                                                        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                            $iconClass = 'fa-file-image';
+                                                            $iconColor = 'text-green-500';
+                                                        } elseif (strtolower($extension) === 'pdf') {
+                                                            $iconClass = 'fa-file-pdf';
+                                                            $iconColor = 'text-red-500';
+                                                        } elseif (in_array(strtolower($extension), ['doc', 'docx'])) {
+                                                            $iconClass = 'fa-file-word';
+                                                            $iconColor = 'text-blue-500';
+                                                        }
+
+                                                        // Get original file name from document_description if it exists
+                                                        $fileName = $discussion->document_description ?: basename($discussion->document_path);
+                                                    @endphp
+                                                    <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
+                                                    <span class="text-xs truncate max-w-[150px]">
+                                                        {{ $fileName }}
+                                                    </span>
+                                                </a>
+                                                
+                                                <!-- Preview Container -->
+                                                <div class="hidden group-hover:block absolute z-50 transform -translate-y-1/2 right-full mr-2 bg-white rounded-lg shadow-lg p-2 border">
+                                                    @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
+                                                        <img src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                             alt="Preview" 
+                                                             class="max-w-[300px] h-auto rounded">
+                                                    @elseif(strtolower($extension) === 'pdf')
+                                                        <iframe src="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                                class="w-[500px] h-[300px] rounded"
+                                                                title="PDF Preview"></iframe>
+                                                    @elseif(in_array(strtolower($extension), ['doc', 'docx']))
+                                                        <div class="w-[200px] p-4 text-center">
+                                                            <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
+                                                            <p class="text-sm text-gray-600">{{ $fileName }}</p>
+                                                        </div>
+                                                    @endif
+                                                    
+                                                    @if($discussion->document_description)
+                                                        <div class="mt-2 p-2 bg-gray-50 rounded text-sm">
+                                                            <p class="text-gray-600">{{ $discussion->document_description }}</p>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         @else
                                             <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
                                         @endif

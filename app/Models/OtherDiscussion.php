@@ -80,6 +80,9 @@ class OtherDiscussion extends Model
         'previous_commitment',
         'next_commitment',
         'unit_source',
+        'closed_at',
+        'document_path',
+        'document_description'
     ];
 
     protected $dates = [

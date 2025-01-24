@@ -72,15 +72,15 @@
                                         <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
                                         <p class="text-gray-600 mb-2">Drag & drop file di sini atau</p>
                                         <button type="button" 
-                                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
-                                                onclick="document.getElementById('document').click()">
+                                                id="selectFileBtn"
+                                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
                                             Pilih File
                                         </button>
                                     </div>
                                     <div id="file-preview" class="hidden w-full">
                                         <div class="flex items-center justify-between bg-white p-3 rounded-md shadow-sm">
                                             <div class="flex items-center">
-                                                <i class="fas fa-file text-blue-500 mr-2"></i>
+                                                <i id="file-icon" class="fas fa-file text-blue-500 mr-2"></i>
                                                 <span id="file-name" class="text-sm text-gray-600"></span>
                                             </div>
                                             <button type="button" 
@@ -88,6 +88,18 @@
                                                     class="text-red-500 hover:text-red-700">
                                                 <i class="fas fa-times"></i>
                                             </button>
+                                        </div>
+                                        <!-- Preview Container -->
+                                        <div id="preview-container" class="mt-4 hidden">
+                                            <!-- Image Preview -->
+                                            <img id="image-preview" class="max-w-full h-auto rounded-lg shadow-sm hidden" alt="Preview">
+                                            <!-- PDF Preview -->
+                                            <iframe id="pdf-preview" class="w-full h-[500px] rounded-lg shadow-sm hidden"></iframe>
+                                            <!-- Word Preview Message -->
+                                            <div id="word-preview" class="hidden bg-gray-50 p-4 rounded-lg text-center">
+                                                <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
+                                                <p class="text-gray-600">Dokumen Word akan tersedia setelah disimpan</p>
+                                            </div>
                                         </div>
                                     </div>
                                     <p class="text-xs text-gray-500 mt-2">
@@ -610,25 +622,26 @@ function generateDepartmentOptions() {
     ).join('');
 }
 
+// Inisialisasi variabel di awal
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('document');
 const dropZoneContent = document.getElementById('drop-zone-content');
 const filePreview = document.getElementById('file-preview');
 const fileName = document.getElementById('file-name');
 
-// Prevent default drag behaviors
+// Event listener untuk drag & drop
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropZone.addEventListener(eventName, preventDefaults, false);
     document.body.addEventListener(eventName, preventDefaults, false);
 });
 
-// Highlight drop zone when dragging over it
+// Highlight drop zone saat drag over
 ['dragenter', 'dragover'].forEach(eventName => {
     dropZone.addEventListener(eventName, highlight, false);
 });
 
 ['dragleave', 'drop'].forEach(eventName => {
-    dropZone.addEventListener(eventName, unhighlight, false);
+    dropZone.addEventListener('dragleave', unhighlight, false);
 });
 
 // Handle dropped files
@@ -636,6 +649,23 @@ dropZone.addEventListener('drop', handleDrop, false);
 
 // Handle file input change
 fileInput.addEventListener('change', handleFiles);
+
+// Handle click pada drop zone
+dropZone.addEventListener('click', function(e) {
+    // Jika yang diklik adalah area preview atau tombol remove, jangan trigger input file
+    if (e.target.closest('#file-preview') || e.target.closest('button[onclick*="removeFile"]')) {
+        return;
+    }
+    
+    // Untuk klik di area lain, trigger input file
+    fileInput.click();
+});
+
+// Tambahkan event listener untuk tombol pilih file
+document.getElementById('selectFileBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('document').click();
+});
 
 function preventDefaults (e) {
     e.preventDefault();
@@ -687,6 +717,42 @@ function handleFiles(e) {
         dropZoneContent.classList.add('hidden');
         filePreview.classList.remove('hidden');
         fileName.textContent = file.name;
+
+        // Reset semua preview
+        document.getElementById('preview-container').classList.remove('hidden');
+        document.getElementById('image-preview').classList.add('hidden');
+        document.getElementById('pdf-preview').classList.add('hidden');
+        document.getElementById('word-preview').classList.add('hidden');
+
+        // Update icon berdasarkan tipe file
+        const fileIcon = document.getElementById('file-icon');
+        fileIcon.className = 'fas mr-2 ';
+
+        // Tampilkan preview berdasarkan tipe file
+        if (file.type.startsWith('image/')) {
+            fileIcon.classList.add('fa-file-image', 'text-green-500');
+            const imagePreview = document.getElementById('image-preview');
+            imagePreview.classList.remove('hidden');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type === 'application/pdf') {
+            fileIcon.classList.add('fa-file-pdf', 'text-red-500');
+            const pdfPreview = document.getElementById('pdf-preview');
+            pdfPreview.classList.remove('hidden');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pdfPreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type.includes('word')) {
+            fileIcon.classList.add('fa-file-word', 'text-blue-500');
+            document.getElementById('word-preview').classList.remove('hidden');
+        }
     }
 }
 
@@ -695,6 +761,12 @@ function removeFile() {
     dropZoneContent.classList.remove('hidden');
     filePreview.classList.add('hidden');
     fileName.textContent = '';
+    
+    // Reset preview
+    document.getElementById('preview-container').classList.add('hidden');
+    document.getElementById('image-preview').classList.add('hidden');
+    document.getElementById('pdf-preview').classList.add('hidden');
+    document.getElementById('word-preview').classList.add('hidden');
 }
 </script>
 @endpush
