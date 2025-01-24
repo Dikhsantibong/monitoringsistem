@@ -528,6 +528,10 @@ Route::get('/admin/other-discussions/{id}/export/{format}', [OtherDiscussionCont
 
 Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData'])->name('plant.chart.data');
 
+Route::get('other-discussions/{id}/download-document', 
+    [OtherDiscussionController::class, 'downloadDocument'])
+    ->name('admin.other-discussions.download-document');
+
 
 
 

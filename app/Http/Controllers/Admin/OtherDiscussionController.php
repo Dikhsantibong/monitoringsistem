@@ -229,7 +229,7 @@ class OtherDiscussionController extends Controller
     public function store(Request $request)
     {
         try {
-            \Log::info('Storing discussion with data:', $request->all());
+            DB::beginTransaction();
             
             $validated = $request->validate([
                 'sr_number' => 'required',
@@ -247,14 +247,33 @@ class OtherDiscussionController extends Controller
                 'commitment_deadlines' => 'required|array',
                 'commitment_department_ids' => 'required|array',
                 'commitment_section_ids' => 'required|array',
-                'commitment_status' => 'required|array'
+                'commitment_status' => 'required|array',
+                'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // max 10MB
             ]);
 
-            // Debug log untuk melihat data yang dikirim
-            \Log::info('Data yang dikirim:', [
-                'department_ids' => $request->commitment_department_ids,
-                'all_data' => $request->all()
-            ]);
+            if ($request->hasFile('document')) {
+                $file = $request->file('document');
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+                
+                // Generate nama file yang unik dengan ekstensi asli
+                $fileName = uniqid() . '_' . time() . '.' . $extension;
+                
+                // Simpan file dengan ekstensi asli
+                $path = $file->storeAs('discussion-documents', $fileName, 'public');
+                
+                // Log untuk debugging
+                \Log::info('File upload details:', [
+                    'original_name' => $originalName,
+                    'stored_name' => $fileName,
+                    'extension' => $extension,
+                    'mime_type' => $file->getMimeType(),
+                    'path' => $path
+                ]);
+
+                $validated['document_path'] = $path;
+                $validated['document_description'] = $originalName; // Simpan nama asli file
+            }
 
             // Ambil semua department_id yang valid dari database
             $validDepartmentIds = \App\Models\Department::pluck('id')->toArray();
@@ -314,19 +333,15 @@ class OtherDiscussionController extends Controller
 
             return redirect()
                 ->route('admin.other-discussions.index')
-                ->with('success', 'Data berhasil ditambahkan');
+                ->with('success', 'Pembahasan berhasil ditambahkan');
 
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error creating discussion:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
+            \Log::error('Error storing discussion:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-            
-            return back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal menambahkan pembahasan: ' . $e->getMessage());
         }
     }
 
@@ -409,7 +424,7 @@ class OtherDiscussionController extends Controller
                 'commitment_status.*' => 'required|in:Open,Closed',
                 'status' => 'required|in:Open,Closed',
                 // Tambahkan validasi untuk dokumen
-                'document' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120', // max 5MB
+                'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // max 10MB
                 'document_description' => 'required|string|max:255',
             ]);
 
@@ -421,11 +436,28 @@ class OtherDiscussionController extends Controller
                 }
 
                 // Upload dokumen baru
-                $path = $request->file('document')->store('discussion-documents', 'public');
+                $file = $request->file('document');
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
                 
+                // Generate nama file yang unik dengan ekstensi asli
+                $fileName = uniqid() . '_' . time() . '.' . $extension;
+                
+                // Simpan file dengan ekstensi asli
+                $path = $file->storeAs('discussion-documents', $fileName, 'public');
+                
+                // Log untuk debugging
+                \Log::info('File upload details:', [
+                    'original_name' => $originalName,
+                    'stored_name' => $fileName,
+                    'extension' => $extension,
+                    'mime_type' => $file->getMimeType(),
+                    'path' => $path
+                ]);
+
                 // Update path dokumen dan deskripsi
                 $discussion->document_path = $path;
-                $discussion->document_description = $request->document_description;
+                $discussion->document_description = $originalName;
             }
 
             // Generate PIC
@@ -922,5 +954,66 @@ class OtherDiscussionController extends Controller
         }
         
         abort(404);
+    }
+
+    public function downloadDocument($id)
+    {
+        try {
+            $discussion = OtherDiscussion::findOrFail($id);
+            
+            if (!$discussion->document_path) {
+                return back()->with('error', 'Dokumen tidak ditemukan');
+            }
+
+            $path = storage_path('app/public/' . $discussion->document_path);
+            
+            if (!file_exists($path)) {
+                \Log::error('Document file not found:', ['path' => $path]);
+                return back()->with('error', 'File tidak ditemukan di server');
+            }
+
+            // Dapatkan ekstensi file dari path
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            
+            // Tentukan mime type berdasarkan ekstensi
+            $mime = $this->getMimeType($extension);
+
+            // Gunakan nama file asli dari document_description atau nama file di path
+            $fileName = $discussion->document_description ?? basename($path);
+
+            \Log::info('Downloading document:', [
+                'path' => $path,
+                'mime' => $mime,
+                'extension' => $extension,
+                'filename' => $fileName
+            ]);
+
+            return response()->file($path, [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error downloading document:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Gagal mengunduh dokumen');
+        }
+    }
+
+    private function getMimeType($extension)
+    {
+        $mimes = [
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif'
+        ];
+
+        return $mimes[strtolower($extension)] ?? 'application/octet-stream';
     }
 }   
