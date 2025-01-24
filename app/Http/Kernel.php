@@ -27,6 +27,7 @@ class Kernel extends HttpKernel
         // Mengkonversi string kosong menjadi NULL
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\Cors::class,
+        \App\Http\Middleware\HandleDocumentDownload::class,
     ];
 
     /**

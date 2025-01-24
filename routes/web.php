@@ -31,6 +31,8 @@ use App\Http\Controllers\Admin\MachineStatusViewController;
 use App\Http\Controllers\Admin\MachineStatusController;
 use App\Http\Controllers\Admin\OtherDiscussionEditController;
 use App\Http\Controllers\Admin\AdminPembangkitController;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -527,6 +529,49 @@ Route::get('/admin/other-discussions/{id}/print', [OtherDiscussionController::cl
 Route::get('/admin/other-discussions/{id}/export/{format}', [OtherDiscussionController::class, 'exportSingle'])->name('admin.other-discussions.export.single');
 
 Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData'])->name('plant.chart.data');
+
+Route::get('storage/documents/{filename}', function($filename) {
+    $storagePath = storage_path('app/public/documents/' . $filename);
+    $publicPath = public_path('storage/documents/' . $filename);
+    
+    // Cek file di kedua lokasi
+    if (!file_exists($storagePath) && !file_exists($publicPath)) {
+        abort(404);
+    }
+    
+    // Gunakan file yang ada
+    $filePath = file_exists($storagePath) ? $storagePath : $publicPath;
+    
+    // Deteksi MIME type
+    $mimeType = mime_content_type($filePath);
+    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+    
+    $headers = [
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=3600'
+    ];
+    
+    // Set disposition berdasarkan tipe file
+    if (in_array(strtolower($extension), ['doc', 'docx', 'pdf'])) {
+        $headers['Content-Disposition'] = 'attachment; filename="' . $filename . '"';
+    }
+    
+    // Log akses file
+    Log::info('File accessed', [
+        'filename' => $filename,
+        'mime_type' => $mimeType,
+        'file_path' => $filePath,
+        'exists' => file_exists($filePath)
+    ]);
+    
+    return new StreamedResponse(
+        function() use ($filePath) {
+            readfile($filePath);
+        },
+        200,
+        $headers
+    );
+})->where('filename', '.*');
 
 
 

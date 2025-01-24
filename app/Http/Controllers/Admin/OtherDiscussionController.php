@@ -309,6 +309,56 @@ class OtherDiscussionController extends Controller
                 }
             }
 
+            if ($request->hasFile('document')) {
+                try {
+                    $file = $request->file('document');
+                    $extension = $file->getClientOriginalExtension();
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    
+                    // Definisikan path
+                    $storagePath = storage_path('app/public/documents');
+                    $publicPath = public_path('storage/documents');
+                    
+                    // Buat direktori jika belum ada
+                    if (!is_dir($storagePath)) {
+                        mkdir($storagePath, 0755, true);
+                    }
+                    if (!is_dir($publicPath)) {
+                        mkdir($publicPath, 0755, true);
+                    }
+                    
+                    // Upload file ke kedua lokasi
+                    $file->move($storagePath, $fileName);
+                    copy($storagePath . '/' . $fileName, $publicPath . '/' . $fileName);
+                    
+                    // Set permission
+                    chmod($storagePath . '/' . $fileName, 0644);
+                    chmod($publicPath . '/' . $fileName, 0644);
+                    
+                    // Update database
+                    $discussion->document_path = 'documents/' . $fileName;
+                    $discussion->document_description = $request->document_description;
+                    
+                    // Log untuk debugging
+                    Log::info('Document uploaded', [
+                        'original_name' => $file->getClientOriginalName(),
+                        'storage_path' => $storagePath . '/' . $fileName,
+                        'public_path' => $publicPath . '/' . $fileName,
+                        'exists_storage' => file_exists($storagePath . '/' . $fileName),
+                        'exists_public' => file_exists($publicPath . '/' . $fileName),
+                        'storage_perms' => substr(sprintf('%o', fileperms($storagePath . '/' . $fileName)), -4),
+                        'public_perms' => substr(sprintf('%o', fileperms($publicPath . '/' . $fileName)), -4)
+                    ]);
+                    
+                } catch (\Exception $e) {
+                    Log::error('Error uploading document:', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    throw $e;
+                }
+            }
+
             DB::commit();
             \Log::info('Transaction committed successfully');
 

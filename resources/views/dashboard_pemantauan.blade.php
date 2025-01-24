@@ -159,7 +159,7 @@
         </div>
     </div>
     <script>
-        // Konfigurasi umum untuk chart
+           // Konfigurasi umum untuk chart
         const chartConfig = {
             responsive: true,
             maintainAspectRatio: true,
