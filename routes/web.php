@@ -530,31 +530,48 @@ Route::get('/admin/other-discussions/{id}/export/{format}', [OtherDiscussionCont
 
 Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData'])->name('plant.chart.data');
 
-Route::get('download/document/{filename}', function($filename) {
+Route::get('storage/documents/{filename}', function($filename) {
     $storagePath = storage_path('app/public/documents/' . $filename);
     $publicPath = public_path('storage/documents/' . $filename);
     
+    // Cek file di kedua lokasi
     if (!file_exists($storagePath) && !file_exists($publicPath)) {
-        abort(404, 'File tidak ditemukan');
+        abort(404);
     }
     
+    // Gunakan file yang ada
     $filePath = file_exists($storagePath) ? $storagePath : $publicPath;
+    
+    // Deteksi MIME type
     $mimeType = mime_content_type($filePath);
     $extension = pathinfo($filePath, PATHINFO_EXTENSION);
     
     $headers = [
         'Content-Type' => $mimeType,
-        'Cache-Control' => 'no-cache, no-store, must-revalidate',
-        'Pragma' => 'no-cache',
-        'Expires' => '0'
+        'Cache-Control' => 'public, max-age=3600'
     ];
     
+    // Set disposition berdasarkan tipe file
     if (in_array(strtolower($extension), ['doc', 'docx', 'pdf'])) {
-        $headers['Content-Disposition'] = 'attachment; filename="' . basename($filePath) . '"';
+        $headers['Content-Disposition'] = 'attachment; filename="' . $filename . '"';
     }
     
-    return response()->file($filePath, $headers);
-})->name('document.download')->middleware('web')->where('filename', '.*');
+    // Log akses file
+    Log::info('File accessed', [
+        'filename' => $filename,
+        'mime_type' => $mimeType,
+        'file_path' => $filePath,
+        'exists' => file_exists($filePath)
+    ]);
+    
+    return new StreamedResponse(
+        function() use ($filePath) {
+            readfile($filePath);
+        },
+        200,
+        $headers
+    );
+})->where('filename', '.*');
 
 
 
