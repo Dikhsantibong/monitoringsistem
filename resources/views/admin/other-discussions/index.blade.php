@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -365,10 +366,9 @@
                                         <td class="px-4 py-3 text-sm">
                                             @if($discussion->document_path)
                                                 <div class="relative group">
-                                                    <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                       onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
-                                                       class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                                       onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')">
+                                                    <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                       target="_blank"
+                                                       class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
                                                         @php
                                                             $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
                                                             $iconClass = 'fa-file-alt';
@@ -549,8 +549,8 @@
                                                                     @endif
                                                                 </div>
                                                             </div>
-                                                            <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                               onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
+                                                            <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                               target="_blank"
                                                                class="text-blue-600 hover:text-blue-800">
                                                                 <i class="fas fa-download"></i>
                                                             </a>
@@ -692,10 +692,9 @@
                                     <td class="px-4 py-3 text-sm">
                                         @if($discussion->document_path)
                                             <div class="relative group">
-                                                <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                   onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
-                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                                   onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')">
+                                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                   target="_blank"
+                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
                                                     @php
                                                         $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
                                                         $iconClass = 'fa-file-alt';
@@ -832,8 +831,8 @@
                                                                 @endif
                                                             </div>
                                                         </div>
-                                                        <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                           onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
+                                                        <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                           target="_blank"
                                                            class="text-blue-600 hover:text-blue-800">
                                                             <i class="fas fa-download"></i>
                                                         </a>
@@ -996,10 +995,9 @@
                                     <td class="px-6 py-3 text-sm">
                                         @if($discussion->document_path)
                                             <div class="relative group">
-                                                <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                   onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
-                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                                   onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')">
+                                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                   target="_blank"
+                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
                                                     @php
                                                         $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
                                                         $iconClass = 'fa-file-alt';
@@ -1128,8 +1126,8 @@
                                                                 @endif
                                                             </div>
                                                         </div>
-                                                        <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                           onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
+                                                        <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                           target="_blank"
                                                            class="text-blue-600 hover:text-blue-800">
                                                             <i class="fas fa-download"></i>
                                                         </a>
@@ -1288,10 +1286,9 @@
                                     <td class="px-4 py-3 text-sm">
                                         @if($discussion->document_path)
                                             <div class="relative group">
-                                                <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                   onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
-                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                                   onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')">
+                                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                   target="_blank"
+                                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
                                                     @php
                                                         $extension = pathinfo($discussion->document_path, PATHINFO_EXTENSION);
                                                         $iconClass = 'fa-file-alt';
@@ -1424,8 +1421,8 @@
                                                                 @endif
                                                             </div>
                                                         </div>
-                                                        <a href="{{ url('storage/' . $discussion->document_path) }}" 
-                                                           onclick="return handleDocumentClick(event, '{{ pathinfo($discussion->document_path, PATHINFO_EXTENSION) }}', '{{ url('storage/' . $discussion->document_path) }}', '{{ $discussion->document_description ?: basename($discussion->document_path) }}')"
+                                                        <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                                           target="_blank"
                                                            class="text-blue-600 hover:text-blue-800">
                                                             <i class="fas fa-download"></i>
                                                         </a>
@@ -1942,49 +1939,6 @@
         if (printWindow) {
             printWindow.focus();
         }
-    }
-
-    function handleDocumentClick(event, extension, url, fileName) {
-        event.preventDefault();
-        
-        // Untuk file gambar dan PDF, buka di tab baru
-        if (['jpg', 'jpeg', 'png', 'gif', 'pdf'].includes(extension.toLowerCase())) {
-            window.open(url, '_blank');
-            return false;
-        }
-        
-        // Untuk file dokumen (.doc, .docx), download file
-        if (['doc', 'docx'].includes(extension.toLowerCase())) {
-            fetch(url)
-                .then(response => response.blob())
-                .then(blob => {
-                    const blobUrl = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = blobUrl;
-                    a.download = fileName;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(blobUrl);
-                    document.body.removeChild(a);
-                })
-                .catch(error => {
-                    console.error('Error downloading file:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal Download',
-                        text: 'Terjadi kesalahan saat mengunduh dokumen'
-                    });
-                });
-            return false;
-        }
-        
-        return true;
-    }
-
-    function handleDocumentError(element) {
-        element.innerHTML = '<i class="fas fa-exclamation-circle text-red-500"></i> Dokumen tidak tersedia';
-        element.classList.add('cursor-not-allowed');
-        element.removeAttribute('href');
     }
 </script>
 @push('scripts')
