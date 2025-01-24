@@ -334,6 +334,7 @@
                                                 </form>
                                             </div>
                                         </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Dokumen</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Action</th>
                                     </tr>
                                 </thead>
@@ -360,6 +361,24 @@
                                                 {{ $discussion->status === 'Open' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                                                 {{ $discussion->status }}
                                             </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm">
+                                            @if($discussion->documents->count() > 0)
+                                                <div class="flex flex-col gap-1">
+                                                    @foreach($discussion->documents as $document)
+                                                        <a href="{{ asset('storage/' . $document->path) }}" 
+                                                           target="_blank"
+                                                           class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                                            <i class="fas fa-file-alt"></i>
+                                                            <span class="text-xs truncate max-w-[150px]">
+                                                                {{ $document->original_name }}
+                                                            </span>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3 text-sm">
                                             <div class="flex items-center gap-2">
@@ -429,7 +448,7 @@
                                     </tr>
                                     <!-- Row Detail (Hidden by default) -->
                                     <tr id="discussion-{{ $discussion->id }}" class="hidden bg-gray-50">
-                                        <td colspan="7" class="px-4 py-3">
+                                        <td colspan="8" class="px-4 py-3">
                                             <div class="grid grid-cols-2 gap-4 p-4">
                                                 <!-- Kolom Kiri -->
                                                 <div>
@@ -469,6 +488,37 @@
                                                     </div>
                                                     @endforeach
                                                 </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <h4 class="font-semibold text-gray-700 mb-2">Dokumen Pendukung</h4>
+                                                @if($discussion->documents->count() > 0)
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        @foreach($discussion->documents as $document)
+                                                            <div class="bg-white p-3 rounded-lg shadow-sm border">
+                                                                <div class="flex items-center justify-between">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <i class="fas fa-file-alt text-blue-500"></i>
+                                                                        <div>
+                                                                            <p class="text-sm font-medium text-gray-700 truncate">
+                                                                                {{ $document->original_name }}
+                                                                            </p>
+                                                                            <p class="text-xs text-gray-500">
+                                                                                {{ $document->description }}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <a href="{{ asset('storage/' . $document->path) }}" 
+                                                                       target="_blank"
+                                                                       class="text-blue-600 hover:text-blue-800">
+                                                                        <i class="fas fa-download"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <p class="text-gray-500 text-sm">Tidak ada dokumen pendukung</p>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

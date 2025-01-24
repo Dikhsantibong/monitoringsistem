@@ -43,9 +43,87 @@
             <h3 class="text-gray-700 text-3xl font-medium">Edit Pembahasan</h3>
 
             <div class="mt-8">
-                <form id="editDiscussionForm" action="{{ route('admin.other-discussions.update', $discussion->id) }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <form id="editDiscussionForm" action="{{ route('admin.other-discussions.update', $discussion->id) }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
+
+                    <!-- Ganti bagian form upload dokumen dengan yang baru -->
+                    <div class="mb-6 border-b pb-6">
+                        <h4 class="text-lg font-semibold mb-4">Upload Dokumen Pendukung <span class="text-red-500">*</span></h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- File Upload dengan Drag & Drop -->
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="document">
+                                    Dokumen (PDF/Word/Gambar)
+                                </label>
+                                <div 
+                                    id="drop-zone"
+                                    class="w-full min-h-[200px] px-3 py-2 border-2 border-dashed border-gray-300 rounded-md 
+                                           hover:border-blue-500 transition-colors duration-200 ease-in-out
+                                           flex flex-col items-center justify-center cursor-pointer bg-gray-50">
+                                    <input type="file" 
+                                           name="document" 
+                                           id="document" 
+                                           class="hidden"
+                                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                           required>
+                                    <div class="text-center" id="drop-zone-content">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                        <p class="text-gray-600 mb-2">Drag & drop file di sini atau</p>
+                                        <button type="button" 
+                                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
+                                                onclick="document.getElementById('document').click()">
+                                            Pilih File
+                                        </button>
+                                    </div>
+                                    <div id="file-preview" class="hidden w-full">
+                                        <div class="flex items-center justify-between bg-white p-3 rounded-md shadow-sm">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-file text-blue-500 mr-2"></i>
+                                                <span id="file-name" class="text-sm text-gray-600"></span>
+                                            </div>
+                                            <button type="button" 
+                                                    onclick="removeFile()"
+                                                    class="text-red-500 hover:text-red-700">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        Format yang diizinkan: PDF, Word (doc/docx), Gambar (jpg/jpeg/png). Maksimal 5MB
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Deskripsi Dokumen -->
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="document_description">
+                                    Deskripsi Dokumen
+                                </label>
+                                <textarea name="document_description" 
+                                          id="document_description" 
+                                          rows="8"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                          required
+                                          placeholder="Berikan deskripsi singkat tentang dokumen yang diupload"></textarea>
+                            </div>
+                        </div>
+
+                        @if($discussion->document_path)
+                        <div class="mt-4">
+                            <h5 class="text-sm font-semibold mb-2">Dokumen Saat Ini:</h5>
+                            <div class="flex items-center gap-2 bg-white p-3 rounded-md shadow-sm">
+                                <i class="fas fa-file text-blue-500"></i>
+                                <a href="{{ asset('storage/' . $discussion->document_path) }}" 
+                                   target="_blank"
+                                   class="text-blue-500 hover:text-blue-700">
+                                    {{ $discussion->document_description ?? 'Lihat Dokumen' }}
+                                </a>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- No SR -->
@@ -413,6 +491,46 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     if (status === 'Closed' && !validateStatus(document.getElementById('status'))) {
         e.preventDefault();
     }
+
+    const fileInput = document.getElementById('document');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Upload Dokumen Diperlukan',
+            text: 'Silakan upload dokumen pendukung sebelum menyimpan perubahan.',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Validasi ukuran file (5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB dalam bytes
+    if (file.size > maxSize) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Ukuran File Terlalu Besar',
+            text: 'Ukuran file maksimal adalah 5MB.',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Validasi tipe file
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Format File Tidak Didukung',
+            text: 'Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
 });
 
 // Fungsi untuk menambah komitmen baru
@@ -490,6 +608,93 @@ function generateDepartmentOptions() {
     return departments.map(dept => 
         `<option value="${dept.id}">${dept.name}</option>`
     ).join('');
+}
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('document');
+const dropZoneContent = document.getElementById('drop-zone-content');
+const filePreview = document.getElementById('file-preview');
+const fileName = document.getElementById('file-name');
+
+// Prevent default drag behaviors
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+});
+
+// Highlight drop zone when dragging over it
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, unhighlight, false);
+});
+
+// Handle dropped files
+dropZone.addEventListener('drop', handleDrop, false);
+
+// Handle file input change
+fileInput.addEventListener('change', handleFiles);
+
+function preventDefaults (e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function highlight(e) {
+    dropZone.classList.add('border-blue-500', 'bg-blue-50');
+}
+
+function unhighlight(e) {
+    dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+}
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles({ target: { files: files } });
+}
+
+function handleFiles(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Validasi tipe file
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Format File Tidak Didukung',
+                text: 'Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Validasi ukuran file (5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB dalam bytes
+        if (file.size > maxSize) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ukuran File Terlalu Besar',
+                text: 'Ukuran file maksimal adalah 5MB.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Update tampilan
+        dropZoneContent.classList.add('hidden');
+        filePreview.classList.remove('hidden');
+        fileName.textContent = file.name;
+    }
+}
+
+function removeFile() {
+    fileInput.value = '';
+    dropZoneContent.classList.remove('hidden');
+    filePreview.classList.add('hidden');
+    fileName.textContent = '';
 }
 </script>
 @endpush

@@ -18,8 +18,7 @@ use PDF;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\OtherDiscussionsExport;
 use App\Exports\SingleOtherDiscussionExport;
-
-
+use Illuminate\Support\Facades\Storage;
 
 class OtherDiscussionController extends Controller
 {
@@ -381,7 +380,6 @@ class OtherDiscussionController extends Controller
         return view('admin.other-discussions.edit', compact('discussion'));
     }
 
-
     public function update(Request $request, $id)
     {
         try {
@@ -392,7 +390,6 @@ class OtherDiscussionController extends Controller
             // Validasi request
             $request->validate([
                 'sr_number' => 'required',
-            
                 'unit' => 'required',
                 'topic' => 'required',
                 'target' => 'required',
@@ -410,8 +407,26 @@ class OtherDiscussionController extends Controller
                 'commitment_section_ids.*' => 'required',
                 'commitment_status' => 'required|array|min:1',
                 'commitment_status.*' => 'required|in:Open,Closed',
-                'status' => 'required|in:Open,Closed'
+                'status' => 'required|in:Open,Closed',
+                // Tambahkan validasi untuk dokumen
+                'document' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120', // max 5MB
+                'document_description' => 'required|string|max:255',
             ]);
+
+            // Handle file upload
+            if ($request->hasFile('document')) {
+                // Hapus dokumen lama jika ada
+                if ($discussion->document_path) {
+                    Storage::disk('public')->delete($discussion->document_path);
+                }
+
+                // Upload dokumen baru
+                $path = $request->file('document')->store('discussion-documents', 'public');
+                
+                // Update path dokumen dan deskripsi
+                $discussion->document_path = $path;
+                $discussion->document_description = $request->document_description;
+            }
 
             // Generate PIC
             $pic = $this->getPICName($request->department_id, $request->section_id);
@@ -419,7 +434,6 @@ class OtherDiscussionController extends Controller
             // Update diskusi
             $discussion->fill([
                 'sr_number' => $request->sr_number,
-                
                 'unit' => $request->unit,
                 'topic' => $request->topic,
                 'target' => $request->target,
