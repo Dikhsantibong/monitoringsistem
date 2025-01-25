@@ -541,21 +541,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::delete('pembangkit/delete-image/{machineId}', [App\Http\Controllers\Admin\PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
 });
 
-Route::get('/admin/laporan/check-wo-status/{id}', [LaporanController::class, 'checkWOStatus'])->name('admin.laporan.check-wo-status');
-
-// Tambahkan route untuk update status WO
-Route::post('/admin/laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
-    ->name('admin.laporan.update-wo-status')
-    ->middleware(['auth', 'admin']);
-
-Route::middleware(['auth', 'admin'])->group(function () {
-    // ... route lainnya ...
-    
-    // Route untuk update status WO - pastikan hanya ada 1 route untuk ini
-    Route::post('/admin/laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
-        ->name('admin.laporan.update-wo-status');
-});
-
 
 
 
