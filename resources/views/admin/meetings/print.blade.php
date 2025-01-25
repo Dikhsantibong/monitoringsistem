@@ -194,6 +194,62 @@
             margin-left: auto;
             margin-right: auto;
         }
+        .unit-section {
+            margin-bottom: 2rem;
+            page-break-inside: avoid;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stat-item {
+            padding: 0.5rem;
+            background-color: #f3f4f6;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+        .stat-item span {
+            display: block;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        .stat-item strong {
+            display: block;
+            font-size: 1.125rem;
+            color: #1f2937;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .report-table th {
+            background-color: #0A749B;
+            color: white;
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            text-align: center;
+            border: 1px solid #0A749B;
+        }
+        .report-table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-operasi { background-color: #dcfce7; color: #166534; }
+        .status-standby { background-color: #dbeafe; color: #1e40af; }
+        .status-gangguan { background-color: #fee2e2; color: #991b1b; }
+        .status-pemeliharaan { background-color: #ffedd5; color: #9a3412; }
+        .status-overhaul { background-color: #ede9fe; color: #5b21b6; }
+        .status-default { background-color: #f3f4f6; color: #374151; }
     </style>
 </head>
 <body>
@@ -308,12 +364,7 @@
 
                 <!-- Total Score dengan style khusus -->
                 @php
-                    // Hitung total score peserta
                     $totalScorePeserta = collect($data['peserta'])->sum('skor');
-                    $maxScorePeserta = count($data['peserta']) * 100; // Maksimum score untuk peserta
-                    $persentasePeserta = ($totalScorePeserta / $maxScorePeserta) * 100;
-
-                    // Hitung total score ketentuan
                     $totalScoreKetentuan = 
                         $data['kesiapan_panitia'] +
                         $data['kesiapan_bahan'] +
@@ -324,21 +375,12 @@
                         $data['ketegasan_moderator'] +
                         $data['kelengkapan_sr'] +
                         $data['skor_waktu_mulai'];
-                    $maxScoreKetentuan = 9 * 100; // 9 item ketentuan, masing-masing maksimum 100
-                    $persentaseKetentuan = ($totalScoreKetentuan / $maxScoreKetentuan) * 100;
-
-                    // Hitung grand total dalam persentase
-                    $totalMaxScore = $maxScorePeserta + $maxScoreKetentuan;
                     $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
-                    $persentaseTotal = ($grandTotal / $totalMaxScore) * 100;
                 @endphp
                 <tr class="total-row">
                     <td colspan="4" style="text-align: right;">Total Score:</td>
-                    <td style="text-align: center;">{{ number_format($persentaseTotal, 1) }}%</td>
-                    <td>
-                        Peserta: {{ number_format($persentasePeserta, 1) }}% | 
-                        Ketentuan: {{ number_format($persentaseKetentuan, 1) }}%
-                    </td>
+                    <td style="text-align: center;">{{ $grandTotal }}</td>
+                    <td>Total score peserta dan ketentuan</td>
                 </tr>
             </tbody>
         </table>
@@ -391,7 +433,7 @@
         </table>
     </div>
 
-    <!-- Halaman ketiga - Report Table (dipindah ke akhir) -->
+    <!-- Halaman ketiga - Report Table -->
     <div class="page-break">
         <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
         
@@ -401,47 +443,82 @@
                s/d {{ request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y') : '-' }}</p>
         </div>
 
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Unit</th>
-                    <th>Mesin</th>
-                    <th>DMN</th>
-                    <th>DMP</th>
-                    <th>Beban</th>
-                    <th>Status</th>
-                    <th>Comp</th>
+        @foreach($powerPlants as $powerPlant)
+            <div class="unit-section mb-4">
+                <h3 class="text-lg font-semibold uppercase mb-2">STATUS MESIN - {{ $powerPlant->name }}</h3>
                 
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($logs as $index => $log)
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $log->machine->powerPlant->name }}</td>
-                        <td>{{ $log->machine->name }}</td>
-                        <td>{{ $log->dmn }}</td>
-                        <td>{{ $log->dmp }}</td>
-                        <td>{{ $log->load_value }}</td>
-                        <td>
-                            <span class="status-badge {{ 
-                                $log->status === 'Operasi' ? 'status-operasi' : 
-                                ($log->status === 'Gangguan' ? 'status-gangguan' : 'status-standby') 
-                            }}">
-                                {{ $log->status }}
-                            </span>
-                        </td>
-                        <td>{{ $log->component }}</td>
-                      
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="15" style="text-align: center;">Tidak ada data untuk ditampilkan</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                <!-- Statistik Unit -->
+                <div class="stats-grid">
+                    @php
+                        $plantLogs = $logs->filter(function($log) use ($powerPlant) {
+                            return $log->machine->power_plant_id === $powerPlant->id;
+                        });
+
+                        $totalDMP = $plantLogs->sum('dmp');
+                        $totalDMN = $plantLogs->sum('dmn');
+                        $totalBeban = $plantLogs->where('status', 'Operasi')->sum('load_value');
+                    @endphp
+                    
+                    <div class="stat-item">
+                        <span>DMP Total:</span>
+                        <strong>{{ number_format($totalDMP, 1) }} MW</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>DMN Total:</span>
+                        <strong>{{ number_format($totalDMN, 1) }} MW</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Total Beban:</span>
+                        <strong>{{ number_format($totalBeban, 1) }} MW</strong>
+                    </div>
+                </div>
+
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Mesin</th>
+                            <th>DMN</th>
+                            <th>DMP</th>
+                            <th>Beban</th>
+                            <th>Status</th>
+                            <th>Component</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($powerPlant->machines as $index => $machine)
+                            @php
+                                $machineLog = $logs->where('machine_id', $machine->id)->first();
+                                $status = $machineLog?->status ?? '-';
+                                
+                                // Tentukan status class berdasarkan status
+                                $statusClass = match($status) {
+                                    'Operasi' => 'status-operasi',
+                                    'Standby' => 'status-standby',
+                                    'Gangguan' => 'status-gangguan',
+                                    'Pemeliharaan' => 'status-pemeliharaan',
+                                    'Overhaul' => 'status-overhaul',
+                                    default => 'status-default'
+                                };
+                            @endphp
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $machine->name }}</td>
+                                <td>{{ $machineLog?->dmn ?? '-' }}</td>
+                                <td>{{ $machineLog?->dmp ?? '-' }}</td>
+                                <td>{{ $machineLog?->load_value ?? '-' }}</td>
+                                <td>
+                                    <span class="status-badge {{ $statusClass }}">
+                                        {{ $status }}
+                                    </span>
+                                </td>
+                                <td>{{ $machineLog?->component ?? '-' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endforeach
     </div>
 
     <!-- Halaman keempat - Service Request Table -->

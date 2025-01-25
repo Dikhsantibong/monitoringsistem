@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\WorkOrder;
+use App\Models\PowerPlant;
 
 
 class AdminMeetingController extends Controller
@@ -296,46 +297,55 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->date ?? now()->format('Y-m-d');
+            \Log::info('Print function called with date: ' . $date);
             
             // Data untuk score card
             $scoreCard = ScoreCardDaily::whereDate('tanggal', $date)->first();
+            \Log::info('ScoreCard data:', ['scoreCard' => $scoreCard]);
             
             // Data untuk report table
             $logs = MachineStatusLog::with(['machine.powerPlant'])
-                ->whereDate('tanggal', $date)
-                ->orderBy('tanggal', 'desc')
+                ->whereDate('created_at', $date)
+                ->orderBy('created_at', 'desc')
                 ->get();
+            \Log::info('Machine Status Logs count: ' . $logs->count());
+
+            // Query untuk powerPlants
+            $powerPlants = \App\Models\PowerPlant::with(['machines' => function($query) {
+                $query->orderBy('name');
+            }])->get();
+            \Log::info('PowerPlants count: ' . $powerPlants->count());
 
             // Data untuk daftar hadir
-            $attendances = Attendance::whereDate('time', $date)
-                ->orderBy('time', 'asc')
+            $attendances = Attendance::whereDate('created_at', $date)
+                ->orderBy('created_at', 'asc')
                 ->get();
+            \Log::info('Attendances count: ' . $attendances->count());
 
             // Data untuk Service Request
             $serviceRequests = ServiceRequest::whereDate('created_at', $date)
                 ->orderBy('created_at', 'desc')
                 ->get();
+            \Log::info('Service Requests count: ' . $serviceRequests->count());
 
             // Data untuk Work Order
             $workOrders = WorkOrder::whereDate('created_at', $date)
                 ->orderBy('created_at', 'desc')
                 ->get();
+            \Log::info('Work Orders count: ' . $workOrders->count());
 
-            // Data untuk WO Backlog
-            $woBacklogs = WoBacklog::whereDate('tanggal_backlog', $date)
-                ->orderBy('tanggal_backlog', 'desc')
+            // Data untuk Work Order Backlog
+            $woBacklogs = WoBacklog::whereDate('created_at', $date)
+                ->orderBy('created_at', 'desc')
                 ->get();
-
-            // Data untuk Other Discussions, Closed Discussions, dan Overdue Discussions
-            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)->get();
-            $closedDiscussions = ClosedDiscussion::whereDate('created_at', $date)->get();
-            $overdueDiscussions = OverdueDiscussion::whereDate('created_at', $date)->get();
+            \Log::info('WO Backlogs count: ' . $woBacklogs->count());
 
             if (!$scoreCard) {
+                \Log::warning('Score card not found for date: ' . $date);
                 return back()->with('error', 'Data score card tidak ditemukan untuk tanggal tersebut');
             }
 
-            // Format data peserta dengan benar
+            // Format data peserta
             $peserta = json_decode($scoreCard->peserta, true) ?? [];
             $formattedPeserta = [];
             
@@ -351,23 +361,33 @@ class AdminMeetingController extends Controller
 
             // Format data score card
             $data = [
-                'lokasi' => $scoreCard->lokasi,
+                'lokasi' => $scoreCard->lokasi, 
                 'waktu_mulai' => $scoreCard->waktu_mulai,
                 'waktu_selesai' => $scoreCard->waktu_selesai,
                 'peserta' => $formattedPeserta,
-                'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-                'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
-                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
-                'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
-                'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 'Data tidak tersedia',
-                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 0
+                'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 100,
+                'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 100,
+                'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 100,
+                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 100,
+                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 100,
+                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 100,
+                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 100,
+                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 100,
+                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 100
             ];
 
-            // Decode signatures dari parameter URL
+            // Decode signatures
             $signatures = json_decode(urldecode($request->signatures), true) ?? [];
+            
+            \Log::info('Preparing to render view with data', [
+                'date' => $date,
+                'has_logs' => $logs->isNotEmpty(),
+                'has_powerPlants' => $powerPlants->isNotEmpty(),
+                'has_attendances' => $attendances->isNotEmpty(),
+                'has_serviceRequests' => $serviceRequests->isNotEmpty(),
+                'has_workOrders' => $workOrders->isNotEmpty(),
+                'has_woBacklogs' => $woBacklogs->isNotEmpty()
+            ]);
 
             return view('admin.meetings.print', compact(
                 'data', 
@@ -376,13 +396,19 @@ class AdminMeetingController extends Controller
                 'attendances', 
                 'serviceRequests',
                 'workOrders',
+                'powerPlants',
                 'woBacklogs',
                 'signatures'
             ));
 
         } catch (\Exception $e) {
-            \Log::error('Print error: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan saat memuat data print');
+            \Log::error('Print error details: ', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat memuat data print: ' . $e->getMessage());
         }
     }
 
