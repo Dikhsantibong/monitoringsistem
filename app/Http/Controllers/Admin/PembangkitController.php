@@ -347,55 +347,41 @@ class PembangkitController extends Controller
             if (!$request->hasFile('image')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada file gambar yang diunggah'
-                ], 400);
+                    'message' => 'Tidak ada file yang diunggah'
+                ]);
             }
 
             $file = $request->file('image');
             $machineId = $request->input('machine_id');
-
-            // Validasi tipe file
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-            if (!in_array($file->getMimeType(), $allowedTypes)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Format file tidak didukung. Gunakan JPG, JPEG, atau PNG'
-                ], 400);
-            }
-
-            // Validasi ukuran file (5MB)
-            if ($file->getSize() > 5 * 1024 * 1024) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ukuran file terlalu besar. Maksimal 5MB'
-                ], 400);
-            }
-
-            // Generate nama file
-            $fileName = 'machine_' . $machineId . '_' . time() . '.' . $file->getClientOriginalExtension();
-
+            
+            // Generate nama file unik dengan timestamp
+            $filename = 'machine_' . $machineId . '_' . time() . '.' . $file->getClientOriginalExtension();
+            
             // Pastikan direktori ada
             $path = storage_path('app/public/machine-images');
             if (!file_exists($path)) {
                 mkdir($path, 0777, true);
             }
 
-            // Hapus file lama jika ada
-            $pattern = $path . '/machine_' . $machineId . '_*';
-            array_map('unlink', glob($pattern));
+            // Hapus gambar lama jika ada
+            $oldFiles = glob(storage_path('app/public/machine-images/machine_' . $machineId . '_*'));
+            foreach ($oldFiles as $oldFile) {
+                if (file_exists($oldFile)) {
+                    unlink($oldFile);
+                }
+            }
 
-            // Simpan file
-            $file->move($path, $fileName);
-            $relativePath = 'machine-images/' . $fileName;
+            // Simpan file baru
+            $file->move($path, $filename);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Gambar berhasil diunggah',
-                'image_url' => $relativePath
+                'image_url' => 'machine-images/' . $filename
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error uploading image: ' . $e->getMessage());
+            \Log::error('Error dalam uploadImage: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengunggah gambar: ' . $e->getMessage()
@@ -419,6 +405,35 @@ class PembangkitController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus gambar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function checkImage($machineId)
+    {
+        try {
+            $pattern = storage_path('app/public/machine-images/machine_' . $machineId . '_*');
+            $files = glob($pattern);
+            
+            if (!empty($files)) {
+                $latestFile = end($files);
+                $filename = basename($latestFile);
+                
+                return response()->json([
+                    'success' => true,
+                    'image_url' => $filename
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'No image found'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error checking image: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error checking image'
             ], 500);
         }
     }

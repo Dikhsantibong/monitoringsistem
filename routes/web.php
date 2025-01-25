@@ -541,6 +541,23 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::delete('pembangkit/delete-image/{machineId}', [App\Http\Controllers\Admin\PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
 });
 
+<<<<<<< HEAD
+=======
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    // Route untuk pembangkit
+    Route::get('/pembangkit/check-image/{machineId}', [PembangkitController::class, 'checkImage'])
+        ->name('pembangkit.check-image');
+        
+    // Route untuk laporan
+    Route::get('/laporan/check-wo-status/{id}', [LaporanController::class, 'checkWOStatus'])
+        ->name('laporan.check-wo-status');
+    
+    Route::post('/laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
+        ->name('laporan.update-wo-status')
+        ->middleware('admin');
+});
+
+>>>>>>> 8bf171a77d2adfac6abaff6fbd5bbadd7c05f8b0
 
 
 
