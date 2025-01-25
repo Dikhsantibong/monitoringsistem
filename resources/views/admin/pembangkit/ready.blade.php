@@ -309,18 +309,36 @@
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
                                                     </td>
                                                     <td class="px-3 py-2 text-center">
-                                                        <div class="flex flex-col items-center gap-2">
+                                                        <div class="flex flex-col items-center">
                                                             <input type="file" 
                                                                 id="image_{{ $machine->id }}"
                                                                 class="hidden image-upload"
                                                                 accept="image/*"
+                                                                onchange="handleImageUpload(event, {{ $machine->id }})"
                                                                 data-machine-id="{{ $machine->id }}">
                                                             <button type="button" 
                                                                 class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
                                                                 onclick="document.getElementById('image_{{ $machine->id }}').click()">
                                                                 Upload Gambar
                                                             </button>
-                                                            <div id="preview_{{ $machine->id }}" class="image-preview mt-2"></div>
+                                                            <div id="image_container_{{ $machine->id }}" class="image-preview mt-2">
+                                                                @if($todayLogs->where('machine_id', $machine->id)->first()?->image_url)
+                                                                    <div class="relative">
+                                                                        <img src="{{ asset('storage/' . $todayLogs->where('machine_id', $machine->id)->first()->image_url) }}" 
+                                                                             alt="Preview" 
+                                                                             class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
+                                                                             onclick="showLargeImage('{{ asset('storage/' . $todayLogs->where('machine_id', $machine->id)->first()->image_url) }}')"
+                                                                             title="Klik untuk memperbesar">
+                                                                        <button type="button"
+                                                                                onclick="deleteImage('{{ $machine->id }}')"
+                                                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -793,6 +811,27 @@
                     // Debug untuk melihat data yang akan diupdate
                     console.log('Updating machine:', log.machine_id, log);
 
+                    // Update gambar
+                    const imageContainer = row.querySelector(`#image_container_${log.machine_id}`);
+                    if (imageContainer && log.image_url) {
+                        imageContainer.innerHTML = `
+                            <div class="relative">
+                                <img src="/storage/${log.image_url}" 
+                                     alt="Preview" 
+                                     class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
+                                     onclick="showLargeImage('/storage/${log.image_url}')"
+                                     title="Klik untuk memperbesar">
+                                <button type="button"
+                                        onclick="deleteImage(${log.machine_id})"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    }
+
                     // Update Status dan warnanya
                     const statusSelect = row.querySelector(`select[name="status[${log.machine_id}]"]`);
                     if (statusSelect) {
@@ -1051,71 +1090,103 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
 </script>
 @push('scripts')
 <script>
-    // Existing scripts ...
+    function handleImageUpload(event, machineId) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    // Image upload handling
-    document.querySelectorAll('.image-upload').forEach(input => {
-        const machineId = input.dataset.machineId;
-        
-        // Load existing image if any
-        const savedImage = localStorage.getItem(`machine_image_${machineId}`);
-        if (savedImage) {
-            showImage(machineId, savedImage);
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ukuran file terlalu besar. Maksimal 5MB'
+            });
+            return;
         }
-        
-        input.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > 5000000) { // 5MB limit
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Ukuran gambar terlalu besar. Maksimal 5MB'
-                    });
-                    return;
-                }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageData = e.target.result;
-                    showImage(machineId, imageData);
-                    localStorage.setItem(`machine_image_${machineId}`, imageData);
-                }
-                reader.readAsDataURL(file);
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (!allowedTypes.includes(file.type)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Format file tidak didukung. Gunakan JPG, JPEG, atau PNG'
+            });
+            return;
+        }
+
+        // Create FormData
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('machine_id', machineId);
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+        // Show loading state
+        const container = document.getElementById(`image_container_${machineId}`);
+        container.innerHTML = '<div class="text-center">Mengunggah...</div>';
+
+        // Upload image
+        fetch('/admin/pembangkit/upload-image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Network response was not ok');
+                });
             }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Show preview with correct path
+                container.innerHTML = `
+                    <div class="relative">
+                        <img src="/storage/${data.image_url}" 
+                             alt="Preview" 
+                             class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
+                             onclick="showLargeImage('/storage/${data.image_url}')"
+                             title="Klik untuk memperbesar">
+                        <button type="button"
+                                onclick="deleteImage(${machineId})"
+                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                
+                // Trigger loadData to ensure data is saved
+                loadData();
+            } else {
+                throw new Error(data.message || 'Gagal mengunggah gambar');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Gagal mengunggah gambar'
+            });
+            container.innerHTML = '';
+            // Reset file input
+            event.target.value = '';
         });
-    });
-
-    function showImage(machineId, imageData) {
-        const previewDiv = document.getElementById(`preview_${machineId}`);
-        previewDiv.innerHTML = `
-            <div class="relative">
-                <img src="${imageData}" 
-                     alt="Preview" 
-                     class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
-                     onclick="showLargeImage('${imageData}')"
-                     title="Klik untuk memperbesar">
-                <button type="button"
-                        onclick="deleteImage('${machineId}')"
-                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        `;
     }
 
-    function showLargeImage(imageData) {
+    function showLargeImage(imageUrl) {
         Swal.fire({
-            imageUrl: imageData,
+            imageUrl: imageUrl,
+            imageWidth: '80%',
+            imageHeight: '80vh',
             imageAlt: 'Gambar Mesin',
-            width: '80%',
-            padding: '20px',
             showConfirmButton: false,
             showCloseButton: true,
             customClass: {
-                image: 'max-h-[80vh] w-auto'
+                image: 'object-contain max-h-[80vh]'
             }
         });
     }
@@ -1132,13 +1203,51 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem(`machine_image_${machineId}`);
-                document.getElementById(`preview_${machineId}`).innerHTML = '';
-                Swal.fire(
-                    'Terhapus!',
-                    'Gambar telah dihapus.',
-                    'success'
-                );
+                // Send delete request
+                fetch(`/admin/pembangkit/delete-image/${machineId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Clear image container
+                        const container = document.getElementById(`image_container_${machineId}`);
+                        if (container) {
+                            container.innerHTML = '';
+                        }
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Terhapus!',
+                            text: 'Gambar telah dihapus.',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+
+                        // Reload data to ensure everything is in sync
+                        loadData();
+                    } else {
+                        throw new Error(data.message || 'Gagal menghapus gambar');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Gagal menghapus gambar'
+                    });
+                });
             }
         });
     }

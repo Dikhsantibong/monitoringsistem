@@ -115,6 +115,7 @@
 </div>
 
 <script src="{{ asset('js/toggle.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function toggleDropdown() {
     document.getElementById('dropdown').classList.toggle('hidden');

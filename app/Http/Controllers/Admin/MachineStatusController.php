@@ -8,125 +8,107 @@ use App\Models\MachineStatusLog;
 use App\Models\UnitOperationHour;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Models\Machine;
 
 class MachineStatusController extends Controller
 {
     public function view(Request $request)
     {
         try {
-            $date = $request->get('date', now()->format('Y-m-d'));
+            $date = $request->get('date', now()->toDateString());
+            $search = $request->get('search');
             $unitSource = $request->get('unit_source');
-            $searchQuery = $request->get('search');
             
-            // Query power plants
-            $powerPlantsQuery = PowerPlant::with(['machines' => function($query) {
+            // Query untuk mengambil data pembangkit dengan relasi yang dibutuhkan
+            $query = PowerPlant::with(['machines' => function($query) {
                 $query->with(['statusLogs' => function($query) {
-                    $query->where('tanggal', '>=', now()->subDays(30))
-                          ->orderBy('tanggal', 'desc');
+                    $query->latest('tanggal');
                 }]);
             }]);
             
             // Filter berdasarkan unit_source
             if (session('unit') === 'mysql') {
                 if ($unitSource) {
-                    $powerPlantsQuery->where('unit_source', $unitSource);
+                    $query->where('unit_source', $unitSource);
                 }
             } else {
-                $powerPlantsQuery->where('unit_source', session('unit'));
+                $query->where('unit_source', session('unit'));
             }
             
-            // Filter pencarian
-            if ($searchQuery) {
-                $powerPlantsQuery->where(function($query) use ($searchQuery) {
-                    $query->where('name', 'like', "%{$searchQuery}%")
-                        ->orWhereHas('machines', function($q) use ($searchQuery) {
-                            $q->where('name', 'like', "%{$searchQuery}%");
+            // Filter berdasarkan pencarian
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('machines', function($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('machines.statusLogs', function($q) use ($search) {
+                            $q->where('status', 'like', "%{$search}%");
                         });
                 });
             }
             
-            $powerPlants = $powerPlantsQuery->get();
+            $powerPlants = $query->get();
             
-            // Hitung statistik downtime untuk setiap mesin
+            // Proses setiap pembangkit dan mesinnya
             foreach ($powerPlants as $powerPlant) {
                 foreach ($powerPlant->machines as $machine) {
+                    // Ambil log terbaru untuk mesin ini
+                    $latestLog = $machine->statusLogs->first();
+                    
+                    // Cari gambar terbaru untuk mesin ini
+                    $pattern = storage_path('app/public/machine-images/machine_' . $machine->id . '_*');
+                    $files = glob($pattern);
+                    if (!empty($files)) {
+                        rsort($files); // Sort descending untuk mendapatkan file terbaru
+                        $latestFile = $files[0];
+                        $machine->image_url = 'machine-images/' . basename($latestFile);
+                    }
+
+                    // Hitung statistik downtime
                     $machine->downtime_stats = $this->calculateDowntimeStats($machine);
+                    
+                    // Bersihkan deskripsi dari tag gambar
+                    if ($latestLog) {
+                        $latestLog->deskripsi = trim(preg_replace('/\[image:.*?\]/', '', $latestLog->deskripsi ?? ''));
+                    }
                 }
             }
             
-            // Get logs dengan filter pencarian
-            $logsQuery = MachineStatusLog::with(['machine', 'powerPlant'])
-                ->whereDate('tanggal', $date);
-            
-            if ($searchQuery) {
-                $logsQuery->where(function($query) use ($searchQuery) {
-                    $query->whereHas('machine', function($q) use ($searchQuery) {
-                        $q->where('name', 'like', "%{$searchQuery}%");
-                    })
-                    ->orWhere('status', 'like', "%{$searchQuery}%");
-                });
-            }
-            
-            $logs = $logsQuery->get();
+            // Ambil semua log untuk tanggal yang dipilih
+            $logs = MachineStatusLog::with(['machine', 'powerPlant'])
+                ->whereDate('tanggal', $date)
+                ->when($search, function($query) use ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->whereHas('machine', function($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        })->orWhere('status', 'like', "%{$search}%");
+                    });
+                })
+                ->get();
 
-            // Get dan hitung HOP
-            $hopQuery = UnitOperationHour::with('powerPlant')
-                ->whereDate('tanggal', $date);
+            // Ambil data HOP
+            $hops = UnitOperationHour::with('powerPlant')
+                ->whereDate('tanggal', $date)
+                ->when(session('unit') !== 'mysql', function($query) {
+                    $query->whereHas('powerPlant', function($q) {
+                        $q->where('unit_source', session('unit'));
+                    });
+                })
+                ->when($unitSource, function($query) use ($unitSource) {
+                    $query->whereHas('powerPlant', function($q) use ($unitSource) {
+                        $q->where('unit_source', $unitSource);
+                    });
+                })
+                ->get();
 
-            if ($unitSource) {
-                $hopQuery->where('unit_source', $unitSource);
-            } elseif (session('unit') !== 'mysql') {
-                $hopQuery->where('unit_source', session('unit'));
-            }
-
-            $unitOperationHours = $hopQuery->get()->mapWithKeys(function ($item) {
-                return [$item->power_plant_id => $item];
-            });
-
-            $totalHopByPlant = [];
-            foreach ($powerPlants as $powerPlant) {
-                $hop = $unitOperationHours->get($powerPlant->id);
-                $totalHopByPlant[$powerPlant->id] = [
-                    'value' => $hop ? $hop->hop_value : 0,
-                    'status' => $hop && $hop->hop_value >= 7 ? 'aman' : 'siaga'
-                ];
-            }
-
-            if ($request->ajax()) {
-                $html = View::make('admin.machine-status._table', compact(
-                    'powerPlants', 
-                    'date', 
-                    'logs', 
-                    'unitOperationHours',
-                    'totalHopByPlant'
-                ))->render();
-                
-                return response()->json([
-                    'success' => true,
-                    'html' => $html
-                ]);
-            }
-
-            return view('admin.machine-status.view', compact(
-                'powerPlants', 
-                'date', 
-                'logs', 
-                'unitOperationHours',
-                'totalHopByPlant'
-            ));
+            return view('admin.machine-status.view', compact('powerPlants', 'logs', 'hops', 'date'));
             
         } catch (\Exception $e) {
-            \Log::error('Error in MachineStatusController@view: ' . $e->getMessage());
-            
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-                ], 500);
-            }
-            
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            \Log::error('Error in machine status view: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data');
         }
     }
 
@@ -183,5 +165,93 @@ class MachineStatusController extends Controller
         }
 
         return $stats;
+    }
+
+    public function index()
+    {
+        $machines = Machine::with(['powerPlant', 'logs' => function($query) {
+            $query->latest('tanggal')->take(1);
+        }])->get();
+
+        $formattedMachines = $machines->map(function($machine) {
+            $latestLog = $machine->logs->first();
+            
+            // Cari gambar dari direktori
+            $imagePath = null;
+            $pattern = storage_path('app/public/machine-images/machine_' . $machine->id . '_*');
+            $files = glob($pattern);
+            if (!empty($files)) {
+                rsort($files); // Sort descending untuk mendapatkan file terbaru
+                $latestFile = $files[0];
+                $imagePath = 'machine-images/' . basename($latestFile);
+            }
+
+            // Bersihkan deskripsi dari tag gambar
+            $cleanDescription = $latestLog ? preg_replace('/\[image:.*?\]/', '', $latestLog->deskripsi ?? '') : '';
+            
+            return [
+                'id' => $machine->id,
+                'name' => $machine->name,
+                'power_plant' => $machine->powerPlant->name,
+                'latest_log' => $latestLog ? [
+                    'status' => $latestLog->status,
+                    'tanggal' => $latestLog->tanggal,
+                    'deskripsi' => trim($cleanDescription),
+                    'image_url' => $imagePath
+                ] : null
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $formattedMachines
+        ]);
+    }
+
+    public function show($id)
+    {
+        try {
+            $machine = Machine::with(['powerPlant', 'logs' => function($query) {
+                $query->latest('tanggal');
+            }])->findOrFail($id);
+
+            // Cari gambar dari direktori
+            $imagePath = null;
+            $pattern = storage_path('app/public/machine-images/machine_' . $machine->id . '_*');
+            $files = glob($pattern);
+            if (!empty($files)) {
+                rsort($files); // Sort descending untuk mendapatkan file terbaru
+                $latestFile = $files[0];
+                $imagePath = 'machine-images/' . basename($latestFile);
+            }
+
+            $latestLog = $machine->logs->first();
+            
+            // Bersihkan deskripsi dari tag gambar
+            $cleanDescription = $latestLog ? preg_replace('/\[image:.*?\]/', '', $latestLog->deskripsi ?? '') : '';
+
+            $machineData = [
+                'id' => $machine->id,
+                'name' => $machine->name,
+                'power_plant' => $machine->powerPlant->name,
+                'latest_log' => $latestLog ? [
+                    'status' => $latestLog->status,
+                    'tanggal' => $latestLog->tanggal,
+                    'deskripsi' => trim($cleanDescription),
+                    'image_url' => $imagePath
+                ] : null
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $machineData
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data mesin: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

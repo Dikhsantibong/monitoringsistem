@@ -23,7 +23,8 @@ class MachineOperation extends Model
         'hop',
         'recorded_at',
         'keterangan',
-        'unit_source'
+        'unit_source',
+        'image_url'
     ];
 
     protected $attributes = [

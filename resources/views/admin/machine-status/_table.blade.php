@@ -39,8 +39,10 @@
                                         return 0;
                                     });
                                 
-                                $hopData = $totalHopByPlant[$powerPlant->id] ?? ['value' => 0, 'status' => 'siaga'];
-                                $hopClass = $hopData['status'] === 'aman' ? 'text-green-600' : 'text-red-600';
+                                $hopData = $hops->where('power_plant_id', $powerPlant->id)->first();
+                                $hopValue = $hopData ? $hopData->hop_value : 0;
+                                $hopStatus = $hopValue >= 7 ? 'aman' : 'siaga';
+                                $hopClass = $hopStatus === 'aman' ? 'text-green-600' : 'text-red-600';
                             @endphp
                             
                             <div class="bg-green-50 p-3 rounded-lg">
@@ -69,9 +71,9 @@
                             </div>
                             <div class="bg-orange-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total HOP:</p>
-                                <p class="text-xl font-bold text-orange-700">{{ number_format($hopData['value'], 1) }} Hari</p>
+                                <p class="text-xl font-bold text-orange-700">{{ number_format($hopValue, 1) }} Hari</p>
                                 <p class="text-sm font-medium {{ $hopClass }}">
-                                    Status: {{ ucfirst($hopData['status']) }}
+                                    Status: {{ ucfirst($hopStatus) }}
                                 </p>
                             </div>
                         </div>
@@ -121,7 +123,6 @@
             </div>
 
             <!-- Tabel -->
-            
             <div class="table-responsive">
                 <table class="min-w-full bg-white">
                     <thead>
@@ -139,8 +140,8 @@
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Action Plan</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Progress</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Tanggal Mulai</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Target Selesai</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Gambar</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Target Selesai</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Gambar</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm">
@@ -156,6 +157,16 @@
                                     'Overhaul' => 'bg-violet-100 text-violet-800',
                                     default => 'bg-gray-100 text-gray-800'
                                 };
+
+                                // Cari gambar untuk mesin ini
+                                $pattern = storage_path('app/public/machine-images/machine_' . $machine->id . '_*');
+                                $files = glob($pattern);
+                                $imageUrl = null;
+                                if (!empty($files)) {
+                                    rsort($files); // Sort descending untuk mendapatkan file terbaru
+                                    $latestFile = $files[0];
+                                    $imageUrl = 'machine-images/' . basename($latestFile);
+                                }
                             @endphp
                             <tr class="hover:bg-gray-50 border border-gray-200">
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $index + 1 }}</td>
@@ -177,13 +188,19 @@
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                 </td>
-                                <td class="px-3 py-2 text-center">
+                                <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                 </td>
                                 <td class="px-3 py-2 text-center">
-                                    <div id="image_container_{{ $machine->id }}" class="flex justify-center">
-                                        <!-- Gambar akan ditampilkan di sini -->
-                                    </div>
+                                    @if($imageUrl)
+                                        <img src="{{ asset('storage/' . $imageUrl) }}" 
+                                             alt="Machine Image" 
+                                             class="w-20 h-20 object-cover mx-auto cursor-pointer"
+                                             onclick="showLargeImage('{{ asset('storage/' . $imageUrl) }}')"
+                                             title="Klik untuk memperbesar">
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -196,60 +213,24 @@
                     </tbody>
                 </table>
             </div>
-
-            
         </div>
     @endforeach
 @endif
 
+@push('scripts')
 <script>
-// Fungsi untuk menampilkan gambar besar
-function showLargeImage(imageData) {
+function showLargeImage(imageUrl) {
     Swal.fire({
-        imageUrl: imageData,
-        imageAlt: 'Gambar Mesin',
-        width: '80%',
-        padding: '20px',
+        imageUrl: imageUrl,
+        imageWidth: '80%',
+        imageHeight: '80vh',
+        imageAlt: 'Machine Image',
         showConfirmButton: false,
-        showCloseButton: true,
-        customClass: {
-            image: 'max-h-[80vh] w-auto'
-        }
+        width: '90%',
+        padding: '20px',
+        background: '#fff',
+        showCloseButton: true
     });
 }
-
-// Fungsi untuk memuat dan menampilkan gambar
-function loadAndDisplayImage(machineId) {
-    const imageData = localStorage.getItem(`machine_image_${machineId}`);
-    const container = document.getElementById(`image_container_${machineId}`);
-    
-    if (imageData && container) {
-        container.innerHTML = `
-            <img src="${imageData}" 
-                 alt="Machine Image" 
-                 class="w-20 h-20 object-cover rounded cursor-pointer"
-                 onclick="showLargeImage('${imageData}')"
-                 title="Klik untuk memperbesar">
-        `;
-    } else if (container) {
-        container.innerHTML = '<span class="text-gray-400">Tidak ada gambar</span>';
-    }
-}
-
-// Memuat gambar saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    @foreach($powerPlants as $powerPlant)
-        @foreach($powerPlant->machines as $machine)
-            loadAndDisplayImage({{ $machine->id }});
-        @endforeach
-    @endforeach
-});
-
-// Mendengarkan perubahan di localStorage
-window.addEventListener('storage', function(e) {
-    if (e.key && e.key.startsWith('machine_image_')) {
-        const machineId = e.key.split('_')[2];
-        loadAndDisplayImage(machineId);
-    }
-});
-</script> 
+</script>
+@endpush 

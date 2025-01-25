@@ -90,6 +90,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/report', [PembangkitController::class, 'report'])->name('pembangkit.report');
         Route::get('/report/download', [PembangkitController::class, 'downloadReport'])->name('pembangkit.report.download');
         Route::get('/report/print', [PembangkitController::class, 'printReport'])->name('pembangkit.report.print');
+        Route::post('/upload-image', [PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
     });
 
     Route::prefix('laporan')->group(function () {
@@ -525,6 +526,20 @@ Route::get('/admin/other-discussions/{id}/print', [OtherDiscussionController::cl
 Route::get('/admin/other-discussions/{id}/export/{format}', [OtherDiscussionController::class, 'exportSingle'])->name('admin.other-discussions.export.single');
 
 Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData'])->name('plant.chart.data');
+
+Route::get('other-discussions/{id}/download-document', 
+    [OtherDiscussionController::class, 'downloadDocument'])
+    ->name('admin.other-discussions.download-document');
+
+Route::delete('/admin/pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('admin.pembangkit.delete-image');
+
+Route::post('/pembangkit/upload-image', [PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
+Route::delete('/pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    Route::post('pembangkit/upload-image', [App\Http\Controllers\Admin\PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
+    Route::delete('pembangkit/delete-image/{machineId}', [App\Http\Controllers\Admin\PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
+});
 
 
 
