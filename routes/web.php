@@ -381,13 +381,20 @@ Route::post('/admin/pembangkit/reset-status', [PembangkitController::class, 'res
 Route::get('/admin/pembangkit/ready', [PembangkitController::class, 'ready'])->name('admin.pembangkit.ready');
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    // Route yang sudah ada
-    Route::get('/pembangkit/ready', [PembangkitController::class, 'ready'])->name('pembangkit.ready');
-    Route::post('/pembangkit/save-status', [PembangkitController::class, 'saveStatus'])->name('pembangkit.save-status');
-    Route::get('/pembangkit/get-status', [PembangkitController::class, 'getStatus'])->name('pembangkit.get-status');
-    
-    // Tambahkan route baru untuk search
-    Route::get('/pembangkit/search', [PembangkitController::class, 'searchMachines'])->name('pembangkit.search');
+    // Route untuk pembangkit
+    Route::post('pembangkit/upload-image', [PembangkitController::class, 'uploadImage'])
+        ->name('pembangkit.upload-image');
+    Route::delete('pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])
+        ->name('pembangkit.delete-image');
+    Route::get('pembangkit/check-image/{machineId}', [PembangkitController::class, 'checkImage'])
+        ->name('pembangkit.check-image');
+        
+    // Route untuk laporan
+    Route::get('laporan/check-wo-status/{id}', [LaporanController::class, 'checkWOStatus'])
+        ->name('laporan.check-wo-status');
+    Route::post('laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
+        ->name('laporan.update-wo-status')
+        ->middleware('admin');
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {
