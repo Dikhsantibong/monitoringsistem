@@ -137,10 +137,18 @@ class OtherDiscussionEditController extends Controller
                 $existingDescriptions = $discussion->document_description ? [$discussion->document_description] : [];
             }
 
+            // Buat direktori jika belum ada
+            $uploadPath = public_path('storage/discussion-documents');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
             foreach ($request->file('documents') as $index => $file) {
                 $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-                $path = $file->storeAs('discussion-documents', $fileName, 'public');
+                // Simpan langsung ke public/storage
+                $file->move($uploadPath, $fileName);
                 
+                $path = 'discussion-documents/' . $fileName;
                 $existingPaths[] = $path;
                 $existingDescriptions[] = $request->input('document_descriptions.' . $index, $file->getClientOriginalName());
             }

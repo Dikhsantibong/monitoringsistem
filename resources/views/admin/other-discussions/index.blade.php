@@ -390,8 +390,7 @@
                                                             <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
                                                             <a href="{{ asset('storage/' . $path) }}" 
                                                                target="_blank"
-                                                               class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                                                               title="{{ $descriptions[$index] ?? basename($path) }}">
+                                                               class="text-sm text-blue-600 hover:text-blue-800 hover:underline">
                                                                 {{ Str::limit($descriptions[$index] ?? basename($path), 30) }}
                                                             </a>
                                                         </div>
@@ -713,8 +712,7 @@
                                                         <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
                                                         <a href="{{ asset('storage/' . $path) }}" 
                                                            target="_blank"
-                                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                                                           title="{{ $descriptions[$index] ?? basename($path) }}">
+                                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline">
                                                             {{ Str::limit($descriptions[$index] ?? basename($path), 30) }}
                                                         </a>
                                                     </div>
@@ -1318,8 +1316,7 @@
                                                         <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
                                                         <a href="{{ asset('storage/' . $path) }}" 
                                                            target="_blank"
-                                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                                                           title="{{ $descriptions[$index] ?? basename($path) }}">
+                                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline">
                                                             {{ Str::limit($descriptions[$index] ?? basename($path), 30) }}
                                                         </a>
                                                     </div>
