@@ -666,9 +666,9 @@
             if (result.isConfirmed) {
                 const newStatus = document.getElementById('statusSelect').value;
                 
-                // Buat dan submit form
+                // Buat form dengan method POST yang benar
                 const form = document.createElement('form');
-                form.method = 'POST';
+                form.method = 'POST';  // Pastikan menggunakan POST
                 form.action = `/admin/laporan/update-wo-status/${woId}`;
                 
                 // CSRF Token
@@ -686,15 +686,6 @@
                 form.appendChild(csrfToken);
                 form.appendChild(statusInput);
                 document.body.appendChild(form);
-                
-                // Tampilkan loading
-                Swal.fire({
-                    title: 'Memproses...',
-                    text: 'Sedang mengubah status',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
-                
                 form.submit();
             }
         });
@@ -1448,31 +1439,4 @@
 </script>
 @push('scripts')
 @endpush
-
-@if(session('success'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: "{{ session('success') }}",
-                timer: 1500,
-                showConfirmButton: false
-            });
-        });
-    </script>
-@endif
-
-@if(session('error'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: "{{ session('error') }}",
-                confirmButtonText: 'OK'
-            });
-        });
-    </script>
-@endif
     
