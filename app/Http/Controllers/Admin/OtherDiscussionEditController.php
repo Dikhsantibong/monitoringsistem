@@ -45,32 +45,6 @@ class OtherDiscussionEditController extends Controller
             // Validasi request menggunakan method validateDiscussion
             $validated = $this->validateDiscussion($request);
             
-            // Handle multiple file upload
-            if ($request->hasFile('documents')) {
-                // Get existing documents if any
-                $existingPaths = json_decode($discussion->document_path) ?? [];
-                $existingNames = json_decode($discussion->document_description) ?? [];
-                
-                if (!is_array($existingPaths)) {
-                    $existingPaths = $discussion->document_path ? [$discussion->document_path] : [];
-                    $existingNames = $discussion->document_description ? [$discussion->document_description] : [];
-                }
-
-                // Add new documents
-                foreach ($request->file('documents') as $file) {
-                    $originalName = $file->getClientOriginalName();
-                    $path = $file->store('discussion-documents', 'public');
-                    
-                    // Append new documents to existing ones
-                    $existingPaths[] = $path;
-                    $existingNames[] = $originalName;
-                }
-                
-                // Update document information
-                $discussion->document_path = json_encode($existingPaths);
-                $discussion->document_description = json_encode($existingNames);
-            }
-
             // Generate PIC
             $pic = $this->picGenerator->generate(
                 $validated['department_id'],
@@ -99,6 +73,11 @@ class OtherDiscussionEditController extends Controller
 
             $discussion->saveQuietly();
 
+            // Handle file uploads jika ada
+            if ($request->hasFile('documents')) {
+                $this->handleFileUploads($request, $discussion);
+            }
+
             // Update komitmen
             $this->updateCommitments($discussion, $request);
             
@@ -123,8 +102,8 @@ class OtherDiscussionEditController extends Controller
 
     protected function validateDiscussion(Request $request)
     {
-        return $request->validate([
-            'sr_number' => 'nullable|numeric',
+        $rules = [
+            'sr_number' => 'nullable|string|max:20',
             'unit' => 'required|string|max:255',
             'topic' => 'required|string|max:255',
             'target' => 'required|string',
@@ -134,29 +113,55 @@ class OtherDiscussionEditController extends Controller
             'risk_level' => 'required|in:R,MR,MT,T',
             'priority_level' => 'required|in:Low,Medium,High',
             'status' => 'required|in:Open,Closed',
-            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
-            
-            // Validasi untuk komitmen yang ada
-            'commitments' => 'array',
-            'commitment_deadlines' => 'array',
-            'commitment_department_ids' => 'array',
-            'commitment_section_ids' => 'array',
-            'commitment_status' => 'array',
-            
-            // Validasi untuk komitmen baru
-            'new_commitments' => 'array',
-            'new_commitment_deadlines' => 'array',
-            'new_commitment_department_ids' => 'array',
-            'new_commitment_section_ids' => 'array',
-            'new_commitment_status' => 'array'
-        ]);
+        ];
+
+        return $request->validate($rules);
+    }
+
+    protected function handleFileUploads($request, $discussion)
+    {
+        try {
+            // Validasi file
+            $request->validate([
+                'documents.*' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+                'document_descriptions.*' => 'required|string|max:255',
+            ]);
+
+            // Ambil data dokumen yang sudah ada
+            $existingPaths = json_decode($discussion->document_path) ?? [];
+            $existingDescriptions = json_decode($discussion->document_description) ?? [];
+
+            // Konversi ke array jika string tunggal
+            if (!is_array($existingPaths)) {
+                $existingPaths = $discussion->document_path ? [$discussion->document_path] : [];
+                $existingDescriptions = $discussion->document_description ? [$discussion->document_description] : [];
+            }
+
+            foreach ($request->file('documents') as $index => $file) {
+                $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+                $path = $file->storeAs('discussion-documents', $fileName, 'public');
+                
+                $existingPaths[] = $path;
+                $existingDescriptions[] = $request->input('document_descriptions.' . $index, $file->getClientOriginalName());
+            }
+
+            // Update discussion dengan data file baru
+            $discussion->document_path = json_encode($existingPaths);
+            $discussion->document_description = json_encode($existingDescriptions);
+            $discussion->save();
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('File upload error: ' . $e->getMessage());
+            throw new \Exception('Gagal mengupload file: ' . $e->getMessage());
+        }
     }
 
     protected function updateDiscussion(OtherDiscussion $discussion, array $validated)
     {
         $pic = $this->picGenerator->generate(
             $validated['department_id'], 
-            $validated['section_id']
+            $validated['section_id']    
         );
 
         $discussion->update([
@@ -222,5 +227,38 @@ class OtherDiscussionEditController extends Controller
             'status' => $data['status'],
             'pic' => $pic
         ]);
+    }
+
+    public function removeFile(Request $request, $id)
+    {
+        try {
+            $discussion = OtherDiscussion::findOrFail($id);
+            $fileIndex = $request->input('file_index');
+            
+            $paths = json_decode($discussion->document_path) ?? [];
+            $descriptions = json_decode($discussion->document_description) ?? [];
+            
+            if (isset($paths[$fileIndex])) {
+                // Hapus file dari storage
+                Storage::disk('public')->delete($paths[$fileIndex]);
+                
+                // Hapus dari array
+                array_splice($paths, $fileIndex, 1);
+                array_splice($descriptions, $fileIndex, 1);
+                
+                // Update database
+                $discussion->update([
+                    'document_path' => json_encode($paths),
+                    'document_description' => json_encode($descriptions)
+                ]);
+                
+                return response()->json(['success' => true]);
+            }
+            
+            return response()->json(['success' => false, 'message' => 'File tidak ditemukan']);
+            
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 } 

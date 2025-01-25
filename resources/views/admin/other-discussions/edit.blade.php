@@ -67,8 +67,7 @@
                                            id="documents" 
                                            class="hidden"
                                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                           multiple
-                                           required>
+                                           multiple>
                                     <div class="text-center" id="drop-zone-content">
                                         <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
                                         <p class="text-gray-600 mb-2">Drag & drop file di sini atau</p>
@@ -91,18 +90,16 @@
 
                             <!-- Deskripsi Dokumen -->
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="document_description">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
                                     Deskripsi Dokumen
                                 </label>
-                                <textarea name="document_description" 
-                                          id="document_description" 
-                                          rows="8"
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                          required
-                                          placeholder="Berikan deskripsi singkat tentang dokumen yang diupload"></textarea>
+                                <div id="descriptions-container">
+                                    <!-- Deskripsi akan ditambahkan secara dinamis via JavaScript -->
+                                </div>
                             </div>
                         </div>
 
+                        <!-- Tampilkan dokumen yang sudah ada -->
                         @if($discussion->document_path)
                         <div class="mt-4">
                             <h5 class="text-sm font-semibold mb-2">Dokumen Saat Ini:</h5>
@@ -118,6 +115,7 @@
                                             $extension = pathinfo($path, PATHINFO_EXTENSION);
                                             $iconClass = 'fa-file';
                                             $iconColor = 'text-blue-500';
+                                            
                                             
                                             if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png'])) {
                                                 $iconClass = 'fa-file-image';
@@ -137,6 +135,11 @@
                                             {{ $names[$index] ?? basename($path) }}
                                         </a>
                                     </div>
+                                    <button type="button"
+                                            onclick="removeExistingFile({{ $discussion->id }}, {{ $index }})"
+                                            class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </div>
                                 @endforeach
                             </div>
@@ -559,67 +562,74 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
 function handleFiles(e) {
     const files = Array.from(e.target.files);
     
-    // Reset file list
+    // Validasi file
+    const invalidFiles = files.filter(file => {
+        const validTypes = ['application/pdf', 'application/msword', 
+                          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                          'image/jpeg', 'image/png'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!validTypes.includes(file.type)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Format File Tidak Didukung',
+                text: `File "${file.name}" harus berformat PDF, Word, atau Gambar (JPG/PNG).`
+            });
+            return true;
+        }
+        
+        if (file.size > maxSize) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ukuran File Terlalu Besar',
+                text: `File "${file.name}" melebihi batas maksimal 5MB.`
+            });
+            return true;
+        }
+        
+        return false;
+    });
+
+    if (invalidFiles.length > 0) {
+        fileInput.value = '';
+        return;
+    }
+
+    // Show preview
+    filesPreview.classList.remove('hidden');
+    dropZoneContent.classList.add('hidden');
     filesList.innerHTML = '';
     
-    files.forEach(file => {
-        if (!validateFile(file)) {
-            return;
+    // Clear existing descriptions
+    const descriptionsContainer = document.getElementById('descriptions-container');
+    descriptionsContainer.innerHTML = '';
+
+    files.forEach((file, index) => {
+        // Add description input for each file
+        const descriptionInput = document.createElement('div');
+        descriptionInput.className = 'mb-2';
+        descriptionInput.innerHTML = `
+            <label class="block text-sm text-gray-600 mb-1">${file.name}</label>
+            <input type="text" 
+                   name="document_descriptions[]" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="Masukkan deskripsi dokumen"
+                   required>
+        `;
+        descriptionsContainer.appendChild(descriptionInput);
+
+        // Create file preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = createFilePreview(file, index, e.target.result);
+            filesList.appendChild(preview);
         }
-        
-        // Create preview item
-        const previewItem = document.createElement('div');
-        previewItem.className = 'flex items-center justify-between bg-white p-3 rounded-md shadow-sm mb-2';
-        
-        // Add file icon and name
-        const fileInfo = document.createElement('div');
-        fileInfo.className = 'flex items-center';
-        
-        const icon = document.createElement('i');
-        icon.className = `fas ${getFileIconClass(file.type)} mr-2`;
-        
-        const name = document.createElement('span');
-        name.className = 'text-sm text-gray-600';
-        name.textContent = file.name;
-        
-        fileInfo.appendChild(icon);
-        fileInfo.appendChild(name);
-        
-        // Add preview if it's an image
         if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.createElement('img');
-                preview.src = e.target.result;
-                preview.className = 'w-20 h-20 object-cover rounded-md ml-2';
-                fileInfo.appendChild(preview);
-            };
             reader.readAsDataURL(file);
+        } else {
+            reader.readAsArrayBuffer(file);
         }
-        
-        // Add remove button
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'text-red-500 hover:text-red-700';
-        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        removeBtn.onclick = function() {
-            previewItem.remove();
-            if (filesList.children.length === 0) {
-                dropZoneContent.classList.remove('hidden');
-                filesPreview.classList.add('hidden');
-            }
-        };
-        
-        previewItem.appendChild(fileInfo);
-        previewItem.appendChild(removeBtn);
-        filesList.appendChild(previewItem);
     });
-    
-    if (files.length > 0) {
-        // Show preview container
-        dropZoneContent.classList.add('hidden');
-        filesPreview.classList.remove('hidden');
-    }
 }
 
 // Fungsi untuk menambah komitmen baru
@@ -808,6 +818,160 @@ function removeFile() {
     filesPreview.classList.add('hidden');
     filesList.innerHTML = '';
 }
+
+// Function untuk menghapus file yang sudah ada
+function removeExistingFile(discussionId, fileIndex) {
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "File yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/other-discussions/${discussionId}/remove-file`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ file_index: fileIndex })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Terhapus!',
+                        'File berhasil dihapus.',
+                        'success'
+                    ).then(() => {
+                        // Reload halaman untuk memperbarui tampilan
+                        window.location.reload();
+                    });
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                Swal.fire(
+                    'Error!',
+                    error.message,
+                    'error'
+                );
+            });
+        }
+    });
+}
 </script>
+@endpush
+
+@push('styles')
+<style>
+/* Animasi untuk drag & drop */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.animate-pulse {
+    animation: pulse 1s infinite;
+}
+
+/* Animasi untuk fade in */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Styling untuk drop zone */
+#drop-zone {
+    transition: all 0.3s ease;
+}
+
+#drop-zone.drag-over {
+    border-color: #3B82F6;
+    background-color: #EFF6FF;
+}
+
+/* Styling untuk file preview */
+.file-preview {
+    transition: all 0.2s ease;
+}
+
+.file-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Progress bar styling */
+.upload-progress {
+    width: 100%;
+    height: 4px;
+    background-color: #E5E7EB;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #3B82F6;
+    transition: width 0.3s ease;
+}
+
+/* File type badges */
+.file-type-badge {
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.file-type-badge.pdf {
+    background-color: #FEE2E2;
+    color: #DC2626;
+}
+
+.file-type-badge.image {
+    background-color: #E0E7FF;
+    color: #4F46E5;
+}
+
+.file-type-badge.word {
+    background-color: #DBEAFE;
+    color: #2563EB;
+}
+
+/* Hover effects for buttons */
+.action-button {
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    transform: scale(1.05);
+}
+
+/* Loading spinner */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3B82F6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 @endpush
 @endsection             

@@ -578,6 +578,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         ->name('laporan.update-sr-status');
 });
 
+// Tambahkan route berikut di dalam group admin
+Route::post('/other-discussions/{id}/remove-file', [OtherDiscussionEditController::class, 'removeFile'])
+    ->name('admin.other-discussions.remove-file');
+
 
 
 

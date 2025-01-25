@@ -362,23 +362,23 @@
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3 text-sm">
+                                        <td class="px-4 py-3">
                                             @if($discussion->document_path)
-                                                <div class="relative group">
-                                                    @php
-                                                        $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
-                                                        $names = json_decode($discussion->document_description) ?? [$discussion->document_description];
-                                                    @endphp
+                                                @php
+                                                    $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
+                                                    $descriptions = json_decode($discussion->document_description) ?? [$discussion->document_description];
+                                                @endphp
+                                                <div class="flex flex-col space-y-1">
                                                     @foreach($paths as $index => $path)
                                                         @php
                                                             $extension = pathinfo($path, PATHINFO_EXTENSION);
                                                             $iconClass = 'fa-file';
                                                             $iconColor = 'text-blue-500';
                                                             
-                                                            if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                            if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png'])) {
                                                                 $iconClass = 'fa-file-image';
                                                                 $iconColor = 'text-green-500';
-                                                            } elseif (strtolower($extension) === 'pdf') {
+                                                            } elseif ($extension === 'pdf') {
                                                                 $iconClass = 'fa-file-pdf';
                                                                 $iconColor = 'text-red-500';
                                                             } elseif (in_array($extension, ['doc', 'docx'])) {
@@ -386,36 +386,19 @@
                                                                 $iconColor = 'text-blue-500';
                                                             }
                                                         @endphp
-                                                        <a href="{{ asset('storage/' . $path) }}" 
-                                                           target="_blank"
-                                                           class="text-blue-600 hover:text-blue-800 flex items-center gap-1 mb-1">
+                                                        <div class="flex items-center space-x-2">
                                                             <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
-                                                            <span class="text-xs truncate max-w-[150px]">
-                                                                {{ $names[$index] ?? basename($path) }}
-                                                            </span>
-                                                        </a>
-                                                        
-                                                        <!-- Preview Container -->
-                                                        <div class="hidden group-hover:block absolute z-50 transform -translate-y-1/2 right-full mr-2 bg-white rounded-lg shadow-lg p-2 border">
-                                                            @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
-                                                                <img src="{{ asset('storage/' . $path) }}" 
-                                                                     alt="Preview" 
-                                                                     class="max-w-[300px] h-auto rounded">
-                                                            @elseif(strtolower($extension) === 'pdf')
-                                                                <iframe src="{{ asset('storage/' . $path) }}" 
-                                                                        class="w-[500px] h-[300px] rounded"
-                                                                        title="PDF Preview"></iframe>
-                                                            @elseif(in_array(strtolower($extension), ['doc', 'docx']))
-                                                                <div class="w-[200px] p-4 text-center">
-                                                                    <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
-                                                                    <p class="text-sm text-gray-600">{{ $names[$index] ?? basename($path) }}</p>
-                                                                </div>
-                                                            @endif
+                                                            <a href="{{ asset('storage/' . $path) }}" 
+                                                               target="_blank"
+                                                               class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                                               title="{{ $descriptions[$index] ?? basename($path) }}">
+                                                                {{ Str::limit($descriptions[$index] ?? basename($path), 30) }}
+                                                            </a>
                                                         </div>
                                                     @endforeach
                                                 </div>
                                             @else
-                                                <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
+                                                <span class="text-gray-400 text-sm">Tidak ada dokumen</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-3 text-sm">
@@ -702,23 +685,23 @@
                                             {{ $discussion->status }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm">
+                                    <td class="px-4 py-3">
                                         @if($discussion->document_path)
-                                            <div class="relative group">
-                                                @php
-                                                    $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
-                                                    $names = json_decode($discussion->document_description) ?? [$discussion->document_description];
-                                                @endphp
+                                            @php
+                                                $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
+                                                $descriptions = json_decode($discussion->document_description) ?? [$discussion->document_description];
+                                            @endphp
+                                            <div class="flex flex-col space-y-1">
                                                 @foreach($paths as $index => $path)
                                                     @php
                                                         $extension = pathinfo($path, PATHINFO_EXTENSION);
                                                         $iconClass = 'fa-file';
                                                         $iconColor = 'text-blue-500';
                                                         
-                                                        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png'])) {
                                                             $iconClass = 'fa-file-image';
                                                             $iconColor = 'text-green-500';
-                                                        } elseif (strtolower($extension) === 'pdf') {
+                                                        } elseif ($extension === 'pdf') {
                                                             $iconClass = 'fa-file-pdf';
                                                             $iconColor = 'text-red-500';
                                                         } elseif (in_array($extension, ['doc', 'docx'])) {
@@ -726,36 +709,19 @@
                                                             $iconColor = 'text-blue-500';
                                                         }
                                                     @endphp
-                                                    <a href="{{ asset('storage/' . $path) }}" 
-                                                       target="_blank"
-                                                       class="text-blue-600 hover:text-blue-800 flex items-center gap-1 mb-1">
+                                                    <div class="flex items-center space-x-2">
                                                         <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
-                                                        <span class="text-xs truncate max-w-[150px]">
-                                                            {{ $names[$index] ?? basename($path) }}
-                                                        </span>
-                                                    </a>
-                                                    
-                                                    <!-- Preview Container -->
-                                                    <div class="hidden group-hover:block absolute z-50 transform -translate-y-1/2 right-full mr-2 bg-white rounded-lg shadow-lg p-2 border">
-                                                        @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
-                                                            <img src="{{ asset('storage/' . $path) }}" 
-                                                                 alt="Preview" 
-                                                                 class="max-w-[300px] h-auto rounded">
-                                                        @elseif(strtolower($extension) === 'pdf')
-                                                            <iframe src="{{ asset('storage/' . $path) }}" 
-                                                                    class="w-[500px] h-[300px] rounded"
-                                                                    title="PDF Preview"></iframe>
-                                                        @elseif(in_array(strtolower($extension), ['doc', 'docx']))
-                                                            <div class="w-[200px] p-4 text-center">
-                                                                <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
-                                                                <p class="text-sm text-gray-600">{{ $names[$index] ?? basename($path) }}</p>
-                                                            </div>
-                                                        @endif
+                                                        <a href="{{ asset('storage/' . $path) }}" 
+                                                           target="_blank"
+                                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                                           title="{{ $descriptions[$index] ?? basename($path) }}">
+                                                            {{ Str::limit($descriptions[$index] ?? basename($path), 30) }}
+                                                        </a>
                                                     </div>
                                                 @endforeach
                                             </div>
                                         @else
-                                            <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
+                                            <span class="text-gray-400 text-sm">Tidak ada dokumen</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm">
@@ -1324,23 +1290,23 @@
                                             </button>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-sm">
+                                    <td class="px-4 py-3">
                                         @if($discussion->document_path)
-                                            <div class="relative group">
-                                                @php
-                                                    $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
-                                                    $names = json_decode($discussion->document_description) ?? [$discussion->document_description];
-                                                @endphp
+                                            @php
+                                                $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
+                                                $descriptions = json_decode($discussion->document_description) ?? [$discussion->document_description];
+                                            @endphp
+                                            <div class="flex flex-col space-y-1">
                                                 @foreach($paths as $index => $path)
                                                     @php
                                                         $extension = pathinfo($path, PATHINFO_EXTENSION);
                                                         $iconClass = 'fa-file';
                                                         $iconColor = 'text-blue-500';
                                                         
-                                                        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png'])) {
                                                             $iconClass = 'fa-file-image';
                                                             $iconColor = 'text-green-500';
-                                                        } elseif (strtolower($extension) === 'pdf') {
+                                                        } elseif ($extension === 'pdf') {
                                                             $iconClass = 'fa-file-pdf';
                                                             $iconColor = 'text-red-500';
                                                         } elseif (in_array($extension, ['doc', 'docx'])) {
@@ -1348,36 +1314,19 @@
                                                             $iconColor = 'text-blue-500';
                                                         }
                                                     @endphp
-                                                    <a href="{{ asset('storage/' . $path) }}" 
-                                                       target="_blank"
-                                                       class="text-blue-600 hover:text-blue-800 flex items-center gap-1 mb-1">
+                                                    <div class="flex items-center space-x-2">
                                                         <i class="fas {{ $iconClass }} {{ $iconColor }}"></i>
-                                                        <span class="text-xs truncate max-w-[150px]">
-                                                            {{ $names[$index] ?? basename($path) }}
-                                                        </span>
-                                                    </a>
-                                                    
-                                                    <!-- Preview Container -->
-                                                    <div class="hidden group-hover:block absolute z-50 transform -translate-y-1/2 right-full mr-2 bg-white rounded-lg shadow-lg p-2 border">
-                                                        @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
-                                                            <img src="{{ asset('storage/' . $path) }}" 
-                                                                 alt="Preview" 
-                                                                 class="max-w-[300px] h-auto rounded">
-                                                        @elseif(strtolower($extension) === 'pdf')
-                                                            <iframe src="{{ asset('storage/' . $path) }}" 
-                                                                    class="w-[500px] h-[300px] rounded"
-                                                                    title="PDF Preview"></iframe>
-                                                        @elseif(in_array(strtolower($extension), ['doc', 'docx']))
-                                                            <div class="w-[200px] p-4 text-center">
-                                                                <i class="fas fa-file-word text-blue-500 text-3xl mb-2"></i>
-                                                                <p class="text-sm text-gray-600">{{ $names[$index] ?? basename($path) }}</p>
-                                                            </div>
-                                                        @endif
+                                                        <a href="{{ asset('storage/' . $path) }}" 
+                                                           target="_blank"
+                                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                                           title="{{ $descriptions[$index] ?? basename($path) }}">
+                                                            {{ Str::limit($descriptions[$index] ?? basename($path), 30) }}
+                                                        </a>
                                                     </div>
                                                 @endforeach
                                             </div>
                                         @else
-                                            <span class="text-gray-400 text-xs">Tidak ada dokumen</span>
+                                            <span class="text-gray-400 text-sm">Tidak ada dokumen</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm">
