@@ -165,6 +165,12 @@ class OtherDiscussion extends Model
         return $this->hasMany(Commitment::class, 'other_discussion_id');
     }
 
+    // Tambahkan relasi untuk dokumen
+    public function documents()
+    {
+        return $this->hasMany(DiscussionDocument::class, 'other_discussion_id');
+    }
+
     // Tambahkan method untuk cek deadline
     public function isOverdue()
     {

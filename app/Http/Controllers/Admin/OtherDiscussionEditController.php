@@ -45,20 +45,30 @@ class OtherDiscussionEditController extends Controller
             // Validasi request menggunakan method validateDiscussion
             $validated = $this->validateDiscussion($request);
             
-            // Handle file upload
-            if ($request->hasFile('document')) {
-                // Hapus dokumen lama jika ada
-                if ($discussion->document_path) {
-                    Storage::disk('public')->delete($discussion->document_path);
+            // Handle multiple file upload
+            if ($request->hasFile('documents')) {
+                // Get existing documents if any
+                $existingPaths = json_decode($discussion->document_path) ?? [];
+                $existingNames = json_decode($discussion->document_description) ?? [];
+                
+                if (!is_array($existingPaths)) {
+                    $existingPaths = $discussion->document_path ? [$discussion->document_path] : [];
+                    $existingNames = $discussion->document_description ? [$discussion->document_description] : [];
                 }
 
-                $file = $request->file('document');
-                $originalName = $file->getClientOriginalName();
+                // Add new documents
+                foreach ($request->file('documents') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $path = $file->store('discussion-documents', 'public');
+                    
+                    // Append new documents to existing ones
+                    $existingPaths[] = $path;
+                    $existingNames[] = $originalName;
+                }
                 
-                // Upload dokumen baru
-                $path = $file->store('discussion-documents', 'public');
-                $discussion->document_path = $path;
-                $discussion->document_description = $originalName;
+                // Update document information
+                $discussion->document_path = json_encode($existingPaths);
+                $discussion->document_description = json_encode($existingNames);
             }
 
             // Generate PIC
@@ -102,7 +112,7 @@ class OtherDiscussionEditController extends Controller
                 
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error updating discussion:', [
+            Log::error('Error updating discussion:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -124,6 +134,7 @@ class OtherDiscussionEditController extends Controller
             'risk_level' => 'required|in:R,MR,MT,T',
             'priority_level' => 'required|in:Low,Medium,High',
             'status' => 'required|in:Open,Closed',
+            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
             
             // Validasi untuk komitmen yang ada
             'commitments' => 'array',
