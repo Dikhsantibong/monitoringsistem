@@ -7,15 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\QueryException;
 
 class WorkOrder extends Model
 {
     use HasFactory;
 
     public static $isSyncing = false;
-    public static $maxRetries = 3;
-    public static $retryDelay = 1; // dalam detik
 
     protected $fillable = [
         'id',
@@ -109,74 +106,39 @@ class WorkOrder extends Model
                 ? PowerPlant::getConnectionByUnitSource($powerPlant->unit_source)
                 : 'mysql';
 
-            Log::info("Starting sync - Current: {$currentConnection}, Target: {$targetConnection}");
+            Log::info("Current connection: {$currentConnection}, Target connection: {$targetConnection}");
 
-            $attempt = 0;
-            $maxAttempts = 3;
-            $success = false;
+            $targetDB = DB::connection($targetConnection);
 
-            while (!$success && $attempt < $maxAttempts) {
-                try {
-                    // Set session variables terlebih dahulu
-                    DB::connection($targetConnection)->statement('SET SESSION innodb_lock_wait_timeout = 5');
-                    DB::connection($targetConnection)->statement('SET SESSION transaction_isolation = "READ-UNCOMMITTED"');
+            Log::info("Attempting to {$action} WO sync", [
+                'data' => $data,
+                'current_connection' => $currentConnection,
+                'target_connection' => $targetConnection
+            ]);
 
-                    // Cek data tanpa lock
-                    $exists = DB::connection($targetConnection)
-                        ->table('work_orders')
-                        ->where('id', $data['id'])
-                        ->exists();
-
-                    if ($action === 'create') {
-                        if (!$exists) {
-                            // Gunakan insert ignore untuk menghindari error duplikat
-                            DB::connection($targetConnection)
-                                ->statement("INSERT IGNORE INTO work_orders 
-                                    (id, description, type, status, priority, schedule_start, 
-                                    schedule_finish, power_plant_id, unit_source, is_active, 
-                                    is_backlogged, created_at, updated_at) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                                    array_values($data));
-                        }
-                    } elseif ($action === 'update' && $exists) {
-                        DB::connection($targetConnection)
-                            ->table('work_orders')
+            switch($action) {
+                case 'create':
+                    $targetDB->table('work_orders')->insert($data);
+                    break;
+                    
+                case 'update':
+                    $targetDB->table('work_orders')
                             ->where('id', $workOrder->id)
                             ->update($data);
-                    } elseif ($action === 'delete' && $exists) {
-                        DB::connection($targetConnection)
-                            ->table('work_orders')
+                    break;
+                    
+                case 'delete':
+                    $targetDB->table('work_orders')
                             ->where('id', $workOrder->id)
                             ->delete();
-                    }
-
-                    $success = true;
-                    Log::info("WO Sync successful on attempt #{$attempt}", [
-                        'id' => $workOrder->id,
-                        'unit' => $powerPlant->unit_source,
-                        'action' => $action
-                    ]);
-
-                } catch (QueryException $e) {
-                    if (str_contains($e->getMessage(), 'Lock wait timeout exceeded')) {
-                        $attempt++;
-                        if ($attempt < $maxAttempts) {
-                            $waitTime = pow(2, $attempt); // exponential backoff
-                            Log::warning("Lock timeout on attempt #{$attempt}, waiting {$waitTime}s before retry", [
-                                'id' => $workOrder->id,
-                                'error' => $e->getMessage()
-                            ]);
-                            sleep($waitTime);
-                            continue;
-                        }
-                    }
-                    throw $e;
-                }
+                    break;
             }
 
-            if (!$success) {
-                throw new \Exception("Sync failed after {$maxAttempts} attempts");
-            }
+            Log::info("WO Sync successful", [
+                'id' => $workOrder->id,
+                'unit' => $powerPlant->unit_source,
+                'action' => $action
+            ]);
 
         } catch (\Exception $e) {
             Log::error("WO Sync failed", [

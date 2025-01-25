@@ -213,6 +213,10 @@ Route::middleware(['auth'])->group(function () {
 
         // Route Score Card lainnya
         Route::resource('score-card', ScoreCardDailyController::class);
+
+        // Route untuk update status SR
+        Route::post('/laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
+            ->name('laporan.update-sr-status');
     });
 });
 
@@ -538,8 +542,8 @@ Route::post('/pembangkit/upload-image', [PembangkitController::class, 'uploadIma
 Route::delete('/pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    Route::post('pembangkit/upload-image', [App\Http\Controllers\Admin\PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
-    Route::delete('pembangkit/delete-image/{machineId}', [App\Http\Controllers\Admin\PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
+    Route::post('pembangkit/upload-image', [PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
+    Route::delete('pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
 
     // Route untuk pembangkit
     Route::get('/pembangkit/check-image/{machineId}', [PembangkitController::class, 'checkImage'])
@@ -552,6 +556,26 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('/laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
         ->name('laporan.update-wo-status')
         ->middleware('admin');
+
+    // Route untuk update status SR
+    Route::post('/laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
+        ->name('laporan.update-sr-status');
+});
+
+// Tambahkan route ini di luar group route yang ada
+Route::middleware(['auth'])->group(function () {
+    // Route khusus untuk update status SR
+    Route::post('/admin/laporan/update-sr-status/{id}', [App\Http\Controllers\Admin\LaporanController::class, 'updateSRStatus'])
+        ->name('admin.laporan.update-sr-status');
+});
+
+// Atau jika Anda ingin menambahkannya di dalam group admin yang sudah ada:
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+    // ... route lainnya ...
+    
+    // Route untuk update status SR
+    Route::post('laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
+        ->name('laporan.update-sr-status');
 });
 
 

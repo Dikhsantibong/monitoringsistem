@@ -215,7 +215,7 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
                                         @foreach ($serviceRequests as $index => $sr)
-                                            <tr data-sr-id="{{ $sr->id }}" class="hover:bg-gray-50 transition-colors duration-150">
+                                            <tr class="hover:bg-gray-50 transition-colors duration-150">
                                                 <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="px-4 py-2 border border-gray-200">
                                                     <div class="flex items-center gap-2">
@@ -247,7 +247,7 @@
                                                     @endif
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
-                                                <td class="py-2 px-4 border border-gray-200" data-column="status">
+                                                <td class="py-2 px-4 border border-gray-200">
                                                     <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                         {{ $sr->status }}
                                                     </span>
@@ -262,7 +262,7 @@
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     {{ $sr->priority }}
                                                 </td>
-                                                <td class="py-2 px-4 border border-gray-200" data-column="action">
+                                                <td class="py-2 px-4 border border-gray-200">
                                                     <button onclick="updateStatus('sr', {{ $sr->id }}, '{{ $sr->status }}')"
                                                         class="px-3 py-1 text-sm rounded-full {{ $sr->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
                                                         {{ $sr->status == 'Open' ? 'Tutup' : 'Buka' }}
@@ -599,7 +599,6 @@
 @endsection
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     // Helper Functions
     function getStatusColor(status) {
@@ -634,60 +633,91 @@
 
     // Main Functions
     function showStatusOptions(woId, currentStatus) {
-        // Cek jika status sudah Closed
         if (currentStatus === 'Closed') {
             Swal.fire({
-                icon: 'warning',
-                title: 'Tidak dapat mengubah status',
-                text: 'WO yang sudah Closed tidak dapat diubah statusnya',
-                confirmButtonText: 'OK'
+                icon: 'info',
+                title: 'Informasi',
+                text: 'WO sudah ditutup dan tidak dapat diubah lagi.'
             });
             return;
         }
 
-        // Tampilkan dialog pilihan status
         Swal.fire({
-            title: 'Ubah Status WO',
-            html: `
-                <select id="statusSelect" class="swal2-select" style="width: 100%; padding: 8px; margin-top: 10px; border: 1px solid #d9d9d9; border-radius: 4px;">
-                    <option value="Open" ${currentStatus === 'Open' ? 'selected' : ''}>Open</option>
-                    <option value="WAPPR" ${currentStatus === 'WAPPR' ? 'selected' : ''}>WAPPR</option>
-                    <option value="APPR" ${currentStatus === 'APPR' ? 'selected' : ''}>APPR</option>
-                    <option value="WMATL" ${currentStatus === 'WMATL' ? 'selected' : ''}>WMATL</option>
-                    <option value="Closed" ${currentStatus === 'Closed' ? 'selected' : ''}>Closed</option>
-                </select>
-            `,
+            title: 'Pilih Status',
+            input: 'select',
+            inputOptions: {
+                'Open': 'Open',
+                'Closed': 'Closed',
+                'Comp': 'Comp',
+                'APPR': 'APPR',
+                'WAPPR': 'WAPPR',
+                'WMATL': 'WMATL'
+            },
+            inputValue: currentStatus,
             showCancelButton: true,
-            confirmButtonText: 'Simpan',
             cancelButtonText: 'Batal',
+            confirmButtonText: 'Simpan',
             confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33'
+            cancelButtonColor: '#d33',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Anda harus memilih status!';
+                }
+            }
         }).then((result) => {
             if (result.isConfirmed) {
-                const newStatus = document.getElementById('statusSelect').value;
-                
-                // Buat form dengan method POST yang benar
-                const form = document.createElement('form');
-                form.method = 'POST';  // Pastikan menggunakan POST
-                form.action = `/admin/laporan/update-wo-status/${woId}`;
-                
-                // CSRF Token
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = document.querySelector('meta[name="csrf-token"]').content;
-                
-                // Status
-                const statusInput = document.createElement('input');
-                statusInput.type = 'hidden';
-                statusInput.name = 'status';
-                statusInput.value = newStatus;
-                
-                form.appendChild(csrfToken);
-                form.appendChild(statusInput);
-                document.body.appendChild(form);
-                form.submit();
+                processStatusUpdate(woId, result.value);
             }
+        });
+    }
+
+    function processStatusUpdate(id, newStatus) {
+        const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector(`#woTable tbody tr[data-id="${id}"]`);
+                
+                if (row) {
+                    const statusCell = row.querySelector('td[data-column="status"]');
+                    const actionCell = row.querySelector('td[data-column="action"]');
+
+                    if (statusCell) {
+                        statusCell.innerHTML = getStatusBadge(newStatus);
+                    }
+
+                    if (actionCell) {
+                        actionCell.innerHTML = getActionButton(id, newStatus);
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message || 'Terjadi kesalahan saat mengupdate status'
+            });
         });
     }
 
@@ -882,11 +912,21 @@
 
     function updateStatus(type, id, currentStatus) {
         const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
-        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        if (currentStatus === 'Closed') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi',
+                text: 'WO sudah ditutup dan tidak dapat diubah lagi.',
+            });
+            return; // Menghentikan eksekusi jika sudah ditutup
+        }
+        const url = type === 'sr' ? 
+            "{{ route('admin.laporan.update-sr-status', ['id' => ':id']) }}".replace(':id', id) :
+            "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
 
         Swal.fire({
             title: 'Konfirmasi',
-            text: `Apakah Anda yakin ingin ${newStatus === 'Closed' ? 'menutup' : 'membuka'} ${type.toUpperCase()} ini?`,
+            text: `Apakah Anda yakin ingin mengubah status menjadi ${newStatus}?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -895,64 +935,44 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Tampilkan loading
-                Swal.fire({
-                    title: 'Memproses...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Gunakan fetch API sebagai pengganti $.ajax
-                fetch(`/admin/laporan/update-${type}-status/${id}`, {
+                fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ status: newStatus })
                 })
-                .then(response => response.json())
                 .then(response => {
-                    if (response.success) {
-                        // Update UI langsung tanpa reload
-                        const row = document.querySelector(`tr[data-${type}-id="${id}"]`);
-                        if (row) {
-                            const statusCell = row.querySelector('td[data-column="status"]');
-                            const actionCell = row.querySelector('td[data-column="action"]');
-                            
-                            if (statusCell) {
-                                statusCell.innerHTML = `<span class="px-2 py-1 rounded-full ${newStatus === 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">${newStatus}</span>`;
-                            }
-                            
-                            if (actionCell) {
-                                const button = actionCell.querySelector('button');
-                                button.textContent = newStatus === 'Open' ? 'Tutup' : 'Buka';
-                                button.classList.toggle('bg-green-500');
-                                button.classList.toggle('bg-red-500');
-                            }
-                        }
-
-                        // Tampilkan pesan sukses
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Status berhasil diubah',
-                            timer: 1500,
-                            showConfirmButton: false
+                            title: 'Status berhasil diubah!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            location.reload();
                         });
                     } else {
-                        throw new Error('Gagal mengubah status');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan!',
+                            text: data.message || 'Gagal mengubah status'
+                        });
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'Gagal!',
-                        text: 'Terjadi kesalahan saat mengubah status',
-                        confirmButtonText: 'OK'
+                        title: 'Terjadi kesalahan!',
+                        text: 'Gagal mengubah status'
                     });
                 });
             }
