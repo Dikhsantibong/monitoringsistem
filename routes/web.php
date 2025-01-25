@@ -541,6 +541,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::delete('pembangkit/delete-image/{machineId}', [App\Http\Controllers\Admin\PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/pembangkit/check-image/{machineId}', [App\Http\Controllers\Admin\PembangkitController::class, 'checkImage'])
+        ->name('admin.pembangkit.check-image');
+});
+
 
 
 

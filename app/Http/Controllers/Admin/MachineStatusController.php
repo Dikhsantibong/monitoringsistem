@@ -52,31 +52,6 @@ class MachineStatusController extends Controller
             
             $powerPlants = $query->get();
             
-            // Proses setiap pembangkit dan mesinnya
-            foreach ($powerPlants as $powerPlant) {
-                foreach ($powerPlant->machines as $machine) {
-                    // Ambil log terbaru untuk mesin ini
-                    $latestLog = $machine->statusLogs->first();
-                    
-                    // Cari gambar terbaru untuk mesin ini
-                    $pattern = storage_path('app/public/machine-images/machine_' . $machine->id . '_*');
-                    $files = glob($pattern);
-                    if (!empty($files)) {
-                        rsort($files); // Sort descending untuk mendapatkan file terbaru
-                        $latestFile = $files[0];
-                        $machine->image_url = 'machine-images/' . basename($latestFile);
-                    }
-
-                    // Hitung statistik downtime
-                    $machine->downtime_stats = $this->calculateDowntimeStats($machine);
-                    
-                    // Bersihkan deskripsi dari tag gambar
-                    if ($latestLog) {
-                        $latestLog->deskripsi = trim(preg_replace('/\[image:.*?\]/', '', $latestLog->deskripsi ?? ''));
-                    }
-                }
-            }
-            
             // Ambil semua log untuk tanggal yang dipilih
             $logs = MachineStatusLog::with(['machine', 'powerPlant'])
                 ->whereDate('tanggal', $date)
@@ -103,6 +78,13 @@ class MachineStatusController extends Controller
                     });
                 })
                 ->get();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'html' => view('admin.machine-status._table', compact('powerPlants', 'logs', 'hops', 'date'))->render()
+                ]);
+            }
 
             return view('admin.machine-status.view', compact('powerPlants', 'logs', 'hops', 'date'));
             

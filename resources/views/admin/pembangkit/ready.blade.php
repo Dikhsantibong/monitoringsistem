@@ -309,7 +309,7 @@
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
                                                     </td>
                                                     <td class="px-3 py-2 text-center">
-                                                        <div class="flex flex-col items-center">
+                                                        <div id="image_container_{{ $machine->id }}" class="flex flex-col items-center">
                                                             <input type="file" 
                                                                 id="image_{{ $machine->id }}"
                                                                 class="hidden image-upload"
@@ -321,24 +321,7 @@
                                                                 onclick="document.getElementById('image_{{ $machine->id }}').click()">
                                                                 Upload Gambar
                                                             </button>
-                                                            <div id="image_container_{{ $machine->id }}" class="image-preview mt-2">
-                                                                @if($todayLogs->where('machine_id', $machine->id)->first()?->image_url)
-                                                                    <div class="relative">
-                                                                        <img src="{{ asset('storage/' . $todayLogs->where('machine_id', $machine->id)->first()->image_url) }}" 
-                                                                             alt="Preview" 
-                                                                             class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
-                                                                             onclick="showLargeImage('{{ asset('storage/' . $todayLogs->where('machine_id', $machine->id)->first()->image_url) }}')"
-                                                                             title="Klik untuk memperbesar">
-                                                                        <button type="button"
-                                                                                onclick="deleteImage('{{ $machine->id }}')"
-                                                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
-                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                                            </svg>
-                                                                        </button>
-                                                                    </div>
-                                                                @endif
-                                                            </div>
+                                                            <div class="image-preview mt-2"></div>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -764,6 +747,57 @@
                 // Update form dengan data baru
                 updateFormWithData(result.data);
                 
+                // Setelah data diupdate, muat gambar untuk setiap mesin
+                const machines = document.querySelectorAll('[data-machine-id]');
+                machines.forEach(machine => {
+                    const machineId = machine.dataset.machineId;
+                    const container = document.getElementById(`image_container_${machineId}`);
+                    if (container) {
+                        // Cek apakah ada gambar yang tersimpan
+                        fetch(`/admin/pembangkit/check-image/${machineId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.image_url) {
+                                container.innerHTML = `
+                                    <div class="relative">
+                                        <img src="{{ asset('storage/machine-images') }}/${data.image_url}" 
+                                             alt="Preview" 
+                                             class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
+                                             onclick="showLargeImage('{{ asset('storage/machine-images') }}/${data.image_url}')"
+                                             title="Klik untuk memperbesar">
+                                        <button type="button"
+                                                onclick="deleteImage(${machineId})"
+                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                `;
+                            } else {
+                                // Reset container ke tombol upload jika tidak ada gambar
+                                container.innerHTML = `
+                                    <input type="file" 
+                                        id="image_${machineId}"
+                                        class="hidden image-upload"
+                                        accept="image/*"
+                                        onchange="handleImageUpload(event, ${machineId})"
+                                        data-machine-id="${machineId}">
+                                    <button type="button" 
+                                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                                        onclick="document.getElementById('image_${machineId}').click()">
+                                        Upload Gambar
+                                    </button>
+                                    <div class="image-preview mt-2"></div>
+                                `;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading image:', error);
+                        });
+                    }
+                });
+                
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
@@ -960,11 +994,6 @@
         }
     }
 
-    // Pastikan fungsi dijalankan saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-        loadData();
-    });
-
     // Event listener untuk perubahan tanggal
     document.getElementById('filterDate').addEventListener('change', loadData);
 </script>
@@ -1126,15 +1155,13 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
         container.innerHTML = '<div class="text-center">Mengunggah...</div>';
 
         // Upload image
-        fetch('/admin/pembangkit/upload-image', {
+        fetch('{{ route("admin.pembangkit.upload-image") }}', {
             method: 'POST',
             body: formData
         })
         .then(response => {
             if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(text || 'Network response was not ok');
-                });
+                throw new Error('Network response was not ok');
             }
             return response.json();
         })
@@ -1143,10 +1170,10 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
                 // Show preview with correct path
                 container.innerHTML = `
                     <div class="relative">
-                        <img src="/storage/${data.image_url}" 
+                        <img src="{{ asset('storage') }}/${data.image_url}" 
                              alt="Preview" 
                              class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
-                             onclick="showLargeImage('/storage/${data.image_url}')"
+                             onclick="showLargeImage('{{ asset('storage') }}/${data.image_url}')"
                              title="Klik untuk memperbesar">
                         <button type="button"
                                 onclick="deleteImage(${machineId})"
@@ -1171,8 +1198,13 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
                 title: 'Error',
                 text: error.message || 'Gagal mengunggah gambar'
             });
-            container.innerHTML = '';
-            // Reset file input
+            container.innerHTML = `
+                <button type="button" 
+                    class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                    onclick="document.getElementById('image_${machineId}').click()">
+                    Upload Gambar
+                </button>
+            `;
             event.target.value = '';
         });
     }
@@ -1182,10 +1214,11 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
             imageUrl: imageUrl,
             imageWidth: '80%',
             imageHeight: '80vh',
-            imageAlt: 'Gambar Mesin',
+            imageAlt: 'Machine Image',
             showConfirmButton: false,
             showCloseButton: true,
             customClass: {
+                popup: 'swal2-popup-large',
                 image: 'object-contain max-h-[80vh]'
             }
         });
@@ -1203,28 +1236,31 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Send delete request
                 fetch(`/admin/pembangkit/delete-image/${machineId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     }
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Clear image container
                         const container = document.getElementById(`image_container_${machineId}`);
-                        if (container) {
-                            container.innerHTML = '';
-                        }
+                        container.innerHTML = `
+                            <input type="file" 
+                                id="image_${machineId}"
+                                class="hidden image-upload"
+                                accept="image/*"
+                                onchange="handleImageUpload(event, ${machineId})"
+                                data-machine-id="${machineId}">
+                            <button type="button" 
+                                class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                                onclick="document.getElementById('image_${machineId}').click()">
+                                Upload Gambar
+                            </button>
+                            <div class="image-preview mt-2"></div>
+                        `;
                         
                         Swal.fire({
                             icon: 'success',
@@ -1233,9 +1269,6 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
                             showConfirmButton: false,
                             timer: 1500
                         });
-
-                        // Reload data to ensure everything is in sync
-                        loadData();
                     } else {
                         throw new Error(data.message || 'Gagal menghapus gambar');
                     }
