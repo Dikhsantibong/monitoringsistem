@@ -539,11 +539,7 @@ Route::delete('/pembangkit/delete-image/{machineId}', [PembangkitController::cla
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::post('pembangkit/upload-image', [App\Http\Controllers\Admin\PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
     Route::delete('pembangkit/delete-image/{machineId}', [App\Http\Controllers\Admin\PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
-});
 
-<<<<<<< HEAD
-=======
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     // Route untuk pembangkit
     Route::get('/pembangkit/check-image/{machineId}', [PembangkitController::class, 'checkImage'])
         ->name('pembangkit.check-image');
@@ -556,8 +552,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->name('laporan.update-wo-status')
         ->middleware('admin');
 });
-
->>>>>>> 8bf171a77d2adfac6abaff6fbd5bbadd7c05f8b0
 
 
 
