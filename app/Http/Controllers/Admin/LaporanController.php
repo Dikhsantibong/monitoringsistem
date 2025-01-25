@@ -317,11 +317,47 @@ class LaporanController extends Controller
 
     public function updateSRStatus(Request $request, $id)
     {
-        $sr = ServiceRequest::findOrFail($id);
-        $sr->status = $request->status;
-        $sr->save();
+        try {
+            // Cari SR berdasarkan ID
+            $sr = ServiceRequest::findOrFail($id);
+            
+            // Validasi status yang dikirim
+            $request->validate([
+                'status' => 'required|in:Open,Closed'
+            ]);
 
-        return response()->json(['success' => true]);
+            // Update status
+            $sr->status = $request->status;
+            $sr->save();
+
+            // Log perubahan
+            \Log::info('SR status updated', [
+                'sr_id' => $id,
+                'old_status' => $sr->getOriginal('status'),
+                'new_status' => $request->status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status SR berhasil diubah',
+                'data' => [
+                    'id' => $sr->id,
+                    'status' => $sr->status
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating SR status: ' . $e->getMessage(), [
+                'sr_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status SR: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updateWOStatus(Request $request, $id)

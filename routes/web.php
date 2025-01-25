@@ -237,7 +237,8 @@ Route::prefix('attendance')->name('attendance.')->group(function () {
 // Route untuk admin (dengan middleware auth)
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     // Route untuk laporan
-    Route::post('/laporan/sr/{id}/update-status', [LaporanController::class, 'updateSRStatus'])->name('laporan.update-sr-status');
+    Route::post('/laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
+        ->name('admin.laporan.update-sr-status');
     Route::post('/laporan/wo/{id}/update-status', [LaporanController::class, 'updateWOStatus'])->name('laporan.update-wo-status');
     
     // Route untuk daftar hadir
