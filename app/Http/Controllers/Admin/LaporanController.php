@@ -11,6 +11,8 @@ use App\Models\WoBacklog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PowerPlant;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\QueryException;
 
 class LaporanController extends Controller
 {
@@ -157,47 +159,102 @@ class LaporanController extends Controller
     public function storeWO(Request $request)
     {
         try {
-            DB::beginTransaction();
-
+            // 1. Validasi input
             $validatedData = $request->validate([
-                'wo_id' => 'required|numeric',
+                'wo_id' => 'required|numeric|unique:work_orders,id',
                 'description' => 'required',
-                'type' => 'required',
-                'status' => 'required',
-                'priority' => 'required',
+                'type' => 'required|in:CM,PM,PDM,PAM,OH,EJ,EM',
+                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
+                'priority' => 'required|in:emergency,normal,outage,urgent',
                 'schedule_start' => 'required|date',
-                'schedule_finish' => 'required|date',
-                'unit' => 'required'
+                'schedule_finish' => 'required|date|after_or_equal:schedule_start',
+                'unit' => 'required|exists:power_plants,id'
             ]);
 
-            // Ambil power plant berdasarkan ID yang dipilih
+            // 2. Ambil power plant
             $powerPlant = PowerPlant::findOrFail($request->unit);
             
-            // Tentukan koneksi database berdasarkan session atau input
+            // 3. Set koneksi database
             $connection = session('unit') ?? 'mysql';
             
-            // Buat Work Order
-            $workOrder = new WorkOrder();
-            $workOrder->setConnection($connection);
-            $workOrder->id = $validatedData['wo_id'];
-            $workOrder->description = $validatedData['description'];
-            $workOrder->type = $validatedData['type'];
-            $workOrder->status = $validatedData['status'];
-            $workOrder->priority = $validatedData['priority'];
-            $workOrder->schedule_start = $validatedData['schedule_start'];
-            $workOrder->schedule_finish = $validatedData['schedule_finish'];
-            $workOrder->power_plant_id = $powerPlant->id;
-            $workOrder->is_active = true;
-            $workOrder->is_backlogged = false;
-            $workOrder->save();
+            // 4. Buat Work Order
+            try {
+                DB::beginTransaction();
 
-            DB::commit();
-            return redirect()->route('admin.laporan.sr_wo')->with('success', 'Work Order berhasil ditambahkan');
+                // Cek duplikat ID di kedua database
+                $exists = DB::connection($connection)->table('work_orders')
+                    ->where('id', $validatedData['wo_id'])
+                    ->exists();
+
+                if ($exists) {
+                    throw new \Exception('ID WO sudah digunakan di database ' . $connection);
+                }
+
+                // Cek di database target
+                $targetConnection = $connection === 'mysql' 
+                    ? PowerPlant::getConnectionByUnitSource($powerPlant->unit_source)
+                    : 'mysql';
+
+                $existsInTarget = DB::connection($targetConnection)->table('work_orders')
+                    ->where('id', $validatedData['wo_id'])
+                    ->exists();
+
+                if ($existsInTarget) {
+                    throw new \Exception('ID WO sudah digunakan di database ' . $targetConnection);
+                }
+                
+                $workOrder = new WorkOrder();
+                $workOrder->setConnection($connection);
+                $workOrder->id = $validatedData['wo_id'];
+                $workOrder->description = $validatedData['description'];
+                $workOrder->type = $validatedData['type'];
+                $workOrder->status = $validatedData['status'];
+                $workOrder->priority = $validatedData['priority'];
+                $workOrder->schedule_start = $validatedData['schedule_start'];
+                $workOrder->schedule_finish = $validatedData['schedule_finish'];
+                $workOrder->power_plant_id = $powerPlant->id;
+                $workOrder->is_active = true;
+                $workOrder->is_backlogged = false;
+                
+                // Simpan WO
+                $workOrder->save();
+                
+                DB::commit();
+                
+                Log::info('Work Order created successfully', [
+                    'id' => $workOrder->id,
+                    'power_plant' => $powerPlant->name,
+                    'connection' => $connection,
+                    'target_connection' => $targetConnection
+                ]);
+
+                return redirect()
+                    ->route('admin.laporan.sr_wo')
+                    ->with('success', 'Work Order berhasil ditambahkan');
+
+            } catch (QueryException $e) {
+                DB::rollBack();
+                
+                // Tangani duplikat ID
+                if ($e->getCode() == 23000) { // Duplicate entry
+                    return back()
+                        ->withInput()
+                        ->with('error', 'ID WO sudah digunakan. Silakan gunakan ID lain.');
+                }
+                
+                throw $e;
+            }
 
         } catch (\Exception $e) {
-            DB::rollback();
-            Log::error('Error in storeWO method: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            Log::error('Error in storeWO method', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -270,47 +327,30 @@ class LaporanController extends Controller
     public function updateWOStatus(Request $request, $id)
     {
         try {
-            DB::beginTransaction();
-            
-            // 1. Validasi input dengan nilai enum yang benar
+            // 1. Validasi input
             $request->validate([
-                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'  // Sesuaikan dengan enum di database
+                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
             ]);
 
-            // 2. Ambil dan update WO dengan query builder
-            $wo = DB::table('work_orders')
-                ->where('id', $id)
-                ->first();
-
-            if (!$wo) {
-                throw new \Exception('Work Order tidak ditemukan');
-            }
-
-            $oldStatus = $wo->status;
-
-            if ($oldStatus === 'Closed') {  // Ubah pengecekan ke 'Close'
+            // 2. Cari WO menggunakan model untuk trigger events
+            $wo = WorkOrder::findOrFail($id);
+            
+            if ($wo->status === 'Closed') {
                 throw new \Exception('WO yang sudah Closed tidak dapat diubah statusnya');
             }
 
-            // 3. Update menggunakan query builder
-            DB::table('work_orders')
-                ->where('id', $id)
-                ->update([
-                    'status' => $request->status,
-                    'updated_at' => now()
-                ]);
+            $oldStatus = $wo->status;
+            
+            // 3. Update status
+            $wo->status = $request->status;
+            $wo->save();
 
-            // 4. Ambil data terbaru untuk memastikan
-            $updatedWo = DB::table('work_orders')
-                ->where('id', $id)
-                ->first();
-
-            DB::commit();
-
-            \Log::info('WO status updated', [
+            // 4. Log perubahan
+            Log::info('WO status updated successfully', [
                 'wo_id' => $id,
                 'old_status' => $oldStatus,
-                'new_status' => $updatedWo->status
+                'new_status' => $wo->status,
+                'updated_at' => $wo->updated_at
             ]);
 
             return response()->json([
@@ -318,15 +358,17 @@ class LaporanController extends Controller
                 'message' => "Status berhasil diubah dari {$oldStatus} ke {$request->status}",
                 'data' => [
                     'id' => $id,
-                    'newStatus' => $updatedWo->status
+                    'newStatus' => $wo->status,
+                    'updated_at' => $wo->updated_at,
+                    'power_plant_id' => $wo->power_plant_id
                 ]
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Failed to update WO status', [
+            Log::error('Failed to update WO status', [
                 'wo_id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
