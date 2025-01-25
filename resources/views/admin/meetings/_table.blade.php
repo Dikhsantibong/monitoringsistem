@@ -60,6 +60,34 @@
 </div>
 
 @if($scoreCards->isNotEmpty())
+    @php
+        // Hitung total score peserta
+        $totalScorePeserta = collect($scoreCards->first()['peserta'])->sum('skor');
+        $maxScorePeserta = count($scoreCards->first()['peserta']) * 100;
+        $persentasePeserta = ($totalScorePeserta / $maxScorePeserta) * 100;
+
+        // Hitung total score ketentuan dengan pengecekan null
+        $scoreCard = $scoreCards->first();
+        $totalScoreKetentuan = 
+            ($scoreCard['skor_waktu_mulai'] ?? 100) +
+            ($scoreCard['kesiapan_panitia'] ?? 100) +
+            ($scoreCard['kesiapan_bahan'] ?? 100) +
+            ($scoreCard['aktivitas_luar'] ?? 100) +
+            ($scoreCard['gangguan_diskusi'] ?? 100) +
+            ($scoreCard['gangguan_keluar_masuk'] ?? 100) +
+            ($scoreCard['gangguan_interupsi'] ?? 100) +
+            ($scoreCard['ketegasan_moderator'] ?? 100) +
+            ($scoreCard['kelengkapan_sr'] ?? 100);
+        
+        $maxScoreKetentuan = 9 * 100; // 9 item ketentuan
+        $persentaseKetentuan = ($totalScoreKetentuan / $maxScoreKetentuan) * 100;
+
+        // Hitung grand total dalam persentase
+        $totalMaxScore = $maxScorePeserta + $maxScoreKetentuan;
+        $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+        $persentaseTotal = ($grandTotal / $totalMaxScore) * 100;
+    @endphp
+
     <!-- Info Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <!-- Informasi Rapat -->
@@ -90,24 +118,16 @@
             <h3 class="text-lg font-semibold mb-3">Ringkasan Score</h3>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <p class="text-sm ">Kesiapan Panitia:</p>
-                    <p class="font-medium text-blue-600">{{ $scoreCards->first()['kesiapan_panitia'] }}%</p>
+                    <p class="text-sm text-gray-600">Score Peserta:</p>
+                    <p class="font-medium text-blue-600">{{ number_format($persentasePeserta, 1) }}%</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-600">Kesiapan Bahan:</p>
-                    <p class="font-medium text-green-600">{{ $scoreCards->first()['kesiapan_bahan'] }}%</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Aktivitas Luar:</p>
-                    <p class="font-medium text-purple-600">{{ $scoreCards->first()['aktivitas_luar'] }}%</p>
+                    <p class="text-sm text-gray-600">Score Ketentuan:</p>
+                    <p class="font-medium text-green-600">{{ number_format($persentaseKetentuan, 1) }}%</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-600">Total Score:</p>
-                    <p class="font-medium text-red-600">
-                        {{ number_format(($scoreCards->first()['kesiapan_panitia'] + 
-                           $scoreCards->first()['kesiapan_bahan'] + 
-                           $scoreCards->first()['aktivitas_luar']) / 3, 2) }}%
-                    </p>
+                    <p class="font-medium text-red-600">{{ number_format($persentaseTotal, 1) }}%</p>
                 </div>
             </div>
         </div>
@@ -226,26 +246,13 @@
                 </tr>
 
                 <!-- Total Score -->
-                @php
-                    $totalScorePeserta = collect($scoreCards->first()['peserta'])->sum('skor');
-                    $totalScoreKetentuan = 
-                        ($scoreCards->first()['kesiapan_panitia'] ?? 100) +
-                        ($scoreCards->first()['kesiapan_bahan'] ?? 100) +
-                        ($scoreCards->first()['aktivitas_luar'] ?? 100) +
-                        ($scoreCards->first()['gangguan_diskusi'] ?? 100) +
-                        ($scoreCards->first()['gangguan_keluar_masuk'] ?? 100) +
-                        ($scoreCards->first()['gangguan_interupsi'] ?? 100) +
-                        ($scoreCards->first()['ketegasan_moderator'] ?? 100) +
-                        ($scoreCards->first()['skor_waktu_mulai'] ?? 100) +
-                        ($scoreCards->first()['skor_waktu_selesai'] ?? 100) +
-                        ($scoreCards->first()['kelengkapan_sr'] ?? 100);
-
-                    $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
-                @endphp
-                <tr>
+                <tr class="bg-gray-50">
                     <td colspan="4" class="border p-2 text-right font-bold">Total Score:</td>
-                    <td class="border p-2 text-center font-bold">{{ $grandTotal }}</td>
-                    <td class="border p-2">Total dari score peserta dan ketentuan rapat</td>
+                    <td class="border p-2 text-center font-bold">{{ number_format($persentaseTotal, 1) }}%</td>
+                    <td class="border p-2">
+                        Peserta: {{ number_format($persentasePeserta, 1) }}% | 
+                        Ketentuan: {{ number_format($persentaseKetentuan, 1) }}%
+                    </td>
                 </tr>
             </tbody>
         </table>

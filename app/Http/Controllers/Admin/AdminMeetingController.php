@@ -316,10 +316,20 @@ class AdminMeetingController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            // Data untuk Work Order
+            $workOrders = WorkOrder::whereDate('created_at', $date)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
             // Data untuk WO Backlog
             $woBacklogs = WoBacklog::whereDate('tanggal_backlog', $date)
                 ->orderBy('tanggal_backlog', 'desc')
                 ->get();
+
+            // Data untuk Other Discussions, Closed Discussions, dan Overdue Discussions
+            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)->get();
+            $closedDiscussions = ClosedDiscussion::whereDate('created_at', $date)->get();
+            $overdueDiscussions = OverdueDiscussion::whereDate('created_at', $date)->get();
 
             if (!$scoreCard) {
                 return back()->with('error', 'Data score card tidak ditemukan untuk tanggal tersebut');
@@ -344,7 +354,7 @@ class AdminMeetingController extends Controller
                 'lokasi' => $scoreCard->lokasi,
                 'waktu_mulai' => $scoreCard->waktu_mulai,
                 'waktu_selesai' => $scoreCard->waktu_selesai,
-                'peserta' => $formattedPeserta, // Menggunakan data peserta yang sudah diformat
+                'peserta' => $formattedPeserta,
                 'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
                 'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
                 'aktivitas_luar' => $scoreCard->aktivitas_luar,
@@ -352,7 +362,7 @@ class AdminMeetingController extends Controller
                 'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
                 'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
                 'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 'Data tidak tersedia', // Tambahkan default value
+                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 'Data tidak tersedia',
                 'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 0
             ];
 
@@ -365,6 +375,7 @@ class AdminMeetingController extends Controller
                 'logs', 
                 'attendances', 
                 'serviceRequests',
+                'workOrders',
                 'woBacklogs',
                 'signatures'
             ));

@@ -170,8 +170,7 @@
         }
         .signatures-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 40px;
+            grid-template-columns: 1fr;
             margin-top: 40px;
             padding: 20px;
         }
@@ -309,7 +308,12 @@
 
                 <!-- Total Score dengan style khusus -->
                 @php
+                    // Hitung total score peserta
                     $totalScorePeserta = collect($data['peserta'])->sum('skor');
+                    $maxScorePeserta = count($data['peserta']) * 100; // Maksimum score untuk peserta
+                    $persentasePeserta = ($totalScorePeserta / $maxScorePeserta) * 100;
+
+                    // Hitung total score ketentuan
                     $totalScoreKetentuan = 
                         $data['kesiapan_panitia'] +
                         $data['kesiapan_bahan'] +
@@ -320,12 +324,21 @@
                         $data['ketegasan_moderator'] +
                         $data['kelengkapan_sr'] +
                         $data['skor_waktu_mulai'];
+                    $maxScoreKetentuan = 9 * 100; // 9 item ketentuan, masing-masing maksimum 100
+                    $persentaseKetentuan = ($totalScoreKetentuan / $maxScoreKetentuan) * 100;
+
+                    // Hitung grand total dalam persentase
+                    $totalMaxScore = $maxScorePeserta + $maxScoreKetentuan;
                     $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+                    $persentaseTotal = ($grandTotal / $totalMaxScore) * 100;
                 @endphp
                 <tr class="total-row">
                     <td colspan="4" style="text-align: right;">Total Score:</td>
-                    <td style="text-align: center;">{{ $grandTotal }}</td>
-                    <td>Total score peserta dan ketentuan</td>
+                    <td style="text-align: center;">{{ number_format($persentaseTotal, 1) }}%</td>
+                    <td>
+                        Peserta: {{ number_format($persentasePeserta, 1) }}% | 
+                        Ketentuan: {{ number_format($persentaseKetentuan, 1) }}%
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -484,7 +497,63 @@
         </table>
     </div>
 
-    <!-- Halaman kelima - WO Backlog Table -->
+    <!-- Halaman Work Orders -->
+    <div class="page-break">
+        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+        
+        <div class="header">
+            <h2>DAFTAR WORK ORDER</h2>
+            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+        </div>
+
+        <table class="wo-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 15%">No WO</th>
+                    <th style="width: 30%">Deskripsi</th>
+                    <th style="width: 10%">Tipe</th>
+                    <th style="width: 10%">Status</th>
+                    <th style="width: 15%">Prioritas</th>
+                    <th style="width: 15%">Jadwal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($workOrders as $index => $wo)
+                    <tr>
+                        <td style="text-align: center;">{{ $loop->iteration }}</td>
+                        <td>{{ $wo->id }}</td>
+                        <td>{{ $wo->description }}</td>
+                        <td>{{ $wo->type }}</td>
+                        <td>
+                            <span class="status-badge {{ 
+                                $wo->status === 'Completed' ? 'status-operasi' : 
+                                ($wo->status === 'In Progress' ? 'status-standby' : 
+                                'status-gangguan') 
+                            }}">
+                                {{ $wo->status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="priority-badge priority-{{ strtolower($wo->priority) }}">
+                                {{ $wo->priority }}
+                            </span>
+                        </td>
+                        <td>
+                            {{ \Carbon\Carbon::parse($wo->schedule_start)->format('d/m/Y') }} - 
+                            {{ \Carbon\Carbon::parse($wo->schedule_finish)->format('d/m/Y') }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" style="text-align: center;">Tidak ada Work Order untuk tanggal ini</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Halaman WO Backlog -->
     <div class="page-break">
         <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
         
@@ -499,7 +568,7 @@
                     <th style="width: 5%">No</th>
                     <th style="width: 15%">No WO</th>
                     <th style="width: 35%">Deskripsi</th>
-                    <th style="width: 15%">Tanggal</th>
+                    <th style="width: 15%">Tanggal Backlog</th>
                     <th style="width: 15%">Status</th>
                     <th style="width: 15%">Keterangan</th>
                 </tr>
@@ -631,31 +700,7 @@
         </div>
 
         <div class="signatures-grid">
-            <div class="signature-box">
-                <p class="title">ASMAN OPERASI</p>
-                @if(isset($signatures['Operasi']))
-                    <img src="{{ $signatures['Operasi'] }}" alt="Tanda Tangan ASMAN OPERASI" class="signature-image">
-                @endif
-                <div class="signature-line"></div>
-            </div>
-
-            <div class="signature-box">
-                <p class="title">ASMAN PEMELIHARAAN</p>
-                @if(isset($signatures['Pemeliharaan']))
-                    <img src="{{ $signatures['Pemeliharaan'] }}" alt="Tanda Tangan ASMAN PEMELIHARAAN" class="signature-image">
-                @endif
-                <div class="signature-line"></div>
-            </div>
-
-            <div class="signature-box">
-                <p class="title">ASMAN ENJINIRING</p>
-                @if(isset($signatures['Enjiniring']))
-                    <img src="{{ $signatures['Enjiniring'] }}" alt="Tanda Tangan ASMAN ENJINIRING" class="signature-image">
-                @endif
-                <div class="signature-line"></div>
-            </div>
-
-            <div class="signature-box">
+            <div class="signature-box" style="grid-column: 1 / -1;">
                 <p class="title">MANAJER UP</p>
                 @if(isset($signatures['Manajer']))
                     <img src="{{ $signatures['Manajer'] }}" alt="Tanda Tangan MANAJER UP" class="signature-image">
@@ -664,40 +709,6 @@
             </div>
         </div>
     </div>
-
-    <style>
-    .signatures-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 40px;
-        margin-top: 40px;
-        padding: 20px;
-    }
-
-    .signature-box {
-        text-align: center;
-        padding: 20px;
-    }
-
-    .signature-box .title {
-        font-weight: bold;
-        margin-bottom: 60px;
-    }
-
-    .signature-image {
-        max-width: 200px;
-        max-height: 100px;
-        margin: 0 auto;
-    }
-
-    .signature-line {
-        margin-top: 10px;
-        border-top: 1px solid black;
-        width: 200px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    </style>
 
     <script>
         window.onload = function() {
