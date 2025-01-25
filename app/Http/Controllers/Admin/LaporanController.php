@@ -327,54 +327,14 @@ class LaporanController extends Controller
     public function updateWOStatus(Request $request, $id)
     {
         try {
-            // 1. Validasi input
-            $request->validate([
-                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
-            ]);
-
-            // 2. Cari WO menggunakan model untuk trigger events
             $wo = WorkOrder::findOrFail($id);
-            
-            if ($wo->status === 'Closed') {
-                throw new \Exception('WO yang sudah Closed tidak dapat diubah statusnya');
-            }
-
             $oldStatus = $wo->status;
-            
-            // 3. Update status
             $wo->status = $request->status;
             $wo->save();
 
-            // 4. Log perubahan
-            Log::info('WO status updated successfully', [
-                'wo_id' => $id,
-                'old_status' => $oldStatus,
-                'new_status' => $wo->status,
-                'updated_at' => $wo->updated_at
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => "Status berhasil diubah dari {$oldStatus} ke {$request->status}",
-                'data' => [
-                    'id' => $id,
-                    'newStatus' => $wo->status,
-                    'updated_at' => $wo->updated_at,
-                    'power_plant_id' => $wo->power_plant_id
-                ]
-            ]);
-
+            return redirect()->back()->with('success', "Status WO berhasil diubah dari {$oldStatus} menjadi {$request->status}");
         } catch (\Exception $e) {
-            Log::error('Failed to update WO status', [
-                'wo_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengubah status: ' . $e->getMessage()
-            ], 400);
+            return redirect()->back()->with('error', 'Gagal mengubah status WO');
         }
     }
 
@@ -625,5 +585,13 @@ class LaporanController extends Controller
             \Log::error('Error in manage method: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data.');
         }
+    }
+
+    public function checkWOStatus($id)
+    {
+        $wo = WorkOrder::find($id);
+        return response()->json([
+            'status' => $wo ? $wo->status : null
+        ]);
     }
 }

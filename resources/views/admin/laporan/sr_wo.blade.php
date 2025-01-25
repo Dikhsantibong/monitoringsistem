@@ -599,6 +599,7 @@
 @endsection
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     // Helper Functions
     function getStatusColor(status) {
@@ -633,91 +634,69 @@
 
     // Main Functions
     function showStatusOptions(woId, currentStatus) {
+        // Cek jika status sudah Closed
         if (currentStatus === 'Closed') {
             Swal.fire({
-                icon: 'info',
-                title: 'Informasi',
-                text: 'WO sudah ditutup dan tidak dapat diubah lagi.'
+                icon: 'warning',
+                title: 'Tidak dapat mengubah status',
+                text: 'WO yang sudah Closed tidak dapat diubah statusnya',
+                confirmButtonText: 'OK'
             });
             return;
         }
 
+        // Tampilkan dialog pilihan status
         Swal.fire({
-            title: 'Pilih Status',
-            input: 'select',
-            inputOptions: {
-                'Open': 'Open',
-                'Closed': 'Closed',
-                'Comp': 'Comp',
-                'APPR': 'APPR',
-                'WAPPR': 'WAPPR',
-                'WMATL': 'WMATL'
-            },
-            inputValue: currentStatus,
+            title: 'Ubah Status WO',
+            html: `
+                <select id="statusSelect" class="swal2-select" style="width: 100%; padding: 8px; margin-top: 10px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    <option value="Open" ${currentStatus === 'Open' ? 'selected' : ''}>Open</option>
+                    <option value="WAPPR" ${currentStatus === 'WAPPR' ? 'selected' : ''}>WAPPR</option>
+                    <option value="APPR" ${currentStatus === 'APPR' ? 'selected' : ''}>APPR</option>
+                    <option value="WMATL" ${currentStatus === 'WMATL' ? 'selected' : ''}>WMATL</option>
+                    <option value="Closed" ${currentStatus === 'Closed' ? 'selected' : ''}>Closed</option>
+                </select>
+            `,
             showCancelButton: true,
-            cancelButtonText: 'Batal',
             confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
             confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'Anda harus memilih status!';
-                }
-            }
+            cancelButtonColor: '#d33'
         }).then((result) => {
             if (result.isConfirmed) {
-                processStatusUpdate(woId, result.value);
-            }
-        });
-    }
-
-    function processStatusUpdate(id, newStatus) {
-        const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
-        
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ status: newStatus })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const row = document.querySelector(`#woTable tbody tr[data-id="${id}"]`);
+                const newStatus = document.getElementById('statusSelect').value;
                 
-                if (row) {
-                    const statusCell = row.querySelector('td[data-column="status"]');
-                    const actionCell = row.querySelector('td[data-column="action"]');
-
-                    if (statusCell) {
-                        statusCell.innerHTML = getStatusBadge(newStatus);
-                    }
-
-                    if (actionCell) {
-                        actionCell.innerHTML = getActionButton(id, newStatus);
-                    }
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                }
-            } else {
-                throw new Error(data.message);
+                // Buat dan submit form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/laporan/update-wo-status/${woId}`;
+                
+                // CSRF Token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = document.querySelector('meta[name="csrf-token"]').content;
+                
+                // Status
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = newStatus;
+                
+                form.appendChild(csrfToken);
+                form.appendChild(statusInput);
+                document.body.appendChild(form);
+                
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Memproses...',
+                    text: 'Sedang mengubah status',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+                
+                form.submit();
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: error.message || 'Terjadi kesalahan saat mengupdate status'
-            });
         });
     }
 
@@ -911,69 +890,100 @@
     document.getElementById('searchInput').addEventListener('input', debouncedSearch);
 
     function updateStatus(type, id, currentStatus) {
-        const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
+        // Cek jika status sudah Closed
         if (currentStatus === 'Closed') {
             Swal.fire({
-                icon: 'info',
-                title: 'Informasi',
-                text: 'WO sudah ditutup dan tidak dapat diubah lagi.',
+                icon: 'warning',
+                title: 'Tidak dapat mengubah status',
+                text: 'WO yang sudah Closed tidak dapat diubah statusnya',
+                confirmButtonText: 'OK'
             });
-            return; // Menghentikan eksekusi jika sudah ditutup
+            return;
         }
-        const url = type === 'sr' ? 
-            "{{ route('admin.laporan.update-sr-status', ['id' => ':id']) }}".replace(':id', id) :
-            "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
 
+        // Tampilkan konfirmasi
+        const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
+        
         Swal.fire({
             title: 'Konfirmasi',
             text: `Apakah Anda yakin ingin mengubah status menjadi ${newStatus}?`,
-            icon: 'warning',
+            icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
             confirmButtonText: 'Ya',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Memproses...',
+                    text: 'Sedang mengubah status',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                // Kirim request
+                $.ajax({
+                    url: `/admin/laporan/update-${type}-status/${id}`,
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        status: newStatus
                     },
-                    body: JSON.stringify({ status: newStatus })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Status berhasil diubah!',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            location.reload();
+                    success: function(response) {
+                        if (response.success) {
+                            // Update UI tanpa reload
+                            const row = $(`tr[data-${type}-id="${id}"]`);
+                            const statusCell = row.find('td[data-column="status"]');
+                            const actionCell = row.find('td[data-column="action"]');
+
+                            // Update status badge
+                            statusCell.html(`
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${newStatus === 'Closed' ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'}">
+                                    ${newStatus}
+                                </span>
+                            `);
+
+                            // Update action button
+                            if (newStatus === 'Closed') {
+                                actionCell.html(`
+                                    <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                                        Closed
+                                    </button>
+                                `);
+                            }
+
+                            // Tampilkan pesan sukses
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Status berhasil diubah',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            // Update filter jika ada
+                            if (typeof filterWOTable === 'function') {
+                                filterWOTable();
+                            }
+                        }
+                    },
+                    error: function() {
+                        // Jika gagal, tetap cek status sebenarnya
+                        $.get(`/admin/laporan/check-${type}-status/${id}`, function(response) {
+                            if (response.status === newStatus) {
+                                // Jika status sudah berubah, update UI
+                                location.reload();
+                            } else {
+                                // Jika benar-benar gagal
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal!',
+                                    text: 'Terjadi kesalahan saat mengubah status',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
                         });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Terjadi kesalahan!',
-                            text: data.message || 'Gagal mengubah status'
-                        });
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Terjadi kesalahan!',
-                        text: 'Gagal mengubah status'
-                    });
                 });
             }
         });
@@ -1438,4 +1448,31 @@
 </script>
 @push('scripts')
 @endpush
+
+@if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+    </script>
+@endif
+
+@if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: "{{ session('error') }}",
+                confirmButtonText: 'OK'
+            });
+        });
+    </script>
+@endif
     
