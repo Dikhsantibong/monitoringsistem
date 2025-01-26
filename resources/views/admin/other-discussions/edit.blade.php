@@ -471,9 +471,10 @@ async function verifyPasswordAndDelete() {
     
     try {
         const response = await fetch('/admin/verify-password', {
-            method: 'POST',
+            method: 'POST', 
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({ password })
@@ -488,6 +489,8 @@ async function verifyPasswordAndDelete() {
                 const fileResponse = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
                     method: 'DELETE',
                     headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
@@ -505,47 +508,36 @@ async function verifyPasswordAndDelete() {
                             window.location.reload();
                         }
                     });
-                } else {
-                    throw new Error('Gagal menghapus dokumen');
                 }
             } else if (deleteAction === 'removeCommitment') {
                 const commitmentEntry = deleteParams.element.closest('.commitment-entry');
                 const commitmentId = commitmentEntry.dataset.commitmentId;
                 const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
 
-                try {
-                    const commitmentResponse = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                const commitmentResponse = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                if (commitmentResponse.ok) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Komitmen berhasil dihapus',
+                        icon: 'success',
+                        showCancelButton: false,
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            commitmentEntry.remove();
                         }
                     });
-
-                    if (!commitmentResponse.ok) {
-                        throw new Error('Gagal menghapus komitmen');
-                    }
-
-                    const commitmentData = await commitmentResponse.json();
-
-                    if (commitmentData.success) {
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Komitmen berhasil dihapus',
-                            icon: 'success',
-                            showCancelButton: false,
-                            confirmButtonColor: '#3085d6',
-                            confirmButtonText: 'OK'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                commitmentEntry.remove();
-                            }
-                        });
-                    } else {
-                        throw new Error(commitmentData.message || 'Gagal menghapus komitmen');
-                    }
-                } catch (error) {
-                    throw new Error(error.message || 'Gagal menghapus komitmen');
+                } else {
+                    throw new Error('Gagal menghapus komitmen');
                 }
             }
             closePasswordModal();
