@@ -67,17 +67,23 @@
                 <div class="mb-4 border-b border-gray-200">
                     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
                         <li class="mr-2">
-                            <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active" data-tab="sr">
+                            <a href="#" onclick="switchTab('sr'); return false;" 
+                               class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active" 
+                               data-tab="sr">
                                 Service Request (SR)
                             </a>
                         </li>
                         <li class="mr-2">
-                            <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" data-tab="wo">
+                            <a href="#" onclick="switchTab('wo'); return false;" 
+                               class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" 
+                               data-tab="wo">
                                 Work Order (WO)
                             </a>
                         </li>
                         <li class="mr-2">
-                            <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" data-tab="backlog">
+                            <a href="#" onclick="switchTab('backlog'); return false;" 
+                               class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" 
+                               data-tab="backlog">
                                 WO Backlog
                             </a>
                         </li>
@@ -1457,24 +1463,48 @@
     }
 
     // Tab switching functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('data-tab');
-                
-                // Update active tab
-                tabs.forEach(t => t.classList.remove('active', 'border-blue-500'));
-                this.classList.add('active', 'border-blue-500');
-                
-                // Show correct content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.add('hidden');
-                });
-                document.getElementById(`${targetId}-tab`).classList.remove('hidden');
-            });
+    function switchTab(tabId) {
+        // Hapus kelas active dari semua tab
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+            tab.classList.remove('active', 'border-blue-500');
         });
+        
+        // Tambah kelas active ke tab yang diklik
+        const selectedTab = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+        if (selectedTab) {
+            selectedTab.classList.add('active', 'border-blue-500');
+        }
+        
+        // Sembunyikan semua konten tab
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Tampilkan konten tab yang dipilih
+        const selectedContent = document.getElementById(`${tabId}-tab`);
+        if (selectedContent) {
+            selectedContent.classList.remove('hidden');
+            
+            // Update table counts dan jalankan filter yang sesuai
+            updateTableCounts();
+            if (tabId === 'sr') {
+                filterSRTable();
+            } else if (tabId === 'wo') {
+                filterWOTable();
+            } else if (tabId === 'backlog') {
+                filterBacklogTable();
+            }
+        }
+    }
+
+    // Tambahkan event listener saat dokumen dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set tab pertama sebagai active
+        const firstTab = document.querySelector('.tab-btn');
+        if (firstTab) {
+            const tabId = firstTab.getAttribute('data-tab');
+            switchTab(tabId);
+        }
     });
 </script>
 
