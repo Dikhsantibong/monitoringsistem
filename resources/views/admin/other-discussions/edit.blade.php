@@ -481,76 +481,46 @@ async function verifyPasswordAndDelete() {
             body: JSON.stringify({ password })
         });
 
-        // Cek response type
-        const contentType = verifyResponse.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Server error: Invalid response type');
-        }
-
         const verifyData = await verifyResponse.json();
 
         if (!verifyData.success) {
-            document.getElementById('passwordError').textContent = verifyData.message || 'Password tidak valid';
+            document.getElementById('passwordError').textContent = 'Password tidak valid';
             document.getElementById('passwordError').classList.remove('hidden');
             return;
         }
 
-        let response;
+        // Proses penghapusan
+        let deleteUrl;
         if (deleteAction === 'removeFile') {
-            response = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
-                method: 'DELETE',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
+            deleteUrl = `/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`;
         } else if (deleteAction === 'removeCommitment') {
             const commitmentEntry = deleteParams.element.closest('.commitment-entry');
             const commitmentId = commitmentEntry.dataset.commitmentId;
             const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
-
-            response = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
+            deleteUrl = `/admin/other-discussions/${discussionId}/commitments/${commitmentId}`;
         }
 
-        // Cek response type
-        const responseType = response.headers.get('content-type');
-        if (!responseType || !responseType.includes('application/json')) {
-            throw new Error('Server error: Invalid response type');
-        }
+        const deleteResponse = await fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        });
 
-        const data = await response.json();
+        const deleteData = await deleteResponse.json();
 
-        if (data.success) {
+        if (deleteData.success) {
             closePasswordModal();
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: data.message
-            }).then(() => {
-                if (deleteAction === 'removeFile') {
-                    window.location.reload();
-                } else {
-                    deleteParams.element.closest('.commitment-entry').remove();
-                }
-            });
+            window.location.reload(); // Reload halaman untuk menampilkan flash message
         } else {
-            throw new Error(data.message || 'Gagal melakukan penghapusan');
+            throw new Error('Gagal melakukan penghapusan');
         }
 
     } catch (error) {
         console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Terjadi Kesalahan',
-            text: error.message || 'Gagal melakukan penghapusan'
-        });
+        document.getElementById('passwordError').textContent = error.message;
+        document.getElementById('passwordError').classList.remove('hidden');
     }
 }
 
@@ -637,7 +607,12 @@ function validateStatus(select) {
         .some(statusSelect => statusSelect.value === 'Open');
 
     if (select.value === 'Closed' && (hasOpenCommitments || hasOpenNewCommitments)) {
-        alert('Semua komitmen harus Closed sebelum mengubah status menjadi Closed');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan!',
+            text: 'Semua komitmen harus Closed sebelum mengubah status menjadi Closed',
+            confirmButtonText: 'OK'
+        });
         select.value = 'Open';
         return false;
     }
@@ -647,11 +622,13 @@ function validateStatus(select) {
 // Fungsi untuk menghapus komitmen
 function removeCommitment(button) {
     const commitmentEntry = button.closest('.commitment-entry');
+    // Jika ini komitmen baru (belum disimpan)
     if (!commitmentEntry.dataset.commitmentId) {
         commitmentEntry.remove();
         return;
     }
     
+    // Jika ini komitmen yang sudah ada
     deleteAction = 'removeCommitment';
     deleteParams = { element: button };
     showPasswordModal();
@@ -669,7 +646,12 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     
     if (files.length === 0) {
         e.preventDefault();
-        alert('Silakan upload minimal satu dokumen pendukung sebelum menyimpan perubahan.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Upload Dokumen Diperlukan',
+            text: 'Silakan upload minimal satu dokumen pendukung sebelum menyimpan perubahan.',
+            confirmButtonText: 'OK'
+        });
         return;
     }
 
@@ -678,7 +660,12 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     for (const file of files) {
         if (file.size > maxSize) {
             e.preventDefault();
-            alert(`File "${file.name}" melebihi batas maksimal 5MB.`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Ukuran File Terlalu Besar',
+                text: `File "${file.name}" melebihi batas maksimal 5MB.`,
+                confirmButtonText: 'OK'
+            });
             return;
         }
     }
@@ -688,7 +675,12 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     for (const file of files) {
         if (!allowedTypes.includes(file.type)) {
             e.preventDefault();
-            alert(`File "${file.name}" harus berformat PDF, Word, atau Gambar (JPG/PNG).`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Format File Tidak Didukung',
+                text: `File "${file.name}" harus berformat PDF, Word, atau Gambar (JPG/PNG).`,
+                confirmButtonText: 'OK'
+            });
             return;
         }
     }
@@ -705,12 +697,20 @@ function handleFiles(e) {
         const maxSize = 5 * 1024 * 1024; // 5MB
         
         if (!validTypes.includes(file.type)) {
-            alert('Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).');
+            Swal.fire({
+                icon: 'error',
+                title: 'Format File Tidak Didukung',
+                text: `File "${file.name}" harus berformat PDF, Word, atau Gambar (JPG/PNG).`
+            });
             return true;
         }
         
         if (file.size > maxSize) {
-            alert('Ukuran file maksimal adalah 5MB.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Ukuran File Terlalu Besar',
+                text: `File "${file.name}" melebihi batas maksimal 5MB.`
+            });
             return true;
         }
         
@@ -904,14 +904,24 @@ function validateFile(file) {
     // Validasi tipe file
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
-        alert('Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).');
+        Swal.fire({
+            icon: 'error',
+            title: 'Format File Tidak Didukung',
+            text: 'Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).',
+            confirmButtonText: 'OK'
+        });
         return false;
     }
 
     // Validasi ukuran file (5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB dalam bytes
     if (file.size > maxSize) {
-        alert('Ukuran file maksimal adalah 5MB.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Ukuran File Terlalu Besar',
+            text: 'Ukuran file maksimal adalah 5MB.',
+            confirmButtonText: 'OK'
+        });
         return false;
     }
     

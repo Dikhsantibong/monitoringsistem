@@ -553,24 +553,21 @@ Route::get('other-discussions/{id}/download-document',
 Route::post('/other-discussions/{id}/remove-file', [OtherDiscussionEditController::class, 'removeFile'])
     ->name('admin.other-discussions.remove-file');
 
-Route::post('/admin/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
-    ->name('admin.verify-password')
-    ->middleware(['web', 'auth']);
+Route::post('/admin/verify-password', [PasswordVerificationController::class, 'verify'])
+    ->name('admin.verify-password');
 
 // Verifikasi password
 Route::post('/admin/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
     ->name('admin.verify-password');
 
 // Hapus file
-Route::middleware(['auth', 'web'])->group(function () {
-    Route::delete('/admin/other-discussions/{discussion}/remove-file/{index}', 
-        [OtherDiscussionController::class, 'removeFile'])
-        ->name('admin.other-discussions.remove-file');
+Route::delete('/admin/other-discussions/{discussion}/remove-file/{index}', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeFile'])
+    ->name('admin.other-discussions.remove-file');
 
-    Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}', 
-        [OtherDiscussionController::class, 'removeCommitment'])
-        ->name('admin.other-discussions.remove-commitment');
-});
+// Route untuk hapus commitment
+Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}', 
+    [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeCommitment'])
+    ->name('admin.other-discussions.remove-commitment');
 
 
 
