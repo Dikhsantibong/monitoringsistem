@@ -1638,6 +1638,9 @@
         }
     });
     function confirmDelete(id) {
+        // Definisikan base URL di awal
+        const baseUrl = "{{ config('app.url') }}";
+        
         Swal.fire({
             title: 'Verifikasi Password',
             input: 'password',
@@ -1654,8 +1657,18 @@
             },
             preConfirm: async (password) => {
                 try {
+                    // Gunakan base URL yang benar
+                    const verifyUrl = `${baseUrl}/admin/verify-password`;
+                    const deleteUrl = `${baseUrl}/admin/other-discussions/${id}`;
+                    
+                    console.log('Debug URLs:', {
+                        baseUrl,
+                        verifyUrl,
+                        deleteUrl
+                    });
+
                     // Verifikasi password
-                    const verifyResponse = await fetch('/admin/verify-password', {
+                    const verifyResponse = await fetch(verifyUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1665,20 +1678,29 @@
                         body: JSON.stringify({ password })
                     });
 
+                    // Log response headers untuk debug
+                    console.log('Response Headers:', {
+                        contentType: verifyResponse.headers.get('content-type'),
+                        status: verifyResponse.status
+                    });
+
                     if (!verifyResponse.ok) {
-                        const errorData = await verifyResponse.text();
-                        console.error('Verify Response:', errorData);
-                        throw new Error('Password verification failed');
+                        const errorText = await verifyResponse.text();
+                        console.error('Verify Response Error:', {
+                            status: verifyResponse.status,
+                            text: errorText
+                        });
+                        throw new Error(`Verifikasi password gagal (${verifyResponse.status})`);
                     }
 
                     const verifyData = await verifyResponse.json();
                     
                     if (!verifyData.success) {
-                        throw new Error('Password tidak valid');
+                        throw new Error(verifyData.message || 'Password tidak valid');
                     }
 
                     // Proses delete
-                    const deleteResponse = await fetch(`/admin/other-discussions/${id}`, {
+                    const deleteResponse = await fetch(deleteUrl, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1688,9 +1710,12 @@
                     });
 
                     if (!deleteResponse.ok) {
-                        const errorData = await deleteResponse.text();
-                        console.error('Delete Response:', errorData);
-                        throw new Error('Failed to delete discussion');
+                        const errorText = await deleteResponse.text();
+                        console.error('Delete Response Error:', {
+                            status: deleteResponse.status,
+                            text: errorText
+                        });
+                        throw new Error(`Gagal menghapus data (${deleteResponse.status})`);
                     }
 
                     const deleteData = await deleteResponse.json();
@@ -1702,9 +1727,18 @@
                     return deleteData;
 
                 } catch (error) {
-                    console.error('Error Details:', error);
+                    console.error('Full Error Details:', {
+                        message: error.message,
+                        urls: {
+                            base: baseUrl,
+                            verify: `${baseUrl}/admin/verify-password`,
+                            delete: `${baseUrl}/admin/other-discussions/${id}`
+                        },
+                        timestamp: new Date().toISOString()
+                    });
+                    
                     Swal.showValidationMessage(
-                        `Request failed: ${error.message}`
+                        `Error: ${error.message}\nSilakan coba lagi atau hubungi administrator.`
                     );
                 }
             },
@@ -1950,6 +1984,15 @@
             printWindow.focus();
         }
     }
+
+    // Debug helper
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Environment Check:', {
+            baseUrl: "{{ config('app.url') }}",
+            currentUrl: window.location.href,
+            environment: "{{ config('app.env') }}"
+        });
+    });
 </script>
 @push('scripts')
 @endpush
