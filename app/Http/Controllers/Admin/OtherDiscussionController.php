@@ -118,25 +118,80 @@ class OtherDiscussionController extends Controller
     public function destroy($id)
     {
         try {
-            $discussion = OtherDiscussion::findOrFail($id);
+            // Cari data dengan findOrFail
+            $otherDiscussion = OtherDiscussion::findOrFail($id);
             
+            \Log::info('Starting delete process', [
+                'discussion_id' => $id,
+                'user' => auth()->user()->email,
+                'data_exists' => $otherDiscussion ? 'yes' : 'no'
+            ]);
+
             DB::beginTransaction();
-            
-            $discussion->delete();
-            
-            DB::commit();
-            
-            return redirect()
-                ->route('admin.other-discussions.index')
-                ->with('success', 'Data berhasil dihapus');
+
+            try {
+                // Hapus files
+                if ($otherDiscussion->document_path) {
+                    $paths = json_decode($otherDiscussion->document_path, true) ?? [];
+                    foreach ($paths as $path) {
+                        if (Storage::exists('public/' . $path)) {
+                            Storage::delete('public/' . $path);
+                            \Log::info('File deleted', ['path' => $path]);
+                        }
+                    }
+                }
+
+                // Hapus commitments
+                $otherDiscussion->commitments()->delete();
                 
+                // Hapus discussion
+                $deleted = $otherDiscussion->delete();
+                
+                if (!$deleted) {
+                    throw new \Exception('Gagal menghapus data pembahasan');
+                }
+
+                DB::commit();
+                \Log::info('Delete success', ['id' => $id]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pembahasan berhasil dihapus',
+                    'debug_info' => [
+                        'discussion_id' => $id,
+                        'deleted_at' => now()->toDateTimeString()
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('Discussion not found', ['id' => $id]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus pembahasan: Data pembahasan tidak ditemukan',
+                'debug_info' => [
+                    'discussion_id' => $id,
+                    'error' => 'Model not found'
+                ]
+            ], 404);
         } catch (\Exception $e) {
-            DB::rollback();
-            \Log::error('Error deleting discussion: ' . $e->getMessage());
-            
-            return redirect()
-                ->route('admin.other-discussions.index')
-                ->with('error', 'Gagal menghapus data');
+            \Log::error('Delete failed', [
+                'error' => $e->getMessage(),
+                'discussion_id' => $id ?? null
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus pembahasan: ' . $e->getMessage(),
+                'debug_info' => [
+                    'error_message' => $e->getMessage(),
+                    'discussion_id' => $id
+                ]
+            ], 500);
         }
     }
 

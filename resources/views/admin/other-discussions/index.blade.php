@@ -1673,43 +1673,76 @@
     });
     function confirmDelete(id) {
         Swal.fire({
-            title: 'Apakah Anda yakin?',
-            text: "Data yang dihapus tidak dapat dikembalikan!",
-            icon: 'warning',
+            title: 'Verifikasi Password',
+            input: 'password',
+            inputLabel: 'Masukkan password Anda untuk melanjutkan',
+            inputPlaceholder: 'Password',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Buat form untuk delete request
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ url("/admin/other-discussions") }}/' + id;
-                
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'DELETE';
-                
-                const tokenInput = document.createElement('input');
-                tokenInput.type = 'hidden';
-                tokenInput.name = '_token';
-                tokenInput.value = '{{ csrf_token() }}';
-                
-                form.appendChild(methodInput);
-                form.appendChild(tokenInput);
-                document.body.appendChild(form);
+            confirmButtonText: 'Hapus',
+            cancelButtonText: 'Batal',
+            showLoaderOnConfirm: true,
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Password harus diisi!';
+                }
+            },
+            preConfirm: async (password) => {
+                try {
+                    // Verifikasi password
+                    const verifyResponse = await fetch(`${window.location.origin}/admin/verify-password`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ password })
+                    });
 
-                // Tampilkan loading
-                Swal.fire({
-                    title: 'Menghapus data...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                        form.submit();
+                    const verifyData = await verifyResponse.json();
+                    console.log('Password verification:', verifyData);
+
+                    if (!verifyData.success) {
+                        throw new Error('Password tidak valid');
                     }
+
+                    // Proses delete
+                    const deleteResponse = await fetch(`${window.location.origin}/admin/other-discussions/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+
+                    const deleteData = await deleteResponse.json();
+                    console.log('Delete response:', deleteData);
+
+                    if (!deleteData.success) {
+                        throw new Error(deleteData.message || 'Gagal menghapus data');
+                    }
+
+                    return deleteData;
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.showValidationMessage(
+                        `Request failed: ${error.message}`
+                    );
+                }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value?.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: result.value.message || 'Data berhasil dihapus',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    window.location.reload();
                 });
             }
         });
