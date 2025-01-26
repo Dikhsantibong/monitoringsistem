@@ -68,17 +68,17 @@
             <div class="mb-4 border-b border-gray-200">
                 <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
                     <li class="mr-2">
-                        <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active" data-tab="sr">
+                        <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn {{ request('tab') == 'sr' ? 'active' : '' }}" data-tab="sr">
                             Service Request (SR)
                         </a>
                     </li>
                     <li class="mr-2">
-                        <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" data-tab="wo">
+                        <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn {{ request('tab') == 'wo' ? 'active' : '' }}" data-tab="wo">
                             Work Order (WO)
                         </a>
                     </li>
                     <li class="mr-2">
-                        <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" data-tab="backlog">
+                        <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn {{ request('tab') == 'backlog' ? 'active' : '' }}" data-tab="backlog">
                             WO Backlog
                         </a>
                     </li>
@@ -86,7 +86,7 @@
             </div>
 
             <!-- SR Table -->
-            <div id="sr-tab" class="tab-content active">
+            <div id="sr-tab" class="tab-content {{ request('tab') == 'sr' ? 'active' : 'hidden' }}">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Manajemen Service Request</h3>
@@ -141,7 +141,7 @@
             </div>
 
             <!-- WO Table -->
-            <div id="wo-tab" class="tab-content hidden">
+            <div id="wo-tab" class="tab-content {{ request('tab') == 'wo' ? 'active' : 'hidden' }}">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Manajemen Work Order</h3>
@@ -209,7 +209,7 @@
             </div>
 
             <!-- Backlog Table -->
-            <div id="backlog-tab" class="tab-content hidden">
+            <div id="backlog-tab" class="tab-content {{ request('tab') == 'backlog' ? 'active' : 'hidden' }}">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Manajemen WO Backlog</h3>

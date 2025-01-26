@@ -95,10 +95,16 @@
                     <div class="bg-white rounded-lg shadow p-6 mb-4">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
-                            <a href="{{ route('admin.laporan.create-sr') }}" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
-                                <i class="fas fa-plus-circle mr-2"></i> Tambah SR
-                            </a>
+                            <div class="flex gap-2">
+                                <a href="{{ route('admin.laporan.manage', ['tab' => 'sr']) }}" 
+                                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                                    <i class="fas fa-cog mr-2"></i> Manage SR
+                                </a>
+                                <a href="{{ route('admin.laporan.create-sr') }}" 
+                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus-circle mr-2"></i> Tambah SR
+                                </a>
+                            </div>
                         </div>
                         
                         <!-- Header section dengan search dan counter -->
@@ -260,10 +266,16 @@
                     <div class="bg-white rounded-lg shadow p-6 mb-4">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
-                            <a href="{{ route('admin.laporan.create-wo') }}" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
-                                <i class="fas fa-plus-circle mr-2"></i> Tambah WO
-                            </a>
+                            <div class="flex gap-2">
+                                <a href="{{ route('admin.laporan.manage', ['tab' => 'wo']) }}" 
+                                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                                    <i class="fas fa-cog mr-2"></i> Manage WO
+                                </a>
+                                <a href="{{ route('admin.laporan.create-wo') }}" 
+                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus-circle mr-2"></i> Tambah WO
+                                </a>
+                            </div>
                         </div>
                         
                         <!-- Header section dengan search dan counter -->
@@ -436,10 +448,16 @@
                     <div class="bg-white rounded-lg shadow p-6 mb-4">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
-                            <a href="{{ route('admin.laporan.create-backlog') }}" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
-                                <i class="fas fa-plus-circle mr-2"></i> Tambah Backlog
-                            </a>
+                            <div class="flex gap-2">
+                                <a href="{{ route('admin.laporan.manage', ['tab' => 'backlog']) }}" 
+                                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                                    <i class="fas fa-cog mr-2"></i> Manage Backlog
+                                </a>
+                                <a href="{{ route('admin.laporan.create-backlog') }}" 
+                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                    <i class="fas fa-plus-circle mr-2"></i> Tambah Backlog
+                                </a>
+                            </div>
                         </div>
                         
                         <!-- Header section dengan search dan counter -->
