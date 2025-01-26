@@ -1021,44 +1021,83 @@ class OtherDiscussionController extends Controller
     public function removeFile(OtherDiscussion $discussion, $index)
     {
         try {
+            DB::beginTransaction();
+            
             $paths = json_decode($discussion->document_path) ?? [];
             $descriptions = json_decode($discussion->document_description) ?? [];
 
-            if (isset($paths[$index])) {
-                Storage::delete('public/' . $paths[$index]);
-                
-                unset($paths[$index]);
-                unset($descriptions[$index]);
-
-                $paths = array_values($paths);
-                $descriptions = array_values($descriptions);
-
-                $discussion->update([
-                    'document_path' => json_encode($paths),
-                    'document_description' => json_encode($descriptions)
-                ]);
-
-                return response()->json(['success' => true]);
+            if (!isset($paths[$index])) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File tidak ditemukan'
+                ], 404);
             }
 
-            return response()->json(['success' => false]);
+            Storage::delete('public/' . $paths[$index]);
+            
+            unset($paths[$index]);
+            unset($descriptions[$index]);
+
+            $paths = array_values($paths);
+            $descriptions = array_values($descriptions);
+
+            $discussion->update([
+                'document_path' => json_encode($paths),
+                'document_description' => json_encode($descriptions)
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil dihapus'
+            ], 200);
+
         } catch (\Exception $e) {
-            return response()->json(['success' => false]);
+            DB::rollBack();
+            \Log::error('Error deleting file: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus file'
+            ], 500);
         }
     }
 
     public function removeCommitment(OtherDiscussion $discussion, $commitmentId)
     {
         try {
+            DB::beginTransaction();
+            
             $commitment = Commitment::where('id', $commitmentId)
                 ->where('other_discussion_id', $discussion->id)
-                ->firstOrFail();
+                ->first();
+
+            if (!$commitment) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Komitmen tidak ditemukan'
+                ], 404);
+            }
 
             $commitment->delete();
+            DB::commit();
 
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Komitmen berhasil dihapus'
+            ], 200);
+
         } catch (\Exception $e) {
-            return response()->json(['success' => false]);
+            DB::rollBack();
+            \Log::error('Error deleting commitment: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus komitmen'
+            ], 500);
         }
     }
 }       

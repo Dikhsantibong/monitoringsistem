@@ -481,69 +481,75 @@ async function verifyPasswordAndDelete() {
             body: JSON.stringify({ password })
         });
 
+        // Cek response type
+        const contentType = verifyResponse.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Server error: Invalid response type');
+        }
+
         const verifyData = await verifyResponse.json();
 
         if (!verifyData.success) {
-            document.getElementById('passwordError').textContent = 'Password tidak valid';
+            document.getElementById('passwordError').textContent = verifyData.message || 'Password tidak valid';
             document.getElementById('passwordError').classList.remove('hidden');
             return;
         }
 
-        // Proses penghapusan
+        let response;
         if (deleteAction === 'removeFile') {
-            const fileResponse = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
+            response = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 }
             });
-
-            const fileData = await fileResponse.json();
-
-            if (fileData.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Dokumen berhasil dihapus'
-                }).then(() => {
-                    window.location.reload();
-                });
-            }
         } else if (deleteAction === 'removeCommitment') {
             const commitmentEntry = deleteParams.element.closest('.commitment-entry');
             const commitmentId = commitmentEntry.dataset.commitmentId;
             const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
 
-            const commitmentResponse = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
+            response = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 }
             });
-
-            const commitmentData = await commitmentResponse.json();
-
-            if (commitmentData.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Komitmen berhasil dihapus'
-                }).then(() => {
-                    commitmentEntry.remove();
-                });
-            }
         }
 
-        closePasswordModal();
+        // Cek response type
+        const responseType = response.headers.get('content-type');
+        if (!responseType || !responseType.includes('application/json')) {
+            throw new Error('Server error: Invalid response type');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            closePasswordModal();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: data.message
+            }).then(() => {
+                if (deleteAction === 'removeFile') {
+                    window.location.reload();
+                } else {
+                    deleteParams.element.closest('.commitment-entry').remove();
+                }
+            });
+        } else {
+            throw new Error(data.message || 'Gagal melakukan penghapusan');
+        }
 
     } catch (error) {
         console.error('Error:', error);
         Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: 'Terjadi kesalahan saat menghapus'
+            title: 'Terjadi Kesalahan',
+            text: error.message || 'Gagal melakukan penghapusan'
         });
     }
 }
