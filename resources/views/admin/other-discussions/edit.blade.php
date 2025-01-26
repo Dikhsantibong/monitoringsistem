@@ -471,8 +471,8 @@ async function verifyPasswordAndDelete() {
         const password = document.getElementById('verificationPassword').value;
         const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
         
-        // Verifikasi password dengan URL yang benar
-        const verifyResponse = await fetch('/admin/verify-password', {
+        // Gunakan route() helper untuk mendapatkan URL yang benar
+        const verifyResponse = await fetch('{{ route("admin.verify-password") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -483,6 +483,8 @@ async function verifyPasswordAndDelete() {
         });
 
         if (!verifyResponse.ok) {
+            console.error('Verify response status:', verifyResponse.status);
+            console.error('Verify response text:', await verifyResponse.text());
             throw new Error('Verifikasi password gagal');
         }
 
@@ -540,7 +542,7 @@ async function verifyPasswordAndDelete() {
             throw new Error(deleteData.message || 'Gagal menghapus');
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error details:', error);
         document.getElementById('passwordError').textContent = 'Terjadi kesalahan saat verifikasi';
         document.getElementById('passwordError').classList.remove('hidden');
     }

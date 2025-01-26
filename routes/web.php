@@ -553,8 +553,9 @@ Route::get('other-discussions/{id}/download-document',
 Route::post('/other-discussions/{id}/remove-file', [OtherDiscussionEditController::class, 'removeFile'])
     ->name('admin.other-discussions.remove-file');
 
-Route::post('/admin/verify-password', [PasswordVerificationController::class, 'verify'])
-    ->name('admin.verify-password');
+Route::post('/admin/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
+    ->name('admin.verify-password')
+    ->middleware(['web', 'auth']);
 
 // Verifikasi password
 Route::post('/admin/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
