@@ -470,11 +470,11 @@ async function verifyPasswordAndDelete() {
     const password = document.getElementById('verificationPassword').value;
     
     try {
+        // Verifikasi password
         const response = await fetch('/admin/verify-password', {
-            method: 'POST', 
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({ password })
@@ -483,30 +483,24 @@ async function verifyPasswordAndDelete() {
         const data = await response.json();
 
         if (data.success) {
-            // Jika password benar
             if (deleteAction === 'removeFile') {
-                // Hapus file
                 const fileResponse = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
-                if (fileResponse.ok) {
+                const fileData = await fileResponse.json();
+
+                if (fileData.success) {
                     Swal.fire({
                         title: 'Berhasil!',
                         text: 'Dokumen berhasil dihapus',
-                        icon: 'success',
-                        showCancelButton: false,
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.reload();
-                        }
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.reload();
                     });
                 }
             } else if (deleteAction === 'removeCommitment') {
@@ -518,26 +512,19 @@ async function verifyPasswordAndDelete() {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
-                if (commitmentResponse.ok) {
+                const commitmentData = await commitmentResponse.json();
+
+                if (commitmentData.success) {
+                    commitmentEntry.remove();
                     Swal.fire({
                         title: 'Berhasil!',
                         text: 'Komitmen berhasil dihapus',
-                        icon: 'success',
-                        showCancelButton: false,
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            commitmentEntry.remove();
-                        }
+                        icon: 'success'
                     });
-                } else {
-                    throw new Error('Gagal menghapus komitmen');
                 }
             }
             closePasswordModal();
@@ -546,11 +533,10 @@ async function verifyPasswordAndDelete() {
             document.getElementById('passwordError').classList.remove('hidden');
         }
     } catch (error) {
-        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Terjadi Kesalahan',
-            text: error.message || 'Gagal melakukan penghapusan'
+            text: 'Gagal melakukan penghapusan'
         });
     }
 }
@@ -653,13 +639,11 @@ function validateStatus(select) {
 // Fungsi untuk menghapus komitmen
 function removeCommitment(button) {
     const commitmentEntry = button.closest('.commitment-entry');
-    // Jika ini komitmen baru (belum disimpan)
     if (!commitmentEntry.dataset.commitmentId) {
         commitmentEntry.remove();
         return;
     }
     
-    // Jika ini komitmen yang sudah ada
     deleteAction = 'removeCommitment';
     deleteParams = { element: button };
     showPasswordModal();
