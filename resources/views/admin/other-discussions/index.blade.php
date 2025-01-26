@@ -1689,7 +1689,7 @@
             preConfirm: async (password) => {
                 try {
                     // Verifikasi password
-                    const verifyResponse = await fetch(`${window.location.origin}/admin/verify-password`, {
+                    const verifyResponse = await fetch('/admin/verify-password', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1699,15 +1699,20 @@
                         body: JSON.stringify({ password })
                     });
 
-                    const verifyData = await verifyResponse.json();
-                    console.log('Password verification:', verifyData);
+                    if (!verifyResponse.ok) {
+                        const errorData = await verifyResponse.text();
+                        console.error('Verify Response:', errorData);
+                        throw new Error('Password verification failed');
+                    }
 
+                    const verifyData = await verifyResponse.json();
+                    
                     if (!verifyData.success) {
                         throw new Error('Password tidak valid');
                     }
 
                     // Proses delete
-                    const deleteResponse = await fetch(`${window.location.origin}/admin/other-discussions/${id}`, {
+                    const deleteResponse = await fetch(`/admin/other-discussions/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1716,9 +1721,14 @@
                         }
                     });
 
-                    const deleteData = await deleteResponse.json();
-                    console.log('Delete response:', deleteData);
+                    if (!deleteResponse.ok) {
+                        const errorData = await deleteResponse.text();
+                        console.error('Delete Response:', errorData);
+                        throw new Error('Failed to delete discussion');
+                    }
 
+                    const deleteData = await deleteResponse.json();
+                    
                     if (!deleteData.success) {
                         throw new Error(deleteData.message || 'Gagal menghapus data');
                     }
@@ -1726,7 +1736,7 @@
                     return deleteData;
 
                 } catch (error) {
-                    console.error('Error:', error);
+                    console.error('Error Details:', error);
                     Swal.showValidationMessage(
                         `Request failed: ${error.message}`
                     );
