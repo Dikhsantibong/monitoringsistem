@@ -1052,19 +1052,53 @@ class OtherDiscussionController extends Controller
     public function removeCommitment(OtherDiscussion $discussion, $commitmentId)
     {
         try {
+            \Log::info('Attempting to remove commitment', [
+                'discussion_id' => $discussion->id,
+                'commitment_id' => $commitmentId,
+                'user' => auth()->user()->email
+            ]);
+
             $commitment = Commitment::where('id', $commitmentId)
                 ->where('other_discussion_id', $discussion->id)
                 ->firstOrFail();
 
+            \Log::info('Commitment found', [
+                'commitment' => $commitment->toArray()
+            ]);
+
             $commitment->delete();
 
+            \Log::info('Commitment deleted successfully');
+            
             session()->flash('success', 'Komitmen berhasil dihapus');
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Komitmen berhasil dihapus',
+                'debug_info' => [
+                    'discussion_id' => $discussion->id,
+                    'commitment_id' => $commitmentId,
+                    'timestamp' => now()->toIso8601String()
+                ]
+            ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error deleting commitment: ' . $e->getMessage());
+            \Log::error('Error deleting commitment', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'discussion_id' => $discussion->id,
+                'commitment_id' => $commitmentId
+            ]);
+
             session()->flash('error', 'Gagal menghapus komitmen');
-            return response()->json(['success' => false]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus komitmen',
+                'debug_info' => [
+                    'error' => $e->getMessage(),
+                    'discussion_id' => $discussion->id,
+                    'commitment_id' => $commitmentId
+                ]
+            ], 500);
         }
     }
 }   

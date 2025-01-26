@@ -469,9 +469,17 @@ function closePasswordModal() {
 async function verifyPasswordAndDelete() {
     try {
         const password = document.getElementById('verificationPassword').value;
+        console.log('Attempting password verification...');
         
-        // Verifikasi password menggunakan controller yang sudah ada
-        const verifyResponse = await fetch(`${window.location.origin}/admin/verify-password`, {
+        // Debug info
+        console.log('Current URL:', window.location.href);
+        console.log('Origin:', window.location.origin);
+        
+        const verifyUrl = `${window.location.origin}/admin/verify-password`;
+        console.log('Verify URL:', verifyUrl);
+
+        // Verifikasi password
+        const verifyResponse = await fetch(verifyUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -481,24 +489,47 @@ async function verifyPasswordAndDelete() {
             body: JSON.stringify({ password })
         });
 
-        const verifyData = await verifyResponse.json();
+        // Debug response
+        console.log('Verify Response Status:', verifyResponse.status);
+        console.log('Response Headers:', Object.fromEntries(verifyResponse.headers.entries()));
+        
+        // Tampilkan response mentah untuk debugging
+        const rawResponse = await verifyResponse.text();
+        console.log('Raw Response:', rawResponse);
+
+        let verifyData;
+        try {
+            verifyData = JSON.parse(rawResponse);
+        } catch (e) {
+            console.error('JSON Parse Error:', e);
+            document.getElementById('passwordError').innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <p class="font-bold">Response Error</p>
+                    <p class="text-sm">${rawResponse.substring(0, 200)}...</p>
+                    <p class="text-sm mt-2">Status: ${verifyResponse.status}</p>
+                </div>
+            `;
+            return;
+        }
 
         if (!verifyData.success) {
-            document.getElementById('passwordError').textContent = 'Password tidak valid';
+            document.getElementById('passwordError').textContent = verifyData.message || 'Password tidak valid';
             document.getElementById('passwordError').classList.remove('hidden');
             return;
         }
 
-        // Proses penghapusan
+        // Proses penghapusan dengan debugging
         let deleteUrl;
         if (deleteAction === 'removeFile') {
-            deleteUrl = `/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`;
+            deleteUrl = `${window.location.origin}/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`;
         } else if (deleteAction === 'removeCommitment') {
             const commitmentEntry = deleteParams.element.closest('.commitment-entry');
             const commitmentId = commitmentEntry.dataset.commitmentId;
             const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
-            deleteUrl = `/admin/other-discussions/${discussionId}/commitments/${commitmentId}`;
+            deleteUrl = `${window.location.origin}/admin/other-discussions/${discussionId}/commitments/${commitmentId}`;
         }
+
+        console.log('Delete URL:', deleteUrl);
 
         const deleteResponse = await fetch(deleteUrl, {
             method: 'DELETE',
@@ -508,18 +539,49 @@ async function verifyPasswordAndDelete() {
             }
         });
 
-        const deleteData = await deleteResponse.json();
+        // Debug delete response
+        console.log('Delete Response Status:', deleteResponse.status);
+        const rawDeleteResponse = await deleteResponse.text();
+        console.log('Raw Delete Response:', rawDeleteResponse);
+
+        let deleteData;
+        try {
+            deleteData = JSON.parse(rawDeleteResponse);
+        } catch (e) {
+            console.error('Delete JSON Parse Error:', e);
+            document.getElementById('passwordError').innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <p class="font-bold">Delete Response Error</p>
+                    <p class="text-sm">${rawDeleteResponse.substring(0, 200)}...</p>
+                    <p class="text-sm mt-2">Status: ${deleteResponse.status}</p>
+                </div>
+            `;
+            return;
+        }
 
         if (deleteData.success) {
             closePasswordModal();
-            window.location.reload(); // Reload halaman untuk menampilkan flash message
+            window.location.reload();
         } else {
-            throw new Error('Gagal melakukan penghapusan');
+            throw new Error(deleteData.message || 'Gagal melakukan penghapusan');
         }
 
     } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('passwordError').textContent = error.message;
+        console.error('Error Details:', {
+            message: error.message,
+            stack: error.stack,
+            deleteAction,
+            deleteParams
+        });
+
+        document.getElementById('passwordError').innerHTML = `
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                <p class="font-bold">Error</p>
+                <p class="text-sm">${error.message}</p>
+                <p class="text-sm mt-2">Action: ${deleteAction}</p>
+                <p class="text-sm">Params: ${JSON.stringify(deleteParams)}</p>
+            </div>
+        `;
         document.getElementById('passwordError').classList.remove('hidden');
     }
 }
