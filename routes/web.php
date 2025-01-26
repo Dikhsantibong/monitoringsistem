@@ -553,12 +553,16 @@ Route::get('other-discussions/{id}/download-document',
 Route::post('/other-discussions/{id}/remove-file', [OtherDiscussionEditController::class, 'removeFile'])
     ->name('admin.other-discussions.remove-file');
 
-Route::middleware(['auth', 'web'])->group(function () {
-    // Gunakan controller yang sudah ada
-    Route::post('/admin/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
+Route::middleware(['auth', 'web'])->prefix('admin')->group(function () {
+    // Verifikasi password
+    Route::post('/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
         ->name('admin.verify-password');
-    
+        
     // Route lainnya...
+    Route::delete('/other-discussions/{discussion}/remove-file/{index}', 
+        [OtherDiscussionController::class, 'removeFile']);
+    Route::delete('/other-discussions/{discussion}/commitments/{commitment}', 
+        [OtherDiscussionController::class, 'removeCommitment']);
 });
 
 // Verifikasi password
