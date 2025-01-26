@@ -358,8 +358,7 @@
                                                             <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
                                                                 <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
                                                             </svg>  
-                                                        </div>                  
-                                                    </div>
+                                                    </div>                  
                                                 </div>
                                             </th>
                                             <th class="py-2 px-4 border-b">Tanggal</th>
@@ -371,7 +370,7 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($workOrders as $index => $wo)
-                                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                            <tr data-wo-id="WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
                                                 <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="px-4 py-2 border border-gray-200">
                                                     <div class="flex items-center gap-2">
@@ -410,7 +409,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
-                                                <td class="py-2 px-4 border border-gray-200" data-column="status">
+                                                <td data-column="status" class="py-2 px-4 border border-gray-200">
                                                     <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
                                                         {{ $wo->status }}
                                                     </span>
@@ -430,7 +429,7 @@
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     {{ $wo->schedule_finish }}
                                                 </td>
-                                                <td class="py-2 px-4 border border-gray-200" data-column="action">
+                                                <td data-column="action" class="py-2 px-4 border border-gray-200">
                                                     @if ($wo->status != 'Closed')
                                                         <button onclick="showStatusOptions('{{ $wo->id }}', '{{ $wo->status }}')"
                                                             class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
@@ -569,13 +568,6 @@
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     <div class="flex space-x-2">
-                                                        {{-- @if($backlog->status == 'Open')
-                                                            <button 
-                                                                onclick="updateBacklogStatus({{ $backlog->id }})"
-                                                                class="px-3 py-1 text-sm rounded-full bg-green-500 hover:bg-green-600 text-white">
-                                                                Tutup
-                                                            </button>
-                                                        @endif --}}
                                                         <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
                                                             class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
                                                             <i class="fas fa-edit mr-2"></i> Edit
@@ -687,18 +679,36 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update tampilan tabel
-                const row = document.querySelector(`tr[data-wo-id="${id}"]`);
+                // Cari baris WO yang sesuai
+                const row = document.querySelector(`tr[data-wo-id="${data.data.formattedId}"]`);
                 if (row) {
+                    // Update status cell
                     const statusCell = row.querySelector('td[data-column="status"]');
-                    const actionCell = row.querySelector('td[data-column="action"]');
-                    
                     if (statusCell) {
-                        statusCell.innerHTML = getStatusBadge(newStatus);
+                        statusCell.innerHTML = `
+                            <span class="px-2 py-1 rounded-full ${getStatusColorClass(newStatus)}">
+                                ${newStatus}
+                            </span>
+                        `;
                     }
-                    
+
+                    // Update action cell
+                    const actionCell = row.querySelector('td[data-column="action"]');
                     if (actionCell) {
-                        actionCell.innerHTML = getActionButton(id, newStatus);
+                        if (newStatus === 'Closed') {
+                            actionCell.innerHTML = `
+                                <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                                    Closed
+                                </button>
+                            `;
+                        } else {
+                            actionCell.innerHTML = `
+                                <button onclick="showStatusOptions('${id}', '${newStatus}')"
+                                    class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+                                    <i class="fas fa-edit mr-2"></i> Ubah
+                                </button>
+                            `;
+                        }
                     }
                 }
 
@@ -706,7 +716,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Status Berhasil Diubah!',
-                    text: `Status WO telah diubah menjadi ${newStatus}`,
+                    text: data.message,
                     showConfirmButton: false,
                     timer: 1500,
                     toast: true,
@@ -727,6 +737,19 @@
                 timer: 3000
             });
         });
+    }
+
+    // Helper function untuk mendapatkan class warna status
+    function getStatusColorClass(status) {
+        const colorClasses = {
+            'Open': 'bg-red-100 text-red-600',
+            'Closed': 'bg-green-100 text-green-600',
+            'Comp': 'bg-blue-100 text-blue-600',
+            'APPR': 'bg-yellow-100 text-yellow-600',
+            'WAPPR': 'bg-purple-100 text-purple-600',
+            'WMATL': 'bg-gray-100 text-gray-600'
+        };
+        return colorClasses[status] || 'bg-gray-100 text-gray-600';
     }
 
     // Event Listeners
@@ -873,6 +896,7 @@
     function searchTable(tableId, searchValue) {
         const table = document.getElementById(tableId);
         const rows = table.getElementsByTagName('tr');
+        let visibleCount = 0;
 
         // Loop melalui semua baris, mulai dari index 1 untuk melewati header
         for (let i = 1; i < rows.length; i++) {
@@ -891,6 +915,13 @@
 
             // Tampilkan/sembunyikan baris berdasarkan hasil pencarian
             row.style.display = found ? '' : 'none';
+            if (found) visibleCount++;
+        }
+
+        // Update counter
+        const counter = document.getElementById(`${tableId}VisibleCount`);
+        if (counter) {
+            counter.textContent = visibleCount;
         }
     }
 

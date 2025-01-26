@@ -274,63 +274,34 @@ class LaporanController extends Controller
         try {
             DB::beginTransaction();
             
-            // 1. Validasi input dengan nilai enum yang benar
             $request->validate([
-                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'  // Sesuaikan dengan enum di database
+                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
             ]);
 
-            // 2. Ambil dan update WO dengan query builder
-            $wo = DB::table('work_orders')
-                ->where('id', $id)
-                ->first();
+            $wo = WorkOrder::findOrFail($id);
 
-            if (!$wo) {
-                throw new \Exception('Work Order tidak ditemukan');
-            }
-
-            $oldStatus = $wo->status;
-
-            if ($oldStatus === 'Closed') {  // Ubah pengecekan ke 'Close'
+            if ($wo->status === 'Closed') {
                 throw new \Exception('WO yang sudah Closed tidak dapat diubah statusnya');
             }
 
-            // 3. Update menggunakan query builder
-            DB::table('work_orders')
-                ->where('id', $id)
-                ->update([
-                    'status' => $request->status,
-                    'updated_at' => now()
-                ]);
-
-            // 4. Ambil data terbaru untuk memastikan
-            $updatedWo = DB::table('work_orders')
-                ->where('id', $id)
-                ->first();
+            $oldStatus = $wo->status;
+            $wo->status = $request->status;
+            $wo->save();
 
             DB::commit();
-
-            \Log::info('WO status updated', [
-                'wo_id' => $id,
-                'old_status' => $oldStatus,
-                'new_status' => $updatedWo->status
-            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => "Status berhasil diubah dari {$oldStatus} ke {$request->status}",
                 'data' => [
                     'id' => $id,
-                    'newStatus' => $updatedWo->status
+                    'newStatus' => $wo->status,
+                    'formattedId' => 'WO-' . str_pad($id, 4, '0', STR_PAD_LEFT)
                 ]
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Failed to update WO status', [
-                'wo_id' => $id,
-                'error' => $e->getMessage()
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengubah status: ' . $e->getMessage()
