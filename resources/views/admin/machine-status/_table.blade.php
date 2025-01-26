@@ -140,14 +140,20 @@
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Action Plan</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Progress</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Tanggal Mulai</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Target Selesai</th>
+                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Target Selesai</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Gambar</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm">
                         @forelse($powerPlant->machines as $index => $machine)
                             @php
-                                $log = $filteredLogs->firstWhere('machine_id', $machine->id);
+                                // Pastikan mengambil log terbaru untuk tanggal yang dipilih
+                                $log = $filteredLogs
+                                    ->where('machine_id', $machine->id)
+                                    ->where('created_at', '>=', $date . ' 00:00:00')
+                                    ->where('created_at', '<=', $date . ' 23:59:59')
+                                    ->first();
+                                    
                                 $status = $log?->status ?? '-';
                                 $statusClass = match($status) {
                                     'Operasi' => 'bg-green-100 text-green-800',
@@ -158,15 +164,9 @@
                                     default => 'bg-gray-100 text-gray-800'
                                 };
 
-                                // Cari gambar untuk mesin ini
-                                $pattern = storage_path('app/public/machine-images/machine_' . $machine->id . '_*');
-                                $files = glob($pattern);
-                                $imageUrl = null;
-                                if (!empty($files)) {
-                                    rsort($files); // Sort descending untuk mendapatkan file terbaru
-                                    $latestFile = $files[0];
-                                    $imageUrl = 'machine-images/' . basename($latestFile);
-                                }
+                                $image = DB::table('machine_images')
+                                    ->where('machine_id', $machine->id)
+                                    ->first();
                             @endphp
                             <tr class="hover:bg-gray-50 border border-gray-200">
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $index + 1 }}</td>
@@ -192,11 +192,11 @@
                                     {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                 </td>
                                 <td class="px-3 py-2 text-center">
-                                    @if($imageUrl)
-                                        <img src="{{ asset('storage/' . $imageUrl) }}" 
+                                    @if($image)
+                                        <img src="{{ asset('storage/' . $image->image_path) }}" 
                                              alt="Machine Image" 
                                              class="w-20 h-20 object-cover mx-auto cursor-pointer"
-                                             onclick="showLargeImage('{{ asset('storage/' . $imageUrl) }}')"
+                                             onclick="showLargeImage('{{ asset('storage/' . $image->image_path) }}')"
                                              title="Klik untuk memperbesar">
                                     @else
                                         -
@@ -205,7 +205,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="15" class="px-3 py-4 text-center text-gray-500">
+                                <td colspan="14" class="px-3 py-4 text-center text-gray-500">
                                     Tidak ada data mesin untuk unit ini
                                 </td>
                             </tr>
@@ -218,19 +218,4 @@
 @endif
 
 @push('scripts')
-<script>
-function showLargeImage(imageUrl) {
-    Swal.fire({
-        imageUrl: imageUrl,
-        imageWidth: '80%',
-        imageHeight: '80vh',
-        imageAlt: 'Machine Image',
-        showConfirmButton: false,
-        width: '90%',
-        padding: '20px',
-        background: '#fff',
-        showCloseButton: true
-    });
-}
-</script>
 @endpush 

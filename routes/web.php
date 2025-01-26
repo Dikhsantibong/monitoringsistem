@@ -375,9 +375,22 @@ Route::get('/get-mothballed-machines', [DashboardPemantauanController::class, 'g
 
 Route::get('/get-maintenance-machines', [DashboardPemantauanController::class, 'getMaintenanceMachines']);
 
-Route::prefix('admin/pembangkit')->middleware(['auth'])->group(function () {
-    Route::post('/save-status', [PembangkitController::class, 'saveStatus'])
-        ->name('admin.pembangkit.save-status');
+Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () {
+    // Pembangkit routes
+    Route::prefix('pembangkit')->name('pembangkit.')->group(function () {
+        Route::get('/ready', [PembangkitController::class, 'ready'])->name('ready');
+        Route::post('/save-status', [PembangkitController::class, 'saveStatus'])->name('save-status');
+        Route::get('/get-status', [PembangkitController::class, 'getStatus'])->name('get-status');
+        Route::get('/status-history', [PembangkitController::class, 'getStatusHistory'])->name('status-history');
+        Route::get('/report', [PembangkitController::class, 'report'])->name('report');
+        Route::get('/report/download', [PembangkitController::class, 'downloadReport'])->name('report.download');
+        Route::get('/report/print', [PembangkitController::class, 'printReport'])->name('report.print');
+        
+        // Image routes
+        Route::post('/upload-image', [PembangkitController::class, 'uploadImage'])->name('upload-image');
+        Route::delete('/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('delete-image');
+        Route::get('/check-image/{machineId}', [PembangkitController::class, 'checkImage'])->name('check-image');
+    });
 });
 
 Route::post('/admin/pembangkit/reset-status', [PembangkitController::class, 'resetStatus'])
@@ -536,49 +549,6 @@ Route::get('other-discussions/{id}/download-document',
     [OtherDiscussionController::class, 'downloadDocument'])
     ->name('admin.other-discussions.download-document');
 
-Route::delete('/admin/pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('admin.pembangkit.delete-image');
-
-Route::post('/pembangkit/upload-image', [PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
-Route::delete('/pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
-
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    Route::post('pembangkit/upload-image', [PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
-    Route::delete('pembangkit/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('pembangkit.delete-image');
-
-    // Route untuk pembangkit
-    Route::get('/pembangkit/check-image/{machineId}', [PembangkitController::class, 'checkImage'])
-        ->name('pembangkit.check-image');
-        
-    // Route untuk laporan
-    Route::get('/laporan/check-wo-status/{id}', [LaporanController::class, 'checkWOStatus'])
-        ->name('laporan.check-wo-status');
-    
-    Route::post('/laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
-        ->name('laporan.update-wo-status')
-        ->middleware('admin');
-
-    // Route untuk update status SR
-    Route::post('/laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
-        ->name('laporan.update-sr-status');
-});
-
-// Tambahkan route ini di luar group route yang ada
-Route::middleware(['auth'])->group(function () {
-    // Route khusus untuk update status SR
-    Route::post('/admin/laporan/update-sr-status/{id}', [App\Http\Controllers\Admin\LaporanController::class, 'updateSRStatus'])
-        ->name('admin.laporan.update-sr-status');
-});
-
-// Atau jika Anda ingin menambahkannya di dalam group admin yang sudah ada:
-Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
-    // ... route lainnya ...
-    
-    // Route untuk update status SR
-    Route::post('laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
-        ->name('laporan.update-sr-status');
-});
-
-// Tambahkan route berikut di dalam group admin
 Route::post('/other-discussions/{id}/remove-file', [OtherDiscussionEditController::class, 'removeFile'])
     ->name('admin.other-discussions.remove-file');
 

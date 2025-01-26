@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\UnitOperationHour;
 use Illuminate\Support\Facades\File;
+use App\Models\MachineImage;
 
 class PembangkitController extends Controller
 {
@@ -60,41 +61,28 @@ class PembangkitController extends Controller
 
             // Simpan data status mesin
             foreach ($request->logs as $log) {
-                $equipment = isset($log['equipment']) ? trim($log['equipment']) : null;
-                
-                $operation = MachineOperation::where('machine_id', $log['machine_id'])
-                    ->latest('recorded_at')
-                    ->first();
-
-                // Cek status untuk menentukan nilai DMP
-                $dmp = $operation ? $operation->dmp : 0;
-                if (in_array($log['status'], ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])) {
-                    $dmp = 0; // Set DMP ke 0 untuk status tertentu
-                }
-
-                if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
-                    MachineStatusLog::updateOrCreate(
-                        [
-                            'machine_id' => $log['machine_id'],
-                            'tanggal' => $log['tanggal']
-                        ],
-                        [
-                            'dmn' => $operation ? $operation->dmn : 0,
-                            'dmp' => $dmp, // Gunakan nilai DMP yang sudah ditentukan
-                            'load_value' => $log['load_value'],
-                            'status' => $log['status'],
-                            'component' => $log['component'],
-                            'equipment' => $equipment,
-                            'deskripsi' => $log['deskripsi'] ?? null,
-                            'kronologi' => $log['kronologi'] ?? null,
-                            'action_plan' => $log['action_plan'] ?? null,
-                            'progres' => $log['progres'] ?? null,
-                            'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
-                            'target_selesai' => $log['target_selesai'] ?? null,
-                            'unit_source' => session('unit')
-                        ]
-                    );
-                }
+                // Pastikan data selalu tersimpan, bahkan jika status kosong
+                MachineStatusLog::updateOrCreate(
+                    [
+                        'machine_id' => $log['machine_id'],
+                        'tanggal' => $log['tanggal']
+                    ],
+                    [
+                        'dmn' => $log['dmn'] ?? 0,
+                        'dmp' => $log['dmp'] ?? 0,
+                        'load_value' => $log['load_value'] ?? 0,
+                        'status' => $log['status'] ?? '-',  // Berikan default value
+                        'component' => $log['component'],
+                        'equipment' => $log['equipment'] ?? null,
+                        'deskripsi' => $log['deskripsi'] ?? null,
+                        'kronologi' => $log['kronologi'] ?? null,
+                        'action_plan' => $log['action_plan'] ?? null,
+                        'progres' => $log['progres'] ?? null,
+                        'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
+                        'target_selesai' => $log['target_selesai'] ?? null,
+                        'unit_source' => session('unit')
+                    ]
+                );
             }
             
             DB::commit();
@@ -357,27 +345,26 @@ class PembangkitController extends Controller
             // Generate nama file unik dengan timestamp
             $filename = 'machine_' . $machineId . '_' . time() . '.' . $file->getClientOriginalExtension();
             
-            // Pastikan direktori ada
-            $path = storage_path('app/public/machine-images');
-            if (!file_exists($path)) {
-                mkdir($path, 0777, true);
+            // Simpan file ke storage public
+            $path = $file->storeAs('machine-images', $filename, 'public');
+
+            // Hapus gambar lama dari storage dan database
+            $oldImage = MachineImage::where('machine_id', $machineId)->first();
+            if ($oldImage) {
+                Storage::disk('public')->delete($oldImage->image_path);
+                $oldImage->delete();
             }
 
-            // Hapus gambar lama jika ada
-            $oldFiles = glob(storage_path('app/public/machine-images/machine_' . $machineId . '_*'));
-            foreach ($oldFiles as $oldFile) {
-                if (file_exists($oldFile)) {
-                    unlink($oldFile);
-                }
-            }
-
-            // Simpan file baru
-            $file->move($path, $filename);
+            // Simpan informasi gambar ke database
+            MachineImage::create([
+                'machine_id' => $machineId,
+                'image_path' => $path
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Gambar berhasil diunggah',
-                'image_url' => 'machine-images/' . $filename
+                'image_url' => $path
             ]);
 
         } catch (\Exception $e) {
@@ -392,9 +379,14 @@ class PembangkitController extends Controller
     public function deleteImage($machineId)
     {
         try {
-            // Hapus semua file gambar untuk mesin ini
-            $pattern = storage_path('app/public/machine-images/machine_' . $machineId . '_*');
-            array_map('unlink', glob($pattern));
+            $image = MachineImage::where('machine_id', $machineId)->first();
+            
+            if ($image) {
+                if (Storage::exists('public/' . $image->image_path)) {
+                    Storage::delete('public/' . $image->image_path);
+                }
+                $image->delete();
+            }
 
             return response()->json([
                 'success' => true,
@@ -412,16 +404,12 @@ class PembangkitController extends Controller
     public function checkImage($machineId)
     {
         try {
-            $pattern = storage_path('app/public/machine-images/machine_' . $machineId . '_*');
-            $files = glob($pattern);
+            $image = MachineImage::where('machine_id', $machineId)->first();
             
-            if (!empty($files)) {
-                $latestFile = end($files);
-                $filename = basename($latestFile);
-                
+            if ($image) {
                 return response()->json([
                     'success' => true,
-                    'image_url' => $filename
+                    'image_url' => $image->image_path
                 ]);
             }
             

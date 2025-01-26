@@ -21,12 +21,8 @@ class MachineStatusController extends Controller
             $search = $request->get('search');
             $unitSource = $request->get('unit_source');
             
-            // Query untuk mengambil data pembangkit dengan relasi yang dibutuhkan
-            $query = PowerPlant::with(['machines' => function($query) {
-                $query->with(['statusLogs' => function($query) {
-                    $query->latest('tanggal');
-                }]);
-            }]);
+            // Query untuk mengambil data pembangkit
+            $query = PowerPlant::with(['machines']);
             
             // Filter berdasarkan unit_source
             if (session('unit') === 'mysql') {
@@ -37,24 +33,10 @@ class MachineStatusController extends Controller
                 $query->where('unit_source', session('unit'));
             }
             
-            // Filter berdasarkan pencarian
-            if ($search) {
-                $query->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhereHas('machines', function($q) use ($search) {
-                            $q->where('name', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('machines.statusLogs', function($q) use ($search) {
-                            $q->where('status', 'like', "%{$search}%");
-                        });
-                });
-            }
-            
             $powerPlants = $query->get();
             
             // Ambil semua log untuk tanggal yang dipilih
-            $logs = MachineStatusLog::with(['machine', 'powerPlant'])
-                ->whereDate('tanggal', $date)
+            $logs = MachineStatusLog::whereDate('tanggal', $date)
                 ->when($search, function($query) use ($search) {
                     $query->where(function($q) use ($search) {
                         $q->whereHas('machine', function($q) use ($search) {
@@ -65,8 +47,7 @@ class MachineStatusController extends Controller
                 ->get();
 
             // Ambil data HOP
-            $hops = UnitOperationHour::with('powerPlant')
-                ->whereDate('tanggal', $date)
+            $hops = UnitOperationHour::whereDate('tanggal', $date)
                 ->when(session('unit') !== 'mysql', function($query) {
                     $query->whereHas('powerPlant', function($q) {
                         $q->where('unit_source', session('unit'));
