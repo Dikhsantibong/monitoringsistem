@@ -467,76 +467,84 @@ function closePasswordModal() {
 
 // Fungsi untuk verifikasi password dan melakukan penghapusan
 async function verifyPasswordAndDelete() {
-    const password = document.getElementById('verificationPassword').value;
-    
     try {
+        const password = document.getElementById('verificationPassword').value;
+        const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
+        
         // Verifikasi password
-        const response = await fetch('/admin/verify-password', {
+        const verifyResponse = await fetch('/admin/verify-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({ password })
         });
 
-        const data = await response.json();
+        if (!verifyResponse.ok) {
+            throw new Error('Verifikasi password gagal');
+        }
 
-        if (data.success) {
-            if (deleteAction === 'removeFile') {
-                const fileResponse = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
+        const verifyData = await verifyResponse.json();
 
-                const fileData = await fileResponse.json();
-
-                if (fileData.success) {
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Dokumen berhasil dihapus',
-                        icon: 'success'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                }
-            } else if (deleteAction === 'removeCommitment') {
-                const commitmentEntry = deleteParams.element.closest('.commitment-entry');
-                const commitmentId = commitmentEntry.dataset.commitmentId;
-                const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
-
-                const commitmentResponse = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
-
-                const commitmentData = await commitmentResponse.json();
-
-                if (commitmentData.success) {
-                    commitmentEntry.remove();
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Komitmen berhasil dihapus',
-                        icon: 'success'
-                    });
-                }
-            }
-            closePasswordModal();
-        } else {
+        if (!verifyData.success) {
             document.getElementById('passwordError').textContent = 'Password tidak valid';
             document.getElementById('passwordError').classList.remove('hidden');
+            return;
+        }
+
+        let url;
+        let successMessage;
+        let reload = false;
+
+        if (deleteAction === 'removeFile') {
+            url = `/admin/other-discussions/${discussionId}/remove-file/${deleteParams.fileIndex}`;
+            successMessage = 'Dokumen berhasil dihapus';
+            reload = true;
+        } else if (deleteAction === 'removeCommitment') {
+            const commitmentId = deleteParams.element.closest('.commitment-entry').dataset.commitmentId;
+            url = `/admin/other-discussions/${discussionId}/commitments/${commitmentId}`;
+            successMessage = 'Komitmen berhasil dihapus';
+        }
+
+        const deleteResponse = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        });
+
+        if (!deleteResponse.ok) {
+            throw new Error('Server error: ' + deleteResponse.status);
+        }
+
+        const deleteData = await deleteResponse.json();
+
+        if (deleteData.success) {
+            closePasswordModal();
+            Swal.fire({
+                title: 'Berhasil!',
+                text: deleteData.message || successMessage,
+                icon: 'success'
+            }).then(() => {
+                if (reload) {
+                    window.location.reload();
+                } else {
+                    deleteParams.element.closest('.commitment-entry').remove();
+                }
+            });
+        } else {
+            throw new Error(deleteData.message || 'Gagal menghapus');
         }
     } catch (error) {
+        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Terjadi Kesalahan',
-            text: 'Gagal melakukan penghapusan'
+            text: error.message || 'Gagal melakukan penghapusan'
         });
     }
 }
@@ -544,7 +552,7 @@ async function verifyPasswordAndDelete() {
 // Fungsi untuk menghapus file
 function removeExistingFile(discussionId, fileIndex) {
     deleteAction = 'removeFile';
-    deleteParams = { discussionId, fileIndex };
+    deleteParams = { fileIndex };
     showPasswordModal();
 }
 
