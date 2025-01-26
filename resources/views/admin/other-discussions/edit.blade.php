@@ -470,8 +470,8 @@ async function verifyPasswordAndDelete() {
     try {
         const password = document.getElementById('verificationPassword').value;
         
-        // Verifikasi password
-        const verifyResponse = await fetch('/admin/verify-password', {
+        // Verifikasi password menggunakan controller yang sudah ada
+        const verifyResponse = await fetch(`${window.location.origin}/admin/verify-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
