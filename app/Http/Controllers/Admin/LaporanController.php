@@ -11,6 +11,8 @@ use App\Models\WoBacklog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PowerPlant;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class LaporanController extends Controller
 {
@@ -582,6 +584,47 @@ class LaporanController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error in manage method: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data.');
+        }
+    }
+
+    public function verifyPasswordAndDelete(Request $request)
+    {
+        try {
+            // Verifikasi password
+            if (!Hash::check($request->password, Auth::user()->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password yang Anda masukkan salah'
+                ], 401);
+            }
+
+            // Proses penghapusan berdasarkan tipe
+            switch ($request->type) {
+                case 'sr':
+                    $item = ServiceRequest::findOrFail($request->id);
+                    break;
+                case 'wo':
+                    $item = WorkOrder::findOrFail($request->id);
+                    break;
+                case 'backlog':
+                    $item = WoBacklog::findOrFail($request->id);
+                    break;
+                default:
+                    throw new \Exception('Tipe data tidak valid');
+            }
+
+            $item->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -621,6 +621,9 @@ Route::middleware(['auth', 'web'])->group(function () {
     });
 });
 
+Route::post('/admin/laporan/verify-delete', [LaporanController::class, 'verifyPasswordAndDelete'])
+    ->name('admin.laporan.verify-delete');
+
 
 
 

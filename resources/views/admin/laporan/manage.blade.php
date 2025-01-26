@@ -268,65 +268,98 @@
     </div>
 </div>
 
+<!-- Password Verification Modal -->
+<div id="passwordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h2 class="text-xl font-bold mb-4">Verifikasi Password</h2>
+        <p class="mb-4">Masukkan password Anda untuk melanjutkan penghapusan</p>
+        <input type="password" id="deletePassword" class="w-full p-2 border rounded mb-4" placeholder="Masukkan password">
+        <div class="flex justify-end gap-2">
+            <button onclick="closePasswordModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Batal</button>
+            <button onclick="confirmDelete()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Hapus</button>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function handleDelete(type, id) {
-    const types = {
-        'sr': 'Service Request',
-        'wo': 'Work Order',
-        'backlog': 'WO Backlog'
-    };
+let deleteData = {
+    type: null,
+    id: null
+};
 
-    Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: `${types[type]} ini akan dihapus permanen!`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Buat form untuk submit
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = "{{ route('admin.laporan.delete', ['type' => ':type', 'id' => ':id']) }}".replace(':type', type).replace(':id', id);
-            
-            // Tambahkan CSRF token
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = '{{ csrf_token() }}';
-            form.appendChild(csrfInput);
-            
-            // Tambahkan method spoofing untuk DELETE
-            const methodInput = document.createElement('input');
-            methodInput.type = 'hidden';
-            methodInput.name = '_method';
-            methodInput.value = 'DELETE';
-            form.appendChild(methodInput);
-            
-            // Tambahkan form ke document dan submit
-            document.body.appendChild(form);
-            
-            // Submit form
-            form.submit();
+function handleDelete(type, id) {
+    deleteData.type = type;
+    deleteData.id = id;
+    document.getElementById('passwordModal').classList.remove('hidden');
+    document.getElementById('passwordModal').classList.add('flex');
+    document.getElementById('deletePassword').value = '';
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').classList.add('hidden');
+    document.getElementById('passwordModal').classList.remove('flex');
+}
+
+function confirmDelete() {
+    const password = document.getElementById('deletePassword').value;
+    
+    fetch("{{ route('admin.laporan.verify-delete') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            type: deleteData.type,
+            id: deleteData.id,
+            password: password
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        closePasswordModal();
+        
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: data.message
+            });
         }
+    })
+    .catch(error => {
+        closePasswordModal();
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Terjadi kesalahan saat menghapus data'
+        });
     });
 }
 
-// Event listener untuk tombol hapus
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('[data-delete]');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const type = this.dataset.type;
-            const id = this.dataset.id;
-            handleDelete(type, id);
-        });
-    });
+// Tutup modal jika user klik di luar modal
+document.getElementById('passwordModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePasswordModal();
+    }
+});
+
+// Handle tombol Enter pada input password
+document.getElementById('deletePassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        confirmDelete();
+    }
 });
 
 // Tab switching functionality
@@ -367,6 +400,18 @@ window.onclick = function(event) {
         }
     }
 }
+
+// Tambahkan event listener untuk tombol hapus
+document.addEventListener('DOMContentLoaded', function() {
+    // Tambahkan event listener untuk semua tombol hapus
+    document.querySelectorAll('[data-delete]').forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            const id = this.getAttribute('data-id');
+            handleDelete(type, id);
+        });
+    });
+});
 </script>
 @push('styles')
 @endpush
