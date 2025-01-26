@@ -215,9 +215,30 @@ Route::middleware(['auth'])->group(function () {
         // Route Score Card lainnya
         Route::resource('score-card', ScoreCardDailyController::class);
 
-        // Route untuk update status SR
+        // Route untuk laporan
+        Route::get('/laporan/sr-wo', [LaporanController::class, 'srWo'])->name('laporan.sr_wo');
+        Route::get('/laporan/create-sr', [LaporanController::class, 'createSR'])->name('laporan.create-sr');
+        Route::get('/laporan/create-wo', [LaporanController::class, 'createWO'])->name('laporan.create-wo');
+        Route::post('/laporan/store-sr', [LaporanController::class, 'storeSR'])->name('laporan.store-sr');
+        Route::post('/laporan/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
+        
+        // Route untuk update status
         Route::post('/laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
             ->name('laporan.update-sr-status');
+        Route::post('/laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
+            ->name('laporan.update-wo-status');
+            
+        // Route untuk WO Backlog
+        Route::get('/laporan/create-wo-backlog', [LaporanController::class, 'createWOBacklog'])
+            ->name('laporan.create-wo-backlog');
+        Route::post('/laporan/store-wo-backlog', [LaporanController::class, 'storeWOBacklog'])
+            ->name('laporan.store-wo-backlog');
+        Route::get('/laporan/edit-wo-backlog/{id}', [LaporanController::class, 'editWoBacklog'])
+            ->name('laporan.edit-wo-backlog');
+        Route::put('/laporan/wo-backlog/{id}', [LaporanController::class, 'updateWoBacklog'])
+            ->name('laporan.update-wo-backlog');
+        Route::post('/laporan/wo-backlog/{id}/status', [LaporanController::class, 'updateBacklogStatus'])
+            ->name('laporan.update-backlog-status');
     });
 });
 
@@ -577,6 +598,20 @@ Route::delete('/admin/other-discussions/{discussion}/remove-file/{index}', [App\
 Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}', 
     [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeCommitment'])
     ->name('admin.other-discussions.remove-commitment');
+
+// Tambahkan di akhir file, sebelum route fallback
+Route::middleware(['auth'])->group(function () {
+    // Update status routes
+    Route::post('/admin/laporan/update-sr-status/{id}', [App\Http\Controllers\Admin\LaporanController::class, 'updateSRStatus'])
+        ->name('admin.laporan.update-sr-status');
+    Route::post('/admin/laporan/update-wo-status/{id}', [App\Http\Controllers\Admin\LaporanController::class, 'updateWOStatus'])
+        ->name('admin.laporan.update-wo-status');
+});
+
+// Route fallback untuk debugging
+Route::fallback(function () {
+    return response()->json(['error' => 'Route tidak ditemukan'], 404);
+});
 
 
 

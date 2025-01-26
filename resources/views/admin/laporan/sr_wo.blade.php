@@ -672,7 +672,7 @@
     }
 
     function processStatusUpdate(id, newStatus) {
-        const url = "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
+        const url = "/admin/laporan/update-wo-status/" + id;
         
         fetch(url, {
             method: 'POST',
@@ -916,13 +916,15 @@
             Swal.fire({
                 icon: 'info',
                 title: 'Informasi',
-                text: 'WO sudah ditutup dan tidak dapat diubah lagi.',
+                text: type === 'sr' ? 'SR sudah ditutup dan tidak dapat diubah lagi.' : 'WO sudah ditutup dan tidak dapat diubah lagi.',
             });
-            return; // Menghentikan eksekusi jika sudah ditutup
+            return;
         }
+
+        // Gunakan URL absolut
         const url = type === 'sr' ? 
-            "{{ route('admin.laporan.update-sr-status', ['id' => ':id']) }}".replace(':id', id) :
-            "{{ route('admin.laporan.update-wo-status', ['id' => ':id']) }}".replace(':id', id);
+            '/admin/laporan/update-sr-status/' + id :
+            '/admin/laporan/update-wo-status/' + id;
 
         Swal.fire({
             title: 'Konfirmasi',
@@ -960,11 +962,7 @@
                             location.reload();
                         });
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Terjadi kesalahan!',
-                            text: data.message || 'Gagal mengubah status'
-                        });
+                        throw new Error(data.message || 'Gagal mengubah status');
                     }
                 })
                 .catch(error => {
@@ -972,7 +970,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Terjadi kesalahan!',
-                        text: 'Gagal mengubah status'
+                        text: error.message || 'Gagal mengubah status'
                     });
                 });
             }
