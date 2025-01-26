@@ -562,12 +562,11 @@ Route::post('/admin/verify-password', [App\Http\Controllers\Admin\PasswordVerifi
     ->name('admin.verify-password');
 
 // Hapus file
-Route::delete('/admin/other-discussions/{discussion}/remove-file/{index}', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeFile'])
+Route::delete('/admin/other-discussions/{discussion}/remove-file/{index}', [OtherDiscussionController::class, 'removeFile'])
     ->name('admin.other-discussions.remove-file');
 
 // Route untuk hapus commitment
-Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}', 
-    [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeCommitment'])
+Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}', [OtherDiscussionController::class, 'removeCommitment'])
     ->name('admin.other-discussions.remove-commitment');
 
 
