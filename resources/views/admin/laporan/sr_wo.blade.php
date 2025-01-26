@@ -409,7 +409,7 @@
                                                         {{ $wo->type }}
                                                     </span>
                                                 </td>
-                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px;">{{ $wo->description }}</td>
+                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
                                                 <td class="py-2 px-4 border border-gray-200" data-column="status">
                                                     <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
                                                         {{ $wo->status }}
@@ -614,7 +614,8 @@
     }
 
     function getStatusBadge(status) {
-        return `<span class="bg-${getStatusColor(status)} text-white rounded-full px-2 py-1">
+        const color = getStatusColor(status);
+        return `<span class="px-2 py-1 rounded-full bg-${color} text-white">
             ${status}
         </span>`;
     }
@@ -686,38 +687,44 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const row = document.querySelector(`#woTable tbody tr[data-id="${id}"]`);
-                
+                // Update tampilan tabel
+                const row = document.querySelector(`tr[data-wo-id="${id}"]`);
                 if (row) {
                     const statusCell = row.querySelector('td[data-column="status"]');
                     const actionCell = row.querySelector('td[data-column="action"]');
-
+                    
                     if (statusCell) {
                         statusCell.innerHTML = getStatusBadge(newStatus);
                     }
-
+                    
                     if (actionCell) {
                         actionCell.innerHTML = getActionButton(id, newStatus);
                     }
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
                 }
+
+                // Tampilkan alert sukses
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Berhasil Diubah!',
+                    text: `Status WO telah diubah menjadi ${newStatus}`,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    toast: true,
+                    position: 'top-end'
+                });
             } else {
-                throw new Error(data.message);
+                throw new Error(data.message || 'Terjadi kesalahan saat mengubah status');
             }
         })
         .catch(error => {
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Error!',
-                text: error.message || 'Terjadi kesalahan saat mengupdate status'
+                title: 'Gagal!',
+                text: error.message || 'Terjadi kesalahan saat mengubah status',
+                toast: true,
+                position: 'top-end',
+                timer: 3000
             });
         });
     }
