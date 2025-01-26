@@ -63,524 +63,506 @@
             </div>
 
             <main class="px-6">
-                <!-- Konten Laporan SR/WO -->
-                <div class="bg-white rounded-lg shadow p-6 sm:p-3">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold">Detail Laporan</h2>
-                        <a href="{{ route('admin.laporan.manage') }}" 
-                           class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-cog mr-2"></i>
-                            Manajemen Laporan
-                        </a>
-                    </div>
-                    <div class="p-4 md:p-0">
-                        <!-- Filter dan Search Section -->
-                        <div class="mb-4 flex flex-col lg:flex-row justify-end space-x-4 gap-y-3">
-                            <form id="filterForm" class="flex flex-col md:flex-row gap-y-3 items-center space-x-2">
-                                <div class="flex items-center space-x-2">
-                                    <label for="tanggal_mulai" class="text-gray-600">Dari:</label>
-                                    <input type="date" id="tanggal_mulai" name="tanggal_mulai" 
-                                        value="{{ request('tanggal_mulai', date('Y-m-d', strtotime('-7 days'))) }}"
-                                        class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <label for="tanggal_akhir" class="text-gray-600">Sampai:</label>
-                                    <input type="date" id="tanggal_akhir" name="tanggal_akhir" 
-                                        value="{{ request('tanggal_akhir', date('Y-m-d')) }}"
-                                        class="px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                </div>
-                                <button type="button" onclick="updateFilter()" 
-                                    class="bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#0A649B] transition-colors flex items-center" 
-                                    style="height: 42px;">
-                                    <i class="fas fa-filter mr-2"></i> Filter
-                                </button>
-                                <button type="button" onclick="showAllData()" 
-                                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center" 
-                                    style="height: 42px;">
-                                    <i class="fas fa-list mr-2"></i> Tampilkan Semua
-                                </button>
-                            </form>
+                <!-- Tab Navigation -->
+                <div class="mb-4 border-b border-gray-200">
+                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+                        <li class="mr-2">
+                            <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active" data-tab="sr">
+                                Service Request (SR)
+                            </a>
+                        </li>
+                        <li class="mr-2">
+                            <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" data-tab="wo">
+                                Work Order (WO)
+                            </a>
+                        </li>
+                        <li class="mr-2">
+                            <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" data-tab="backlog">
+                                WO Backlog
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-                            <!-- Search Input -->
-                            {{-- <div class="flex">
-                                <input type="text" id="searchInput" placeholder="Cari..."
-                                    class="w-full px-2 py-1 border rounded-l-lg focus:outline-none focus:border-blue-500" style="height: 42px;">
-                                <button onclick="searchTables()"
-                                    class="bg-blue-500 px-4 py-1 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors" style="height: 42px;">
-                                    Search
-                                </button>
-                            </div> --}}
+                <!-- SR Table -->
+                <div id="sr-tab" class="tab-content active">
+                    <div class="bg-white rounded-lg shadow p-6 mb-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
+                            <a href="{{ route('admin.laporan.create-sr') }}" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-plus-circle mr-2"></i> Tambah SR
+                            </a>
                         </div>
-
-                        <!-- Card SR -->
-                        <div class="bg-white rounded-lg shadow p-6 mb-4">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
-                                <a href="{{ route('admin.laporan.create-sr') }}" 
-                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-plus-circle mr-2"></i> Tambah SR
-                                </a>
-                            </div>
-                            
-                            <!-- Header section dengan search dan counter -->
-                            <div class="flex justify-between items-center mb-4">
-                                <!-- Search dengan style baru -->
-                                <div class="w-1/3">
-                                    <div class="relative">
-                                        <input type="text" 
-                                               id="searchSR" 
-                                               placeholder="Cari SR, unit, atau status..."
-                                               onkeyup="if(event.key === 'Enter') searchSRTable()"
-                                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-search text-gray-400"></i>
-                                        </div>
+                        
+                        <!-- Header section dengan search dan counter -->
+                        <div class="flex justify-between items-center mb-4">
+                            <!-- Search dengan style baru -->
+                            <div class="w-1/3">
+                                <div class="relative">
+                                    <input type="text" 
+                                           id="searchSR" 
+                                           placeholder="Cari SR, unit, atau status..."
+                                           onkeyup="if(event.key === 'Enter') searchSRTable()"
+                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
                                     </div>
                                 </div>
-                                <!-- Counter -->
-                                <div class="text-gray-600">
-                                    Menampilkan <span id="srVisibleCount">0</span> dari <span id="srTotalCount">0</span> data
-                                </div>
                             </div>
+                            <!-- Counter -->
+                            <div class="text-gray-600">
+                                Menampilkan <span id="srVisibleCount">0</span> dari <span id="srTotalCount">0</span> data
+                            </div>
+                        </div>
 
-                            <!-- Tabel SR -->
-                            <div class="overflow-auto max-h-96">
-                                <table id="srTable"
-                                    class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                    <thead class="sticky top-0 z-10">
-                                        <tr style="background-color: #0A749B; color: white;">
-                                            <th class="py-2 px-4 border-b">No</th>
-                                            <th class="py-2 px-4 border-b">ID SR</th>
-                                            <th class="py-2 px-4 border-b">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Unit</span>
-                                                    <div class="relative">
-                                                        <select id="srUnitFilter" onchange="filterSRTable()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                            <option value="" class="text-gray-700">Semua</option>
-                                                            @foreach($powerPlants as $unit)
-                                                                <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
+                        <!-- Tabel SR -->
+                        <div class="overflow-auto max-h-96">
+                            <table id="srTable"
+                                class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                                <thead class="sticky top-0 z-10">
+                                    <tr style="background-color: #0A749B; color: white;">
+                                        <th class="py-2 px-4 border-b">No</th>
+                                        <th class="py-2 px-4 border-b">ID SR</th>
+                                        <th class="py-2 px-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <span>Unit</span>
+                                                <div class="relative">
+                                                    <select id="srUnitFilter" onchange="filterSRTable()" 
+                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                        <option value="" class="text-gray-700">Semua</option>
+                                                        @foreach($powerPlants as $unit)
+                                                            <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                        </svg>
                                                     </div>
                                                 </div>
-                                            </th>
-                                            <th class="py-2 px-4 border-b">Deskripsi</th>
-                                            <th class="py-2 px-4 border-b">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Status</span>
-                                                    <div class="relative">
-                                                        <select id="srStatusFilter" onchange="filterSRTable()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                            <option value="" class="text-gray-700">Semua</option>
-                                                            <option value="Open" class="text-gray-700">Open</option>
-                                                            <option value="Closed" class="text-gray-700">Closed</option>
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
+                                            </div>
+                                        </th>
+                                        <th class="py-2 px-4 border-b">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <span>Status</span>
+                                                <div class="relative">
+                                                    <select id="srStatusFilter" onchange="filterSRTable()" 
+                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                        <option value="" class="text-gray-700">Semua</option>
+                                                        <option value="Open" class="text-gray-700">Open</option>
+                                                        <option value="Closed" class="text-gray-700">Closed</option>
+                                                    </select>
+                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                        </svg>
                                                     </div>
                                                 </div>
-                                            </th>
-                                            <th class="py-2 px-4 border-b">Tanggal</th>
-                                            <th class="py-2 px-4 border-b">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Downtime</span>
-                                                    <div class="relative">
-                                                        <select id="srDowntimeFilter" onchange="filterSRTable()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                            <option value="" class="text-gray-700">Semua</option>
-                                                            <option value="Yes" class="text-gray-700">Ya</option>
-                                                            <option value="No" class="text-gray-700">Tidak</option>
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
+                                            </div>
+                                        </th>
+                                        <th class="py-2 px-4 border-b">Tanggal</th>
+                                        <th class="py-2 px-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <span>Downtime</span>
+                                                <div class="relative">
+                                                    <select id="srDowntimeFilter" onchange="filterSRTable()" 
+                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                        <option value="" class="text-gray-700">Semua</option>
+                                                        <option value="Yes" class="text-gray-700">Ya</option>
+                                                        <option value="No" class="text-gray-700">Tidak</option>
+                                                    </select>
+                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                        </svg>
                                                     </div>
                                                 </div>
-                                            </th>
-                                            <th class="py-2 px-4 border-b">Tipe SR</th>
-                                            <th class="py-2 px-4 border-b">Priority</th>
-                                            <th class="py-2 px-4 border-b">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200">
-                                        @foreach ($serviceRequests as $index => $sr)
-                                            <tr data-sr-id="SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
-                                                <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
-                                                <td class="px-4 py-2 border border-gray-200">
-                                                    <div class="flex items-center gap-2">
-                                                        {{ $sr->id }}
-                                                        @if($sr->created_at->diffInHours(now()) < 24)
-                                                            <div class="flex items-center gap-1.5">
-                                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
-                                                                    New
-                                                                </span>
-                                                                <span class="text-xs text-gray-500">
-                                                                    {{ $sr->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
-                                                                </span>
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    @if($sr->powerPlant)
-                                                        {{ $sr->powerPlant->name }}
-                                                    @elseif($sr->unit_source)
-                                                        @php
-                                                            $unitName = str_replace('mysql_', '', $sr->unit_source);
-                                                            $unitName = ucfirst($unitName);
-                                                        @endphp
-                                                        {{ $unitName }}
-                                                    @else
-                                                        Unit tidak tersedia
+                                            </div>
+                                        </th>
+                                        <th class="py-2 px-4 border-b">Tipe SR</th>
+                                        <th class="py-2 px-4 border-b">Priority</th>
+                                        <th class="py-2 px-4 border-b">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach ($serviceRequests as $index => $sr)
+                                        <tr data-sr-id="SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
+                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
+                                            <td class="px-4 py-2 border border-gray-200">
+                                                <div class="flex items-center gap-2">
+                                                    {{ $sr->id }}
+                                                    @if($sr->created_at->diffInHours(now()) < 24)
+                                                        <div class="flex items-center gap-1.5">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
+                                                                New
+                                                            </span>
+                                                            <span class="text-xs text-gray-500">
+                                                                {{ $sr->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
+                                                            </span>
+                                                        </div>
                                                     @endif
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
-                                                <td data-column="status" class="py-2 px-4 border border-gray-200">
-                                                    <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-                                                        {{ $sr->status }}
-                                                    </span>
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $sr->created_at }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    {{ $sr->downtime }}
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    {{ $sr->tipe_sr }}
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    {{ $sr->priority }}
-                                                </td>
-                                                <td data-column="action" class="py-2 px-4 border border-gray-200">
-                                                    <button onclick="updateStatus('sr', {{ $sr->id }}, '{{ $sr->status }}')"
-                                                        class="px-3 py-1 text-sm rounded-full {{ $sr->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
-                                                        {{ $sr->status == 'Open' ? 'Tutup' : 'Buka' }}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                                </div>
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                @if($sr->powerPlant)
+                                                    {{ $sr->powerPlant->name }}
+                                                @elseif($sr->unit_source)
+                                                    @php
+                                                        $unitName = str_replace('mysql_', '', $sr->unit_source);
+                                                        $unitName = ucfirst($unitName);
+                                                    @endphp
+                                                    {{ $unitName }}
+                                                @else
+                                                    Unit tidak tersedia
+                                                @endif
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
+                                            <td data-column="status" class="py-2 px-4 border border-gray-200">
+                                                <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
+                                                    {{ $sr->status }}
+                                                </span>
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $sr->created_at }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $sr->downtime }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $sr->tipe_sr }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $sr->priority }}
+                                            </td>
+                                            <td data-column="action" class="py-2 px-4 border border-gray-200">
+                                                <button onclick="updateStatus('sr', {{ $sr->id }}, '{{ $sr->status }}')"
+                                                    class="px-3 py-1 text-sm rounded-full {{ $sr->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
+                                                    {{ $sr->status == 'Open' ? 'Tutup' : 'Buka' }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WO Table -->
+                <div id="wo-tab" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6 mb-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
+                            <a href="{{ route('admin.laporan.create-wo') }}" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-plus-circle mr-2"></i> Tambah WO
+                            </a>
+                        </div>
+                        
+                        <!-- Header section dengan search dan counter -->
+                        <div class="flex justify-between items-center mb-4">
+                            <!-- Search dengan style baru -->
+                            <div class="w-1/3">
+                                <div class="relative">
+                                    <input type="text" 
+                                           id="searchWO" 
+                                           placeholder="Cari WO, unit, atau status..."
+                                           onkeyup="if(event.key === 'Enter') searchWOTable()"
+                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Counter -->
+                            <div class="text-gray-600">
+                                Menampilkan <span id="woVisibleCount">0</span> dari <span id="woTotalCount">0</span> data
                             </div>
                         </div>
 
-                        <!-- Card WO -->
-                        <div class="bg-white rounded-lg shadow p-6 mb-4">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
-                                <a href="{{ route('admin.laporan.create-wo') }}" 
-                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
-                                    <i class="fas fa-plus-circle mr-2"></i> Tambah WO
-                                </a>
+                        <!-- Tabel WO -->
+                        <div class="overflow-auto max-h-96">
+                            @if(session('backlog_notification'))
+                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+                                <p class="font-bold">Perhatian!</p>
+                                <p>{{ session('backlog_notification') }}</p>
                             </div>
-                            
-                            <!-- Header section dengan search dan counter -->
-                            <div class="flex justify-between items-center mb-4">
-                                <!-- Search dengan style baru -->
-                                <div class="w-1/3">
-                                    <div class="relative">
-                                        <input type="text" 
-                                               id="searchWO" 
-                                               placeholder="Cari WO, unit, atau status..."
-                                               onkeyup="if(event.key === 'Enter') searchWOTable()"
-                                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-search text-gray-400"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Counter -->
-                                <div class="text-gray-600">
-                                    Menampilkan <span id="woVisibleCount">0</span> dari <span id="woTotalCount">0</span> data
-                                </div>
-                            </div>
-
-                            <!-- Tabel WO -->
-                            <div class="overflow-auto max-h-96">
-                                @if(session('backlog_notification'))
-                                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-                                    <p class="font-bold">Perhatian!</p>
-                                    <p>{{ session('backlog_notification') }}</p>
-                                </div>
-                                @endif
-                                <table id="woTable" class="min-w-full bg-white border border-gray-300">
-                                    <thead class="sticky top-0 z-10">
-                                        <tr style="background-color: #0A749B; color: white;">
-                                            <th class="py-2 px-4 border-b">No</th>
-                                            <th class="py-2 px-4 border-b">ID WO</th>
-                                            <th class="py-2 px-4 border-b">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Unit</span>
-                                                    <div class="relative">
-                                                        <select id="woUnitFilter" onchange="filterWOTable()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                            <option value="" class="text-gray-700">Semua</option>
-                                                            @foreach($powerPlants as $unit)
-                                                                <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
+                            @endif
+                            <table id="woTable" class="min-w-full bg-white border border-gray-300">
+                                <thead class="sticky top-0 z-10">
+                                    <tr style="background-color: #0A749B; color: white;">
+                                        <th class="py-2 px-4 border-b">No</th>
+                                        <th class="py-2 px-4 border-b">ID WO</th>
+                                        <th class="py-2 px-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <span>Unit</span>
+                                                <div class="relative">
+                                                    <select id="woUnitFilter" onchange="filterWOTable()" 
+                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                        <option value="" class="text-gray-700">Semua</option>
+                                                        @foreach($powerPlants as $unit)
+                                                            <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                        </svg>
                                                     </div>
                                                 </div>
-                                            </th>
-                                            <th class="py-2 px-4 border-b">Type</th>
-                                            <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
-                                            <th class="py-2 px-4 border-b">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Status</span>
-                                                    <div class="relative">
-                                                        <select id="woStatusFilter" onchange="filterWOTable()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                            <option value="" class="text-gray-700">Semua</option>
-                                                            <option value="Open" class="text-gray-700">Open</option>
-                                                            <option value="Closed" class="text-gray-700">Closed</option>
-                                                            <option value="Comp" class="text-gray-700">Comp</option>
-                                                            <option value="APPR" class="text-gray-700">APPR</option>
-                                                            <option value="WAPPR" class="text-gray-700">WAPPR</option>
-                                                            <option value="WMATL" class="text-gray-700">WMATL</option>
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>  
+                                            </div>
+                                        </th>
+                                        <th class="py-2 px-4 border-b">Type</th>
+                                        <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <span>Status</span>
+                                                <div class="relative">
+                                                    <select id="woStatusFilter" onchange="filterWOTable()" 
+                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                        <option value="" class="text-gray-700">Semua</option>
+                                                        <option value="Open" class="text-gray-700">Open</option>
+                                                        <option value="Closed" class="text-gray-700">Closed</option>
+                                                        <option value="Comp" class="text-gray-700">Comp</option>
+                                                        <option value="APPR" class="text-gray-700">APPR</option>
+                                                        <option value="WAPPR" class="text-gray-700">WAPPR</option>
+                                                        <option value="WMATL" class="text-gray-700">WMATL</option>
+                                                    </select>
+                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                        </svg>  
                                                     </div>                  
                                                 </div>
-                                            </th>
-                                            <th class="py-2 px-4 border-b">Tanggal</th>
-                                            <th class="py-2 px-4 border-b">Priority</th>
-                                            <th class="py-2 px-4 border-b">Schedule Start</th>
-                                            <th class="py-2 px-4 border-b">Schedule Finish</th>
-                                            <th class="py-2 px-4 border-b">Aksi</th>
+                                            </div>
+                                        </th>
+                                        <th class="py-2 px-4 border-b">Tanggal</th>
+                                        <th class="py-2 px-4 border-b">Priority</th>
+                                        <th class="py-2 px-4 border-b">Schedule Start</th>
+                                        <th class="py-2 px-4 border-b">Schedule Finish</th>
+                                        <th class="py-2 px-4 border-b">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($workOrders as $index => $wo)
+                                        <tr data-wo-id="WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
+                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
+                                            <td class="px-4 py-2 border border-gray-200">
+                                                <div class="flex items-center gap-2">
+                                                    {{ $wo->id }}
+                                                    @if($wo->created_at->diffInHours(now()) < 24)
+                                                        <div class="flex items-center gap-1.5">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 animate-pulse"></span>
+                                                                New
+                                                            </span>
+                                                            <span class="text-xs text-gray-500">
+                                                                {{ $wo->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
+                                                            </span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                @if($wo->powerPlant)
+                                                    {{ $wo->powerPlant->name }}
+                                                @else
+                                                    Unit tidak tersedia
+                                                @endif
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                <span class="px-2 py-1 rounded-full text-xs
+                                                    {{ $wo->type == 'CM' ? 'bg-blue-100 text-blue-600' : 
+                                                       ($wo->type == 'PM' ? 'bg-green-100 text-green-600' : 
+                                                       ($wo->type == 'PDM' ? 'bg-yellow-100 text-yellow-600' : 
+                                                       ($wo->type == 'PAM' ? 'bg-purple-100 text-purple-600' : 
+                                                       ($wo->type == 'OH' ? 'bg-red-100 text-red-600' : 
+                                                       ($wo->type == 'EJ' ? 'bg-indigo-100 text-indigo-600' : 
+                                                       ($wo->type == 'EM' ? 'bg-gray-100 text-gray-600' : 
+                                                       'bg-gray-100 text-gray-600')))))) }}">
+                                                    {{ $wo->type }}
+                                                </span>
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
+                                            <td data-column="status" class="py-2 px-4 border border-gray-200">
+                                                <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
+                                                    {{ $wo->status }}
+                                                </span>
+                                                @if($wo->is_backlogged)
+                                                    <span class="ml-2 text-xs bg-gray-200 text-gray-700 rounded-full px-2 py-1">
+                                                        In Backlog
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $wo->priority }}
+                                            </td>   
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $wo->schedule_start }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $wo->schedule_finish }}
+                                            </td>
+                                            <td data-column="action" class="py-2 px-4 border border-gray-200">
+                                                @if ($wo->status != 'Closed')
+                                                    <button onclick="showStatusOptions('{{ $wo->id }}', '{{ $wo->status }}')"
+                                                        class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+                                                        <i class="fas fa-edit mr-2"></i> Ubah
+                                                    </button>
+                                                @else
+                                                    <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                                                        Closed
+                                                    </button>
+                                                @endif
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($workOrders as $index => $wo)
-                                            <tr data-wo-id="WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
-                                                <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
-                                                <td class="px-4 py-2 border border-gray-200">
-                                                    <div class="flex items-center gap-2">
-                                                        {{ $wo->id }}
-                                                        @if($wo->created_at->diffInHours(now()) < 24)
-                                                            <div class="flex items-center gap-1.5">
-                                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 animate-pulse"></span>
-                                                                    New
-                                                                </span>
-                                                                <span class="text-xs text-gray-500">
-                                                                    {{ $wo->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
-                                                                </span>
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    @if($wo->powerPlant)
-                                                        {{ $wo->powerPlant->name }}
-                                                    @else
-                                                        Unit tidak tersedia
-                                                    @endif
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    <span class="px-2 py-1 rounded-full text-xs
-                                                        {{ $wo->type == 'CM' ? 'bg-blue-100 text-blue-600' : 
-                                                           ($wo->type == 'PM' ? 'bg-green-100 text-green-600' : 
-                                                           ($wo->type == 'PDM' ? 'bg-yellow-100 text-yellow-600' : 
-                                                           ($wo->type == 'PAM' ? 'bg-purple-100 text-purple-600' : 
-                                                           ($wo->type == 'OH' ? 'bg-red-100 text-red-600' : 
-                                                           ($wo->type == 'EJ' ? 'bg-indigo-100 text-indigo-600' : 
-                                                           ($wo->type == 'EM' ? 'bg-gray-100 text-gray-600' : 
-                                                           'bg-gray-100 text-gray-600')))))) }}">
-                                                        {{ $wo->type }}
-                                                    </span>
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
-                                                <td data-column="status" class="py-2 px-4 border border-gray-200">
-                                                    <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
-                                                        {{ $wo->status }}
-                                                    </span>
-                                                    @if($wo->is_backlogged)
-                                                        <span class="ml-2 text-xs bg-gray-200 text-gray-700 rounded-full px-2 py-1">
-                                                            In Backlog
-                                                        </span>
-                                                    @endif
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    {{ $wo->priority }}
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    {{ $wo->schedule_start }}
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    {{ $wo->schedule_finish }}
-                                                </td>
-                                                <td data-column="action" class="py-2 px-4 border border-gray-200">
-                                                    @if ($wo->status != 'Closed')
-                                                        <button onclick="showStatusOptions('{{ $wo->id }}', '{{ $wo->status }}')"
-                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
-                                                            <i class="fas fa-edit mr-2"></i> Ubah
-                                                        </button>
-                                                    @else
-                                                        <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
-                                                            Closed
-                                                        </button>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backlog Table -->
+                <div id="backlog-tab" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6 mb-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
+                            <a href="{{ route('admin.laporan.create-backlog') }}" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                <i class="fas fa-plus-circle mr-2"></i> Tambah Backlog
+                            </a>
+                        </div>
+                        
+                        <!-- Header section dengan search dan counter -->
+                        <div class="flex justify-between items-center mb-4">
+                            <!-- Search dengan style baru -->
+                            <div class="w-1/3">
+                                <div class="relative">
+                                    <input type="text" 
+                                           id="searchBacklog" 
+                                           placeholder="Cari backlog, unit, atau status..."
+                                           onkeyup="if(event.key === 'Enter') searchBacklogTable()"
+                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Counter -->
+                            <div class="text-gray-600">
+                                Menampilkan <span id="backlogVisibleCount">0</span> dari <span id="backlogTotalCount">0</span> data
                             </div>
                         </div>
 
                         <!-- Tabel Backlog -->
-                        <div class="bg-white rounded-lg shadow p-6 mb-4">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
-                            </div>
-                            
-                            <!-- Header section dengan search dan counter -->
-                            <div class="flex justify-between items-center mb-4">
-                                <!-- Search dengan style baru -->
-                                <div class="w-1/3">
-                                    <div class="relative">
-                                        <input type="text" 
-                                               id="searchBacklog" 
-                                               placeholder="Cari backlog, unit, atau status..."
-                                               onkeyup="if(event.key === 'Enter') searchBacklogTable()"
-                                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-search text-gray-400"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Counter -->
-                                <div class="text-gray-600">
-                                    Menampilkan <span id="backlogVisibleCount">0</span> dari <span id="backlogTotalCount">0</span> data
-                                </div>
-                            </div>
-
-                            <!-- Tabel Backlog -->
-                            <div class="overflow-auto max-h-96">
-                                <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
-                                    <thead class="sticky top-0 z-10">
-                                        <tr style="background-color: #0A749B; color: white;">
-                                            <th class="py-2 px-4 border-b">No</th>
-                                            <th class="py-2 px-4 border-b">No WO</th>
-                                            <th class="py-2 px-4 border-b">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Unit</span>
-                                                    <div class="relative">
-                                                        <select id="backlogUnitFilter" onchange="filterBacklogTable()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                            <option value="" class="text-gray-700">Semua</option>
-                                                            @foreach($powerPlants as $unit)
-                                                                <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
+                        <div class="overflow-auto max-h-96">
+                            <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                                <thead class="sticky top-0 z-10">
+                                    <tr style="background-color: #0A749B; color: white;">
+                                        <th class="py-2 px-4 border-b">No</th>
+                                        <th class="py-2 px-4 border-b">No WO</th>
+                                        <th class="py-2 px-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <span>Unit</span>
+                                                <div class="relative">
+                                                    <select id="backlogUnitFilter" onchange="filterBacklogTable()" 
+                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                        <option value="" class="text-gray-700">Semua</option>
+                                                        @foreach($powerPlants as $unit)
+                                                            <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                        </svg>
                                                     </div>
                                                 </div>
-                                            </th>
-                                            <th class="py-2 px-4 border-b">Deskripsi</th>
-                                            <th class="py-2 px-4 border-b">Tanggal Backlog</th>
-                                            <th class="py-2 px-4 border-b">Keterangan</th>
-                                            <th class="py-2 px-4 border-b">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Status</span>
-                                                    <div class="relative">
-                                                        <select id="backlogStatusFilter" onchange="filterBacklogTable()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                            <option value="" class="text-gray-700">Semua</option>
-                                                            <option value="Open" class="text-gray-700">Open</option>
-                                                            <option value="Closed" class="text-gray-700">Closed</option>
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                            <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
+                                            </div>
+                                        </th>
+                                        <th class="py-2 px-4 border-b">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">Tanggal Backlog</th>
+                                        <th class="py-2 px-4 border-b">Keterangan</th>
+                                        <th class="py-2 px-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <span>Status</span>
+                                                <div class="relative">
+                                                    <select id="backlogStatusFilter" onchange="filterBacklogTable()" 
+                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                        <option value="" class="text-gray-700">Semua</option>
+                                                        <option value="Open" class="text-gray-700">Open</option>
+                                                        <option value="Closed" class="text-gray-700">Closed</option>
+                                                    </select>
+                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                        </svg>
                                                     </div>
                                                 </div>
-                                            </th>
-                                            <th class="py-2 px-4 border-b">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200">
-                                        @foreach ($woBacklogs as $index => $backlog)
-                                            <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                                <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
-                                                <td class="px-4 py-2 border border-gray-200 ">
-                                                    <div class="flex items-center gap-2">
-                                                        {{ $backlog->no_wo }}
-                                                        @if($backlog->created_at->diffInHours(now()) < 24)
-                                                            <div class="flex items-center gap-1.5">
-                                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                                                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5 animate-pulse"></span>
-                                                                    New
-                                                                </span>
-                                                                <span class="text-xs text-gray-500">
-                                                                    {{ $backlog->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
-                                                                </span>
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    @if($backlog->powerPlant)
-                                                        {{ $backlog->powerPlant->name }}
-                                                    @elseif($backlog->unit_source)
-                                                        @php
-                                                            $unitName = str_replace('mysql_', '', $backlog->unit_source);
-                                                            $unitName = ucfirst($unitName);
-                                                        @endphp
-                                                        {{ $unitName }}
-                                                    @else
-                                                        Unit tidak tersedia
+                                            </div>
+                                        </th>
+                                        <th class="py-2 px-4 border-b">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach ($woBacklogs as $index => $backlog)
+                                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
+                                            <td class="px-4 py-2 border border-gray-200 ">
+                                                <div class="flex items-center gap-2">
+                                                    {{ $backlog->no_wo }}
+                                                    @if($backlog->created_at->diffInHours(now()) < 24)
+                                                        <div class="flex items-center gap-1.5">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5 animate-pulse"></span>
+                                                                New
+                                                            </span>
+                                                            <span class="text-xs text-gray-500">
+                                                                {{ $backlog->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
+                                                            </span>
+                                                        </div>
                                                     @endif
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->deskripsi }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->created_at }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">{{ $backlog->keterangan ?? 'N/A' }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    <span class="px-2 py-1 rounded-full {{ $backlog->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-                                                        {{ $backlog->status }}
-                                                    </span>
-                                                </td>
-                                                <td class="py-2 px-4 border border-gray-200">
-                                                    <div class="flex space-x-2">
-                                                        <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
-                                                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
-                                                            <i class="fas fa-edit mr-2"></i> Edit
-                                                        </a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                @if($backlog->powerPlant)
+                                                    {{ $backlog->powerPlant->name }}
+                                                @elseif($backlog->unit_source)
+                                                    @php
+                                                        $unitName = str_replace('mysql_', '', $backlog->unit_source);
+                                                        $unitName = ucfirst($unitName);
+                                                    @endphp
+                                                    {{ $unitName }}
+                                                @else
+                                                    Unit tidak tersedia
+                                                @endif
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $backlog->deskripsi }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->created_at }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->keterangan ?? 'N/A' }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                <span class="px-2 py-1 rounded-full {{ $backlog->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
+                                                    {{ $backlog->status }}
+                                                </span>
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                <div class="flex space-x-2">
+                                                    <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
+                                                        class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+                                                        <i class="fas fa-edit mr-2"></i> Edit
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                </div>
             </main>
         </div>
     </div>
@@ -1473,7 +1455,37 @@
         const audio = new Audio(`{{ asset('audio/${type}.MP3') }}`);
         audio.play();
     }
+
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active', 'border-blue-500'));
+                this.classList.add('active', 'border-blue-500');
+                
+                // Show correct content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(`${targetId}-tab`).classList.remove('hidden');
+            });
+        });
+    });
 </script>
-@push('scripts')
-@endpush
+
+<!-- Add this style -->
+<style>
+.tab-btn.active {
+    border-bottom-color: #3b82f6;
+    color: #3b82f6;
+}
+.tab-content {
+    transition: all 0.3s ease-in-out;
+}
+</style>
     
