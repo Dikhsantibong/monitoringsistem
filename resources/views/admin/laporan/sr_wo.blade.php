@@ -679,36 +679,36 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Cari baris WO yang sesuai
-                const row = document.querySelector(`tr[data-wo-id="${data.data.formattedId}"]`);
-                if (row) {
-                    // Update status cell
-                    const statusCell = row.querySelector('td[data-column="status"]');
-                    if (statusCell) {
-                        statusCell.innerHTML = `
-                            <span class="px-2 py-1 rounded-full ${getStatusColorClass(newStatus)}">
-                                ${newStatus}
-                            </span>
-                        `;
-                    }
+                // Play success sound
+                playSound('success');
+                
+                // Update tampilan status secara real-time
+                const row = document.querySelector(`tr[data-wo-id="WO-${String(id).padStart(4, '0')}"]`);
+                const statusCell = row.querySelector('td[data-column="status"]');
+                if (statusCell) {
+                    statusCell.innerHTML = `
+                        <span class="px-2 py-1 rounded-full ${getStatusColorClass(newStatus)}">
+                            ${newStatus}
+                        </span>
+                    `;
+                }
 
-                    // Update action cell
-                    const actionCell = row.querySelector('td[data-column="action"]');
-                    if (actionCell) {
-                        if (newStatus === 'Closed') {
-                            actionCell.innerHTML = `
-                                <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
-                                    Closed
-                                </button>
-                            `;
-                        } else {
-                            actionCell.innerHTML = `
-                                <button onclick="showStatusOptions('${id}', '${newStatus}')"
-                                    class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
-                                    <i class="fas fa-edit mr-2"></i> Ubah
-                                </button>
-                            `;
-                        }
+                // Update action button
+                const actionCell = row.querySelector('td[data-column="action"]');
+                if (actionCell) {
+                    if (newStatus === 'Closed') {
+                        actionCell.innerHTML = `
+                            <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                                Closed
+                            </button>
+                        `;
+                    } else {
+                        actionCell.innerHTML = `
+                            <button onclick="showStatusOptions('${id}', '${newStatus}')"
+                                class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+                                <i class="fas fa-edit mr-2"></i> Ubah
+                            </button>
+                        `;
                     }
                 }
 
@@ -727,6 +727,9 @@
             }
         })
         .catch(error => {
+            // Play error sound
+            playSound('error');
+            
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
@@ -952,9 +955,12 @@
     function updateStatus(type, id, currentStatus) {
         // Cek jika status sudah Closed
         if (currentStatus === 'Closed') {
+            // Play error sound
+            playSound('error');
+            
             Swal.fire({
                 icon: 'info',
-                title: 'Informasi',
+                title: 'Tidak dapat diubah!',
                 text: type.toUpperCase() + ' sudah ditutup dan tidak dapat diubah lagi.',
                 toast: true,
                 position: 'top-end',
@@ -988,35 +994,36 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Play success sound
+                playSound('success');
+                
+                // Update tampilan status secara real-time
                 const row = document.querySelector(`tr[data-sr-id="SR-${String(id).padStart(4, '0')}"]`);
-                if (row) {
-                    // Update status cell
-                    const statusCell = row.querySelector('td[data-column="status"]');
-                    if (statusCell) {
-                        statusCell.innerHTML = `
-                            <span class="px-2 py-1 rounded-full ${newStatus === 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
-                                ${newStatus}
-                            </span>
-                        `;
-                    }
+                const statusCell = row.querySelector('td[data-column="status"]');
+                if (statusCell) {
+                    statusCell.innerHTML = `
+                        <span class="px-2 py-1 rounded-full ${newStatus === 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                            ${newStatus}
+                        </span>
+                    `;
+                }
 
-                    // Update action button
-                    const actionCell = row.querySelector('td[data-column="action"]');
-                    if (actionCell) {
-                        if (newStatus === 'Closed') {
-                            actionCell.innerHTML = `
-                                <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
-                                    Closed
-                                </button>
-                            `;
-                        } else {
-                            actionCell.innerHTML = `
-                                <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
-                                    class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
-                                    ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
-                                </button>
-                            `;
-                        }
+                // Update action button
+                const actionCell = row.querySelector('td[data-column="action"]');
+                if (actionCell) {
+                    if (newStatus === 'Closed') {
+                        actionCell.innerHTML = `
+                            <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                                Closed
+                            </button>
+                        `;
+                    } else {
+                        actionCell.innerHTML = `
+                            <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
+                                class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
+                                ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
+                            </button>
+                        `;
                     }
                 }
 
@@ -1035,6 +1042,9 @@
             }
         })
         .catch(error => {
+            // Play error sound
+            playSound('error');
+            
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
@@ -1456,6 +1466,12 @@
         });
         
         document.getElementById('backlogVisibleCount').textContent = visibleCount;
+    }
+
+    // Tambahkan fungsi untuk memutar audio
+    function playSound(type) {
+        const audio = new Audio(`{{ asset('audio/${type}.mp3') }}`);
+        audio.play();
     }
 </script>
 @push('scripts')
