@@ -215,7 +215,7 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
                                         @foreach ($serviceRequests as $index => $sr)
-                                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                            <tr data-sr-id="SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
                                                 <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                                 <td class="px-4 py-2 border border-gray-200">
                                                     <div class="flex items-center gap-2">
@@ -247,7 +247,7 @@
                                                     @endif
                                                 </td>
                                                 <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
-                                                <td class="py-2 px-4 border border-gray-200">
+                                                <td data-column="status" class="py-2 px-4 border border-gray-200">
                                                     <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                         {{ $sr->status }}
                                                     </span>
@@ -262,7 +262,7 @@
                                                 <td class="py-2 px-4 border border-gray-200">
                                                     {{ $sr->priority }}
                                                 </td>
-                                                <td class="py-2 px-4 border border-gray-200">
+                                                <td data-column="action" class="py-2 px-4 border border-gray-200">
                                                     <button onclick="updateStatus('sr', {{ $sr->id }}, '{{ $sr->status }}')"
                                                         class="px-3 py-1 text-sm rounded-full {{ $sr->status == 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
                                                         {{ $sr->status == 'Open' ? 'Tutup' : 'Buka' }}
@@ -950,106 +950,79 @@
     document.getElementById('searchInput').addEventListener('input', debouncedSearch);
 
     function updateStatus(type, id, currentStatus) {
-        const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
-        const url = type === 'sr' ? 
-            `{{ url('/admin/laporan/update-sr-status') }}/${id}` :
-            `{{ url('/admin/laporan/update-wo-status') }}/${id}`;
-
-        Swal.fire({
-            title: 'Konfirmasi',
-            text: `Apakah Anda yakin ingin mengubah status menjadi ${newStatus}?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Status berhasil diubah!',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        throw new Error(data.message || 'Gagal mengubah status');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Terjadi kesalahan!',
-                        text: error.message || 'Gagal mengubah status'
-                    });
-                });
-            }
-        });
+        const newStatus = type === 'sr' ? (currentStatus === 'Open' ? 'Closed' : 'Open') : currentStatus;
+        
+        if (type === 'sr') {
+            processSRStatusUpdate(id, newStatus);
+        } else {
+            processStatusUpdate(id, newStatus);
+        }
     }
 
-    function updateBacklogStatus(id) {
-        Swal.fire({
-            title: 'Konfirmasi',
-            text: 'Apakah Anda yakin ingin menutup WO Backlog ini?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                
-                fetch(`/admin/laporan/wo-backlog/${id}/status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token
-                    },
-                    body: JSON.stringify({ status: 'Closed' })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'WO Backlog berhasil ditutup!',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            location.reload();
-                        });
+    function processSRStatusUpdate(id, newStatus) {
+        const url = `{{ url('/admin/laporan/update-sr-status') }}/${id}`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update tampilan status secara real-time
+                const row = document.querySelector(`tr[data-sr-id="SR-${String(id).padStart(4, '0')}"]`);
+                if (row) {
+                    // Update status cell
+                    const statusCell = row.querySelector('td[data-column="status"]');
+                    if (statusCell) {
+                        statusCell.innerHTML = `
+                            <span class="px-2 py-1 rounded-full ${newStatus === 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                                ${newStatus}
+                            </span>
+                        `;
                     }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Terjadi kesalahan!',
-                        text: 'Gagal mengubah status'
-                    });
+
+                    // Update action button
+                    const actionCell = row.querySelector('td[data-column="action"]');
+                    if (actionCell) {
+                        actionCell.innerHTML = `
+                            <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
+                                class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
+                                ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
+                            </button>
+                        `;
+                    }
+                }
+
+                // Tampilkan alert sukses
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Berhasil Diubah!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    toast: true,
+                    position: 'top-end'
                 });
+            } else {
+                throw new Error(data.message || 'Terjadi kesalahan saat mengubah status');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: error.message || 'Terjadi kesalahan saat mengubah status',
+                toast: true,
+                position: 'top-end',
+                timer: 3000
+            });
         });
     }
 

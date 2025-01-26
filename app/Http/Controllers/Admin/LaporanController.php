@@ -250,15 +250,17 @@ class LaporanController extends Controller
     {
         try {
             $sr = ServiceRequest::findOrFail($id);
+            $oldStatus = $sr->status;
             $sr->status = $request->status;
             $sr->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Status SR berhasil diubah',
+                'message' => "Status berhasil diubah dari {$oldStatus} ke {$request->status}",
                 'data' => [
                     'id' => $id,
-                    'newStatus' => $request->status
+                    'newStatus' => $sr->status,
+                    'formattedId' => 'SR-' . str_pad($id, 4, '0', STR_PAD_LEFT)
                 ]
             ]);
         } catch (\Exception $e) {
