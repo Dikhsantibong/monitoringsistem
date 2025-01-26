@@ -1470,7 +1470,7 @@
 
     // Tambahkan fungsi untuk memutar audio
     function playSound(type) {
-        const audio = new Audio(`{{ asset('audio/${type}.mp3') }}`);
+        const audio = new Audio(`{{ asset('audio/${type}.MP3') }}`);
         audio.play();
     }
 </script>
