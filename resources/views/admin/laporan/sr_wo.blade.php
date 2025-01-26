@@ -672,12 +672,13 @@
     }
 
     function processStatusUpdate(id, newStatus) {
-        const url = "/admin/laporan/update-wo-status/" + id;
+        const url = `{{ url('/admin/laporan/update-wo-status') }}/${id}`;
         
         fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({ status: newStatus })
@@ -912,19 +913,9 @@
 
     function updateStatus(type, id, currentStatus) {
         const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
-        if (currentStatus === 'Closed') {
-            Swal.fire({
-                icon: 'info',
-                title: 'Informasi',
-                text: type === 'sr' ? 'SR sudah ditutup dan tidak dapat diubah lagi.' : 'WO sudah ditutup dan tidak dapat diubah lagi.',
-            });
-            return;
-        }
-
-        // Gunakan URL absolut
         const url = type === 'sr' ? 
-            '/admin/laporan/update-sr-status/' + id :
-            '/admin/laporan/update-wo-status/' + id;
+            `{{ url('/admin/laporan/update-sr-status') }}/${id}` :
+            `{{ url('/admin/laporan/update-wo-status') }}/${id}`;
 
         Swal.fire({
             title: 'Konfirmasi',
@@ -941,6 +932,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ status: newStatus })

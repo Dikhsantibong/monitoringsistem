@@ -111,44 +111,30 @@ class LaporanController extends Controller
     public function storeSR(Request $request)
     {
         try {
-            DB::beginTransaction();
-
-            $validatedData = $request->validate([
-                'sr_id' => 'required|numeric',
-                'description' => 'required',
-                'status' => 'required',
-                'tanggal' => 'required|date',
-                'downtime' => 'required',
-                'tipe_sr' => 'required',
-                'priority' => 'required',
-                'unit' => 'required'
+            \Log::info('Received SR data:', $request->all());
+            
+            $sr = ServiceRequest::create([
+                'id' => $request->sr_id,
+                'description' => $request->description,
+                'status' => $request->status,
+                'created_at' => $request->tanggal,
+                'downtime' => $request->downtime,
+                'tipe_sr' => $request->tipe_sr,
+                'priority' => $request->priority,
+                'power_plant_id' => $request->unit
             ]);
 
-            // Ambil power plant dan unit source
-            $powerPlant = PowerPlant::findOrFail($request->unit);
-            
-            // Tentukan koneksi database berdasarkan session atau input
-            $connection = session('unit') ?? 'mysql';
-            
-            // Buat Service Request
-            $serviceRequest = new ServiceRequest();
-            $serviceRequest->setConnection($connection);
-            $serviceRequest->id = $validatedData['sr_id'];
-            $serviceRequest->description = $validatedData['description'];
-            $serviceRequest->status = $validatedData['status'];
-            $serviceRequest->downtime = $validatedData['downtime'];
-            $serviceRequest->tipe_sr = $validatedData['tipe_sr'];
-            $serviceRequest->priority = $validatedData['priority'];
-            $serviceRequest->power_plant_id = $powerPlant->id;
-            $serviceRequest->save();
-
-            DB::commit();
-            return redirect()->route('admin.laporan.sr_wo')->with('success', 'Service Request berhasil ditambahkan');
-
+            return response()->json([
+                'success' => true,
+                'message' => 'SR berhasil ditambahkan',
+                'data' => $sr
+            ]);
         } catch (\Exception $e) {
-            DB::rollback();
-            Log::error('Error in storeSR method: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            \Log::error('Error creating SR: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan SR: ' . $e->getMessage()
+            ], 422);
         }
     }
     
@@ -260,11 +246,25 @@ class LaporanController extends Controller
 
     public function updateSRStatus(Request $request, $id)
     {
-        $sr = ServiceRequest::findOrFail($id);
-        $sr->status = $request->status;
-        $sr->save();
+        try {
+            $sr = ServiceRequest::findOrFail($id);
+            $sr->status = $request->status;
+            $sr->save();
 
-        return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Status SR berhasil diubah',
+                'data' => [
+                    'id' => $id,
+                    'newStatus' => $request->status
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status: ' . $e->getMessage()
+            ], 400);
+        }
     }
 
     public function updateWOStatus(Request $request, $id)

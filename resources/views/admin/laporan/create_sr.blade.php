@@ -58,14 +58,17 @@
                 </div>
             </header>
             <div class="pt-2">
-                <x-admin-breadcrumb :breadcrumbs="[['name' => 'Laporan SR/WO', 'url' => route('admin.laporan.sr_wo')], ['name' => 'Tambah SR', 'url' => null]]" />
+                <x-admin-breadcrumb :breadcrumbs="[
+                    ['name' => 'Laporan SR/WO', 'url' => route('admin.laporan.sr_wo')], 
+                    ['name' => 'Tambah SR', 'url' => null]
+                ]" />
             </div>  
 
 <main class="px-6">
     <div class="bg-white rounded-lg shadow p-6 sm:p-3">
 <div class="container mx-auto mt-8">
     <h2 class="text-2xl font-bold mb-4">Tambah Service Request (SR)</h2>
-    <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST" onsubmit="showSuccessAlert(event, 'SR')">
+    <form id="srForm" action="{{ route('admin.laporan.store-sr') }}" method="POST">
         @csrf
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_id">
@@ -148,5 +151,81 @@
 </main>
 </div>
 
-<script src="{{ asset('js/toggle.js') }}"></script>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('srForm');
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    // Tambahkan loading state
+    let isSubmitting = false;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Prevent double submission
+        if (isSubmitting) return;
+        
+        try {
+            isSubmitting = true;
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Menyimpan...
+            `;
+            
+            const formData = new FormData(form);
+            
+            // Debug formData
+            console.log('Form Data:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+            
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: formData
+            });
+
+            // Debug response
+            console.log('Response status:', response.status);
+            
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message || 'SR berhasil ditambahkan',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                window.location.href = '{{ route("admin.laporan.sr_wo") }}';
+            } else {
+                throw new Error(data.message || 'Terjadi kesalahan saat menyimpan data');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message || 'Terjadi kesalahan saat menyimpan SR'
+            });
+        } finally {
+            isSubmitting = false;
+            submitButton.disabled = false;
+            submitButton.innerHTML = `<i class="fas fa-save mr-2"></i> Simpan`;
+        }
+    });
+});
+</script>
+@endpush
 @endsection 
