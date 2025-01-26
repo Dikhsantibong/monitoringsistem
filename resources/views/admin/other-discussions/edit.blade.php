@@ -471,7 +471,7 @@ async function verifyPasswordAndDelete() {
     
     try {
         const response = await fetch('/admin/verify-password', {
-            method: 'POST', 
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
@@ -483,31 +483,19 @@ async function verifyPasswordAndDelete() {
         const data = await response.json();
 
         if (data.success) {
-            // Jika password benar
             if (deleteAction === 'removeFile') {
-                // Hapus file
                 const fileResponse = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
                     method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
                 if (fileResponse.ok) {
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Dokumen berhasil dihapus',
-                        icon: 'success',
-                        showCancelButton: false,
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.reload();
-                        }
-                    });
+                    alert('Dokumen berhasil dihapus');
+                    window.location.reload();
+                } else {
+                    throw new Error('Gagal menghapus dokumen');
                 }
             } else if (deleteAction === 'removeCommitment') {
                 const commitmentEntry = deleteParams.element.closest('.commitment-entry');
@@ -517,25 +505,13 @@ async function verifyPasswordAndDelete() {
                 const commitmentResponse = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
                 if (commitmentResponse.ok) {
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Komitmen berhasil dihapus',
-                        icon: 'success',
-                        showCancelButton: false,
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            commitmentEntry.remove();
-                        }
-                    });
+                    alert('Komitmen berhasil dihapus');
+                    commitmentEntry.remove();
                 } else {
                     throw new Error('Gagal menghapus komitmen');
                 }
@@ -547,11 +523,7 @@ async function verifyPasswordAndDelete() {
         }
     } catch (error) {
         console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Terjadi Kesalahan',
-            text: error.message || 'Gagal melakukan penghapusan'
-        });
+        alert(error.message || 'Gagal melakukan penghapusan');
     }
 }
 
@@ -638,12 +610,7 @@ function validateStatus(select) {
         .some(statusSelect => statusSelect.value === 'Open');
 
     if (select.value === 'Closed' && (hasOpenCommitments || hasOpenNewCommitments)) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan!',
-            text: 'Semua komitmen harus Closed sebelum mengubah status menjadi Closed',
-            confirmButtonText: 'OK'
-        });
+        alert('Semua komitmen harus Closed sebelum mengubah status menjadi Closed');
         select.value = 'Open';
         return false;
     }
@@ -677,12 +644,7 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     
     if (files.length === 0) {
         e.preventDefault();
-        Swal.fire({
-            icon: 'error',
-            title: 'Upload Dokumen Diperlukan',
-            text: 'Silakan upload minimal satu dokumen pendukung sebelum menyimpan perubahan.',
-            confirmButtonText: 'OK'
-        });
+        alert('Silakan upload minimal satu dokumen pendukung sebelum menyimpan perubahan.');
         return;
     }
 
@@ -691,12 +653,7 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     for (const file of files) {
         if (file.size > maxSize) {
             e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'Ukuran File Terlalu Besar',
-                text: `File "${file.name}" melebihi batas maksimal 5MB.`,
-                confirmButtonText: 'OK'
-            });
+            alert(`File "${file.name}" melebihi batas maksimal 5MB.`);
             return;
         }
     }
@@ -706,12 +663,7 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     for (const file of files) {
         if (!allowedTypes.includes(file.type)) {
             e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'Format File Tidak Didukung',
-                text: `File "${file.name}" harus berformat PDF, Word, atau Gambar (JPG/PNG).`,
-                confirmButtonText: 'OK'
-            });
+            alert(`File "${file.name}" harus berformat PDF, Word, atau Gambar (JPG/PNG).`);
             return;
         }
     }
@@ -728,20 +680,12 @@ function handleFiles(e) {
         const maxSize = 5 * 1024 * 1024; // 5MB
         
         if (!validTypes.includes(file.type)) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Format File Tidak Didukung',
-                text: `File "${file.name}" harus berformat PDF, Word, atau Gambar (JPG/PNG).`
-            });
+            alert('Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).');
             return true;
         }
         
         if (file.size > maxSize) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Ukuran File Terlalu Besar',
-                text: `File "${file.name}" melebihi batas maksimal 5MB.`
-            });
+            alert('Ukuran file maksimal adalah 5MB.');
             return true;
         }
         
@@ -935,24 +879,14 @@ function validateFile(file) {
     // Validasi tipe file
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Format File Tidak Didukung',
-            text: 'Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).',
-            confirmButtonText: 'OK'
-        });
+        alert('Format file yang diizinkan: PDF, Word, atau Gambar (JPG/PNG).');
         return false;
     }
 
     // Validasi ukuran file (5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB dalam bytes
     if (file.size > maxSize) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Ukuran File Terlalu Besar',
-            text: 'Ukuran file maksimal adalah 5MB.',
-            confirmButtonText: 'OK'
-        });
+        alert('Ukuran file maksimal adalah 5MB.');
         return false;
     }
     
