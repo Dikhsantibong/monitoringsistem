@@ -950,6 +950,20 @@
     document.getElementById('searchInput').addEventListener('input', debouncedSearch);
 
     function updateStatus(type, id, currentStatus) {
+        // Cek jika status sudah Closed
+        if (currentStatus === 'Closed') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi',
+                text: type.toUpperCase() + ' sudah ditutup dan tidak dapat diubah lagi.',
+                toast: true,
+                position: 'top-end',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
         const newStatus = type === 'sr' ? (currentStatus === 'Open' ? 'Closed' : 'Open') : currentStatus;
         
         if (type === 'sr') {
@@ -974,7 +988,6 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update tampilan status secara real-time
                 const row = document.querySelector(`tr[data-sr-id="SR-${String(id).padStart(4, '0')}"]`);
                 if (row) {
                     // Update status cell
@@ -990,12 +1003,20 @@
                     // Update action button
                     const actionCell = row.querySelector('td[data-column="action"]');
                     if (actionCell) {
-                        actionCell.innerHTML = `
-                            <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
-                                class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
-                                ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
-                            </button>
-                        `;
+                        if (newStatus === 'Closed') {
+                            actionCell.innerHTML = `
+                                <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
+                                    Closed
+                                </button>
+                            `;
+                        } else {
+                            actionCell.innerHTML = `
+                                <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
+                                    class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
+                                    ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
+                                </button>
+                            `;
+                        }
                     }
                 }
 

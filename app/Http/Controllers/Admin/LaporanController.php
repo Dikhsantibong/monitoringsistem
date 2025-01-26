@@ -250,6 +250,12 @@ class LaporanController extends Controller
     {
         try {
             $sr = ServiceRequest::findOrFail($id);
+            
+            // Cek jika SR sudah closed
+            if ($sr->status === 'Closed') {
+                throw new \Exception('SR yang sudah Closed tidak dapat diubah statusnya');
+            }
+
             $oldStatus = $sr->status;
             $sr->status = $request->status;
             $sr->save();
