@@ -43,7 +43,12 @@
             <h3 class="text-gray-700 text-3xl font-medium">Edit Pembahasan</h3>
 
             <div class="mt-8">
-                <form id="editDiscussionForm" action="{{ route('admin.other-discussions.update', $discussion->id) }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" enctype="multipart/form-data">
+                <form id="editDiscussionForm" 
+                      action="{{ route('admin.other-discussions.update', $discussion->id) }}" 
+                      method="POST" 
+                      class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" 
+                      enctype="multipart/form-data"
+                      data-discussion-id="{{ $discussion->id }}">
                     @csrf
                     @method('PUT')
 
@@ -411,9 +416,160 @@
     </div>
 </div>
 
+<!-- Password Verification Modal -->
+<div id="passwordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-96">
+        <h3 class="text-lg font-semibold mb-4">Verifikasi Password</h3>
+        <p class="text-sm text-gray-600 mb-4">Masukkan password Anda untuk melanjutkan penghapusan</p>
+        
+        <div class="mb-4">
+            <input type="password" 
+                   id="verificationPassword" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                   placeholder="Masukkan password">
+            <p id="passwordError" class="text-red-500 text-sm mt-1 hidden"></p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="closePasswordModal()" 
+                    class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                Batal
+            </button>
+            <button onclick="verifyPasswordAndDelete()" 
+                    class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                Hapus
+            </button>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+let deleteAction = null;
+let deleteParams = null;
+
+// Fungsi untuk menampilkan modal password
+function showPasswordModal() {
+    document.getElementById('passwordModal').classList.remove('hidden');
+    document.getElementById('passwordModal').classList.add('flex');
+    document.getElementById('verificationPassword').value = '';
+    document.getElementById('passwordError').classList.add('hidden');
+}
+
+// Fungsi untuk menutup modal
+function closePasswordModal() {
+    document.getElementById('passwordModal').classList.add('hidden');
+    document.getElementById('passwordModal').classList.remove('flex');
+    deleteAction = null;
+    deleteParams = null;
+}
+
+// Fungsi untuk verifikasi password dan melakukan penghapusan
+async function verifyPasswordAndDelete() {
+    const password = document.getElementById('verificationPassword').value;
+    
+    try {
+        const response = await fetch('/admin/verify-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Jika password benar
+            if (deleteAction === 'removeFile') {
+                // Hapus file
+                const fileResponse = await fetch(`/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                if (fileResponse.ok) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Dokumen berhasil dihapus',
+                        icon: 'success',
+                        showCancelButton: false,
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    throw new Error('Gagal menghapus dokumen');
+                }
+            } else if (deleteAction === 'removeCommitment') {
+                const commitmentEntry = deleteParams.element.closest('.commitment-entry');
+                const commitmentId = commitmentEntry.dataset.commitmentId;
+                const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
+
+                try {
+                    const commitmentResponse = await fetch(`/admin/other-discussions/${discussionId}/commitments/${commitmentId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+
+                    if (!commitmentResponse.ok) {
+                        throw new Error('Gagal menghapus komitmen');
+                    }
+
+                    const commitmentData = await commitmentResponse.json();
+
+                    if (commitmentData.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Komitmen berhasil dihapus',
+                            icon: 'success',
+                            showCancelButton: false,
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                commitmentEntry.remove();
+                            }
+                        });
+                    } else {
+                        throw new Error(commitmentData.message || 'Gagal menghapus komitmen');
+                    }
+                } catch (error) {
+                    throw new Error(error.message || 'Gagal menghapus komitmen');
+                }
+            }
+            closePasswordModal();
+        } else {
+            document.getElementById('passwordError').textContent = 'Password tidak valid';
+            document.getElementById('passwordError').classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan',
+            text: error.message || 'Gagal melakukan penghapusan'
+        });
+    }
+}
+
+// Fungsi untuk menghapus file
+function removeExistingFile(discussionId, fileIndex) {
+    deleteAction = 'removeFile';
+    deleteParams = { discussionId, fileIndex };
+    showPasswordModal();
+}
+
 // Simpan data sections dalam cache
 const sectionsData = @json(\App\Models\Department::with('sections')->get()->mapWithKeys(function($dept) {
     return [$dept->id => $dept->sections->map(function($section) {
@@ -504,7 +660,17 @@ function validateStatus(select) {
 
 // Fungsi untuk menghapus komitmen
 function removeCommitment(button) {
-    button.closest('.commitment-entry').remove();
+    const commitmentEntry = button.closest('.commitment-entry');
+    // Jika ini komitmen baru (belum disimpan)
+    if (!commitmentEntry.dataset.commitmentId) {
+        commitmentEntry.remove();
+        return;
+    }
+    
+    // Jika ini komitmen yang sudah ada
+    deleteAction = 'removeCommitment';
+    deleteParams = { element: button };
+    showPasswordModal();
 }
 
 // Submit handler yang dioptimasi
@@ -817,53 +983,6 @@ function removeFile() {
     dropZoneContent.classList.remove('hidden');
     filesPreview.classList.add('hidden');
     filesList.innerHTML = '';
-}
-
-// Function untuk menghapus file yang sudah ada
-function removeExistingFile(discussionId, fileIndex) {
-    Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: "File yang dihapus tidak dapat dikembalikan!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/admin/other-discussions/${discussionId}/remove-file`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({ file_index: fileIndex })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire(
-                        'Terhapus!',
-                        'File berhasil dihapus.',
-                        'success'
-                    ).then(() => {
-                        // Reload halaman untuk memperbarui tampilan
-                        window.location.reload();
-                    });
-                } else {
-                    throw new Error(data.message);
-                }
-            })
-            .catch(error => {
-                Swal.fire(
-                    'Error!',
-                    error.message,
-                    'error'
-                );
-            });
-        }
-    });
 }
 </script>
 @endpush

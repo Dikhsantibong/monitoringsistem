@@ -19,6 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\OtherDiscussionsExport;
 use App\Exports\SingleOtherDiscussionExport;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Commitment;
 
 class OtherDiscussionController extends Controller
 {
@@ -1015,5 +1016,74 @@ class OtherDiscussionController extends Controller
         ];
 
         return $mimes[strtolower($extension)] ?? 'application/octet-stream';
+    }
+
+    public function removeFile(OtherDiscussion $discussion, $index)
+    {
+        try {
+            $paths = json_decode($discussion->document_path);
+            $descriptions = json_decode($discussion->document_description);
+
+            // Hapus file dari storage
+            if (isset($paths[$index])) {
+                Storage::delete('public/' . $paths[$index]);
+                
+                // Hapus path dan deskripsi dari array
+                unset($paths[$index]);
+                unset($descriptions[$index]);
+
+                // Reindex array
+                $paths = array_values($paths);
+                $descriptions = array_values($descriptions);
+
+                // Update database
+                $discussion->update([
+                    'document_path' => json_encode($paths),
+                    'document_description' => json_encode($descriptions)
+                ]);
+
+                return response()->json(['success' => true]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'File tidak ditemukan']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus file']);
+        }
+    }
+
+    public function removeCommitment(OtherDiscussion $discussion, $commitmentId)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Cari commitment berdasarkan ID
+            $commitment = Commitment::where('id', $commitmentId)
+                ->where('other_discussion_id', $discussion->id)
+                ->firstOrFail();
+
+            // Hapus commitment
+            $commitment->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Komitmen berhasil dihapus'
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Komitmen tidak ditemukan'
+            ], 404);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error deleting commitment: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus komitmen'
+            ], 500);
+        }
     }
 }   

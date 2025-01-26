@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\LaporanDeleteController;
 use App\Http\Controllers\Admin\MachineStatusViewController;
 use App\Http\Controllers\Admin\MachineStatusController;
 use App\Http\Controllers\Admin\OtherDiscussionEditController;
+use App\Http\Controllers\Admin\PasswordVerificationController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -551,6 +552,22 @@ Route::get('other-discussions/{id}/download-document',
 
 Route::post('/other-discussions/{id}/remove-file', [OtherDiscussionEditController::class, 'removeFile'])
     ->name('admin.other-discussions.remove-file');
+
+Route::post('/admin/verify-password', [PasswordVerificationController::class, 'verify'])
+    ->name('admin.verify-password');
+
+// Verifikasi password
+Route::post('/admin/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
+    ->name('admin.verify-password');
+
+// Hapus file
+Route::delete('/admin/other-discussions/{discussion}/remove-file/{index}', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeFile'])
+    ->name('admin.other-discussions.remove-file');
+
+// Route untuk hapus commitment
+Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}', 
+    [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeCommitment'])
+    ->name('admin.other-discussions.remove-commitment');
 
 
 
