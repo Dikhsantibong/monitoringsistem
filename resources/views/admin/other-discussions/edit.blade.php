@@ -478,17 +478,16 @@ async function verifyPasswordAndDelete() {
         const password = document.getElementById('verificationPassword').value;
         
         // Debug info
-        const verifyUrl = "{{ route('admin.verify-password') }}";
+        const baseUrl = "{{ url('/admin') }}"; // Pastikan base URL benar
         console.log('Debug Info:', {
-            'Base URL': window.location.origin,
-            'Verify URL': verifyUrl,
-            'CSRF Token': document.querySelector('meta[name="csrf-token"]')?.content,
-            'Action': deleteAction,
-            'Params': deleteParams
+            'Base URL': baseUrl,
+            'Current Path': window.location.pathname,
+            'Delete Action': deleteAction,
+            'Delete Params': deleteParams
         });
 
         // Verifikasi password
-        const verifyResponse = await fetch(verifyUrl, {
+        const verifyResponse = await fetch(`${baseUrl}/verify-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -498,47 +497,10 @@ async function verifyPasswordAndDelete() {
             body: JSON.stringify({ password })
         });
 
-        // Debug response
-        console.log('Response Info:', {
-            'Status': verifyResponse.status,
-            'Status Text': verifyResponse.statusText,
-            'Headers': Object.fromEntries(verifyResponse.headers.entries()),
-            'URL': verifyResponse.url
-        });
-
-        // Tampilkan error di UI
-        const errorDiv = document.getElementById('passwordError');
-        errorDiv.innerHTML = `
-            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-                <strong class="font-bold">Debug Info:</strong>
-                <p class="text-sm">Status: ${verifyResponse.status}</p>
-                <p class="text-sm">URL: ${verifyUrl}</p>
-            </div>
-        `;
-        errorDiv.classList.remove('hidden');
-
-        if (!verifyResponse.ok) {
-            throw new Error(`HTTP error! status: ${verifyResponse.status}`);
-        }
-
-        const rawResponse = await verifyResponse.text();
-        console.log('Raw Response:', rawResponse);
-
-        let verifyData;
-        try {
-            verifyData = JSON.parse(rawResponse);
-        } catch (e) {
-            errorDiv.innerHTML += `
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    <p class="font-bold">Parse Error:</p>
-                    <p class="text-sm">Response tidak valid: ${rawResponse.substring(0, 100)}...</p>
-                </div>
-            `;
-            return;
-        }
+        const verifyData = await verifyResponse.json();
 
         if (!verifyData.success) {
-            errorDiv.innerHTML = `
+            document.getElementById('passwordError').innerHTML = `
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     <p>${verifyData.message || 'Password tidak valid'}</p>
                 </div>
@@ -546,12 +508,26 @@ async function verifyPasswordAndDelete() {
             return;
         }
 
-        // Proses penghapusan jika verifikasi berhasil
-        const deleteUrl = deleteAction === 'removeFile' 
-            ? `${window.location.origin}/admin/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`
-            : `${window.location.origin}/admin/other-discussions/${document.querySelector('form#editDiscussionForm').dataset.discussionId}/commitments/${deleteParams.element.closest('.commitment-entry').dataset.commitmentId}`;
+        // Proses penghapusan dengan URL yang benar
+        let deleteUrl;
+        if (deleteAction === 'removeFile') {
+            deleteUrl = `${baseUrl}/other-discussions/${deleteParams.discussionId}/remove-file/${deleteParams.fileIndex}`;
+        } else if (deleteAction === 'removeCommitment') {
+            const commitmentEntry = deleteParams.element.closest('.commitment-entry');
+            const commitmentId = commitmentEntry.dataset.commitmentId;
+            const discussionId = document.querySelector('form#editDiscussionForm').dataset.discussionId;
+            deleteUrl = `${baseUrl}/other-discussions/${discussionId}/commitments/${commitmentId}`;
+        }
 
-        console.log('Delete URL:', deleteUrl);
+        // Debug delete request
+        console.log('Delete Request:', {
+            'URL': deleteUrl,
+            'Method': 'DELETE',
+            'Headers': {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        });
 
         const deleteResponse = await fetch(deleteUrl, {
             method: 'DELETE',
@@ -575,9 +551,14 @@ async function verifyPasswordAndDelete() {
         }
 
     } catch (error) {
-        console.error('Full Error Details:', error);
-        const errorDiv = document.getElementById('passwordError');
-        errorDiv.innerHTML = `
+        console.error('Full Error Details:', {
+            message: error.message,
+            action: deleteAction,
+            url: error.url || 'N/A',
+            stack: error.stack
+        });
+
+        document.getElementById('passwordError').innerHTML = `
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                 <p class="font-bold">Error:</p>
                 <p class="text-sm">${error.message}</p>
@@ -585,9 +566,20 @@ async function verifyPasswordAndDelete() {
                 <p class="text-sm">URL: ${error.url || 'N/A'}</p>
             </div>
         `;
-        errorDiv.classList.remove('hidden');
     }
 }
+
+// Tambahkan fungsi helper untuk debug
+function debugRoutes() {
+    console.log('Route Debug:', {
+        'Base URL': "{{ url('/admin') }}",
+        'Current URL': window.location.href,
+        'Discussion ID': document.querySelector('form#editDiscussionForm')?.dataset?.discussionId
+    });
+}
+
+// Panggil debug saat halaman dimuat
+document.addEventListener('DOMContentLoaded', debugRoutes);
 
 // Fungsi untuk menghapus file
 function removeExistingFile(discussionId, fileIndex) {
@@ -1119,4 +1111,4 @@ function removeFile() {
 }
 </style>
 @endpush
-@endsection             
+@endsection
