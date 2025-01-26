@@ -1688,8 +1688,18 @@
             },
             preConfirm: async (password) => {
                 try {
+                    // Gunakan route yang di-generate Laravel
+                    const verifyUrl = "{{ route('admin.verify-password') }}";
+                    const deleteUrl = "{{ route('admin.other-discussions.index') }}";
+                    
+                    console.log('Debug URLs:', {
+                        verifyUrl,
+                        deleteUrl,
+                        currentOrigin: window.location.origin
+                    });
+
                     // Verifikasi password
-                    const verifyResponse = await fetch('/admin/verify-password', {
+                    const verifyResponse = await fetch(verifyUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1700,19 +1710,24 @@
                     });
 
                     if (!verifyResponse.ok) {
-                        const errorData = await verifyResponse.text();
-                        console.error('Verify Response:', errorData);
-                        throw new Error('Password verification failed');
+                        const errorText = await verifyResponse.text();
+                        console.error('Verify Response Error:', {
+                            status: verifyResponse.status,
+                            statusText: verifyResponse.statusText,
+                            headers: Object.fromEntries(verifyResponse.headers.entries()),
+                            body: errorText
+                        });
+                        throw new Error(`Verifikasi password gagal (${verifyResponse.status})`);
                     }
 
                     const verifyData = await verifyResponse.json();
                     
                     if (!verifyData.success) {
-                        throw new Error('Password tidak valid');
+                        throw new Error(verifyData.message || 'Password tidak valid');
                     }
 
-                    // Proses delete
-                    const deleteResponse = await fetch(`/admin/other-discussions/${id}`, {
+                    // Proses delete dengan URL yang benar
+                    const deleteResponse = await fetch(`${deleteUrl}/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1722,9 +1737,14 @@
                     });
 
                     if (!deleteResponse.ok) {
-                        const errorData = await deleteResponse.text();
-                        console.error('Delete Response:', errorData);
-                        throw new Error('Failed to delete discussion');
+                        const errorText = await deleteResponse.text();
+                        console.error('Delete Response Error:', {
+                            status: deleteResponse.status,
+                            statusText: deleteResponse.statusText,
+                            headers: Object.fromEntries(deleteResponse.headers.entries()),
+                            body: errorText
+                        });
+                        throw new Error(`Gagal menghapus data (${deleteResponse.status})`);
                     }
 
                     const deleteData = await deleteResponse.json();
@@ -1736,10 +1756,16 @@
                     return deleteData;
 
                 } catch (error) {
-                    console.error('Error Details:', error);
-                    Swal.showValidationMessage(
-                        `Request failed: ${error.message}`
-                    );
+                    console.error('Full Error Details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    Swal.showValidationMessage(`
+                        Error: ${error.message}
+                        ${error.stack ? `\nStack: ${error.stack}` : ''}
+                    `);
                 }
             },
             allowOutsideClick: () => !Swal.isLoading()
@@ -1757,6 +1783,17 @@
             }
         });
     }
+
+    // Debug helper
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Available Routes:', {
+            verifyPassword: "{{ route('admin.verify-password') }}",
+            discussionIndex: "{{ route('admin.other-discussions.index') }}",
+            baseUrl: "{{ url('/') }}",
+            currentUrl: window.location.href
+        });
+    });
+
     function switchTab(tabName) {
         // Sembunyikan semua konten tab
         document.querySelectorAll('.tab-content').forEach(content => {

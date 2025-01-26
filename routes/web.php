@@ -576,8 +576,8 @@ Route::post('/other-discussions/{id}/remove-file', [OtherDiscussionEditControlle
 
 Route::middleware(['auth', 'web'])->prefix('admin')->group(function () {
     // Verifikasi password
-    Route::post('/verify-password', [App\Http\Controllers\Admin\PasswordVerificationController::class, 'verify'])
-        ->name('admin.verify-password');
+    Route::post('/verify-password', [PasswordVerificationController::class, 'verify'])
+        ->name('verify-password');
         
     // Route lainnya...
     Route::delete('/other-discussions/{discussion}/remove-file/{index}', 
@@ -611,6 +611,14 @@ Route::middleware(['auth'])->group(function () {
 // Route fallback untuk debugging
 Route::fallback(function () {
     return response()->json(['error' => 'Route tidak ditemukan'], 404);
+});
+
+Route::middleware(['auth', 'web'])->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::post('/verify-password', [PasswordVerificationController::class, 'verify'])
+            ->name('verify-password');
+        Route::resource('other-discussions', OtherDiscussionController::class);
+    });
 });
 
 
