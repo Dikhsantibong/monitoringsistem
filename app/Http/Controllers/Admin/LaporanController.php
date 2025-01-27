@@ -152,61 +152,35 @@ class LaporanController extends Controller
                 'unit' => 'required'
             ]);
     
-            $connection = session('unit') ?? 'mysql';
-    
-            // Validasi awal ID WO
-            if (DB::connection($connection)
-                ->table('work_orders')
-                ->where('id', $validatedData['wo_id'])
-                ->exists()) {
-                return back()->with('error', 'Work Order dengan ID tersebut sudah ada.');
-            }
-    
-            DB::connection($connection)->beginTransaction();
-    
-            try {
-                $powerPlant = PowerPlant::findOrFail($request->unit);
-    
-                $workOrderData = [
-                    'id' => $validatedData['wo_id'],
-                    'description' => $validatedData['description'],
-                    'type' => $validatedData['type'],
-                    'status' => $validatedData['status'],
-                    'priority' => $validatedData['priority'],
-                    'schedule_start' => $validatedData['schedule_start'],
-                    'schedule_finish' => $validatedData['schedule_finish'],
-                    'power_plant_id' => $powerPlant->id,
-                    'unit_source' => $connection,
-                    'is_active' => true,
-                    'is_backlogged' => false,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ];
-    
-                $inserted = DB::connection($connection)
-                    ->table('work_orders')
-                    ->insert($workOrderData);
-    
-                if (!$inserted) {
-                    throw new \Exception('Gagal menyimpan Work Order');
-                }
-    
-                DB::connection($connection)->commit();
-    
-                return redirect()
-                    ->route('admin.laporan.sr_wo')
-                    ->with('success', 'Work Order berhasil ditambahkan');
-            } catch (\Exception $e) {
-                DB::connection($connection)->rollBack();
-                throw $e;
-            }
+            // Ambil power plant untuk mendapatkan unit_source
+            $powerPlant = PowerPlant::findOrFail($request->unit);
+            
+            // Buat Work Order menggunakan model (bukan DB facade)
+            $workOrder = new WorkOrder();
+            $workOrder->id = $validatedData['wo_id'];
+            $workOrder->description = $validatedData['description'];
+            $workOrder->type = $validatedData['type'];
+            $workOrder->status = $validatedData['status'];
+            $workOrder->priority = $validatedData['priority'];
+            $workOrder->schedule_start = $validatedData['schedule_start'];
+            $workOrder->schedule_finish = $validatedData['schedule_finish'];
+            $workOrder->power_plant_id = $powerPlant->id;
+            $workOrder->is_active = true;
+            $workOrder->is_backlogged = false;
+            
+            // Simpan WO - ini akan mentrigger event created di model
+            $workOrder->save();
+
+            return redirect()
+                ->route('admin.laporan.sr_wo')
+                ->with('success', 'Work Order berhasil ditambahkan');
+
         } catch (\Exception $e) {
             Log::error('Error in storeWO method: ' . $e->getMessage(), [
-                'connection' => $connection ?? 'default',
                 'request_data' => $request->all(),
                 'trace' => $e->getTraceAsString()
             ]);
-    
+
             return back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -304,42 +278,23 @@ class LaporanController extends Controller
 
     public function updateWOStatus(Request $request, $id)
     {
-        DB::beginTransaction();
         try {
-            // 1. Validasi request
             $request->validate([
                 'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
             ]);
 
-            // 2. Cari WO dengan lock minimal
-            $wo = WorkOrder::where('id', $id)
-                ->lockForUpdate()
-                ->first();
+            // Gunakan model untuk update (bukan DB facade)
+            $wo = WorkOrder::findOrFail($id);
 
-            if (!$wo) {
-                throw new \Exception('Work Order tidak ditemukan');
-            }
-
-            // 3. Validasi status
             if ($wo->status === 'Closed') {
-                DB::rollBack();
                 throw new \Exception('WO yang sudah Closed tidak dapat diubah statusnya');
             }
 
-            // 4. Update status menggunakan query builder
             $oldStatus = $wo->status;
-            
-            DB::table('work_orders')
-                ->where('id', $id)
-                ->update([
-                    'status' => $request->status,
-                    'updated_at' => now()
-                ]);
+            $wo->status = $request->status;
+            // Update akan mentrigger event updated di model
+            $wo->save();
 
-            // 5. Commit transaksi
-            DB::commit();
-
-            // 6. Return response sukses
             return response()->json([
                 'success' => true,
                 'message' => "Status berhasil diubah dari {$oldStatus} ke {$request->status}",
@@ -350,21 +305,7 @@ class LaporanController extends Controller
                 ]
             ]);
 
-        } catch (\PDOException $e) {
-            DB::rollBack();
-            Log::error('Database connection error in updateWOStatus: ' . $e->getMessage(), [
-                'wo_id' => $id,
-                'error_code' => $e->getCode(),
-                'error_info' => $e->errorInfo ?? null
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengubah status: Database error. Silakan coba lagi.'
-            ], 500);
-
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Error in updateWOStatus: ' . $e->getMessage(), [
                 'wo_id' => $id,
                 'trace' => $e->getTraceAsString()

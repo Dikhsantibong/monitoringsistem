@@ -97,24 +97,21 @@ class WorkOrder extends Model
                 'unit_source' => $powerPlant->unit_source,
                 'is_active' => $workOrder->is_active,
                 'is_backlogged' => $workOrder->is_backlogged,
-                'created_at' => now(),
-                'updated_at' => now()
+                'created_at' => $workOrder->created_at,
+                'updated_at' => $workOrder->updated_at
             ];
 
-            $currentConnection = session('unit', 'mysql');
-            $targetConnection = $currentConnection === 'mysql' 
-                ? PowerPlant::getConnectionByUnitSource($powerPlant->unit_source)
-                : 'mysql';
+            // Jika input dari UP Kendari, sync ke unit lokal
+            if (session('unit') === 'mysql') {
+                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+                $targetDB = DB::connection($targetConnection);
+            } 
+            // Jika input dari unit lokal, sync ke UP Kendari
+            else {
+                $targetDB = DB::connection('mysql');
+            }
 
-            Log::info("Current connection: {$currentConnection}, Target connection: {$targetConnection}");
-
-            $targetDB = DB::connection($targetConnection);
-
-            Log::info("Attempting to {$action} WO sync", [
-                'data' => $data,
-                'current_connection' => $currentConnection,
-                'target_connection' => $targetConnection
-            ]);
+            Log::info("Attempting to {$action} WO sync", ['data' => $data]);
 
             switch($action) {
                 case 'create':
@@ -136,17 +133,14 @@ class WorkOrder extends Model
 
             Log::info("WO Sync successful", [
                 'id' => $workOrder->id,
-                'unit' => $powerPlant->unit_source,
-                'action' => $action
+                'unit' => $powerPlant->unit_source
             ]);
 
         } catch (\Exception $e) {
             Log::error("WO Sync failed", [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'workOrder' => $workOrder->toArray()
+                'trace' => $e->getTraceAsString()
             ]);
-            throw $e;
         } finally {
             self::$isSyncing = false;
         }
