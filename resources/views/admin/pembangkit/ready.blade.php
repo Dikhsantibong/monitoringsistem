@@ -18,51 +18,6 @@
             width: 100%; /* Memastikan tabel mengambil lebar penuh */
             table-layout: auto; /* Mengizinkan kolom untuk menyesuaikan lebar */
         }
-        .image-preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .image-preview {
-            position: relative;
-            width: 100px;
-            height: 100px;
-        }
-        .image-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        .image-delete {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: red;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .image-upload-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: #ddd;
-        }
-        .image-upload-progress-bar {
-            height: 100%;
-            background: #4CAF50;
-            width: 0;
-            transition: width 0.3s ease;
-        }
     </style>
 @endpush
 
@@ -354,20 +309,19 @@
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
                                                     </td>
                                                     <td class="px-3 py-2">
-                                                        <div id="image_container_{{ $machine->id }}" class="image-container">
+                                                        <div id="image_container_{{ $machine->id }}" class="flex flex-col items-center">
                                                             <input type="file" 
-                                                                   id="image_{{ $machine->id }}"
-                                                                   class="hidden image-upload"
-                                                                   accept="image/*"
-                                                                   multiple
-                                                                   onchange="handleImageUpload(event, {{ $machine->id }})"
-                                                                   data-machine-id="{{ $machine->id }}">
+                                                                id="image_{{ $machine->id }}"
+                                                                class="hidden image-upload"
+                                                                accept="image/*"
+                                                                onchange="handleImageUpload(event, {{ $machine->id }})"
+                                                                data-machine-id="{{ $machine->id }}">
                                                             <button type="button" 
-                                                                    class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                                                                    onclick="document.getElementById('image_{{ $machine->id }}').click()">
+                                                                class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                                                                onclick="document.getElementById('image_{{ $machine->id }}').click()">
                                                                 Upload Gambar
                                                             </button>
-                                                            <div class="image-preview-container" id="preview_{{ $machine->id }}"></div>
+                                                            <div class="image-preview mt-2"></div>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -425,7 +379,7 @@
                         onclick="document.getElementById('image_${machineId}').click()">
                         Upload Gambar
                     </button>
-                    <div class="image-preview-container" id="preview_${machineId}"></div>
+                    <div class="image-preview mt-2"></div>
                 `;
             });
         });
@@ -943,7 +897,7 @@
                                         onclick="document.getElementById('image_${log.machine_id}').click()">
                                         Upload Gambar
                                     </button>
-                                    <div class="image-preview-container" id="preview_${log.machine_id}"></div>
+                                    <div class="image-preview mt-2"></div>
                                 `;
                             }
                         })
@@ -1132,159 +1086,155 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
 </script>
 @push('scripts')
 <script>
-const imageUploads = new Map(); // Untuk tracking upload yang sedang berjalan
-
 function handleImageUpload(event, machineId) {
-    const files = event.target.files;
-    const previewContainer = document.getElementById(`preview_${machineId}`);
-    
-    // Validasi jumlah file
-    if (files.length > 5) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Maksimal 5 gambar yang dapat diunggah sekaligus'
+            text: 'Ukuran file terlalu besar. Maksimal 5MB'
         });
         return;
     }
 
-    // Process each file
-    Array.from(files).forEach((file, index) => {
-        // Validasi ukuran file
-        if (file.size > 5 * 1024 * 1024) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `File ${file.name} terlalu besar. Maksimal 5MB`
-            });
-            return;
-        }
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Format file tidak didukung. Gunakan JPG, JPEG, atau PNG'
+        });
+        return;
+    }
 
-        // Validasi tipe file
-        if (!file.type.match('image.*')) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `File ${file.name} bukan gambar yang valid`
-            });
-            return;
-        }
-
-        // Create preview element
-        const previewId = `preview_${machineId}_${Date.now()}_${index}`;
-        const previewElement = createPreviewElement(previewId, file);
-        previewContainer.appendChild(previewElement);
-
-        // Upload file
-        uploadFile(file, machineId, previewId);
-    });
-
-    // Reset input file
-    event.target.value = '';
-}
-
-function createPreviewElement(previewId, file) {
-    const div = document.createElement('div');
-    div.className = 'image-preview';
-    div.id = previewId;
-
+    const container = document.getElementById(`image_container_${machineId}`);
     const reader = new FileReader();
-    reader.onload = (e) => {
-        div.innerHTML = `
-            <img src="${e.target.result}" alt="Preview">
-            <div class="image-delete" onclick="deletePreview('${previewId}')">&times;</div>
-            <div class="image-upload-progress">
-                <div class="image-upload-progress-bar"></div>
+    
+    reader.onload = function(e) {
+        // Simpan file dalam variabel global untuk digunakan nanti
+        window.selectedFile = file;
+        
+        container.innerHTML = `
+            <div class="relative mb-2">
+                <img src="${e.target.result}" 
+                     alt="Preview" 
+                     class="w-32 h-32 object-cover rounded shadow-sm">
+            </div>
+            <div class="flex gap-2 justify-center">
+                <button type="button" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    onclick="confirmUpload(${machineId})">
+                    Konfirmasi Upload
+                </button>
+                <button type="button" 
+                    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                    onclick="cancelUpload(${machineId})">
+                    Batal
+                </button>
             </div>
         `;
     };
-    reader.readAsDataURL(file);
 
-    return div;
+    reader.readAsDataURL(file);
 }
 
-function uploadFile(file, machineId, previewId) {
+function confirmUpload(machineId) {
+    const file = window.selectedFile; // Menggunakan file yang disimpan
+    if (!file) {
+        console.error('No file selected');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('image', file);
     formData.append('machine_id', machineId);
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
 
-    const xhr = new XMLHttpRequest();
-    imageUploads.set(previewId, xhr);
+    const container = document.getElementById(`image_container_${machineId}`);
+    container.innerHTML = '<div class="text-center">Mengunggah...</div>';
 
-    xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-            const percentComplete = (e.loaded / e.total) * 100;
-            updateProgressBar(previewId, percentComplete);
+    // Gunakan route yang benar
+    fetch('{{ route("admin.pembangkit.upload-image") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         }
-    };
-
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            const response = JSON.parse(xhr.responseText);
-            if (response.success) {
-                updatePreviewAfterUpload(previewId, response.image);
-            } else {
-                showUploadError(previewId, response.message);
-            }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            container.innerHTML = `
+                <div class="relative">
+                    <img src="{{ asset('storage') }}/${data.image_url}" 
+                         alt="Preview" 
+                         class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
+                         onclick="showLargeImage('{{ asset('storage') }}/${data.image_url}')"
+                         title="Klik untuk memperbesar">
+                    <button type="button"
+                            onclick="deleteImage(${machineId})"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            // Clear selected file
+            window.selectedFile = null;
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Gambar berhasil diunggah',
+                timer: 1500,
+                showConfirmButton: false
+            });
         } else {
-            showUploadError(previewId, 'Upload gagal');
+            throw new Error(data.message || 'Gagal mengunggah gambar');
         }
-        imageUploads.delete(previewId);
-    };
-
-    xhr.onerror = function() {
-        showUploadError(previewId, 'Network error');
-        imageUploads.delete(previewId);
-    };
-
-    xhr.open('POST', '/admin/pembangkit/upload-image', true);
-    xhr.send(formData);
-}
-
-function updateProgressBar(previewId, percent) {
-    const progressBar = document.querySelector(`#${previewId} .image-upload-progress-bar`);
-    if (progressBar) {
-        progressBar.style.width = `${percent}%`;
-    }
-}
-
-function updatePreviewAfterUpload(previewId, imageData) {
-    const previewElement = document.getElementById(previewId);
-    if (previewElement) {
-        previewElement.innerHTML = `
-            <img src="${imageData.url}" alt="Uploaded" class="cursor-pointer" 
-                 onclick="showLargeImage('${imageData.url}')">
-            <div class="image-delete" onclick="deleteImage('${previewId}', ${imageData.id})">&times;</div>
-        `;
-    }
-}
-
-function showUploadError(previewId, message) {
-    const previewElement = document.getElementById(previewId);
-    if (previewElement) {
-        previewElement.remove();
-    }
-    Swal.fire({
-        icon: 'error',
-        title: 'Upload Error',
-        text: message
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Gagal mengunggah gambar'
+        });
+        resetUploadForm(machineId);
     });
 }
 
-function deletePreview(previewId) {
-    // Cancel upload if in progress
-    const xhr = imageUploads.get(previewId);
-    if (xhr) {
-        xhr.abort();
-        imageUploads.delete(previewId);
-    }
+function cancelUpload(machineId) {
+    resetUploadForm(machineId);
+}
 
-    // Remove preview element
-    const previewElement = document.getElementById(previewId);
-    if (previewElement) {
-        previewElement.remove();
-    }
+function resetUploadForm(machineId) {
+    const container = document.getElementById(`image_container_${machineId}`);
+    container.innerHTML = `
+        <input type="file" 
+            id="image_${machineId}"
+            class="hidden image-upload"
+            accept="image/*"
+            onchange="handleImageUpload(event, ${machineId})"
+            data-machine-id="${machineId}">
+        <button type="button" 
+            class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+            onclick="document.getElementById('image_${machineId}').click()">
+            Upload Gambar
+        </button>
+        <div class="image-preview mt-2"></div>
+    `;
 }
 
 function showLargeImage(imageUrl) {
@@ -1302,34 +1252,50 @@ function showLargeImage(imageUrl) {
     });
 }
 
-// Load existing images when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    const machines = document.querySelectorAll('[data-machine-id]');
-    machines.forEach(machine => {
-        const machineId = machine.dataset.machineId;
-        loadExistingImages(machineId);
-    });
-});
-
-function loadExistingImages(machineId) {
-    fetch(`/admin/pembangkit/get-images/${machineId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.images) {
-                const previewContainer = document.getElementById(`preview_${machineId}`);
-                data.images.forEach(image => {
-                    const previewElement = document.createElement('div');
-                    previewElement.className = 'image-preview';
-                    previewElement.innerHTML = `
-                        <img src="${image.url}" alt="Existing" class="cursor-pointer"
-                             onclick="showLargeImage('${image.url}')">
-                        <div class="image-delete" onclick="deleteImage('${machineId}', ${image.id})">&times;</div>
-                    `;
-                    previewContainer.appendChild(previewElement);
+function deleteImage(machineId) {
+    Swal.fire({
+        title: 'Hapus Gambar?',
+        text: "Gambar akan dihapus permanen",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/pembangkit/delete-image/${machineId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resetUploadForm(machineId);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terhapus!',
+                        text: 'Gambar telah dihapus.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    throw new Error(data.message || 'Gagal menghapus gambar');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Gagal menghapus gambar'
                 });
-            }
-        })
-        .catch(error => console.error('Error loading images:', error));
+            });
+        }
+    });
 }
 </script>
 @endpush
