@@ -9,13 +9,9 @@ use App\Models\Machine;
 use App\Models\MachineOperation;
 use App\Models\MachineStatusLog;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
+use PDF;
 use App\Models\UnitOperationHour;
-use Illuminate\Support\Facades\File;
-use App\Models\MachineImage;
 
 class PembangkitController extends Controller
 {
@@ -33,7 +29,7 @@ class PembangkitController extends Controller
         $machines = Machine::with('issues', 'metrics')->get();
         $operations = MachineOperation::all();
         
-        // Ambil status log hari ini
+        // Ambil status log dan HOP hari ini
         $todayLogs = MachineStatusLog::whereDate('tanggal', Carbon::today())->get();
         $todayHops = UnitOperationHour::whereDate('tanggal', Carbon::today())->get();
 
@@ -61,28 +57,41 @@ class PembangkitController extends Controller
 
             // Simpan data status mesin
             foreach ($request->logs as $log) {
-                // Pastikan data selalu tersimpan, bahkan jika status kosong
-                MachineStatusLog::updateOrCreate(
-                    [
-                        'machine_id' => $log['machine_id'],
-                        'tanggal' => $log['tanggal']
-                    ],
-                    [
-                        'dmn' => $log['dmn'] ?? 0,
-                        'dmp' => $log['dmp'] ?? 0,
-                        'load_value' => $log['load_value'] ?? 0,
-                        'status' => $log['status'] ?? '-',  // Berikan default value
-                        'component' => $log['component'],
-                        'equipment' => $log['equipment'] ?? null,
-                        'deskripsi' => $log['deskripsi'] ?? null,
-                        'kronologi' => $log['kronologi'] ?? null,
-                        'action_plan' => $log['action_plan'] ?? null,
-                        'progres' => $log['progres'] ?? null,
-                        'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
-                        'target_selesai' => $log['target_selesai'] ?? null,
-                        'unit_source' => session('unit')
-                    ]
-                );
+                $equipment = isset($log['equipment']) ? trim($log['equipment']) : null;
+                
+                $operation = MachineOperation::where('machine_id', $log['machine_id'])
+                    ->latest('recorded_at')
+                    ->first();
+
+                // Cek status untuk menentukan nilai DMP
+                $dmp = $operation ? $operation->dmp : 0;
+                if (in_array($log['status'], ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])) {
+                    $dmp = 0; // Set DMP ke 0 untuk status tertentu
+                }
+
+                if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
+                    MachineStatusLog::updateOrCreate(
+                        [
+                            'machine_id' => $log['machine_id'],
+                            'tanggal' => $log['tanggal']
+                        ],
+                        [
+                            'dmn' => $operation ? $operation->dmn : 0,
+                            'dmp' => $dmp, // Gunakan nilai DMP yang sudah ditentukan
+                            'load_value' => $log['load_value'],
+                            'status' => $log['status'],
+                            'component' => $log['component'],
+                            'equipment' => $equipment,
+                            'deskripsi' => $log['deskripsi'] ?? null,
+                            'kronologi' => $log['kronologi'] ?? null,
+                            'action_plan' => $log['action_plan'] ?? null,
+                            'progres' => $log['progres'] ?? null,
+                            'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
+                            'target_selesai' => $log['target_selesai'] ?? null,
+                            'unit_source' => session('unit')
+                        ]
+                    );
+                }
             }
             
             DB::commit();
@@ -104,48 +113,54 @@ class PembangkitController extends Controller
     {
         try {
             $tanggal = $request->tanggal ?? now()->toDateString();
-            
-            // Ambil semua log untuk tanggal tersebut
-            $logs = MachineStatusLog::whereDate('tanggal', $tanggal)->get();
-            
+
+            // Ambil data status mesin untuk tanggal yang dipilih
+            $logs = MachineStatusLog::with(['machine.powerPlant'])
+                ->whereDate('tanggal', $tanggal)
+                ->get();
+
+            // Jika tidak ada data untuk tanggal tersebut, ambil data terakhir
+            if ($logs->isEmpty()) {
+                $logs = MachineStatusLog::with(['machine.powerPlant'])
+                    ->whereIn('id', function($query) use ($tanggal) {
+                        $query->selectRaw('MAX(id)')
+                            ->from('machine_status_logs')
+                            ->whereDate('tanggal', '<=', $tanggal)
+                            ->groupBy('machine_id');
+                    })
+                    ->get();
+            }
+
+            // Debug log untuk memeriksa data
+            \Log::info('Data logs yang diambil:', $logs->toArray());
+
             $formattedLogs = $logs->map(function($log) {
-                // Cari gambar langsung dari direktori
-                $imagePath = null;
-                $pattern = storage_path('app/public/machine-images/machine_' . $log->machine_id . '_*');
-                $files = glob($pattern);
-                if (!empty($files)) {
-                    rsort($files); // Sort descending untuk mendapatkan file terbaru
-                    $latestFile = $files[0];
-                    $imagePath = 'machine-images/' . basename($latestFile);
-                }
-                
-                // Bersihkan deskripsi dari tag gambar
-                $cleanDescription = preg_replace('/\[image:.*?\]/', '', $log->deskripsi ?? '');
-                
                 return [
                     'machine_id' => $log->machine_id,
                     'tanggal' => $log->tanggal,
-                    'status' => $log->status ?? '',
+                    'status' => $log->status ?? '', // Pastikan status tidak null
                     'dmn' => $log->dmn,
                     'dmp' => $log->dmp,
                     'load_value' => $log->load_value,
-                    'component' => $log->component ?? '',
-                    'equipment' => $log->equipment ?? '',
-                    'deskripsi' => trim($cleanDescription),
+                    'component' => $log->component ?? '', // Pastikan component tidak null
+                    'equipment' => $log->equipment ?? '', // Pastikan equipment tidak null
+                    'deskripsi' => $log->deskripsi,
                     'kronologi' => $log->kronologi,
                     'action_plan' => $log->action_plan,
                     'progres' => $log->progres,
                     'tanggal_mulai' => $log->tanggal_mulai ? $log->tanggal_mulai->format('Y-m-d') : null,
-                    'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null,
-                    'image_url' => $imagePath
+                    'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null
                 ];
             });
+
+            // Ambil data HOP
+            $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'logs' => $formattedLogs,
-                    'hops' => UnitOperationHour::whereDate('tanggal', $tanggal)->get()
+                    'hops' => $hops
                 ]
             ]);
 
@@ -326,103 +341,6 @@ class PembangkitController extends Controller
                 'success' => false,
                 'message' => 'Gagal mereset data: ' . $e->getMessage()
             ]);
-        }
-    }
-
-    public function uploadImage(Request $request)
-    {
-        try {
-            if (!$request->hasFile('image')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tidak ada file yang diunggah'
-                ]);
-            }
-
-            $file = $request->file('image');
-            $machineId = $request->input('machine_id');
-            
-            // Generate nama file unik dengan timestamp
-            $filename = 'machine_' . $machineId . '_' . time() . '.' . $file->getClientOriginalExtension();
-            
-            // Simpan file ke storage public
-            $path = $file->storeAs('machine-images', $filename, 'public');
-
-            // Hapus gambar lama dari storage dan database
-            $oldImage = MachineImage::where('machine_id', $machineId)->first();
-            if ($oldImage) {
-                Storage::disk('public')->delete($oldImage->image_path);
-                $oldImage->delete();
-            }
-
-            // Simpan informasi gambar ke database
-            MachineImage::create([
-                'machine_id' => $machineId,
-                'image_path' => $path
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Gambar berhasil diunggah',
-                'image_url' => $path
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error dalam uploadImage: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengunggah gambar: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function deleteImage($machineId)
-    {
-        try {
-            $image = MachineImage::where('machine_id', $machineId)->first();
-            
-            if ($image) {
-                if (Storage::exists('public/' . $image->image_path)) {
-                    Storage::delete('public/' . $image->image_path);
-                }
-                $image->delete();
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Gambar berhasil dihapus'
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error dalam deleteImage: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus gambar: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function checkImage($machineId)
-    {
-        try {
-            $image = MachineImage::where('machine_id', $machineId)->first();
-            
-            if ($image) {
-                return response()->json([
-                    'success' => true,
-                    'image_url' => $image->image_path
-                ]);
-            }
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'No image found'
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error checking image: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error checking image'
-            ], 500);
         }
     }
 }

@@ -91,7 +91,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/report', [PembangkitController::class, 'report'])->name('pembangkit.report');
         Route::get('/report/download', [PembangkitController::class, 'downloadReport'])->name('pembangkit.report.download');
         Route::get('/report/print', [PembangkitController::class, 'printReport'])->name('pembangkit.report.print');
-        Route::post('/upload-image', [PembangkitController::class, 'uploadImage'])->name('pembangkit.upload-image');
+        Route::post('/upload-image', [PembangkitController::class, 'uploadImage'])->name('admin.pembangkit.upload-image');
+        Route::delete('/delete-image', [PembangkitController::class, 'deleteImage'])->name('admin.pembangkit.delete-image');
+        Route::get('/get-images/{machineId}', [PembangkitController::class, 'getImages'])->name('admin.pembangkit.get-images');
     });
 
     Route::prefix('laporan')->group(function () {

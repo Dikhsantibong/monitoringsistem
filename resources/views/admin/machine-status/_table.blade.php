@@ -39,10 +39,8 @@
                                         return 0;
                                     });
                                 
-                                $hopData = $hops->where('power_plant_id', $powerPlant->id)->first();
-                                $hopValue = $hopData ? $hopData->hop_value : 0;
-                                $hopStatus = $hopValue >= 7 ? 'aman' : 'siaga';
-                                $hopClass = $hopStatus === 'aman' ? 'text-green-600' : 'text-red-600';
+                                $hopData = $totalHopByPlant[$powerPlant->id] ?? ['value' => 0, 'status' => 'siaga'];
+                                $hopClass = $hopData['status'] === 'aman' ? 'text-green-600' : 'text-red-600';
                             @endphp
                             
                             <div class="bg-green-50 p-3 rounded-lg">
@@ -71,9 +69,9 @@
                             </div>
                             <div class="bg-orange-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total HOP:</p>
-                                <p class="text-xl font-bold text-orange-700">{{ number_format($hopValue, 1) }} Hari</p>
+                                <p class="text-xl font-bold text-orange-700">{{ number_format($hopData['value'], 1) }} Hari</p>
                                 <p class="text-sm font-medium {{ $hopClass }}">
-                                    Status: {{ ucfirst($hopStatus) }}
+                                    Status: {{ ucfirst($hopData['status']) }}
                                 </p>
                             </div>
                         </div>
@@ -123,6 +121,7 @@
             </div>
 
             <!-- Tabel -->
+            
             <div class="table-responsive">
                 <table class="min-w-full bg-white">
                     <thead>
@@ -141,19 +140,12 @@
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Progress</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Tanggal Mulai</th>
                             <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Target Selesai</th>
-                            <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Gambar</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm">
                         @forelse($powerPlant->machines as $index => $machine)
                             @php
-                                // Pastikan mengambil log terbaru untuk tanggal yang dipilih
-                                $log = $filteredLogs
-                                    ->where('machine_id', $machine->id)
-                                    ->where('created_at', '>=', $date . ' 00:00:00')
-                                    ->where('created_at', '<=', $date . ' 23:59:59')
-                                    ->first();
-                                    
+                                $log = $filteredLogs->firstWhere('machine_id', $machine->id);
                                 $status = $log?->status ?? '-';
                                 $statusClass = match($status) {
                                     'Operasi' => 'bg-green-100 text-green-800',
@@ -163,10 +155,6 @@
                                     'Overhaul' => 'bg-violet-100 text-violet-800',
                                     default => 'bg-gray-100 text-gray-800'
                                 };
-
-                                $image = DB::table('machine_images')
-                                    ->where('machine_id', $machine->id)
-                                    ->first();
                             @endphp
                             <tr class="hover:bg-gray-50 border border-gray-200">
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $index + 1 }}</td>
@@ -188,19 +176,8 @@
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                 </td>
-                                <td class="px-3 py-2 border-r border-gray-200 text-center">
-                                    {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
-                                </td>
                                 <td class="px-3 py-2 text-center">
-                                    @if($image)
-                                        <img src="{{ asset('storage/' . $image->image_path) }}" 
-                                             alt="Machine Image" 
-                                             class="w-20 h-20 object-cover mx-auto cursor-pointer"
-                                             onclick="showLargeImage('{{ asset('storage/' . $image->image_path) }}')"
-                                             title="Klik untuk memperbesar">
-                                    @else
-                                        -
-                                    @endif
+                                    {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                 </td>
                             </tr>
                         @empty
@@ -213,9 +190,8 @@
                     </tbody>
                 </table>
             </div>
+
+            
         </div>
     @endforeach
-@endif
-
-@push('scripts')
-@endpush 
+@endif 

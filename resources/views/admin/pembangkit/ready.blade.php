@@ -197,9 +197,6 @@
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
                                                     Target Selesai
                                                 </th>
-                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Gambar
-                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody class="text-sm">
@@ -308,22 +305,6 @@
                                                             name="target_selesai[{{ $machine->id }}]"
                                                             class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
                                                     </td>
-                                                    <td class="px-3 py-2">
-                                                        <div id="image_container_{{ $machine->id }}" class="flex flex-col items-center">
-                                                            <input type="file" 
-                                                                id="image_{{ $machine->id }}"
-                                                                class="hidden image-upload"
-                                                                accept="image/*"
-                                                                onchange="handleImageUpload(event, {{ $machine->id }})"
-                                                                data-machine-id="{{ $machine->id }}">
-                                                            <button type="button" 
-                                                                class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                                                                onclick="document.getElementById('image_{{ $machine->id }}').click()">
-                                                                Upload Gambar
-                                                            </button>
-                                                            <div class="image-preview mt-2"></div>
-                                                        </div>
-                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -363,25 +344,6 @@
                 // Jika timer tidak berjalan, sembunyikan timer
                 document.getElementById('timer').style.display = 'none';
             }
-
-            // Reset semua container gambar ke tampilan default
-            document.querySelectorAll('[id^="image_container_"]').forEach(container => {
-                const machineId = container.id.replace('image_container_', '');
-                container.innerHTML = `
-                    <input type="file" 
-                        id="image_${machineId}"
-                        class="hidden image-upload"
-                        accept="image/*"
-                        onchange="handleImageUpload(event, ${machineId})"
-                        data-machine-id="${machineId}">
-                    <button type="button" 
-                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                        onclick="document.getElementById('image_${machineId}').click()">
-                        Upload Gambar
-                    </button>
-                    <div class="image-preview mt-2"></div>
-                `;
-            });
         });
 
         function updateTimer() {
@@ -524,26 +486,49 @@
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
                 const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-                const statusSelect = row.querySelector(`select[name="status[${machineId}]"]`);
-                const loadInput = row.querySelector(`input[name="load_value[${machineId}]"]`);
+                const statusSelect = row.querySelector('select');
+                const componentSelect = row.querySelector('.system-select');
                 
-                // Pastikan semua data terisi, bahkan jika kosong
-                data.logs.push({
-                    machine_id: machineId,
-                    tanggal: tanggal,
-                    status: statusSelect ? statusSelect.value : null,
-                    load_value: loadInput ? loadInput.value : '0',
-                    dmn: row.querySelector(`input[name="dmn[${machineId}]"]`)?.value || '0',
-                    dmp: row.querySelector(`input[name="dmp[${machineId}]"]`)?.value || '0',
-                    component: row.querySelector(`select[name="system[${machineId}]"]`)?.value || null,
-                    equipment: row.querySelector(`textarea[name="equipment[${machineId}]"]`)?.value || null,
-                    deskripsi: row.querySelector(`textarea[name="deskripsi[${machineId}]"]`)?.value || null,
-                    kronologi: row.querySelector(`textarea[name="kronologi[${machineId}]"]`)?.value || null,
-                    action_plan: row.querySelector(`textarea[name="action_plan[${machineId}]"]`)?.value || null,
-                    progres: row.querySelector(`textarea[name="progres[${machineId}]"]`)?.value || null,
-                    tanggal_mulai: row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`)?.value || null,
-                    target_selesai: row.querySelector(`input[name="target_selesai[${machineId}]"]`)?.value || null
-                });
+                // Perbaikan pengambilan nilai equipment
+                const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
+                const equipmentValue = equipmentTextarea ? equipmentTextarea.value.trim() : '';
+                
+                // Ambil nilai-nilai lain
+                const dmpInput = row.querySelector('td:nth-child(3) input');
+                const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
+                const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
+                const inputBeban = row.querySelector('td:nth-child(4) input');
+                const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
+                const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
+                const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
+                const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
+
+                // Perbaiki selector untuk input beban
+                const loadInput = row.querySelector('td:nth-child(5) input[type="number"]'); // Sesuaikan dengan posisi kolom beban
+                const loadValue = loadInput ? parseFloat(loadInput.value) || 0 : 0;
+
+                // Debug log untuk memastikan nilai beban terambil
+                console.log('Load value for machine', machineId, ':', loadValue);
+
+                if (statusSelect && statusSelect.value) {
+                    data.logs.push({
+                        machine_id: machineId,
+                        tanggal: tanggal,
+                        hop: hopValue,
+                        status: statusSelect.value,
+                        component: componentSelect ? componentSelect.value : null,
+                        equipment: equipmentValue,
+                        dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
+                        dmp: dmpInput ? dmpInput.value.trim() : null,
+                        load_value: loadValue, // Pastikan nilai load_value selalu terisi
+                        deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
+                        action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
+                        progres: inputProgres ? inputProgres.value.trim() : null,
+                        kronologi: inputKronologi ? inputKronologi.value.trim() : null,
+                        tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
+                        target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
+                    });
+                }
             });
         });
 
@@ -861,49 +846,6 @@
                             console.log(`${field} updated:`, value);
                         }
                     }
-
-                    // Tambahkan update untuk gambar
-                    fetch(`/admin/pembangkit/check-image/${log.machine_id}`)
-                        .then(response => response.json())
-                        .then(imageData => {
-                            const imageContainer = row.querySelector(`#image_container_${log.machine_id}`);
-                            if (imageData.success && imageData.image_url) {
-                                imageContainer.innerHTML = `
-                                    <div class="relative">
-                                        <img src="{{ asset('storage') }}/${imageData.image_url}" 
-                                             alt="Preview" 
-                                             class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
-                                             onclick="showLargeImage('{{ asset('storage') }}/${imageData.image_url}')"
-                                             title="Klik untuk memperbesar">
-                                        <button type="button"
-                                                onclick="deleteImage(${log.machine_id})"
-                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                `;
-                            } else {
-                                imageContainer.innerHTML = `
-                                    <input type="file" 
-                                        id="image_${log.machine_id}"
-                                        class="hidden image-upload"
-                                        accept="image/*"
-                                        onchange="handleImageUpload(event, ${log.machine_id})"
-                                        data-machine-id="${log.machine_id}">
-                                    <button type="button" 
-                                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                                        onclick="document.getElementById('image_${log.machine_id}').click()">
-                                        Upload Gambar
-                                    </button>
-                                    <div class="image-preview mt-2"></div>
-                                `;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error loading image:', error);
-                        });
                 }
             });
         }
@@ -960,6 +902,11 @@
                 return '#FFFFFF'; // Default tanpa warna
         }
     }
+
+    // Pastikan fungsi dijalankan saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        loadData();
+    });
 
     // Event listener untuk perubahan tanggal
     document.getElementById('filterDate').addEventListener('change', loadData);
@@ -1085,217 +1032,4 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
 });
 </script>
 @push('scripts')
-<script>
-function handleImageUpload(event, machineId) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Ukuran file terlalu besar. Maksimal 5MB'
-        });
-        return;
-    }
-
-    // Check file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Format file tidak didukung. Gunakan JPG, JPEG, atau PNG'
-        });
-        return;
-    }
-
-    const container = document.getElementById(`image_container_${machineId}`);
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        // Simpan file dalam variabel global untuk digunakan nanti
-        window.selectedFile = file;
-        
-        container.innerHTML = `
-            <div class="relative mb-2">
-                <img src="${e.target.result}" 
-                     alt="Preview" 
-                     class="w-32 h-32 object-cover rounded shadow-sm">
-            </div>
-            <div class="flex gap-2 justify-center">
-                <button type="button" 
-                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    onclick="confirmUpload(${machineId})">
-                    Konfirmasi Upload
-                </button>
-                <button type="button" 
-                    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                    onclick="cancelUpload(${machineId})">
-                    Batal
-                </button>
-            </div>
-        `;
-    };
-
-    reader.readAsDataURL(file);
-}
-
-function confirmUpload(machineId) {
-    const file = window.selectedFile; // Menggunakan file yang disimpan
-    if (!file) {
-        console.error('No file selected');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('machine_id', machineId);
-    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-
-    const container = document.getElementById(`image_container_${machineId}`);
-    container.innerHTML = '<div class="text-center">Mengunggah...</div>';
-
-    // Gunakan route yang benar
-    fetch('{{ route("admin.pembangkit.upload-image") }}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            container.innerHTML = `
-                <div class="relative">
-                    <img src="{{ asset('storage') }}/${data.image_url}" 
-                         alt="Preview" 
-                         class="w-32 h-32 object-cover rounded shadow-sm cursor-pointer"
-                         onclick="showLargeImage('{{ asset('storage') }}/${data.image_url}')"
-                         title="Klik untuk memperbesar">
-                    <button type="button"
-                            onclick="deleteImage(${machineId})"
-                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            `;
-            
-            // Clear selected file
-            window.selectedFile = null;
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: 'Gambar berhasil diunggah',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        } else {
-            throw new Error(data.message || 'Gagal mengunggah gambar');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.message || 'Gagal mengunggah gambar'
-        });
-        resetUploadForm(machineId);
-    });
-}
-
-function cancelUpload(machineId) {
-    resetUploadForm(machineId);
-}
-
-function resetUploadForm(machineId) {
-    const container = document.getElementById(`image_container_${machineId}`);
-    container.innerHTML = `
-        <input type="file" 
-            id="image_${machineId}"
-            class="hidden image-upload"
-            accept="image/*"
-            onchange="handleImageUpload(event, ${machineId})"
-            data-machine-id="${machineId}">
-        <button type="button" 
-            class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-            onclick="document.getElementById('image_${machineId}').click()">
-            Upload Gambar
-        </button>
-        <div class="image-preview mt-2"></div>
-    `;
-}
-
-function showLargeImage(imageUrl) {
-    Swal.fire({
-        imageUrl: imageUrl,
-        imageWidth: '80%',
-        imageHeight: '80vh',
-        imageAlt: 'Machine Image',
-        showConfirmButton: false,
-        showCloseButton: true,
-        customClass: {
-            popup: 'swal2-popup-large',
-            image: 'object-contain max-h-[80vh]'
-        }
-    });
-}
-
-function deleteImage(machineId) {
-    Swal.fire({
-        title: 'Hapus Gambar?',
-        text: "Gambar akan dihapus permanen",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/admin/pembangkit/delete-image/${machineId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    resetUploadForm(machineId);
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Terhapus!',
-                        text: 'Gambar telah dihapus.',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                } else {
-                    throw new Error(data.message || 'Gagal menghapus gambar');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Gagal menghapus gambar'
-                });
-            });
-        }
-    });
-}
-</script>
 @endpush

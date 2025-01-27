@@ -33,7 +33,6 @@ class MachineStatusLog extends Model
         'kronologi',
         'action_plan',
         'progres',
-        'image_path',
         'tanggal_mulai',
         'target_selesai',
         'unit_source'
@@ -42,8 +41,7 @@ class MachineStatusLog extends Model
     protected $casts = [
         'tanggal' => 'date',
         'tanggal_mulai' => 'date',
-        'target_selesai' => 'date',
-        'image_path' => 'array'
+        'target_selesai' => 'date'
     ];
 
     protected $dates = [
@@ -180,43 +178,6 @@ class MachineStatusLog extends Model
                 'date' => Carbon::parse($item->date)->format('D'),
                 'load' => round($item->avg_load, 2),
                 'capacity' => round($item->total_capacity, 2)
-            ];
-        });
-    }
-
-    public function addImage($path, $description = null)
-    {
-        $images = $this->image_path ?? [];
-        $images[] = [
-            'path' => $path,
-            'description' => $description,
-            'uploaded_at' => now()->toDateTimeString()
-        ];
-        $this->image_path = $images;
-        $this->save();
-    }
-
-    public function removeImage($index)
-    {
-        $images = $this->image_path ?? [];
-        if (isset($images[$index])) {
-            // Hapus file fisik
-            Storage::disk('public')->delete($images[$index]['path']);
-            // Hapus dari array
-            array_splice($images, $index, 1);
-            $this->image_path = $images;
-            $this->save();
-        }
-    }
-
-    public function getImagesAttribute()
-    {
-        return collect($this->image_path ?? [])->map(function($image) {
-            return [
-                'path' => $image['path'],
-                'description' => $image['description'],
-                'uploaded_at' => Carbon::parse($image['uploaded_at']),
-                'url' => Storage::disk('public')->url($image['path'])
             ];
         });
     }

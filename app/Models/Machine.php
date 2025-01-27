@@ -54,11 +54,6 @@ class Machine extends Model
         return $this->hasMany(MachineStatusLog::class);
     }
 
-    public function logs()
-    {
-        return $this->hasMany(MachineStatusLog::class);
-    }
-
     public function getConnectionName()
     {
         return session('unit');

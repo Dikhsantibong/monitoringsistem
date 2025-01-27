@@ -23,8 +23,7 @@ class MachineOperation extends Model
         'hop',
         'recorded_at',
         'keterangan',
-        'unit_source',
-        'image_url'
+        'unit_source'
     ];
 
     protected $attributes = [
@@ -120,4 +119,3 @@ class MachineOperation extends Model
         }
     }
 }
-
