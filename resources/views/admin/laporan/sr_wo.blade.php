@@ -71,6 +71,9 @@
                                class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active" 
                                data-tab="sr">
                                 Service Request (SR)
+                                <span class="ml-2 bg-green-400 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                    {{ $serviceRequests->count() }}
+                                </span>
                             </a>
                         </li>
                         <li class="mr-2">
@@ -78,6 +81,9 @@
                                class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" 
                                data-tab="wo">
                                 Work Order (WO)
+                                <span class="ml-2 bg-blue-400 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                    {{ $workOrders->count() }}
+                                </span>
                             </a>
                         </li>
                         <li class="mr-2">
@@ -85,6 +91,9 @@
                                class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" 
                                data-tab="backlog">
                                 WO Backlog
+                                <span class="ml-2 bg-red-400 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                    {{ $woBacklogs->count() }}
+                                </span>
                             </a>
                         </li>
                     </ul>
