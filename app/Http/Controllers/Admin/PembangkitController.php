@@ -61,8 +61,7 @@ class PembangkitController extends Controller
 
             // Simpan data status mesin
             foreach ($request->logs as $log) {
-                // Pastikan data selalu tersimpan, bahkan jika status kosong
-                MachineStatusLog::updateOrCreate(
+                $statusLog = MachineStatusLog::updateOrCreate(
                     [
                         'machine_id' => $log['machine_id'],
                         'tanggal' => $log['tanggal']
@@ -71,7 +70,7 @@ class PembangkitController extends Controller
                         'dmn' => $log['dmn'] ?? 0,
                         'dmp' => $log['dmp'] ?? 0,
                         'load_value' => $log['load_value'] ?? 0,
-                        'status' => $log['status'] ?? '-',  // Berikan default value
+                        'status' => $log['status'] ?? '-',
                         'component' => $log['component'],
                         'equipment' => $log['equipment'] ?? null,
                         'deskripsi' => $log['deskripsi'] ?? null,
@@ -83,6 +82,13 @@ class PembangkitController extends Controller
                         'unit_source' => session('unit')
                     ]
                 );
+
+                // Jika ada gambar baru, tambahkan ke log
+                if (!empty($log['new_images'])) {
+                    foreach ($log['new_images'] as $imageData) {
+                        $statusLog->addImage($imageData['path'], $imageData['description'] ?? null);
+                    }
+                }
             }
             
             DB::commit();
@@ -332,6 +338,12 @@ class PembangkitController extends Controller
     public function uploadImage(Request $request)
     {
         try {
+            $request->validate([
+                'image' => 'required|image|mmax:5120', // max 5MB
+                'machine_id' => 'required|exists:machines,id',
+                'description' => 'nullable|string|max:255'
+            ]);
+
             if (!$request->hasFile('image')) {
                 return response()->json([
                     'success' => false,
@@ -341,30 +353,37 @@ class PembangkitController extends Controller
 
             $file = $request->file('image');
             $machineId = $request->input('machine_id');
+            $description = $request->input('description');
             
-            // Generate nama file unik dengan timestamp
+            // Generate nama file unik
             $filename = 'machine_' . $machineId . '_' . time() . '.' . $file->getClientOriginalExtension();
             
-            // Simpan file ke storage public
+            // Simpan file
             $path = $file->storeAs('machine-images', $filename, 'public');
 
-            // Hapus gambar lama dari storage dan database
-            $oldImage = MachineImage::where('machine_id', $machineId)->first();
-            if ($oldImage) {
-                Storage::disk('public')->delete($oldImage->image_path);
-                $oldImage->delete();
-            }
+            // Ambil atau buat log status untuk hari ini
+            $statusLog = MachineStatusLog::firstOrCreate(
+                [
+                    'machine_id' => $machineId,
+                    'tanggal' => now()->toDateString()
+                ],
+                [
+                    'status' => 'Operasi',
+                    'unit_source' => session('unit')
+                ]
+            );
 
-            // Simpan informasi gambar ke database
-            MachineImage::create([
-                'machine_id' => $machineId,
-                'image_path' => $path
-            ]);
+            // Tambah gambar ke log
+            $statusLog->addImage($path, $description);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Gambar berhasil diunggah',
-                'image_url' => $path
+                'image' => [
+                    'path' => $path,
+                    'url' => Storage::disk('public')->url($path),
+                    'description' => $description
+                ]
             ]);
 
         } catch (\Exception $e) {
@@ -376,27 +395,68 @@ class PembangkitController extends Controller
         }
     }
 
-    public function deleteImage($machineId)
+    public function deleteImage(Request $request)
     {
         try {
-            $image = MachineImage::where('machine_id', $machineId)->first();
-            
-            if ($image) {
-                if (Storage::exists('public/' . $image->image_path)) {
-                    Storage::delete('public/' . $image->image_path);
-                }
-                $image->delete();
+            $request->validate([
+                'machine_id' => 'required|exists:machines,id',
+                'index' => 'required|integer|min:0'
+            ]);
+
+            $machineId = $request->input('machine_id');
+            $index = $request->input('index');
+
+            $statusLog = MachineStatusLog::where('machine_id', $machineId)
+                ->whereDate('tanggal', now())
+                ->first();
+
+            if (!$statusLog) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Log status tidak ditemukan'
+                ], 404);
             }
+
+            $statusLog->removeImage($index);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Gambar berhasil dihapus'
             ]);
+
         } catch (\Exception $e) {
             \Log::error('Error dalam deleteImage: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus gambar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getImages($machineId)
+    {
+        try {
+            $statusLog = MachineStatusLog::where('machine_id', $machineId)
+                ->whereDate('tanggal', now())
+                ->first();
+
+            if (!$statusLog) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Log status tidak ditemukan'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'images' => $statusLog->images
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error dalam getImages: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil gambar: ' . $e->getMessage()
             ], 500);
         }
     }

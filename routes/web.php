@@ -624,6 +624,16 @@ Route::middleware(['auth', 'web'])->group(function () {
 Route::post('/admin/laporan/verify-delete', [LaporanController::class, 'verifyPasswordAndDelete'])
     ->name('admin.laporan.verify-delete');
 
+// Tambahkan route berikut di dalam group admin
+Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
+    // ... existing routes ...
+
+    // Routes untuk handle image
+    Route::post('/pembangkit/upload-image', [PembangkitController::class, 'uploadImage'])->name('admin.pembangkit.upload-image');
+    Route::delete('/pembangkit/delete-image', [PembangkitController::class, 'deleteImage'])->name('admin.pembangkit.delete-image');
+    Route::get('/pembangkit/get-images/{machineId}', [PembangkitController::class, 'getImages'])->name('admin.pembangkit.get-images');
+});
+
 
 
 
