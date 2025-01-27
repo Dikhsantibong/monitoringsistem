@@ -304,11 +304,20 @@ class LaporanController extends Controller
     public function updateWOStatus(Request $request, $id)
     {
         try {
+            // Reconnect ke database jika koneksi terputus
+            if (!DB::connection()->getPdo()) {
+                DB::reconnect();
+            }
+
             DB::beginTransaction();
             
             $request->validate([
                 'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
             ]);
+
+            // Gunakan timeout yang lebih singkat
+            DB::statement('SET SESSION wait_timeout = 300');
+            DB::statement('SET SESSION interactive_timeout = 300');
 
             $wo = WorkOrder::findOrFail($id);
 
@@ -318,6 +327,8 @@ class LaporanController extends Controller
 
             $oldStatus = $wo->status;
             $wo->status = $request->status;
+            
+            // Simpan dengan timeout yang lebih singkat
             $wo->save();
 
             DB::commit();
@@ -334,10 +345,22 @@ class LaporanController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            // Log error untuk debugging
+            Log::error('Error in updateWOStatus: ' . $e->getMessage(), [
+                'wo_id' => $id,
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengubah status: ' . $e->getMessage()
             ], 400);
+        } finally {
+            // Reset timeout ke nilai default
+            DB::statement('SET SESSION wait_timeout = 300');
+            DB::statement('SET SESSION interactive_timeout = 300');
         }
     }
 
