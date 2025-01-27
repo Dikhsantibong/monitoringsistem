@@ -636,6 +636,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/pembangkit/get-images/{machineId}', [PembangkitController::class, 'getImages'])->name('admin.pembangkit.get-images');
 });
 
+Route::get('/admin/laporan/check-backlog', [LaporanController::class, 'manualCheckBacklog'])
+    ->name('admin.laporan.check-backlog');
+
 
 
 

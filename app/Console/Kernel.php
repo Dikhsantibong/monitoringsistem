@@ -21,6 +21,12 @@ class Kernel extends ConsoleKernel
          // Jalankan pengecekan setiap hari jam 00:01
          $schedule->command('discussions:check-overdue')->dailyAt('00:01');
         $schedule->command('logs:clear')->daily();
+        $schedule->call(function () {
+            $controller = new \App\Http\Controllers\Admin\LaporanController();
+            $result = $controller->checkAndMoveToBacklog();
+            
+            \Log::info('Scheduled backlog check completed', $result);
+        })->hourly();
     }
 
     /**
