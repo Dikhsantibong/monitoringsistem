@@ -6,8 +6,6 @@ use Illuminate\Support\ServiceProvider;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 use Illuminate\Pagination\Paginator;
-use App\Models\WorkOrder;
-use App\Observers\WorkOrderObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +26,5 @@ class AppServiceProvider extends ServiceProvider
         $this->app['router']->aliasMiddleware('user', UserMiddleware::class);
         
         Paginator::useBootstrap();
-        WorkOrder::observe(WorkOrderObserver::class);
     }
 }
