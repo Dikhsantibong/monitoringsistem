@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
+
 class LaporanController extends Controller
 {
     public function srWo(Request $request)
@@ -303,64 +304,76 @@ class LaporanController extends Controller
 
     public function updateWOStatus(Request $request, $id)
     {
+        DB::beginTransaction();
         try {
-            // Reconnect ke database jika koneksi terputus
-            if (!DB::connection()->getPdo()) {
-                DB::reconnect();
-            }
-
-            DB::beginTransaction();
-            
+            // 1. Validasi request
             $request->validate([
                 'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
             ]);
 
-            // Gunakan timeout yang lebih singkat
-            DB::statement('SET SESSION wait_timeout = 300');
-            DB::statement('SET SESSION interactive_timeout = 300');
+            // 2. Cari WO dengan lock minimal
+            $wo = WorkOrder::where('id', $id)
+                ->lockForUpdate()
+                ->first();
 
-            $wo = WorkOrder::findOrFail($id);
+            if (!$wo) {
+                throw new \Exception('Work Order tidak ditemukan');
+            }
 
+            // 3. Validasi status
             if ($wo->status === 'Closed') {
+                DB::rollBack();
                 throw new \Exception('WO yang sudah Closed tidak dapat diubah statusnya');
             }
 
+            // 4. Update status menggunakan query builder
             $oldStatus = $wo->status;
-            $wo->status = $request->status;
             
-            // Simpan dengan timeout yang lebih singkat
-            $wo->save();
+            DB::table('work_orders')
+                ->where('id', $id)
+                ->update([
+                    'status' => $request->status,
+                    'updated_at' => now()
+                ]);
 
+            // 5. Commit transaksi
             DB::commit();
 
+            // 6. Return response sukses
             return response()->json([
                 'success' => true,
                 'message' => "Status berhasil diubah dari {$oldStatus} ke {$request->status}",
                 'data' => [
                     'id' => $id,
-                    'newStatus' => $wo->status,
+                    'newStatus' => $request->status,
                     'formattedId' => 'WO-' . str_pad($id, 4, '0', STR_PAD_LEFT)
                 ]
             ]);
 
+        } catch (\PDOException $e) {
+            DB::rollBack();
+            Log::error('Database connection error in updateWOStatus: ' . $e->getMessage(), [
+                'wo_id' => $id,
+                'error_code' => $e->getCode(),
+                'error_info' => $e->errorInfo ?? null
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status: Database error. Silakan coba lagi.'
+            ], 500);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            // Log error untuk debugging
             Log::error('Error in updateWOStatus: ' . $e->getMessage(), [
                 'wo_id' => $id,
-                'request_data' => $request->all(),
                 'trace' => $e->getTraceAsString()
             ]);
-
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengubah status: ' . $e->getMessage()
             ], 400);
-        } finally {
-            // Reset timeout ke nilai default
-            DB::statement('SET SESSION wait_timeout = 300');
-            DB::statement('SET SESSION interactive_timeout = 300');
         }
     }
 
