@@ -49,18 +49,14 @@
 
     <div class="flex-1 main-content px-4 py-6">
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold text-gray-800">Daftar SR/WO Closed</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Laporan SR/WO Closed</h2>
                 <div class="flex gap-4">
-                    <!-- Tombol Kembali -->
-                   
-                    <!-- Tombol Download PDF -->
                     <a href="{{ route('admin.laporan.sr_wo.closed.download') }}" 
                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center">
                         <i class="fas fa-download mr-2"></i>Download PDF
                     </a>
                     
-                    <!-- Tombol Print -->
                     <button onclick="window.open('{{ route('admin.laporan.sr_wo.closed.print') }}', '_blank')"
                             class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center">
                         <i class="fas fa-print mr-2"></i>Print
@@ -68,60 +64,278 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 border">
-                        @foreach(App\Models\ServiceRequest::where('status', 'Closed')->get() as $index => $report)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap border">{{ $index + 1 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap border">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    SR
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap border">{{ $report->id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap border">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4 border">{{ $report->description }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap border">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    {{ $report->status }}
-                                </span>
-                            </td>
-                        </tr>
-                        @endforeach
+            <!-- Tab Navigation -->
+            <div class="mb-4 border-b border-gray-200">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+                    <li class="mr-2">
+                        <a href="#" onclick="switchTab('sr'); return false;" 
+                           class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active" 
+                           data-tab="sr">
+                            Service Request (SR) Closed
+                            <span class="ml-2 bg-green-400 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                {{ App\Models\ServiceRequest::where('status', 'Closed')->count() }}
+                            </span>
+                        </a>
+                    </li>
+                    <li class="mr-2">
+                        <a href="#" onclick="switchTab('wo'); return false;" 
+                           class="inline-block p-4 border-b-2 rounded-t-lg tab-btn" 
+                           data-tab="wo">
+                            Work Order (WO) Closed
+                            <span class="ml-2 bg-blue-400 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                {{ App\Models\WorkOrder::where('status', 'Closed')->count() }}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-                        @foreach(App\Models\WorkOrder::where('status', 'Closed')->get() as $index => $report)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap border">{{ App\Models\ServiceRequest::where('status', 'Closed')->count() + $index + 1 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap border">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    WO
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap border">{{ $report->id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap border">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4 border">{{ $report->description }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap border">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    {{ $report->status }}
-                                </span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <!-- SR Table Content -->
+            <div id="sr-tab" class="tab-content active">
+                <!-- Search dan Counter untuk SR -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-1/3">
+                        <div class="relative">
+                            <input type="text" 
+                                   id="searchSR" 
+                                   placeholder="Cari SR..."
+                                   onkeyup="if(event.key === 'Enter') searchTable('srTable', this.value)"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-gray-600">
+                        Menampilkan <span id="srVisibleCount">0</span> dari <span id="srTotalCount">0</span> data
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr style="background-color: #0A749B; color: white;">
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tipe</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nomor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tanggal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 border">
+                            @foreach(App\Models\ServiceRequest::where('status', 'Closed')->get() as $index => $report)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap border">{{ $index + 1 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap border">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        SR
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap border">{{ $report->id }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap border">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
+                                <td class="px-6 py-4 border">{{ $report->description }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap border">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ $report->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- WO Table Content -->
+            <div id="wo-tab" class="tab-content hidden">
+                <!-- Search dan Counter untuk WO -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-1/3">
+                        <div class="relative">
+                            <input type="text" 
+                                   id="searchWO" 
+                                   placeholder="Cari WO..."
+                                   onkeyup="if(event.key === 'Enter') searchTable('woTable', this.value)"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-gray-600">
+                        Menampilkan <span id="woVisibleCount">0</span> dari <span id="woTotalCount">0</span> data
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr style="background-color: #0A749B; color: white;">
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tipe</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nomor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tanggal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 border">
+                            @foreach(App\Models\WorkOrder::where('status', 'Closed')->get() as $index => $report)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap border">{{ $index + 1 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap border">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        WO
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap border">{{ $report->id }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap border">{{ Carbon\Carbon::parse($report->created_at)->format('d/m/Y H:i') }}</td>
+                                <td class="px-6 py-4 border">{{ $report->description }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap border">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ $report->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Add this style -->
+<style>
+.tab-btn.active {
+    border-bottom-color: #3b82f6;
+    color: #3b82f6;
+}
+.tab-content {
+    transition: all 0.3s ease-in-out;
+}
+</style>
+
+<script>
+// Tab switching functionality
+function switchTab(tabId) {
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+        tab.classList.remove('active', 'border-blue-500');
+    });
+    
+    // Add active class to clicked tab
+    const selectedTab = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    if (selectedTab) {
+        selectedTab.classList.add('active', 'border-blue-500');
+    }
+    
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Show selected tab content
+    const selectedContent = document.getElementById(`${tabId}-tab`);
+    if (selectedContent) {
+        selectedContent.classList.remove('hidden');
+    }
+}
+
+// Add event listener when document loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Set first tab as active
+    const firstTab = document.querySelector('.tab-btn');
+    if (firstTab) {
+        const tabId = firstTab.getAttribute('data-tab');
+        switchTab(tabId);
+    }
+});
+
+// Fungsi pencarian untuk tabel
+function searchTable(tableId, searchValue) {
+    const table = document.getElementById(tableId);
+    const rows = table.getElementsByTagName('tr');
+    let visibleCount = 0;
+    const totalCount = rows.length - 1; // Kurangi 1 untuk header
+
+    searchValue = searchValue.toLowerCase();
+
+    // Mulai dari indeks 1 untuk melewati header
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+
+        for (let j = 0; j < cells.length; j++) {
+            const cellText = cells[j].textContent.toLowerCase();
+            if (cellText.includes(searchValue)) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    }
+
+    // Update counter
+    const visibleCountId = tableId === 'srTable' ? 'srVisibleCount' : 'woVisibleCount';
+    const totalCountId = tableId === 'srTable' ? 'srTotalCount' : 'woTotalCount';
+    
+    document.getElementById(visibleCountId).textContent = visibleCount;
+    document.getElementById(totalCountId).textContent = totalCount;
+}
+
+// Debounce function untuk mencegah terlalu banyak pencarian
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Event listeners untuk pencarian real-time
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInputs = {
+        'searchSR': 'srTable',
+        'searchWO': 'woTable'
+    };
+
+    Object.entries(searchInputs).forEach(([inputId, tableId]) => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            const debouncedSearch = debounce(() => {
+                searchTable(tableId, input.value);
+            }, 300);
+
+            input.addEventListener('input', debouncedSearch);
+        }
+    });
+
+    // Inisialisasi counter
+    ['srTable', 'woTable'].forEach(tableId => {
+        const table = document.getElementById(tableId);
+        if (table) {
+            const totalRows = table.getElementsByTagName('tr').length - 1;
+            const visibleCountId = tableId === 'srTable' ? 'srVisibleCount' : 'woVisibleCount';
+            const totalCountId = tableId === 'srTable' ? 'srTotalCount' : 'woTotalCount';
+            
+            document.getElementById(visibleCountId).textContent = totalRows;
+            document.getElementById(totalCountId).textContent = totalRows;
+        }
+    });
+});
+</script>
 @endsection 
