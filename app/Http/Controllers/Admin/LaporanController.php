@@ -145,7 +145,7 @@ class LaporanController extends Controller
                 'wo_id' => 'required|numeric',
                 'description' => 'required',
                 'type' => 'required',
-                'status' => 'required',
+                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
                 'priority' => 'required',
                 'schedule_start' => 'required|date',
                 'schedule_finish' => 'required|date',
@@ -155,7 +155,7 @@ class LaporanController extends Controller
             // Ambil power plant untuk mendapatkan unit_source
             $powerPlant = PowerPlant::findOrFail($request->unit);
             
-            // Buat Work Order menggunakan model (bukan DB facade)
+            // Buat Work Order menggunakan model
             $workOrder = new WorkOrder();
             $workOrder->id = $validatedData['wo_id'];
             $workOrder->description = $validatedData['description'];
@@ -168,7 +168,7 @@ class LaporanController extends Controller
             $workOrder->is_active = true;
             $workOrder->is_backlogged = false;
             
-            // Simpan WO - ini akan mentrigger event created di model
+            // Simpan WO
             $workOrder->save();
 
             return redirect()
