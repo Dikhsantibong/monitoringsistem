@@ -1,128 +1,128 @@
-<table class="min-w-full divide-y divide-gray-200 border border-gray-200">
-    <thead class="bg-gray-50">
-        <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">No</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Unit</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Mesin</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMN</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">DMP</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Beban</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Comp</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Equipment</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Deskripsi</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Kronologi</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Action Plan</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Progres</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Tanggal Mulai</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Target Selesai</th>
-        </tr>
-    </thead>
-    <tbody id="reportTableBody">
-        @forelse($logs as $index => $log)
-            <tr class="hover:bg-gray-50 border border-gray-200 resp">
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->powerPlant->name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->machine->name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->dmn }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->dmp }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->load_value }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        {{ $log->status === 'Operasi' ? 'bg-green-100 text-green-800' : 
-                           ($log->status === 'Gangguan' ? 'bg-red-100 text-red-800' : 
-                           'bg-yellow-100 text-yellow-800') }}">
-                        {{ $log->status }}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200 " style="width: 300px">{{ $log->component }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px">{{ $log->equipment }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->deskripsi }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->kronologi }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->action_plan }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200" style="width: 300px;">{{ $log->progres }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->tanggal_mulai ? Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}</td>
-                <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $log->target_selesai ? Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}</td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="15" class="px-6 py-4 text-center text-gray-500 border border-gray-200">
-                    Tidak ada data untuk ditampilkan
-                </td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
+<div class="bg-white rounded-lg shadow p-6">
+    <!-- Table Header -->
+    
 
-<!-- Pagination -->
-<div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-    <div class="flex-1 flex justify-between sm:hidden">
-        @if ($logs->previousPageUrl())
-            <a href="{{ $logs->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Previous
-            </a>
-        @endif
-        @if ($logs->nextPageUrl())
-            <a href="{{ $logs->nextPageUrl() }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Next
-            </a>
-        @endif
-    </div>
-    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-        <div>
-            <p class="text-sm text-gray-700">
-                Menampilkan
-                <span class="font-medium">{{ $logs->firstItem() ?? 0 }}</span>
-                sampai
-                <span class="font-medium">{{ $logs->lastItem() ?? 0 }}</span>
-                dari
-                <span class="font-medium">{{ $logs->total() }}</span>
-                hasil
-            </p>
+    <!-- Search dan Counter -->
+    <div class="flex justify-between items-center mb-4">
+        <div class="w-1/3">
+            <div class="relative">
+                <input type="text" 
+                       id="searchReport" 
+                       placeholder="Cari data..."
+                       class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+            </div>
         </div>
-        <div>
-            @if ($logs->hasPages())
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    {{-- Previous Page Link --}}
-                    @if ($logs->onFirstPage())
-                        <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-300">
-                            <span class="sr-only">Previous</span>
-                            <i class="fas fa-chevron-left h-5 w-5"></i>
-                        </span>
-                    @else
-                        <a href="{{ $logs->previousPageUrl() }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                            <span class="sr-only">Previous</span>
-                            <i class="fas fa-chevron-left h-5 w-5"></i>
-                        </a>
-                    @endif
+        <div class="text-gray-600">
+            Menampilkan <span id="visibleCount">{{ $logs->count() }}</span> dari <span id="totalCount">{{ $logs->total() }}</span> data
+        </div>
+    </div>
 
-                    {{-- Pagination Elements --}}
-                    @foreach ($logs->getUrlRange(max($logs->currentPage() - 2, 1), min($logs->currentPage() + 2, $logs->lastPage())) as $page => $url)
-                        @if ($page == $logs->currentPage())
-                            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                                {{ $page }}
+    <!-- Table Content -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr style="background-color: #0A749B; color: white;">
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Unit</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Mesin</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">DMN</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">DMP</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 border">
+                @forelse($logs as $index => $log)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap border">{{ $index + 1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap border">{{ $log->machine->powerPlant->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap border">{{ $log->machine->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap border">{{ $log->dmn ?: '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap border">{{ $log->dmp ?: '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap border">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {{ $log->status === 'Operasi' ? 'bg-green-100 text-green-800' : 
+                                   ($log->status === 'Gangguan' ? 'bg-red-100 text-red-800' : 
+                                   'bg-yellow-100 text-yellow-800') }}">
+                                {{ $log->status }}
                             </span>
-                        @else
-                            <a href="{{ $url }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                {{ $page }}
-                            </a>
-                        @endif
-                    @endforeach
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500 border">
+                            Tidak ada data untuk ditampilkan
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-                    {{-- Next Page Link --}}
-                    @if ($logs->hasMorePages())
-                        <a href="{{ $logs->nextPageUrl() }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                            <span class="sr-only">Next</span>
-                            <i class="fas fa-chevron-right h-5 w-5"></i>
-                        </a>
-                    @else
-                        <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-300">
-                            <span class="sr-only">Next</span>
-                            <i class="fas fa-chevron-right h-5 w-5"></i>
-                        </span>
-                    @endif
-                </nav>
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            @if ($logs->previousPageUrl())
+                <a href="{{ $logs->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
             @endif
+            @if ($logs->nextPageUrl())
+                <a href="{{ $logs->nextPageUrl() }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+            @endif
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Menampilkan
+                    <span class="font-medium">{{ $logs->firstItem() ?? 0 }}</span>
+                    sampai
+                    <span class="font-medium">{{ $logs->lastItem() ?? 0 }}</span>
+                    dari
+                    <span class="font-medium">{{ $logs->total() }}</span>
+                    hasil
+                </p>
+            </div>
+            <div>
+                {{ $logs->links() }}
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+// Fungsi pencarian untuk tabel
+function searchTable(searchValue) {
+    const rows = document.querySelectorAll('tbody tr');
+    let visibleCount = 0;
+    const totalCount = rows.length;
+
+    searchValue = searchValue.toLowerCase();
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchValue)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    document.getElementById('visibleCount').textContent = visibleCount;
+}
+
+// Event listener untuk pencarian
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchReport');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            searchTable(this.value);
+        });
+    }
+});
+</script>
