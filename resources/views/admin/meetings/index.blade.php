@@ -95,11 +95,13 @@
                                         <input type="text" 
                                                id="tanggal-filter" 
                                                class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
-                                               placeholder="Pilih tanggal"
+                                               placeholder="mm/dd/yyyy"
                                                value="{{ $selectedDate }}"
-                                               data-available-dates='@json($availableDates)'>
+                                               data-available-dates='@json($availableDates)'
+                                               onfocus="(this.type='date')"
+                                               onblur="(this.type='text')">
                                         <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                            <i class="fas fa-calendar text-gray-400"></i>
+                                            <!-- <i class="fas fa-calendar text-gray-400"></i> -->
                                         </div>
                                     </div>
                                 </div>
