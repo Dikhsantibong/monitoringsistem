@@ -160,5 +160,40 @@ class PowerPlant extends Model
 
         return $databases[$unitSource] ?? 'u478221055_up_kendari';
     }
+
+    public function calculateUnservedLoad($startDate = null, $endDate = null)
+    {
+        // Jika tanggal tidak diset, gunakan 7 hari terakhir
+        $startDate = $startDate ?: now()->subDays(6)->startOfDay();
+        $endDate = $endDate ?: now()->endOfDay();
+
+        // Ambil semua status log mesin dengan kondisi yang menyebabkan beban tak tersalur
+        $unservedLoads = $this->machines()
+            ->with(['statusLogs' => function($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                      ->whereIn('status', ['Gangguan', 'Mothballed', 'Overhaul'])
+                      ->select('machine_id', 'tanggal', 'status', 'dmp');
+            }])
+            ->get()
+            ->flatMap(function($machine) {
+                return $machine->statusLogs->map(function($log) use ($machine) {
+                    return [
+                        'date' => $log->tanggal->format('Y-m-d'),
+                        'dmp' => $log->dmp ?? 0,
+                        'status' => $log->status,
+                        'machine_name' => $machine->name
+                    ];
+                });
+            })
+            ->groupBy('date');
+
+        return [
+            'power_plant' => $this->name,
+            'daily_data' => $unservedLoads,
+            'total_unserved' => $unservedLoads->sum(function($day) {
+                return collect($day)->sum('dmp');
+            })
+        ];
+    }
 }
 

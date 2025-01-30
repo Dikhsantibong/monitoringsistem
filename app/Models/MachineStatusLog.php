@@ -181,4 +181,46 @@ class MachineStatusLog extends Model
             ];
         });
     }
+
+    public static function getUnservedLoadData($powerPlantId, $startDate, $endDate)
+    {
+        \Log::info("Mengambil data beban tak tersalur untuk pembangkit ID: $powerPlantId", [
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]);
+
+        $data = static::query()
+            ->join('machines', 'machines.id', '=', 'machine_status_logs.machine_id')
+            ->where('machines.power_plant_id', $powerPlantId)
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->whereIn('status', ['Gangguan', 'Mothballed', 'Overhaul'])
+            ->select(
+                'machine_status_logs.id',
+                'machine_status_logs.tanggal',
+                'machine_status_logs.status',
+                'machine_status_logs.dmn',
+                'machine_status_logs.dmp',
+                'machines.capacity',
+                'machines.name as machine_name'
+            )
+            ->orderBy('tanggal')
+            ->get()
+            ->map(function ($log) {
+                // Jika DMP = 0, gunakan DMN atau capacity sebagai fallback
+                $unservedLoad = $log->dmp > 0 ? $log->dmp : ($log->dmn > 0 ? $log->dmn : $log->capacity);
+                return [
+                    'tanggal' => $log->tanggal,
+                    'status' => $log->status,
+                    'unserved_load' => floatval($unservedLoad),
+                    'machine_name' => $log->machine_name
+                ];
+            });
+
+        \Log::info("Data beban tak tersalur ditemukan:", [
+            'count' => $data->count(),
+            'data' => $data->toArray()
+        ]);
+        
+        return $data;
+    }
 } 

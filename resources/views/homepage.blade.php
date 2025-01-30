@@ -595,31 +595,25 @@
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
 
-            <!-- Rest of the content remains exactly the same -->
-            <!-- Highlight Kinerja -->
-            {{-- <h3 class="mt-10 mb-4 text-2xl font-semibold">Highlight Kinerja</h3>
-            <div class="flex justify-center gap-5">
-                <div class="bg-box">
-                    <h3 class="text-title">TOTAL KAPASITAS LISTRIK</h3>
-                    <p class="text-value">{{ $total_capacity }} MW</p>
+            <div class="container mx-auto px-4 py-8">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">
+                        Beban Tak Tersalur Per Unit Pembangkit
+                    </h2>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-sm text-gray-500">
+                                Periode: {{ now()->subDays(6)->format('d M Y') }} - {{ now()->format('d M Y') }}
+                            </div>
+                            <div class="text-sm text-gray-500" id="lastUpdate">
+                                Update Terakhir: {{ now()->format('H:i:s d/m/Y') }}
+                            </div>
+                        </div>
+                        <div id="unservedLoadChart" style="height: 400px;"></div>
+                    </div>
                 </div>
-                <div class="bg-box">
-                    <h3 class="text-title">TOTAL UNIT PEMBANGKIT</h3>
-                    <p class="text-value">{{ $total_units }} UNIT</p>
-                </div>
-                <div class="bg-box">
-                    <h3 class="text-title">UNIT PEMBANGKIT AKTIF</h3>
-                    <p class="text-value">{{ $active_units }} UNIT</p>
-                </div>
-            </div> --}}
-
-            {{-- <div class="w-full flex justify-center flex-col items-center">
-                <h3 class="mt-4 mb-4 text-xl font-semibold">Grafik Line</h3>
-                <div id="line-chart" style="border: 1px solid #ddd; border-radius: 10px;"
-                    class="w-4/5 flex justify-center">
-                </div>
-            </div> --}}
-
+            </div>
             <!-- Live Data Unit Operasional -->
             <div class="flex justify-center items-center mt-10 mb-4 gap-4">
                 <h3 class="text-xl font-semibold">Live Data Unit Operasional</h3>
@@ -632,55 +626,52 @@
             <div class="w-full flex justify-center flex-col items-center mb-5">
                 <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4 w-4/5">
                     <div class="overflow-auto">
-                        @if(isset($statusLogs))
-                            <table class="table table-striped table-bordered min-w-full">
-                                <thead>
-                                    <tr>
-                                        <th class="text-center">Nama Unit</th>
-                                        <th class="text-center">Mesin</th>
-                                        <th class="text-center">DMN</th>
-                                        <th class="text-center">DMP</th>
-                                        <th class="text-center">Beban</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-center">Waktu Update</th>
+                        <table class="table table-striped table-bordered min-w-full">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Nama Unit</th>
+                                    <th class="text-center">Mesin</th>
+                                    <th class="text-center">DMN</th>
+                                    <th class="text-center">DMP</th>
+                                    <th class="text-center">Beban</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Waktu Update</th>
+                                </tr>
+                            </thead>
+                            <tbody id="unit-table-body">
+                                @foreach ($statusLogs as $log)
+                                    <tr class="table-row">
+                                        <td class="text-center">{{ $log->machine->powerPlant->name ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->machine->name ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->dmn ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
+                                        <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
+                                        <td class="text-center">
+                                            @php
+                                                $statusColor = [
+                                                    'Gangguan' => 'bg-red-100 text-red-600',
+                                                    'Mothballed' => 'bg-yellow-100 text-yellow-600',
+                                                    'Overhaul' => 'bg-orange-100 text-orange-600'
+                                                ][$log->status] ?? 'bg-gray-100 text-gray-600';
+                                            @endphp
+                                            <span class="px-2 py-1 rounded-full {{ $statusColor }}">
+                                                {{ $log->status }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center text-sm text-gray-500">
+                                            {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : 'N/A' }}
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody id="unit-table-body">
-                                    @foreach ($statusLogs as $log)
-                                        <tr class="table-row">
-                                            <td class="text-center">{{ $log->machine->powerPlant->name ?? 'N/A' }}</td>
-                                            <td class="text-center">{{ $log->machine->name ?? 'N/A' }}</td>
-                                            <td class="text-center">{{ $log->dmn ?? 'N/A' }}</td>
-                                            <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
-                                            <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
-                                            <td class="text-center">
-                                                @php
-                                                    $statusColor = [
-                                                        'Gangguan' => 'bg-red-100 text-red-600',
-                                                        'Mothballed' => 'bg-yellow-100 text-yellow-600',
-                                                        'Overhaul' => 'bg-orange-100 text-orange-600'
-                                                    ][$log->status] ?? 'bg-gray-100 text-gray-600';
-                                                @endphp
-                                                <span class="px-2 py-1 rounded-full {{ $statusColor }}">
-                                                    {{ $log->status }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center text-sm text-gray-500">
-                                                {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : 'N/A' }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @else
-                            <div class="text-center py-4">
-                                <p class="text-gray-500">Data status tidak tersedia</p>
-                            </div>
-                        @endif
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
             {{-- </div> --}}
+
+            <!-- Setelah section peta pembangkit -->
+          
 
             <!-- Footer -->
             <footer class="footer w-full">
@@ -1432,6 +1423,109 @@
                 updateLiveTime();
             </script>
             @push('scripts')
+            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const chartData = @json($chartData);
+                console.log('Chart Data:', chartData);
+
+                if (!chartData || !Array.isArray(chartData.dates) || !Array.isArray(chartData.datasets)) {
+                    console.error('Invalid chart data');
+                    return;
+                }
+
+                const options = {
+                    series: chartData.datasets,
+                    chart: {
+                        type: 'bar',
+                        height: 400,
+                        stacked: true,
+                        toolbar: {
+                            show: true,
+                            tools: {
+                                download: true,
+                                selection: false,
+                                zoom: true,
+                                zoomin: true,
+                                zoomout: true,
+                                pan: true,
+                            }
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '70%',
+                            borderRadius: 4,
+                            dataLabels: {
+                                total: {
+                                    enabled: true,
+                                    style: {
+                                        fontSize: '13px',
+                                        fontWeight: 900
+                                    }
+                                }
+                            }
+                        },
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function(val) {
+                            return val.toFixed(1) + ' MW';
+                        },
+                        style: {
+                            fontSize: '12px'
+                        }
+                    },
+                    xaxis: {
+                        categories: chartData.dates,
+                        labels: {
+                            rotate: -45,
+                            style: {
+                                fontSize: '12px'
+                            }
+                        },
+                        title: {
+                            text: 'Tanggal'
+                        }
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'Beban Tak Tersalur (MW)'
+                        },
+                        labels: {
+                            formatter: function(val) {
+                                return val.toFixed(1) + ' MW';
+                            }
+                        }
+                    },
+                    tooltip: {
+                        shared: true,
+                        intersect: false,
+                        y: {
+                            formatter: function(value) {
+                                return value.toFixed(2) + ' MW';
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'bottom',
+                        horizontalAlign: 'center'
+                    },
+                    colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A'],
+                    fill: {
+                        opacity: 0.8
+                    }
+                };
+
+                try {
+                    const chart = new ApexCharts(document.querySelector("#unservedLoadChart"), options);
+                    chart.render();
+                } catch (error) {
+                    console.error('Error rendering chart:', error);
+                }
+            });
+            </script>
             @endpush
         </div>
     </div>
