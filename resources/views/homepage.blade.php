@@ -520,19 +520,19 @@
         #machineReadinessChart,
         #powerDeliveryChart,
         #unservedLoadChart {
-            background-color: rgba(17, 24, 39, 0.08);  /* Increased darkness */
+            background-color: rgba(168, 214, 0, 0.35);  /* Meningkatkan opacity ke 0.35 */
             border-radius: 8px;
             padding: 16px;
         }
 
         /* Container styles for charts */
         .bg-gray-50 {
-            background-color: rgba(17, 24, 39, 0.1) !important;  /* Darker background */
+            background-color: rgba(168, 214, 0, 0.4) !important;  /* Meningkatkan opacity ke 0.4 */
         }
 
         /* Chart container hover effect */
         .bg-gray-50:hover {
-            background-color: rgba(17, 24, 39, 0.12) !important;
+            background-color: rgba(168, 214, 0, 0.45) !important;  /* Meningkatkan opacity ke 0.45 */
             transition: background-color 0.3s ease;
         }
 
@@ -697,7 +697,7 @@
 
             <div class="container mx-auto px-4 py-6">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200" style="background-color: rgba(17, 24, 39, 0.08);">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 px-2">Monitoring Beban Tak Tersalur & Kesiapan Mesin</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 px-2">MONITORING KESIAPAN PEMBANGKIT</h2>
                     
                     <!-- Grid untuk diagram circle berdampingan -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
