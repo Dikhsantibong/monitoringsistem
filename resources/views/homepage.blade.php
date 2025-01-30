@@ -639,29 +639,76 @@
                                 </tr>
                             </thead>
                             <tbody id="unit-table-body">
-                                @foreach ($statusLogs as $log)
-                                    <tr class="table-row">
-                                        <td class="text-center">{{ $log->machine->powerPlant->name ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->machine->name ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->dmn ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
-                                        <td class="text-center">
-                                            @php
-                                                $statusColor = [
-                                                    'Gangguan' => 'bg-red-100 text-red-600',
-                                                    'Mothballed' => 'bg-yellow-100 text-yellow-600',
-                                                    'Overhaul' => 'bg-orange-100 text-orange-600'
-                                                ][$log->status] ?? 'bg-gray-100 text-gray-600';
-                                            @endphp
-                                            <span class="px-2 py-1 rounded-full {{ $statusColor }}">
-                                                {{ $log->status }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center text-sm text-gray-500">
-                                            {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : 'N/A' }}
-                                        </td>
-                                    </tr>
+                                @php
+                                    $nonOperationalStatuses = ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'];
+                                @endphp
+                                
+                                @foreach($powerPlants as $plant)
+                                    @foreach($plant->machines as $machine)
+                                        @php
+                                            $latestStatus = $machine->statusLogs->first();
+                                            // Skip jika tidak ada status atau status bukan non-operational
+                                            if (!$latestStatus || !in_array($latestStatus->status, $nonOperationalStatuses)) {
+                                                continue;
+                                            }
+
+                                            // Set style berdasarkan status
+                                            $statusStyle = match($latestStatus->status) {
+                                                'Gangguan' => [
+                                                    'bg' => '#FEE2E2',
+                                                    'text' => '#DC2626',
+                                                    'border' => '#FECACA',
+                                                    'icon' => '⚠️'
+                                                ],
+                                                'Pemeliharaan' => [
+                                                    'bg' => '#FEF3C7',
+                                                    'text' => '#D97706',
+                                                    'border' => '#FDE68A',
+                                                    'icon' => '🔧'
+                                                ],
+                                                'Mothballed' => [
+                                                    'bg' => '#E0E7FF',
+                                                    'text' => '#4F46E5',
+                                                    'border' => '#C7D2FE',
+                                                    'icon' => '🔒'
+                                                ],
+                                                'Overhaul' => [
+                                                    'bg' => '#F3E8FF',
+                                                    'text' => '#9333EA',
+                                                    'border' => '#E9D5FF',
+                                                    'icon' => '⚙️'
+                                                ],
+                                                default => [
+                                                    'bg' => '#F3F4F6',
+                                                    'text' => '#6B7280',
+                                                    'border' => '#D1D5DB',
+                                                    'icon' => '❔'
+                                                ]
+                                            };
+                                        @endphp
+                                        <tr class="table-row">
+                                            <td class="text-center">{{ $plant->name }}</td>
+                                            <td class="text-center">{{ $machine->name }}</td>
+                                            <td class="text-center">{{ number_format($latestStatus->dmn, 1) }}</td>
+                                            <td class="text-center">{{ number_format($latestStatus->dmp, 1) }}</td>
+                                            <td class="text-center">{{ number_format($latestStatus->load_value, 1) }} MW</td>
+                                            <td class="text-center">
+                                                <span style="
+                                                    background: {{ $statusStyle['bg'] }}; 
+                                                    color: {{ $statusStyle['text'] }}; 
+                                                    padding: 4px 12px;
+                                                    border-radius: 12px;
+                                                    font-size: 0.85em;
+                                                    border: 1px solid {{ $statusStyle['border'] }};
+                                                ">
+                                                    {{ $statusStyle['icon'] }} {{ $latestStatus->status }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center text-sm text-gray-500">
+                                                {{ $latestStatus->created_at->format('d/m/Y H:i:s') }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 @endforeach
                             </tbody>
                         </table>

@@ -122,10 +122,10 @@ return [
         'sync' => [
             'driver' => 'daily',
             'path' => storage_path('logs/sync/sync.log'),
-            'level' => 'debug',
+            'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
         ],
 
     ],
-
+    
 ];
