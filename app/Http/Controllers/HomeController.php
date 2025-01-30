@@ -147,36 +147,108 @@ class HomeController extends Controller
             
             $chartData['totalCapacity'] = $totalPowerPlantCapacity;
             
-            // Hitung persentase kesiapan mesin
+            // Hitung status mesin untuk hari ini
+            $machineStatus = [
+                'Operasi' => 0,
+                'Standby' => 0,
+                'Gangguan' => 0,
+                'Pemeliharaan' => 0,
+                'Mothballed' => 0,
+                'Overhaul' => 0
+            ];
+
             $totalMachines = 0;
-            $readyMachines = 0;
+            
             foreach ($powerPlants as $plant) {
                 foreach ($plant->machines as $machine) {
                     $totalMachines++;
+                    
+                    // Ambil status terakhir mesin hari ini
                     $latestStatus = $machine->statusLogs()
                         ->whereDate('tanggal', now())
-                        ->whereIn('status', ['Operasi', 'Standby'])
+                        ->orderBy('created_at', 'desc')
                         ->first();
+
                     if ($latestStatus) {
-                        $readyMachines++;
+                        $machineStatus[$latestStatus->status]++;
                     }
                 }
             }
-            
-            $machineReadiness = $totalMachines > 0 ? round(($readyMachines / $totalMachines) * 100, 1) : 0;
-            
-            // Hitung persentase beban tersalur
-            $totalCapacity = array_sum($totalPowerPlantCapacity);
-            $totalUnserved = array_sum(array_map(function($dataset) {
-                return array_sum($dataset['data']);
-            }, $datasets));
-            
-            $powerDeliveryPercentage = $totalCapacity > 0 ? 
-                round((($totalCapacity - $totalUnserved) / $totalCapacity) * 100, 1) : 0;
-            
+
+            // Hitung persentase kesiapan (Operasi + Standby)
+            $readyMachines = $machineStatus['Operasi'] + $machineStatus['Standby'];
+            $machineReadiness = $totalMachines > 0 ? 
+                round(($readyMachines / $totalMachines) * 100, 1) : 0;
+
+            // Detail status untuk ditampilkan
+            $statusDetails = [
+                'ready' => [
+                    'count' => $readyMachines,
+                    'percentage' => $machineReadiness
+                ],
+                'notReady' => [
+                    'count' => $totalMachines - $readyMachines,
+                    'percentage' => 100 - $machineReadiness
+                ],
+                'breakdown' => [
+                    'Operasi' => $machineStatus['Operasi'],
+                    'Standby' => $machineStatus['Standby'],
+                    'Gangguan' => $machineStatus['Gangguan'],
+                    'Pemeliharaan' => $machineStatus['Pemeliharaan'],
+                    'Mothballed' => $machineStatus['Mothballed'],
+                    'Overhaul' => $machineStatus['Overhaul']
+                ]
+            ];
+
             $chartData['machineReadiness'] = $machineReadiness;
-            $chartData['powerDeliveryPercentage'] = $powerDeliveryPercentage;
+            $chartData['statusDetails'] = $statusDetails;
+
+            // Hitung detail beban tersalur
+            $totalCapacity = 0;
             
+            $totalUnserved = 0;
+            
+            // Ambil data hari ini
+            $today = now()->format('Y-m-d');
+            
+            foreach ($powerPlants as $plant) {
+                foreach ($plant->machines as $machine) {
+                    // Ambil DMP terakhir dari MachineOperation
+                    $lastOperation = MachineOperation::where('machine_id', $machine->id)
+                        ->whereDate('recorded_at', '<=', $today)
+                        ->orderBy('recorded_at', 'desc')
+                        ->first();
+
+                    if ($lastOperation) {
+                        $totalCapacity += floatval($lastOperation->dmp);
+                        
+                        // Cek apakah ada status gangguan
+                        $statusLog = MachineStatusLog::where('machine_id', $machine->id)
+                            ->whereDate('tanggal', $today)
+                            ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
+                            ->first();
+                            
+                        if ($statusLog) {
+                            $totalUnserved += floatval($lastOperation->dmp);
+                        }
+                    }
+                }
+            }
+
+            $delivered = $totalCapacity - $totalUnserved;
+            $deliveryPercentage = $totalCapacity > 0 ? 
+                round(($delivered / $totalCapacity) * 100, 1) : 0;
+
+            // Tambahkan ke chartData
+            $chartData['powerDeliveryDetails'] = [
+                'total' => $totalCapacity,
+                'delivered' => $delivered,
+                'undelivered' => $totalUnserved,
+                'percentage' => $deliveryPercentage
+            ];
+            
+            $chartData['powerDeliveryPercentage'] = $deliveryPercentage;
+
             return view('homepage', compact(
                 'statusLogs',
                 'powerPlants',
@@ -216,6 +288,20 @@ class HomeController extends Controller
                     'dates' => [],
                     'datasets' => [],
                     'machineReadiness' => 0,
+                    'statusDetails' => [
+                        'ready' => ['count' => 0, 'percentage' => 0],
+                        'notReady' => ['count' => 0, 'percentage' => 0],
+                        'breakdown' => [
+                            'Operasi' => 0, 'Standby' => 0, 'Gangguan' => 0,
+                            'Pemeliharaan' => 0, 'Mothballed' => 0, 'Overhaul' => 0
+                        ]
+                    ],
+                    'powerDeliveryDetails' => [
+                        'total' => 0,
+                        'delivered' => 0,
+                        'undelivered' => 0,
+                        'percentage' => 0
+                    ],
                     'powerDeliveryPercentage' => 0
                 ]
             ]);

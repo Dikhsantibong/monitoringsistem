@@ -617,6 +617,40 @@
                                 <p class="text-sm text-gray-500">Status operasional unit pembangkit</p>
                             </div>
                             <div id="machineReadinessChart" class="mx-auto" style="height: 200px;"></div>
+                            
+                            <!-- Detail status mesin -->
+                            <div class="mt-4 space-y-2 text-sm">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded">
+                                        <span class="text-green-700">Operasi</span>
+                                        <span class="font-semibold text-green-800">{{ $chartData['statusDetails']['breakdown']['Operasi'] }} Unit</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded">
+                                        <span class="text-blue-700">Standby</span>
+                                        <span class="font-semibold text-blue-800">{{ $chartData['statusDetails']['breakdown']['Standby'] }} Unit</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded">
+                                        <span class="text-red-700">Gangguan</span>
+                                        <span class="font-semibold text-red-800">{{ $chartData['statusDetails']['breakdown']['Gangguan'] }} Unit</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-yellow-50 rounded">
+                                        <span class="text-yellow-700">Pemeliharaan</span>
+                                        <span class="font-semibold text-yellow-800">{{ $chartData['statusDetails']['breakdown']['Pemeliharaan'] }} Unit</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center p-2 bg-purple-50 rounded">
+                                        <span class="text-purple-700">Mothballed</span>
+                                        <span class="font-semibold text-purple-800">{{ $chartData['statusDetails']['breakdown']['Mothballed'] }} Unit</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-orange-50 rounded">
+                                        <span class="text-orange-700">Overhaul</span>
+                                        <span class="font-semibold text-orange-800">{{ $chartData['statusDetails']['breakdown']['Overhaul'] }} Unit</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Ring Progress Beban Tersalur -->
@@ -626,6 +660,26 @@
                                 <p class="text-sm text-gray-500">Kapasitas daya yang tersedia</p>
                             </div>
                             <div id="powerDeliveryChart" class="mx-auto" style="height: 200px;"></div>
+                            
+                            <!-- Detail beban tersalur -->
+                            <div class="mt-4 space-y-2 text-sm">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded">
+                                        <span class="text-green-700">Tersalur</span>
+                                        <span class="font-semibold text-green-800">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded">
+                                        <span class="text-red-700">Tak Tersalur</span>
+                                        <span class="font-semibold text-red-800">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
+                                    </div>
+                                </div>
+                                <div class="p-2 bg-blue-50 rounded">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-blue-700">Total Kapasitas</span>
+                                        <span class="font-semibold text-blue-800">{{ number_format($chartData['powerDeliveryDetails']['total'], 1) }} MW</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
