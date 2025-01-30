@@ -122,6 +122,61 @@ class HomeController extends Controller
                 'datasets' => $datasets
             ];
 
+            // Tambahkan perhitungan total DMP untuk semua mesin
+            $totalPowerPlantCapacity = [];
+            foreach ($dates as $date) {
+                $dateFormatted = Carbon::createFromFormat('d M Y', $date)->format('Y-m-d');
+                $totalDMP = 0;
+                
+                foreach ($powerPlants as $plant) {
+                    foreach ($plant->machines as $machine) {
+                        // Ambil data operasi terakhir sebelum atau pada tanggal tersebut
+                        $lastOperation = MachineOperation::where('machine_id', $machine->id)
+                            ->whereDate('recorded_at', '<=', $dateFormatted)
+                            ->orderBy('recorded_at', 'desc')
+                            ->first();
+                            
+                        if ($lastOperation) {
+                            $totalDMP += floatval($lastOperation->dmp);
+                        }
+                    }
+                }
+                $totalPowerPlantCapacity[$dateFormatted] = $totalDMP;
+            }
+
+            
+            $chartData['totalCapacity'] = $totalPowerPlantCapacity;
+            
+            // Hitung persentase kesiapan mesin
+            $totalMachines = 0;
+            $readyMachines = 0;
+            foreach ($powerPlants as $plant) {
+                foreach ($plant->machines as $machine) {
+                    $totalMachines++;
+                    $latestStatus = $machine->statusLogs()
+                        ->whereDate('tanggal', now())
+                        ->whereIn('status', ['Operasi', 'Standby'])
+                        ->first();
+                    if ($latestStatus) {
+                        $readyMachines++;
+                    }
+                }
+            }
+            
+            $machineReadiness = $totalMachines > 0 ? round(($readyMachines / $totalMachines) * 100, 1) : 0;
+            
+            // Hitung persentase beban tersalur
+            $totalCapacity = array_sum($totalPowerPlantCapacity);
+            $totalUnserved = array_sum(array_map(function($dataset) {
+                return array_sum($dataset['data']);
+            }, $datasets));
+            
+            $powerDeliveryPercentage = $totalCapacity > 0 ? 
+                round((($totalCapacity - $totalUnserved) / $totalCapacity) * 100, 1) : 0;
+            
+            $chartData['machineReadiness'] = $machineReadiness;
+            $chartData['powerDeliveryPercentage'] = $powerDeliveryPercentage;
+            
             return view('homepage', compact(
                 'statusLogs',
                 'powerPlants',
@@ -159,7 +214,9 @@ class HomeController extends Controller
                 'active_units' => 0,
                 'chartData' => [
                     'dates' => [],
-                    'datasets' => []
+                    'datasets' => [],
+                    'machineReadiness' => 0,
+                    'powerDeliveryPercentage' => 0
                 ]
             ]);
         }

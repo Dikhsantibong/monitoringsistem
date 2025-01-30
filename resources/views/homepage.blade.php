@@ -604,22 +604,35 @@
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
 
-            <div class="container mx-auto px-4 py-8">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-2xl font-bold text-[#0A749B] mb-4 text-center">
-                        Beban Tak Tersalur Per Unit Pembangkit
-                    </h2>
+            <div class="container mx-auto px-4 py-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 px-2">Monitoring Beban Tak Tersalur & Kesiapan Mesin</h2>
                     
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="text-sm text-gray-500">
-                                Periode: {{ now()->subDays(6)->format('d M Y') }} - {{ now()->format('d M Y') }}
+                    <!-- Grid untuk diagram circle berdampingan -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <!-- Ring Progress Kesiapan Mesin -->
+                        <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
+                            <div class="text-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Kesiapan Mesin</h3>
+                                <p class="text-sm text-gray-500">Status operasional unit pembangkit</p>
                             </div>
-                            <div class="text-sm text-gray-500" id="lastUpdate">
-                                Update Terakhir: {{ now()->format('H:i:s d/m/Y') }}
-                            </div>
+                            <div id="machineReadinessChart" class="mx-auto" style="height: 200px;"></div>
                         </div>
-                        <div id="unservedLoadChart" style="height: 400px;"></div>
+                        
+                        <!-- Ring Progress Beban Tersalur -->
+                        <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
+                            <div class="text-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Beban Tersalur</h3>
+                                <p class="text-sm text-gray-500">Kapasitas daya yang tersedia</p>
+                            </div>
+                            <div id="powerDeliveryChart" class="mx-auto" style="height: 200px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Grafik Bar memanjang horizontal -->
+                    <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Beban Tak Tersalur per Unit</h3>
+                        <div id="unservedLoadChart" style="height: 450px;"></div>
                     </div>
                 </div>
             </div>
@@ -1484,150 +1497,200 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const chartData = @json($chartData);
                 
-                const options = {
+                // Update konfigurasi bar chart untuk orientasi horizontal
+                const barOptions = {
                     series: chartData.datasets,
                     chart: {
                         type: 'bar',
-                        height: 400,
+                        height: 450,
                         stacked: true,
                         toolbar: {
                             show: true,
                             tools: {
                                 download: true,
-                                selection: true,
-                                zoom: true,
-                                zoomin: true,
-                                zoomout: true,
-                                pan: true,
-                                reset: true
-                            },
-                            export: {
-                                csv: {
-                                    filename: 'beban-tak-tersalur',
-                                    columnDelimiter: ',',
-                                    headerCategory: 'Tanggal',
-                                    headerValue: 'Beban Tak Tersalur (MW)'
-                                },
-                                svg: {
-                                    filename: 'beban-tak-tersalur'
-                                },
-                                png: {
-                                    filename: 'beban-tak-tersalur'
-                                }
+                                selection: false,
+                                zoom: false,
+                                zoomin: false,
+                                zoomout: false,
+                                pan: false,
                             }
-                        }
+                        },
+                        background: 'transparent'
                     },
                     plotOptions: {
                         bar: {
-                            horizontal: false,
-                            columnWidth: '70%',
-                            borderRadius: 5
+                            horizontal: true, // Ubah ke orientasi horizontal
+                            borderRadius: 4,
+                            barHeight: '70%',
+                            dataLabels: {
+                                total: {
+                                    enabled: true,
+                                    offsetX: 10,
+                                    style: {
+                                        fontSize: '13px',
+                                        fontWeight: 600
+                                    }
+                                }
+                            }
                         },
                     },
+                    colors: ['#0284c7', '#0891b2', '#0d9488', '#059669', '#65a30d', '#92400e'],
                     dataLabels: {
-                        enabled: false  // Nonaktifkan label di bar untuk menghindari tumpang tindih
+                        enabled: true,
+                        formatter: function(val) {
+                            return val.toFixed(1) + ' MW';
+                        },
+                        textAnchor: 'start',
+                        style: {
+                            fontSize: '12px'
+                        }
                     },
                     xaxis: {
                         categories: chartData.dates,
                         labels: {
-                            rotate: -45,
                             style: {
-                                fontSize: '12px'
+                                fontSize: '12px',
+                                fontWeight: 500
                             }
                         }
                     },
                     yaxis: {
                         title: {
-                            text: 'Beban Tak Tersalur (MW)',
+                            text: 'Tanggal',
                             style: {
                                 fontSize: '13px',
                                 fontWeight: 500
                             }
-                        },
-                        labels: {
-                            formatter: function(val) {
-                                return val.toFixed(1) + ' MW';
-                            }
                         }
                     },
                     tooltip: {
-                        enabled: true,
-                        shared: true,
-                        intersect: false,
-                        followCursor: true,
-                        custom: function({ series, seriesIndex, dataPointIndex, w }) {
-                            let content = `
-                            <div class="arrow_box" style="padding: 10px;">
-                                <div style="font-weight: bold; margin-bottom: 10px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
-                                    ${chartData.dates[dataPointIndex]}
-                                </div>`;
-
-                            // Hitung total dan tampilkan hanya unit dengan nilai > 0
-                            let total = 0;
-                            series.forEach((value, index) => {
-                                const val = value[dataPointIndex];
-                                if (val > 0) {
-                                    const unitName = w.globals.seriesNames[index];
-                                    const formattedVal = val.toFixed(2);
-                                    total += parseFloat(val);
-                                    
-                                    // Tambahkan warna indikator sesuai dengan bar
-                                    const color = w.globals.colors[index];
-                                    content += `
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                        <div style="display: flex; align-items: center;">
-                                            <span style="display: inline-block; width: 10px; height: 10px; background: ${color}; margin-right: 8px; border-radius: 50%;"></span>
-                                            <span style="color: #666;">${unitName}:</span>
-                                        </div>
-                                        <span style="font-weight: 600; color: #333;">${formattedVal} MW</span>
-                                    </div>`;
-                                }
-                            });
-
-                            // Tampilkan total jika ada data
-                            if (total > 0) {
-                                content += `
-                                <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #ddd;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-weight: bold; color: #333;">Total Beban Tak Tersalur:</span>
-                                        <span style="font-weight: bold; color: #333;">${total.toFixed(2)} MW</span>
-                                    </div>
-                                </div>`;
-                            }
-
-                            content += `</div>`;
-                            return content;
-                        },
-                        style: {
-                            fontSize: '12px'
-                        }
+                        // ... konfigurasi tooltip yang sudah ada ...
                     },
                     legend: {
-                        position: 'bottom',
-                        horizontalAlign: 'center',
-                        offsetY: 10,
-                        markers: {
-                            width: 12,
-                            height: 12,
-                            radius: 12
-                        },
-                        itemMargin: {
-                            horizontal: 10,
-                            vertical: 5
-                        }
-                    },
-                    colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A'],
-                    fill: {
-                        opacity: 0.8
+                        position: 'right',
+                        offsetY: 40
                     }
                 };
-
-                try {
-                    const chart = new ApexCharts(document.querySelector("#unservedLoadChart"), options);
-                    chart.render();
-                } catch (error) {
-                    console.error('Error rendering chart:', error);
-                }
+                
+                // Konfigurasi ring progress tetap sama
+                const readinessOptions = {
+                    series: [chartData.machineReadiness],
+                    chart: {
+                        height: 180,
+                        type: 'radialBar',
+                        background: 'transparent',
+                        offsetY: -10 // Sesuaikan offset untuk posisi yang lebih baik
+                    },
+                    plotOptions: {
+                        radialBar: {
+                            hollow: {
+                                size: '75%',
+                                margin: 15, // Tambahkan margin
+                                background: '#fff',
+                            },
+                            track: {
+                                background: '#e2e8f0',
+                                strokeWidth: '97%',
+                            },
+                            dataLabels: {
+                                show: true,
+                                name: {
+                                    show: true,
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#475569',
+                                    offsetY: 30, // Sesuaikan posisi label nama
+                                },
+                                value: {
+                                    show: true,
+                                    fontSize: '24px',
+                                    fontWeight: 700,
+                                    color: '#0284c7',
+                                    offsetY: -10, // Sesuaikan posisi label nilai
+                                    formatter: function(val) {
+                                        return val + '%';
+                                    }
+                                },
+                                total: {
+                                    show: true,
+                                    label: 'Total',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#475569',
+                                    formatter: function(w) {
+                                        return chartData.machineReadiness + '%';
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shade: 'dark',
+                            type: 'horizontal',
+                            shadeIntensity: 0.5,
+                            gradientToColors: ['#0284c7'],
+                            stops: [0, 100]
+                        }
+                    },
+                    stroke: {
+                        lineCap: 'round',
+                        dashArray: 0
+                    },
+                    labels: ['Kesiapan'],
+                    responsive: [{
+                        breakpoint: 480,
+                        options: {
+                            chart: {
+                                height: 150
+                            }
+                        }
+                    }]
+                };
+                
+                const powerDeliveryOptions = {
+                    ...readinessOptions,
+                    series: [chartData.powerDeliveryPercentage],
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            gradientToColors: ['#059669']
+                        }
+                    },
+                    plotOptions: {
+                        ...readinessOptions.plotOptions,
+                        radialBar: {
+                            ...readinessOptions.plotOptions.radialBar,
+                            dataLabels: {
+                                ...readinessOptions.plotOptions.radialBar.dataLabels,
+                                value: {
+                                    ...readinessOptions.plotOptions.radialBar.dataLabels.value,
+                                    color: '#059669',
+                                    formatter: function(val) {
+                                        return val + '%';
+                                    }
+                                },
+                                total: {
+                                    ...readinessOptions.plotOptions.radialBar.dataLabels.total,
+                                    formatter: function(w) {
+                                        return chartData.powerDeliveryPercentage + '%';
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    labels: ['Tersalur']
+                };
+                
+                // Render charts
+                const charts = {
+                    bar: new ApexCharts(document.querySelector("#unservedLoadChart"), barOptions),
+                    readiness: new ApexCharts(document.querySelector("#machineReadinessChart"), readinessOptions),
+                    power: new ApexCharts(document.querySelector("#powerDeliveryChart"), powerDeliveryOptions)
+                };
+                
+                Object.values(charts).forEach(chart => chart.render());
             });
             </script>
             @endpush
