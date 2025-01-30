@@ -17,8 +17,11 @@ class HomeController extends Controller
     public function index()
     {
         try {
-            // Ambil data power plants dengan eager loading
-            $powerPlants = PowerPlant::with(['machines.statusLogs'])->get();
+            // Ambil data power plants dengan eager loading yang tepat
+            $powerPlants = PowerPlant::with(['machines.statusLogs' => function($query) {
+                $query->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
+                      ->latest();
+            }])->get();
             
             // Ambil status logs
             $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
@@ -41,8 +44,7 @@ class HomeController extends Controller
             // Generate tanggal untuk 7 hari terakhir
             $dates = [];
             for ($i = 6; $i >= 0; $i--) {
-                $date = now()->subDays($i);
-                $dates[] = $date->format('d M Y');
+                $dates[] = now()->subDays($i)->format('d M Y');
                 
                 // Hitung total capacity
                 $total_capacity_data[] = $powerPlants->sum(function($plant) {
@@ -75,49 +77,54 @@ class HomeController extends Controller
                 
                 foreach ($dates as $date) {
                     $dateFormatted = Carbon::createFromFormat('d M Y', $date)->format('Y-m-d');
+                    $totalUnserved = 0;
+
+                    foreach ($plant->machines as $machine) {
+                        // Cek status mesin pada tanggal tersebut
+                        $statusLog = MachineStatusLog::where('machine_id', $machine->id)
+                            ->whereDate('tanggal', $dateFormatted)
+                            ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
+                            ->first();
+
+                        if ($statusLog) {
+                            // Jika ada status gangguan, ambil DMP dari MachineOperation terakhir sebelum gangguan
+                            $lastOperation = MachineOperation::where('machine_id', $machine->id)
+                                ->whereDate('recorded_at', '<=', $dateFormatted)
+                                ->orderBy('recorded_at', 'desc')
+                                ->first();
+
+                            if ($lastOperation) {
+                                $totalUnserved += floatval($lastOperation->dmp);
+                            }
+                        }
+                    }
                     
-                    // Perbaikan query untuk menghitung beban tak tersalur
-                    $totalUnserved = $plant->machines()
-                        ->with(['statusLogs' => function($query) use ($dateFormatted) {
-                            $query->whereDate('tanggal', $dateFormatted)
-                                  ->whereIn('status', ['Gangguan', 'Mothballed', 'Overhaul']);
-                        }])
-                        ->get()
-                        ->sum(function($machine) {
-                            // Ambil status log terakhir pada tanggal tersebut
-                            $lastLog = $machine->statusLogs->first();
-                            // Jika status dalam kondisi gangguan/mothballed/overhaul, ambil DMP nya
-                            return $lastLog ? $lastLog->dmp : 0;
-                        });
-                    
-                    $unservedLoadData[] = floatval($totalUnserved);
+                    $unservedLoadData[] = round($totalUnserved, 2);
                 }
                 
-                // Debug log untuk melihat data per pembangkit
-                \Log::info("Beban tak tersalur untuk {$plant->name}:", [
-                    'data' => $unservedLoadData
-                ]);
-                
-                $datasets[] = [
-                    'name' => $plant->name,
-                    'data' => array_values($unservedLoadData)
-                ];
+                // Hanya tambahkan ke dataset jika ada beban tak tersalur
+                if (array_sum($unservedLoadData) > 0) {
+                    $datasets[] = [
+                        'name' => $plant->name,
+                        'data' => $unservedLoadData
+                    ];
+                }
             }
 
+            // Debug log
+            \Log::info('Chart Data:', [
+                'dates' => $dates,
+                'datasets' => $datasets
+            ]);
+
             $chartData = [
-                'dates' => array_values($dates),
+                'dates' => $dates,
                 'datasets' => $datasets
             ];
-
-            // Debug log untuk melihat keseluruhan data
-            \Log::info('Final Chart Data:', $chartData);
 
             return view('homepage', compact(
                 'statusLogs',
                 'powerPlants',
-                'total_capacity',
-                'total_units',
-                'active_units',
                 'total_capacity_data',
                 'total_units_data',
                 'active_units_data',
@@ -126,17 +133,19 @@ class HomeController extends Controller
                 'load_value_data',
                 'capacity_data',
                 'dates',
+                'total_capacity',
+                'total_units',
+                'active_units',
                 'chartData'
             ));
             
         } catch (\Exception $e) {
             \Log::error('Error in HomeController@index: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
             return view('homepage', [
                 'statusLogs' => collect([]),
                 'powerPlants' => collect([]),
-                'total_capacity' => 0,
-                'total_units' => 0,
-                'active_units' => 0,
                 'total_capacity_data' => [],
                 'total_units_data' => [],
                 'active_units_data' => [],
@@ -145,6 +154,9 @@ class HomeController extends Controller
                 'load_value_data' => [],
                 'capacity_data' => [],
                 'dates' => [],
+                'total_capacity' => 0,
+                'total_units' => 0,
+                'active_units' => 0,
                 'chartData' => [
                     'dates' => [],
                     'datasets' => []
