@@ -701,17 +701,6 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     const fileInput = document.getElementById('documents');
     const files = fileInput.files;
     
-    if (files.length === 0) {
-        e.preventDefault();
-        Swal.fire({
-            icon: 'error',
-            title: 'Upload Dokumen Diperlukan',
-            text: 'Silakan upload minimal satu dokumen pendukung sebelum menyimpan perubahan.',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
     // Validasi ukuran file (5MB per file)
     const maxSize = 5 * 1024 * 1024; // 5MB dalam bytes
     for (const file of files) {

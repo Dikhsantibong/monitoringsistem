@@ -35,40 +35,49 @@
         }
 
         /* Mobile menu styles */
-        .navbar-toggler {
-            display: none;
-            border: none;
-            padding: 0.25rem 0.75rem;
-            font-size: 1.25rem;
-            background-color: transparent;
-        }
-
-        .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        }
-
         .mobile-menu {
             display: none;
-            position: absolute;
-            top: 100%;
+            position: fixed;
+            top: 60px; /* Sesuaikan dengan tinggi navbar */
+            left: 0;
             right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 0.5rem 0;
-            min-width: 200px;
-            z-index: 1001;
+            background-color: #1a1a1a;
+            padding: 1rem;
+            z-index: 50;
+            transition: transform 0.3s ease-in-out;
+            transform: translateY(-100%);
+        }
+
+        .mobile-menu.show {
+            transform: translateY(0);
+            display: block;
         }
 
         .mobile-menu a {
             display: block;
-            padding: 0.5rem 1rem;
-            color: #0095B7;
+            color: white;
+            padding: 0.75rem 1rem;
             text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-menu a:last-child {
+            border-bottom: none;
         }
 
         .mobile-menu a:hover {
-            background-color: #f8f9fa;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #A8D600;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-toggler {
+                display: block;
+            }
+            
+            .desktop-menu {
+                display: none;
+            }
         }
 
         /* Responsive breakpoints */
@@ -597,7 +606,7 @@
 
             <div class="container mx-auto px-4 py-8">
                 <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">
+                    <h2 class="text-2xl font-bold text-[#0A749B] mb-4 text-center">
                         Beban Tak Tersalur Per Unit Pembangkit
                     </h2>
                     
