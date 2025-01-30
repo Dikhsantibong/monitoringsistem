@@ -657,26 +657,26 @@
                                                 'Gangguan' => [
                                                     'bg' => '#FEE2E2',
                                                     'text' => '#DC2626',
-                                                    'border' => '#FECACA',
+                                                    'border' => '#FCA5A5',
                                                     'icon' => '⚠️'
                                                 ],
                                                 'Pemeliharaan' => [
                                                     'bg' => '#FEF3C7',
                                                     'text' => '#D97706',
-                                                    'border' => '#FDE68A',
+                                                    'border' => '#FCD34D',
                                                     'icon' => '🔧'
                                                 ],
                                                 'Mothballed' => [
-                                                    'bg' => '#E0E7FF',
-                                                    'text' => '#4F46E5',
-                                                    'border' => '#C7D2FE',
+                                                    'bg' => '#FEF3C7',
+                                                    'text' => '#D97706',
+                                                    'border' => '#FCD34D',
                                                     'icon' => '🔒'
                                                 ],
                                                 'Overhaul' => [
-                                                    'bg' => '#F3E8FF',
-                                                    'text' => '#9333EA',
-                                                    'border' => '#E9D5FF',
-                                                    'icon' => '⚙️'
+                                                    'bg' => '#FFE4B5',
+                                                    'text' => '#FF8C00',
+                                                    'border' => '#FFB74D',
+                                                    'icon' => '🔧'
                                                 ],
                                                 default => [
                                                     'bg' => '#F3F4F6',
@@ -1474,13 +1474,7 @@
             <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const chartData = @json($chartData);
-                console.log('Chart Data:', chartData);
-
-                if (!chartData || !Array.isArray(chartData.dates) || !Array.isArray(chartData.datasets)) {
-                    console.error('Invalid chart data');
-                    return;
-                }
-
+                
                 const options = {
                     series: chartData.datasets,
                     chart: {
@@ -1491,11 +1485,26 @@
                             show: true,
                             tools: {
                                 download: true,
-                                selection: false,
+                                selection: true,
                                 zoom: true,
                                 zoomin: true,
                                 zoomout: true,
                                 pan: true,
+                                reset: true
+                            },
+                            export: {
+                                csv: {
+                                    filename: 'beban-tak-tersalur',
+                                    columnDelimiter: ',',
+                                    headerCategory: 'Tanggal',
+                                    headerValue: 'Beban Tak Tersalur (MW)'
+                                },
+                                svg: {
+                                    filename: 'beban-tak-tersalur'
+                                },
+                                png: {
+                                    filename: 'beban-tak-tersalur'
+                                }
                             }
                         }
                     },
@@ -1503,26 +1512,11 @@
                         bar: {
                             horizontal: false,
                             columnWidth: '70%',
-                            borderRadius: 4,
-                            dataLabels: {
-                                total: {
-                                    enabled: true,
-                                    style: {
-                                        fontSize: '13px',
-                                        fontWeight: 900
-                                    }
-                                }
-                            }
+                            borderRadius: 5
                         },
                     },
                     dataLabels: {
-                        enabled: true,
-                        formatter: function(val) {
-                            return val.toFixed(1) + ' MW';
-                        },
-                        style: {
-                            fontSize: '12px'
-                        }
+                        enabled: false  // Nonaktifkan label di bar untuk menghindari tumpang tindih
                     },
                     xaxis: {
                         categories: chartData.dates,
@@ -1531,14 +1525,15 @@
                             style: {
                                 fontSize: '12px'
                             }
-                        },
-                        title: {
-                            text: 'Tanggal'
                         }
                     },
                     yaxis: {
                         title: {
-                            text: 'Beban Tak Tersalur (MW)'
+                            text: 'Beban Tak Tersalur (MW)',
+                            style: {
+                                fontSize: '13px',
+                                fontWeight: 500
+                            }
                         },
                         labels: {
                             formatter: function(val) {
@@ -1547,17 +1542,70 @@
                         }
                     },
                     tooltip: {
+                        enabled: true,
                         shared: true,
                         intersect: false,
-                        y: {
-                            formatter: function(value) {
-                                return value.toFixed(2) + ' MW';
+                        followCursor: true,
+                        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                            let content = `
+                            <div class="arrow_box" style="padding: 10px;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+                                    ${chartData.dates[dataPointIndex]}
+                                </div>`;
+
+                            // Hitung total dan tampilkan hanya unit dengan nilai > 0
+                            let total = 0;
+                            series.forEach((value, index) => {
+                                const val = value[dataPointIndex];
+                                if (val > 0) {
+                                    const unitName = w.globals.seriesNames[index];
+                                    const formattedVal = val.toFixed(2);
+                                    total += parseFloat(val);
+                                    
+                                    // Tambahkan warna indikator sesuai dengan bar
+                                    const color = w.globals.colors[index];
+                                    content += `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="display: inline-block; width: 10px; height: 10px; background: ${color}; margin-right: 8px; border-radius: 50%;"></span>
+                                            <span style="color: #666;">${unitName}:</span>
+                                        </div>
+                                        <span style="font-weight: 600; color: #333;">${formattedVal} MW</span>
+                                    </div>`;
+                                }
+                            });
+
+                            // Tampilkan total jika ada data
+                            if (total > 0) {
+                                content += `
+                                <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #ddd;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-weight: bold; color: #333;">Total Beban Tak Tersalur:</span>
+                                        <span style="font-weight: bold; color: #333;">${total.toFixed(2)} MW</span>
+                                    </div>
+                                </div>`;
                             }
+
+                            content += `</div>`;
+                            return content;
+                        },
+                        style: {
+                            fontSize: '12px'
                         }
                     },
                     legend: {
                         position: 'bottom',
-                        horizontalAlign: 'center'
+                        horizontalAlign: 'center',
+                        offsetY: 10,
+                        markers: {
+                            width: 12,
+                            height: 12,
+                            radius: 12
+                        },
+                        itemMargin: {
+                            horizontal: 10,
+                            vertical: 5
+                        }
                     },
                     colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A'],
                     fill: {
