@@ -472,6 +472,97 @@
             align-items: center;
             width: 100%; /* Tambahkan ini */
         }
+
+        /* Mobile menu transition styles */
+        #mobile-menu {
+            transition: max-height 0.3s ease-in-out;
+            overflow: hidden;
+            max-height: 0;
+        }
+
+        #mobile-menu.hidden {
+            display: none;
+        }
+
+        /* Improved mobile menu styles */
+        .nav-link-mobile {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link-mobile:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #4299e1;
+            padding-left: 1.25rem;
+        }
+
+        /* Hamburger button hover effect */
+        #mobile-menu-button {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s ease;
+        }
+
+        #mobile-menu-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #mobile-menu-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+        }
+
+        /* Dark background for chart sections */
+        #machineReadinessChart,
+        #powerDeliveryChart,
+        #unservedLoadChart {
+            background-color: rgba(17, 24, 39, 0.08);  /* Increased darkness */
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        /* Container styles for charts */
+        .bg-gray-50 {
+            background-color: rgba(17, 24, 39, 0.1) !important;  /* Darker background */
+        }
+
+        /* Chart container hover effect */
+        .bg-gray-50:hover {
+            background-color: rgba(17, 24, 39, 0.12) !important;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Ensure text remains readable */
+        .bg-gray-50 .text-gray-700,
+        .bg-gray-50 .text-gray-500 {
+            color: #374151 !important;  /* Darker text for better contrast */
+        }
+
+        /* Chart grid lines */
+        .apexcharts-grid line {
+            stroke: rgba(255, 255, 255, 0.15);  /* Slightly more visible grid lines */
+        }
+
+        /* Chart tooltip */
+        .apexcharts-tooltip {
+            background: rgba(17, 24, 39, 0.97) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .apexcharts-tooltip-title {
+            background: rgba(17, 24, 39, 0.9) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Chart legend */
+        .apexcharts-legend-text {
+            color: #374151 !important;  /* Darker text for better readability */
+        }
     </style>
 @endsection
 
@@ -605,7 +696,7 @@
             <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
 
             <div class="container mx-auto px-4 py-6">
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200" style="background-color: rgba(17, 24, 39, 0.08);">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 px-2">Monitoring Beban Tak Tersalur & Kesiapan Mesin</h2>
                     
                     <!-- Grid untuk diagram circle berdampingan -->
@@ -656,7 +747,7 @@
                         <!-- Ring Progress Beban Tersalur -->
                         <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
                             <div class="text-center mb-4">
-                                <h3 class="text-lg font-semibold text-gray-700">Beban Tersalur</h3>
+                                <h3 class="text-lg font-semibold text-gray-700">Beban tersalur ( Kesiapan Daya )</h3>
                                 <p class="text-sm text-gray-500">Kapasitas daya yang tersedia</p>
                             </div>
                             <div id="powerDeliveryChart" class="mx-auto" style="height: 200px;"></div>
@@ -665,11 +756,11 @@
                             <div class="mt-4 space-y-2 text-sm">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex justify-between items-center p-2 bg-green-50 rounded">
-                                        <span class="text-green-700">Tersalur</span>
+                                        <span class="text-green-700">Tersalur ( Kesiapan Daya )</span>
                                         <span class="font-semibold text-green-800">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
                                     </div>
                                     <div class="flex justify-between items-center p-2 bg-red-50 rounded">
-                                        <span class="text-red-700">Tak Tersalur</span>
+                                        <span class="text-red-700">Tak tersalur ( Daya Tidak Siap )</span>
                                         <span class="font-semibold text-red-800">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
                                     </div>
                                 </div>
@@ -685,7 +776,7 @@
                     
                     <!-- Grafik Bar memanjang horizontal -->
                     <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Beban Tak Tersalur per Unit</h3>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Ketidak Siapan Daya Mesin Per Unit</h3>
                         <div id="unservedLoadChart" style="height: 450px;"></div>
                     </div>
                 </div>
@@ -1354,9 +1445,63 @@
                                 tooltip: {
                                     shared: true,
                                     intersect: false,
+                                    followCursor: true,
+                                    custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                                        let content = `
+                                            <div class="custom-tooltip" style="padding: 10px; background: rgba(255, 255, 255, 0.95); border: 1px solid #e2e8f0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                <div style="font-weight: bold; margin-bottom: 8px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">
+                                                    ${chartData.dates[dataPointIndex]}
+                                                </div>
+                                                <div style="max-height: 200px; overflow-y: auto;">
+                                        `;
+
+                                        let total = 0;
+                                        series.forEach((value, index) => {
+                                            if (value[dataPointIndex] > 0) {
+                                                const name = w.globals.seriesNames[index];
+                                                const val = value[dataPointIndex].toFixed(2);
+                                                total += parseFloat(val);
+                                                const color = w.globals.colors[index];
+                                                
+                                                content += `
+                                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 3px 0;">
+                                                        <div style="display: flex; align-items: center;">
+                                                            <span style="display: inline-block; width: 8px; height: 8px; background: ${color}; margin-right: 8px; border-radius: 50%;"></span>
+                                                            <span style="color: #475569;">${name}:</span>
+                                                        </div>
+                                                        <span style="font-weight: 600; color: #1e293b;">${val} MW</span>
+                                                    </div>
+                                                `;
+                                            }
+                                        });
+
+                                        if (total > 0) {
+                                            content += `
+                                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                        <span style="font-weight: 600; color: #1e293b;">Total:</span>
+                                                        <span style="font-weight: 700; color: #1e293b;">${total.toFixed(2)} MW</span>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }
+
+                                        content += `
+                                                </div>
+                                            </div>
+                                        `;
+
+                                        return content;
+                                    },
+                                    style: {
+                                        fontSize: '12px'
+                                    },
+                                    onDatasetHover: {
+                                        highlightDataSeries: true,
+                                    },
                                     y: {
-                                        formatter: function(val) {
-                                            return val.toFixed(2) + ' MW';
+                                        formatter: function(value) {
+                                            return value.toFixed(2) + ' MW';
                                         }
                                     }
                                 },
@@ -1370,12 +1515,13 @@
                                     }
                                 },
                                 grid: {
-                                    borderColor: '#f1f1f1',
+                                    borderColor: '#e2e8f0',
+                                    strokeDashArray: 4,
                                     padding: {
-                                        top: 10,
-                                        right: 10,
-                                        bottom: 10,
-                                        left: 10
+                                        top: 0,
+                                        right: 20,
+                                        bottom: 0,
+                                        left: 20
                                     }
                                 },
                                 noData: {
@@ -1544,6 +1690,42 @@
                 setInterval(updateLiveTime, 1000);
                 // Panggil sekali saat halaman dimuat
                 updateLiveTime();
+
+                // Mobile menu functionality
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
+
+                mobileMenuButton.addEventListener('click', function() {
+                    // Toggle menu visibility
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Optional: Add slide animation
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+                    } else {
+                        mobileMenu.style.maxHeight = '0';
+                    }
+                });
+
+                // Close mobile menu when clicking menu items
+                const mobileMenuItems = mobileMenu.querySelectorAll('a');
+                mobileMenuItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenu.style.maxHeight = '0';
+                    });
+                });
+
+                // Close mobile menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    const isClickInsideMenu = mobileMenu.contains(event.target);
+                    const isClickOnButton = mobileMenuButton.contains(event.target);
+                    
+                    if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenu.style.maxHeight = '0';
+                    }
+                });
             </script>
             @push('scripts')
             <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
