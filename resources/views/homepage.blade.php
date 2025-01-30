@@ -747,7 +747,7 @@
                         <!-- Ring Progress Beban Tersalur -->
                         <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
                             <div class="text-center mb-4">
-                                <h3 class="text-lg font-semibold text-gray-700">Beban tersalur ( Kesiapan Daya )</h3>
+                                <h3 class="text-lg font-semibold text-gray-700">Kesiapan Daya</h3>
                                 <p class="text-sm text-gray-500">Kapasitas daya yang tersedia</p>
                             </div>
                             <div id="powerDeliveryChart" class="mx-auto" style="height: 200px;"></div>
@@ -756,11 +756,11 @@
                             <div class="mt-4 space-y-2 text-sm">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex justify-between items-center p-2 bg-green-50 rounded">
-                                        <span class="text-green-700">Tersalur ( Kesiapan Daya )</span>
+                                        <span class="text-green-700">Kesiapan Daya </span>
                                         <span class="font-semibold text-green-800">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
                                     </div>
                                     <div class="flex justify-between items-center p-2 bg-red-50 rounded">
-                                        <span class="text-red-700">Tak tersalur ( Daya Tidak Siap )</span>
+                                        <span class="text-red-700"> Daya Tidak Siap</span>
                                         <span class="font-semibold text-red-800">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
                                     </div>
                                 </div>

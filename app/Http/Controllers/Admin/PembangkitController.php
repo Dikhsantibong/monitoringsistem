@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use PDF;
 use App\Models\UnitOperationHour;
+use Illuminate\Support\Facades\Log;
 
 class PembangkitController extends Controller
 {
@@ -43,16 +44,51 @@ class PembangkitController extends Controller
             
             // Simpan data HOP
             foreach ($request->hops as $hopData) {
-                UnitOperationHour::updateOrCreate(
-                    [
-                        'power_plant_id' => $hopData['power_plant_id'],
-                        'tanggal' => $hopData['tanggal']
-                    ],
-                    [
+                // Dapatkan power plant untuk mendapatkan unit_source
+                $powerPlant = PowerPlant::find($hopData['power_plant_id']);
+                if (!$powerPlant) {
+                    throw new \Exception("Power Plant not found for id: {$hopData['power_plant_id']}");
+                }
+
+                Log::info("Saving HOP data", [
+                    'power_plant' => $powerPlant->name,
+                    'session' => session('unit'),
+                    'hop_data' => $hopData
+                ]);
+
+                // Cek apakah data sudah ada
+                $existingHop = UnitOperationHour::where([
+                    'power_plant_id' => $hopData['power_plant_id'],
+                    'tanggal' => $hopData['tanggal']
+                ])->first();
+
+                if ($existingHop) {
+                    // Update existing record
+                    $existingHop->update([
                         'hop_value' => $hopData['hop_value'],
-                        'unit_source' => session('unit')
-                    ]
-                );
+                        'unit_source' => session('unit', 'mysql')
+                    ]);
+
+                    Log::info("Updated existing HOP", [
+                        'id' => $existingHop->id,
+                        'power_plant_id' => $existingHop->power_plant_id,
+                        'hop_value' => $existingHop->hop_value
+                    ]);
+                } else {
+                    // Create new record
+                    $newHop = UnitOperationHour::create([
+                        'power_plant_id' => $hopData['power_plant_id'],
+                        'tanggal' => $hopData['tanggal'],
+                        'hop_value' => $hopData['hop_value'],
+                        'unit_source' => session('unit', 'mysql')
+                    ]);
+
+                    Log::info("Created new HOP", [
+                        'id' => $newHop->id,
+                        'power_plant_id' => $newHop->power_plant_id,
+                        'hop_value' => $newHop->hop_value
+                    ]);
+                }
             }
 
             // Simpan data status mesin
@@ -95,13 +131,24 @@ class PembangkitController extends Controller
             }
             
             DB::commit();
+
+            Log::info("All data saved successfully", [
+                'session' => session('unit'),
+                'hop_count' => count($request->hops),
+                'log_count' => count($request->logs)
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil disimpan'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error saving data: ' . $e->getMessage());
+            Log::error('Error saving data', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'session' => session('unit')
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan data: ' . $e->getMessage()
@@ -113,59 +160,73 @@ class PembangkitController extends Controller
     {
         try {
             $tanggal = $request->tanggal ?? now()->toDateString();
+            $currentSession = session('unit', 'mysql');
+
+            Log::info("Fetching status data", [
+                'tanggal' => $tanggal,
+                'session' => $currentSession
+            ]);
 
             // Ambil data status mesin untuk tanggal yang dipilih
             $logs = MachineStatusLog::with(['machine.powerPlant'])
                 ->whereDate('tanggal', $tanggal)
                 ->get();
 
-            // Jika tidak ada data untuk tanggal tersebut, ambil data terakhir
-            if ($logs->isEmpty()) {
-                $logs = MachineStatusLog::with(['machine.powerPlant'])
-                    ->whereIn('id', function($query) use ($tanggal) {
-                        $query->selectRaw('MAX(id)')
-                            ->from('machine_status_logs')
-                            ->whereDate('tanggal', '<=', $tanggal)
-                            ->groupBy('machine_id');
-                    })
-                    ->get();
-            }
+            // Ambil data HOP dengan mempertimbangkan session
+            $hops = UnitOperationHour::with('powerPlant')
+                ->whereDate('tanggal', $tanggal)
+                ->when($currentSession !== 'mysql', function($query) use ($currentSession) {
+                    // Jika di unit lokal, filter berdasarkan unit_source
+                    $query->whereHas('powerPlant', function($q) use ($currentSession) {
+                        $q->where('unit_source', $currentSession);
+                    });
+                })
+                ->get();
 
-            // Debug log untuk memeriksa data
-            \Log::info('Data logs yang diambil:', $logs->toArray());
-
-            $formattedLogs = $logs->map(function($log) {
-                return [
-                    'machine_id' => $log->machine_id,
-                    'tanggal' => $log->tanggal,
-                    'status' => $log->status ?? '', // Pastikan status tidak null
-                    'dmn' => $log->dmn,
-                    'dmp' => $log->dmp,
-                    'load_value' => $log->load_value,
-                    'component' => $log->component ?? '', // Pastikan component tidak null
-                    'equipment' => $log->equipment ?? '', // Pastikan equipment tidak null
-                    'deskripsi' => $log->deskripsi,
-                    'kronologi' => $log->kronologi,
-                    'action_plan' => $log->action_plan,
-                    'progres' => $log->progres,
-                    'tanggal_mulai' => $log->tanggal_mulai ? $log->tanggal_mulai->format('Y-m-d') : null,
-                    'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null
-                ];
-            });
-
-            // Ambil data HOP
-            $hops = UnitOperationHour::whereDate('tanggal', $tanggal)->get();
+            Log::info("Data retrieved successfully", [
+                'log_count' => $logs->count(),
+                'hop_count' => $hops->count(),
+                'session' => $currentSession
+            ]);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'logs' => $formattedLogs,
-                    'hops' => $hops
+                    'logs' => $logs->map(function($log) {
+                        return [
+                            'machine_id' => $log->machine_id,
+                            'tanggal' => $log->tanggal,
+                            'status' => $log->status ?? '',
+                            'dmn' => $log->dmn,
+                            'dmp' => $log->dmp,
+                            'load_value' => $log->load_value,
+                            'component' => $log->component ?? '',
+                            'equipment' => $log->equipment ?? '',
+                            'deskripsi' => $log->deskripsi,
+                            'kronologi' => $log->kronologi,
+                            'action_plan' => $log->action_plan,
+                            'progres' => $log->progres,
+                            'tanggal_mulai' => $log->tanggal_mulai ? $log->tanggal_mulai->format('Y-m-d') : null,
+                            'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null
+                        ];
+                    }),
+                    'hops' => $hops->map(function($hop) {
+                        return [
+                            'power_plant_id' => $hop->power_plant_id,
+                            'tanggal' => $hop->tanggal,
+                            'hop_value' => $hop->hop_value,
+                            'unit_source' => $hop->unit_source
+                        ];
+                    })
                 ]
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error dalam getStatus: ' . $e->getMessage());
+            Log::error('Error in getStatus', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'session' => session('unit')
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()

@@ -140,106 +140,154 @@ class UnitOperationHour extends Model
         }
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::created(function ($hop) {
+            try {
+                Log::info("HOP Created Event Triggered", [
+                    'hop_id' => $hop->id,
+                    'power_plant_id' => $hop->power_plant_id,
+                    'session' => session('unit')
+                ]);
+                
+                self::syncData('create', $hop);
+            } catch (\Exception $e) {
+                Log::error("Error in HOP created event", [
+                    'error' => $e->getMessage(),
+                    'hop_id' => $hop->id
+                ]);
+            }
+        });
+
+        static::updated(function ($hop) {
+            try {
+                Log::info("HOP Updated Event Triggered", [
+                    'hop_id' => $hop->id,
+                    'power_plant_id' => $hop->power_plant_id,
+                    'session' => session('unit')
+                ]);
+                
+                self::syncData('update', $hop);
+            } catch (\Exception $e) {
+                Log::error("Error in HOP updated event", [
+                    'error' => $e->getMessage(),
+                    'hop_id' => $hop->id
+                ]);
+            }
+        });
+
+        static::deleted(function ($hop) {
+            try {
+                Log::info("HOP Deleted Event Triggered", [
+                    'hop_id' => $hop->id,
+                    'power_plant_id' => $hop->power_plant_id,
+                    'session' => session('unit')
+                ]);
+                
+                self::syncData('delete', $hop);
+            } catch (\Exception $e) {
+                Log::error("Error in HOP deleted event", [
+                    'error' => $e->getMessage(),
+                    'hop_id' => $hop->id
+                ]);
+            }
+        });
+    }
+
+    protected static function shouldSync($powerPlant)
+    {
+        // Jika sedang dalam proses sync, skip
+        if (self::$isSyncing) {
+            return false;
+        }
+
+        // Jika tidak ada power plant atau unit source, skip
+        if (!$powerPlant || !$powerPlant->unit_source) {
+            return false;
+        }
+
+        $currentSession = session('unit', 'mysql');
+
+        // Sync diperlukan dalam dua kasus:
+        // 1. Jika operasi dari UP Kendari (mysql) ke unit lokal
+        // 2. Jika operasi dari unit lokal ke UP Kendari
+        return ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') ||
+               ($currentSession !== 'mysql' && $powerPlant->unit_source === $currentSession);
+    }
+
     protected static function syncData($action, $hop)
     {
-        $sessionId = self::logSyncProcess('start', [
-            'action' => $action,
-            'hop_id' => $hop->id
-        ]);
-
+        $sessionId = uniqid('sync_');
+        
         try {
             if (self::$isSyncing) {
-                self::debugSync($sessionId, 'Sync already in progress, skipping');
                 return;
             }
 
             self::$isSyncing = true;
             
-            // Dapatkan power plant
             $powerPlant = $hop->powerPlant;
             if (!$powerPlant) {
                 throw new \Exception('Power Plant not found');
             }
 
-            self::debugSync($sessionId, 'Power plant retrieved', [
-                'power_plant_id' => $powerPlant->id,
-                'unit_source' => $powerPlant->unit_source
-            ]);
-
-            // Siapkan data untuk sinkronisasi
-            $data = [
-                'id' => $hop->id,
-                'power_plant_id' => $hop->power_plant_id,
-                'tanggal' => $hop->tanggal,
-                'hop_value' => $hop->hop_value,
-                'keterangan' => $hop->keterangan,
-                'unit_source' => $powerPlant->unit_source,
-                'created_at' => $hop->created_at,
-                'updated_at' => $hop->updated_at
-            ];
-
-            self::debugSync($sessionId, 'Data prepared', ['data' => $data]);
-
-            // Tentukan target database berdasarkan session
-            $currentSession = session('unit', 'mysql');
-            
-            if ($currentSession === 'mysql') {
-                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
-                self::debugSync($sessionId, 'Syncing from UP Kendari to unit local', [
-                    'target_connection' => $targetConnection
-                ]);
-            } else {
-                $targetConnection = 'mysql';
-                self::debugSync($sessionId, 'Syncing from unit local to UP Kendari');
+            if (!self::shouldSync($powerPlant)) {
+                return;
             }
 
-            $targetDB = DB::connection($targetConnection);
+            // Tentukan target connection
+            $currentSession = session('unit', 'mysql');
+            if ($currentSession === 'mysql') {
+                // Dari UP Kendari ke unit lokal
+                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+            } else {
+                // Dari unit lokal ke UP Kendari
+                $targetConnection = 'mysql';
+            }
 
-            // Begin transaction
+            if (!$targetConnection) {
+                throw new \Exception("Invalid target connection");
+            }
+
             DB::beginTransaction();
-            
+
             try {
-                switch($action) {
-                    case 'create':
-                        $targetDB->table('unit_operation_hours')->insert($data);
-                        self::debugSync($sessionId, 'Insert operation completed');
-                        break;
-                        
-                    case 'update':
-                        $oldData = $targetDB->table('unit_operation_hours')
-                                          ->where('id', $hop->id)
-                                          ->first();
-                        self::debugSync($sessionId, 'Previous data state', [
-                            'old_data' => $oldData
-                        ]);
-                        
-                        $targetDB->table('unit_operation_hours')
-                                ->where('id', $hop->id)
-                                ->update($data);
-                        self::debugSync($sessionId, 'Update operation completed');
-                        break;
-                        
-                    case 'delete':
-                        $targetDB->table('unit_operation_hours')
-                                ->where('id', $hop->id)
-                                ->delete();
-                        self::debugSync($sessionId, 'Delete operation completed');
-                        break;
+                $targetDB = DB::connection($targetConnection);
+
+                $data = [
+                    'power_plant_id' => $hop->power_plant_id,
+                    'tanggal' => $hop->tanggal,
+                    'hop_value' => $hop->hop_value,
+                    'keterangan' => $hop->keterangan,
+                    'unit_source' => $currentSession === 'mysql' ? $powerPlant->unit_source : $currentSession,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+
+                // Cek existing record
+                $existingRecord = $targetDB->table('unit_operation_hours')
+                    ->where('power_plant_id', $hop->power_plant_id)
+                    ->whereDate('tanggal', $hop->tanggal)
+                    ->first();
+
+                if ($existingRecord) {
+                    $targetDB->table('unit_operation_hours')
+                            ->where('id', $existingRecord->id)
+                            ->update($data);
+                } else {
+                    $targetDB->table('unit_operation_hours')->insert($data);
                 }
 
                 DB::commit();
-                self::debugSync($sessionId, 'Transaction committed');
-
-                if (self::verifySyncSuccess($action, $hop, $targetDB)) {
-                    self::recordSyncAttempt($action, $hop, true);
-                    self::logSyncProcess('success', [
-                        'sync_id' => $sessionId,
-                        'hop_id' => $hop->id,
-                        'target_connection' => $targetConnection
-                    ]);
-                } else {
-                    throw new \Exception("Sync verification failed");
-                }
+                
+                Log::info("HOP sync successful", [
+                    'action' => $action,
+                    'hop_id' => $hop->id,
+                    'target_connection' => $targetConnection,
+                    'unit_source' => $data['unit_source']
+                ]);
 
             } catch (\Exception $e) {
                 DB::rollBack();
@@ -247,22 +295,13 @@ class UnitOperationHour extends Model
             }
 
         } catch (\Exception $e) {
-            self::recordSyncAttempt($action, $hop, false, $e->getMessage());
-            self::logSyncProcess('failed', [
-                'sync_id' => $sessionId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            Log::error("HOP {$action} sync failed", [
+            Log::error("HOP sync failed", [
                 'message' => $e->getMessage(),
+                'hop_id' => $hop->id ?? null,
                 'trace' => $e->getTraceAsString()
             ]);
         } finally {
             self::$isSyncing = false;
-            self::logSyncProcess('end', [
-                'sync_id' => $sessionId,
-                'duration' => now()->diffInMilliseconds(now())
-            ]);
         }
     }
 
@@ -271,3 +310,6 @@ class UnitOperationHour extends Model
         return $this->belongsTo(PowerPlant::class);
     }
 }
+
+
+

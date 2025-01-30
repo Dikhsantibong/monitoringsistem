@@ -38,9 +38,15 @@
                                         }
                                         return 0;
                                     });
+
+                                // Ambil data HOP untuk power plant ini
+                                $hopValue = \App\Models\UnitOperationHour::where('power_plant_id', $powerPlant->id)
+                                    ->whereDate('tanggal', $date)
+                                    ->value('hop_value') ?? 0;
                                 
-                                $hopData = $totalHopByPlant[$powerPlant->id] ?? ['value' => 0, 'status' => 'siaga'];
-                                $hopClass = $hopData['status'] === 'aman' ? 'text-green-600' : 'text-red-600';
+                                // Tentukan status HOP
+                                $hopStatus = $hopValue >= 15 ? 'aman' : 'siaga';
+                                $hopClass = $hopStatus === 'aman' ? 'text-green-600' : 'text-red-600';
                             @endphp
                             
                             
@@ -70,9 +76,9 @@
                             </div>
                             <div class="bg-orange-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total HOP:</p>
-                                <p class="text-xl font-bold text-orange-700">{{ number_format($hopData['value'], 1) }} Hari</p>
+                                <p class="text-xl font-bold text-orange-700">{{ number_format($hopValue, 1) }} Hari</p>
                                 <p class="text-sm font-medium {{ $hopClass }}">
-                                    Status: {{ ucfirst($hopData['status']) }}
+                                    Status: {{ ucfirst($hopStatus) }}
                                 </p>
                             </div>
                         </div>
