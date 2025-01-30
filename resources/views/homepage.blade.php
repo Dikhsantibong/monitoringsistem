@@ -1551,7 +1551,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const chartData = @json($chartData);
                 
-                // Update konfigurasi bar chart untuk orientasi horizontal
+                // Konfigurasi grafik bar
                 const barOptions = {
                     series: chartData.datasets,
                     chart: {
@@ -1573,7 +1573,7 @@
                     },
                     plotOptions: {
                         bar: {
-                            horizontal: true, // Ubah ke orientasi horizontal
+                            horizontal: true,
                             borderRadius: 4,
                             barHeight: '70%',
                             dataLabels: {
@@ -1590,14 +1590,7 @@
                     },
                     colors: ['#0284c7', '#0891b2', '#0d9488', '#059669', '#65a30d', '#92400e'],
                     dataLabels: {
-                        enabled: true,
-                        formatter: function(val) {
-                            return val.toFixed(1) + ' MW';
-                        },
-                        textAnchor: 'start',
-                        style: {
-                            fontSize: '12px'
-                        }
+                        enabled: false  // Nonaktifkan dataLabels default
                     },
                     xaxis: {
                         categories: chartData.dates,
@@ -1618,11 +1611,92 @@
                         }
                     },
                     tooltip: {
-                        // ... konfigurasi tooltip yang sudah ada ...
+                        enabled: true,
+                        shared: true,
+                        intersect: false,
+                        followCursor: true,
+                        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                            let content = `
+                                <div class="custom-tooltip" style="padding: 10px; background: rgba(255, 255, 255, 0.95); border: 1px solid #e2e8f0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="font-weight: bold; margin-bottom: 8px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">
+                                        ${chartData.dates[dataPointIndex]}
+                                    </div>
+                                    <div style="max-height: 200px; overflow-y: auto;">
+                            `;
+
+                            let total = 0;
+                            series.forEach((value, index) => {
+                                if (value[dataPointIndex] > 0) {
+                                    const name = w.globals.seriesNames[index];
+                                    const val = value[dataPointIndex].toFixed(2);
+                                    total += parseFloat(val);
+                                    const color = w.globals.colors[index];
+                                    
+                                    content += `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 3px 0;">
+                                            <div style="display: flex; align-items: center;">
+                                                <span style="display: inline-block; width: 8px; height: 8px; background: ${color}; margin-right: 8px; border-radius: 50%;"></span>
+                                                <span style="color: #475569;">${name}:</span>
+                                            </div>
+                                            <span style="font-weight: 600; color: #1e293b;">${val} MW</span>
+                                        </div>
+                                    `;
+                                }
+                            });
+
+                            if (total > 0) {
+                                content += `
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-weight: 600; color: #1e293b;">Total:</span>
+                                            <span style="font-weight: 700; color: #1e293b;">${total.toFixed(2)} MW</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
+                            content += `
+                                    </div>
+                                </div>
+                            `;
+
+                            return content;
+                        },
+                        style: {
+                            fontSize: '12px'
+                        },
+                        onDatasetHover: {
+                            highlightDataSeries: true,
+                        },
+                        y: {
+                            formatter: function(value) {
+                                return value.toFixed(2) + ' MW';
+                            }
+                        }
                     },
                     legend: {
                         position: 'right',
-                        offsetY: 40
+                        offsetY: 40,
+                        markers: {
+                            width: 12,
+                            height: 12,
+                            radius: 6
+                        },
+                        itemMargin: {
+                            horizontal: 10,
+                            vertical: 5
+                        }
+                    },
+                    grid: {
+                        show: true,
+                        borderColor: '#e2e8f0',
+                        strokeDashArray: 4,
+                        padding: {
+                            top: 0,
+                            right: 20,
+                            bottom: 0,
+                            left: 20
+                        }
                     }
                 };
                 
