@@ -17,118 +17,100 @@ class HomeController extends Controller
     public function index()
     {
         try {
-            // Eager load machines dan status logs
-            $powerPlants = PowerPlant::with([
-                'machines',
-                'machines.statusLogs' => function($query) {
-                    $query->latest()->take(1);
-                }
-            ])->get();
+            // Ambil data power plants dengan relasi machines dan status logs
+            $powerPlants = PowerPlant::with(['machines.statusLogs' => function($query) {
+                $query->latest()->take(1);
+            }])->get();
 
-            $markersData = Marker::all();
-            // Ambil data status log hari ini
-            $units = MachineStatusLog::with(['machine', 'machine.powerPlant'])
-                ->select(
-                    'machine_id',
-                    'status',
-                    'dmn',
-                    'dmp',
-                    'load_value',
-                    'tanggal',
-                    'created_at',
-                    'tanggal_mulai',
-                    'target_selesai'
-                )
-                ->where('status', 'Gangguan')
-                ->where(function ($query) {
-                    $query->where('target_selesai', '>=', Carbon::now())
-                        ->orWhereNull('target_selesai');
-                })
-                ->whereNotExists(function ($query) {
-                    $query->from('machine_status_logs as msl2')
-                        ->whereColumn('msl2.machine_id', 'machine_status_logs.machine_id')
-                        ->where('msl2.created_at', '>', 'machine_status_logs.created_at')
-                        ->where('msl2.status', 'Gangguan')
-                        ->whereBetween('msl2.created_at', [
-                            DB::raw('machine_status_logs.tanggal_mulai'),
-                            DB::raw('machine_status_logs.target_selesai')
-                        ]);
-                })
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            // Gunakan created_at untuk lastUpdate
-            $lastUpdate = $units->max('created_at');
+            // Inisialisasi array untuk data grafik dan tanggal
+            $dates = [];
+            $dmn_data = [];
+            $dmp_data = [];
+            $load_value_data = [];
+            $capacity_data = [];
+            $total_capacity_data = [];
+            $total_units_data = [];
+            $active_units_data = [];
             
-            // Data untuk grafik dari MachineStatusLog
-            $monthlyData = MachineStatusLog::getDummyMonthlyData();
-            
-            // Siapkan data untuk grafik
-            $dates = $monthlyData->pluck('month')->toArray();
-            $dmn_data = $monthlyData->pluck('count')->map(function($item) { return rand(70, 90); })->toArray();
-            $dmp_data = $monthlyData->pluck('count')->map(function($item) { return rand(60, 85); })->toArray();
-            $load_value_data = $monthlyData->pluck('count')->map(function($item) { return rand(100, 500); })->toArray();
-            $capacity_data = $monthlyData->pluck('count')->map(function($item) { return rand(500, 1000); })->toArray();
-            $total_capacity_data = $monthlyData->pluck('count')->map(function($item) { return rand(1000, 2000); })->toArray();
-            $total_units_data = $monthlyData->pluck('count')->toArray();
-            $active_units_data = $monthlyData->pluck('count')->map(function($item) { return rand(1, $item); })->toArray();
-            
-            // Sederhanakan data marker
-            $markers = $markersData->map(function($marker) {
-                // Ambil data chart dari MachineStatusLog
-                $chartData = MachineStatusLog::getChartData($marker->id);
+            // Ambil data 7 hari terakhir
+            for ($i = 6; $i >= 0; $i--) {
+                $date = now()->subDays($i);
+                $dates[] = $date->format('Y-m-d');
                 
-                return [
-                    // Data dari Marker
-                    'id' => $marker->id,
-                    'name' => $marker->name,
-                    'latitude' => $marker->getLatitudeAttribute(),
-                    'longitude' => $marker->getLongitudeAttribute(),
-                    'mesin' => $marker->mesin,
-                    'capacity' => $marker->capacity,
-                    'status' => $marker->status,
-                    'DMN' => $marker->DMN,
-                    'DMP' => $marker->DMP,
-                    'Beban' => $marker->Beban,
-                    'HOP' => $marker->HOP,
-                    
-                    // Data tambahan untuk grafik
-                    'chart_data' => [
-                        'dates' => $chartData->pluck('date')->toArray(),
-                        'beban' => $chartData->pluck('load')->toArray(),
-                        'kapasitas' => $chartData->pluck('capacity')->toArray()
-                    ]
-                ];
-            })->toArray(); // Konversi ke array
+                // Capacity data
+                $capacity_data[] = $powerPlants->sum(function($plant) {
+                    return $plant->machines->sum(function($machine) {
+                        return $machine->capacity ?? 0;
+                    });
+                });
 
-            // Debug dengan format array yang benar
-            \Log::info('Markers data:', ['count' => count($markers)]);
+                // DMN dan DMP data
+                $dmn_data[] = $powerPlants->sum(function($plant) {
+                    return $plant->machines->sum(function($machine) {
+                        return $machine->statusLogs->first()->dmn ?? 0;
+                    });
+                });
 
-            // Hitung total statistik
-            $total_capacity = $powerPlants->sum(function($plant) {
-                return $plant->machines->sum('capacity');
-            });
-            $total_units = $powerPlants->count();
-            $active_units = $powerPlants->filter(function($plant) {
-                return $plant->machines->where('status', 'Aktif')->count() > 0;
-            })->count();
+                $dmp_data[] = $powerPlants->sum(function($plant) {
+                    return $plant->machines->sum(function($machine) {
+                        return $machine->statusLogs->first()->dmp ?? 0;
+                    });
+                });
 
-            \Log::info('Data markers:', $markers); // Debug log
+                // Load value data
+                $load_value_data[] = $powerPlants->sum(function($plant) {
+                    return $plant->machines->sum(function($machine) {
+                        return $machine->statusLogs->first()->load_value ?? 0;
+                    });
+                });
 
-            // Ambil data untuk live unit operational
-            $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
-                ->whereIn('status', ['Gangguan', 'Mothballed', 'Overhaul'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+                // Total kapasitas
+                $total_capacity_data[] = $powerPlants->sum(function($plant) {
+                    return $plant->machines->sum('capacity');
+                });
+
+                // Total unit
+                $total_units_data[] = $powerPlants->sum(function($plant) {
+                    return $plant->machines->count();
+                });
+
+                // Unit aktif
+                $active_units_data[] = $powerPlants->sum(function($plant) {
+                    return $plant->machines->filter(function($machine) {
+                        return $machine->statusLogs->first() && 
+                               $machine->statusLogs->first()->status === 'Operasi';
+                    })->count();
+                });
+            }
+
+            // Hitung statistik
+            $total_capacity = array_sum($total_capacity_data) / count($total_capacity_data);
+            $total_units = array_sum($total_units_data) / count($total_units_data);
+            $active_units = array_sum($active_units_data) / count($active_units_data);
+
+            // Status logs
+            try {
+                $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
+                    ->whereIn('id', function($query) {
+                        $query->selectRaw('MAX(id)')
+                            ->from('machine_status_logs')
+                            ->groupBy('machine_id');
+                    })
+                    ->get();
+            } catch (\Exception $e) {
+                \Log::warning('Failed to fetch status logs: ' . $e->getMessage());
+                $statusLogs = collect([]);
+            }
+
+            // Tambahkan lastUpdate
+            $lastUpdate = now()->format('Y-m-d H:i:s');
 
             return view('homepage', compact(
+                'statusLogs',
                 'powerPlants',
                 'total_capacity',
                 'total_units',
                 'active_units',
-                'units',
-                'lastUpdate',
-                'dates',
                 'dmn_data',
                 'dmp_data',
                 'load_value_data',
@@ -136,12 +118,26 @@ class HomeController extends Controller
                 'total_capacity_data',
                 'total_units_data',
                 'active_units_data',
-                'statusLogs'
+                'dates',
+                'lastUpdate'
             ));
 
         } catch (\Exception $e) {
             \Log::error('Error in HomeController@index: ' . $e->getMessage());
-            return view('homepage', ['error' => 'Terjadi kesalahan saat memuat data.']);
+            return view('homepage', [
+                'statusLogs' => collect([]),
+                'powerPlants' => collect([]),
+                'dmn_data' => [],
+                'dmp_data' => [],
+                'load_value_data' => [],
+                'capacity_data' => [],
+                'total_capacity_data' => [],
+                'total_units_data' => [],
+                'active_units_data' => [],
+                'dates' => [],
+                'lastUpdate' => now()->format('Y-m-d H:i:s'),
+                'error' => 'Terjadi kesalahan saat memuat data.'
+            ]);
         }
     }
 

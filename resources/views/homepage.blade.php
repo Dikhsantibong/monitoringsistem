@@ -632,45 +632,51 @@
             <div class="w-full flex justify-center flex-col items-center mb-5">
                 <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4 w-4/5">
                     <div class="overflow-auto">
-                        <table class="table table-striped table-bordered min-w-full">
-                            <thead>
-                                <tr>
-                                    <th class="text-center">Nama Unit</th>
-                                    <th class="text-center">Mesin</th>
-                                    <th class="text-center">DMN</th>
-                                    <th class="text-center">DMP</th>
-                                    <th class="text-center">Beban</th>
-                                    <th class="text-center">Status</th>
-                                    <th class="text-center">Waktu Update</th>
-                                </tr>
-                            </thead>
-                            <tbody id="unit-table-body">
-                                @foreach ($statusLogs as $log)
-                                    <tr class="table-row">
-                                        <td class="text-center">{{ $log->machine->powerPlant->name ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->machine->name ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->dmn ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
-                                        <td class="text-center">
-                                            @php
-                                                $statusColor = [
-                                                    'Gangguan' => 'bg-red-100 text-red-600',
-                                                    'Mothballed' => 'bg-yellow-100 text-yellow-600',
-                                                    'Overhaul' => 'bg-orange-100 text-orange-600'
-                                                ][$log->status] ?? 'bg-gray-100 text-gray-600';
-                                            @endphp
-                                            <span class="px-2 py-1 rounded-full {{ $statusColor }}">
-                                                {{ $log->status }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center text-sm text-gray-500">
-                                            {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : 'N/A' }}
-                                        </td>
+                        @if(isset($statusLogs))
+                            <table class="table table-striped table-bordered min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">Nama Unit</th>
+                                        <th class="text-center">Mesin</th>
+                                        <th class="text-center">DMN</th>
+                                        <th class="text-center">DMP</th>
+                                        <th class="text-center">Beban</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Waktu Update</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody id="unit-table-body">
+                                    @foreach ($statusLogs as $log)
+                                        <tr class="table-row">
+                                            <td class="text-center">{{ $log->machine->powerPlant->name ?? 'N/A' }}</td>
+                                            <td class="text-center">{{ $log->machine->name ?? 'N/A' }}</td>
+                                            <td class="text-center">{{ $log->dmn ?? 'N/A' }}</td>
+                                            <td class="text-center">{{ $log->dmp ?? 'N/A' }}</td>
+                                            <td class="text-center">{{ $log->load_value ?? 'N/A' }}</td>
+                                            <td class="text-center">
+                                                @php
+                                                    $statusColor = [
+                                                        'Gangguan' => 'bg-red-100 text-red-600',
+                                                        'Mothballed' => 'bg-yellow-100 text-yellow-600',
+                                                        'Overhaul' => 'bg-orange-100 text-orange-600'
+                                                    ][$log->status] ?? 'bg-gray-100 text-gray-600';
+                                                @endphp
+                                                <span class="px-2 py-1 rounded-full {{ $statusColor }}">
+                                                    {{ $log->status }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center text-sm text-gray-500">
+                                                {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : 'N/A' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <div class="text-center py-4">
+                                <p class="text-gray-500">Data status tidak tersedia</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
