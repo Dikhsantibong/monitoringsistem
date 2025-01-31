@@ -190,17 +190,38 @@
 <script>
 function confirmDelete(id, name) {
     Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: `Unit "${name}" akan dihapus secara permanen!`,
+        title: 'Verifikasi Password',
+        html: `
+            <p class="mb-3">Unit "${name}" akan dihapus secara permanen!</p>
+            <input type="password" id="password" class="swal2-input" placeholder="Masukkan password Anda">
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
         confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+            const password = document.getElementById('password').value;
+            if (!password) {
+                Swal.showValidationMessage('Password harus diisi');
+                return false;
+            }
+            return password;
+        }
     }).then((result) => {
         if (result.isConfirmed) {
-            document.getElementById(`delete-form-${id}`).submit();
+            const password = result.value;
+            const form = document.getElementById(`delete-form-${id}`);
+            
+            // Tambahkan input password ke form
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name = 'password';
+            passwordInput.value = password;
+            form.appendChild(passwordInput);
+            
+            form.submit();
         }
     });
 }

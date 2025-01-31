@@ -660,20 +660,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
-// Fungsi untuk konfirmasi delete dengan SweetAlert2
+// Fungsi untuk konfirmasi delete dengan SweetAlert2 dan verifikasi password
 function confirmDelete(machineId, machineName) {
     Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: `Anda akan menghapus mesin: ${machineName}`,
+        title: 'Verifikasi Password',
+        html: `
+            <p class="mb-3">Mesin "${machineName}" akan dihapus secara permanen!</p>
+            <input type="password" id="password" class="swal2-input" placeholder="Masukkan password Anda">
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
         confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+            const password = document.getElementById('password').value;
+            if (!password) {
+                Swal.showValidationMessage('Password harus diisi');
+                return false;
+            }
+            return password;
+        }
     }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById(`delete-form-${machineId}`).submit();
+        if (result.isConfirmed) {   
+            const password = result.value;
+            const form = document.getElementById(`delete-form-${machineId}`);
+            
+            // Tambahkan input password ke form
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name = 'password';
+            passwordInput.value = password;
+            form.appendChild(passwordInput);
+            
+            form.submit();
         }
     });
 }

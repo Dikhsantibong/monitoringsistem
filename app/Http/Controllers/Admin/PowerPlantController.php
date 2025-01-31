@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PowerPlant;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
 
@@ -35,16 +37,25 @@ class PowerPlantController extends Controller
         return view('admin.power-plants.edit', compact('powerPlant'));
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $powerPlant = PowerPlant::findOrFail($id);
-        $powerPlant->delete();
-        
-        return redirect()->route('admin.power-plants.index')
-            ->with('success', 'Unit berhasil dihapus');
+        try {
+            // Verifikasi password
+            if (!Hash::check($request->password, Auth::user()->password)) {
+                return back()->with('error', 'Password yang Anda masukkan salah');
+            }
+
+            $powerPlant = PowerPlant::findOrFail($id);
+            $powerPlant->delete();
+
+            return redirect()->route('admin.power-plants.index')
+                ->with('success', 'Unit pembangkit berhasil dihapus');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus unit pembangkit: ' . $e->getMessage());
+        }
     }
 
-    public function create()
+    public function create()    
     {
         return view('admin.power-plants.create');
     }
