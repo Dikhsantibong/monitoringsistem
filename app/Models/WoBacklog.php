@@ -67,31 +67,37 @@ class WoBacklog extends Model
                 throw new \Exception('Power Plant not found');
             }
 
+            // Data lengkap untuk sinkronisasi
             $data = [
                 'no_wo' => $woBacklog->no_wo,
                 'deskripsi' => $woBacklog->deskripsi,
+                'type_wo' => $woBacklog->type_wo,           // tambahkan
+                'priority' => $woBacklog->priority,          // tambahkan
+                'schedule_start' => $woBacklog->schedule_start,   // tambahkan
+                'schedule_finish' => $woBacklog->schedule_finish, // tambahkan
                 'tanggal_backlog' => $woBacklog->tanggal_backlog,
                 'keterangan' => $woBacklog->keterangan,
                 'status' => $woBacklog->status,
                 'power_plant_id' => $woBacklog->power_plant_id,
                 'unit_source' => $powerPlant->unit_source,
-                'created_at' => now(),
-                'updated_at' => now()
+                'created_at' => $woBacklog->created_at,
+                'updated_at' => $woBacklog->updated_at
             ];
 
-            $currentConnection = session('unit', 'mysql');
-            $targetConnection = $currentConnection === 'mysql' 
-                ? PowerPlant::getConnectionByUnitSource($powerPlant->unit_source)
-                : 'mysql';
-
-            Log::info("Current connection: {$currentConnection}, Target connection: {$targetConnection}");
-
-            $targetDB = DB::connection($targetConnection);
+            // Jika input dari UP Kendari, sync ke unit lokal
+            if (session('unit') === 'mysql') {
+                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+                $targetDB = DB::connection($targetConnection);
+            } 
+            // Jika input dari unit lokal, sync ke UP Kendari
+            else {
+                $targetDB = DB::connection('mysql');
+            }
 
             Log::info("Attempting to {$action} WO Backlog sync", [
                 'data' => $data,
-                'current_connection' => $currentConnection,
-                'target_connection' => $targetConnection
+                'current_connection' => session('unit', 'mysql'),
+                'target_connection' => $targetDB->getName()
             ]);
 
             switch($action) {
@@ -115,7 +121,11 @@ class WoBacklog extends Model
             Log::info("WO Backlog Sync successful", [
                 'no_wo' => $woBacklog->no_wo,
                 'unit' => $powerPlant->unit_source,
-                'action' => $action
+                'action' => $action,
+                'type_wo' => $data['type_wo'],
+                'priority' => $data['priority'],
+                'schedule_start' => $data['schedule_start'],
+                'schedule_finish' => $data['schedule_finish']
             ]);
 
         } catch (\Exception $e) {
