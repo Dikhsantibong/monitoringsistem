@@ -143,49 +143,42 @@ class LaporanController extends Controller
     public function storeWO(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'wo_id' => 'required|numeric',
-                'description' => 'required',
-                'type' => 'required',
-                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
-                'priority' => 'required',
-                'schedule_start' => 'required|date',
-                'schedule_finish' => 'required|date',
-                'unit' => 'required'
-            ]);
-    
-            // Ambil power plant untuk mendapatkan unit_source
-            $powerPlant = PowerPlant::findOrFail($request->unit);
-            
-            // Buat Work Order menggunakan model
-            $workOrder = new WorkOrder();
-            $workOrder->id = $validatedData['wo_id'];
-            $workOrder->description = $validatedData['description'];
-            $workOrder->type = $validatedData['type'];
-            $workOrder->status = $validatedData['status'];
-            $workOrder->priority = $validatedData['priority'];
-            $workOrder->schedule_start = $validatedData['schedule_start'];
-            $workOrder->schedule_finish = $validatedData['schedule_finish'];
-            $workOrder->power_plant_id = $powerPlant->id;
-            $workOrder->is_active = true;
-            $workOrder->is_backlogged = false;
-            
-            // Simpan WO
-            $workOrder->save();
+            Log::info('Received WO data:', $request->all());
 
-            return redirect()
-                ->route('admin.laporan.sr_wo')
-                ->with('success', 'Work Order berhasil ditambahkan');
+            $workOrder = WorkOrder::create([
+                'id' => $request->wo_id,
+                'description' => $request->description,
+                'type' => $request->type,
+                'status' => $request->status,
+                'priority' => $request->priority,
+                'schedule_start' => $request->schedule_start,
+                'schedule_finish' => $request->schedule_finish,
+                'power_plant_id' => $request->unit,
+                'is_active' => true,
+                'is_backlogged' => false
+            ]);
+
+            Log::info('WO created successfully:', [
+                'wo_id' => $workOrder->id
+            ]);
+
+            // Pastikan mengembalikan response JSON
+            return response()->json([
+                'success' => true,
+                'message' => 'Work Order berhasil ditambahkan'
+            ]);
 
         } catch (\Exception $e) {
-            Log::error('Error in storeWO method: ' . $e->getMessage(), [
-                'request_data' => $request->all(),
+            Log::error('Error creating WO:', [
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            // Pastikan mengembalikan response JSON untuk error juga
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan Work Order: ' . $e->getMessage()
+            ], 500);
         }
     }
     
