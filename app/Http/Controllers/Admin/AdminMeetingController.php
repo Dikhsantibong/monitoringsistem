@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\WorkOrder;
 use App\Models\PowerPlant;
+use Illuminate\Support\Facades\DB;
 
 
 class AdminMeetingController extends Controller
@@ -238,52 +239,37 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->date ?? now()->format('Y-m-d');
+            $allScoreCards = [];
             
-            $scoreCards = ScoreCardDaily::whereDate('tanggal', $date)
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            if ($scoreCards->isEmpty()) {
-                return back()->with('error', 'Tidak ada data untuk tanggal ini.');
+            // Daftar koneksi database yang akan diambil datanya
+            $connections = [
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka',
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua',
+                
+            ];
+            
+            foreach ($connections as $connection => $unitName) {
+                try {
+                    // Ganti koneksi database
+                    $scoreCards = DB::connection($connection)
+                        ->table('score_card_dailies')
+                        ->whereDate('tanggal', $date)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    
+                    if ($scoreCards->isNotEmpty()) {
+                        $allScoreCards[$unitName] = $this->formatScoreCardData($scoreCards->first(), $unitName);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Error accessing {$connection}: " . $e->getMessage());
+                    continue;
+                }
             }
 
-            $formattedScoreCards = $scoreCards->map(function ($scoreCard) {
-                $peserta = json_decode($scoreCard->peserta, true) ?? [];
-                $formattedPeserta = [];
-                
-                if (is_array($peserta)) {
-                    foreach ($peserta as $jabatan => $data) {
-                        if (is_array($data)) {
-                            $formattedPeserta[] = [
-                                'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
-                                'awal' => $data['awal'] ?? '0',
-                                'akhir' => $data['akhir'] ?? '0',
-                                'skor' => $data['skor'] ?? '0',
-                                'keterangan' => $data['keterangan'] ?? null
-                            ];
-                        }
-                    }
-                }
-                
-                return [
-                    'tanggal' => $scoreCard->tanggal,
-                    'lokasi' => $scoreCard->lokasi,
-                    'waktu_mulai' => $scoreCard->waktu_mulai,
-                    'waktu_selesai' => $scoreCard->waktu_selesai,
-                    'peserta' => $formattedPeserta,
-                    'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-                    'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
-                    'aktivitas_luar' => $scoreCard->aktivitas_luar,
-                    'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
-                    'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
-                    'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
-                    'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
-                    'kelengkapan_sr' => $scoreCard->kelengkapan_sr
-                ];
-            });
-
             return view('admin.meetings.print', [
-                'scoreCards' => $formattedScoreCards,
+                'allScoreCards' => $allScoreCards,
                 'date' => $date
             ]);
             
@@ -293,122 +279,127 @@ class AdminMeetingController extends Controller
         }
     }
 
+    private function formatScoreCardData($scoreCard, $unitName)
+    {
+        return [
+            'lokasi' => $unitName,
+            'waktu_mulai' => $scoreCard->waktu_mulai,
+            'waktu_selesai' => $scoreCard->waktu_selesai,
+            'peserta' => json_decode($scoreCard->peserta, true),
+            'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+            'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+            'aktivitas_luar' => $scoreCard->aktivitas_luar,
+            'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+            'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+            'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+            'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+            'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+            'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai
+        ];
+    }
+
     public function print(Request $request)
     {
         try {
             $date = $request->date ?? now()->format('Y-m-d');
-            \Log::info('Print function called with date: ' . $date);
+            $allScoreCards = [];
             
-            // Data untuk score card
-            $scoreCard = ScoreCardDaily::whereDate('tanggal', $date)->first();
-            \Log::info('ScoreCard data:', ['scoreCard' => $scoreCard]);
+            \Log::info('Print function called with date:', ['date' => $date]);
             
-            // Data untuk report table
-            $logs = MachineStatusLog::with(['machine.powerPlant'])
-                ->whereDate('created_at', $date)
-                ->orderBy('created_at', 'desc')
-                ->get();
-            \Log::info('Machine Status Logs count: ' . $logs->count());
-
-            // Query untuk powerPlants
-            $powerPlants = \App\Models\PowerPlant::with(['machines' => function($query) {
-                $query->orderBy('name');
-            }])->get();
-            \Log::info('PowerPlants count: ' . $powerPlants->count());
-
-            // Data untuk daftar hadir
-            $attendances = Attendance::whereDate('created_at', $date)
-                ->orderBy('created_at', 'asc')
-                ->get();
-            \Log::info('Attendances count: ' . $attendances->count());
-
-            // Data untuk Service Request
-            $serviceRequests = ServiceRequest::whereDate('created_at', $date)
-                ->orderBy('created_at', 'desc')
-                ->get();
-            \Log::info('Service Requests count: ' . $serviceRequests->count());
-
-            // Data untuk Work Order
-            $workOrders = WorkOrder::whereDate('created_at', $date)
-                ->orderBy('created_at', 'desc')
-                ->get();
-            \Log::info('Work Orders count: ' . $workOrders->count());
-
-            // Data untuk Work Order Backlog
-            $woBacklogs = WoBacklog::whereDate('created_at', $date)
-                ->orderBy('created_at', 'desc')
-                ->get();
-            \Log::info('WO Backlogs count: ' . $woBacklogs->count());
-
-            if (!$scoreCard) {
-                \Log::warning('Score card not found for date: ' . $date);
-                return back()->with('error', 'Data score card tidak ditemukan untuk tanggal tersebut');
-            }
-
-            // Format data peserta
-            $peserta = json_decode($scoreCard->peserta, true) ?? [];
-            $formattedPeserta = [];
-            
-            foreach ($peserta as $key => $value) {
-                $formattedPeserta[] = [
-                    'jabatan' => ucwords(str_replace('_', ' ', $key)),
-                    'awal' => $value['awal'] ?? '0',
-                    'akhir' => $value['akhir'] ?? '0',
-                    'skor' => $value['skor'] ?? '0',
-                    'keterangan' => $value['keterangan'] ?? ''
-                ];
-            }
-
-            // Format data score card
-            $data = [
-                'lokasi' => $scoreCard->lokasi, 
-                'waktu_mulai' => $scoreCard->waktu_mulai,
-                'waktu_selesai' => $scoreCard->waktu_selesai,
-                'peserta' => $formattedPeserta,
-                'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 100,
-                'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 100,
-                'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 100,
-                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 100,
-                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 100,
-                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 100,
-                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 100,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 100,
-                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 100
+            $connections = [
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka', 
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua',
+                'u478221055_up_kendari' => 'UP Kendari'
             ];
-
-            // Decode signatures
-            $signatures = json_decode(urldecode($request->signatures), true) ?? [];
             
-            \Log::info('Preparing to render view with data', [
+            foreach ($connections as $connection => $unitName) {
+                try {
+                    \Log::info("Trying to access database connection: {$connection}");
+                    
+                    $query = DB::connection($connection)
+                        ->table('score_card_daily')
+                        ->whereDate('tanggal', $date);
+                    
+                    \Log::info("Query for {$connection}:", [
+                        'sql' => $query->toSql(),
+                        'bindings' => $query->getBindings()
+                    ]);
+                    
+                    $scoreCard = $query->orderBy('created_at', 'desc')->first();
+                    
+                    \Log::info("Score card data for {$connection}:", [
+                        'found' => !is_null($scoreCard),
+                        'data' => $scoreCard
+                    ]);
+                    
+                    if ($scoreCard) {
+                        // Hitung skor waktu mulai berdasarkan waktu yang ada
+                        $waktuMulaiTarget = "07:30:00"; // Waktu target mulai rapat
+                        $waktuMulaiActual = $scoreCard->waktu_mulai;
+                        
+                        // Hitung selisih dalam menit
+                        $selisihMenit = round((strtotime($waktuMulaiActual) - strtotime($waktuMulaiTarget)) / 60);
+                        
+                        // Hitung skor (-10 per 3 menit keterlambatan)
+                        $skorWaktuMulai = max(0, 100 - (floor($selisihMenit / 3) * 10));
+                        
+                        $allScoreCards[$unitName] = [
+                            'lokasi' => $scoreCard->lokasi,
+                            'waktu_mulai' => $scoreCard->waktu_mulai,
+                            'waktu_selesai' => $scoreCard->waktu_selesai,
+                            'peserta' => json_decode($scoreCard->peserta, true),
+                            'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                            'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                            'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                            'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                            'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                            'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                            'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                            'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+                            'skor_waktu_mulai' => $skorWaktuMulai // Menggunakan skor yang dihitung
+                        ];
+                        \Log::info("Successfully added score card for {$unitName}", [
+                            'waktu_mulai_actual' => $waktuMulaiActual,
+                            'selisih_menit' => $selisihMenit,
+                            'skor_waktu_mulai' => $skorWaktuMulai
+                        ]);
+                    } else {
+                        \Log::info("No score card found for {$unitName} on date {$date}");
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Error accessing {$connection}: " . $e->getMessage(), [
+                        'exception' => $e,
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    continue;
+                }
+            }
+
+            \Log::info('Final AllScoreCards data:', [
+                'count' => count($allScoreCards),
+                'data' => $allScoreCards
+            ]); 
+
+            return view('admin.meetings.print', [
+                'allScoreCards' => $allScoreCards,
                 'date' => $date,
-                'has_logs' => $logs->isNotEmpty(),
-                'has_powerPlants' => $powerPlants->isNotEmpty(),
-                'has_attendances' => $attendances->isNotEmpty(),
-                'has_serviceRequests' => $serviceRequests->isNotEmpty(),
-                'has_workOrders' => $workOrders->isNotEmpty(),
-                'has_woBacklogs' => $woBacklogs->isNotEmpty()
+                'attendances' => [], 
+                'powerPlants' => [], 
+                'logs' => [], 
+                'serviceRequests' => [], 
+                'workOrders' => [], 
+                'woBacklogs' => [], 
+                'signatures' => [] 
             ]);
-
-            return view('admin.meetings.print', compact(
-                'data', 
-                'date', 
-                'logs', 
-                'attendances', 
-                'serviceRequests',
-                'workOrders',
-                'powerPlants',
-                'woBacklogs',
-                'signatures'
-            ));
-
+            
         } catch (\Exception $e) {
-            \Log::error('Print error details: ', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+            \Log::error('Print error: ' . $e->getMessage(), [
+                'exception' => $e,
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->with('error', 'Terjadi kesalahan saat memuat data print: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
         }
     }
 
