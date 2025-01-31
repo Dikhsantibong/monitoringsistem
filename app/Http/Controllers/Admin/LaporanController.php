@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 
 class LaporanController extends Controller
@@ -422,88 +423,103 @@ class LaporanController extends Controller
 
     private function checkExpiredWO()
     {
-        // Skip jika request update status
         if (request()->is('*/update-wo-status/*')) {
             Log::info('Skipping expired WO check for status update request');
             return;
         }
 
-        Log::info('Starting expired WO check');
+        Log::info('Starting expired WO check at: ' . now() . ' with timezone: ' . config('app.timezone'));
         
         DB::beginTransaction();
         try {
-            // Debug: Tampilkan waktu sekarang
-            Log::debug('Current time: ' . now());
+            // Debug waktu dan timezone
+            $currentTime = now();
+            Log::debug('Current server time details:', [
+                'time' => $currentTime->toDateTimeString(),
+                'timezone' => $currentTime->timezone->getName(),
+                'timestamp' => $currentTime->timestamp
+            ]);
 
-            // Cari WO yang expired, belum di-backlog, dan statusnya bukan Closed
-            $expiredWOs = WorkOrder::whereNotIn('status', ['Closed'])  // Ubah kondisi ini
+            // Cari WO yang expired dengan kondisi yang lebih spesifik
+            $expiredWOs = WorkOrder::whereNotIn('status', ['Closed'])
                 ->where('is_backlogged', false)
-                ->where('schedule_finish', '<', now())
+                ->where('schedule_finish', '<', $currentTime->format('Y-m-d'))
                 ->get();
 
             Log::info('Found expired WOs:', [
                 'count' => $expiredWOs->count(),
-                'statuses' => $expiredWOs->pluck('status')->toArray()
+                'wo_ids' => $expiredWOs->pluck('id')->toArray(),
+                'schedules' => $expiredWOs->pluck('schedule_finish', 'id')->toArray()
             ]);
 
             foreach ($expiredWOs as $wo) {
-                Log::info('Processing expired WO:', [
-                    'wo_id' => $wo->id,
-                    'status' => $wo->status,
-                    'schedule_finish' => $wo->schedule_finish,
-                    'current_time' => now()
-                ]);
-
                 try {
-                    // Buat WO Backlog dengan data lengkap
-                    $backlog = WoBacklog::create([
-                        'no_wo' => $wo->id,
-                        'deskripsi' => $wo->description,
-                        'type_wo' => $wo->type,
-                        'priority' => $wo->priority,
-                        'schedule_start' => $wo->schedule_start,
-                        'schedule_finish' => $wo->schedule_finish,
-                        'tanggal_backlog' => now(),
-                        'keterangan' => "Otomatis masuk backlog karena melewati jadwal (Status: {$wo->status})",
-                        'status' => 'Open',
-                        'power_plant_id' => $wo->power_plant_id,
-                        'unit_source' => $wo->unit_source
-                    ]);
+                    DB::beginTransaction(); // Transaction per WO
 
-                    // Update status WO dan tandai sebagai backlogged
-                    $wo->update([
-                        'is_backlogged' => true,
-                        'backlogged_at' => now()
-                    ]);
-
-                    Log::info('Successfully moved WO to backlog', [
-                        'wo_id' => $wo->id,
-                        'original_status' => $wo->status,
-                        'backlog_id' => $backlog->id,
-                        'type_wo' => $backlog->type_wo,
-                        'priority' => $backlog->priority,
-                        'schedule_start' => $backlog->schedule_start,
-                        'schedule_finish' => $backlog->schedule_finish
-                    ]);
-
-                    // Hapus WO original
-                    $wo->delete();
-
-                } catch (\Exception $e) {
-                    Log::error('Error processing individual WO:', [
+                    Log::info('Processing expired WO:', [
                         'wo_id' => $wo->id,
                         'status' => $wo->status,
-                        'error' => $e->getMessage()
+                        'schedule_finish' => $wo->schedule_finish,
+                        'current_time' => $currentTime,
+                        'is_past' => Carbon::parse($wo->schedule_finish)->isPast()
                     ]);
-                    continue; // Lanjut ke WO berikutnya jika ada error
+
+                    // Verifikasi ulang sebelum memindahkan
+                    if (Carbon::parse($wo->schedule_finish)->isPast()) {
+                        // Buat WO Backlog
+                        $backlog = WoBacklog::create([
+                            'no_wo' => $wo->id,
+                            'deskripsi' => $wo->description,
+                            'type_wo' => $wo->type,
+                            'priority' => $wo->priority,
+                            'schedule_start' => $wo->schedule_start,
+                            'schedule_finish' => $wo->schedule_finish,
+                            'tanggal_backlog' => $currentTime,
+                            'keterangan' => "Otomatis masuk backlog karena melewati jadwal (Status: {$wo->status})",
+                            'status' => 'Open',
+                            'power_plant_id' => $wo->power_plant_id,
+                            'unit_source' => $wo->unit_source
+                        ]);
+
+                        // Update WO original
+                        $wo->update([
+                            'is_backlogged' => true,
+                            'backlogged_at' => $currentTime
+                        ]);
+
+                        Log::info('Successfully created backlog:', [
+                            'backlog_id' => $backlog->id,
+                            'wo_id' => $wo->id,
+                            'created_at' => $backlog->created_at
+                        ]);
+
+                        // Hapus WO original setelah berhasil membuat backlog
+                        $wo->delete();
+
+                        DB::commit(); // Commit per WO
+                    } else {
+                        DB::rollBack(); // Rollback jika tidak jadi expired
+                        Log::info('WO no longer expired after recheck:', [
+                            'wo_id' => $wo->id,
+                            'schedule_finish' => $wo->schedule_finish
+                        ]);
+                    }
+
+                } catch (\Exception $e) {
+                    DB::rollBack(); // Rollback per WO jika ada error
+                    Log::error('Error processing individual WO:', [
+                        'wo_id' => $wo->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    continue;
                 }
             }
 
-            DB::commit();
-            Log::info('Completed expired WO check');
+            DB::commit(); // Commit transaksi utama
 
             if ($expiredWOs->count() > 0) {
-                $message = 'Ada ' . $expiredWOs->count() . ' WO yang telah dipindahkan ke backlog karena expired.';
+                $message = "Ada {$expiredWOs->count()} WO yang telah dipindahkan ke backlog karena expired.";
                 session()->flash('backlog_notification', $message);
                 Log::info($message);
             }
