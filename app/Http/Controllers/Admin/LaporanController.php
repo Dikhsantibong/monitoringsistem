@@ -442,38 +442,27 @@ class LaporanController extends Controller
             // Debug: Tampilkan waktu sekarang
             Log::debug('Current time: ' . now());
 
-            // Ambil WO yang expired, belum di-backlog, dan masih Open
-            $expiredWOs = WorkOrder::where('schedule_finish', '<', now())
-                ->where('status', 'Open')
+            // Cari WO yang expired, belum di-backlog, dan statusnya bukan Closed
+            $expiredWOs = WorkOrder::whereNotIn('status', ['Closed'])  // Ubah kondisi ini
                 ->where('is_backlogged', false)
-                ->lockForUpdate()
+                ->where('schedule_finish', '<', now())
                 ->get();
 
-            // Debug: Tampilkan query yang dijalankan
-            Log::debug('Expired WO Query:', [
-                'sql' => WorkOrder::where('schedule_finish', '<', now())
-                    ->where('status', 'Open')
-                    ->where('is_backlogged', false)
-                    ->toSql(),
-                'bindings' => WorkOrder::where('schedule_finish', '<', now())
-                    ->where('status', 'Open')
-                    ->where('is_backlogged', false)
-                    ->getBindings()
+            Log::info('Found expired WOs:', [
+                'count' => $expiredWOs->count(),
+                'statuses' => $expiredWOs->pluck('status')->toArray()
             ]);
 
-            // Debug: Tampilkan jumlah WO yang expired
-            Log::info('Found ' . $expiredWOs->count() . ' expired WOs');
-
             foreach ($expiredWOs as $wo) {
-                Log::info('Processing expired WO', [
+                Log::info('Processing expired WO:', [
                     'wo_id' => $wo->id,
-                    'schedule_finish' => $wo->schedule_finish,
                     'status' => $wo->status,
-                    'is_backlogged' => $wo->is_backlogged
+                    'schedule_finish' => $wo->schedule_finish,
+                    'current_time' => now()
                 ]);
 
                 try {
-                    // Buat WO Backlog
+                    // Buat WO Backlog dengan data lengkap
                     $backlog = WoBacklog::create([
                         'no_wo' => $wo->id,
                         'deskripsi' => $wo->description,
@@ -482,44 +471,43 @@ class LaporanController extends Controller
                         'schedule_start' => $wo->schedule_start,
                         'schedule_finish' => $wo->schedule_finish,
                         'tanggal_backlog' => now(),
-                        'keterangan' => 'Otomatis masuk backlog karena melewati jadwal',
+                        'keterangan' => "Otomatis masuk backlog karena melewati jadwal (Status: {$wo->status})",
                         'status' => 'Open',
                         'power_plant_id' => $wo->power_plant_id,
                         'unit_source' => $wo->unit_source
                     ]);
 
-                    Log::info('Created backlog with complete data:', [
+                    // Update status WO dan tandai sebagai backlogged
+                    $wo->update([
+                        'is_backlogged' => true,
+                        'backlogged_at' => now()
+                    ]);
+
+                    Log::info('Successfully moved WO to backlog', [
+                        'wo_id' => $wo->id,
+                        'original_status' => $wo->status,
                         'backlog_id' => $backlog->id,
-                        'no_wo' => $backlog->no_wo,
                         'type_wo' => $backlog->type_wo,
                         'priority' => $backlog->priority,
                         'schedule_start' => $backlog->schedule_start,
                         'schedule_finish' => $backlog->schedule_finish
                     ]);
 
-                    // Update status WO
-                    $wo->update(['is_backlogged' => true]);
-                    Log::info('Updated WO is_backlogged status', [
-                        'wo_id' => $wo->id,
-                        'is_backlogged' => true
-                    ]);
-
-                    // Hapus WO
+                    // Hapus WO original
                     $wo->delete();
-                    Log::info('Deleted original WO', ['wo_id' => $wo->id]);
 
                 } catch (\Exception $e) {
-                    Log::error('Error processing individual WO', [
+                    Log::error('Error processing individual WO:', [
                         'wo_id' => $wo->id,
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
+                        'status' => $wo->status,
+                        'error' => $e->getMessage()
                     ]);
-                    throw $e;
+                    continue; // Lanjut ke WO berikutnya jika ada error
                 }
             }
 
             DB::commit();
-            Log::info('Successfully committed transaction');
+            Log::info('Completed expired WO check');
 
             if ($expiredWOs->count() > 0) {
                 $message = 'Ada ' . $expiredWOs->count() . ' WO yang telah dipindahkan ke backlog karena expired.';
@@ -529,22 +517,11 @@ class LaporanController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error in checkExpiredWO', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'previous_exception' => $e->getPrevious() ? [
-                    'message' => $e->getPrevious()->getMessage(),
-                    'trace' => $e->getPrevious()->getTraceAsString()
-                ] : null
+            Log::error('Error in checkExpiredWO:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            // Debug: Tampilkan error di development
-            if (config('app.debug')) {
-                throw $e;
-            }
         }
-
-        Log::info('Finished expired WO check');
     }
 
     public function destroySR($id)
