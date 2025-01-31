@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
 
 class LaporanController extends Controller
 {
-    public function srWo(Request $request)
+        public function srWo(Request $request)
     {
         $this->checkExpiredWO();
 
@@ -44,7 +44,7 @@ class LaporanController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(25);
 
-            // 3. Optimasi query Work Orders
+            // 3. Optimasi query Work Orders - menampilkan semua status termasuk closed
             $workOrders = WorkOrder::with(['powerPlant:id,name'])
                 ->select([
                     'id', 
@@ -60,7 +60,6 @@ class LaporanController extends Controller
                     'is_active',
                     'is_backlogged'
                 ])
-                ->where('is_active', true)
                 ->latest()
                 ->take(100)
                 ->get();
@@ -105,7 +104,6 @@ class LaporanController extends Controller
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-    
 
     // Tambah method untuk handle SR
     public function storeSR(Request $request)
@@ -381,15 +379,43 @@ class LaporanController extends Controller
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-
+                     
     // Method untuk update status WO Backlog
-    public function updateBacklogStatus(Request $request, $id)
+    public function updateBacklogStatus($id)
     {
-        $backlog = WoBacklog::findOrFail($id);
-        $backlog->status = $request->status;
-        $backlog->save();
+        try {
+            Log::info('Updating backlog status', [
+                'backlog_id' => $id,
+                'new_status' => request('status')
+            ]);
 
-        return response()->json(['success' => true]);
+            $backlog = WoBacklog::findOrFail($id);
+            
+            // Update status menggunakan save() untuk memicu observer
+            $backlog->status = request('status');
+            $backlog->save();
+
+            Log::info('Backlog status updated successfully', [
+                'backlog_id' => $id,
+                'new_status' => $backlog->status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diupdate'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error updating backlog status', [
+                'backlog_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // Method untuk edit WO Backlog
@@ -477,6 +503,10 @@ class LaporanController extends Controller
                     $backlog = WoBacklog::create([
                         'no_wo' => $wo->id,
                         'deskripsi' => $wo->description,
+                        'type_wo' => $wo->type,
+                        'priority' => $wo->priority,
+                        'schedule_start' => $wo->schedule_start,
+                        'schedule_finish' => $wo->schedule_finish,
                         'tanggal_backlog' => now(),
                         'keterangan' => 'Otomatis masuk backlog karena melewati jadwal',
                         'status' => 'Open',
@@ -484,9 +514,14 @@ class LaporanController extends Controller
                         'unit_source' => $wo->unit_source
                     ]);
 
-                    Log::info('Created backlog entry', [
+                    // Tambahkan log untuk memverifikasi data
+                    Log::info('Created backlog with complete data:', [
                         'backlog_id' => $backlog->id,
-                        'wo_id' => $wo->id
+                        'no_wo' => $backlog->no_wo,
+                        'type_wo' => $backlog->type_wo,
+                        'priority' => $backlog->priority,
+                        'schedule_start' => $backlog->schedule_start,
+                        'schedule_finish' => $backlog->schedule_finish
                     ]);
 
                     // Update status WO
@@ -659,10 +694,27 @@ class LaporanController extends Controller
     {
         try {
             $workOrder = WorkOrder::findOrFail($id);
-            $workOrder->checkAndMoveToBacklog();
+            
+            Log::info('Moving WO to backlog manually', [
+                'wo_id' => $workOrder->id,
+                'type' => $workOrder->type,
+                'priority' => $workOrder->priority,
+                'schedule_start' => $workOrder->schedule_start,
+                'schedule_finish' => $workOrder->schedule_finish
+            ]);
+            
+            $result = $workOrder->checkAndMoveToBacklog();
+            
+            if (!$result) {
+                throw new \Exception('Failed to move WO to backlog');
+            }
             
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
+            Log::error('Error in manual moveToBacklog', [
+                'wo_id' => $id,
+                'error' => $e->getMessage()
+            ]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

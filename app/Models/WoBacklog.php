@@ -19,6 +19,10 @@ class WoBacklog extends Model
         'id',
         'no_wo',
         'deskripsi',
+        'type_wo',
+        'priority',
+        'schedule_start',
+        'schedule_finish',
         'tanggal_backlog',
         'status',
         'keterangan',
@@ -136,27 +140,51 @@ class WoBacklog extends Model
             try {
                 DB::beginTransaction();
                 
-                // Buat WO baru dengan status closed
-                WorkOrder::create([
+                // Debug log untuk data backlog
+                Log::info('Backlog data before moving to WO:', [
+                    'no_wo' => $this->no_wo,
+                    'type_wo' => $this->type_wo,
+                    'priority' => $this->priority,
+                    'schedule_start' => $this->schedule_start,
+                    'schedule_finish' => $this->schedule_finish
+                ]);
+
+                // Buat WO dengan data dari backlog
+                $workOrder = WorkOrder::create([
                     'id' => $this->no_wo,
                     'description' => $this->deskripsi,
+                    'type' => $this->type_wo,         // pastikan mapping field sesuai
+                    'priority' => $this->priority,
+                    'schedule_start' => $this->schedule_start,
+                    'schedule_finish' => $this->schedule_finish,
                     'status' => 'Closed',
                     'power_plant_id' => $this->power_plant_id,
                     'unit_source' => $this->unit_source,
-                    'schedule_start' => now(),
-                    'schedule_finish' => now(),
-                    'is_active' => false
+                    'is_active' => false,
+                    'is_backlogged' => false
+                ]);
+
+                // Debug log setelah membuat WO
+                Log::info('Created WorkOrder with data:', [
+                    'id' => $workOrder->id,
+                    'type' => $workOrder->type,
+                    'priority' => $workOrder->priority,
+                    'schedule_start' => $workOrder->schedule_start,
+                    'schedule_finish' => $workOrder->schedule_finish
                 ]);
 
                 // Hapus dari backlog
                 $this->delete();
-
+                
                 DB::commit();
                 return true;
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Error moving backlog to WO: ' . $e->getMessage());
-                return false;
+                Log::error('Error moving backlog to WO:', [
+                    'error' => $e->getMessage(),
+                    'backlog_data' => $this->toArray()
+                ]);
+                throw $e;
             }
         }
         return false;

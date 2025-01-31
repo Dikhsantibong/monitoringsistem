@@ -239,7 +239,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('laporan.edit-wo-backlog');
         Route::put('/laporan/wo-backlog/{id}', [LaporanController::class, 'updateWoBacklog'])
             ->name('laporan.update-wo-backlog');
-        Route::post('/laporan/wo-backlog/{id}/status', [LaporanController::class, 'updateBacklogStatus'])
+        Route::post('/laporan/update-backlog-status/{id}', [LaporanController::class, 'updateBacklogStatus'])
             ->name('laporan.update-backlog-status');
     });
 });

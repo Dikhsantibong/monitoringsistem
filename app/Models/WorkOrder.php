@@ -157,15 +157,38 @@ class WorkOrder extends Model
             try {
                 DB::beginTransaction();
                 
-                // Buat WO Backlog baru
-                WoBacklog::create([
+                // Debug log untuk memastikan data asli ada
+                Log::info('Original WO data:', [
+                    'id' => $this->id,
+                    'type' => $this->type,
+                    'priority' => $this->priority,
+                    'schedule_start' => $this->schedule_start,
+                    'schedule_finish' => $this->schedule_finish
+                ]);
+
+                // Buat WO Backlog dengan data lengkap
+                $backlog = WoBacklog::create([
                     'no_wo' => $this->id,
                     'deskripsi' => $this->description,
+                    'type_wo' => $this->type,           // pastikan field ini terisi
+                    'priority' => $this->priority,       // pastikan field ini terisi
+                    'schedule_start' => $this->schedule_start,   // pastikan field ini terisi
+                    'schedule_finish' => $this->schedule_finish, // pastikan field ini terisi
                     'tanggal_backlog' => now(),
-                    'keterangan' => 'Auto-generated from expired WO',
+                    'keterangan' => 'Otomatis masuk backlog karena melewati jadwal',
                     'status' => 'Open',
                     'power_plant_id' => $this->power_plant_id,
                     'unit_source' => $this->unit_source
+                ]);
+
+                // Debug log setelah membuat backlog
+                Log::info('Created backlog with data:', [
+                    'backlog_id' => $backlog->id,
+                    'no_wo' => $backlog->no_wo,
+                    'type_wo' => $backlog->type_wo,
+                    'priority' => $backlog->priority,
+                    'schedule_start' => $backlog->schedule_start,
+                    'schedule_finish' => $backlog->schedule_finish
                 ]);
 
                 // Hapus WO yang expired
@@ -175,7 +198,10 @@ class WorkOrder extends Model
                 return true;
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Error moving WO to backlog: ' . $e->getMessage());
+                Log::error('Error moving WO to backlog:', [
+                    'error' => $e->getMessage(),
+                    'wo_data' => $this->toArray()
+                ]);
                 return false;
             }
         }
