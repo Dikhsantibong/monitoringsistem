@@ -63,10 +63,19 @@ class WoBacklog extends Model
             self::$isSyncing = true;
             
             $powerPlant = PowerPlant::find($woBacklog->power_plant_id);
-            if (!$powerPlant) {
-                throw new \Exception('Power Plant not found');
+            
+            // Skip sinkronisasi jika unit_source adalah mysql (database utama)
+            if (!$powerPlant || $powerPlant->unit_source === 'mysql') {
+                Log::info('Skipping sync for main database (mysql)', [
+                    'power_plant' => $powerPlant->name ?? 'unknown',
+                    'unit_source' => $powerPlant->unit_source ?? 'unknown'
+                ]);
+                return;
             }
 
+            // Lanjutkan proses sinkronisasi untuk unit lain
+            $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+            
             // Data lengkap untuk sinkronisasi
             $data = [
                 'no_wo' => $woBacklog->no_wo,
@@ -84,15 +93,7 @@ class WoBacklog extends Model
                 'updated_at' => $woBacklog->updated_at
             ];
 
-            // Jika input dari UP Kendari, sync ke unit lokal
-            if (session('unit') === 'mysql') {
-                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
-                $targetDB = DB::connection($targetConnection);
-            } 
-            // Jika input dari unit lokal, sync ke UP Kendari
-            else {
-                $targetDB = DB::connection('mysql');
-            }
+            $targetDB = DB::connection($targetConnection);
 
             Log::info("Attempting to {$action} WO Backlog sync", [
                 'data' => $data,

@@ -81,10 +81,19 @@ class WorkOrder extends Model
             self::$isSyncing = true;
             
             $powerPlant = PowerPlant::find($workOrder->power_plant_id);
-            if (!$powerPlant) {
-                throw new \Exception('Power Plant not found');
+            
+            // Skip sinkronisasi jika unit_source adalah mysql (database utama)
+            if (!$powerPlant || $powerPlant->unit_source === 'mysql') {
+                Log::info('Skipping sync for main database (mysql)', [
+                    'power_plant' => $powerPlant->name ?? 'unknown',
+                    'unit_source' => $powerPlant->unit_source ?? 'unknown'
+                ]);
+                return;
             }
 
+            // Lanjutkan proses sinkronisasi untuk unit lain
+            $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+            
             $data = [
                 'id' => $workOrder->id,
                 'description' => $workOrder->description,
@@ -101,30 +110,23 @@ class WorkOrder extends Model
                 'updated_at' => $workOrder->updated_at
             ];
 
-            // Jika input dari UP Kendari, sync ke unit lokal
-            if (session('unit') === 'mysql') {
-                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
-                $targetDB = DB::connection($targetConnection);
-            } 
-            // Jika input dari unit lokal, sync ke UP Kendari
-            else {
-                $targetDB = DB::connection('mysql');
-            }
-
             Log::info("Attempting to {$action} WO sync", ['data' => $data]);
 
             switch($action) {
                 case 'create':
+                    $targetDB = DB::connection($targetConnection);
                     $targetDB->table('work_orders')->insert($data);
                     break;
                     
                 case 'update':
+                    $targetDB = DB::connection($targetConnection);
                     $targetDB->table('work_orders')
                             ->where('id', $workOrder->id)
                             ->update($data);
                     break;
                     
                 case 'delete':
+                    $targetDB = DB::connection($targetConnection);
                     $targetDB->table('work_orders')
                             ->where('id', $workOrder->id)
                             ->delete();
@@ -137,10 +139,12 @@ class WorkOrder extends Model
             ]);
 
         } catch (\Exception $e) {
-            Log::error("WO Sync failed", [
+            Log::error('WO Sync failed', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'workOrder' => $workOrder->toArray()
             ]);
+            throw $e;
         } finally {
             self::$isSyncing = false;
         }
