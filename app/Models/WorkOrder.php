@@ -151,5 +151,34 @@ class WorkOrder extends Model
         return $this->belongsTo(PowerPlant::class);
     }
 
-   
+    public function checkAndMoveToBacklog()
+    {
+        if ($this->status !== 'Closed' && Carbon::parse($this->schedule_finish)->isPast()) {
+            try {
+                DB::beginTransaction();
+                
+                // Buat WO Backlog baru
+                WoBacklog::create([
+                    'no_wo' => $this->id,
+                    'deskripsi' => $this->description,
+                    'tanggal_backlog' => now(),
+                    'keterangan' => 'Auto-generated from expired WO',
+                    'status' => 'Open',
+                    'power_plant_id' => $this->power_plant_id,
+                    'unit_source' => $this->unit_source
+                ]);
+
+                // Hapus WO yang expired
+                $this->delete();
+
+                DB::commit();
+                return true;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error moving WO to backlog: ' . $e->getMessage());
+                return false;
+            }
+        }
+        return false;
+    }
 } 

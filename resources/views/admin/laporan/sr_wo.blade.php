@@ -720,8 +720,8 @@
                     } else {
                         actionCell.innerHTML = `
                             <button onclick="showStatusOptions('${id}', '${newStatus}')"
-                                class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
-                                <i class="fas fa-edit mr-2"></i> Ubah
+                                class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
+                                ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
                             </button>
                         `;
                     }
@@ -1533,6 +1533,48 @@
             switchTab(tabId);
         }
     });
+
+    function checkExpiredWorkOrders() {
+        const rows = document.querySelectorAll('#woTable tbody tr');
+        const now = new Date();
+        
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td[data-column="status"]');
+            const scheduleFinishCell = row.querySelector('td:nth-child(10)'); // sesuaikan dengan index kolom schedule_finish
+            
+            if (statusCell && scheduleFinishCell && !statusCell.textContent.includes('Closed')) {
+                const finishDate = new Date(scheduleFinishCell.textContent);
+                
+                if (finishDate < now) {
+                    // Kirim request ke backend untuk memindahkan WO ke backlog
+                    const woId = row.getAttribute('data-wo-id').replace('WO-', '');
+                    moveToBacklog(woId);
+                }
+            }
+        });
+    }
+
+    async function moveToBacklog(woId) {
+        try {
+            const response = await fetch(`/admin/laporan/move-to-backlog/${woId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+            
+            if (response.ok) {
+                location.reload(); // Refresh halaman setelah pemindahan berhasil
+            }
+        } catch (error) {
+            console.error('Error moving WO to backlog:', error);
+        }
+    }
+
+    // Jalankan pengecekan setiap 1 menit
+    setInterval(checkExpiredWorkOrders, 60000);
+    // Jalankan pengecekan saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', checkExpiredWorkOrders);
 </script>
 
 <!-- Add this style -->

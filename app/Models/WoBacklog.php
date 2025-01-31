@@ -129,4 +129,36 @@ class WoBacklog extends Model
     {
         return $this->belongsTo(PowerPlant::class);
     }
+
+    public function moveBackToWorkOrder()
+    {
+        if ($this->status === 'Closed') {
+            try {
+                DB::beginTransaction();
+                
+                // Buat WO baru dengan status closed
+                WorkOrder::create([
+                    'id' => $this->no_wo,
+                    'description' => $this->deskripsi,
+                    'status' => 'Closed',
+                    'power_plant_id' => $this->power_plant_id,
+                    'unit_source' => $this->unit_source,
+                    'schedule_start' => now(),
+                    'schedule_finish' => now(),
+                    'is_active' => false
+                ]);
+
+                // Hapus dari backlog
+                $this->delete();
+
+                DB::commit();
+                return true;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error moving backlog to WO: ' . $e->getMessage());
+                return false;
+            }
+        }
+        return false;
+    }
 }   

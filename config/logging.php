@@ -126,6 +126,13 @@ return [
             'days' => 14,
         ],
 
+        'wo_operations' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/wo_operations.log'),
+            'level' => 'debug',
+            'days' => 14,
+        ],
+
     ],
     
 ];
