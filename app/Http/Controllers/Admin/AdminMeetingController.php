@@ -313,6 +313,45 @@ class AdminMeetingController extends Controller
                 'mysql_wua_wua' => 'Wua-Wua',
                 'u478221055_up_kendari' => 'UP Kendari'
             ];
+
+            // Data untuk semua unit
+            $attendances = Attendance::whereDate('created_at', $date)
+                ->orderBy('created_at')
+                ->get();
+
+            $powerPlants = PowerPlant::with(['machines' => function($query) use ($date) {
+                $query->whereHas('statusLogs', function($q) use ($date) {
+                    $q->whereDate('created_at', $date);
+                });
+            }])->get();
+
+            $logs = MachineStatusLog::whereDate('created_at', $date)
+                ->with('machine.powerPlant')
+                ->get();
+
+            $serviceRequests = ServiceRequest::whereDate('created_at', $date)
+                ->orderBy('priority', 'desc')
+                ->get();
+
+            $workOrders = WorkOrder::whereDate('created_at', $date)
+                ->orderBy('created_at')
+                ->get();
+
+            $woBacklogs = WoBacklog::whereDate('created_at', $date)
+                ->orderBy('created_at')
+                ->get();
+
+            // Tambahkan query untuk Other Discussions
+            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)
+                ->with('commitments') // Load relasi commitments
+                ->orderBy('created_at')
+                ->get();
+
+            // Tambahkan logging untuk other discussions
+            \Log::info('Other Discussions data:', [
+                'count' => $otherDiscussions->count(),
+                'date' => $date
+            ]);
             
             foreach ($connections as $connection => $unitName) {
                 try {
@@ -377,21 +416,25 @@ class AdminMeetingController extends Controller
                 }
             }
 
-            \Log::info('Final AllScoreCards data:', [
-                'count' => count($allScoreCards),
-                'data' => $allScoreCards
-            ]); 
+            \Log::info('Data collected:', [
+                'scoreCards' => count($allScoreCards),
+                'attendances' => $attendances->count(),
+                'powerPlants' => $powerPlants->count(),
+                'serviceRequests' => $serviceRequests->count(),
+                'workOrders' => $workOrders->count(),
+                'woBacklogs' => $woBacklogs->count()
+            ]);
 
             return view('admin.meetings.print', [
                 'allScoreCards' => $allScoreCards,
                 'date' => $date,
-                'attendances' => [], 
-                'powerPlants' => [], 
-                'logs' => [], 
-                'serviceRequests' => [], 
-                'workOrders' => [], 
-                'woBacklogs' => [], 
-                'signatures' => [] 
+                'attendances' => $attendances,
+                'powerPlants' => $powerPlants,
+                'logs' => $logs,
+                'serviceRequests' => $serviceRequests,
+                'workOrders' => $workOrders,
+                'woBacklogs' => $woBacklogs,
+                'otherDiscussions' => $otherDiscussions // Tambahkan other discussions ke view
             ]);
             
         } catch (\Exception $e) {
@@ -401,6 +444,13 @@ class AdminMeetingController extends Controller
             ]);
             return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
         }
+    }
+
+    private function hitungSkorWaktuMulai($waktuMulai)
+    {
+        $waktuTarget = "07:30:00";
+        $selisihMenit = round((strtotime($waktuMulai) - strtotime($waktuTarget)) / 60);
+        return max(0, 100 - (floor($selisihMenit / 3) * 10));
     }
 
     public function downloadPDF(Request $request)

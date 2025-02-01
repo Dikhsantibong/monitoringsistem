@@ -30,6 +30,8 @@
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Mesin</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">DMN</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">DMP</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Beban</th>
+                    
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
                 </tr>
             </thead>
@@ -41,6 +43,7 @@
                         <td class="px-6 py-4 whitespace-nowrap border">{{ $log->machine->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap border">{{ $log->dmn ?: '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap border">{{ $log->dmp ?: '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap border">{{ $log->load_value ?: '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap border">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                 {{ $log->status === 'Operasi' ? 'bg-green-100 text-green-800' : 

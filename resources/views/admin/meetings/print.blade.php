@@ -250,6 +250,60 @@
         .status-pemeliharaan { background-color: #ffedd5; color: #9a3412; }
         .status-overhaul { background-color: #ede9fe; color: #5b21b6; }
         .status-default { background-color: #f3f4f6; color: #374151; }
+        .deadline-info {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .commitment-item {
+            margin-bottom: 5px;
+            padding: 3px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .commitment-desc {
+            margin-bottom: 2px;
+        }
+        .pic-item {
+            margin-bottom: 5px;
+        }
+        .risk-badge, .priority-badge, .status-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .risk-t { background-color: #fee2e2; color: #991b1b; }
+        .risk-mt { background-color: #fef3c7; color: #92400e; }
+        .risk-mr { background-color: #f3f4f6; color: #374151; }
+        .risk-r { background-color: #dcfce7; color: #166534; }
+        .priority-high { background-color: #fee2e2; color: #991b1b; }
+        .priority-medium { background-color: #fef3c7; color: #92400e; }
+        .priority-low { background-color: #dcfce7; color: #166534; }
+        .status-open { background-color: #fee2e2; color: #991b1b; }
+        .status-closed { background-color: #dcfce7; color: #166534; }
+        .overdue-row {
+            background-color: #fff1f1;
+        }
+        
+        .overdue {
+            color: #dc2626;
+        }
+        
+        .closed-info {
+            font-size: 9px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .document-badge {
+            background-color: #0A749B;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -683,7 +737,7 @@
         </table>
     </div>
 
-    <!-- Halaman Notes -->
+    <!-- Halaman Pembahasan Lain-lain -->
     <div class="page-break">
         <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
         
@@ -692,22 +746,18 @@
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
 
-        <table class="notes-table">
+        <table class="report-table">
             <thead>
                 <tr>
-                    <th style="width: 3%">No</th>
-                    <th style="width: 7%">No SR</th>
-                    <th style="width: 7%">No Pembahasan</th>
-                    <th style="width: 7%">Unit</th>
-                    <th style="width: 10%">Topik</th>
-                    <th style="width: 10%">Sasaran</th>
-                    <th style="width: 7%">PIC Sasaran</th>
-                    <th style="width: 5%">Tingkat Resiko</th>
-                    <th style="width: 5%">Tingkat Prioritas</th>
-                    <th style="width: 15%">Komitmen & Deadline</th>
-                    <th style="width: 7%">PIC Komitmen</th>
-                    <th style="width: 7%">Status</th>
-                    <th style="width: 7%">Deadline</th>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 10%">No SR</th>
+                    <th style="width: 10%">No Pembahasan</th>
+                    <th style="width: 10%">Unit</th>
+                    <th style="width: 15%">Topic</th>
+                    <th style="width: 25%">Target</th>
+                    <th style="width: 15%">PIC</th>
+                    <th style="width: 10%">Status</th>
+                    <th style="width: 10%">Deadline</th>
                 </tr>
             </thead>
             <tbody>
@@ -717,56 +767,44 @@
                         ->concat(App\Models\ClosedDiscussion::whereDate('created_at', $date)->get())
                         ->concat(App\Models\OverdueDiscussion::whereDate('created_at', $date)->get())
                         ->sortBy('created_at');
-                    $no = 1;
                 @endphp
 
                 @forelse($discussions as $discussion)
                     <tr>
-                        <td style="text-align: center;">{{ $no++ }}</td>
+                        <td style="text-align: center;">{{ $loop->iteration }}</td>
                         <td>{{ $discussion->sr_number ?? '-' }}</td>
-                        <td>{{ $discussion->no_pembahasan ?? '-' }}</td>
+                        <td>{{ $discussion->no_pembahasan }}</td>
                         <td>{{ $discussion->unit }}</td>
                         <td>{{ $discussion->topic }}</td>
+                        <td>{{ $discussion->target }}</td>
+                        <td>{{ $discussion->pic }}</td>
                         <td>
-                            <div>{{ $discussion->target }}</div>
-                            <div style="font-size: 10px; color: #666;">
-                                Deadline: {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
-                            </div>
+                            <span class="status-badge status-{{ strtolower($discussion->status) }}">
+                                {{ $discussion->status }}
+                            </span>
                         </td>
-                        <td>{{ $discussion->pic ?? '-' }}</td>
-                        <td style="text-align: center;">{{ $discussion->risk_level }}</td>
-                        <td style="text-align: center;">{{ $discussion->priority_level }}</td>
-                        <td>
-                            @if($discussion->commitments && $discussion->commitments->count() > 0)
-                                @foreach($discussion->commitments as $commitment)
-                                    <div style="margin-bottom: 5px; padding: 3px; border: 1px solid #ddd;">
-                                        <div>{{ $commitment->description }}</div>
-                                        <div style="font-size: 10px; color: #666;">
-                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td>
-                            @if($discussion->commitments && $discussion->commitments->count() > 0)
-                                @foreach($discussion->commitments as $commitment)
-                                    <div style="margin-bottom: 5px;">
-                                        {{ $commitment->pic ?? '-' }}
-                                    </div>
-                                @endforeach
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td style="text-align: center;">{{ $discussion->status }}</td>
                         <td>{{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}</td>
                     </tr>
+                    @if($discussion->commitments && $discussion->commitments->count() > 0)
+                        <tr>
+                            <td colspan="9">
+                                <strong>Commitments:</strong>
+                                <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
+                                    @foreach($discussion->commitments as $commitment)
+                                        <li style="margin-bottom: 5px;">
+                                            • {{ $commitment->description }} 
+                                            (PIC: {{ $commitment->pic }}, 
+                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}, 
+                                            Status: {{ $commitment->status }})
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                        </tr>
+                    @endif
                 @empty
                     <tr>
-                        <td colspan="13" style="text-align: center;">Tidak ada pembahasan untuk tanggal ini</td>
+                        <td colspan="9" style="text-align: center;">Tidak ada pembahasan untuk tanggal ini</td>
                     </tr>
                 @endforelse
             </tbody>
