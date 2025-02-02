@@ -140,11 +140,33 @@ class LaporanController extends Controller
     
 
     // Tambah method untuk handle WO
-    public function storeWO(Request $request)
+    public function store(Request $request)
     {
         try {
-            Log::info('Received WO data:', $request->all());
+            DB::beginTransaction();
 
+            // Map koneksi database ke nama unit
+            $connectionNames = [
+                'mysql' => 'UP KENDARI',
+                'mysql_bau_bau' => 'ULPLTD BAU BAU',
+                'mysql_kolaka' => 'ULPLTD KOLAKA',
+                'mysql_wua_wua' => 'ULPLTD WUA WUA',
+                'mysql_poasia' => 'ULPLTD POASIA'
+            ];
+
+            // Cek duplikasi ID di semua koneksi database
+            foreach ($connectionNames as $connection => $unitName) {
+                $exists = DB::connection($connection)
+                           ->table('work_orders')
+                           ->where('id', $request->wo_id)
+                           ->exists();
+                
+                if ($exists) {
+                    throw new \Exception("ID WO {$request->wo_id} sudah ada di {$unitName}");
+                }
+            }
+
+            // Lanjutkan proses yang sudah ada
             $workOrder = WorkOrder::create([
                 'id' => $request->wo_id,
                 'description' => $request->description,
@@ -158,23 +180,14 @@ class LaporanController extends Controller
                 'is_backlogged' => false
             ]);
 
-            Log::info('WO created successfully:', [
-                'wo_id' => $workOrder->id
-            ]);
-
-            // Pastikan mengembalikan response JSON
+            DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Work Order berhasil ditambahkan'
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error creating WO:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            // Pastikan mengembalikan response JSON untuk error juga
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menambahkan Work Order: ' . $e->getMessage()
