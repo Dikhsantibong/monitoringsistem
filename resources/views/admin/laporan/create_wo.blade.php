@@ -64,7 +64,7 @@
                 <div class="bg-white rounded-lg shadow p-6 sm:p-3">
                     <div class="pt-2">
                         <h2 class="text-2xl font-bold mb-4">Tambah Work Order (WO)</h2>
-                        <form id="woForm" action="{{ route('admin.laporan.store') }}" method="POST">
+                        <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST">
                             @csrf
                             <div class="mb-4">
                                 <label for="wo_id" class="block text-gray-700">ID WO</label>
