@@ -247,6 +247,7 @@ class AdminMeetingController extends Controller
                 'mysql_kolaka' => 'Kolaka',
                 'mysql_poasia' => 'Poasia',
                 'mysql_wua_wua' => 'Wua-Wua',
+
                 
             ];
             
@@ -307,11 +308,11 @@ class AdminMeetingController extends Controller
             \Log::info('Print function called with date:', ['date' => $date]);
             
             $connections = [
+                'u478221055_up_kendari' => 'UP Kendari',
                 'mysql_bau_bau' => 'Bau-Bau',
                 'mysql_kolaka' => 'Kolaka', 
                 'mysql_poasia' => 'Poasia',
                 'mysql_wua_wua' => 'Wua-Wua',
-                'u478221055_up_kendari' => 'UP Kendari'
             ];
 
             // Data untuk semua unit
@@ -464,113 +465,146 @@ class AdminMeetingController extends Controller
             $logoData = base64_encode(file_get_contents($logoPath));
             $logoSrc = 'data:image/png;base64,' . $logoData;
 
-            // 1. Score Card Daily
-            $scoreCard = ScoreCardDaily::whereDate('tanggal', $date)
-                ->latest()
-                ->first();
-
-            if (!$scoreCard) {
-                return back()->with('error', 'Data tidak ditemukan untuk tanggal tersebut');
-            }
-
-            // Format data peserta
-            $peserta = json_decode($scoreCard->peserta, true) ?? [];
-            $formattedPeserta = [];
-            foreach ($peserta as $jabatan => $data) {
-                $formattedPeserta[] = [
-                    'jabatan' => ucwords(str_replace('_', ' ', $jabatan)),
-                    'awal' => $data['awal'] ?? '0',
-                    'akhir' => $data['akhir'] ?? '0',
-                    'skor' => $data['skor'] ?? '0',
-                    'keterangan' => $data['keterangan'] ?? ''
-                ];
-            }
-
-            // 2. Daftar Hadir
+            $allScoreCards = [];
+            $allDiscussions = [];
+            $allMachineStatuses = [];
+            
+            // Data untuk semua unit
             $attendances = Attendance::whereDate('created_at', $date)
                 ->orderBy('created_at')
                 ->get();
 
-            // 3. Status Pembangkit
-            $machineStatuses = MachineStatusLog::whereDate('created_at', $date)
-                ->with(['machine.powerPlant'])
-                ->orderBy('machine_id')
-                ->orderBy('created_at')
+            $powerPlants = PowerPlant::with(['machines' => function($query) use ($date) {
+                $query->whereHas('statusLogs', function($q) use ($date) {
+                    $q->whereDate('created_at', $date);
+                });
+            }])->get();
+
+            $logs = MachineStatusLog::whereDate('created_at', $date)
+                ->with('machine.powerPlant')
                 ->get();
 
-            // 4. Service Requests
             $serviceRequests = ServiceRequest::whereDate('created_at', $date)
                 ->orderBy('priority', 'desc')
-                ->orderBy('created_at')
                 ->get();
 
-            // 5. Work Orders
             $workOrders = WorkOrder::whereDate('created_at', $date)
                 ->orderBy('created_at')
                 ->get();
 
-            // 6. Work Order Backlog
             $woBacklogs = WoBacklog::whereDate('created_at', $date)
                 ->orderBy('created_at')
                 ->get();
 
-            // 7. Other Discussions (Pembahasan Lain)
-            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)->get();
-            $closedDiscussions = ClosedDiscussion::whereDate('created_at', $date)->get();
-            $overdueDiscussions = OverdueDiscussion::whereDate('created_at', $date)->get();
+            // Tambahkan query untuk Other Discussions
+            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)
+                ->with('commitments')
+                ->orderBy('created_at')
+                ->get();
 
-            // Gabungkan semua diskusi
-            $discussions = collect()
-                ->concat($otherDiscussions)
-                ->concat($closedDiscussions)
-                ->concat($overdueDiscussions)
-                ->sortBy('created_at');
-
-            // Data untuk Score Card
-            $data = [
-                'lokasi' => $scoreCard->lokasi,
-                'waktu_mulai' => $scoreCard->waktu_mulai,
-                'waktu_selesai' => $scoreCard->waktu_selesai,
-                'peserta' => $formattedPeserta,
-                'kesiapan_panitia' => $scoreCard->kesiapan_panitia ?? 100,
-                'kesiapan_bahan' => $scoreCard->kesiapan_bahan ?? 100,
-                'aktivitas_luar' => $scoreCard->aktivitas_luar ?? 100,
-                'gangguan_diskusi' => $scoreCard->gangguan_diskusi ?? 100,
-                'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk ?? 100,
-                'gangguan_interupsi' => $scoreCard->gangguan_interupsi ?? 100,
-                'ketegasan_moderator' => $scoreCard->ketegasan_moderator ?? 100,
-                'kelengkapan_sr' => $scoreCard->kelengkapan_sr ?? 100,
-                'skor_waktu_mulai' => $scoreCard->skor_waktu_mulai ?? 100
+            // Definisi koneksi database
+            $connections = [
+                'u478221055_up_kendari' => 'UP Kendari',
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka', 
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua',
             ];
 
-            // 8. Signatures (jika ada)
-            $signatures = [
-                'Operasi' => null,
-                'Pemeliharaan' => null,
-                'Enjiniring' => null,
-                'Manajer' => null
-            ];
+            foreach ($connections as $connection => $unitName) {
+                try {
+                    // Score Card Data
+                    $scoreCard = DB::connection($connection)
+                        ->table('score_card_daily')
+                        ->whereDate('tanggal', $date)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
 
-            \Log::info('Loading PDF view with data...');
+                    if ($scoreCard) {
+                        // Hitung skor waktu mulai
+                        $waktuMulaiTarget = "07:30:00";
+                        $waktuMulaiActual = $scoreCard->waktu_mulai;
+                        $selisihMenit = round((strtotime($waktuMulaiActual) - strtotime($waktuMulaiTarget)) / 60);
+                        $skorWaktuMulai = max(0, 100 - (floor($selisihMenit / 3) * 10));
 
-            // Generate PDF dengan semua data yang diperlukan
+                        $allScoreCards[$unitName] = [
+                            'lokasi' => $scoreCard->lokasi,
+                            'waktu_mulai' => $scoreCard->waktu_mulai,
+                            'waktu_selesai' => $scoreCard->waktu_selesai,
+                            'peserta' => json_decode($scoreCard->peserta, true),
+                            'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
+                            'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+                            'aktivitas_luar' => $scoreCard->aktivitas_luar,
+                            'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
+                            'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
+                            'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
+                            'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
+                            'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
+                            'skor_waktu_mulai' => $skorWaktuMulai
+                        ];
+                    }
+
+                    // Machine Status Data
+                    $statuses = DB::connection($connection)
+                        ->table('machine_status_logs AS msl')
+                        ->join('machines AS m', 'msl.machine_id', '=', 'm.id')
+                        ->join('power_plants AS pp', 'm.power_plant_id', '=', 'pp.id')
+                        ->whereDate('msl.created_at', $date)
+                        ->select(
+                            'msl.id',
+                            'msl.status',
+                            'msl.created_at',
+                            'msl.dmp',
+                            'msl.dmn',
+                            'msl.load_value',
+                            'msl.component',
+                            'm.name as machine_name',
+                            'pp.name as power_plant_name'
+                        )
+                        ->orderBy('m.name')
+                        ->orderBy('msl.created_at', 'desc')
+                        ->get();
+
+                    if ($statuses->isNotEmpty()) {
+                        $groupedStatuses = $statuses->groupBy('machine_name')
+                            ->map(function ($machineStatuses) {
+                                return $machineStatuses->first();
+                            });
+                        $allMachineStatuses[$unitName] = $groupedStatuses;
+                    }
+
+                } catch (\Exception $e) {
+                    \Log::error("Error accessing {$connection}: " . $e->getMessage());
+                    continue;
+                }
+            }
+
+            \Log::info('Data collected for PDF:', [
+                'scoreCards' => count($allScoreCards),
+                'machineStatuses' => count($allMachineStatuses),
+                'attendances' => $attendances->count(),
+                'serviceRequests' => $serviceRequests->count(),
+                'workOrders' => $workOrders->count(),
+                'woBacklogs' => $woBacklogs->count()
+            ]);
+
             $pdf = PDF::loadView('admin.meetings.score-card-pdf', compact(
                 'date',
-                'data',
+                'allScoreCards',
+                'allDiscussions',
                 'attendances',
-                'machineStatuses',
+                'powerPlants',
+                'logs',
                 'serviceRequests',
                 'workOrders',
                 'woBacklogs',
-                'discussions',
-                'signatures',
-                'logoSrc'
+                'logoSrc',
+                'allMachineStatuses',
+                'otherDiscussions'
             ));
-            
+
             $pdf->setPaper('a4', 'portrait');
             
-            \Log::info('PDF generated successfully, initiating download...');
-
             return $pdf->download('score_card_' . $date . '.pdf');
 
         } catch (\Exception $e) {

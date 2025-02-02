@@ -53,6 +53,9 @@
             color: white;
             font-size: 15px;
             font-weight: bold;
+            padding: 12px 14px;
+            text-align: left;
+            border: 1px solid #0A749B;
         }
         td.keterangan {
             font-size: 14px;
@@ -88,9 +91,9 @@
         .report-table th {
             background-color: #0A749B;
             color: white;
-            font-size: 11px;
-            padding: 8px;
-            border: 1px solid #000;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #0A749B;
             text-align: left;
         }
         .report-table td {
@@ -103,6 +106,7 @@
             border-radius: 12px;
             font-weight: bold;
             font-size: 10px;
+            display: inline-block;
         }
         .status-operasi {
             background-color: #dcfce7;
@@ -126,7 +130,7 @@
             color: white;
             font-size: 12px;
             padding: 10px;
-            border: 1px solid #000;
+            border: 1px solid #0A749B;
             text-align: left;
         }
         .sr-table td {
@@ -303,6 +307,47 @@
             padding: 2px 6px;
             border-radius: 12px;
             font-size: 10px;
+        }
+
+        /* Update style untuk thead */
+        th { 
+            background-color: #0A749B;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            padding: 12px 14px;
+            text-align: left;
+            border: 1px solid #0A749B;
+        }
+
+        /* Style untuk tabel spesifik */
+        .report-table th,
+        .sr-table th,
+        .wo-table th,
+        .attendance-table th { 
+            background-color: #0A749B;
+            color: white;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #0A749B;
+            text-align: left;
+        }
+
+        /* Pastikan border tetap terlihat */
+        .report-table td,
+        .sr-table td,
+        .wo-table td,
+        .attendance-table td {
+            border: 1px solid #000;
+        }
+
+        /* Style untuk status badge */
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 10px;
+            display: inline-block;
         }
     </style>
 </head>

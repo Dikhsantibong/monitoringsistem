@@ -86,144 +86,116 @@
         }
         .status-operasi { background-color: #28a745; color: white; }
         .status-standby { background-color: #ffc107; color: black; }
-        .status-maintenance { background-color: #dc3545; color: white; }
-        .status-emergency { background-color: #dc3545; color: white; }
-        .status-shutdown { background-color: #6c757d; color: white; }
+        .status-gangguan { background-color: #dc3545; color: white; }
+        .status-pemeliharaan { background-color: #17a2b8; color: white; }
+        .status-overhaul { background-color: #6c757d; color: white; }
+        .status-default { background-color: #6c757d; color: white; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
-    <!-- Halaman pertama - Score Card -->
-    <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
-    
-    @if(isset($data) && isset($date))
-        <div class="header">
-            <h2>SCORE CARD DAILY</h2>
-            <p>Tanggal: {{ is_string($date) ? \Carbon\Carbon::parse($date)->format('d F Y') : $date->format('d F Y') }}</p>
-            <p>Lokasi: {{ $data['lokasi'] }}</p>
-            <p>Waktu: {{ \Carbon\Carbon::parse($data['waktu_mulai'])->format('H:i') }} - 
-                     {{ \Carbon\Carbon::parse($data['waktu_selesai'])->format('H:i') }}</p>
-        </div>
+    <!-- Halaman Score Card -->
+    @if(!empty($allScoreCards))
+        @foreach($allScoreCards as $unitName => $data)
+            @if($loop->iteration > 1)
+                <div class="page-break"></div>
+            @endif
+            
+            <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
+            
+            <div class="header">
+                <h2>SCORE CARD DAILY</h2>
+                <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+                <p>Lokasi: {{ $unitName }}</p>
+                <p>Waktu: {{ \Carbon\Carbon::parse($data['waktu_mulai'])->format('H:i') }} - 
+                         {{ \Carbon\Carbon::parse($data['waktu_selesai'])->format('H:i') }}</p>
+            </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 5%">No</th>   
-                    <th style="width: 27%">Peserta</th>
-                    <th style="width: 10%">Awal</th>
-                    <th style="width: 10%">Akhir</th>
-                    <th style="width: 13%">Skor</th>
-                    <th>Keterangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($data['peserta'] as $index => $peserta)
+            <table class="report-table">
+                <thead>
                     <tr>
-                        <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $peserta['jabatan'] }}</td>
-                        <td style="text-align: center;">{{ $peserta['skor'] == 50 ? 0 : '' }}</td>
-                        <td style="text-align: center;">{{ $peserta['skor'] == 100 ? 1 : '' }}</td>
-                        <td style="text-align: center;">{{ $peserta['skor'] }}</td>
-                        <td class="keterangan">{{ $peserta['keterangan'] }}</td>
+                        <th style="width: 5%">No</th>   
+                        <th style="width: 27%">Peserta</th>
+                        <th style="width: 10%">Awal</th>
+                        <th style="width: 10%">Akhir</th>
+                        <th style="width: 13%">Skor</th>
+                        <th>Keterangan</th>
                     </tr>
-                @endforeach
+                </thead>
+                <tbody>
+                    @foreach($data['peserta'] as $peserta)
+                        <tr>
+                            <td style="text-align: center;">{{ $loop->iteration }}</td>
+                            <td>{{ $peserta['jabatan'] }}</td>
+                            <td style="text-align: center;">{{ $peserta['skor'] == 50 ? 0 : '' }}</td>
+                            <td style="text-align: center;">{{ $peserta['skor'] == 100 ? 1 : '' }}</td>
+                            <td style="text-align: center;">{{ $peserta['skor'] }}</td>
+                            <td class="keterangan">{{ $peserta['keterangan'] }}</td>
+                        </tr>
+                    @endforeach
 
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 1 }}</td>
-                    <td>Ketepatan waktu mulai</td>
-                    <td style="text-align: center;">Start</td>
-                    <td style="text-align: center;">{{ \Carbon\Carbon::parse($data['waktu_mulai'])->format('H:i') }}</td>
-                    <td style="text-align: center;">{{ $data['skor_waktu_mulai'] }}</td>
-                    <td class="keterangan">-10 per 3 menit keterlambatan</td>
-                </tr>
+                    <!-- Ketentuan Rapat -->
+                    @php
+                        $ketentuanFields = [
+                            ['label' => 'Ketepatan waktu mulai', 'value' => 'skor_waktu_mulai', 'start' => 'Start', 'end' => $data['waktu_mulai'], 'keterangan' => '-10 per 3 menit keterlambatan'],
+                            ['label' => 'Kesiapan Panitia', 'value' => 'kesiapan_panitia', 'keterangan' => '-20 per peralatan tidak siap'],
+                            ['label' => 'Kesiapan Bahan', 'value' => 'kesiapan_bahan', 'keterangan' => '-20 per bahan tidak siap'],
+                            ['label' => 'Aktivitas Luar', 'value' => 'aktivitas_luar', 'keterangan' => '-10 per gangguan'],
+                            ['label' => 'Gangguan Diskusi', 'value' => 'gangguan_diskusi', 'keterangan' => '-10 per gangguan'],
+                            ['label' => 'Gangguan Keluar Masuk', 'value' => 'gangguan_keluar_masuk', 'keterangan' => '-10 per gangguan'],
+                            ['label' => 'Gangguan Interupsi', 'value' => 'gangguan_interupsi', 'keterangan' => '-10 per gangguan'],
+                            ['label' => 'Ketegasan Moderator', 'value' => 'ketegasan_moderator', 'keterangan' => 'Obyektif'],
+                            ['label' => 'Kelengkapan SR', 'value' => 'kelengkapan_sr', 'keterangan' => 'Kaidah, Dokumentasi, CMMS']
+                        ];
+                    @endphp
 
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 2 }}</td>
-                    <td>Kesiapan Panitia</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['kesiapan_panitia'] }}</td>
-                    <td class="keterangan">-20 per peralatan tidak siap</td>
-                </tr>
+                    @foreach($ketentuanFields as $index => $field)
+                        <tr>
+                            <td style="text-align: center;">{{ count($data['peserta']) + $loop->iteration }}</td>
+                            <td>{{ $field['label'] }}</td>
+                            <td style="text-align: center;">{{ $field['start'] ?? '' }}</td>
+                            <td style="text-align: center;">
+                                @if(isset($field['end']))
+                                    {{ \Carbon\Carbon::parse($field['end'])->format('H:i') }}
+                                @endif
+                            </td>
+                            <td style="text-align: center;">{{ $data[$field['value']] }}</td>
+                            <td class="keterangan">{{ $field['keterangan'] }}</td>
+                        </tr>
+                    @endforeach
 
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 3 }}</td>
-                    <td>Kesiapan Bahan</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['kesiapan_bahan'] }}</td>
-                    <td class="keterangan">-20 per bahan tidak siap</td>
-                </tr>
-
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 4 }}</td>
-                    <td>Aktivitas Luar</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['aktivitas_luar'] }}</td>
-                    <td class="keterangan">-10 per gangguan</td>
-                </tr>
-
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 5 }}</td>
-                    <td>Gangguan Diskusi</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['gangguan_diskusi'] }}</td>
-                    <td class="keterangan">-10 per gangguan</td>
-                </tr>
-
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 6 }}</td>
-                    <td>Gangguan Keluar Masuk</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['gangguan_keluar_masuk'] }}</td>
-                    <td class="keterangan">-10 per gangguan</td>
-                </tr>
-
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 7 }}</td>
-                    <td>Gangguan Interupsi</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['gangguan_interupsi'] }}</td>
-                    <td class="keterangan">-10 per gangguan</td>
-                </tr>
-
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 8 }}</td>
-                    <td>Ketegasan Moderator</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['ketegasan_moderator'] }}</td>
-                    <td class="keterangan">Obyektif</td>
-                </tr>
-
-                <tr>
-                    <td style="text-align: center;">{{ count($data['peserta']) + 9 }}</td>
-                    <td>Kelengkapan SR</td>
-                    <td style="text-align: center;" colspan="2"></td>
-                    <td style="text-align: center;">{{ $data['kelengkapan_sr'] }}</td>
-                    <td class="keterangan">Kaidah, Dokumentasi, CMMS</td>
-                </tr>
-
-                @php
-                    $totalScorePeserta = collect($data['peserta'])->sum('skor');
-                    $totalScoreKetentuan = 
-                        $data['kesiapan_panitia'] +
-                        $data['kesiapan_bahan'] +
-                        $data['aktivitas_luar'] +
-                        $data['gangguan_diskusi'] +
-                        $data['gangguan_keluar_masuk'] +
-                        $data['gangguan_interupsi'] +
-                        $data['ketegasan_moderator'] +
-                        $data['kelengkapan_sr'] +
-                        $data['skor_waktu_mulai'];
-                    $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
-                @endphp
-                <tr class="total-row">
-                    <td colspan="4" style="text-align: right;">Total Score:</td>
-                    <td style="text-align: center;">{{ $grandTotal }}</td>
-                    <td>Total score peserta dan ketentuan</td>
-                </tr>
-            </tbody>
-        </table>
+                    <!-- Total Score -->
+                    @php
+                        $totalScorePeserta = collect($data['peserta'])->sum('skor');
+                        $totalScoreKetentuan = collect($ketentuanFields)->sum(function($field) use ($data) {
+                            return $data[$field['value']] ?? 0;
+                        });
+                        $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+                    @endphp
+                    
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right;">Total Score:</td>
+                        <td style="text-align: center;">{{ $grandTotal }}</td>
+                        <td>Total score peserta dan ketentuan</td>
+                    </tr>
+                </tbody>
+            </table>
+        @endforeach
     @else
         <div class="error">
-            Data tidak lengkap untuk generate PDF
+            Tidak ada data score card yang tersedia untuk tanggal ini
         </div>
     @endif
 
@@ -271,102 +243,8 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Halaman Status Pembangkit -->
-    <div class="page-break">
-        <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
-        
-        <div class="header">
-            <h2>LAPORAN STATUS PEMBANGKIT</h2>
-            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
-        </div>
-
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%">No</th>
-                    <th style="width: 15%">Unit</th>
-                    <th style="width: 10%">Waktu</th>
-                    <th style="width: 10%">Status</th>
-                    <th style="width: 15%">Daya (MW)</th>
-                    <th style="width: 15%">MVAR</th>
-                    <th>Keterangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $currentUnit = ''; @endphp
-                @forelse($machineStatuses as $index => $log)
-                    @if($currentUnit != $log->machine->unit)
-                        @php $currentUnit = $log->machine->unit; @endphp
-                        <tr>
-                            <td colspan="7" style="background-color: #f8f9fa; font-weight: bold;">
-                                {{ $log->machine->unit }}
-                            </td>
-                        </tr>
-                    @endif
-                    <tr>
-                        <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $log->machine->name }}</td>
-                        <td style="text-align: center;">
-                            {{ \Carbon\Carbon::parse($log->created_at)->format('H:i') }}
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="status-badge status-{{ strtolower($log->status) }}">
-                                {{ $log->status }}
-                            </span>
-                        </td>
-                        <td style="text-align: right;">
-                            {{ number_format($log->power_output, 2) }}
-                        </td>
-                        <td style="text-align: right;">
-                            {{ number_format($log->mvar, 2) }}
-                        </td>
-                        <td>{{ $log->notes }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align: center;">
-                            Tidak ada data status pembangkit
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <!-- Ringkasan Status -->
-        <div style="margin-top: 20px;">
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th colspan="2">Ringkasan Status Pembangkit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="width: 30%">Total Unit Beroperasi</td>
-                        <td>
-                            {{ $machineStatuses->where('status', 'OPERASI')->count() }} Unit
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Total Daya Terbangkit</td>
-                        <td>
-                            {{ number_format($machineStatuses->sum('power_output'), 2) }} MW
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Total MVAR</td>
-                        <td>
-                            {{ number_format($machineStatuses->sum('mvar'), 2) }} MVAR
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Halaman Service Request -->
-    <div class="page-break">
+     <!-- Halaman Service Request -->
+     <div class="page-break">
         <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
         <div class="header">
             <h2>DAFTAR SERVICE REQUEST</h2>
@@ -441,6 +319,87 @@
         </table>
     </div>
 
+    <!-- Halaman Status Mesin -->
+    @foreach($powerPlants as $powerPlant)
+        <div class="page-break">
+            <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
+            <div class="header">
+                <h2>STATUS MESIN - {{ $powerPlant->name }}</h2>
+                <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+            </div>
+
+            <!-- Statistik Unit -->
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                @php
+                    $plantLogs = $logs->filter(function($log) use ($powerPlant) {
+                        return $log->machine->power_plant_id === $powerPlant->id;
+                    });
+
+                    $totalDMP = $plantLogs->sum('dmp');
+                    $totalDMN = $plantLogs->sum('dmn');
+                    $totalBeban = $plantLogs->where('status', 'OPERASI')->sum('load_value');
+                @endphp
+                
+                <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
+                    <span style="font-size: 14px; color: #6c757d;">DMP Total:</span>
+                    <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMP, 1) }} MW</strong>
+                </div>
+                <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
+                    <span style="font-size: 14px; color: #6c757d;">DMN Total:</span>
+                    <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMN, 1) }} MW</strong>
+                </div>
+                <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
+                    <span style="font-size: 14px; color: #6c757d;">Total Beban:</span>
+                    <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalBeban, 1) }} MW</strong>
+                </div>
+            </div>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%; text-align: center;">No</th>
+                        <th style="width: 20%;">Mesin</th>
+                        <th style="width: 12%; text-align: center;">DMN</th>
+                        <th style="width: 12%; text-align: center;">DMP</th>
+                        <th style="width: 12%; text-align: center;">Beban</th>
+                        <th style="width: 15%; text-align: center;">Status</th>
+                        <th style="width: 24%;">Component</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($powerPlant->machines as $index => $machine)
+                        @php
+                            $machineLog = $logs->where('machine_id', $machine->id)->first();
+                            $status = $machineLog?->status ?? '-';
+                            
+                            $statusClass = match($status) {
+                                'OPERASI' => 'status-operasi',
+                                'STANDBY' => 'status-standby',
+                                'GANGGUAN' => 'status-gangguan',
+                                'PEMELIHARAAN' => 'status-pemeliharaan',
+                                'OVERHAUL' => 'status-overhaul',
+                                default => 'status-default'
+                            };
+                        @endphp
+                        <tr>
+                            <td style="text-align: center;">{{ $index + 1 }}</td>
+                            <td>{{ $machine->name }}</td>
+                            <td style="text-align: center;">{{ $machineLog?->dmn ?? '-' }}</td>
+                            <td style="text-align: center;">{{ $machineLog?->dmp ?? '-' }}</td>
+                            <td style="text-align: center;">{{ $machineLog?->load_value ?? '-' }}</td>
+                            <td style="text-align: center;">
+                                <span class="status-badge {{ $statusClass }}">
+                                    {{ $status }}
+                                </span>
+                            </td>
+                            <td>{{ $machineLog?->component ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endforeach
+
     <!-- Halaman Notes -->
     <div class="page-break">
         <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
@@ -479,5 +438,7 @@
             </div>
         </div>
     </div>
+
+   
 </body>
 </html>

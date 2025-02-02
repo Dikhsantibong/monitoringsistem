@@ -578,5 +578,96 @@
                     background: #555;
                 }
                 </style>
+
+                <div id="loadingOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex items-center justify-center">
+                    <div class="bg-white p-5 rounded-lg flex flex-col items-center">
+                        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-3"></div>
+                        <p class="text-gray-700" id="loadingText">Memproses...</p>
+                    </div>
+                </div>
+
+                <script>
+                function showLoading(message = 'Memproses...') {
+                    document.getElementById('loadingText').textContent = message;
+                    document.getElementById('loadingOverlay').classList.remove('hidden');
+                }
+
+                function hideLoading() {
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                }
+
+                // Update fungsi print
+                function printTable() {
+                    const dateSelect = document.querySelector('#tanggal-filter');
+                    const date = dateSelect.value;
+                    
+                    if (!date) {
+                        alert('Pilih tanggal terlebih dahulu');
+                        return;
+                    }
+
+                    showLoading('Mempersiapkan dokumen untuk print...');
+                    const printUrl = "{{ route('admin.meetings.print') }}?date=" + encodeURIComponent(date);
+                    
+                    const printWindow = window.open(printUrl, '_blank');
+                    if (printWindow) {
+                        printWindow.onload = function() {
+                            hideLoading();
+                        };
+                    } else {
+                        hideLoading();
+                    }
+                }
+
+                // Update fungsi download PDF
+                function downloadPDF() {
+                    const dateSelect = document.querySelector('#tanggal-filter');
+                    const date = dateSelect.value;
+                    
+                    if (!date) {
+                        alert('Pilih tanggal terlebih dahulu');
+                        return;
+                    }
+
+                    showLoading('Mengunduh PDF...');
+                    
+                    fetch("{{ route('admin.meetings.download-pdf') }}?tanggal=" + encodeURIComponent(date))
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'score_card_' + date + '.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            hideLoading();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Gagal mengunduh PDF. Silakan coba lagi.');
+                            hideLoading();
+                        });
+                }
+                </script>
             @endsection
+
+<style>
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+</style>
 
