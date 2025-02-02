@@ -145,28 +145,20 @@ class LaporanController extends Controller
         try {
             DB::beginTransaction();
 
-            // Map koneksi database ke nama unit
-            $connectionNames = [
-                'mysql' => 'UP KENDARI',
-                'mysql_bau_bau' => 'ULPLTD BAU BAU',
-                'mysql_kolaka' => 'ULPLTD KOLAKA',
-                'mysql_wua_wua' => 'ULPLTD WUA WUA',
-                'mysql_poasia' => 'ULPLTD POASIA'
-            ];
-
             // Cek duplikasi ID di semua koneksi database
-            foreach ($connectionNames as $connection => $unitName) {
+            $connections = ['mysql', 'mysql_wua_wua', 'mysql_poasia', 'mysql_kolaka', 'mysql_bau_bau'];
+            foreach ($connections as $connection) {
                 $exists = DB::connection($connection)
                            ->table('work_orders')
                            ->where('id', $request->wo_id)
                            ->exists();
                 
                 if ($exists) {
-                    throw new \Exception("ID WO {$request->wo_id} sudah ada di {$unitName}");
+                    throw new \Exception("ID WO {$request->wo_id} sudah ada di database {$connection}");
                 }
             }
 
-            // Lanjutkan proses yang sudah ada
+            // Jika tidak ada duplikasi, lanjutkan proses yang sudah ada
             $workOrder = WorkOrder::create([
                 'id' => $request->wo_id,
                 'description' => $request->description,
