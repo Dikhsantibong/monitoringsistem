@@ -1270,23 +1270,7 @@
                                             {{ $discussion->status }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm">
-                                        <div class="flex items-center gap-2">
-                                            <button onclick="toggleDetails('closed-{{ $discussion->id }}')" 
-                                                    class="text-blue-600 hover:text-blue-800 focus:outline-none"
-                                                    aria-expanded="false"
-                                                    aria-controls="details-closed-{{ $discussion->id }}"
-                                                    title="Detail">
-                                                <i class="fas fa-chevron-down transition-transform duration-200" 
-                                                   id="icon-closed-{{ $discussion->id }}"></i>
-                                            </button>
-                                            
-                                            <button onclick="confirmDelete('{{ $discussion->id }}')"
-                                                    class="text-red-600 hover:text-red-800 focus:outline-none"
-                                                    title="Hapus">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
+                              
                                     </td>
                                     <td class="px-4 py-3">
                                         @if($discussion->document_path)
