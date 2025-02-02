@@ -77,8 +77,6 @@ class OtherDiscussion extends Model
         'risk_level',
         'priority_level',
         'status',
-        'previous_commitment',
-        'next_commitment',
         'unit_source',
         'closed_at',
         'document_path',

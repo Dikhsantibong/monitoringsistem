@@ -13,21 +13,30 @@ class SyncOtherDiscussionToUpKendari
         try {
             $data = [
                 'sr_number' => $event->discussion->sr_number,
-                'wo_number' => $event->discussion->wo_number,
+                'no_pembahasan' => $event->discussion->no_pembahasan,
                 'unit' => $event->discussion->unit,
                 'topic' => $event->discussion->topic,
                 'target' => $event->discussion->target,
+                'target_deadline' => $event->discussion->target_deadline,
+                'deadline' => $event->discussion->deadline,
+                'department_id' => $event->discussion->department_id,
+                'section_id' => $event->discussion->section_id,
+                'pic' => $event->discussion->pic,
                 'risk_level' => $event->discussion->risk_level,
                 'priority_level' => $event->discussion->priority_level,
-                'previous_commitment' => $event->discussion->previous_commitment,
-                'next_commitment' => $event->discussion->next_commitment,
-                'pic' => $event->discussion->pic,
                 'status' => $event->discussion->status,
-                'deadline' => $event->discussion->deadline,
                 'unit_source' => $event->sourceUnit,
+                'closed_at' => $event->discussion->closed_at,
+                'document_path' => $event->discussion->document_path,
+                'document_description' => $event->discussion->document_description,
                 'created_at' => now(),
                 'updated_at' => now()
             ];
+
+            // Hapus field yang bernilai null atau undefined
+            $data = array_filter($data, function($value) {
+                return !is_null($value);
+            });
 
             // Gunakan koneksi UP Kendari
             DB::connection('mysql')->beginTransaction();

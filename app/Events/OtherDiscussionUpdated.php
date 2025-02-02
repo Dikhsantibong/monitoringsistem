@@ -2,22 +2,23 @@
 
 namespace App\Events;
 
+use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\OtherDiscussion;
 
 class OtherDiscussionUpdated
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $discussion;
-    public $sourceUnit;
     public $action;
+    public $sourceUnit;
 
-    public function __construct(OtherDiscussion $discussion, string $action)
+    public function __construct($discussion, $action)
     {
         $this->discussion = $discussion;
-        $this->sourceUnit = session('unit');
         $this->action = $action;
+        $this->sourceUnit = session('unit', 'mysql');
     }
 } 

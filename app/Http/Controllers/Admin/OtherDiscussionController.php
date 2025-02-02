@@ -118,15 +118,8 @@ class OtherDiscussionController extends Controller
     public function destroy($id)
     {
         try {
-            // Cari data dengan findOrFail
             $otherDiscussion = OtherDiscussion::findOrFail($id);
             
-            \Log::info('Starting delete process', [
-                'discussion_id' => $id,
-                'user' => auth()->user()->email,
-                'data_exists' => $otherDiscussion ? 'yes' : 'no'
-            ]);
-
             DB::beginTransaction();
 
             try {
@@ -144,23 +137,14 @@ class OtherDiscussionController extends Controller
                 // Hapus commitments
                 $otherDiscussion->commitments()->delete();
                 
-                // Hapus discussion
-                $deleted = $otherDiscussion->delete();
-                
-                if (!$deleted) {
-                    throw new \Exception('Gagal menghapus data pembahasan');
-                }
+                // Hapus discussion (akan trigger event delete otomatis)
+                $otherDiscussion->delete();
 
                 DB::commit();
-                \Log::info('Delete success', ['id' => $id]);
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Pembahasan berhasil dihapus',
-                    'debug_info' => [
-                        'discussion_id' => $id,
-                        'deleted_at' => now()->toDateTimeString()
-                    ]
+                    'message' => 'Pembahasan berhasil dihapus'
                 ]);
 
             } catch (\Exception $e) {
@@ -168,16 +152,6 @@ class OtherDiscussionController extends Controller
                 throw $e;
             }
 
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            \Log::error('Discussion not found', ['id' => $id]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus pembahasan: Data pembahasan tidak ditemukan',
-                'debug_info' => [
-                    'discussion_id' => $id,
-                    'error' => 'Model not found'
-                ]
-            ], 404);
         } catch (\Exception $e) {
             \Log::error('Delete failed', [
                 'error' => $e->getMessage(),
@@ -224,19 +198,33 @@ class OtherDiscussionController extends Controller
 
     public function updateStatus(Request $request)
     {
-        $discussion = OtherDiscussion::findOrFail($request->discussion_id);
-        $discussion->status = ucfirst(strtolower($request->status));
-        
-        if ($request->status === 'Closed') {
-            $discussion->closed_at = now();
-        }
-        
-        $discussion->save();
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Status berhasil diperbarui'
-        ]);
+            $discussion = OtherDiscussion::findOrFail($request->discussion_id);
+            $discussion->status = ucfirst(strtolower($request->status));
+            
+            if ($request->status === 'Closed') {
+                $discussion->closed_at = now();
+            }
+            
+            // Gunakan save() biasa untuk trigger event
+            $discussion->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui status'
+            ], 500);
+        }
     }
 
     public function create()
@@ -352,7 +340,8 @@ class OtherDiscussionController extends Controller
                 'pic' => $pic,
                 'risk_level' => $validated['risk_level'],
                 'priority_level' => $validated['priority_level'],
-                'status' => $validated['status']
+                'status' => $validated['status'],
+                'unit_source' => session('unit', 'mysql'), // Tambahkan unit_source
             ]);
 
             // Log sebelum menyimpan commitments
@@ -531,14 +520,15 @@ class OtherDiscussionController extends Controller
                 'pic' => $pic,
                 'risk_level' => $request->risk_level,
                 'priority_level' => $request->priority_level,
-                'status' => $request->status
+                'status' => $request->status,
+                'unit_source' => session('unit', 'mysql'), // Tambahkan unit_source
             ]);
 
             if ($request->status === 'Closed' && !$discussion->closed_at) {
                 $discussion->closed_at = now();
             }
 
-            $discussion->saveQuietly();
+            $discussion->save();
 
             // Update komitmen
             $discussion->commitments()->delete();
@@ -560,8 +550,6 @@ class OtherDiscussionController extends Controller
             }
 
             DB::commit();
-
-            event(new OtherDiscussionUpdated($discussion, 'update'));
 
             return redirect()->route('admin.other-discussions.index')
                 ->with('success', 'Data berhasil diperbarui');
