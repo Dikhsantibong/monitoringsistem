@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <div class="flex h-screen bg-gray-50 overflow-auto">
     <x-sidebar />
 
@@ -342,7 +343,7 @@
                                     @forelse($activeDiscussions as $index => $discussion)
                                     <tr class="hover:bg-gray-50">
                                         <!-- Row Utama -->
-                                        <td class="px-4 py-3 text-sm">{{ $index + 1 }}</td>
+                                        <td class="px-4 py-3 text-sm">{{ $activeDiscussions->firstItem() + $index }}</td>
                                         <td class="px-4 py-3 text-sm">{{ $discussion->sr_number }}</td>
                                         <td class="px-4 py-3 text-sm">
                                             {{ $discussion->no_pembahasan }}
@@ -559,7 +560,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="14" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                                             Tidak ada data aktif
                                         </td>
                                     </tr>
@@ -568,7 +569,16 @@
                             </table>
                         </div>
                         <div class="mt-4">
-                            {{ $activeDiscussions->appends(request()->except('active_page'))->links() }}
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    Menampilkan {{ $activeDiscussions->firstItem() ?? 0 }} 
+                                    sampai {{ $activeDiscussions->lastItem() ?? 0 }} 
+                                    dari {{ $activeDiscussions->total() }} data
+                                </div>
+                                <div>
+                                    {{ $activeDiscussions->appends(request()->except('active_page'))->links('pagination::bootstrap-4') }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -667,7 +677,7 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($targetOverdueDiscussions as $index => $discussion)
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 text-sm">{{ $index + 1 }}</td>
+                                    <td class="px-4 py-3 text-sm">{{ $targetOverdueDiscussions->firstItem() + $index }}</td>
                                     <td class="px-4 py-3 text-sm">{{ $discussion->sr_number }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         {{ $discussion->no_pembahasan }}
@@ -846,7 +856,16 @@
                         </table>
                     </div>
                     <div class="mt-4">
-                        {{ $targetOverdueDiscussions->appends(request()->except('target_page'))->links() }}
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                Menampilkan {{ $targetOverdueDiscussions->firstItem() ?? 0 }} 
+                                sampai {{ $targetOverdueDiscussions->lastItem() ?? 0 }} 
+                                dari {{ $targetOverdueDiscussions->total() }} data
+                            </div>
+                            <div>
+                                {{ $targetOverdueDiscussions->appends(request()->except('target_page'))->links('pagination::bootstrap-4') }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -876,7 +895,7 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($commitmentOverdueDiscussions as $index => $discussion)
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $commitmentOverdueDiscussions->firstItem() + $index }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $discussion->sr_number }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         <div class="flex items-center gap-2">
@@ -1155,7 +1174,16 @@
                         </table>
                     </div>
                     <div class="mt-4">
-                        {{ $commitmentOverdueDiscussions->links() }}
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                Menampilkan {{ $commitmentOverdueDiscussions->firstItem() ?? 0 }} 
+                                sampai {{ $commitmentOverdueDiscussions->lastItem() ?? 0 }} 
+                                dari {{ $commitmentOverdueDiscussions->total() }} data
+                            </div>
+                            <div>
+                                {{ $commitmentOverdueDiscussions->links('pagination::bootstrap-4') }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1253,7 +1281,7 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($closedDiscussions as $index => $discussion)
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 text-sm">{{ $index + 1 }}</td>
+                                    <td class="px-4 py-3 text-sm">{{ $closedDiscussions->firstItem() + $index }}</td>
                                     <td class="px-4 py-3 text-sm">{{ $discussion->sr_number }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         {{ $discussion->no_pembahasan }}
@@ -1430,7 +1458,16 @@
                         </table>
                     </div>
                     <div class="mt-4">
-                        {{ $closedDiscussions->appends(request()->except('closed_page'))->links() }}
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                Menampilkan {{ $closedDiscussions->firstItem() ?? 0 }} 
+                                sampai {{ $closedDiscussions->lastItem() ?? 0 }} 
+                                dari {{ $closedDiscussions->total() }} data
+                            </div>
+                            <div>
+                                {{ $closedDiscussions->appends(request()->except('closed_page'))->links('pagination::bootstrap-4') }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
