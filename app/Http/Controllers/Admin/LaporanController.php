@@ -663,4 +663,63 @@ class LaporanController extends Controller
         // Set channel logging khusus untuk WO
         Log::channel('wo_operations')->info('LaporanController initialized');
     }
+
+    public function editWO($id)
+    {
+        $workOrder = WorkOrder::findOrFail($id);
+        $powerPlants = PowerPlant::all();
+        
+        return view('admin.laporan.edit_wo', compact('workOrder', 'powerPlants'));
+    }
+
+    public function updateWO(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $workOrder = WorkOrder::findOrFail($id);
+            $powerPlant = PowerPlant::find($workOrder->power_plant_id);
+
+            Log::info('Updating WO:', [
+                'wo_id' => $id,
+                'unit_source' => $powerPlant->unit_source ?? 'unknown',
+                'old_data' => $workOrder->toArray(),
+                'new_data' => $request->all()
+            ]);
+
+            $workOrder->update([
+                'description' => $request->description,
+                'type' => $request->type,
+                'priority' => $request->priority,
+                'schedule_start' => $request->schedule_start,
+                'schedule_finish' => $request->schedule_finish,
+                'power_plant_id' => $request->unit
+            ]);
+
+            DB::commit();
+
+            Log::info('WO Updated successfully:', [
+                'wo_id' => $id,
+                'unit_source' => $powerPlant->unit_source ?? 'unknown'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Work Order berhasil diupdate'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating WO:', [
+                'wo_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate Work Order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

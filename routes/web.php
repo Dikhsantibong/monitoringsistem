@@ -639,6 +639,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
 Route::post('/admin/laporan/move-to-backlog/{id}', [LaporanController::class, 'moveToBacklog'])
     ->name('admin.laporan.move-to-backlog');
 
+Route::get('/admin/laporan/edit-wo/{id}', [LaporanController::class, 'editWO'])
+    ->name('admin.laporan.edit-wo');
+Route::post('/admin/laporan/update-wo/{id}', [LaporanController::class, 'updateWO'])
+    ->name('admin.laporan.update-wo');
+
 
 
 

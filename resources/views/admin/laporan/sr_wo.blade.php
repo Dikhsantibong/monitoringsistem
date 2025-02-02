@@ -433,16 +433,38 @@
                                                 {{ $wo->schedule_finish }}
                                             </td>
                                             <td data-column="action" class="py-2 px-4 border border-gray-200">
-                                                @if ($wo->status != 'Closed')
-                                                    <button onclick="showStatusOptions('{{ $wo->id }}', '{{ $wo->status }}')"
-                                                        class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
-                                                        <i class="fas fa-edit mr-2"></i> Ubah
-                                                    </button>
-                                                @else
-                                                    <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
-                                                        Closed
-                                                    </button>
-                                                @endif
+                                                <div class="flex space-x-2">
+                                                    @if ($wo->status != 'Closed')
+                                                        <!-- Tombol Status -->
+                                                        <button onclick="showStatusOptions('{{ $wo->id }}', '{{ $wo->status }}')"
+                                                            class="p-2 flex items-center text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors group"
+                                                            title="Ubah Status">
+                                                            <i class="fas fa-exchange-alt mr-2"></i>
+                                                            <span class="opacity-100">
+                                                                Update Status
+                                                            </span>
+                                                        </button>
+                                                        
+                                                        <!-- Tombol Edit -->
+                                                        <a href="{{ route('admin.laporan.edit-wo', $wo->id) }}"
+                                                            class="p-2 flex items-center text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors group"
+                                                            title="Edit WO">
+                                                            <i class="fas fa-edit mr-2 text-green-600"></i>
+                                                            <span class="opacity-100">
+                                                                Edit WO
+                                                            </span>
+                                                        </a>
+                                                    @else
+                                                        <!-- Status Closed -->
+                                                        <span class="p-2 flex items-center text-gray-400" title="WO Closed">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                            </svg>
+                                                            <span class="ml-2">Closed</span>
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -1017,7 +1039,7 @@
                 const statusCell = row.querySelector('td[data-column="status"]');
                 if (statusCell) {
                     statusCell.innerHTML = `
-                        <span class="px-2 py-1 rounded-full ${newStatus === 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                        <span class="px-2 py-1 rounded-full ${getStatusColorClass(newStatus)}">
                             ${newStatus}
                         </span>
                     `;
