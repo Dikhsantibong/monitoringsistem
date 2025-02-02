@@ -140,7 +140,7 @@ class LaporanController extends Controller
     
 
     // Tambah method untuk handle WO
-    public function store(Request $request)
+    public function storeWO(Request $request)
     {
         try {
             DB::beginTransaction();
