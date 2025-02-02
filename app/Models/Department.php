@@ -29,4 +29,8 @@ class Department extends Model
             \Log::info('Department retrieved:', $department->toArray());
         });
     }
+    public function getConnectionName()
+    {
+        return session('unit');
+    }
 }

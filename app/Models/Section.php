@@ -39,4 +39,8 @@ class Section extends Model
             ]);
         });
     }
+    public function getConnectionName()
+    {
+        return session('unit');
+    }
 } 
