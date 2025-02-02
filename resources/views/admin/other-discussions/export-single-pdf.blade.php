@@ -14,8 +14,12 @@
             margin-bottom: 20px;
         }
         .logo {
-            max-width: 80px;
+            width: 240px;
+            height: auto;
             margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         table {
             width: 100%;
@@ -65,7 +69,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ public_path('images/navlog1.png') }}" alt="Logo PLN" class="logo">
+        <img src="{{ public_path('logo/navlog1.png') }}" alt="Logo PLN" class="logo">
         <h2>PT PLN NP UP KENDARI</h2>
         <div class="title">Detail Pembahasan</div>
         <div class="subtitle">No. Pembahasan: {{ $discussion->no_pembahasan }}</div>
