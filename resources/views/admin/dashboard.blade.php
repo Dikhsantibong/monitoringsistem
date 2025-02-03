@@ -180,7 +180,7 @@
                     <!-- Card Kehadiran Rapat -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Score Peserta</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">Score Card Daily</h3>
                             <div class="flex space-x-2">
                                 <button onclick="toggleChartType('meetingChart', 'line')"
                                     class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">

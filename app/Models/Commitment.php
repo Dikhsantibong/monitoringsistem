@@ -52,4 +52,8 @@ class Commitment extends Model
         }
         return null;
     }
+    public function getConnectionName()
+    {
+        return session('unit', 'u478221055_up_kendari');
+    }
 } 

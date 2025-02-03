@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Events\MachineStatusUpdated;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * MachineStatusLog Model
@@ -73,6 +74,10 @@ class MachineStatusLog extends Model
         'updated_at'
     ];
 
+    protected $primaryKey = 'uuid';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     public function machine()
     {
         return $this->belongsTo(Machine::class, 'machine_id');
@@ -105,6 +110,12 @@ class MachineStatusLog extends Model
     {
         parent::boot();
         
+        static::creating(function ($model) {
+            if (!$model->uuid) {
+                $model->uuid = (string) Str::uuid();
+            }
+        });
+
         static::created(function ($machineStatus) {
             self::syncData('create', $machineStatus);
         });
