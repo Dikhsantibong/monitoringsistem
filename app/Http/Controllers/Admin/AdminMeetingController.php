@@ -306,22 +306,28 @@ class AdminMeetingController extends Controller
             $allScoreCards = [];
             $currentSession = session('unit');
 
-            // Definisi koneksi database
+            // Mapping koneksi database dengan nama unit yang sesuai
             $connections = [
-                'u478221055_up_kendari' => 'UP Kendari',
-                'mysql_bau_bau' => 'Bau-Bau',
-                'mysql_kolaka' => 'Kolaka', 
-                'mysql_poasia' => 'Poasia',
-                'mysql_wua_wua' => 'Wua-Wua',
+                'mysql' => [
+                    'u478221055_up_kendari' => 'UP Kendari',
+                    'mysql_bau_bau' => 'Bau-Bau',
+                    'mysql_kolaka' => 'Kolaka', 
+                    'mysql_poasia' => 'Poasia',
+                    'mysql_wua_wua' => 'Wua-Wua',
+                ],
+                'mysql_bau_bau' => ['mysql_bau_bau' => 'Bau-Bau'],
+                'mysql_kolaka' => ['mysql_kolaka' => 'Kolaka'],
+                'mysql_poasia' => ['mysql_poasia' => 'Poasia'],
+                'mysql_wua_wua' => ['mysql_wua_wua' => 'Wua-Wua']
             ];
 
-            // Filter koneksi berdasarkan session
-            if ($currentSession !== 'mysql') {
-                // Jika bukan admin, hanya ambil koneksi sesuai session
-                $connections = array_filter($connections, function($key) use ($currentSession) {
-                    return $key === $currentSession;
-                }, ARRAY_FILTER_USE_KEY);
-            }
+            // Pilih koneksi berdasarkan session
+            $activeConnections = $connections[$currentSession] ?? [];
+            
+            \Log::info('Current session and connections:', [
+                'session' => $currentSession,
+                'activeConnections' => $activeConnections
+            ]);
 
             // Data untuk semua unit
             $attendances = Attendance::whereDate('created_at', $date)
@@ -362,37 +368,24 @@ class AdminMeetingController extends Controller
                 'date' => $date
             ]);
             
-            foreach ($connections as $connection => $unitName) {
+            foreach ($activeConnections as $connection => $unitName) {
                 try {
-                    \Log::info("Trying to access database connection: {$connection}");
+                    \Log::info("Trying to fetch data for connection: {$connection}");
                     
-                    $query = DB::connection($connection)
-                        ->table('score_card_daily')
-                        ->whereDate('tanggal', $date);
-                    
-                    \Log::info("Query for {$connection}:", [
-                        'sql' => $query->toSql(),
-                        'bindings' => $query->getBindings()
-                    ]);
-                    
-                    $scoreCard = $query->orderBy('created_at', 'desc')->first();
-                    
-                    \Log::info("Score card data for {$connection}:", [
-                        'found' => !is_null($scoreCard),
-                        'data' => $scoreCard
-                    ]);
-                    
+                    // Score Card Data - Menggunakan nama tabel yang benar
+                    $scoreCard = DB::connection($connection)
+                        ->table('score_card_daily') // Menggunakan nama tabel yang benar
+                        ->whereDate('tanggal', $date)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
                     if ($scoreCard) {
-                        // Hitung skor waktu mulai berdasarkan waktu yang ada
-                        $waktuMulaiTarget = "07:30:00"; // Waktu target mulai rapat
+                        // Hitung skor waktu mulai
+                        $waktuMulaiTarget = "07:30:00";
                         $waktuMulaiActual = $scoreCard->waktu_mulai;
-                        
-                        // Hitung selisih dalam menit
                         $selisihMenit = round((strtotime($waktuMulaiActual) - strtotime($waktuMulaiTarget)) / 60);
-                        
-                        // Hitung skor (-10 per 3 menit keterlambatan)
                         $skorWaktuMulai = max(0, 100 - (floor($selisihMenit / 3) * 10));
-                        
+
                         $allScoreCards[$unitName] = [
                             'lokasi' => $scoreCard->lokasi,
                             'waktu_mulai' => $scoreCard->waktu_mulai,
@@ -406,32 +399,26 @@ class AdminMeetingController extends Controller
                             'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
                             'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
                             'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
-                            'skor_waktu_mulai' => $skorWaktuMulai // Menggunakan skor yang dihitung
-                        ];
-                        \Log::info("Successfully added score card for {$unitName}", [
-                            'waktu_mulai_actual' => $waktuMulaiActual,
-                            'selisih_menit' => $selisihMenit,
                             'skor_waktu_mulai' => $skorWaktuMulai
+                        ];
+
+                        \Log::info("Successfully fetched score card for {$unitName}", [
+                            'data' => $allScoreCards[$unitName]
                         ]);
                     } else {
                         \Log::info("No score card found for {$unitName} on date {$date}");
                     }
                 } catch (\Exception $e) {
                     \Log::error("Error accessing {$connection}: " . $e->getMessage(), [
-                        'exception' => $e,
                         'trace' => $e->getTraceAsString()
                     ]);
                     continue;
                 }
             }
 
-            \Log::info('Data collected:', [
-                'scoreCards' => count($allScoreCards),
-                'attendances' => $attendances->count(),
-                'powerPlants' => $powerPlants->count(),
-                'serviceRequests' => $serviceRequests->count(),
-                'workOrders' => $workOrders->count(),
-                'woBacklogs' => $woBacklogs->count()
+            \Log::info('Final score cards data:', [
+                'count' => count($allScoreCards),
+                'units' => array_keys($allScoreCards)
             ]);
 
             return view('admin.meetings.print', [
@@ -443,14 +430,11 @@ class AdminMeetingController extends Controller
                 'serviceRequests' => $serviceRequests,
                 'workOrders' => $workOrders,
                 'woBacklogs' => $woBacklogs,
-                'otherDiscussions' => $otherDiscussions // Tambahkan other discussions ke view
+                'otherDiscussions' => $otherDiscussions
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Print error: ' . $e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString()
-            ]);
+            \Log::error('Print error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
         }
     }
@@ -469,22 +453,28 @@ class AdminMeetingController extends Controller
             $allScoreCards = [];
             $currentSession = session('unit');
 
-            // Definisi koneksi database
+            // Mapping koneksi database dengan nama unit yang sesuai
             $connections = [
-                'u478221055_up_kendari' => 'UP Kendari',
-                'mysql_bau_bau' => 'Bau-Bau',
-                'mysql_kolaka' => 'Kolaka', 
-                'mysql_poasia' => 'Poasia',
-                'mysql_wua_wua' => 'Wua-Wua',
+                'mysql' => [
+                    'u478221055_up_kendari' => 'UP Kendari',
+                    'mysql_bau_bau' => 'Bau-Bau',
+                    'mysql_kolaka' => 'Kolaka', 
+                    'mysql_poasia' => 'Poasia',
+                    'mysql_wua_wua' => 'Wua-Wua',
+                ],
+                'mysql_bau_bau' => ['mysql_bau_bau' => 'Bau-Bau'],
+                'mysql_kolaka' => ['mysql_kolaka' => 'Kolaka'],
+                'mysql_poasia' => ['mysql_poasia' => 'Poasia'],
+                'mysql_wua_wua' => ['mysql_wua_wua' => 'Wua-Wua']
             ];
 
-            // Filter koneksi berdasarkan session
-            if ($currentSession !== 'mysql') {
-                // Jika bukan admin, hanya ambil koneksi sesuai session
-                $connections = array_filter($connections, function($key) use ($currentSession) {
-                    return $key === $currentSession;
-                }, ARRAY_FILTER_USE_KEY);
-            }
+            // Pilih koneksi berdasarkan session
+            $activeConnections = $connections[$currentSession] ?? [];
+            
+            \Log::info('Current session and connections:', [
+                'session' => $currentSession,
+                'activeConnections' => $activeConnections
+            ]);
 
             // Data untuk semua unit
             $attendances = Attendance::whereDate('created_at', $date)
@@ -528,11 +518,11 @@ class AdminMeetingController extends Controller
                 'mysql_wua_wua' => 'Wua-Wua',
             ];
 
-            foreach ($connections as $connection => $unitName) {
+            foreach ($activeConnections as $connection => $unitName) {
                 try {
-                    // Score Card Data
+                    // Score Card Data - Menggunakan nama tabel yang benar
                     $scoreCard = DB::connection($connection)
-                        ->table('score_card_daily')
+                        ->table('score_card_daily') // Menggunakan nama tabel yang benar
                         ->whereDate('tanggal', $date)
                         ->orderBy('created_at', 'desc')
                         ->first();

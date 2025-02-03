@@ -365,11 +365,18 @@
                 } else {
                     // Untuk unit lain, hanya tampilkan data unit mereka sendiri
                     $unitMapping = [
-                        'mysql_wua_wua' => 'Wua Wua',
-                        'mysql_bau_bau' => 'Bau Bau',
-                        'mysql_poasia' => 'Poasia',
-                        'mysql_kolaka' => 'Kolaka'
+                        'mysql_wua_wua' => 'Wua-Wua',  // Sesuaikan dengan format nama yang dikirim dari controller
+                        'mysql_bau_bau' => 'Bau-Bau',  // Sesuaikan dengan format nama yang dikirim dari controller
+                        'mysql_poasia' => 'Poasia',    // Sesuaikan dengan format nama yang dikirim dari controller
+                        'mysql_kolaka' => 'Kolaka'     // Sesuaikan dengan format nama yang dikirim dari controller
                     ];
+                    
+                    // Debug information
+                    \Log::info('Print View Debug:', [
+                        'currentSession' => $currentSession,
+                        'unitName' => $unitName,
+                        'mappedUnit' => $unitMapping[$currentSession] ?? null
+                    ]);
                     
                     $shouldDisplay = ($currentSession && isset($unitMapping[$currentSession]) && $unitName === $unitMapping[$currentSession]);
                 }
