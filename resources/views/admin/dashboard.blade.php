@@ -387,11 +387,11 @@
                 });
             });
 
-            // Data untuk Ketepatan Waktu
+            // Data untuk Ketepatan Waktu (Kehadiran)
             const activityData = {
                 labels: formattedDates,
                 datasets: [{
-                    label: 'Skor Ketepatan Waktu',
+                    label: 'Persentase Kehadiran Tepat Waktu',
                     data: chartData.scoreCardData.scores,
                     borderColor: 'rgb(59, 130, 246)',
                     backgroundColor: 'rgba(59, 130, 246, 0.5)',
@@ -457,11 +457,29 @@
                     scales: {
                         ...commonOptions.scales,
                         y: {
-                            ...commonOptions.scales.y,
+                            beginAtZero: true,
                             max: 100,
                             ticks: {
                                 callback: function(value) {
                                     return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Kehadiran Tepat Waktu: ${context.raw}%`;
                                 }
                             }
                         }
@@ -811,7 +829,6 @@
 
         // Fungsi untuk toggle dropdown
         function toggleDropdown() {
-            w
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('hidden');
         }

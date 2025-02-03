@@ -14,6 +14,7 @@ use App\Models\WorkOrder;
 use App\Models\WoBacklog;
 use App\Models\OtherDiscussion;
 use App\Models\Commitment;
+use App\Models\Attendance;
 
 
 class DashboardController extends Controller
@@ -122,7 +123,8 @@ class DashboardController extends Controller
             'closed' => WorkOrder::where('status', 'closed')->count()
         ]);
 
-        // Format data untuk charts
+        $attendancePercentages = $this->getAttendanceData();
+        
         $chartData = [
             'scoreCardData' => [
                 'dates' => $formattedScoreCard->keys()->toArray(),
@@ -260,5 +262,37 @@ class DashboardController extends Controller
             \Log::error('Error in calculateTotalScore: ' . $e->getMessage());
             return 0;
         }
+    }
+
+    private function getAttendanceData()
+    {
+        $currentMonth = now()->startOfMonth();
+        $startDate = $currentMonth->copy()->startOfMonth();
+        $endDate = $currentMonth->copy()->endOfMonth();
+        
+        $dates = collect();
+        for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+            $dates->push($date->format('Y-m-d'));
+        }
+
+        $attendanceData = Attendance::whereBetween('time', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->get()
+            ->groupBy(function($item) {
+                return $item->time->format('Y-m-d');
+            })
+            ->map(function($group) {
+                $total = $group->count();
+                $tepatWaktu = $group->filter(function($attendance) {
+                    return $attendance->time->format('H:i:s') <= '08:00:00';
+                })->count();
+                
+                return ($total > 0) ? round(($tepatWaktu / $total) * 100, 2) : 0;
+            });
+
+        return $dates->mapWithKeys(function($date) use ($attendanceData) {
+            return [
+                $date => $attendanceData[$date] ?? 0
+            ];
+        })->sortKeys();
     }
 } 
