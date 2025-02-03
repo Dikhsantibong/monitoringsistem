@@ -310,14 +310,10 @@
                         return;
                     }
 
-                    console.log('Selected date:', date); // Untuk debugging
+                    // Langsung buka window print tanpa loading
                     const printUrl = "{{ route('admin.meetings.print') }}?date=" + encodeURIComponent(date);
                     window.open(printUrl, '_blank');
                 }
-
-                
-
-                
                 </script>
 
                 @push('scripts')
@@ -430,20 +426,6 @@
                         });
                     }
                 });
-
-                function printTable() {
-                    const dateSelect = document.querySelector('#tanggal-filter');
-                    const date = dateSelect.value;
-                    
-                    if (!date) {
-                        alert('Pilih tanggal terlebih dahulu');
-                        return;
-                    }
-
-                    console.log('Selected date for print:', date);
-                    const printUrl = "{{ route('admin.meetings.print') }}?date=" + encodeURIComponent(date);
-                    window.open(printUrl, '_blank');
-                }
                 </script>
 
                 <!-- Tambahkan script ini -->
@@ -606,7 +588,7 @@
                         return;
                     }
 
-                    showLoading('Mempersiapkan dokumen untuk print...');
+                   
                     const printUrl = "{{ route('admin.meetings.print') }}?date=" + encodeURIComponent(date);
                     
                     const printWindow = window.open(printUrl, '_blank');

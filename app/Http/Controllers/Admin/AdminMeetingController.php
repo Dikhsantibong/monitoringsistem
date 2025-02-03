@@ -302,11 +302,11 @@ class AdminMeetingController extends Controller
     public function print(Request $request)
     {
         try {
-            $date = $request->date ?? now()->format('Y-m-d');
+            $date = $request->get('date');
             $allScoreCards = [];
-            
-            \Log::info('Print function called with date:', ['date' => $date]);
-            
+            $currentSession = session('unit');
+
+            // Definisi koneksi database
             $connections = [
                 'u478221055_up_kendari' => 'UP Kendari',
                 'mysql_bau_bau' => 'Bau-Bau',
@@ -314,6 +314,14 @@ class AdminMeetingController extends Controller
                 'mysql_poasia' => 'Poasia',
                 'mysql_wua_wua' => 'Wua-Wua',
             ];
+
+            // Filter koneksi berdasarkan session
+            if ($currentSession !== 'mysql') {
+                // Jika bukan admin, hanya ambil koneksi sesuai session
+                $connections = array_filter($connections, function($key) use ($currentSession) {
+                    return $key === $currentSession;
+                }, ARRAY_FILTER_USE_KEY);
+            }
 
             // Data untuk semua unit
             $attendances = Attendance::whereDate('created_at', $date)
@@ -458,17 +466,26 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->get('tanggal');
-            \Log::info('Attempting to download PDF for date: ' . $date);
-            
-            // Get logo path
-            $logoPath = public_path('logo/navlog1.png');
-            $logoData = base64_encode(file_get_contents($logoPath));
-            $logoSrc = 'data:image/png;base64,' . $logoData;
-
             $allScoreCards = [];
-            $allDiscussions = [];
-            $allMachineStatuses = [];
-            
+            $currentSession = session('unit');
+
+            // Definisi koneksi database
+            $connections = [
+                'u478221055_up_kendari' => 'UP Kendari',
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka', 
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua',
+            ];
+
+            // Filter koneksi berdasarkan session
+            if ($currentSession !== 'mysql') {
+                // Jika bukan admin, hanya ambil koneksi sesuai session
+                $connections = array_filter($connections, function($key) use ($currentSession) {
+                    return $key === $currentSession;
+                }, ARRAY_FILTER_USE_KEY);
+            }
+
             // Data untuk semua unit
             $attendances = Attendance::whereDate('created_at', $date)
                 ->orderBy('created_at')

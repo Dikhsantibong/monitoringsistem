@@ -136,7 +136,22 @@
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
                             <div class="overflow-auto">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h2 class="text-lg font-semibold text-gray-800">{{ $unit->name }}</h2>
+                                    <div class="flex flex-col">
+                                        <h2 class="text-lg font-semibold text-gray-800">{{ $unit->name }}</h2>
+                                        <div class="text-sm text-gray-600">
+                                            <span class="font-medium">Update Terakhir:</span>
+                                            <span id="last_update_{{ $unit->id }}" class="ml-1">
+                                                @php
+                                                    $lastUpdate = $operations
+                                                        ->where('unit_id', $unit->id)
+                                                        ->where('tanggal', date('Y-m-d'))
+                                                        ->max('updated_at');
+                                                    
+                                                    echo $lastUpdate ? \Carbon\Carbon::parse($lastUpdate)->format('d/m/Y H:i:s') : '-';
+                                                @endphp
+                                            </span>
+                                        </div>
+                                    </div>
                                     <!-- Tambahkan input HOP di sini -->
                                     <div class="flex items-center gap-x-2">
                                         <label for="hop_{{ $unit->id }}" class="text-sm font-medium text-gray-700">HOP:</label>
@@ -765,10 +780,39 @@
             return;
         }
 
-        console.log('Data yang diterima:', data); // Debug log
-
         // Update data mesin
         if (data.logs) {
+            // Kelompokkan log berdasarkan unit_id
+            const logsByUnit = {};
+            data.logs.forEach(log => {
+                if (!logsByUnit[log.unit_id]) {
+                    logsByUnit[log.unit_id] = [];
+                }
+                logsByUnit[log.unit_id].push(log);
+            });
+
+            // Update waktu terakhir untuk setiap unit
+            Object.keys(logsByUnit).forEach(unitId => {
+                const logs = logsByUnit[unitId];
+                const latestUpdate = logs.reduce((latest, log) => {
+                    const updateTime = new Date(log.updated_at);
+                    return latest < updateTime ? updateTime : latest;
+                }, new Date(0));
+
+                const lastUpdateElement = document.getElementById(`last_update_${unitId}`);
+                if (lastUpdateElement) {
+                    lastUpdateElement.textContent = latestUpdate.toLocaleString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                }
+            });
+
+            // Update data mesin seperti sebelumnya
             data.logs.forEach(log => {
                 const row = document.querySelector(`tr[data-machine-id="${log.machine_id}"]`);
                 if (row) {

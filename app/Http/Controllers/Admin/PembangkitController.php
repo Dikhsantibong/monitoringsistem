@@ -28,10 +28,19 @@ class PembangkitController extends Controller
             END
         ")->get();
         $machines = Machine::with('issues', 'metrics')->get();
-        $operations = MachineOperation::all();
         
-        // Ambil status log dan HOP hari ini
-        $todayLogs = MachineStatusLog::whereDate('tanggal', Carbon::today())->get();
+        // Modifikasi query operations untuk include unit_id
+        $operations = MachineOperation::select('machine_operations.*', 'machines.power_plant_id as unit_id')
+            ->join('machines', 'machines.id', 'machine_operations.machine_id')
+            ->get();
+        
+        // Ambil status log dengan relasi machine dan updated_at
+        $todayLogs = MachineStatusLog::with(['machine'])
+            ->select('machine_status_logs.*', 'machines.power_plant_id as unit_id')
+            ->join('machines', 'machines.id', 'machine_status_logs.machine_id')
+            ->whereDate('tanggal', Carbon::today())
+            ->get();
+        
         $todayHops = UnitOperationHour::whereDate('tanggal', Carbon::today())->get();
 
         return view('admin.pembangkit.ready', compact('units', 'machines', 'operations', 'todayLogs', 'todayHops'));
@@ -162,32 +171,21 @@ class PembangkitController extends Controller
             $tanggal = $request->tanggal ?? now()->toDateString();
             $currentSession = session('unit', 'mysql');
 
-            Log::info("Fetching status data", [
-                'tanggal' => $tanggal,
-                'session' => $currentSession
-            ]);
-
-            // Ambil data status mesin untuk tanggal yang dipilih
+            // Modifikasi query untuk include unit_id dan updated_at
             $logs = MachineStatusLog::with(['machine.powerPlant'])
+                ->select('machine_status_logs.*', 'machines.power_plant_id as unit_id')
+                ->join('machines', 'machines.id', 'machine_status_logs.machine_id')
                 ->whereDate('tanggal', $tanggal)
                 ->get();
 
-            // Ambil data HOP dengan mempertimbangkan session
             $hops = UnitOperationHour::with('powerPlant')
                 ->whereDate('tanggal', $tanggal)
                 ->when($currentSession !== 'mysql', function($query) use ($currentSession) {
-                    // Jika di unit lokal, filter berdasarkan unit_source
                     $query->whereHas('powerPlant', function($q) use ($currentSession) {
                         $q->where('unit_source', $currentSession);
                     });
                 })
                 ->get();
-
-            Log::info("Data retrieved successfully", [
-                'log_count' => $logs->count(),
-                'hop_count' => $hops->count(),
-                'session' => $currentSession
-            ]);
 
             return response()->json([
                 'success' => true,
@@ -195,6 +193,7 @@ class PembangkitController extends Controller
                     'logs' => $logs->map(function($log) {
                         return [
                             'machine_id' => $log->machine_id,
+                            'unit_id' => $log->unit_id,
                             'tanggal' => $log->tanggal,
                             'status' => $log->status ?? '',
                             'dmn' => $log->dmn,
@@ -207,7 +206,8 @@ class PembangkitController extends Controller
                             'action_plan' => $log->action_plan,
                             'progres' => $log->progres,
                             'tanggal_mulai' => $log->tanggal_mulai ? $log->tanggal_mulai->format('Y-m-d') : null,
-                            'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null
+                            'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null,
+                            'updated_at' => $log->updated_at
                         ];
                     }),
                     'hops' => $hops->map(function($hop) {

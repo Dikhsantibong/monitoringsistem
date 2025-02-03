@@ -109,89 +109,111 @@
     <!-- Halaman Score Card -->
     @if(!empty($allScoreCards))
         @foreach($allScoreCards as $unitName => $data)
-            @if($loop->iteration > 1)
-                <div class="page-break"></div>
-            @endif
-            
-            <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
-            
-            <div class="header">
-                <h2>SCORE CARD DAILY</h2>
-                <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
-                <p>Lokasi: {{ $unitName }}</p>
-                <p>Waktu: {{ \Carbon\Carbon::parse($data['waktu_mulai'])->format('H:i') }} - 
-                         {{ \Carbon\Carbon::parse($data['waktu_selesai'])->format('H:i') }}</p>
-            </div>
-
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th style="width: 5%">No</th>   
-                        <th style="width: 27%">Peserta</th>
-                        <th style="width: 10%">Awal</th>
-                        <th style="width: 10%">Akhir</th>
-                        <th style="width: 13%">Skor</th>
-                        <th>Keterangan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($data['peserta'] as $peserta)
-                        <tr>
-                            <td style="text-align: center;">{{ $loop->iteration }}</td>
-                            <td>{{ $peserta['jabatan'] }}</td>
-                            <td style="text-align: center;">{{ $peserta['skor'] == 50 ? 0 : '' }}</td>
-                            <td style="text-align: center;">{{ $peserta['skor'] == 100 ? 1 : '' }}</td>
-                            <td style="text-align: center;">{{ $peserta['skor'] }}</td>
-                            <td class="keterangan">{{ $peserta['keterangan'] }}</td>
-                        </tr>
-                    @endforeach
-
-                    <!-- Ketentuan Rapat -->
-                    @php
-                        $ketentuanFields = [
-                            ['label' => 'Ketepatan waktu mulai', 'value' => 'skor_waktu_mulai', 'start' => 'Start', 'end' => $data['waktu_mulai'], 'keterangan' => '-10 per 3 menit keterlambatan'],
-                            ['label' => 'Kesiapan Panitia', 'value' => 'kesiapan_panitia', 'keterangan' => '-20 per peralatan tidak siap'],
-                            ['label' => 'Kesiapan Bahan', 'value' => 'kesiapan_bahan', 'keterangan' => '-20 per bahan tidak siap'],
-                            ['label' => 'Aktivitas Luar', 'value' => 'aktivitas_luar', 'keterangan' => '-10 per gangguan'],
-                            ['label' => 'Gangguan Diskusi', 'value' => 'gangguan_diskusi', 'keterangan' => '-10 per gangguan'],
-                            ['label' => 'Gangguan Keluar Masuk', 'value' => 'gangguan_keluar_masuk', 'keterangan' => '-10 per gangguan'],
-                            ['label' => 'Gangguan Interupsi', 'value' => 'gangguan_interupsi', 'keterangan' => '-10 per gangguan'],
-                            ['label' => 'Ketegasan Moderator', 'value' => 'ketegasan_moderator', 'keterangan' => 'Obyektif'],
-                            ['label' => 'Kelengkapan SR', 'value' => 'kelengkapan_sr', 'keterangan' => 'Kaidah, Dokumentasi, CMMS']
-                        ];
-                    @endphp
-
-                    @foreach($ketentuanFields as $index => $field)
-                        <tr>
-                            <td style="text-align: center;">{{ count($data['peserta']) + $loop->iteration }}</td>
-                            <td>{{ $field['label'] }}</td>
-                            <td style="text-align: center;">{{ $field['start'] ?? '' }}</td>
-                            <td style="text-align: center;">
-                                @if(isset($field['end']))
-                                    {{ \Carbon\Carbon::parse($field['end'])->format('H:i') }}
-                                @endif
-                            </td>
-                            <td style="text-align: center;">{{ $data[$field['value']] }}</td>
-                            <td class="keterangan">{{ $field['keterangan'] }}</td>
-                        </tr>
-                    @endforeach
-
-                    <!-- Total Score -->
-                    @php
-                        $totalScorePeserta = collect($data['peserta'])->sum('skor');
-                        $totalScoreKetentuan = collect($ketentuanFields)->sum(function($field) use ($data) {
-                            return $data[$field['value']] ?? 0;
-                        });
-                        $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
-                    @endphp
+            @php
+                $currentSession = session('unit');
+                $shouldDisplay = false;
+                
+                // Jika login sebagai mysql (admin), tampilkan semua unit
+                if ($currentSession === 'mysql') {
+                    $shouldDisplay = true;
+                } else {
+                    // Untuk unit lain, hanya tampilkan data unit mereka sendiri
+                    $unitMapping = [
+                        'mysql_wua_wua' => 'Wua Wua',
+                        'mysql_bau_bau' => 'Bau Bau',
+                        'mysql_poasia' => 'Poasia',
+                        'mysql_kolaka' => 'Kolaka'
+                    ];
                     
-                    <tr class="total-row">
-                        <td colspan="4" style="text-align: right;">Total Score:</td>
-                        <td style="text-align: center;">{{ $grandTotal }}</td>
-                        <td>Total score peserta dan ketentuan</td>
-                    </tr>
-                </tbody>
-            </table>
+                    $shouldDisplay = ($currentSession && isset($unitMapping[$currentSession]) && $unitName === $unitMapping[$currentSession]);
+                }
+            @endphp
+
+            @if($shouldDisplay)
+                @if($loop->iteration > 1)
+                    <div class="page-break"></div>
+                @endif
+                
+                <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
+                
+                <div class="header">
+                    <h2>SCORE CARD DAILY</h2>
+                    <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+                    <p>Lokasi: {{ $unitName }}</p>
+                    <p>Waktu: {{ \Carbon\Carbon::parse($data['waktu_mulai'])->format('H:i') }} - 
+                             {{ \Carbon\Carbon::parse($data['waktu_selesai'])->format('H:i') }}</p>
+                </div>
+
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%">No</th>   
+                            <th style="width: 27%">Peserta</th>
+                            <th style="width: 10%">Awal</th>
+                            <th style="width: 10%">Akhir</th>
+                            <th style="width: 13%">Skor</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($data['peserta'] as $peserta)
+                            <tr>
+                                <td style="text-align: center;">{{ $loop->iteration }}</td>
+                                <td>{{ $peserta['jabatan'] }}</td>
+                                <td style="text-align: center;">{{ $peserta['skor'] == 50 ? 0 : '' }}</td>
+                                <td style="text-align: center;">{{ $peserta['skor'] == 100 ? 1 : '' }}</td>
+                                <td style="text-align: center;">{{ $peserta['skor'] }}</td>
+                                <td class="keterangan">{{ $peserta['keterangan'] }}</td>
+                            </tr>
+                        @endforeach
+
+                        <!-- Ketentuan Rapat -->
+                        @php
+                            $ketentuanFields = [
+                                ['label' => 'Ketepatan waktu mulai', 'value' => 'skor_waktu_mulai', 'start' => 'Start', 'end' => $data['waktu_mulai'], 'keterangan' => '-10 per 3 menit keterlambatan'],
+                                ['label' => 'Kesiapan Panitia', 'value' => 'kesiapan_panitia', 'keterangan' => '-20 per peralatan tidak siap'],
+                                ['label' => 'Kesiapan Bahan', 'value' => 'kesiapan_bahan', 'keterangan' => '-20 per bahan tidak siap'],
+                                ['label' => 'Aktivitas Luar', 'value' => 'aktivitas_luar', 'keterangan' => '-10 per gangguan'],
+                                ['label' => 'Gangguan Diskusi', 'value' => 'gangguan_diskusi', 'keterangan' => '-10 per gangguan'],
+                                ['label' => 'Gangguan Keluar Masuk', 'value' => 'gangguan_keluar_masuk', 'keterangan' => '-10 per gangguan'],
+                                ['label' => 'Gangguan Interupsi', 'value' => 'gangguan_interupsi', 'keterangan' => '-10 per gangguan'],
+                                ['label' => 'Ketegasan Moderator', 'value' => 'ketegasan_moderator', 'keterangan' => 'Obyektif'],
+                                ['label' => 'Kelengkapan SR', 'value' => 'kelengkapan_sr', 'keterangan' => 'Kaidah, Dokumentasi, CMMS']
+                            ];
+                        @endphp
+
+                        @foreach($ketentuanFields as $index => $field)
+                            <tr>
+                                <td style="text-align: center;">{{ count($data['peserta']) + $loop->iteration }}</td>
+                                <td>{{ $field['label'] }}</td>
+                                <td style="text-align: center;">{{ $field['start'] ?? '' }}</td>
+                                <td style="text-align: center;">
+                                    @if(isset($field['end']))
+                                        {{ \Carbon\Carbon::parse($field['end'])->format('H:i') }}
+                                    @endif
+                                </td>
+                                <td style="text-align: center;">{{ $data[$field['value']] }}</td>
+                                <td class="keterangan">{{ $field['keterangan'] }}</td>
+                            </tr>
+                        @endforeach
+
+                        <!-- Total Score -->
+                        @php
+                            $totalScorePeserta = collect($data['peserta'])->sum('skor');
+                            $totalScoreKetentuan = collect($ketentuanFields)->sum(function($field) use ($data) {
+                                return $data[$field['value']] ?? 0;
+                            });
+                            $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+                        @endphp
+                        
+                        <tr class="total-row">
+                            <td colspan="4" style="text-align: right;">Total Score:</td>
+                            <td style="text-align: center;">{{ $grandTotal }}</td>
+                            <td>Total score peserta dan ketentuan</td>
+                        </tr>
+                    </tbody>
+                </table>
+            @endif
         @endforeach
     @else
         <div class="error">

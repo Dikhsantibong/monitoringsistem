@@ -145,48 +145,118 @@ class LaporanController extends Controller
         try {
             DB::beginTransaction();
 
-            // Cek duplikasi ID di semua koneksi database
-            $connections = ['mysql', 'mysql_wua_wua', 'mysql_poasia', 'mysql_kolaka', 'mysql_bau_bau'];
-            foreach ($connections as $connection) {
-                $exists = DB::connection($connection)
-                           ->table('work_orders')
-                           ->where('id', $request->wo_id)
-                           ->exists();
-                
-                if ($exists) {
-                    throw new \Exception("ID WO {$request->wo_id} sudah ada di database {$connection}");
-                }
-            }
+            // 1. Dapatkan power plant dan unit source
+            $powerPlant = PowerPlant::findOrFail($request->unit);
+            $unitSource = $powerPlant->unit_source ?? 'mysql';
 
-            // Jika tidak ada duplikasi, lanjutkan proses yang sudah ada
-            $workOrder = WorkOrder::create([
-                'id' => $request->wo_id,
+            // 2. Fungsi untuk mendapatkan ID yang tersedia
+            $getAvailableId = function($baseId) use ($unitSource) {
+                $id = $baseId;
+                $maxAttempts = 100; // Batasi jumlah percobaan
+                $attempt = 0;
+
+                while ($attempt < $maxAttempts) {
+                    // Cek di semua database
+                    $exists = false;
+                    $connections = ['mysql', 'mysql_wua_wua', 'mysql_poasia', 'mysql_kolaka', 'mysql_bau_bau'];
+                    
+                    foreach ($connections as $connection) {
+                        try {
+                            $check = DB::connection($connection)
+                                ->table('work_orders')
+                                ->where('id', $id)
+                                ->exists();
+                            
+                            if ($check) {
+                                $exists = true;
+                                break;
+                            }
+                        } catch (\Exception $e) {
+                            continue;
+                        }
+                    }
+
+                    if (!$exists) {
+                        return $id;
+                    }
+
+                    $id++; // Coba ID berikutnya
+                    $attempt++;
+                }
+
+                throw new \Exception("Tidak dapat menemukan ID yang tersedia setelah $maxAttempts percobaan");
+            };
+
+            // 3. Dapatkan ID yang tersedia
+            $woId = $getAvailableId($request->wo_id);
+
+            Log::info('Using WO ID:', [
+                'original_id' => $request->wo_id,
+                'final_id' => $woId,
+                'unit_source' => $unitSource
+            ]);
+
+            // 4. Insert data dengan ID yang sudah diverifikasi
+            $insertData = [
+                'id' => $woId,
                 'description' => $request->description,
                 'type' => $request->type,
-                'status' => $request->status,
+                'status' => 'Open',
                 'priority' => $request->priority,
                 'schedule_start' => $request->schedule_start,
                 'schedule_finish' => $request->schedule_finish,
                 'power_plant_id' => $request->unit,
+                'unit_source' => $unitSource,
                 'is_active' => true,
-                'is_backlogged' => false
-            ]);
+                'is_backlogged' => false,
+                'created_at' => now(),
+                'updated_at' => now()
+            ];
+
+            // 5. Insert ke database unit
+            DB::connection($unitSource)
+                ->table('work_orders')
+                ->insert($insertData);
+
+            // 6. Sinkronisasi ke database utama jika berbeda
+            if ($unitSource !== 'mysql') {
+                try {
+                    DB::connection('mysql')
+                        ->table('work_orders')
+                        ->insert($insertData);
+                } catch (\Exception $e) {
+                    Log::warning('Sync to main DB failed:', [
+                        'error' => $e->getMessage(),
+                        'wo_id' => $woId
+                    ]);
+                }
+            }
 
             DB::commit();
+
+            // 7. Return response dengan ID yang digunakan
             return response()->json([
                 'success' => true,
-                'message' => 'Work Order berhasil ditambahkan'
+                'message' => 'Work Order berhasil ditambahkan',
+                'data' => [
+                    'wo_id' => $woId,
+                    'original_id' => $request->wo_id
+                ]
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Failed to create WO:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menambahkan Work Order: ' . $e->getMessage()
             ], 500);
         }
     }
-    
 
     public function srWoClosed()
     {

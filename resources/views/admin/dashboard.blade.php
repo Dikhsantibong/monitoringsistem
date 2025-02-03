@@ -180,7 +180,7 @@
                     <!-- Card Kehadiran Rapat -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Score Card Daily</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">Score Peserta</h3>
                             <div class="flex space-x-2">
                                 <button onclick="toggleChartType('meetingChart', 'line')"
                                     class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
@@ -387,11 +387,11 @@
                 });
             });
 
-            // Data untuk Ketepatan Waktu (Kehadiran)
+            // Data untuk Ketepatan Waktu
             const activityData = {
                 labels: formattedDates,
                 datasets: [{
-                    label: 'Persentase Kehadiran Tepat Waktu',
+                    label: 'Skor Ketepatan Waktu',
                     data: chartData.scoreCardData.scores,
                     borderColor: 'rgb(59, 130, 246)',
                     backgroundColor: 'rgba(59, 130, 246, 0.5)',
@@ -457,29 +457,11 @@
                     scales: {
                         ...commonOptions.scales,
                         y: {
-                            beginAtZero: true,
+                            ...commonOptions.scales.y,
                             max: 100,
                             ticks: {
                                 callback: function(value) {
                                     return value + '%';
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Kehadiran Tepat Waktu: ${context.raw}%`;
                                 }
                             }
                         }
@@ -712,6 +694,9 @@
                 }]
             };
 
+            // Debug: Log data komitmen
+            console.log('Commitment Data:', chartData.commitmentData);
+
             // Inisialisasi Other Discussion Chart
             otherDiscussionChart = new Chart(document.getElementById('otherDiscussionChart'), {
                 type: 'pie',
@@ -747,41 +732,26 @@
                                 size: 14,
                                 weight: 'bold'
                             }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw || 0;
+                                    const label = context.label || '';
+                                    return `${label}: ${value}`;
+                                }
+                            }
                         }
                     }
                 }
             });
 
-            // Update stats dengan format yang lebih rapi
-            function updateChartStats() {
-                // Update stats untuk SR
-                const srStats = document.getElementById('srStats');
-                const srTotal = srData.datasets[0].data.reduce((a, b) => a + b, 0);
-                srStats.innerHTML = `Total: ${srTotal} | Open: ${srData.datasets[0].data[0]} | Closed: ${srData.datasets[0].data[1]}`;
-
-                // Update stats untuk WO
-                const woStats = document.getElementById('woStats');
-                const woTotal = woData.datasets[0].data.reduce((a, b) => a + b, 0);
-                woStats.innerHTML = `Total: ${woTotal} | Open: ${woData.datasets[0].data[0]} | Closed: ${woData.datasets[0].data[1]}`;
-
-                // Update stats untuk WO Backlog
-                const woBacklogStats = document.getElementById('woBacklogStats');
-                const backlogTotal = woBacklogData.datasets[0].data.reduce((a, b) => a + b, 0);
-                woBacklogStats.innerHTML = `Total: ${backlogTotal} | High: ${woBacklogData.datasets[0].data[0]} | Medium: ${woBacklogData.datasets[0].data[1]} | Low: ${woBacklogData.datasets[0].data[2]}`;
-
-                // Update stats untuk Other Discussion
-                const otherDiscussionStats = document.getElementById('otherDiscussionStats');
-                const otherDiscussionTotal = otherDiscussionData.datasets[0].data.reduce((a, b) => a + b, 0);
-                otherDiscussionStats.innerHTML = `Total: ${otherDiscussionTotal} | Open: ${otherDiscussionData.datasets[0].data[0]} | Closed: ${otherDiscussionData.datasets[0].data[1]}`;
-
-                // Update stats untuk Commitment
-                const commitmentStats = document.getElementById('commitmentStats');
+            // Update stats untuk commitment
+            const commitmentStats = document.getElementById('commitmentStats');
+            if (commitmentStats) {
                 const commitmentTotal = commitmentData.datasets[0].data.reduce((a, b) => a + b, 0);
                 commitmentStats.innerHTML = `Total: ${commitmentTotal} | Open: ${commitmentData.datasets[0].data[0]} | Closed: ${commitmentData.datasets[0].data[1]}`;
             }
-
-            // Panggil fungsi update stats setelah chart diinisialisasi
-            updateChartStats();
         });
 
         // Fungsi untuk mengubah tipe chart

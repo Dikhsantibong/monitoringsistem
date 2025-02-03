@@ -52,6 +52,7 @@ class WorkOrder extends Model
     }
 
     public function getConnectionName()
+    
     {
         return session('unit', 'mysql');
     }
@@ -60,6 +61,16 @@ class WorkOrder extends Model
     {
         parent::boot();
         
+        static::creating(function ($model) {
+            Log::info('Creating WO - Pre-save check:', [
+                'wo_id' => $model->id,
+                'connection' => $model->getConnectionName(),
+                'exists' => static::on($model->getConnectionName())
+                    ->where('id', $model->id)
+                    ->exists()
+            ]);
+        });
+
         static::created(function ($workOrder) {
             self::syncData('create', $workOrder);
         });
