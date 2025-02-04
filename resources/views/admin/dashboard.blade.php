@@ -160,7 +160,7 @@
                     <!-- Card Ketepatan Waktu -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Ketepatan Waktu</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">Persentasi Kehadiran</h3>
                             <div class="flex space-x-2">
                                 <button onclick="toggleChartType('activityChart', 'line')"
                                     class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
@@ -391,7 +391,7 @@
             const activityData = {
                 labels: formattedDates,
                 datasets: [{
-                    label: 'Skor Ketepatan Waktu',
+                    label: 'Score Persentasi Kehadiran',
                     data: chartData.scoreCardData.scores,
                     borderColor: 'rgb(59, 130, 246)',
                     backgroundColor: 'rgba(59, 130, 246, 0.5)',
