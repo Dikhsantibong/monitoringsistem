@@ -666,7 +666,7 @@ function confirmDelete(machineId, machineName) {
         title: 'Verifikasi Password',
         html: `
             <p class="mb-3">Mesin "${machineName}" akan dihapus secara permanen!</p>
-            <input type="password" id="password" class="swal2-input" placeholder="Masukkan password Anda">
+            <input type="password" id="swal-password" class="swal2-input" placeholder="Masukkan password Anda">
         `,
         icon: 'warning',
         showCancelButton: true,
@@ -675,7 +675,7 @@ function confirmDelete(machineId, machineName) {
         confirmButtonText: 'Ya, hapus!',
         cancelButtonText: 'Batal',
         preConfirm: () => {
-            const password = document.getElementById('password').value;
+            const password = document.getElementById('swal-password').value;
             if (!password) {
                 Swal.showValidationMessage('Password harus diisi');
                 return false;
@@ -694,6 +694,7 @@ function confirmDelete(machineId, machineName) {
             passwordInput.value = password;
             form.appendChild(passwordInput);
             
+            // Submit form
             form.submit();
         }
     });
