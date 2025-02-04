@@ -171,15 +171,29 @@ class PembangkitController extends Controller
             $tanggal = $request->tanggal ?? now()->toDateString();
             $currentSession = session('unit', 'mysql');
 
-            // Modifikasi query untuk include unit_id dan updated_at
+            // Subquery untuk mendapatkan tanggal terakhir update untuk setiap mesin
+            $lastUpdateDates = MachineStatusLog::select('machine_id', DB::raw('MAX(tanggal) as last_date'))
+                ->groupBy('machine_id');
+
+            // Modifikasi query untuk mengambil data terakhir untuk setiap mesin
             $logs = MachineStatusLog::with(['machine.powerPlant'])
                 ->select('machine_status_logs.*', 'machines.power_plant_id as unit_id')
                 ->join('machines', 'machines.id', 'machine_status_logs.machine_id')
-                ->whereDate('tanggal', $tanggal)
+                ->joinSub($lastUpdateDates, 'last_updates', function ($join) {
+                    $join->on('machine_status_logs.machine_id', '=', 'last_updates.machine_id')
+                        ->on('machine_status_logs.tanggal', '=', 'last_updates.last_date');
+                })
                 ->get();
 
+            // Ambil data HOP terakhir untuk setiap unit
+            $lastHopDates = UnitOperationHour::select('power_plant_id', DB::raw('MAX(tanggal) as last_date'))
+                ->groupBy('power_plant_id');
+
             $hops = UnitOperationHour::with('powerPlant')
-                ->whereDate('tanggal', $tanggal)
+                ->joinSub($lastHopDates, 'last_updates', function ($join) {
+                    $join->on('unit_operation_hours.power_plant_id', '=', 'last_updates.power_plant_id')
+                        ->on('unit_operation_hours.tanggal', '=', 'last_updates.last_date');
+                })
                 ->when($currentSession !== 'mysql', function($query) use ($currentSession) {
                     $query->whereHas('powerPlant', function($q) use ($currentSession) {
                         $q->where('unit_source', $currentSession);
