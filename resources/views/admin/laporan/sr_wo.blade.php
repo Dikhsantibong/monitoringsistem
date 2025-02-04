@@ -342,6 +342,8 @@
                                         </th>
                                         <th class="py-2 px-4 border-b">Type</th>
                                         <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">Kendala</th>
+                                        <th class="py-2 px-4 border-b">Tindak Lanjut</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">
                                                 <span>Status</span>
@@ -412,6 +414,12 @@
                                                 </span>
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ $wo->kendala }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ $wo->tindak_lanjut }}
+                                            </td>
                                             <td data-column="status" class="py-2 px-4 border border-gray-200">
                                                 <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
                                                     {{ $wo->status }}

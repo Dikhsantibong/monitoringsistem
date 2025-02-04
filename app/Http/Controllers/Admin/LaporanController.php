@@ -48,7 +48,9 @@ class LaporanController extends Controller
             $workOrders = WorkOrder::with(['powerPlant:id,name'])
                 ->select([
                     'id', 
-                    'description', 
+                    'description',
+                    'kendala',
+                    'tindak_lanjut',
                     'status', 
                     'created_at', 
                     'priority', 
@@ -200,6 +202,8 @@ class LaporanController extends Controller
             $insertData = [
                 'id' => $woId,
                 'description' => $request->description,
+                'kendala' => $request->kendala,
+                'tindak_lanjut' => $request->tindak_lanjut,
                 'type' => $request->type,
                 'status' => 'Open',
                 'priority' => $request->priority,
@@ -764,6 +768,8 @@ class LaporanController extends Controller
 
             $workOrder->update([
                 'description' => $request->description,
+                'kendala' => $request->kendala,
+                'tindak_lanjut' => $request->tindak_lanjut,
                 'type' => $request->type,
                 'priority' => $request->priority,
                 'schedule_start' => $request->schedule_start,

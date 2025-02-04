@@ -17,6 +17,8 @@ class WorkOrder extends Model
     protected $fillable = [
         'id',
         'description',
+        'kendala',
+        'tindak_lanjut',
         'type',
         'status',
         'priority',
