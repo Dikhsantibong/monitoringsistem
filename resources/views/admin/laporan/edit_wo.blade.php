@@ -33,6 +33,16 @@
                     </div>
 
                     <div class="mb-4">
+                        <label for="kendala" class="block text-gray-700">Kendala</label>
+                        <textarea name="kendala" id="kendala" class="w-full px-3 py-2 border rounded-md">{{ $workOrder->kendala ?? '' }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="tindak_lanjut" class="block text-gray-700">Tindak Lanjut</label>
+                        <textarea name="tindak_lanjut" id="tindak_lanjut" class="w-full px-3 py-2 border rounded-md">{{ $workOrder->tindak_lanjut ?? '' }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
                         <label for="type" class="block text-gray-700">Type WO</label>
                         <select name="type" id="type" class="w-full px-3 py-2 border rounded-md" required>
                             @foreach(['CM', 'PM', 'PDM', 'PAM', 'OH', 'EJ', 'EM'] as $type)
@@ -156,20 +166,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Tambahkan fungsi autoresize untuk textarea
-    const textarea = document.getElementById('description');
-    
     // Fungsi untuk menyesuaikan tinggi textarea
     function autoResize() {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';
     }
     
-    // Panggil autoResize saat halaman dimuat untuk menyesuaikan dengan konten awal
-    textarea.addEventListener('input', autoResize);
-    
-    // Trigger sekali saat halaman dimuat
-    autoResize.call(textarea);
+    // Terapkan autoResize ke semua textarea
+    const textareas = ['description', 'kendala', 'tindak_lanjut'];
+    textareas.forEach(id => {
+        const textarea = document.getElementById(id);
+        textarea.addEventListener('input', autoResize);
+        // Trigger sekali saat halaman dimuat untuk menyesuaikan dengan konten awal
+        autoResize.call(textarea);
+    });
 });
 </script>
 @endpush
