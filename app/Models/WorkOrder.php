@@ -216,6 +216,10 @@ class WorkOrder extends Model
 
     public function getDocumentUrlAttribute()
     {
-        return $this->document_path ? asset('storage/' . $this->document_path) : null;
+        if ($this->document_path) {
+            // Pastikan path lengkap
+            return url('storage/' . $this->document_path);
+        }
+        return null;
     }
 }   

@@ -439,11 +439,11 @@
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 @if($wo->document_path)
-                                                    <a href="{{ $wo->document_url }}" 
-                                                       target="_blank"
-                                                       class="text-blue-600 hover:text-blue-800 flex items-center">
+                                                    <a href="{{ route('admin.laporan.download-document', $wo->id) }}" 
+                                                       class="text-blue-600 hover:text-blue-800 flex items-center"
+                                                       target="_blank">
                                                         <i class="fas fa-file-alt mr-2"></i>
-                                                        Lihat Dokumen
+                                                        {{ $wo->document_description ?? 'Lihat Dokumen' }}
                                                     </a>
                                                 @else
                                                     -
@@ -1611,6 +1611,40 @@
     setInterval(checkExpiredWorkOrders, 60000);
     // Jalankan pengecekan saat halaman dimuat
     document.addEventListener('DOMContentLoaded', checkExpiredWorkOrders);
+
+    function verifyAndOpenDocument(url, fileName) {
+        console.log('Verifying document access:', url);
+        
+        fetch(url, { 
+            method: 'HEAD',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (response.ok) {
+                console.log('Document found, opening...');
+                window.open(url, '_blank');
+            } else {
+                console.error('Document not found:', response.status);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Dokumen tidak ditemukan atau tidak dapat diakses'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error accessing document:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan saat mengakses dokumen'
+            });
+        });
+    }
 </script>
 
 <!-- Add this style -->

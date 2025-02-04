@@ -764,8 +764,21 @@ class LaporanController extends Controller
             DB::beginTransaction();
 
             $workOrder = WorkOrder::findOrFail($id);
-            $powerPlant = PowerPlant::find($workOrder->power_plant_id);
+            
+            // Validasi input
+            $request->validate([
+                'description' => 'required',
+                'kendala' => 'nullable',
+                'tindak_lanjut' => 'nullable',
+                'type' => 'required|in:CM,PM,PDM,PAM,OH,EJ,EM',
+                'priority' => 'required|in:emergency,normal,outage,urgent',
+                'schedule_start' => 'required|date',
+                'schedule_finish' => 'required|date|after_or_equal:schedule_start',
+                'unit' => 'required|exists:power_plants,id',
+                'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120'
+            ]);
 
+            // Data yang akan diupdate
             $data = [
                 'description' => $request->description,
                 'kendala' => $request->kendala,
@@ -786,12 +799,40 @@ class LaporanController extends Controller
                     Storage::delete('public/' . $workOrder->document_path);
                 }
 
-                // Upload dokumen baru
-                $path = $file->store('work-orders', 'public');
+                // Generate nama file yang aman
+                $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+                
+                // Simpan file
+                $path = $file->storeAs('work-orders', $fileName, 'public');
+                
+                // Log untuk debugging
+                \Log::info('Document Upload:', [
+                    'original_name' => $file->getClientOriginalName(),
+                    'stored_path' => $path,
+                    'full_url' => asset('storage/' . $path),
+                    'exists' => Storage::exists('public/' . $path)
+                ]);
+
                 $data['document_path'] = $path;
             }
 
+            // Update data WO
             $workOrder->update($data);
+
+            // Sinkronisasi ke database utama jika berbeda
+            if ($workOrder->unit_source !== 'mysql') {
+                try {
+                    DB::connection('mysql')
+                        ->table('work_orders')
+                        ->where('id', $workOrder->id)
+                        ->update($data);
+                } catch (\Exception $e) {
+                    Log::warning('Sync to main DB failed:', [
+                        'error' => $e->getMessage(),
+                        'wo_id' => $workOrder->id
+                    ]);
+                }
+            }
 
             DB::commit();
 
@@ -813,5 +854,67 @@ class LaporanController extends Controller
                 'message' => 'Gagal mengupdate Work Order: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function downloadDocument($id)
+    {
+        try {
+            $workOrder = WorkOrder::findOrFail($id);
+            
+            if (!$workOrder->document_path) {
+                return back()->with('error', 'Dokumen tidak ditemukan');
+            }
+
+            $path = storage_path('app/public/' . $workOrder->document_path);
+            
+            if (!file_exists($path)) {
+                \Log::error('Document file not found:', ['path' => $path]);
+                return back()->with('error', 'File tidak ditemukan di server');
+            }
+
+            // Dapatkan ekstensi file dari path
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            
+            // Tentukan mime type berdasarkan ekstensi
+            $mime = $this->getMimeType($extension);
+
+            // Gunakan nama file asli dari document_description atau nama file di path
+            $fileName = $workOrder->document_description ?? basename($path);
+
+            \Log::info('Downloading document:', [
+                'path' => $path,
+                'mime' => $mime,
+                'extension' => $extension,
+                'filename' => $fileName
+            ]);
+
+            return response()->file($path, [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error downloading document:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Gagal mengunduh dokumen');
+        }
+    }
+
+    private function getMimeType($extension)
+    {
+        $mimes = [
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png'
+        ];
+
+        return $mimes[strtolower($extension)] ?? 'application/octet-stream';
     }
 }

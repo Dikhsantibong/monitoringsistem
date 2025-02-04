@@ -10,6 +10,7 @@ use App\Models\PowerPlant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class LaporanDeleteController extends Controller
 {
@@ -79,6 +80,40 @@ class LaporanDeleteController extends Controller
             return redirect()
                 ->route('admin.laporan.manage')
                 ->with('error', 'Terjadi kesalahan saat menghapus data');
+        }
+    }
+
+    public function updateWO(Request $request, $id)
+    {
+        try {
+            // ... kode lainnya ...
+
+            if ($request->hasFile('document')) {
+                $file = $request->file('document');
+                
+                // Hapus dokumen lama jika ada
+                if ($workOrder->document_path && Storage::exists('public/' . $workOrder->document_path)) {
+                    Storage::delete('public/' . $workOrder->document_path);
+                }
+
+                // Generate nama file yang aman
+                $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+                
+                // Simpan file
+                $path = $file->storeAs('work-orders', $fileName, 'public');
+                
+                // Log untuk debugging
+                \Log::info('Document Upload:', [
+                    'original_name' => $file->getClientOriginalName(),
+                    'stored_path' => $path,
+                    'full_url' => asset('storage/' . $path),
+                    'exists' => Storage::exists('public/' . $path)
+                ]);
+
+                $data['document_path'] = $path;
+            }
+
+            // ... kode lainnya ...
         }
     }
 } 
