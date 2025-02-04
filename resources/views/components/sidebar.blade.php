@@ -20,8 +20,8 @@
                 <span class="ml-3 text-base">Dashboard</span>
             </a>
 
-            <a href="{{ route('admin.pembangkit.ready') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.pembangkit.ready') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+            <a href="{{ route('admin.machine-status.view') }}"
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-status.view') || request()->routeIs('admin.machine-status.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-check w-6 h-6"></i>
                 <span class="ml-3 text-base">Kesiapan Pembangkit</span>
             </a>

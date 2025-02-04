@@ -68,9 +68,18 @@
             <div class="bg-white rounded-lg shadow p-3 sm:p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-semibold text-gray-800">Pembahasan Lain-lain</h2>
-                    <a href="{{ route('admin.other-discussions.create') }}" class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
-                        <i class="fas fa-plus mr-2"></i> Tambah Data
-                    </a>
+                    <div class="flex items-center space-x-1"> <!-- Menggunakan space-x-1 untuk jarak lebih dekat -->
+                        <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
+                           title="Link Maximo" 
+                           target="_blank" 
+                           class="text-blue-500 hover:underline flex items-center"> <!-- Menambahkan flex untuk menyelaraskan logo dan teks -->
+                            <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-6 mr-1"> <!-- Ukuran logo diperkecil -->
+                            Link Maximo
+                        </a>
+                        <a href="{{ route('admin.other-discussions.create') }}" class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
+                            <i class="fas fa-plus mr-2"></i> Tambah Data
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Alert Messages -->

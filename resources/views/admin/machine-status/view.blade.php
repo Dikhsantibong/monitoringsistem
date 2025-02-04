@@ -102,6 +102,14 @@
                                 class="border rounded px-3 py-2 text-sm w-64"
                                 value="{{ request('search') }}">
                         </div>
+
+                        <!-- Update Mesin Button -->
+                        <div>
+                            <a href="{{ route('admin.pembangkit.ready') }}" 
+                               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Update Mesin
+                            </a>
+                        </div>
                     </div>
                 </div>
 
