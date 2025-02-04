@@ -370,6 +370,7 @@
                                         <th class="py-2 px-4 border-b">Priority</th>
                                         <th class="py-2 px-4 border-b">Schedule Start</th>
                                         <th class="py-2 px-4 border-b">Schedule Finish</th>
+                                        <th class="py-2 px-4 border-b">Dokumen</th>
                                         <th class="py-2 px-4 border-b">Aksi</th>
                                     </tr>
                                 </thead>
@@ -414,12 +415,8 @@
                                                 </span>
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                {{ $wo->kendala }}
-                                            </td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                {{ $wo->tindak_lanjut }}
-                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->kendala ?? '-' }}</td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->tindak_lanjut ?? '-' }}</td>
                                             <td data-column="status" class="py-2 px-4 border border-gray-200">
                                                 <span class="bg-{{ $wo->status == 'Open' ? 'red-500' : ($wo->status == 'Closed' ? 'green-500' : ($wo->status == 'WAPPR' ? 'yellow-500' : 'gray-500')) }} text-white rounded-full px-2 py-1">
                                                     {{ $wo->status }}
@@ -439,6 +436,18 @@
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 {{ $wo->schedule_finish }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                @if($wo->document_path)
+                                                    <a href="{{ $wo->document_url }}" 
+                                                       target="_blank"
+                                                       class="text-blue-600 hover:text-blue-800 flex items-center">
+                                                        <i class="fas fa-file-alt mr-2"></i>
+                                                        Lihat Dokumen
+                                                    </a>
+                                                @else
+                                                    -
+                                                @endif
                                             </td>
                                             <td data-column="action" class="py-2 px-4 border border-gray-200">
                                                 <div class="flex space-x-2">

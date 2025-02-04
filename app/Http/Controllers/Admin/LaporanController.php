@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 
 class LaporanController extends Controller
@@ -44,13 +45,14 @@ class LaporanController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(25);
 
-            // 3. Optimasi query Work Orders
+            // 3. Optimasi query Work Orders dengan kolom baru
             $workOrders = WorkOrder::with(['powerPlant:id,name'])
                 ->select([
                     'id', 
                     'description',
-                    'kendala',
-                    'tindak_lanjut',
+                    'kendala',           // Tambahkan kolom baru
+                    'tindak_lanjut',     // Tambahkan kolom baru
+                    'document_path',      // Tambahkan kolom baru
                     'status', 
                     'created_at', 
                     'priority', 
@@ -62,7 +64,6 @@ class LaporanController extends Controller
                     'is_active',
                     'is_backlogged'
                 ])
-                
                 ->latest()
                 ->take(100)
                 ->get();
@@ -72,7 +73,9 @@ class LaporanController extends Controller
                 ->select([
                     'id', 
                     'no_wo', 
-                    'deskripsi', 
+                    'deskripsi',
+                    'kendala',           // Tambahkan kolom baru
+                    'tindak_lanjut',     // Tambahkan kolom baru 
                     'tanggal_backlog', 
                     'keterangan', 
                     'status', 
@@ -88,6 +91,12 @@ class LaporanController extends Controller
             $srCount = $serviceRequests->total();
             $woCount = $workOrders->count();
             $backlogCount = $woBacklogs->count();
+
+            // Debug log untuk memeriksa data
+            Log::info('Work Orders Data:', [
+                'count' => $woCount,
+                'sample' => $workOrders->first()
+            ]);
 
             // 6. Return view dengan semua data yang diperlukan
             return view('admin.laporan.sr_wo', compact(
@@ -202,8 +211,6 @@ class LaporanController extends Controller
             $insertData = [
                 'id' => $woId,
                 'description' => $request->description,
-                'kendala' => $request->kendala,
-                'tindak_lanjut' => $request->tindak_lanjut,
                 'type' => $request->type,
                 'status' => 'Open',
                 'priority' => $request->priority,
@@ -759,14 +766,7 @@ class LaporanController extends Controller
             $workOrder = WorkOrder::findOrFail($id);
             $powerPlant = PowerPlant::find($workOrder->power_plant_id);
 
-            Log::info('Updating WO:', [
-                'wo_id' => $id,
-                'unit_source' => $powerPlant->unit_source ?? 'unknown',
-                'old_data' => $workOrder->toArray(),
-                'new_data' => $request->all()
-            ]);
-
-            $workOrder->update([
+            $data = [
                 'description' => $request->description,
                 'kendala' => $request->kendala,
                 'tindak_lanjut' => $request->tindak_lanjut,
@@ -775,14 +775,25 @@ class LaporanController extends Controller
                 'schedule_start' => $request->schedule_start,
                 'schedule_finish' => $request->schedule_finish,
                 'power_plant_id' => $request->unit
-            ]);
+            ];
+
+            // Handle dokumen jika ada
+            if ($request->hasFile('document')) {
+                $file = $request->file('document');
+                
+                // Hapus dokumen lama jika ada
+                if ($workOrder->document_path && Storage::exists('public/' . $workOrder->document_path)) {
+                    Storage::delete('public/' . $workOrder->document_path);
+                }
+
+                // Upload dokumen baru
+                $path = $file->store('work-orders', 'public');
+                $data['document_path'] = $path;
+            }
+
+            $workOrder->update($data);
 
             DB::commit();
-
-            Log::info('WO Updated successfully:', [
-                'wo_id' => $id,
-                'unit_source' => $powerPlant->unit_source ?? 'unknown'
-            ]);
 
             return response()->json([
                 'success' => true,

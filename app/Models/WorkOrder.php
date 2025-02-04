@@ -19,6 +19,7 @@ class WorkOrder extends Model
         'description',
         'kendala',
         'tindak_lanjut',
+        'document_path',
         'type',
         'status',
         'priority',
@@ -110,6 +111,8 @@ class WorkOrder extends Model
             $data = [
                 'id' => $workOrder->id,
                 'description' => $workOrder->description,
+                'kendala' => $workOrder->kendala,
+                'tindak_lanjut' => $workOrder->tindak_lanjut,
                 'type' => $workOrder->type,
                 'status' => $workOrder->status,
                 'priority' => $workOrder->priority,
@@ -174,14 +177,15 @@ class WorkOrder extends Model
             try {
                 DB::beginTransaction();
                 
-                // Buat WO Backlog dengan menyimpan data asli
                 WoBacklog::create([
                     'no_wo' => $this->id,
                     'deskripsi' => $this->description,
-                    'type_wo' => $this->type,           // simpan data asli
-                    'priority' => $this->priority,       // simpan data asli
-                    'schedule_start' => $this->schedule_start,   // simpan data asli
-                    'schedule_finish' => $this->schedule_finish, // simpan data asli
+                    'kendala' => $this->kendala,
+                    'tindak_lanjut' => $this->tindak_lanjut,
+                    'type_wo' => $this->type,
+                    'priority' => $this->priority,
+                    'schedule_start' => $this->schedule_start,
+                    'schedule_finish' => $this->schedule_finish,
                     'tanggal_backlog' => now(),
                     'keterangan' => 'Auto-generated from expired WO',
                     'status' => 'Open',
@@ -197,7 +201,6 @@ class WorkOrder extends Model
                     'schedule_finish' => $this->schedule_finish
                 ]);
 
-                // Hapus WO yang expired
                 $this->delete();
 
                 DB::commit();
@@ -210,4 +213,9 @@ class WorkOrder extends Model
         }
         return false;
     }
-} 
+
+    public function getDocumentUrlAttribute()
+    {
+        return $this->document_path ? asset('storage/' . $this->document_path) : null;
+    }
+}   
