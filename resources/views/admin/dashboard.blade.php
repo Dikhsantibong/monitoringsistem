@@ -36,7 +36,7 @@
 @section('content')
     <div class="flex h-screen bg-gray-50 overflow-auto">
         <!-- Sidebar -->
-      @include('components.sidebar')
+        @include('components.sidebar')
         <!-- Main Content -->
         <div id="main-content" class="flex-1 main-content">
             <!-- Header -->
@@ -96,65 +96,6 @@
 
             <!-- Dashboard Content -->
             <main class="px-6">
-                <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <!-- Card 1 -->
-                    <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}">
-                        <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
-                            <i class="fa-solid fa-users text-white text-3xl mr-3"></i>
-                            <div class="flex-1">
-                                <h3 class="text-white text-md font-medium">PRESENTASI KEHADIRAN </h3>
-                            </div>
-                            <p class="text-2xl font-bold text-white" id="total-users">
-                                {{ $totalUsers }}
-                            </p>
-                        </div>
-                    </a>
-                    <!-- Card 2 -->
-                    <a href="{{ route('admin.laporan.sr_wo_closed') }}">
-                        <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
-                            <i class="fa-solid fa-calendar-check text-white text-3xl mr-3"></i>
-                            <div class="flex-1">
-                                <h3 class="text-white text-md font-medium">TOTAL SR/WO CLOSED</h3>
-                            </div>
-                            <p class="text-2xl font-bold text-white" id="today-meetings">
-                                {{ $totalClosedSRWO }}
-                            </p>
-                        </div>
-                    </a>
-                    <!-- Card 3 -->
-                    <div onclick="window.location.href='{{ route('admin.pembangkit.report') }}'"
-                        class="bg-red-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-yellow-600 transition-colors">
-                        <i class="fa-solid fa-cogs text-white text-3xl mr-3"></i>
-                        <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">JUMLAH MESIN GANGGUAN</h3>
-                        </div>
-                        <p class="text-2xl font-bold text-white" id="machine-issues">
-                            @php
-                                $gangguanCount = \App\Models\MachineStatusLog::where('status', 'Gangguan')
-                                    ->whereDate('tanggal', now())
-                                    ->count();
-                            @endphp
-                            {{ $gangguanCount }}
-                        </p>
-                    </div>
-                    <!-- Card 4 -->
-                    <div onclick="window.location.href='{{ route('admin.other-discussions.index') }}'"
-                        class="bg-purple-500 rounded-lg shadow p-6 flex items-center cursor-pointer hover:bg-purple-600 transition-colors">
-                        <i class="fa-solid fa-check-circle text-white text-3xl mr-3"></i>
-                        <div class="flex-1">
-                            <h3 class="text-white text-md font-medium">TOTAL DISKUSI SELESAI</h3>
-                        </div>
-                        <p class="text-2xl font-bold text-white" id="total-closed-discussions">
-                            @php
-                                $closedCount = \App\Models\OtherDiscussion::where('status', 'Closed')
-                                    ->count();
-                            @endphp
-                            {{ $closedCount }}
-                        </p>
-                    </div>
-                </div>
-
                 <!-- Charts -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Card Ketepatan Waktu -->
@@ -198,7 +139,7 @@
                     </div>
                 </div>
 
-                <!-- Tambahkan baris baru untuk diagram SR dan WO -->
+                <!-- Diagram SR dan WO -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <!-- Card SR Status -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
@@ -264,7 +205,7 @@
                     </div>
                 </div>
 
-                <!-- Tambahkan baris baru untuk diagram Pembahasan dan Komitmen -->
+                <!-- Diagram Pembahasan dan Komitmen -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Card Pembahasan Lain-lain Status -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">

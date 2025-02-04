@@ -330,11 +330,20 @@ class MachineMonitorController extends Controller
 
         $machines = $query->orderBy('id')->paginate(10);
         
+        // Debug: Tampilkan username yang sedang login
+        \Log::info('Current username: ' . Auth::user()->username);
+        
+        // Tambahkan variabel untuk mengontrol tampilan kolom aksi
+        $showActionColumn = Auth::user()->username === 'mysql';
+        
+        // Debug: Tampilkan nilai $showActionColumn
+        \Log::info('Show action column: ' . ($showActionColumn ? 'true' : 'false'));
+        
         if ($request->ajax()) {
-            return view('admin.machine-monitor.table-body', compact('machines'))->render();
+            return view('admin.machine-monitor.table-body', compact('machines', 'showActionColumn'))->render();
         }
         
-        return view('admin.machine-monitor.show', compact('machines'));
+        return view('admin.machine-monitor.show', compact('machines', 'showActionColumn'));
     }
 
     public function edit($id)

@@ -13,8 +13,23 @@
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <div class="w-full">    
-    
-                        <h1 class="text-lg font-semibold uppercase mb-2">STATUS MESIN - {{ $powerPlant->name }}</h1>
+                        <div class="flex justify-between items-center mb-2">
+                            <h1 class="text-lg font-semibold uppercase">STATUS MESIN - {{ $powerPlant->name }}</h1>
+                            @php
+                                // Ambil update terakhir untuk unit ini
+                                $lastUpdate = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                    ->max('updated_at');
+                                
+                                // Format waktu update terakhir
+                                $formattedLastUpdate = $lastUpdate 
+                                    ? \Carbon\Carbon::parse($lastUpdate)->format('d/m/Y H:i:s')
+                                    : '-';
+                            @endphp
+                            <div class="text-sm text-gray-600">
+                                <span class="font-medium">Update Terakhir:</span>
+                                <span class="ml-1">{{ $formattedLastUpdate }}</span>
+                            </div>
+                        </div>
                         
                         <!-- Tambahkan informasi total DMN, DMP, dan Beban -->
                         <div class="grid grid-cols-5 gap-4 mb-4">
