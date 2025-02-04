@@ -41,6 +41,8 @@ class Attendance extends Model
     {
         parent::boot();
         
+        // Semua event listener dinonaktifkan dengan menghapus atau memberi komentar pada kode di bawah
+        /*
         // Handle Created Event
         static::created(function ($attendance) {
             self::syncToUpKendari('create', $attendance);
@@ -55,6 +57,7 @@ class Attendance extends Model
         static::deleted(function ($attendance) {
             self::syncToUpKendari('delete', $attendance);
         });
+        */
     }
 
     protected static function syncToUpKendari($action, $attendance)

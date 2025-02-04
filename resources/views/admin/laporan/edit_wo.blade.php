@@ -155,6 +155,21 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = `<i class="fas fa-save mr-2"></i> Simpan`;
         }
     });
+
+    // Tambahkan fungsi autoresize untuk textarea
+    const textarea = document.getElementById('description');
+    
+    // Fungsi untuk menyesuaikan tinggi textarea
+    function autoResize() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    }
+    
+    // Panggil autoResize saat halaman dimuat untuk menyesuaikan dengan konten awal
+    textarea.addEventListener('input', autoResize);
+    
+    // Trigger sekali saat halaman dimuat
+    autoResize.call(textarea);
 });
 </script>
 @endpush
