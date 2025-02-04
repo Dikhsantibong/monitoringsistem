@@ -119,17 +119,24 @@
                 } else {
                     // Untuk unit lain, hanya tampilkan data unit mereka sendiri
                     $unitMapping = [
-                        'mysql_wua_wua' => 'Wua Wua',
-                        'mysql_bau_bau' => 'Bau Bau',
+                        'mysql_wua_wua' => 'Wua-Wua',
+                        'mysql_bau_bau' => 'Bau-Bau',
                         'mysql_poasia' => 'Poasia',
                         'mysql_kolaka' => 'Kolaka'
                     ];
+                    
+                    // Debug information
+                    \Log::info('PDF View Debug:', [
+                        'currentSession' => $currentSession,
+                        'unitName' => $unitName,
+                        'data' => $data
+                    ]);
                     
                     $shouldDisplay = ($currentSession && isset($unitMapping[$currentSession]) && $unitName === $unitMapping[$currentSession]);
                 }
             @endphp
 
-            @if($shouldDisplay)
+            @if($shouldDisplay || $currentSession === 'mysql')
                 @if($loop->iteration > 1)
                     <div class="page-break"></div>
                 @endif

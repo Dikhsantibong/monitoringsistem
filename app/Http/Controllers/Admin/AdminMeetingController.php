@@ -451,12 +451,13 @@ class AdminMeetingController extends Controller
         try {
             $date = $request->get('tanggal');
             $allScoreCards = [];
+            $allMachineStatuses = [];
             $currentSession = session('unit');
+            $logoSrc = public_path('logo/navlog1.png'); // Pastikan path logo benar
 
             // Mapping koneksi database dengan nama unit yang sesuai
             $connections = [
                 'mysql' => [
-                    'u478221055_up_kendari' => 'UP Kendari',
                     'mysql_bau_bau' => 'Bau-Bau',
                     'mysql_kolaka' => 'Kolaka', 
                     'mysql_poasia' => 'Poasia',
@@ -471,8 +472,9 @@ class AdminMeetingController extends Controller
             // Pilih koneksi berdasarkan session
             $activeConnections = $connections[$currentSession] ?? [];
             
-            \Log::info('Current session and connections:', [
+            \Log::info('PDF Generation Debug:', [
                 'session' => $currentSession,
+                'date' => $date,
                 'activeConnections' => $activeConnections
             ]);
 
@@ -595,23 +597,27 @@ class AdminMeetingController extends Controller
                 'woBacklogs' => $woBacklogs->count()
             ]);
 
-            $pdf = PDF::loadView('admin.meetings.score-card-pdf', compact(
-                'date',
-                'allScoreCards',
-                'allDiscussions',
-                'attendances',
-                'powerPlants',
-                'logs',
-                'serviceRequests',
-                'workOrders',
-                'woBacklogs',
-                'logoSrc',
-                'allMachineStatuses',
-                'otherDiscussions'
-            ));
+            // Sebelum generate PDF, pastikan data tersedia
+            if (empty($allScoreCards)) {
+                \Log::warning('No score cards data available');
+                return back()->with('error', 'Tidak ada data scorecard yang tersedia untuk tanggal ini.');
+            }
+
+            $pdf = PDF::loadView('admin.meetings.score-card-pdf', [
+                'date' => $date,
+                'allScoreCards' => $allScoreCards,
+                'attendances' => $attendances,
+                'powerPlants' => $powerPlants,
+                'logs' => $logs,
+                'serviceRequests' => $serviceRequests,
+                'workOrders' => $workOrders,
+                'woBacklogs' => $woBacklogs,
+                'logoSrc' => $logoSrc,
+                'allMachineStatuses' => $allMachineStatuses,
+                'otherDiscussions' => $otherDiscussions
+            ]);
 
             $pdf->setPaper('a4', 'portrait');
-            
             return $pdf->download('score_card_' . $date . '.pdf');
 
         } catch (\Exception $e) {

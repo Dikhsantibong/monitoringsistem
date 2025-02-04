@@ -90,50 +90,27 @@
                     </div>
                     
                     <!-- Action Buttons -->
-                    @if(!in_array(Auth::user()->username, ['mysql_wua_wua', 'mysql_kolaka', 'mysql_bau_bau', 'mysql_wua']))
-                        <div class="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
-                            <a href="{{ route('admin.machine-monitor.create') }}" 
-                                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all text-sm">
-                                <i class="fas fa-plus"></i>
-                                <span class="hidden sm:inline">Tambah Mesin</span>
-                            </a>
-                            <button onclick="refreshTable()" 
-                                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all text-sm">
-                                <i class="fas fa-sync-alt"></i>
-                                <span class="hidden sm:inline">Refresh</span>
-                            </button>
-                            <a href="{{ route('admin.machine-monitor') }}" 
-                                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all text-sm">
-                                <i class="fas fa-arrow-left"></i>
-                                <span class="hidden sm:inline">Kembali</span>
-                            </a>
-                        </div>
-                    @else
-                        <div class="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
-                            <button onclick="refreshTable()" 
-                                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all text-sm">
-                                <i class="fas fa-sync-alt"></i>
-                                <span class="hidden sm:inline">Refresh</span>
-                            </button>
-                            <a href="{{ route('admin.machine-monitor') }}" 
-                                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all text-sm">
-                                <i class="fas fa-arrow-left"></i>
-                                <span class="hidden sm:inline">Kembali</span>
-                            </a>
-                        </div>
-                    @endif
+                    <div class="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
+                        <a href="{{ route('admin.machine-monitor.create') }}" 
+                            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all text-sm">
+                            <i class="fas fa-plus"></i>
+                            <span class="hidden sm:inline">Tambah Mesin</span>
+                        </a>
+                        <button onclick="refreshTable()" 
+                            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all text-sm">
+                            <i class="fas fa-sync-alt"></i>
+                            <span class="hidden sm:inline">Refresh</span>
+                        </button>
+                        <a href="{{ route('admin.machine-monitor') }}" 
+                            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all text-sm">
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="hidden sm:inline">Kembali</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Wrapper for Table with Shadow -->
                 <div class="overflow-x-auto shadow-md rounded-lg">
-                    <!-- Debug info (temporary) -->
-                    @if(Auth::check())
-                        <div class="hidden">
-                            Current username: {{ Auth::user()->username }}
-                            Show action column: {{ $showActionColumn ? 'true' : 'false' }}
-                        </div>
-                    @endif
-
                     <table class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                         <thead class="bg-[#0A749B]" style="height: 50px;">
                             <tr>
@@ -145,9 +122,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMN</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMP</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Beban (MW)</th>
-                                @if($showActionColumn)
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
-                                @endif
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
                             </tr>
                         </thead>
                         
@@ -202,33 +177,31 @@
                                 <td class="px-6 py-4 text-center whitespace-nowrap border-r border-gray-200">
                                     {{ $machine->operations->first()->load_value ?? '0' }} MW
                                 </td>
-                                @if($showActionColumn)
-                                    <td class="py-2 whitespace-nowrap flex justify-center gap-2">
-                                        <div>
-                                            <a href="{{ route('admin.machine-monitor.edit', $machine->id) }}" 
-                                               class="text-white btn bg-indigo-500 hover:bg-indigo-600 rounded-lg border px-4 py-2">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </div>
-                                        <div>
-                                            <form id="delete-form-{{ $machine->id }}" 
-                                                  action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" 
-                                                  method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" 
-                                                        onclick="confirmDelete({{ $machine->id }}, '{{ $machine->name }}')" 
-                                                        class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg border px-4 py-2">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                @endif
+                                <td class="py-2 whitespace-nowrap flex justify-center gap-2">
+                                    <div>
+                                        <a href="{{ route('admin.machine-monitor.edit', $machine->id) }}" 
+                                           class="text-white btn bg-indigo-500 hover:bg-indigo-600 rounded-lg border px-4 py-2">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <form id="delete-form-{{ $machine->id }}" 
+                                              action="{{ route('admin.machine-monitor.destroy', $machine->id) }}" 
+                                              method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" 
+                                                    onclick="confirmDelete({{ $machine->id }}, '{{ $machine->name }}')" 
+                                                    class="text-white btn bg-red-500 hover:bg-red-600 rounded-lg border px-4 py-2">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="{{ $showActionColumn ? 9 : 8 }}" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                                     Tidak ada data mesin yang tersedia
                                 </td>
                             </tr>
