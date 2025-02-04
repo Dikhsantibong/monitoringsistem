@@ -116,7 +116,7 @@
                                 <button id="refreshButton" 
                                         onclick="loadData()"
                                         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                    <i class="fas fa-redo mr-2"></i>Muat Ulang
+                                    <i class="fas fa-redo mr-2"></i>Refresh Data
                                 </button>
                             </div>
 
