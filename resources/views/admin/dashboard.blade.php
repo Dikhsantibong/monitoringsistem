@@ -180,7 +180,7 @@
                     <!-- Card Kehadiran Rapat -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Score Peserta</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">Score Daily Meeting</h3>
                             <div class="flex space-x-2">
                                 <button onclick="toggleChartType('meetingChart', 'line')"
                                     class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
@@ -404,8 +404,12 @@
             const meetingData = {
                 labels: formattedDates,
                 datasets: [{
-                    label: 'Total Score Peserta',
-                    data: chartData.attendanceData.scores,
+                    label: 'Score Daily Meeting (%)',
+                    data: chartData.attendanceData.scores.map(score => {
+                        // Pastikan hasil tidak lebih dari 100%
+                        const percentage = Math.round((score / 1000) * 100);
+                        return Math.min(percentage, 100); // Membatasi nilai maksimum ke 100
+                    }),
                     borderColor: 'rgb(16, 185, 129)',
                     backgroundColor: 'rgba(16, 185, 129, 0.5)',
                     tension: 0.1,
@@ -479,9 +483,10 @@
                         ...commonOptions.scales,
                         y: {
                             ...commonOptions.scales.y,
+                            max: 100, // Set maksimum skala Y ke 100
                             ticks: {
                                 callback: function(value) {
-                                    return value;
+                                    return value + '%';
                                 }
                             }
                         }
