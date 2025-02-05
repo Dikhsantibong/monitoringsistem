@@ -213,7 +213,7 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200">
                                                 <div class="flex items-center gap-2">
-                                                    {{ $sr->id }}
+                                                    SR-{{ str_pad($sr->id, 5, '0', STR_PAD_LEFT) }}
                                                     @if($sr->created_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
@@ -380,7 +380,7 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200">
                                                 <div class="flex items-center gap-2">
-                                                    {{ $wo->id }}
+                                                    WO-{{ str_pad($wo->id, 5, '0', STR_PAD_LEFT) }}
                                                     @if($wo->created_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
@@ -582,11 +582,11 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 ">
                                                 <div class="flex items-center gap-2">
-                                                    {{ $backlog->no_wo }}
+                                                    WO-{{ str_pad($backlog->no_wo, 5, '0', STR_PAD_LEFT) }}
                                                     @if($backlog->created_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
-                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                                                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5 animate-pulse"></span>
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1.5 animate-pulse"></span>
                                                                 New
                                                             </span>
                                                             <span class="text-xs text-gray-500">
