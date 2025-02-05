@@ -686,6 +686,11 @@
             return;
         }
 
+        // Cek apakah dokumen sudah diupload sebelum mengubah status ke Closed
+        const row = document.querySelector(`tr[data-wo-id="WO-${String(woId).padStart(4, '0')}"]`);
+        const documentCell = row.querySelector('td:nth-last-child(2)'); // Kolom dokumen
+        const hasDocument = documentCell.textContent.trim() !== '-';
+
         Swal.fire({
             title: 'Pilih Status',
             input: 'select',
@@ -706,6 +711,24 @@
             inputValidator: (value) => {
                 if (!value) {
                     return 'Anda harus memilih status!';
+                }
+                // Cek jika status Closed dipilih tapi belum ada dokumen
+                if (value === 'Closed' && !hasDocument) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Dokumen Diperlukan',
+                        text: 'Anda harus mengupload dokumen terlebih dahulu sebelum menutup WO.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Upload Dokumen',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#3085d6'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Redirect ke halaman edit WO
+                            window.location.href = `/admin/laporan/edit-wo/${woId}#document`;
+                        }
+                    });
+                    return false;
                 }
             }
         }).then((result) => {
@@ -899,6 +922,7 @@
         }
 
         if (tanggalMulai > tanggalAkhir) {
+            
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',

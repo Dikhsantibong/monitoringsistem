@@ -91,7 +91,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="document" class="block text-gray-700 mb-2">Upload Dokumen</label>
+                        <label for="document" class="block text-gray-700 mb-2">Upload Job Card</label>
                         <div class="flex flex-col space-y-4">
                             <!-- Custom File Upload -->
                             <div class="relative">
