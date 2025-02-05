@@ -364,7 +364,7 @@ class LaporanController extends Controller
                 'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
             ]);
 
-            // Gunakan model untuk update (bukan DB facade)
+            // Cari WO di database saat ini
             $wo = WorkOrder::findOrFail($id);
 
             if ($wo->status === 'Closed') {
@@ -373,8 +373,50 @@ class LaporanController extends Controller
 
             $oldStatus = $wo->status;
             $wo->status = $request->status;
-            // Update akan mentrigger event updated di model
+            
+            // Simpan perubahan di database saat ini
             $wo->save();
+
+            // Sinkronisasi ke semua database unit
+            $powerPlant = PowerPlant::find($wo->power_plant_id);
+            if ($powerPlant) {
+                $allConnections = [
+                    'mysql',
+                    'mysql_wua_wua',
+                    'mysql_poasia',
+                    'mysql_kolaka',
+                    'mysql_bau_bau'
+                ];
+
+                // Filter koneksi saat ini
+                $currentConnection = $powerPlant->unit_source ?? 'mysql';
+                $targetConnections = array_filter($allConnections, function($conn) use ($currentConnection) {
+                    return $conn !== $currentConnection;
+                });
+
+                foreach ($targetConnections as $connection) {
+                    try {
+                        DB::connection($connection)
+                            ->table('work_orders')
+                            ->where('id', $wo->id)
+                            ->update([
+                                'status' => $request->status,
+                                'updated_at' => now()
+                            ]);
+
+                        Log::info("WO Status synced to {$connection}", [
+                            'wo_id' => $wo->id,
+                            'new_status' => $request->status
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error("Failed to sync WO status to {$connection}", [
+                            'wo_id' => $wo->id,
+                            'error' => $e->getMessage()
+                        ]);
+                        continue; // Lanjut ke koneksi berikutnya jika gagal
+                    }
+                }
+            }
 
             return response()->json([
                 'success' => true,
