@@ -149,18 +149,13 @@
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
                                                 <div class="relative">
-                                                    <select id="srUnitFilter" onchange="filterSRTable()" 
+                                                    <select id="filterUnitSR" onchange="filterSRTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants as $unit)
-                                                            <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                        @foreach($powerPlants as $plant)
+                                                            <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                        </svg>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </th>
@@ -227,18 +222,8 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">
-                                                @if($sr->powerPlant)
-                                                    {{ $sr->powerPlant->name }}
-                                                @elseif($sr->unit_source)
-                                                    @php
-                                                        $unitName = str_replace('mysql_', '', $sr->unit_source);
-                                                        $unitName = ucfirst($unitName);
-                                                    @endphp
-                                                    {{ $unitName }}
-                                                @else
-                                                    Unit tidak tersedia
-                                                @endif
+                                            <td data-column="unit" class="px-4 py-2 border border-gray-200">
+                                                {{ $sr->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
                                             <td data-column="status" class="py-2 px-4 border border-gray-200">
@@ -325,18 +310,13 @@
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
                                                 <div class="relative">
-                                                    <select id="woUnitFilter" onchange="filterWOTable()" 
+                                                    <select id="filterUnitWO" onchange="filterWOTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants as $unit)
-                                                            <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                        @foreach($powerPlants as $plant)
+                                                            <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                        </svg>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </th>
@@ -394,12 +374,8 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">
-                                                @if($wo->powerPlant)
-                                                    {{ $wo->powerPlant->name }}
-                                                @else
-                                                    Unit tidak tersedia
-                                                @endif
+                                            <td data-column="unit" class="px-4 py-2 border border-gray-200">
+                                                {{ $wo->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 <span class="px-2 py-1 rounded-full text-xs
@@ -537,18 +513,13 @@
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
                                                 <div class="relative">
-                                                    <select id="backlogUnitFilter" onchange="filterBacklogTable()" 
+                                                    <select id="filterUnitBacklog" onchange="filterBacklogTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants as $unit)
-                                                            <option value="{{ $unit->name }}" class="text-gray-700">{{ $unit->name }}</option>
+                                                        @foreach($powerPlants as $plant)
+                                                            <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                        </svg>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </th>
@@ -596,18 +567,8 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">
-                                                @if($backlog->powerPlant)
-                                                    {{ $backlog->powerPlant->name }}
-                                                @elseif($backlog->unit_source)
-                                                    @php
-                                                        $unitName = str_replace('mysql_', '', $backlog->unit_source);
-                                                        $unitName = ucfirst($unitName);
-                                                    @endphp
-                                                    {{ $unitName }}
-                                                @else
-                                                    Unit tidak tersedia
-                                                @endif
+                                            <td data-column="unit" class="px-4 py-2 border border-gray-200">
+                                                {{ $backlog->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $backlog->deskripsi }}</td>
                                             <td class="py-2 px-4 border border-gray-200">{{ $backlog->created_at }}</td>
@@ -1146,7 +1107,7 @@
 
         // Simpan filter yang sedang aktif
         const status = document.getElementById('srStatusFilter').value;
-        const unit = document.getElementById('srUnitFilter').value;
+        const unit = document.getElementById('filterUnitSR').value;
         const downtime = document.getElementById('srDowntimeFilter').value;
 
         for (let i = 1; i < rows.length; i++) {
@@ -1201,7 +1162,7 @@
 
         // Simpan filter yang sedang aktif
         const status = document.getElementById('woStatusFilter').value;
-        const unit = document.getElementById('woUnitFilter').value;
+        const unit = document.getElementById('filterUnitWO').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1250,7 +1211,7 @@
 
         // Simpan filter yang sedang aktif
         const status = document.getElementById('backlogStatusFilter').value;
-        const unit = document.getElementById('backlogUnitFilter').value;
+        const unit = document.getElementById('filterUnitBacklog').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1467,79 +1428,62 @@
     document.addEventListener('DOMContentLoaded', updateTableCounts);
 
     function filterSRTable() {
-        const status = document.getElementById('srStatusFilter').value;
-        const unit = document.getElementById('srUnitFilter').value;
-        const downtime = document.getElementById('srDowntimeFilter').value;
+        const unit = document.getElementById('filterUnitSR').value.toLowerCase();
         const rows = document.querySelectorAll('#srTable tbody tr');
         let visibleCount = 0;
-        
+
         rows.forEach(row => {
-            const statusCell = row.querySelector('td:nth-child(5)');
-            const unitCell = row.querySelector('td:nth-child(3)');
-            const downtimeCell = row.querySelector('td:nth-child(7)');
+            const unitCell = row.querySelector('td[data-column="unit"]');
+            const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
             
-            const statusMatch = !status || statusCell.textContent.trim().includes(status);
-            const unitMatch = !unit || unitCell.textContent.trim().includes(unit);
-            const downtimeMatch = !downtime || 
-                (downtime === 'Yes' && downtimeCell.textContent.trim() !== '0') ||
-                (downtime === 'No' && downtimeCell.textContent.trim() === '0');
-            
-            if (statusMatch && unitMatch && downtimeMatch) {
+            if (!unit || unitText.includes(unit)) {
                 row.style.display = '';
                 visibleCount++;
             } else {
                 row.style.display = 'none';
             }
         });
-        
+
         document.getElementById('srVisibleCount').textContent = visibleCount;
     }
 
     function filterWOTable() {
-        const status = document.getElementById('woStatusFilter').value;
-        const unit = document.getElementById('woUnitFilter').value;
+        const unit = document.getElementById('filterUnitWO').value.toLowerCase();
         const rows = document.querySelectorAll('#woTable tbody tr');
         let visibleCount = 0;
-        
+
         rows.forEach(row => {
-            const statusCell = row.querySelector('td[data-column="status"]');
-            const unitCell = row.querySelector('td:nth-child(3)');
+            const unitCell = row.querySelector('td[data-column="unit"]');
+            const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
             
-            const statusMatch = !status || statusCell.textContent.trim().includes(status);
-            const unitMatch = !unit || unitCell.textContent.trim().includes(unit);
-            
-            if (statusMatch && unitMatch) {
+            if (!unit || unitText.includes(unit)) {
                 row.style.display = '';
                 visibleCount++;
             } else {
                 row.style.display = 'none';
             }
         });
-        
+
         document.getElementById('woVisibleCount').textContent = visibleCount;
     }
 
     function filterBacklogTable() {
-        const status = document.getElementById('backlogStatusFilter').value;
-        const unit = document.getElementById('backlogUnitFilter').value;
+        const unit = document.getElementById('filterUnitBacklog').value.toLowerCase();
         const rows = document.querySelectorAll('#backlogTable tbody tr');
         let visibleCount = 0;
-        
+
         rows.forEach(row => {
-            const statusCell = row.querySelector('td:nth-child(6)');
-            const unitCell = row.querySelector('td:nth-child(3)');
+            const unitCell = row.querySelector('td[data-column="unit"]');
+            const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
             
-            const statusMatch = !status || statusCell.textContent.trim().includes(status);
-            const unitMatch = !unit || unitCell.textContent.trim().includes(unit);
-            
-            if (statusMatch && unitMatch) {
+            if (!unit || unitText.includes(unit)) {
                 row.style.display = '';
                 visibleCount++;
             } else {
                 row.style.display = 'none';
             }
         });
-        
+
         document.getElementById('backlogVisibleCount').textContent = visibleCount;
     }
 
