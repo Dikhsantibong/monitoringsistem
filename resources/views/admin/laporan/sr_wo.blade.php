@@ -143,8 +143,8 @@
                                 class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b">No</th>
-                                        <th class="py-2 px-4 border-b">ID SR</th>
+                                        <th class="py-2 px-4 border-b min-w-[120px]">No</th>
+                                        <th class="py-2 px-4 border-b min-w-[120px]">ID SR</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
@@ -211,7 +211,7 @@
                                     @foreach ($serviceRequests as $index => $sr)
                                         <tr data-sr-id="SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
-                                            <td class="px-4 py-2 border border-gray-200">
+                                            <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     SR-{{ str_pad($sr->id, 5, '0', STR_PAD_LEFT) }}
                                                     @if($sr->created_at->diffInHours(now()) < 24)
@@ -319,8 +319,8 @@
                             <table id="woTable" class="min-w-full bg-white border border-gray-300">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b">No</th>
-                                        <th class="py-2 px-4 border-b">ID WO</th>
+                                        <th class="py-2 px-4 border-b min-w-[120px]">No</th>
+                                        <th class="py-2 px-4 border-b min-w-[120px]">ID WO</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
@@ -378,7 +378,7 @@
                                     @foreach ($workOrders as $index => $wo)
                                         <tr data-wo-id="WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
-                                            <td class="px-4 py-2 border border-gray-200">
+                                            <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     WO-{{ str_pad($wo->id, 5, '0', STR_PAD_LEFT) }}
                                                     @if($wo->created_at->diffInHours(now()) < 24)
@@ -531,8 +531,8 @@
                             <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b">No</th>
-                                        <th class="py-2 px-4 border-b">No WO</th>
+                                        <th class="py-2 px-4 border-b min-w-[120px]">No</th>
+                                        <th class="py-2 px-4 border-b min-w-[120px]">No WO</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
@@ -580,7 +580,7 @@
                                     @foreach ($woBacklogs as $index => $backlog)
                                         <tr class="hover:bg-gray-50 transition-colors duration-150">
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
-                                            <td class="px-4 py-2 border border-gray-200 ">
+                                            <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     WO-{{ str_pad($backlog->no_wo, 5, '0', STR_PAD_LEFT) }}
                                                     @if($backlog->created_at->diffInHours(now()) < 24)
