@@ -678,7 +678,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Dokumen Diperlukan',
-                        text: 'Anda harus mengupload dokumen terlebih dahulu sebelum menutup WO.',
+                        text: 'silahkan Upload Job Card yang telah di validasi.',
                         showCancelButton: true,
                         confirmButtonText: 'Upload Dokumen',
                         cancelButtonText: 'Batal',
