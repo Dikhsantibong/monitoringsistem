@@ -24,9 +24,37 @@ class LaporanController extends Controller
         $this->checkExpiredWO();
 
         try {
-            // 1. Cache power plants data
+            // Perbaikan query PowerPlant untuk mendapatkan semua unit
             $powerPlants = Cache::remember('power_plants', 3600, function () {
-                return PowerPlant::select('id', 'name')->get();
+                // Ambil dari semua koneksi database unit
+                $allPowerPlants = collect();
+                
+                $connections = [
+                    'mysql',          // UP Kendari
+                    'mysql_poasia',   // PLTD Poasia
+                    'mysql_kolaka',   // PLTD Kolaka
+                    'mysql_bau_bau',  // PLTD Bau-Bau
+                    'mysql_wua_wua'   // PLTD Wua-Wua
+                ];
+
+                foreach ($connections as $connection) {
+                    try {
+                        $plants = DB::connection($connection)
+                            ->table('power_plants')
+                            ->select('id', 'name', 'unit_source')
+                            ->get();
+                        
+                        $allPowerPlants = $allPowerPlants->concat($plants);
+                    } catch (\Exception $e) {
+                        Log::error("Error fetching power plants from {$connection}: " . $e->getMessage());
+                        continue;
+                    }
+                }
+
+                // Hapus duplikat berdasarkan kombinasi id dan name
+                return $allPowerPlants->unique(function ($item) {
+                    return $item->id . $item->name;
+                })->values();
             });
 
             // 2. Optimasi query Service Requests
@@ -110,10 +138,8 @@ class LaporanController extends Controller
             ));
 
         } catch (\Exception $e) {
-            \Log::error('Error in srWo method: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            Log::error('Error in srWo: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data');
         }
     }
     
