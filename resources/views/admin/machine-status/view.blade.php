@@ -58,8 +58,10 @@
         </header>
 
         <!-- Loading indicator -->
-        <div id="loading" class="loading">
-            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <div id="loading" class="loading fixed top-0 left-0 right-0 bottom-0 w-full h-screen z-50 overflow-hidden bg-gray-700 opacity-75 flex flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+            <h2 class="text-center text-white text-xl font-semibold mt-4">Loading...</h2>
+            <p class="w-1/3 text-center text-white">Mohon tunggu sebentar...</p>
         </div>
 
         <!-- Main Content -->
@@ -153,7 +155,7 @@ function updateTable() {
     const unitSource = @json(session('unit')) === 'mysql' ? document.getElementById('unit-source')?.value : null;
     const searchText = document.getElementById('searchInput').value;
     
-    document.getElementById('loading').classList.add('show');
+    showLoading();
     
     const params = new URLSearchParams({
         date: date,
@@ -191,7 +193,7 @@ function updateTable() {
         }
     })
     .finally(() => {
-        document.getElementById('loading').classList.remove('show');
+        hideLoading();
     });
 }
 
@@ -204,25 +206,65 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.classList.toggle('collapsed');
         document.getElementById('main-content').classList.toggle('sidebar-collapsed');
     });
+
+    // Sembunyikan loading saat halaman selesai dimuat
+    hideLoading();
 });
+
+// Tambahkan event listener untuk window load
+window.addEventListener('load', function() {
+    // Sembunyikan loading saat semua resource (gambar, dll) selesai dimuat
+    hideLoading();
+});
+
+function showLoading() {
+    document.getElementById('loading').classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loading').classList.add('hidden');
+}
+
+// Tambahkan timeout sebagai fallback
+setTimeout(hideLoading, 5000); // Sembunyikan loading setelah 5 detik jika masih belum hilang
+
+// Tambahkan event listener untuk AJAX requests jika ada
+document.addEventListener('ajax:start', showLoading);
+document.addEventListener('ajax:complete', hideLoading);
+
+// Jika menggunakan jQuery AJAX
+$(document).ajaxStart(function() {
+    showLoading();
+});
+
+$(document).ajaxComplete(function() {
+    hideLoading();
+});
+
+// Jika menggunakan Fetch API, buat wrapper function
+function fetchWithLoading(url, options = {}) {
+    showLoading();
+    return fetch(url, options)
+        .finally(() => {
+            hideLoading();
+        });
+}
 </script>
 
 <style>
 .loading {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
+    transition: all 0.3s ease-in-out;
 }
 
-.loading.show {
-    display: flex;
+.loading.hidden {
+    opacity: 0;
+    visibility: hidden;
+    display: none;
+}
+
+.animate-spin {
+    border-width: 4px;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 }
 
 .sidebar {
