@@ -66,17 +66,24 @@
         <!-- Main Content -->
         <div class="container mx-auto px-2 sm:px-6 py-4 sm:py-8">
             <div class="bg-white rounded-lg shadow p-3 sm:p-6">
-                <div class="flex justify-between items-center mb-6">
+                <!-- Header Section -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-2xl font-semibold text-gray-800">Pembahasan Lain-lain</h2>
-                    <div class="flex items-center space-x-1"> <!-- Menggunakan space-x-1 untuk jarak lebih dekat -->
+                    
+                    <!-- Link Maximo dan Tombol Tambah -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <!-- Link Maximo -->
                         <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
                            title="Link Maximo" 
                            target="_blank" 
-                           class="text-blue-500 hover:underline flex items-center"> <!-- Menambahkan flex untuk menyelaraskan logo dan teks -->
-                            <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-6 mr-1"> <!-- Ukuran logo diperkecil -->
-                            Link Maximo
+                           class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
+                            <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
+                            koneksi maximo
                         </a>
-                        <a href="{{ route('admin.other-discussions.create') }}" class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
+                        
+                        <!-- Tombol Tambah Data -->
+                        <a href="{{ route('admin.other-discussions.create') }}" 
+                           class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
                             <i class="fas fa-plus mr-2"></i> Tambah Data
                         </a>
                     </div>

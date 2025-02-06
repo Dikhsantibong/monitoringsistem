@@ -9,6 +9,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use PDF;
+use App\Exports\AttendanceExport;
 
 class AttendanceController extends Controller
 {
@@ -132,6 +135,69 @@ class AttendanceController extends Controller
         }
     }
 
+    public function generateBackdateToken(Request $request)
+    {
+        try {
+            // Validasi input
+            $request->validate([
+                'tanggal_absen' => 'required|date|before_or_equal:today',
+                'waktu_absen' => 'required',
+                'alasan' => 'required|string'
+            ]);
+
+            DB::beginTransaction();
+            try {
+                // Generate token untuk backdate
+                $token = 'BACK-' . strtoupper(Str::random(8));
+                
+                // Simpan token tanpa kolom is_backdate
+                $tokenId = DB::table('attendance_tokens')->insertGetId([
+                    'token' => $token,
+                    'user_id' => auth()->id(),
+                    'expires_at' => now()->addMinutes(5),
+                    'unit_source' => session('unit', 'mysql'), // Sesuaikan dengan unit_source default
+                    'backdate_data' => json_encode([
+                        'tanggal_absen' => $request->tanggal_absen,
+                        'waktu_absen' => $request->waktu_absen,
+                        'alasan' => $request->alasan
+                    ]),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                if (!$tokenId) {
+                    throw new \Exception('Gagal menyimpan token');
+                }
+
+                // URL untuk QR
+                $qrUrl = url("/attendance/scan/{$token}");
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'qr_url' => $qrUrl,
+                    'message' => 'QR Code berhasil dibuat'
+                ]);
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Generate QR Code Error:', [
+                'message' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat QR Code: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -146,32 +212,52 @@ class AttendanceController extends Controller
 
             DB::beginTransaction();
             try {
+                // Cek token dan ambil data backdate jika ada
+                $tokenData = DB::table('attendance_tokens')
+                    ->where('token', $validated['token'])
+                    ->where('expires_at', '>=', now())
+                    ->first();
+
+                if (!$tokenData) {
+                    throw new \Exception('Token tidak valid atau sudah kadaluarsa');
+                }
+
                 // Generate ID baru
                 $lastId = DB::connection(session('unit'))
                            ->table('attendance')
                            ->max('id') ?? 0;
                 $newId = $lastId + 1;
 
-                // Simpan attendance dengan ID manual
-                $attendance = DB::connection(session('unit'))
-                              ->table('attendance')
-                              ->insert([
+                // Set waktu absen
+                $attendanceTime = now();
+                $isBackdate = false;
+                $backdateReason = null;
+
+                // Jika ini adalah token backdate, gunakan waktu yang sudah ditentukan
+                if ($tokenData->is_backdate && $tokenData->backdate_data) {
+                    $backdateData = json_decode($tokenData->backdate_data, true);
+                    $attendanceTime = Carbon::parse($backdateData['tanggal_absen'] . ' ' . $backdateData['waktu_absen'])
+                                         ->setTimezone('Asia/Makassar');
+                    $isBackdate = true;
+                    $backdateReason = $backdateData['alasan'];
+                }
+
+                // Simpan attendance
+                DB::connection(session('unit'))
+                  ->table('attendance')
+                  ->insert([
                     'id' => $newId,
                     'name' => $validated['name'],
                     'position' => $validated['position'],
                     'division' => $validated['division'],
                     'token' => $validated['token'],
                     'signature' => $validated['signature'],
-                    'time' => now(),
+                    'time' => $attendanceTime,
+                    'is_backdate' => $isBackdate,
+                    'backdate_reason' => $backdateReason,
                     'unit_source' => session('unit', 'poasia'),
                     'created_at' => now(),
                     'updated_at' => now()
-                ]);
-
-                \Log::info('Attendance Created:', [
-                    'attendance_id' => $newId,
-                    'name' => $validated['name'],
-                    'time' => now()
                 ]);
 
                 DB::commit();
@@ -197,12 +283,7 @@ class AttendanceController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
-                'debug_info' => [
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ]
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -228,5 +309,133 @@ class AttendanceController extends Controller
             ], 404);
         }
     }
-    
+
+    public function exportExcel(Request $request)
+    {
+        try {
+            $tanggalAwal = $request->get('tanggal_awal', now()->startOfMonth()->format('Y-m-d'));
+            $tanggalAkhir = $request->get('tanggal_akhir', now()->endOfMonth()->format('Y-m-d'));
+
+            return Excel::download(
+                new AttendanceExport($tanggalAwal, $tanggalAkhir),
+                'rekapitulasi_kehadiran_' . Carbon::now()->format('d-m-Y') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            \Log::error('Export Excel Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengexport data ke Excel');
+        }
+    }
+
+    public function exportPDF(Request $request)
+    {
+        try {
+            $tanggalAwal = Carbon::parse($request->tanggal_awal ?? now()->startOfMonth())
+                ->setTimezone('Asia/Makassar')->startOfDay();
+            $tanggalAkhir = Carbon::parse($request->tanggal_akhir ?? now()->endOfMonth())
+                ->setTimezone('Asia/Makassar')->endOfDay();
+
+            $attendances = Attendance::whereBetween('time', [$tanggalAwal, $tanggalAkhir])
+                ->orderBy('time', 'desc')
+                ->get();
+
+            $pdf = PDF::loadView('admin.daftar_hadir.print', [
+                'attendances' => $attendances,
+                'tanggalAwal' => $tanggalAwal->format('d/m/Y'),
+                'tanggalAkhir' => $tanggalAkhir->format('d/m/Y')
+            ]);
+
+            return $pdf->download('rekapitulasi_kehadiran_' . Carbon::now()->format('d-m-Y') . '.pdf');
+        } catch (\Exception $e) {
+            \Log::error('Export PDF Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengexport data ke PDF');
+        }
+    }
+
+    public function printView(Request $request)
+    {
+        try {
+            $tanggalAwal = Carbon::parse($request->tanggal_awal ?? now()->startOfMonth())
+                ->setTimezone('Asia/Makassar')->startOfDay();
+            $tanggalAkhir = Carbon::parse($request->tanggal_akhir ?? now()->endOfMonth())
+                ->setTimezone('Asia/Makassar')->endOfDay();
+
+            $attendances = Attendance::whereBetween('time', [$tanggalAwal, $tanggalAkhir])
+                ->orderBy('time', 'desc')
+                ->get();
+
+            // Tambahkan path logo
+            $logoPath = public_path('logo/navlog1.png');
+            $logoData = base64_encode(file_get_contents($logoPath));
+            $logoSrc = 'data:image/png;base64,' . $logoData;
+
+            return view('admin.daftar_hadir.print', [
+                'attendances' => $attendances,
+                'tanggalAwal' => $tanggalAwal->format('d/m/Y'),
+                'tanggalAkhir' => $tanggalAkhir->format('d/m/Y'),
+                'logoSrc' => $logoSrc
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Print View Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memuat halaman print');
+        }
+    }
+
+    public function storeBackdate(Request $request)
+    {
+        try {
+            $request->validate([
+                'tanggal_absen' => 'required|date|before_or_equal:today',
+                'waktu_absen' => 'required',
+                'alasan' => 'required|string'
+            ]);
+
+            DB::beginTransaction();
+            try {
+                // Generate ID baru
+                $lastId = DB::connection(session('unit'))
+                           ->table('attendance')
+                           ->max('id') ?? 0;
+                $newId = $lastId + 1;
+
+                // Gabungkan tanggal dan waktu
+                $datetime = Carbon::parse($request->tanggal_absen . ' ' . $request->waktu_absen)
+                                 ->setTimezone('Asia/Makassar');
+
+                // Simpan attendance dengan ID manual
+                DB::connection(session('unit'))
+                  ->table('attendance')
+                  ->insert([
+                    'id' => $newId,
+                    'name' => auth()->user()->name,
+                    'position' => auth()->user()->position,
+                    'division' => auth()->user()->division,
+                    'time' => $datetime,
+                    'is_backdate' => true,
+                    'backdate_reason' => $request->alasan,
+                    'unit_source' => session('unit', 'poasia'),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                DB::commit();
+
+                return redirect()->back()->with('success', 'Absen mundur berhasil disimpan');
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Backdate Store Error:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyimpan absen mundur')
+                ->withInput();
+        }
+    }
 } 

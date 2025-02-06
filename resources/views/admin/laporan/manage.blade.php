@@ -70,16 +70,25 @@
                     <li class="mr-2">
                         <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn {{ request('tab') == 'sr' ? 'active' : '' }}" data-tab="sr">
                             Service Request (SR)
+                            <span class="ml-2 px-2 py-1 text-xs rounded-full bg-blue-100">
+                                {{ $serviceRequests->count() }}
+                            </span>
                         </a>
                     </li>
                     <li class="mr-2">
                         <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn {{ request('tab') == 'wo' ? 'active' : '' }}" data-tab="wo">
                             Work Order (WO)
+                            <span class="ml-2 px-2 py-1 text-xs rounded-full bg-red-100">
+                                {{ $workOrders->count() }}
+                            </span>
                         </a>
                     </li>
                     <li class="mr-2">
                         <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-btn {{ request('tab') == 'backlog' ? 'active' : '' }}" data-tab="backlog">
                             WO Backlog
+                            <span class="ml-2 px-2 py-1 text-xs rounded-full bg-green-100">
+                                {{ $backlogs->count() }}
+                            </span>
                         </a>
                     </li>
                 </ul>
@@ -90,9 +99,32 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Manajemen Service Request</h3>
-                        <a href="{{ route('admin.laporan.create-sr') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            <i class="fas fa-plus mr-2"></i>Tambah SR
-                        </a>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center bg-gray-50 p-2 rounded-lg h-[38px]">
+                                <form action="{{ route('admin.laporan.print', ['type' => 'sr']) }}" 
+                                      method="GET" 
+                                      target="_blank"
+                                      class="flex items-center gap-2">
+                                    <input type="date" 
+                                           name="start_date" 
+                                           class="h-[38px] border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           value="{{ request('start_date', now()->format('Y-m-d')) }}">
+                                    <span class="text-gray-500">s/d</span>
+                                    <input type="date" 
+                                           name="end_date" 
+                                           class="h-[38px] border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           value="{{ request('end_date', now()->format('Y-m-d')) }}">
+                                    <button type="submit"
+                                            class="h-[38px] inline-flex items-center px-4 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                        <i class="fas fa-print mr-2"></i>Print
+                                    </button>
+                                </form>
+                            </div>
+                            <a href="{{ route('admin.laporan.create-sr') }}" 
+                               class="h-[38px] inline-flex items-center px-4 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <i class="fas fa-plus mr-2"></i>Tambah SR
+                            </a>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -145,9 +177,32 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Manajemen Work Order</h3>
-                        <a href="{{ route('admin.laporan.create-wo') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            <i class="fas fa-plus mr-2"></i>Tambah WO
-                        </a>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center bg-gray-50 p-2 rounded-lg h-[38px]">
+                                <form action="{{ route('admin.laporan.print', ['type' => 'wo']) }}" 
+                                      method="GET" 
+                                      target="_blank"
+                                      class="flex items-center gap-2">
+                                    <input type="date" 
+                                           name="start_date" 
+                                           class="h-[38px] border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           value="{{ request('start_date', now()->format('Y-m-d')) }}">
+                                    <span class="text-gray-500">s/d</span>
+                                    <input type="date" 
+                                           name="end_date" 
+                                           class="h-[38px] border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           value="{{ request('end_date', now()->format('Y-m-d')) }}">
+                                    <button type="submit"
+                                            class="h-[38px] inline-flex items-center px-4 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                        <i class="fas fa-print mr-2"></i>Print
+                                    </button>
+                                </form>
+                            </div>
+                            <a href="{{ route('admin.laporan.create-wo') }}" 
+                               class="h-[38px] inline-flex items-center px-4 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <i class="fas fa-plus mr-2"></i>Tambah WO
+                            </a>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -155,11 +210,11 @@
                                 <tr>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID WO</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioritas</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -168,6 +223,9 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        {{ optional($wo->powerPlant)->name ?? 'Unit tidak tersedia' }}
+                                    </td>
                                     <td class="px-6 py-4 border border-gray-200">{{ $wo->description }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
@@ -188,9 +246,6 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $wo->priority }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
-                                        {{ optional($wo->powerPlant)->name ?? 'Unit tidak tersedia' }}
-                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
                                                 data-delete 
@@ -213,9 +268,32 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Manajemen WO Backlog</h3>
-                        <a href="{{ route('admin.laporan.create-backlog') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            <i class="fas fa-plus mr-2"></i>Tambah Backlog
-                        </a>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center bg-gray-50 p-2 rounded-lg h-[38px]">
+                                <form action="{{ route('admin.laporan.print', ['type' => 'backlog']) }}" 
+                                      method="GET" 
+                                      target="_blank"
+                                      class="flex items-center gap-2">
+                                    <input type="date" 
+                                           name="start_date" 
+                                           class="h-[38px] border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           value="{{ request('start_date', now()->format('Y-m-d')) }}">
+                                    <span class="text-gray-500">s/d</span>
+                                    <input type="date" 
+                                           name="end_date" 
+                                           class="h-[38px] border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           value="{{ request('end_date', now()->format('Y-m-d')) }}">
+                                    <button type="submit"
+                                            class="h-[38px] inline-flex items-center px-4 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                        <i class="fas fa-print mr-2"></i>Print
+                                    </button>
+                                </form>
+                            </div>
+                            <a href="{{ route('admin.laporan.create-backlog') }}" 
+                               class="h-[38px] inline-flex items-center px-4 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <i class="fas fa-plus mr-2"></i>Tambah Backlog
+                            </a>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">

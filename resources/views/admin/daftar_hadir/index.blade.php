@@ -68,28 +68,34 @@
                     </p>
 
                     <!-- Input Pencarian -->
-                    <div class="mb-4 flex flex-col lg:flex-row gap-y-3 justify-between items-center">
-                        <!-- Tombol Generate QR Code -->
-                        <div class="flex items-center">
+                    <div class="mb-4 flex flex-col lg:flex-row gap-x-4 gap-y-3 justify-between items-center">
+                        <div class="flex items-center gap-x-4">
+                            <!-- Tombol Generate QR Code -->
                             <button id="generateQrBtn" onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700">
                                 <i class="fas fa-qrcode mr-2"></i>
                                 Generate QR Code
                             </button>
 
-                            <!-- Modal QR Code -->
-                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-                                <div class="bg-white p-8 rounded-lg shadow-lg">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <h3 class="text-xl font-bold flex items-center">
-                                            <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
-                                        </h3>
-                                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
-                                    <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
+                            <!-- Tombol Manage Kehadiran baru -->
+                            <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700">
+                                <i class="fas fa-tasks mr-2"></i>
+                                Manage Kehadiran
+                            </a>
+                        </div>
+
+                        <!-- Modal QR Code -->
+                        <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+                            <div class="bg-white p-8 rounded-lg shadow-lg">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="te   xt-xl font-bold flex items-center">
+                                        <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
+                                    </h3>
+                                    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
+                                <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
+                                <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
                             </div>
                         </div>
 

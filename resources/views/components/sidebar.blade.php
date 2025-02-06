@@ -21,13 +21,13 @@
             </a>
 
             <a href="{{ route('admin.machine-status.view') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-status.view') || request()->routeIs('admin.machine-status.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-status.view') || request()->routeIs('admin.machine-status.*') || request()->routeIs('admin.pembangkit.ready') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-check w-6 h-6"></i>
                 <span class="ml-3 text-base">Kesiapan Pembangkit</span>
             </a>
 
             <a href="{{ route('admin.laporan.sr_wo') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.laporan.sr_wo') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.laporan.sr_wo') || request()->routeIs('admin.laporan.manage') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-file-alt w-6 h-6"></i>
                 <span class="ml-3 text-base">Laporan SR/WO</span>
             </a>
@@ -39,13 +39,13 @@
             </a>
 
             <a href="{{ route('admin.machine-monitor') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-monitor') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
-                <i class="fas fa-cogs w-6 h-6"></i>
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-monitor') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                <i class="fas fa-desktop w-6 h-6"></i>
                 <span class="ml-3 text-base">Monitor Mesin</span>
             </a>
 
             <a href="{{ route('admin.daftar_hadir.index') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.daftar_hadir.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.daftar_hadir.index') || request()->routeIs('admin.daftar_hadir.rekapitulasi') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-list w-6 h-6"></i>
                 <span class="ml-3 text-base">Daftar Hadir</span>
             </a>
@@ -73,6 +73,8 @@
                 <i class="fas fa-cog w-6 h-6"></i>
                 <span class="ml-3 text-base">Pengaturan</span>
             </a>
+
+           
         </nav>
     </div>
 </aside>

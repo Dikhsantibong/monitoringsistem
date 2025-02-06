@@ -114,6 +114,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
         Route::post('/store-token', [DaftarHadirController::class, 'storeToken'])->name('store-token');
         Route::post('/admin/daftar-hadir/store-token', [DaftarHadirController::class, 'storeToken'])->name('admin.daftar_hadir.store_token');
+        Route::get('/print', [AttendanceController::class, 'printView'])
+            ->name('admin.daftar_hadir.print');
     });
 
     Route::prefix('meetings')->group(function () {
@@ -645,6 +647,40 @@ Route::post('/admin/laporan/update-wo/{id}', [LaporanController::class, 'updateW
     ->name('admin.laporan.update-wo');
 
     Route::get('/admin/laporan/download-document/{id}', [LaporanController::class, 'downloadDocument'])->name('admin.laporan.download-document');
+
+Route::prefix('admin/daftar-hadir')->group(function () {
+    Route::get('/export-excel', [AttendanceController::class, 'exportExcel'])
+        ->name('admin.daftar_hadir.export-excel');
+    Route::get('/export-pdf', [AttendanceController::class, 'exportPDF'])
+        ->name('admin.daftar_hadir.export-pdf');
+});
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    // Route yang sudah ada
+    Route::get('/daftar-hadir/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])
+        ->name('admin.daftar_hadir.rekapitulasi');
+    
+    // Tambahkan route untuk export dan print
+    Route::get('/daftar-hadir/export-excel', [AttendanceController::class, 'exportExcel'])
+        ->name('admin.daftar_hadir.export-excel');
+    
+    Route::get('/daftar-hadir/export-pdf', [AttendanceController::class, 'exportPDF'])
+        ->name('admin.daftar_hadir.export-pdf');
+    
+    // Route baru untuk print
+    Route::get('/daftar-hadir/print', [AttendanceController::class, 'printView'])
+        ->name('admin.daftar_hadir.print');
+});
+
+Route::get('/admin/laporan/print/{type}', [LaporanController::class, 'print'])
+    ->name('admin.laporan.print')
+    ->middleware(['auth']);
+
+Route::post('/admin/daftar-hadir/backdate', [AttendanceController::class, 'storeBackdate'])
+    ->name('admin.daftar_hadir.backdate');
+
+Route::post('/admin/daftar-hadir/generate-backdate-token', [AttendanceController::class, 'generateBackdateToken'])
+    ->name('admin.daftar_hadir.generate-backdate-token');
 
 
     

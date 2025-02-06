@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 
 class LaporanController extends Controller
@@ -970,5 +971,58 @@ class LaporanController extends Controller
         ];
 
         return $mimes[strtolower($extension)] ?? 'application/octet-stream';
+    }
+
+    // Tambahkan method print
+    public function print($type, Request $request)
+    {
+        try {
+            $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : now()->startOfDay();
+            $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfDay();
+
+            switch($type) {
+                case 'sr':
+                    $data = ServiceRequest::with('powerPlant')
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    $title = 'Laporan Service Request (SR)';
+                    break;
+                case 'wo':
+                    $data = WorkOrder::with('powerPlant')
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    $title = 'Laporan Work Order (WO)';
+                    break;
+                case 'backlog':
+                    $data = WoBacklog::with('powerPlant')
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    $title = 'Laporan WO Backlog';
+                    break;
+                default:
+                    return back()->with('error', 'Tipe laporan tidak valid');
+            }
+
+            // Get logo
+            $logoPath = public_path('logo/navlogo.png');
+            $logoData = base64_encode(file_get_contents($logoPath));
+            $logoSrc = 'data:image/png;base64,' . $logoData;
+
+            return view('admin.laporan.print', compact(
+                'data',
+                'title',
+                'type',
+                'logoSrc',
+                'startDate',
+                'endDate'
+            ));
+
+        } catch (\Exception $e) {
+            \Log::error('Print Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mencetak laporan');
+        }
     }
 }

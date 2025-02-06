@@ -24,28 +24,23 @@
                     <h1 class="text-xl font-semibold text-gray-800">Daftar Hadir</h1>
                     <!-- User Dropdown -->
                     <div class="relative">
-                        <button id="user-menu-button" class="flex items-center gap-2 hover:text-gray-600"
-                            onclick="toggleUserDropdown()">
-                            <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" alt="User Avatar"
-                                class="w-8 h-8 rounded-full">
-                            <span>{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down text-sm"></i>
-                        </button>
+                       
 
                         <!-- Dropdown Menu -->
-                        <div id="user-dropdown"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
-                            <a href="{{ route('profile.edit') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-user mr-2"></i>Profile
-                            </a>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit"
-                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                                </button>
-                            </form>
+                        <div class="relative">
+                            <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                                <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                    class="w-7 h-7 rounded-full mr-2">
+                                <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                                <i class="fas fa-caret-down ml-2 text-gray-600"></i>
+                            </button>
+                            <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                                <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -56,6 +51,47 @@
 <div class="container mx-auto px-6 py-8">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-semibold">Rekapitulasi Kehadiran Rapat</h1>
+        
+        <!-- Tombol Download, Print, dan Absen Mundur -->
+        <div class="flex gap-3">
+            <!-- Tombol Absen Mundur -->
+            <button onclick="openBackdateModal()" 
+                    class="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-yellow-600">
+                <i class="fas fa-history mr-2"></i>
+                Absen Mundur
+            </button>
+            
+            <!-- Tombol Download Excel -->
+            <a href="{{ route('admin.daftar_hadir.export-excel', [
+                'tanggal_awal' => request('tanggal_awal', now()->startOfMonth()->format('Y-m-d')),
+                'tanggal_akhir' => request('tanggal_akhir', now()->endOfMonth()->format('Y-m-d'))
+            ]) }}" 
+            class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700">
+                <i class="fas fa-file-excel mr-2"></i>
+                Download Excel
+            </a>
+
+            <!-- Tombol Download PDF -->
+            <a href="{{ route('admin.daftar_hadir.export-pdf', [
+                'tanggal_awal' => request('tanggal_awal', now()->startOfMonth()->format('Y-m-d')),
+                'tanggal_akhir' => request('tanggal_akhir', now()->endOfMonth()->format('Y-m-d'))
+            ]) }}" 
+            class="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-red-700">
+                <i class="fas fa-file-pdf mr-2"></i>
+                Download PDF
+            </a>
+
+            <!-- Tombol Print diubah menjadi link yang membuka halaman print di tab baru -->
+            <a href="{{ route('admin.daftar_hadir.print', [
+                'tanggal_awal' => request('tanggal_awal', now()->startOfMonth()->format('Y-m-d')),
+                'tanggal_akhir' => request('tanggal_akhir', now()->endOfMonth()->format('Y-m-d'))
+            ]) }}" 
+            target="_blank"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700">
+                <i class="fas fa-print mr-2"></i>
+                Print
+            </a>
+        </div>
     </div>
 
     <!-- Statistik Cards -->
@@ -171,4 +207,171 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Absen Mundur -->
+<div id="backdateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Absen Mundur</h3>
+            <form id="backdateForm">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Absen</label>
+                    <input type="date" name="tanggal_absen" 
+                           max="{{ date('Y-m-d') }}"
+                           class="w-full rounded-md border-gray-300" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Waktu Absen</label>
+                    <input type="time" name="waktu_absen" 
+                           class="w-full rounded-md border-gray-300" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Alasan</label>
+                    <textarea name="alasan" rows="3" 
+                              class="w-full rounded-md border-gray-300" 
+                              placeholder="Berikan alasan absen mundur" required></textarea>
+                </div>
+                
+                <!-- Form Controls -->
+                <div class="flex justify-end gap-3" id="formControls">
+                    <button type="button" onclick="closeBackdateModal()" 
+                            class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">
+                        Tutup
+                    </button>
+                    <button type="button" onclick="generateBackdateQR()" 
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        Generate QR
+                    </button>
+                </div>
+
+                <!-- QR Code Container -->
+                <div class="mb-4 mt-6" id="qrCodeContainer" style="display: none;">
+                    <div class="text-center">
+                        <div id="qrCode" class="mx-auto flex justify-center mb-4"></div>
+                        <p class="text-sm text-gray-600 mb-4">Scan QR Code untuk melakukan absen mundur</p>
+                        <button type="button" onclick="closeBackdateModal()" 
+                                class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 w-full">
+                            Selesai
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Script untuk Modal dan QR Code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    function openBackdateModal() {
+        document.getElementById('backdateModal').classList.remove('hidden');
+        document.getElementById('qrCodeContainer').style.display = 'none';
+    }
+
+    function closeBackdateModal() {
+        const modal = document.getElementById('backdateModal');
+        const form = document.getElementById('backdateForm');
+        const qrContainer = document.getElementById('qrCodeContainer');
+        const formControls = document.getElementById('formControls');
+        const qrElement = document.getElementById('qrCode');
+        
+        // Reset form
+        form.reset();
+        
+        // Reset QR
+        qrElement.innerHTML = '';
+        qrContainer.style.display = 'none';
+        
+        // Tampilkan kembali form controls
+        formControls.style.display = 'flex';
+        
+        // Tutup modal
+        modal.classList.add('hidden');
+    }
+
+    function generateBackdateQR() {
+        const form = document.getElementById('backdateForm');
+        const formData = new FormData(form);
+
+        // Validasi form
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        // Tampilkan loading state
+        const generateButton = form.querySelector('button[type="button"]');
+        generateButton.disabled = true;
+        generateButton.textContent = 'Generating...';
+
+        // Kirim request untuk generate token backdate
+        fetch('{{ route("admin.daftar_hadir.generate-backdate-token") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                tanggal_absen: formData.get('tanggal_absen'),
+                waktu_absen: formData.get('waktu_absen'),
+                alasan: formData.get('alasan')
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Tampilkan container QR
+                const qrContainer = document.getElementById('qrCodeContainer');
+                const qrElement = document.getElementById('qrCode');
+                const formControls = document.getElementById('formControls');
+                
+                // Reset QR container
+                qrElement.innerHTML = '';
+                
+                // Sembunyikan tombol form controls
+                formControls.style.display = 'none';
+                
+                // Tampilkan QR container
+                qrContainer.style.display = 'block';
+                
+                // Generate QR Code
+                const qr = new QRCode(qrElement, {
+                    text: data.qr_url,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } else {
+                throw new Error(data.message || 'Failed to generate QR Code');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat generate QR Code: ' + error.message);
+            generateButton.disabled = false;
+            generateButton.textContent = 'Generate QR';
+        });
+    }
+</script>
+@endsection
+
+@section('styles')
+<style>
+    #qrCode img {
+        margin: 0 auto;
+        display: block;
+    }
+</style>
+@endsection
+
+@section('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 @endsection
