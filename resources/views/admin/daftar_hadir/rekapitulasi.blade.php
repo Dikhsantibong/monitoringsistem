@@ -265,8 +265,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     function openBackdateModal() {
-        document.getElementById('backdateModal').classList.remove('hidden');
-        document.getElementById('qrCodeContainer').style.display = 'none';
+        const modal = document.getElementById('backdateModal');
+        const form = document.getElementById('backdateForm');
+        const qrContainer = document.getElementById('qrCodeContainer');
+        const formControls = document.getElementById('formControls');
+        
+        // Reset form dan tampilan
+        form.reset();
+        qrContainer.style.display = 'none';
+        formControls.style.display = 'flex';
+        
+        // Tampilkan modal
+        modal.classList.remove('hidden');
     }
 
     function closeBackdateModal() {
@@ -305,26 +315,43 @@
         generateButton.disabled = true;
         generateButton.textContent = 'Generating...';
 
+        // Persiapkan data yang akan dikirim
+        const requestData = {
+            tanggal_absen: formData.get('tanggal_absen'),
+            waktu_absen: formData.get('waktu_absen'),
+            alasan: formData.get('alasan')
+        };
+
+        // Debug: Log data yang akan dikirim
+        console.log('Sending data:', requestData);
+
         // Kirim request untuk generate token backdate
         fetch('{{ route("admin.daftar_hadir.generate-backdate-token") }}', {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                tanggal_absen: formData.get('tanggal_absen'),
-                waktu_absen: formData.get('waktu_absen'),
-                alasan: formData.get('alasan')
-            })
+            body: JSON.stringify(requestData)
         })
-        .then(response => {
+        .then(async response => {
+            const responseData = await response.text();
+            console.log('Raw response:', responseData);
+            
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`HTTP error! status: ${response.status}, message: ${responseData}`);
             }
-            return response.json();
+            
+            try {
+                return JSON.parse(responseData);
+            } catch (e) {
+                throw new Error('Invalid JSON response: ' + responseData);
+            }
         })
         .then(data => {
+            console.log('Parsed response:', data);
+            
             if (data.success) {
                 // Tampilkan container QR
                 const qrContainer = document.getElementById('qrCodeContainer');
@@ -341,7 +368,7 @@
                 qrContainer.style.display = 'block';
                 
                 // Generate QR Code
-                const qr = new QRCode(qrElement, {
+                new QRCode(qrElement, {
                     text: data.qr_url,
                     width: 200,
                     height: 200,
@@ -349,13 +376,19 @@
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
+
+                // Tampilkan pesan sukses
+                console.log('QR Code generated successfully');
             } else {
                 throw new Error(data.message || 'Failed to generate QR Code');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error details:', error);
             alert('Terjadi kesalahan saat generate QR Code: ' + error.message);
+        })
+        .finally(() => {
+            // Reset button state
             generateButton.disabled = false;
             generateButton.textContent = 'Generate QR';
         });
