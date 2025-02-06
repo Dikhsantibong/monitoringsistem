@@ -16,8 +16,11 @@
                         <div class="flex justify-between items-center mb-2">
                             <h1 class="text-lg font-semibold uppercase">STATUS MESIN - {{ $powerPlant->name }}</h1>
                             @php
-                                // Ambil update terakhir untuk unit ini
-                                $lastUpdate = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                // Filter machines yang belum dihapus
+                                $activeMachines = $powerPlant->machines()->whereNull('deleted_at')->get();
+                                
+                                // Ambil update terakhir untuk unit ini (hanya untuk mesin aktif)
+                                $lastUpdate = $logs->whereIn('machine_id', $activeMachines->pluck('id'))
                                     ->max('updated_at');
                                 
                                 // Format waktu update terakhir
@@ -34,25 +37,17 @@
                         <!-- Tambahkan informasi total DMN, DMP, dan Beban -->
                         <div class="grid grid-cols-5 gap-4 mb-4">
                             @php
-                                // Filter logs berdasarkan tanggal yang dipilih
-                                $filteredLogs = $logs->filter(function($log) use ($date) {
-                                    return $log->created_at->format('Y-m-d') === $date;
+                                // Filter logs berdasarkan tanggal yang dipilih dan mesin aktif
+                                $filteredLogs = $logs->filter(function($log) use ($date, $activeMachines) {
+                                    return $log->created_at->format('Y-m-d') === $date 
+                                        && $activeMachines->contains('id', $log->machine_id);
                                 });
 
-                                $totalDMP = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                    ->sum(fn($log) => (float) $log->dmp);
-                                
-                                $totalDMN = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                    ->sum(fn($log) => (float) $log->dmn);
-                                
-                                
-                                $totalBeban = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                    ->sum(function($log) {
-                                        if ($log->status === 'Operasi') {
-                                            return (float) $log->load_value;
-                                        }
-                                        return 0;
-                                    });
+                                $totalDMP = $filteredLogs->sum(fn($log) => (float) $log->dmp);
+                                $totalDMN = $filteredLogs->sum(fn($log) => (float) $log->dmn);
+                                $totalBeban = $filteredLogs
+                                    ->where('status', 'Operasi')
+                                    ->sum(fn($log) => (float) $log->load_value);
 
                                 // Ambil data HOP untuk power plant ini
                                 $hopValue = \App\Models\UnitOperationHour::where('power_plant_id', $powerPlant->id)
@@ -100,13 +95,13 @@
 
                         <div class="grid grid-cols-7 gap-4">
                             @php
-                                $machineCount = $powerPlant->machines->count();
-                                $operasiCount = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Operasi')->count();
-                                $gangguanCount = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Gangguan')->count();
-                                $pemeliharaanCount = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Pemeliharaan')->count();
-                                $standbyCount = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Standby')->count();
-                                $overhaulCount = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Overhaul')->count();
-                                $mothballedCount = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))->where('status', 'Mothballed')->count();
+                                $machineCount = $activeMachines->count();
+                                $operasiCount = $filteredLogs->whereIn('machine_id', $activeMachines->pluck('id'))->where('status', 'Operasi')->count();
+                                $gangguanCount = $filteredLogs->whereIn('machine_id', $activeMachines->pluck('id'))->where('status', 'Gangguan')->count();
+                                $pemeliharaanCount = $filteredLogs->whereIn('machine_id', $activeMachines->pluck('id'))->where('status', 'Pemeliharaan')->count();
+                                $standbyCount = $filteredLogs->whereIn('machine_id', $activeMachines->pluck('id'))->where('status', 'Standby')->count();
+                                $overhaulCount = $filteredLogs->whereIn('machine_id', $activeMachines->pluck('id'))->where('status', 'Overhaul')->count();
+                                $mothballedCount = $filteredLogs->whereIn('machine_id', $activeMachines->pluck('id'))->where('status', 'Mothballed')->count();
                             @endphp
                             
                             <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300">
@@ -165,7 +160,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-sm">
-                        @forelse($powerPlant->machines as $index => $machine)
+                        @forelse($activeMachines as $index => $machine)
                             @php
                                 $log = $filteredLogs->firstWhere('machine_id', $machine->id);
                                 $status = $log?->status ?? '-';
