@@ -152,11 +152,46 @@
                                                     <select id="filterUnitSR" onchange="filterSRTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants as $plant)
-                                                            <option value="{{ $plant->name }}" class="text-gray-700">
-                                                                {{ $plant->name }} ({{ $plant->unit_source }})
-                                                            </option>
-                                                        @endforeach
+                                                        @if(session('unit') === 'mysql')
+                                                            <!-- UP Kendari -->
+                                                            <optgroup label="UP KENDARI" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Wua-Wua -->
+                                                            <optgroup label="PLTD WUA-WUA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_wua_wua')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Poasia -->
+                                                            <optgroup label="PLTD POASIA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_poasia')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Kolaka -->
+                                                            <optgroup label="PLTD KOLAKA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_kolaka')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Bau-Bau -->
+                                                            <optgroup label="PLTD BAU-BAU" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_bau_bau')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                        @else
+                                                            @foreach($powerPlants->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                            @endforeach
+                                                        @endif
                                                     </select>
                                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                                                         <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
@@ -320,15 +355,52 @@
                                                     <select id="filterUnitWO" onchange="filterWOTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants->where('unit_source', session('unit'))->sortBy('name') as $plant)
-                                                            <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
-                                                        @endforeach
+                                                        @if(session('unit') === 'mysql')
+                                                            <!-- UP Kendari -->
+                                                            <optgroup label="UP KENDARI" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Wua-Wua -->
+                                                            <optgroup label="PLTD WUA-WUA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_wua_wua')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Poasia -->
+                                                            <optgroup label="PLTD POASIA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_poasia')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Kolaka -->
+                                                            <optgroup label="PLTD KOLAKA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_kolaka')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Bau-Bau -->
+                                                            <optgroup label="PLTD BAU-BAU" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_bau_bau')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                        @else
+                                                            @foreach($powerPlants->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                            @endforeach
+                                                        @endif
                                                     </select>
                                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                                                         <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
                                                             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                        </svg>  
-                                                    </div>                  
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </th>
@@ -528,9 +600,46 @@
                                                     <select id="filterUnitBacklog" onchange="filterBacklogTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants->where('unit_source', session('unit'))->sortBy('name') as $plant)
-                                                            <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
-                                                        @endforeach
+                                                        @if(session('unit') === 'mysql')
+                                                            <!-- UP Kendari -->
+                                                            <optgroup label="UP KENDARI" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Wua-Wua -->
+                                                            <optgroup label="PLTD WUA-WUA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_wua_wua')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Poasia -->
+                                                            <optgroup label="PLTD POASIA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_poasia')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Kolaka -->
+                                                            <optgroup label="PLTD KOLAKA" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_kolaka')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                            
+                                                            <!-- PLTD Bau-Bau -->
+                                                            <optgroup label="PLTD BAU-BAU" class="text-gray-700">
+                                                                @foreach($powerPlants->where('unit_source', 'mysql_bau_bau')->sortBy('name') as $plant)
+                                                                    <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                        @else
+                                                            @foreach($powerPlants->sortBy('name') as $plant)
+                                                                <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                            @endforeach
+                                                        @endif
                                                     </select>
                                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                                                         <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
