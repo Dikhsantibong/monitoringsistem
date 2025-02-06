@@ -24,19 +24,22 @@ class LaporanController extends Controller
         $this->checkExpiredWO();
 
         try {
-            // Ambil data PowerPlant dari database utama (mysql)
-            $powerPlants = Cache::remember('power_plants', 3600, function () {
-                return DB::connection('mysql')
-                    ->table('power_plants')
-                    ->select('id', 'name', 'unit_source')
-                    ->orderBy('name')
-                    ->get()
-                    ->unique(function ($item) {
-                        // Menghindari duplikasi berdasarkan unit_source dan name
-                        return $item->unit_source . $item->name;
-                    })
-                    ->values();
-            });
+            // Debug: Log session unit
+            \Log::info('Current session unit:', ['unit' => session('unit')]);
+
+            // 1. Get power plants data berdasarkan kondisi
+            $powerPlants = PowerPlant::when(session('unit') !== 'mysql', function($query) {
+                                return $query->where('unit_source', session('unit'));
+                            })
+                            ->select('id', 'name', 'unit_source')
+                            ->orderBy('name')
+                            ->get();
+
+            // Debug: Log power plants data
+            \Log::info('Power Plants data:', [
+                'count' => $powerPlants->count(),
+                'data' => $powerPlants->toArray()
+            ]);
 
             // 2. Optimasi query Service Requests
             $serviceRequests = ServiceRequest::with(['powerPlant:id,name'])
@@ -119,8 +122,10 @@ class LaporanController extends Controller
             ));
 
         } catch (\Exception $e) {
-            Log::error('Error in srWo: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan saat memuat data');
+            \Log::error('Error in srWo method: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
     

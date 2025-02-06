@@ -153,7 +153,9 @@
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
                                                         @foreach($powerPlants as $plant)
-                                                            <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
+                                                            <option value="{{ $plant->name }}" class="text-gray-700">
+                                                                {{ $plant->name }} ({{ $plant->unit_source }})
+                                                            </option>
                                                         @endforeach
                                                     </select>
                                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
@@ -318,7 +320,7 @@
                                                     <select id="filterUnitWO" onchange="filterWOTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants as $plant)
+                                                        @foreach($powerPlants->where('unit_source', session('unit'))->sortBy('name') as $plant)
                                                             <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
                                                         @endforeach
                                                     </select>
@@ -526,7 +528,7 @@
                                                     <select id="filterUnitBacklog" onchange="filterBacklogTable()" 
                                                             class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
                                                         <option value="" class="text-gray-700">Semua</option>
-                                                        @foreach($powerPlants as $plant)
+                                                        @foreach($powerPlants->where('unit_source', session('unit'))->sortBy('name') as $plant)
                                                             <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
                                                         @endforeach
                                                     </select>
@@ -693,7 +695,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Dokumen Diperlukan',
-                        text: 'silahkan Upload Job Card yang telah di validasi.',
+                        text: 'silahkan Upload Job Card yang telah di validasi.',
                         showCancelButton: true,
                         confirmButtonText: 'Upload Dokumen',
                         cancelButtonText: 'Batal',
