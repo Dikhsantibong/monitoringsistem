@@ -22,7 +22,8 @@ class Machine extends Model
         'type',
         'serial_number',
         'components',
-        'unit_source'
+        'unit_source',
+        'deleted_at'
     ];
 
     public function issues()
@@ -98,7 +99,8 @@ class Machine extends Model
                 'components' => $machine->components,
                 'unit_source' => session('unit'),
                 'created_at' => $machine->created_at,
-                'updated_at' => $machine->updated_at
+                'updated_at' => $machine->updated_at,
+                'deleted_at' => $machine->deleted_at
             ];
 
             Log::info("Attempting to {$action} Machine sync", ['data' => $data]);
@@ -117,13 +119,13 @@ class Machine extends Model
                     
                 case 'delete':
                     $upKendari->where('id', $machine->id)
-                             ->delete();
+                             ->update(['deleted_at' => now()]);
                     break;
             }
 
             Log::info("Machine {$action} sync successful", [
                 'id' => $machine->id,
-                'unit' => 'poasia'
+                'unit' => session('unit')
             ]);
 
         } catch (\Exception $e) {
