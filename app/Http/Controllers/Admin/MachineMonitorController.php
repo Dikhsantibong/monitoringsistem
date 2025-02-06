@@ -17,6 +17,7 @@ use App\Models\Issue;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MachineMonitorController extends Controller
 {
@@ -410,9 +411,7 @@ class MachineMonitorController extends Controller
             DB::beginTransaction();
             
             // Hapus semua log status mesin terlebih dahulu
-            if (!MachineStatusLog::deleteMachineLogs($id)) {
-                throw new \Exception('Gagal menghapus log status mesin');
-            }
+            MachineStatusLog::deleteMachineLogs($id);
             
             // Setelah log dihapus, baru hapus mesin
             $machine = Machine::findOrFail($id);
@@ -426,9 +425,10 @@ class MachineMonitorController extends Controller
             
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error("Gagal menghapus mesin: " . $e->getMessage());
             return redirect()
                 ->route('admin.machine-monitor')
-                ->with('error', 'Gagal menghapus data mesin: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus mesin: ' . $e->getMessage());
         }
     }
 }

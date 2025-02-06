@@ -134,23 +134,26 @@ class MachineStatusLog extends Model
             try {
                 DB::beginTransaction();
                 
-                // Dapatkan power plant dari mesin
-                $powerPlant = Machine::find($machineId)->powerPlant;
+                // Dapatkan mesin dan power plant
+                $machine = Machine::find($machineId);
+                if (!$machine || !$machine->powerPlant) {
+                    throw new \Exception('Mesin atau unit pembangkit tidak ditemukan');
+                }
+
+                $powerPlant = $machine->powerPlant;
                 
-                if ($powerPlant) {
-                    // Hapus di database UP Kendari
-                    self::where('machine_id', $machineId)->delete();
+                // Hapus di database UP Kendari
+                static::where('machine_id', $machineId)->delete();
+                
+                // Jika bukan di session mysql (UP Kendari), hapus juga di database unit lokal
+                if (session('unit', 'mysql') !== 'mysql') {
+                    $localConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
                     
-                    // Jika bukan di session mysql (UP Kendari), hapus juga di database unit lokal
-                    if (session('unit', 'mysql') !== 'mysql') {
-                        $localConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
-                        
-                        if ($localConnection) {
-                            DB::connection($localConnection)
-                                ->table('machine_status_logs')
-                                ->where('machine_id', $machineId)
-                                ->delete();
-                        }
+                    if ($localConnection) {
+                        DB::connection($localConnection)
+                            ->table('machine_status_logs')
+                            ->where('machine_id', $machineId)
+                            ->delete();
                     }
                 }
                 
@@ -160,7 +163,7 @@ class MachineStatusLog extends Model
             } catch (\Exception $e) {
                 DB::rollBack();
                 Log::error("Gagal menghapus log status mesin: " . $e->getMessage());
-                return false;
+                throw $e; // Re-throw exception agar dapat ditangkap oleh controller
             }
         }
     }
