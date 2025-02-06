@@ -11,12 +11,72 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Models\MachineStatusLog;
+use App\Models\PowerPlant;
+use App\Models\Notification;
 
 class UserController extends Controller
 {
     public function dashboard()
     {
-        return view('user.dashboard'); // Pastikan file view ini ada
+        // Mengambil data untuk overview cards
+        $totalMachines = Machine::count();
+        $operatingMachines = MachineStatusLog::where('status', 'Operasi')
+            ->whereDate('created_at', today())
+            ->count();
+        $troubleMachines = MachineStatusLog::where('status', 'Gangguan')
+            ->whereDate('created_at', today())
+            ->count();
+        $maintenanceMachines = MachineStatusLog::where('status', 'Pemeliharaan')
+            ->whereDate('created_at', today())
+            ->count();
+
+        // Mengambil data kinerja pembangkit dengan pengecekan pembagi nol
+        $powerPlantPerformance = PowerPlant::select('name')
+            ->withCount(['machines as total_machines'])
+            ->withCount(['machines as operating_machines' => function($query) {
+                $query->whereHas('statusLogs', function($q) {
+                    $q->where('status', 'Operasi')
+                        ->whereDate('created_at', today());
+                });
+            }])
+            ->get()
+            ->map(function($plant) {
+                // Hindari pembagian dengan nol
+                $plant->efficiency = $plant->total_machines > 0 
+                    ? ($plant->operating_machines / $plant->total_machines) * 100 
+                    : 0;
+                return $plant;
+            });
+
+        // Mengambil aktivitas pemeliharaan terbaru
+        $recentMaintenances = MachineStatusLog::with('machine')
+            ->where('status', 'Pemeliharaan')
+            ->whereDate('created_at', today())
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Mengambil meeting hari ini
+        $todayMeetings = Meeting::whereDate('scheduled_at', today())
+            ->orderBy('scheduled_at')
+            ->get();
+
+        // Mengambil notifikasi
+        $notifications = Notification::whereDate('created_at', today())
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('user.dashboard', compact(
+            'totalMachines',
+            'operatingMachines',
+            'troubleMachines',
+            'maintenanceMachines',
+            'powerPlantPerformance',
+            'recentMaintenances',
+            'todayMeetings',
+            'notifications'
+        ));
     }
 
     public function monitoring()
@@ -53,14 +113,17 @@ class UserController extends Controller
     {
         $date = $request->input('date', now()->format('Y-m-d'));
 
-        $machineStatusLogs = MachineStatusLog::with(['machine.powerPlant'])
-            ->whereDate('tanggal', $date)
-            ->orderBy('tanggal', 'desc')
-            ->paginate(10)
-            ->appends(['date' => $date]);
+        // Ambil semua power plants dengan relasi machines dan logs
+        $powerPlants = \App\Models\PowerPlant::with(['machines' => function($query) {
+            $query->orderBy('name');
+        }])->get();
+
+        // Ambil semua logs untuk tanggal yang dipilih
+        $machineStatusLogs = MachineStatusLog::whereDate('tanggal', $date)
+            ->get();
 
         if ($request->ajax()) {
-            $view = view('user.machine-monitor._table', compact('machineStatusLogs'))->render();
+            $view = view('user.machine-monitor._table', compact('powerPlants', 'machineStatusLogs', 'date'))->render();
             
             return response()->json([
                 'success' => true,
@@ -68,7 +131,7 @@ class UserController extends Controller
             ]);
         }
 
-        return view('user.machine-monitor', compact('machineStatusLogs'));
+        return view('user.machine-monitor', compact('powerPlants', 'machineStatusLogs', 'date'));
     }
 
     public function meetings()

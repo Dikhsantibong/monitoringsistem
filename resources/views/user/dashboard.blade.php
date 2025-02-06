@@ -2,83 +2,9 @@
 
 @section('content')
     <div class="flex h-screen bg-gray-50">
-
-        <style>
-            /* Sidebar */
-            aside {
-                background-color: #0A749B;
-                /* Warna biru kehijauan */
-                color: white;
-            }
-
-            /* Link di Sidebar */
-            aside nav a {
-                color: white;
-                /* Teks default putih */
-                display: flex;
-                align-items: center;
-                padding: 12px 16px;
-                text-decoration: none;
-                transition: background-color 0.3s, color 0.3s;
-                /* Animasi transisi */
-            }
-
-            /* Link di Sidebar saat Hover */
-            aside nav a:hover {
-                background-color: white;
-                /* Latar belakang putih */
-                color: black;
-                /* Teks berubah menjadi hitam */
-            }
-
-            /* Aktif Link */
-            aside nav a.bg-yellow-500 {
-                background-color: white;
-                color: #000102;
-            }
-        </style>
         <!-- Sidebar -->
-        <aside id="mobile-menu"
-            class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
-            <div class="p-4 flex items-center gap-3">
-                <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi" class="w-40 h-15">
-                <!-- Mobile Menu Toggle -->
-                <button id="menu-toggle-close"
-                    class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                    aria-controls="mobile-menu" aria-expanded="false">
-                    <span class="sr-only">Open main menu</span>
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <nav class="mt-4">
-                <a href="{{ route('user.dashboard') }}" class="bg-yellow-500">
-                    <i class="fas fa-home mr-3"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ route('user.machine.monitor') }}">
-                    <i class="fas fa-cogs mr-3"></i>
-                    <span>Machine Monitor</span>
-                </a>
-                <a href="{{ route('daily.meeting') }}">
-                    <i class="fas fa-users mr-3"></i>
-                    <span>Daily Meeting</span>
-                </a>
-                <a href="{{ route('monitoring') }}">
-                    <i class="fas fa-chart-line mr-3"></i>
-                    <span>Monitoring</span>
-                </a>
-                <a href="{{ route('documentation') }}">
-                    <i class="fas fa-book mr-3"></i>
-                    <span>Documentation</span>
-                </a>
-                <a href="{{ route('support') }}">
-                    <i class="fas fa-headset mr-3"></i>
-                    <span>Support</span>
-                </a>
-            </nav>
-        </aside>
-
-
+        @include('components.user-sidebar')
+        
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
             <!-- Header -->
@@ -132,68 +58,112 @@
             <!-- Dashboard Content -->
             <main class="px-6">
                 @include('layouts.breadcrumbs', ['breadcrumbs' => [['title' => 'Dashboard']]])
+                
                 <!-- Overview Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-yellow-500 rounded-lg shadow p-6 flex items-center">
-                        <i class="fas fa-chart-line mr-4 text-white" style="font-size: 24px;"></i>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
+                        <i class="fas fa-bolt mr-4 text-white" style="font-size: 24px;"></i>
                         <div>
-                            <h3 class="text-white text-sm font-medium">Progress Harian</h3>
-                            <p class="text-2xl font-bold text-white mt-2">85%</p>
+                            <h3 class="text-white text-sm font-medium">Total Mesin</h3>
+                            <p class="text-2xl font-bold text-white mt-2">{{ $totalMachines }}</p>
                         </div>
                     </div>
                     <div class="bg-green-500 rounded-lg shadow p-6 flex items-center">
                         <i class="fas fa-check-circle mr-4 text-white" style="font-size: 24px;"></i>
                         <div>
-                            <h3 class="text-white text-sm font-medium">Status Aktivitas</h3>
-                            <p class="text-2xl font-bold text-white mt-2">Aktif</p>
+                            <h3 class="text-white text-sm font-medium">Mesin Beroperasi</h3>
+                            <p class="text-2xl font-bold text-white mt-2">{{ $operatingMachines }}</p>
                         </div>
                     </div>
-                    <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
-                        <i class="fas fa-bell mr-4 text-white" style="font-size: 24px;"></i>
+                    <div class="bg-red-500 rounded-lg shadow p-6 flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-4 text-white" style="font-size: 24px;"></i>
                         <div>
-                            <h3 class="text-white text-sm font-medium">Notifikasi</h3>
-                            <p class="text-2xl font-bold text-white mt-2">3 Baru</p>
+                            <h3 class="text-white text-sm font-medium">Mesin Gangguan</h3>
+                            <p class="text-2xl font-bold text-white mt-2">{{ $troubleMachines }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-500 rounded-lg shadow p-6 flex items-center">
+                        <i class="fas fa-wrench mr-4 text-white" style="font-size: 24px;"></i>
+                        <div>
+                            <h3 class="text-white text-sm font-medium">Dalam Pemeliharaan</h3>
+                            <p class="text-2xl font-bold text-white mt-2">{{ $maintenanceMachines }}</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Calendar & Tasks -->
+                <!-- Power Plants Performance -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Kinerja Unit Pembangkit</h3>
+                        <div class="space-y-4">
+                            @foreach($powerPlantPerformance as $plant)
+                            <div class="flex flex-col">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-gray-700">{{ $plant->name }}</span>
+                                    <span class="text-gray-900 font-medium">{{ $plant->efficiency }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $plant->efficiency }}%"></div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Recent Maintenance Activities -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Pemeliharaan Terbaru</h3>
+                        <div class="space-y-4">
+                            @foreach($recentMaintenances as $maintenance)
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <p class="text-sm text-gray-600">{{ $maintenance->machine->name }}</p>
+                                <p class="text-gray-800">{{ $maintenance->description }}</p>
+                                <p class="text-xs text-gray-500">{{ $maintenance->created_at->diffForHumans() }}</p>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Meetings & Notifications -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Jadwal Meeting</h3>
-                        <div id="calendar" class="min-h-[300px]">
-                            <!-- Calendar widget -->
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Jadwal Meeting Hari Ini</h3>
+                        <div class="space-y-4">
+                            @forelse($todayMeetings as $meeting)
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ $meeting->title }}</p>
+                                    <p class="text-sm text-gray-600">{{ $meeting->scheduled_at->format('H:i') }}</p>
+                                </div>
+                                <span class="px-3 py-1 text-xs font-medium rounded-full 
+                                    {{ $meeting->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                    {{ $meeting->status }}
+                                </span>
+                            </div>
+                            @empty
+                            <p class="text-gray-500 text-center">Tidak ada meeting hari ini</p>
+                            @endforelse
                         </div>
                     </div>
+
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Tugas Saat Ini</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Notifikasi Penting</h3>
                         <div class="space-y-4">
-                            <div class="flex items-center">
-                                <input type="checkbox" class="mr-3">
-                                <span class="text-gray-700">Review dokumen project</span>
+                            @forelse($notifications as $notification)
+                            <div class="flex items-start space-x-3 p-3 {{ $notification->read ? 'bg-white' : 'bg-blue-50' }} rounded-lg">
+                                <i class="fas {{ $notification->icon }} text-blue-500 mt-1"></i>
+                                <div>
+                                    <p class="text-gray-800">{{ $notification->message }}</p>
+                                    <p class="text-xs text-gray-500">{{ $notification->created_at->diffForHumans() }}</p>
+                                </div>
                             </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" class="mr-3">
-                                <span class="text-gray-700">Meeting tim development</span>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" class="mr-3">
-                                <span class="text-gray-700">Update status project</span>
-                            </div>
+                            @empty
+                            <p class="text-gray-500 text-center">Tidak ada notifikasi baru</p>
+                            @endforelse
                         </div>
                     </div>
                 </div>
-
-                <!-- Tema Dashboard -->
-                <section class="mt-6">
-                    <h2 class="text-xl font-semibold">Tema Dashboard</h2>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <label for="theme-toggle" class="flex items-center">
-                            <input type="checkbox" id="theme-toggle" class="mr-2">
-                            <span>Mode Gelap</span>
-                        </label>
-                    </div>
-                </section>
             </main>
         </div>
     </div>

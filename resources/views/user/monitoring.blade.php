@@ -3,80 +3,7 @@
 @section('content')
     <div class="flex h-screen bg-gray-50">
         <!-- Sidebar -->
-        <style>
-            /* Sidebar */
-            aside {
-                background-color: #0A749B;
-                /* Warna biru kehijauan */
-                color: white;
-            }
-
-            /* Link di Sidebar */
-            aside nav a {
-                color: white;
-                /* Teks default putih */
-                display: flex;
-                align-items: center;
-                padding: 12px 16px;
-                text-decoration: none;
-                transition: background-color 0.3s, color 0.3s;
-                /* Animasi transisi */
-            }
-
-            /* Link di Sidebar saat Hover */
-            aside nav a:hover {
-                background-color: white;
-                /* Latar belakang putih */
-                color: black;
-                /* Teks berubah menjadi hitam */
-            }
-
-            /* Aktif Link */
-            aside nav a.bg-yellow-500 {
-                background-color: white;
-                color: #000102;
-            }
-        </style>
-        <!-- Sidebar -->
-        <aside id="mobile-menu"
-            class="fixed z-20 overflow-hidden transform transition-transform duration-300 md:relative md:translate-x-0 h-screen w-64 bg-[#0A749B] shadow-md text-white hidden md:block md:shadow-lg">
-            <div class="p-4 flex items-center gap-3">
-                <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi" class="w-40 h-15">
-                <!-- Mobile Menu Toggle -->
-                <button id="menu-toggle-close"
-                    class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                    aria-controls="mobile-menu" aria-expanded="false">
-                    <span class="sr-only">Open main menu</span>
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <nav class="mt-4">
-                <a href="{{ route('user.dashboard') }}">
-                    <i class="fas fa-home mr-3"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ route('user.machine.monitor') }}">
-                    <i class="fas fa-cogs mr-3"></i>
-                    <span>Machine Monitor</span>
-                </a>
-                <a href="{{ route('daily.meeting') }}">
-                    <i class="fas fa-users mr-3"></i>
-                    <span>Daily Meeting</span>
-                </a>
-                <a href="{{ route('monitoring') }}" class="bg-yellow-500">
-                    <i class="fas fa-chart-line mr-3"></i>
-                    <span>Monitoring</span>
-                </a>
-                <a href="{{ route('documentation') }}">
-                    <i class="fas fa-book mr-3"></i>
-                    <span>Documentation</span>
-                </a>
-                <a href="{{ route('support') }}">
-                    <i class="fas fa-headset mr-3"></i>
-                    <span>Support</span>
-                </a>
-            </nav>
-        </aside>
+        @include('components.user-sidebar')
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
@@ -186,4 +113,5 @@
         </script>
         @push('scripts')
         @endpush
-    @endsection
+    </div>
+@endsection
