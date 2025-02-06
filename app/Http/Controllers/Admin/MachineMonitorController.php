@@ -16,6 +16,7 @@ use App\Models\PowerPlant;
 use App\Models\Issue;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MachineMonitorController extends Controller
 {
@@ -403,21 +404,26 @@ class MachineMonitorController extends Controller
         return view('admin.machine-monitor.show', compact('machines'));
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Machine $machine, Request $request)
     {
         try {
-            // Verifikasi password
-            if (!Hash::check($request->password, Auth::user()->password)) {
-                return back()->with('error', 'Password yang Anda masukkan salah');
-            }
-
-            $machine = Machine::findOrFail($id);
+            DB::beginTransaction();
+            
+            // Hapus semua status logs terkait terlebih dahulu
+            $machine->statusLogs()->delete();
+            // Hapus semua operations terkait
+            $machine->operations()->delete();
+            // Kemudian hapus mesin
             $machine->delete();
-
+            
+            DB::commit();
+            
             return redirect()->route('admin.machine-monitor')
-                ->with('success', 'Data mesin berhasil dihapus');
+                ->with('success', 'Mesin berhasil dihapus');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus data mesin: ' . $e->getMessage());
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus data mesin: ' . $e->getMessage());
         }
     }
 }
