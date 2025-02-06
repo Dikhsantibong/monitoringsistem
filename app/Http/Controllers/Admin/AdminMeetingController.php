@@ -450,6 +450,8 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->get('tanggal');
+            \Log::info('Starting PDF download process for date:', ['date' => $date]);
+            
             $allScoreCards = [];
             $allMachineStatuses = [];
             $currentSession = session('unit');
@@ -522,6 +524,8 @@ class AdminMeetingController extends Controller
 
             foreach ($activeConnections as $connection => $unitName) {
                 try {
+                    \Log::info("Trying to fetch data for connection: {$connection}");
+                    
                     // Score Card Data - Menggunakan nama tabel yang benar
                     $scoreCard = DB::connection($connection)
                         ->table('score_card_daily') // Menggunakan nama tabel yang benar
@@ -530,6 +534,11 @@ class AdminMeetingController extends Controller
                         ->first();
 
                     if ($scoreCard) {
+                        \Log::info("Found scorecard data for {$unitName}", [
+                            'scoreCard' => $scoreCard,
+                            'peserta' => json_decode($scoreCard->peserta, true)
+                        ]);
+                        
                         // Hitung skor waktu mulai
                         $waktuMulaiTarget = "07:30:00";
                         $waktuMulaiActual = $scoreCard->waktu_mulai;
@@ -583,7 +592,10 @@ class AdminMeetingController extends Controller
                     }
 
                 } catch (\Exception $e) {
-                    \Log::error("Error accessing {$connection}: " . $e->getMessage());
+                    \Log::error("Error processing {$unitName} data:", [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                     continue;
                 }
             }
@@ -597,32 +609,36 @@ class AdminMeetingController extends Controller
                 'woBacklogs' => $woBacklogs->count()
             ]);
 
-            // Sebelum generate PDF, pastikan data tersedia
-            if (empty($allScoreCards)) {
-                \Log::warning('No score cards data available');
-                return back()->with('error', 'Tidak ada data scorecard yang tersedia untuk tanggal ini.');
-            }
-
-            $pdf = PDF::loadView('admin.meetings.score-card-pdf', [
-                'date' => $date,
-                'allScoreCards' => $allScoreCards,
-                'attendances' => $attendances,
-                'powerPlants' => $powerPlants,
-                'logs' => $logs,
-                'serviceRequests' => $serviceRequests,
-                'workOrders' => $workOrders,
-                'woBacklogs' => $woBacklogs,
-                'logoSrc' => $logoSrc,
-                'allMachineStatuses' => $allMachineStatuses,
-                'otherDiscussions' => $otherDiscussions
+            // Sebelum generate PDF, log semua data yang akan dikirim ke view
+            \Log::info('Data being sent to PDF view:', [
+                'scoreCardsCount' => count($allScoreCards),
+                'attendancesCount' => $attendances->count(),
+                'powerPlantsCount' => $powerPlants->count(),
+                'logsCount' => $logs->count(),
+                'serviceRequestsCount' => $serviceRequests->count(),
+                'workOrdersCount' => $workOrders->count()
             ]);
 
-            $pdf->setPaper('a4', 'portrait');
+            $pdf = PDF::loadView('admin.meetings.score-card-pdf', compact(
+                'date',
+                'allScoreCards',
+                'attendances',
+                'powerPlants',
+                'logs',
+                'serviceRequests',
+                'workOrders',
+                'woBacklogs',
+                'logoSrc',
+                'otherDiscussions'
+            ));
+
             return $pdf->download('score_card_' . $date . '.pdf');
 
         } catch (\Exception $e) {
-            \Log::error('Error in downloadPDF: ' . $e->getMessage());
-            \Log::error($e->getTraceAsString());
+            \Log::error('PDF generation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'Gagal mengunduh PDF. Error: ' . $e->getMessage());
         }
     }

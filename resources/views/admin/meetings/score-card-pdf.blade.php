@@ -206,16 +206,63 @@
 
                         <!-- Total Score -->
                         @php
-                            $totalScorePeserta = collect($data['peserta'])->sum('skor');
-                            $totalScoreKetentuan = collect($ketentuanFields)->sum(function($field) use ($data) {
-                                return $data[$field['value']] ?? 0;
-                            });
-                            $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+                            try {
+                                // Debug log
+                                \Log::info("Processing unit: {$unitName}", [
+                                    'data' => $data
+                                ]);
+                                
+                                // Pastikan data peserta ada dan valid
+                                if (!isset($data['peserta']) || !is_array($data['peserta'])) {
+                                    throw new Exception('Data peserta tidak valid');
+                                }
+
+                                // Hitung total score peserta
+                                $totalScorePeserta = 0;
+                                foreach ($data['peserta'] as $peserta) {
+                                    if (isset($peserta['skor'])) {
+                                        $totalScorePeserta += (int)$peserta['skor'];
+                                    }
+                                }
+
+                                // Hitung total score ketentuan
+                                $totalScoreKetentuan = 
+                                    (int)($data['kesiapan_panitia'] ?? 0) +
+                                    (int)($data['kesiapan_bahan'] ?? 0) +
+                                    (int)($data['aktivitas_luar'] ?? 0) +
+                                    (int)($data['gangguan_diskusi'] ?? 0) +
+                                    (int)($data['gangguan_keluar_masuk'] ?? 0) +
+                                    (int)($data['gangguan_interupsi'] ?? 0) +
+                                    (int)($data['ketegasan_moderator'] ?? 0) +
+                                    (int)($data['kelengkapan_sr'] ?? 0) +
+                                    (int)($data['skor_waktu_mulai'] ?? 0);
+
+                                // Hitung skor maksimum
+                                $maxScorePeserta = count($data['peserta']) * 100;
+                                $maxScoreKetentuan = 900; // 9 ketentuan x 100
+                                $maxPossibleScore = $maxScorePeserta + $maxScoreKetentuan;
+
+                                // Hitung persentase
+                                $actualTotalScore = $totalScorePeserta + $totalScoreKetentuan;
+                                $percentageScore = $maxPossibleScore > 0 ? ($actualTotalScore / $maxPossibleScore) * 100 : 0;
+
+                                \Log::info("Score calculation for {$unitName}", [
+                                    'totalScorePeserta' => $totalScorePeserta,
+                                    'totalScoreKetentuan' => $totalScoreKetentuan,
+                                    'maxPossibleScore' => $maxPossibleScore,
+                                    'actualTotalScore' => $actualTotalScore,
+                                    'percentageScore' => $percentageScore
+                                ]);
+
+                            } catch (\Exception $e) {
+                                \Log::error("Error calculating score for {$unitName}: " . $e->getMessage());
+                                $percentageScore = 0;
+                            }
                         @endphp
                         
                         <tr class="total-row">
-                            <td colspan="4" style="text-align: right;">Total Score:</td>
-                            <td style="text-align: center;">{{ $grandTotal }}</td>
+                            <td colspan="4" style="text-align: right;"><strong>Total Score:</strong></td>
+                            <td style="text-align: center;"><strong>{{ number_format($percentageScore, 2) }}%</strong></td>
                             <td>Total score peserta dan ketentuan</td>
                         </tr>
                     </tbody>
@@ -233,6 +280,7 @@
         <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
         
         <div class="header">
+            
             <h2>DAFTAR HADIR RAPAT</h2>
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>

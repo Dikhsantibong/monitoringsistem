@@ -508,10 +508,14 @@
                                 $data['kelengkapan_sr'] +
                                 $data['skor_waktu_mulai'];
                             $grandTotal = $totalScorePeserta + $totalScoreKetentuan;
+                            
+                            // Hitung persentase
+                            $maxPossibleScore = (count($data['peserta']) * 100) + (900); // 900 adalah total maksimum untuk ketentuan
+                            $percentageScore = ($grandTotal / $maxPossibleScore) * 100;
                         @endphp
                         <tr class="total-row">
                             <td colspan="4" style="text-align: right;">Total Score:</td>
-                            <td style="text-align: center;">{{ $grandTotal }}</td>
+                            <td style="text-align: center;">{{ number_format($percentageScore, 2) }}%</td>
                             <td>Total score peserta dan ketentuan</td>
                         </tr>
                     </tbody>
