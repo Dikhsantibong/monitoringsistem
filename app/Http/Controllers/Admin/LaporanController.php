@@ -24,37 +24,18 @@ class LaporanController extends Controller
         $this->checkExpiredWO();
 
         try {
-            // Perbaikan query PowerPlant untuk mendapatkan semua unit
+            // Ambil data PowerPlant dari database utama (mysql)
             $powerPlants = Cache::remember('power_plants', 3600, function () {
-                // Ambil dari semua koneksi database unit
-                $allPowerPlants = collect();
-                
-                $connections = [
-                    'mysql',          // UP Kendari
-                    'mysql_poasia',   // PLTD Poasia
-                    'mysql_kolaka',   // PLTD Kolaka
-                    'mysql_bau_bau',  // PLTD Bau-Bau
-                    'mysql_wua_wua'   // PLTD Wua-Wua
-                ];
-
-                foreach ($connections as $connection) {
-                    try {
-                        $plants = DB::connection($connection)
-                            ->table('power_plants')
-                            ->select('id', 'name', 'unit_source')
-                            ->get();
-                        
-                        $allPowerPlants = $allPowerPlants->concat($plants);
-                    } catch (\Exception $e) {
-                        Log::error("Error fetching power plants from {$connection}: " . $e->getMessage());
-                        continue;
-                    }
-                }
-
-                // Hapus duplikat berdasarkan kombinasi id dan name
-                return $allPowerPlants->unique(function ($item) {
-                    return $item->id . $item->name;
-                })->values();
+                return DB::connection('mysql')
+                    ->table('power_plants')
+                    ->select('id', 'name', 'unit_source')
+                    ->orderBy('name')
+                    ->get()
+                    ->unique(function ($item) {
+                        // Menghindari duplikasi berdasarkan unit_source dan name
+                        return $item->unit_source . $item->name;
+                    })
+                    ->values();
             });
 
             // 2. Optimasi query Service Requests
