@@ -14,6 +14,7 @@ use App\Models\WorkOrder;
 use App\Models\WoBacklog;
 use App\Models\OtherDiscussion;
 use App\Models\Commitment;
+use App\Models\Attendance;
 
 
 class DashboardController extends Controller
@@ -131,11 +132,32 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Format data untuk charts
+        // Ambil data kehadiran untuk satu bulan
+        $attendanceData = collect();
+        for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+            $dateStr = $date->format('Y-m-d');
+            
+            // Hitung total kehadiran per hari
+            $totalAttendance = Attendance::whereDate('time', $dateStr)->count();
+            
+            // Hitung total karyawan yang diharapkan hadir (misalnya 50 orang)
+            $expectedAttendance = 50; // Sesuaikan dengan jumlah karyawan yang diharapkan
+            
+            // Hitung persentase kehadiran
+            $percentage = $totalAttendance > 0 ? 
+                round(($totalAttendance / $expectedAttendance) * 100, 2) : 0;
+            
+            $attendanceData->push([
+                'date' => $dateStr,
+                'percentage' => $percentage
+            ]);
+        }
+
+        // Format data untuk chart
         $chartData = [
             'scoreCardData' => [
-                'dates' => $formattedScoreCard->keys()->toArray(),
-                'scores' => $formattedScoreCard->values()->toArray(),
+                'dates' => $attendanceData->pluck('date')->toArray(),
+                'scores' => $attendanceData->pluck('percentage')->toArray(),
             ],
             'attendanceData' => [
                 'dates' => $formattedAttendance->keys()->toArray(),
@@ -186,6 +208,11 @@ class DashboardController extends Controller
             ->latest()
             ->take(10)
             ->get();
+
+        // Debug: Log data kehadiran
+        \Log::info('Attendance Data:', [
+            'data' => $attendanceData->toArray()
+        ]);
 
         return view('admin.dashboard', compact(
             'chartData',
