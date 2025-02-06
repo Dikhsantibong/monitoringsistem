@@ -127,6 +127,42 @@ class MachineStatusLog extends Model
         static::deleted(function ($machineStatus) {
             self::syncData('delete', $machineStatus);
         });
+
+        // Tambahkan method untuk menghapus log status mesin
+        public static function deleteMachineLogs($machineId)
+        {
+            try {
+                DB::beginTransaction();
+                
+                // Dapatkan power plant dari mesin
+                $powerPlant = Machine::find($machineId)->powerPlant;
+                
+                if ($powerPlant) {
+                    // Hapus di database UP Kendari
+                    self::where('machine_id', $machineId)->delete();
+                    
+                    // Jika bukan di session mysql (UP Kendari), hapus juga di database unit lokal
+                    if (session('unit', 'mysql') !== 'mysql') {
+                        $localConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+                        
+                        if ($localConnection) {
+                            DB::connection($localConnection)
+                                ->table('machine_status_logs')
+                                ->where('machine_id', $machineId)
+                                ->delete();
+                        }
+                    }
+                }
+                
+                DB::commit();
+                return true;
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error("Gagal menghapus log status mesin: " . $e->getMessage());
+                return false;
+            }
+        }
     }
 
     // Helper methods yang sudah ada

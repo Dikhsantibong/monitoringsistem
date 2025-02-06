@@ -404,25 +404,30 @@ class MachineMonitorController extends Controller
         return view('admin.machine-monitor.show', compact('machines'));
     }
 
-    public function destroy(Machine $machine, Request $request)
+    public function destroy($id)
     {
         try {
             DB::beginTransaction();
             
-            // Hapus semua status logs terkait terlebih dahulu
-            $machine->statusLogs()->delete();
-            // Hapus semua operations terkait
-            $machine->operations()->delete();
-            // Kemudian hapus mesin
+            // Hapus semua log status mesin terlebih dahulu
+            if (!MachineStatusLog::deleteMachineLogs($id)) {
+                throw new \Exception('Gagal menghapus log status mesin');
+            }
+            
+            // Setelah log dihapus, baru hapus mesin
+            $machine = Machine::findOrFail($id);
             $machine->delete();
             
             DB::commit();
             
-            return redirect()->route('admin.machine-monitor')
+            return redirect()
+                ->route('admin.machine-monitor')
                 ->with('success', 'Mesin berhasil dihapus');
+            
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()
+            return redirect()
+                ->route('admin.machine-monitor')
                 ->with('error', 'Gagal menghapus data mesin: ' . $e->getMessage());
         }
     }

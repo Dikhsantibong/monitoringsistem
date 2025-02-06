@@ -16,11 +16,8 @@
                         <div class="flex justify-between items-center mb-2">
                             <h1 class="text-lg font-semibold uppercase">STATUS MESIN - {{ $powerPlant->name }}</h1>
                             @php
-                                // Hanya ambil mesin yang aktif (tidak di-soft delete)
-                                $activeMachineIds = $powerPlant->machines()->whereNull('deleted_at')->pluck('id');
-                                
                                 // Ambil update terakhir untuk unit ini
-                                $lastUpdate = $logs->whereIn('machine_id', $activeMachineIds)
+                                $lastUpdate = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
                                     ->max('updated_at');
                                 
                                 // Format waktu update terakhir
@@ -168,7 +165,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-sm">
-                        @forelse($powerPlant->machines()->whereNull('deleted_at')->get() as $index => $machine)
+                        @forelse($powerPlant->machines as $index => $machine)
                             @php
                                 $log = $filteredLogs->firstWhere('machine_id', $machine->id);
                                 $status = $log?->status ?? '-';

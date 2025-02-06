@@ -6,11 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Machine extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     public static $isSyncing = false;
 
@@ -22,8 +21,7 @@ class Machine extends Model
         'type',
         'serial_number',
         'components',
-        'unit_source',
-        'deleted_at'
+        'unit_source'
     ];
 
     public function issues()
@@ -99,8 +97,7 @@ class Machine extends Model
                 'components' => $machine->components,
                 'unit_source' => session('unit'),
                 'created_at' => $machine->created_at,
-                'updated_at' => $machine->updated_at,
-                'deleted_at' => $machine->deleted_at
+                'updated_at' => $machine->updated_at
             ];
 
             Log::info("Attempting to {$action} Machine sync", ['data' => $data]);
@@ -119,13 +116,13 @@ class Machine extends Model
                     
                 case 'delete':
                     $upKendari->where('id', $machine->id)
-                             ->update(['deleted_at' => now()]);
+                             ->delete();
                     break;
             }
 
             Log::info("Machine {$action} sync successful", [
                 'id' => $machine->id,
-                'unit' => session('unit')
+                'unit' => 'poasia'
             ]);
 
         } catch (\Exception $e) {
