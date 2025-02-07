@@ -17,140 +17,157 @@
         </div>
 
         <main class="px-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-2xl font-bold mb-4">Edit Work Order (WO)</h2>
-                
-                <form id="editWoForm" action="{{ route('admin.laporan.update-wo', $workOrder->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="mb-4">
-                        <label class="block text-gray-700">ID WO</label>
-                        <input type="text" value="{{ $workOrder->id }}" class="w-full px-3 py-2 border rounded-md bg-gray-100" disabled>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="description" class="block text-gray-700">Deskripsi</label>
-                        <textarea name="description" id="description" class="w-full px-3 py-2 border rounded-md" required>{{ $workOrder->description }}</textarea>
-                    </div>
+            <div class="bg-white rounded-lg shadow p-6 sm:p-3">
+                <div class="pt-2">
+                    <h2 class="text-2xl font-bold mb-4">Edit Work Order (WO)</h2>
+                    <form id="editWoForm" action="{{ route('admin.laporan.update-wo', $workOrder->id) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <!-- Grid container untuk 2 kolom -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Kolom Kiri -->
+                            <div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 font-medium mb-2">ID WO</label>
+                                    <input type="text" value="{{ $workOrder->id }}" 
+                                        class="w-full px-3 py-2 border rounded-md bg-gray-100" disabled>
+                                </div>
 
-                    <div class="mb-4">
-                        <label for="kendala" class="block text-gray-700">Kendala</label>
-                        <textarea name="kendala" id="kendala" class="w-full px-3 py-2 border rounded-md">{{ $workOrder->kendala }}</textarea>
-                    </div>
+                                <div class="mb-4">
+                                    <label for="type" class="block text-gray-700 font-medium mb-2">Type WO</label>
+                                    <select name="type" id="type" 
+                                        class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                        @foreach(['CM', 'PM', 'PDM', 'PAM', 'OH', 'EJ', 'EM'] as $type)
+                                            <option value="{{ $type }}" {{ $workOrder->type == $type ? 'selected' : '' }}>
+                                                {{ $type }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                    <div class="mb-4">
-                        <label for="tindak_lanjut" class="block text-gray-700">Tindak Lanjut</label>
-                        <textarea name="tindak_lanjut" id="tindak_lanjut" class="w-full px-3 py-2 border rounded-md">{{ $workOrder->tindak_lanjut }}</textarea>
-                    </div>
+                                <div class="mb-4">
+                                    <label for="priority" class="block text-gray-700 font-medium mb-2">Priority</label>
+                                    <select name="priority" id="priority" 
+                                        class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                        @foreach(['emergency', 'normal', 'outage', 'urgent'] as $priority)
+                                            <option value="{{ $priority }}" {{ $workOrder->priority == $priority ? 'selected' : '' }}>
+                                                {{ ucfirst($priority) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                    <div class="mb-4">
-                        <label for="type" class="block text-gray-700">Type WO</label>
-                        <select name="type" id="type" class="w-full px-3 py-2 border rounded-md" required>
-                            @foreach(['CM', 'PM', 'PDM', 'PAM', 'OH', 'EJ', 'EM'] as $type)
-                                <option value="{{ $type }}" {{ $workOrder->type == $type ? 'selected' : '' }}>
-                                    {{ $type }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                                <div class="mb-4">
+                                    <label for="unit" class="block text-gray-700 font-medium mb-2">Unit</label>
+                                    <select name="unit" id="unit" 
+                                        class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                        @foreach($powerPlants as $powerPlant)
+                                            <option value="{{ $powerPlant->id }}" 
+                                                    {{ $workOrder->power_plant_id == $powerPlant->id ? 'selected' : '' }}>
+                                                {{ $powerPlant->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                    <div class="mb-4">
-                        <label for="priority" class="block text-gray-700">Priority</label>
-                        <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-md" required>
-                            @foreach(['emergency', 'normal', 'outage', 'urgent'] as $priority)
-                                <option value="{{ $priority }}" {{ $workOrder->priority == $priority ? 'selected' : '' }}>
-                                    {{ ucfirst($priority) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="schedule_start" class="block text-gray-700">Schedule Start</label>
-                        <input type="date" name="schedule_start" id="schedule_start" 
-                               value="{{ date('Y-m-d', strtotime($workOrder->schedule_start)) }}" 
-                               class="w-full px-3 py-2 border rounded-md" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="schedule_finish" class="block text-gray-700">Schedule Finish</label>
-                        <input type="date" name="schedule_finish" id="schedule_finish" 
-                               value="{{ date('Y-m-d', strtotime($workOrder->schedule_finish)) }}" 
-                               class="w-full px-3 py-2 border rounded-md" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="unit" class="block text-gray-700">Unit</label>
-                        <select name="unit" id="unit" class="w-full px-3 py-2 border rounded-md" required>
-                            @foreach($powerPlants as $powerPlant)
-                                <option value="{{ $powerPlant->id }}" 
-                                        {{ $workOrder->power_plant_id == $powerPlant->id ? 'selected' : '' }}>
-                                    {{ $powerPlant->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="document" class="block text-gray-700 mb-2">Upload Job Card</label>
-                        <div class="flex flex-col space-y-4">
-                            <!-- Custom File Upload -->
-                            <div class="relative">
-                                <input type="file" 
-                                       name="document" 
-                                       id="document" 
-                                       class="hidden"
-                                       accept=".pdf,.doc,.docx,.xls,.xlsx">
-                                <label for="document" 
-                                       class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer group">
-                                    <div class="flex flex-col items-center">
-                                        <i class="fas fa-cloud-upload-alt text-3xl mb-2 text-gray-400 group-hover:text-blue-500"></i>
-                                        <span class="text-gray-600 group-hover:text-blue-500">Klik atau seret file ke sini</span>
-                                        <span class="text-sm text-gray-500 mt-1">Format: PDF, DOC, DOCX, XLS, XLSX (Maks. 5MB)</span>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="mb-4">
+                                        <label for="schedule_start" class="block text-gray-700 font-medium mb-2">Schedule Start</label>
+                                        <input type="date" name="schedule_start" id="schedule_start" 
+                                            value="{{ date('Y-m-d', strtotime($workOrder->schedule_start)) }}" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                                     </div>
-                                </label>
-                                <!-- File Name Preview -->
-                                <div id="filePreview" class="hidden mt-3 p-3 bg-gray-50 rounded-lg">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-file-alt text-blue-500 mr-2"></i>
-                                            <span id="fileName" class="text-sm text-gray-600"></span>
+
+                                    <div class="mb-4">
+                                        <label for="schedule_finish" class="block text-gray-700 font-medium mb-2">Schedule Finish</label>
+                                        <input type="date" name="schedule_finish" id="schedule_finish" 
+                                            value="{{ date('Y-m-d', strtotime($workOrder->schedule_finish)) }}" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kolom Kanan -->
+                            <div>
+                                <div class="mb-4">
+                                    <label for="description" class="block text-gray-700 font-medium mb-2">Deskripsi</label>
+                                    <textarea name="description" id="description" 
+                                        class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24" required>{{ $workOrder->description }}</textarea>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="kendala" class="block text-gray-700 font-medium mb-2">Kendala</label>
+                                    <textarea name="kendala" id="kendala" 
+                                        class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24">{{ $workOrder->kendala }}</textarea>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="tindak_lanjut" class="block text-gray-700 font-medium mb-2">Tindak Lanjut</label>
+                                    <textarea name="tindak_lanjut" id="tindak_lanjut" 
+                                        class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24">{{ $workOrder->tindak_lanjut }}</textarea>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="document" class="block text-gray-700 font-medium mb-2">Upload Job Card</label>
+                                    <div class="flex flex-col space-y-4">
+                                        <!-- Custom File Upload -->
+                                        <div class="relative">
+                                            <input type="file" name="document" id="document" class="hidden"
+                                                accept=".pdf,.doc,.docx,.xls,.xlsx">
+                                            <label for="document" 
+                                                class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer group">
+                                                <div class="flex flex-col items-center">
+                                                    <i class="fas fa-cloud-upload-alt text-3xl mb-2 text-gray-400 group-hover:text-blue-500"></i>
+                                                    <span class="text-gray-600 group-hover:text-blue-500">Klik atau seret file ke sini</span>
+                                                    <span class="text-sm text-gray-500 mt-1">Format: PDF, DOC, DOCX, XLS, XLSX (Maks. 5MB)</span>
+                                                </div>
+                                            </label>
+                                            <!-- File Preview -->
+                                            <div id="filePreview" class="hidden mt-3 p-3 bg-gray-50 rounded-lg">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                                                        <span id="fileName" class="text-sm text-gray-600"></span>
+                                                    </div>
+                                                    <button type="button" id="removeFile" class="text-red-500 hover:text-red-700">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <button type="button" id="removeFile" class="text-red-500 hover:text-red-700">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+
+                                        <!-- Existing Document -->
+                                        @if($workOrder->document_path)
+                                        <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                                            <div class="flex-1 flex items-center">
+                                                <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                                                <span class="text-sm text-gray-600">Dokumen saat ini</span>
+                                            </div>
+                                            <a href="{{ $workOrder->document_url }}" 
+                                               target="_blank"
+                                               class="ml-4 inline-flex items-center px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors">
+                                                <i class="fas fa-download mr-2"></i>
+                                                Lihat Dokumen
+                                            </a>
+                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Existing Document -->
-                            @if($workOrder->document_path)
-                            <div class="flex items-center p-3 bg-blue-50 rounded-lg">
-                                <div class="flex-1 flex items-center">
-                                    <i class="fas fa-file-alt text-blue-500 mr-2"></i>
-                                    <span class="text-sm text-gray-600">Dokumen saat ini</span>
-                                </div>
-                                <a href="{{ $workOrder->document_url }}" 
-                                   target="_blank"
-                                   class="ml-4 inline-flex items-center px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-download mr-2"></i>
-                                    Lihat Dokumen
-                                </a>
-                            </div>
-                            @endif
                         </div>
-                    </div>
 
-                    <div class="flex justify-end space-x-4">
-                        <a href="{{ route('admin.laporan.sr_wo') }}" 
-                           class="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center">
-                            <i class="fas fa-arrow-left mr-2"></i> Kembali
-                        </a>
-                        <button type="submit" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center">
-                            <i class="fas fa-save mr-2"></i> Simpan
-                        </button>
-                    </div>
-                </form>
+                        <!-- Tombol Submit dan Kembali -->
+                        <div class="flex justify-end space-x-4 mt-6">
+                            <a href="{{ route('admin.laporan.sr_wo') }}" 
+                                class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center">
+                                <i class="fas fa-arrow-left mr-2"></i> Kembali
+                            </a>
+                            <button type="submit" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center">
+                                <i class="fas fa-save mr-2"></i> Simpan
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
     </div>

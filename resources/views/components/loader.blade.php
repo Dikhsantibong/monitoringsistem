@@ -38,5 +38,5 @@
     <div class="loader-text mb-1">
         M<i class="fas fa-cog cog-icon"></i>NDAY
     </div>
-    <div class="loading-text font-semibold mt-1">Monday sedang di muat...</div>
+    <div class="loading-text mt-1">Monday sedang di muat...</div>
 </div>

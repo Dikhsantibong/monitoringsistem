@@ -921,7 +921,7 @@
                     </div>
                 </div>
                 <div class="copyright">
-                    Copyright © 2023 <a href="#">PT PLN Nusantara Power</a>. All Rights Reserved.
+                    Copyright © 2025 <a href="#">PT PLN Nusantara Power UP KENDARI</a>. All Rights Reserved.
                 </div>
             </footer>
 

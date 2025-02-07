@@ -66,67 +66,97 @@
                         <h2 class="text-2xl font-bold mb-4">Tambah Work Order (WO)</h2>
                         <form id="woForm" action="{{ route('admin.laporan.store-wo') }}" method="POST">
                             @csrf
-                            <div class="mb-4">
-                                <label for="wo_id" class="block text-gray-700">ID WO</label>
-                                <input type="number" name="wo_id" id="wo_id" class="w-full px-3 py-2 border rounded-md" required>
+                            <!-- Grid container untuk 2 kolom -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Kolom Kiri -->
+                                <div>
+                                    <div class="mb-4">
+                                        <label for="wo_id" class="block text-gray-700 font-medium mb-2">ID WO</label>
+                                        <input type="number" name="wo_id" id="wo_id" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="type" class="block text-gray-700 font-medium mb-2">Type WO</label>
+                                        <select name="type" id="type" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                            <option value="CM">CM - Corrective Maintenance</option>
+                                            <option value="PM">PM - Preventive Maintenance</option>
+                                            <option value="PDM">PDM - Predictive Maintenance</option>
+                                            <option value="PAM">PAM - Proactive Maintenance</option>
+                                            <option value="OH">OH - Overhaul</option>
+                                            <option value="EJ">EJ - Engineering</option>
+                                            <option value="EM">EM - Emergency</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
+                                        <select name="status" id="status" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                            <option value="Open">Open</option>
+                                            <option value="Closed">Closed</option>
+                                            <option value="Comp">Comp</option>
+                                            <option value="APPR">APPR</option>
+                                            <option value="WAPPR">WAPPR</option>
+                                            <option value="WMATL">WMATL</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="priority" class="block text-gray-700 font-medium mb-2">Priority</label>
+                                        <select name="priority" id="priority" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                            <option value="emergency">Emergency</option>
+                                            <option value="normal">Normal</option>
+                                            <option value="outage">Outage</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Kolom Kanan -->
+                                <div>
+                                    <div class="mb-4">
+                                        <label for="description" class="block text-gray-700 font-medium mb-2">Deskripsi</label>
+                                        <textarea name="description" id="description" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24" required></textarea>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="unit" class="block text-gray-700 font-medium mb-2">Unit</label>
+                                        <select name="unit" id="unit" 
+                                            class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                            @foreach($powerPlants as $powerPlant)
+                                                <option value="{{ $powerPlant->id }}">{{ $powerPlant->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="mb-4">
+                                            <label for="schedule_start" class="block text-gray-700 font-medium mb-2">Schedule Start</label>
+                                            <input type="date" name="schedule_start" id="schedule_start" 
+                                                class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="schedule_finish" class="block text-gray-700 font-medium mb-2">Schedule Finish</label>
+                                            <input type="date" name="schedule_finish" id="schedule_finish" 
+                                                class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-4">
-                                <label for="description" class="block text-gray-700">Deskripsi</label>
-                                <textarea name="description" id="description" class="w-full px-3 py-2 border rounded-md" required></textarea>
-                            </div>
-                            <div class="mb-4">
-                                <label for="type" class="block text-gray-700">Type WO</label>
-                                <select name="type" id="type" class="w-full px-3 py-2 border rounded-md" required>
-                                    <option value="CM">CM - Corrective Maintenance</option>
-                                    <option value="PM">PM - Preventive Maintenance</option>
-                                    <option value="PDM">PDM - Predictive Maintenance</option>
-                                    <option value="PAM">PAM - Proactive Maintenance</option>
-                                    <option value="OH">OH - Overhaul</option>
-                                    <option value="EJ">EJ - Engineering</option>
-                                    <option value="EM">EM - Emergency</option>
-                                </select>
-                            </div>
-                            <div class="mb-4">
-                                <label for="status" class="block text-gray-700">Status</label>
-                                <select name="status" id="status" class="w-full px-3 py-2 border rounded-md" required>
-                                    <option value="Open">Open</option>
-                                    <option value="Closed">Closed</option>
-                                    <option value="Comp">Comp</option>
-                                    <option value="APPR">APPR</option>
-                                    <option value="WAPPR">WAPPR</option>
-                                    <option value="WMATL">WMATL</option>
-                                </select>
-                            </div>
-                            <div class="mb-4">
-                                <label for="priority" class="block text-gray-700">Priority</label>
-                                <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-md" required>
-                                    <option value="emergency">Emergency</option>
-                                    <option value="normal">Normal</option>
-                                    <option value="outage">Outage</option>
-                                    <option value="urgent">Urgent</option>
-                                </select>
-                            </div>
-                            <div class="mb-4">
-                                <label for="schedule_start" class="block text-gray-700">Schedule Start</label>
-                                <input type="date" name="schedule_start" id="schedule_start" class="w-full px-3 py-2 border rounded-md" required>
-                            </div>
-                            <div class="mb-4">
-                                <label for="schedule_finish" class="block text-gray-700">Schedule Finish</label>
-                                <input type="date" name="schedule_finish" id="schedule_finish" class="w-full px-3 py-2 border rounded-md" required>
-                            </div>
-                            <div class="mb-4">
-                                <label for="unit" class="block text-gray-700">Unit</label>
-                                <select name="unit" id="unit" class="w-full px-3 py-2 border rounded-md" required>
-                                    @foreach($powerPlants as $powerPlant)
-                                        <option value="{{ $powerPlant->id }}">{{ $powerPlant->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="flex justify-end space-x-4">
-                                <a href="{{ route('admin.laporan.sr_wo') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center">
+
+                            <!-- Tombol Submit dan Kembali -->
+                            <div class="flex justify-end space-x-4 mt-6">
+                                <a href="{{ route('admin.laporan.sr_wo') }}" 
+                                    class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center">
                                     <i class="fas fa-arrow-left mr-2"></i> Kembali
                                 </a>
-                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center">
+                                <button type="submit" 
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center">
                                     <i class="fas fa-save mr-2"></i> Simpan
                                 </button>
                             </div>
