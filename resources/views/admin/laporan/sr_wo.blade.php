@@ -1569,19 +1569,43 @@
 
     function filterSRTable() {
         const unit = document.getElementById('filterUnitSR').value.toLowerCase();
+        const status = document.getElementById('srStatusFilter').value;
+        const downtime = document.getElementById('srDowntimeFilter').value;
         const rows = document.querySelectorAll('#srTable tbody tr');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const unitCell = row.querySelector('td[data-column="unit"]');
+            const statusCell = row.querySelector('td[data-column="status"]');
+            const downtimeCell = row.querySelector('td:nth-child(7)'); // Sesuaikan dengan index kolom downtime
+
             const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
-            
-            if (!unit || unitText.includes(unit)) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
+            const statusText = statusCell ? statusCell.textContent.trim() : '';
+            const downtimeText = downtimeCell ? downtimeCell.textContent.trim() : '';
+
+            let showRow = true;
+
+            // Filter unit
+            if (unit && !unitText.includes(unit)) {
+                showRow = false;
             }
+
+            // Filter status
+            if (status && !statusText.includes(status)) {
+                showRow = false;
+            }
+
+            // Filter downtime
+            if (downtime) {
+                if (downtime === 'Yes' && downtimeText === '0') {
+                    showRow = false;
+                } else if (downtime === 'No' && downtimeText !== '0') {
+                    showRow = false;
+                }
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
         });
 
         document.getElementById('srVisibleCount').textContent = visibleCount;
@@ -1589,19 +1613,31 @@
 
     function filterWOTable() {
         const unit = document.getElementById('filterUnitWO').value.toLowerCase();
+        const status = document.getElementById('woStatusFilter').value;
         const rows = document.querySelectorAll('#woTable tbody tr');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const unitCell = row.querySelector('td[data-column="unit"]');
+            const statusCell = row.querySelector('td[data-column="status"]');
+
             const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
-            
-            if (!unit || unitText.includes(unit)) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
+            const statusText = statusCell ? statusCell.textContent.trim() : '';
+
+            let showRow = true;
+
+            // Filter unit
+            if (unit && !unitText.includes(unit)) {
+                showRow = false;
             }
+
+            // Filter status
+            if (status && !statusText.includes(status)) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
         });
 
         document.getElementById('woVisibleCount').textContent = visibleCount;
@@ -1609,23 +1645,66 @@
 
     function filterBacklogTable() {
         const unit = document.getElementById('filterUnitBacklog').value.toLowerCase();
+        const status = document.getElementById('backlogStatusFilter').value;
         const rows = document.querySelectorAll('#backlogTable tbody tr');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const unitCell = row.querySelector('td[data-column="unit"]');
+            const statusCell = row.querySelector('td:nth-child(5)'); // Sesuaikan dengan index kolom status
+
             const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
-            
-            if (!unit || unitText.includes(unit)) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
+            const statusText = statusCell ? statusCell.textContent.trim() : '';
+
+            let showRow = true;
+
+            // Filter unit
+            if (unit && !unitText.includes(unit)) {
+                showRow = false;
             }
+
+            // Filter status
+            if (status && !statusText.includes(status)) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
         });
 
         document.getElementById('backlogVisibleCount').textContent = visibleCount;
     }
+
+    // Tambahkan event listener untuk filter status
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event listeners untuk filter SR
+        const srStatusFilter = document.getElementById('srStatusFilter');
+        const srUnitFilter = document.getElementById('filterUnitSR');
+        const srDowntimeFilter = document.getElementById('srDowntimeFilter');
+        
+        if (srStatusFilter) srStatusFilter.addEventListener('change', filterSRTable);
+        if (srUnitFilter) srUnitFilter.addEventListener('change', filterSRTable);
+        if (srDowntimeFilter) srDowntimeFilter.addEventListener('change', filterSRTable);
+
+        // Event listeners untuk filter WO
+        const woStatusFilter = document.getElementById('woStatusFilter');
+        const woUnitFilter = document.getElementById('filterUnitWO');
+        
+        if (woStatusFilter) woStatusFilter.addEventListener('change', filterWOTable);
+        if (woUnitFilter) woUnitFilter.addEventListener('change', filterWOTable);
+
+        // Event listeners untuk filter Backlog
+        const backlogStatusFilter = document.getElementById('backlogStatusFilter');
+        const backlogUnitFilter = document.getElementById('filterUnitBacklog');
+        
+        if (backlogStatusFilter) backlogStatusFilter.addEventListener('change', filterBacklogTable);
+        if (backlogUnitFilter) backlogUnitFilter.addEventListener('change', filterBacklogTable);
+
+        // Inisialisasi filter pertama kali
+        filterSRTable();
+        filterWOTable();
+        filterBacklogTable();
+    });
 
     // Tambahkan fungsi untuk memutar audio
     function playSound(type) {
