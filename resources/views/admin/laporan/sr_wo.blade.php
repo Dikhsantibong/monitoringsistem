@@ -650,8 +650,6 @@
                                             </div>
                                         </th>
                                         <th class="py-2 px-4 border-b">Deskripsi</th>
-                                        <th class="py-2 px-4 border-b">Tanggal Backlog</th>
-                                        <th class="py-2 px-4 border-b">Keterangan</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">
                                                 <span>Status</span>
@@ -670,6 +668,11 @@
                                                 </div>
                                             </div>
                                         </th>
+                                        <th class="py-2 px-4 border-b">Type WO</th>
+                                        <th class="py-2 px-4 border-b">Priority</th>
+                                        <th class="py-2 px-4 border-b">Schedule Start</th>
+                                        <th class="py-2 px-4 border-b">Schedule Finish</th>
+                                        <th class="py-2 px-4 border-b">Tanggal Backlog</th>
                                         <th class="py-2 px-4 border-b">Aksi</th>
                                     </tr>
                                 </thead>
@@ -696,13 +699,24 @@
                                             <td data-column="unit" class="px-4 py-2 border border-gray-200">
                                                 {{ $backlog->powerPlant->name ?? '-' }}
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $backlog->deskripsi }}</td>
-                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->created_at }}</td>
-                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->keterangan ?? 'N/A' }}</td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ $backlog->deskripsi }}
+                                            </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 <span class="px-2 py-1 rounded-full {{ $backlog->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                     {{ $backlog->status }}
                                                 </span>
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->type_wo ?? '-' }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->priority ?? '-' }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $backlog->schedule_start ? \Carbon\Carbon::parse($backlog->schedule_start)->format('d/m/Y') : '-' }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $backlog->schedule_finish ? \Carbon\Carbon::parse($backlog->schedule_finish)->format('d/m/Y') : '-' }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                {{ $backlog->tanggal_backlog ? \Carbon\Carbon::parse($backlog->tanggal_backlog)->format('d/m/Y') : '-' }}
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 <div class="flex space-x-2">

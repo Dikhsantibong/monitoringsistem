@@ -87,8 +87,10 @@ class LaporanController extends Controller
                     'id', 
                     'no_wo', 
                     'deskripsi',
-                    'kendala',           // Tambahkan kolom baru
-                    'tindak_lanjut',     // Tambahkan kolom baru 
+                    'type_wo',
+                    'priority',
+                    'schedule_start',
+                    'schedule_finish',
                     'tanggal_backlog', 
                     'keterangan', 
                     'status', 
