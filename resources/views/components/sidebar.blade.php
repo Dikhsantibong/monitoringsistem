@@ -1,7 +1,7 @@
 <aside id="mobile-menu"
     class="fixed z-20 transform overflow-hidden transition-transform duration-300 md:relative md:translate-x-0 h-screen w-[280px] bg-transparent shadow-md text-white hidden md:block p-3">
     <!-- Container untuk background dengan padding -->
-    <div class="bg-[#0A749B] rounded-2xl h-full px-4 py-6">
+    <div class="bg-[#0A749B] rounded-2xl h-full px-4 py-6 flex flex-col">
         <!-- Logo section -->
         <div class="flex items-center justify-between mb-8">
             <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40">
@@ -13,7 +13,7 @@
         </div>
 
         <!-- Navigation dengan style yang lebih modern -->
-        <nav class="space-y-2">
+        <nav class="space-y-2 flex-grow">
             <a href="{{ route('admin.dashboard') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-home w-6 h-6"></i>
@@ -21,7 +21,7 @@
             </a>
 
             <a href="{{ route('admin.machine-status.view') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-status.view') || request()->routeIs('admin.machine-status.*') || request()->routeIs('admin.pembangkit.ready') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-status.view') || request()->routeIs('admin.machine-status.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-check w-6 h-6"></i>
                 <span class="ml-3 text-base">Kesiapan Pembangkit</span>
             </a>
@@ -73,9 +73,19 @@
                 <i class="fas fa-cog w-6 h-6"></i>
                 <span class="ml-3 text-base">Pengaturan</span>
             </a>
-
-           
         </nav>
+
+        <!-- Bottom Section: Logout -->
+        <div class="mt-2">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" 
+                    class="flex items-center w-full px-3 py-2.5 rounded-lg text-white bg-red-400 hover:bg-red-700 transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt w-6 h-6"></i>
+                    <span class="ml-3 text-base">Logout</span>
+                </button>
+            </form>
+        </div>
     </div>
 </aside>
 {{-- 
