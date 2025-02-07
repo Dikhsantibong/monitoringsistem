@@ -320,6 +320,87 @@
             </tbody>
         </table>
     </div>
+
+     <!-- Halaman Status Mesin -->
+     @foreach($powerPlants as $powerPlant)
+     <div class="page-break">
+         <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
+         <div class="header">
+             <h3 class="text-lg font-semibold uppercase mb-2">STATUS MESIN - {{ $powerPlant->name }}</h3>
+             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+         </div>
+
+         <!-- Statistik Unit -->
+         <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+             @php
+                 $plantLogs = $logs->filter(function($log) use ($powerPlant) {
+                     return $log->machine->power_plant_id === $powerPlant->id;
+                 });
+
+                 $totalDMP = $plantLogs->sum('dmp');
+                 $totalDMN = $plantLogs->sum('dmn');
+                 $totalBeban = $plantLogs->where('status', 'OPERASI')->sum('load_value');
+             @endphp
+             
+             <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
+                 <span style="font-size: 14px; color: #6c757d;">DMP Total:</span>
+                 <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMP, 1) }} MW</strong>
+             </div>
+             <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
+                 <span style="font-size: 14px; color: #6c757d;">DMN Total:</span>
+                 <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMN, 1) }} MW</strong>
+             </div>
+             <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
+                 <span style="font-size: 14px; color: #6c757d;">Total Beban:</span>
+                 <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalBeban, 1) }} MW</strong>
+             </div>
+         </div>
+
+         <table class="report-table">
+             <thead>
+                 <tr>
+                     <th style="width: 5%; text-align: center;">No</th>
+                     <th style="width: 20%;">Mesin</th>
+                     <th style="width: 12%; text-align: center;">DMN</th>
+                     <th style="width: 12%; text-align: center;">DMP</th>
+                     <th style="width: 12%; text-align: center;">Beban</th>
+                     <th style="width: 15%; text-align: center;">Status</th>
+                     <th style="width: 24%;">Component</th>
+                 </tr>
+             </thead>
+             <tbody>
+                 @foreach($powerPlant->machines as $index => $machine)
+                     @php
+                         $machineLog = $logs->where('machine_id', $machine->id)->first();
+                         $status = $machineLog?->status ?? '-';
+                         
+                         $statusClass = match($status) {
+                             'OPERASI' => 'status-operasi',
+                             'STANDBY' => 'status-standby',
+                             'GANGGUAN' => 'status-gangguan',
+                             'PEMELIHARAAN' => 'status-pemeliharaan',
+                             'OVERHAUL' => 'status-overhaul',
+                             default => 'status-default'
+                         };
+                     @endphp
+                     <tr>
+                         <td style="text-align: center;">{{ $index + 1 }}</td>
+                         <td>{{ $machine->name }}</td>
+                         <td style="text-align: center;">{{ $machineLog?->dmn ?? '-' }}</td>
+                         <td style="text-align: center;">{{ $machineLog?->dmp ?? '-' }}</td>
+                         <td style="text-align: center;">{{ $machineLog?->load_value ?? '-' }}</td>
+                         <td style="text-align: center;">
+                             <span class="status-badge {{ $statusClass }}">
+                                 {{ $status }}
+                             </span>
+                         </td>
+                         <td>{{ $machineLog?->component ?? '-' }}</td>
+                     </tr>
+                 @endforeach
+             </tbody>
+         </table>
+     </div>
+ @endforeach
      <!-- Halaman Service Request -->
      <div class="page-break">
         <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
@@ -342,15 +423,59 @@
                 @forelse($serviceRequests as $index => $sr)
                     <tr>
                         <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $sr->number }}</td>
-                        <td>{{ $sr->unit }}</td>
-                        <td>{{ $sr->description }}</td>
-                        <td style="text-align: center;">{{ $sr->status }}</td>
-                        <td style="text-align: center;">{{ $sr->priority }}</td>
+                        <td>{{ $sr->number ?? $sr->id }}</td>
+                        <td>{{ optional($sr->powerPlant)->name ?? '-' }}</td>
+                        <td>{{ $sr->description ?? '-' }}</td>
+                        <td style="text-align: center;">{{ $sr->status ?? '-' }}</td>
+                        <td style="text-align: center;">{{ $sr->priority ?? '-' }}</td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="6" style="text-align: center;">Tidak ada data service request</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Halaman Work Orders -->
+    <div class="page-break">
+        <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
+        <div class="header">
+            <h2>DAFTAR WORK ORDER</h2>
+            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+        </div>
+
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 15%">Nomor WO</th>
+                    <th style="width: 15%">Unit</th>
+                    <th style="width: 30%">Deskripsi</th>
+                    <th style="width: 10%">Tipe</th>
+                    <th style="width: 10%">Status</th>
+                    <th style="width: 15%">Prioritas</th>
+                    <th style="width: 15%">Jadwal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($workOrders as $index => $wo)
+                    <tr>
+                        <td style="text-align: center;">{{ $loop->iteration }}</td>
+                        <td>{{ $wo->number ?? $wo->id }}</td>
+                        <td>{{ optional($wo->powerPlant)->name ?? '-' }}</td>
+                        <td>{{ $wo->description ?? '-' }}</td>
+                        <td>{{ $wo->type ?? '-' }}</td>
+                        <td style="text-align: center;">{{ $wo->status ?? '-' }}</td>
+                        <td style="text-align: center;">{{ $wo->priority ?? '-' }}</td>
+                        <td style="text-align: center;">
+                            {{ $wo->target_date ? \Carbon\Carbon::parse($wo->target_date)->format('d/m/Y') : '-' }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" style="text-align: center;">Tidak ada data work order</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -364,118 +489,40 @@
             <h2>DAFTAR WORK ORDER BACKLOG</h2>
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
+
         <table class="report-table">
             <thead>
                 <tr>
                     <th style="width: 5%">No</th>
                     <th style="width: 15%">Nomor WO</th>
-                    <th style="width: 20%">Unit</th>
-                    <th style="width: 25%">Deskripsi</th>
+                    <th style="width: 15%">Unit</th>
+                    <th style="width: 35%">Deskripsi</th>
+                    <th style="width: 15%">Tanggal Backlog</th>
                     <th style="width: 15%">Status</th>
-                    <th style="width: 20%">Target Selesai</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($workOrders as $index => $wo)
+                @forelse($woBacklogs as $index => $wo)
                     <tr>
                         <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $wo->number }}</td>
-                        <td>{{ $wo->unit }}</td>
-                        <td>{{ $wo->description }}</td>
-                        <td style="text-align: center;">{{ $wo->status }}</td>
+                        <td>{{ $wo->no_wo ?? '-' }}</td>
+                        <td>{{ optional($wo->powerPlant)->name ?? '-' }}</td>
+                        <td>{{ $wo->deskripsi ?? $wo->description ?? '-' }}</td>
                         <td style="text-align: center;">
-                            {{ \Carbon\Carbon::parse($wo->target_date)->format('d/m/Y') }}
+                            {{ $wo->backlog_date ? \Carbon\Carbon::parse($wo->backlog_date)->format('d/m/Y') : '-' }}
                         </td>
+                        <td style="text-align: center;">{{ $wo->status ?? '-' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center;">Tidak ada data work order</td>
+                        <td colspan="6" style="text-align: center;">Tidak ada data work order backlog</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    <!-- Halaman Status Mesin -->
-    @foreach($powerPlants as $powerPlant)
-        <div class="page-break">
-            <img src="{{ $logoSrc }}" alt="PLN Logo" class="logo">
-            <div class="header">
-                <h2>STATUS MESIN - {{ $powerPlant->name }}</h2>
-                <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
-            </div>
-
-            <!-- Statistik Unit -->
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
-                @php
-                    $plantLogs = $logs->filter(function($log) use ($powerPlant) {
-                        return $log->machine->power_plant_id === $powerPlant->id;
-                    });
-
-                    $totalDMP = $plantLogs->sum('dmp');
-                    $totalDMN = $plantLogs->sum('dmn');
-                    $totalBeban = $plantLogs->where('status', 'OPERASI')->sum('load_value');
-                @endphp
-                
-                <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
-                    <span style="font-size: 14px; color: #6c757d;">DMP Total:</span>
-                    <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMP, 1) }} MW</strong>
-                </div>
-                <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
-                    <span style="font-size: 14px; color: #6c757d;">DMN Total:</span>
-                    <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMN, 1) }} MW</strong>
-                </div>
-                <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
-                    <span style="font-size: 14px; color: #6c757d;">Total Beban:</span>
-                    <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalBeban, 1) }} MW</strong>
-                </div>
-            </div>
-
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th style="width: 5%; text-align: center;">No</th>
-                        <th style="width: 20%;">Mesin</th>
-                        <th style="width: 12%; text-align: center;">DMN</th>
-                        <th style="width: 12%; text-align: center;">DMP</th>
-                        <th style="width: 12%; text-align: center;">Beban</th>
-                        <th style="width: 15%; text-align: center;">Status</th>
-                        <th style="width: 24%;">Component</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($powerPlant->machines as $index => $machine)
-                        @php
-                            $machineLog = $logs->where('machine_id', $machine->id)->first();
-                            $status = $machineLog?->status ?? '-';
-                            
-                            $statusClass = match($status) {
-                                'OPERASI' => 'status-operasi',
-                                'STANDBY' => 'status-standby',
-                                'GANGGUAN' => 'status-gangguan',
-                                'PEMELIHARAAN' => 'status-pemeliharaan',
-                                'OVERHAUL' => 'status-overhaul',
-                                default => 'status-default'
-                            };
-                        @endphp
-                        <tr>
-                            <td style="text-align: center;">{{ $index + 1 }}</td>
-                            <td>{{ $machine->name }}</td>
-                            <td style="text-align: center;">{{ $machineLog?->dmn ?? '-' }}</td>
-                            <td style="text-align: center;">{{ $machineLog?->dmp ?? '-' }}</td>
-                            <td style="text-align: center;">{{ $machineLog?->load_value ?? '-' }}</td>
-                            <td style="text-align: center;">
-                                <span class="status-badge {{ $statusClass }}">
-                                    {{ $status }}
-                                </span>
-                            </td>
-                            <td>{{ $machineLog?->component ?? '-' }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endforeach
+   
 
     <!-- Halaman Notes -->
     <div class="page-break">
@@ -500,19 +547,10 @@
             <h2>LEMBAR PENGESAHAN</h2>
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
-        <div class="signatures-grid">
-            <div class="signature-box">
-                <p>Moderator</p>
-                <div class="signature-line"></div>
-                <p>{{ $moderator->name ?? '________________' }}</p>
-                <p>{{ $moderator->position ?? '________________' }}</p>
-            </div>
-            <div class="signature-box">
-                <p>Notulis</p>
-                <div class="signature-line"></div>
-                <p>{{ $notulis->name ?? '________________' }}</p>
-                <p>{{ $notulis->position ?? '________________' }}</p>
-            </div>
+        
+        <div style="margin-top: 100px; text-align: center;">
+            <p style="font-weight: bold; margin-bottom: 100px;">MANAJER UP</p>
+            <div style="width: 200px; border-top: 1px solid black; margin: 0 auto;"></div>
         </div>
     </div>
 

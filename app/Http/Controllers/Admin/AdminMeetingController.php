@@ -288,7 +288,7 @@ class AdminMeetingController extends Controller
             'waktu_selesai' => $scoreCard->waktu_selesai,
             'peserta' => json_decode($scoreCard->peserta, true),
             'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
-            'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
+            'kesiapan_bahan' => $scoreCard->kesiapan_bahan, 
             'aktivitas_luar' => $scoreCard->aktivitas_luar,
             'gangguan_diskusi' => $scoreCard->gangguan_diskusi,
             'gangguan_keluar_masuk' => $scoreCard->gangguan_keluar_masuk,
@@ -303,6 +303,8 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->get('date');
+            $startOfMonth = Carbon::parse($date)->startOfMonth();
+            $endOfMonth = Carbon::parse($date)->endOfMonth();
             $allScoreCards = [];
             $currentSession = session('unit');
 
@@ -344,15 +346,16 @@ class AdminMeetingController extends Controller
                 ->with('machine.powerPlant')
                 ->get();
 
-            $serviceRequests = ServiceRequest::whereDate('created_at', $date)
+            // Modifikasi query untuk data bulanan
+            $serviceRequests = ServiceRequest::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->orderBy('priority', 'desc')
                 ->get();
 
-            $workOrders = WorkOrder::whereDate('created_at', $date)
+            $workOrders = WorkOrder::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->orderBy('created_at')
                 ->get();
 
-            $woBacklogs = WoBacklog::whereDate('created_at', $date)
+            $woBacklogs = WoBacklog::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->orderBy('created_at')
                 ->get();
 
@@ -450,6 +453,8 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->get('tanggal');
+            $startOfMonth = Carbon::parse($date)->startOfMonth();
+            $endOfMonth = Carbon::parse($date)->endOfMonth();
             \Log::info('Starting PDF download process for date:', ['date' => $date]);
             
             $allScoreCards = [];
@@ -495,15 +500,16 @@ class AdminMeetingController extends Controller
                 ->with('machine.powerPlant')
                 ->get();
 
-            $serviceRequests = ServiceRequest::whereDate('created_at', $date)
+            // Modifikasi query untuk data bulanan
+            $serviceRequests = ServiceRequest::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->orderBy('priority', 'desc')
                 ->get();
 
-            $workOrders = WorkOrder::whereDate('created_at', $date)
+            $workOrders = WorkOrder::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->orderBy('created_at')
                 ->get();
 
-            $woBacklogs = WoBacklog::whereDate('created_at', $date)
+            $woBacklogs = WoBacklog::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->orderBy('created_at')
                 ->get();
 

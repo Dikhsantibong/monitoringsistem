@@ -898,14 +898,9 @@
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
 
-        <div class="signatures-grid">
-            <div class="signature-box" style="grid-column: 1 / -1;">
-                <p class="title">MANAJER UP</p>
-                @if(isset($signatures['Manajer']))
-                    <img src="{{ $signatures['Manajer'] }}" alt="Tanda Tangan MANAJER UP" class="signature-image">
-                @endif
-                <div class="signature-line"></div>
-            </div>
+        <div style="margin-top: 100px; text-align: center;">
+            <p style="font-weight: bold; margin-bottom: 100px;">MANAJER UP</p>
+            <div style="width: 200px; border-top: 1px solid black; margin: 0 auto;"></div>
         </div>
     </div>
 
