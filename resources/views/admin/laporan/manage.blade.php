@@ -103,7 +103,8 @@
                             <form action="{{ route('admin.laporan.print', ['type' => 'sr']) }}" 
                                   method="GET" 
                                   target="_blank"
-                                  class="flex items-center gap-2 m-0">
+                                  class="flex items-center gap-2 m-0"
+                                  data-type="sr">
                                 <div class="flex items-center bg-white rounded-lg border h-10">
                                     <input type="date" 
                                            name="start_date" 
@@ -136,6 +137,7 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioritas</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -154,6 +156,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $sr->priority }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
                                         {{ optional($sr->powerPlant)->name ?? 'Unit tidak tersedia' }}
+                                    </td>
+                                    <td data-date="{{ $sr->created_at }}" class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        {{ $sr->created_at }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
@@ -181,7 +186,8 @@
                             <form action="{{ route('admin.laporan.print', ['type' => 'wo']) }}" 
                                   method="GET" 
                                   target="_blank"
-                                  class="flex items-center gap-2 m-0">
+                                  class="flex items-center gap-2 m-0"
+                                  data-type="wo">
                                 <div class="flex items-center bg-white rounded-lg border h-10">
                                     <input type="date" 
                                            name="start_date" 
@@ -215,6 +221,7 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioritas</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -246,6 +253,9 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $wo->priority }}</td>
+                                    <td data-date="{{ $wo->created_at }}" class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        {{ $wo->created_at }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
                                                 data-delete 
@@ -272,7 +282,8 @@
                             <form action="{{ route('admin.laporan.print', ['type' => 'backlog']) }}" 
                                   method="GET" 
                                   target="_blank"
-                                  class="flex items-center gap-2 m-0">
+                                  class="flex items-center gap-2 m-0"
+                                  data-type="backlog">
                                 <div class="flex items-center bg-white rounded-lg border h-10">
                                     <input type="date" 
                                            name="start_date" 
@@ -306,6 +317,7 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -326,6 +338,9 @@
                                         {{ optional($backlog->powerPlant)->name ?? 'Unit tidak tersedia' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border border-gray-200">{{ $backlog->keterangan }}</td>
+                                    <td data-date="{{ $backlog->created_at }}" class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                                        {{ $backlog->created_at }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm border border-gray-200">
                                         <button type="button"
                                                 data-delete 
@@ -487,6 +502,73 @@ document.addEventListener('DOMContentLoaded', function() {
             const type = this.getAttribute('data-type');
             const id = this.getAttribute('data-id');
             handleDelete(type, id);
+        });
+    });
+});
+
+// Tambahkan fungsi untuk validasi data sebelum print
+function validatePrintData(formElement, event) {
+    event.preventDefault(); // Hentikan submit form
+    
+    const startDate = formElement.querySelector('input[name="start_date"]').value;
+    const endDate = formElement.querySelector('input[name="end_date"]').value;
+    const type = formElement.getAttribute('data-type');
+    
+    // Cek data berdasarkan tipe tabel
+    let tableBody;
+    switch(type) {
+        case 'sr':
+            tableBody = document.querySelector('#sr-tab table tbody');
+            break;
+        case 'wo':
+            tableBody = document.querySelector('#wo-tab table tbody');
+            break;
+        case 'backlog':
+            tableBody = document.querySelector('#backlog-tab table tbody');
+            break;
+    }
+    
+    // Hitung jumlah baris yang visible
+    const visibleRows = tableBody ? Array.from(tableBody.querySelectorAll('tr')).filter(row => {
+        const date = row.querySelector('td[data-date]')?.getAttribute('data-date');
+        if (!date) return false;
+        
+        const rowDate = new Date(date);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59);
+        
+        return rowDate >= start && rowDate <= end;
+    }).length : 0;
+
+    if (visibleRows === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Data Kosong',
+            text: `Data pada tanggal ${startDate} s/d ${endDate} kosong`,
+            confirmButtonText: 'Tutup'
+        });
+    } else {
+        // Jika ada data, lanjutkan submit form
+        formElement.submit();
+    }
+}
+
+// Tambahkan event listener untuk form print
+document.addEventListener('DOMContentLoaded', function() {
+    const printForms = document.querySelectorAll('form[action*="print"]');
+    printForms.forEach(form => {
+        // Tambahkan data-type ke form
+        if (form.action.includes('type=sr')) {
+            form.setAttribute('data-type', 'sr');
+        } else if (form.action.includes('type=wo')) {
+            form.setAttribute('data-type', 'wo');
+        } else if (form.action.includes('type=backlog')) {
+            form.setAttribute('data-type', 'backlog');
+        }
+        
+        form.addEventListener('submit', function(e) {
+            validatePrintData(this, e);
         });
     });
 });
