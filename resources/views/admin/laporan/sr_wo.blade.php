@@ -724,8 +724,10 @@
                                                 {{ $backlog->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">{{ $backlog->type_wo ?? '-' }}</td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                {{ $backlog->deskripsi }}
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px;">
+                                                <div class="whitespace-pre-wrap break-words">
+                                                    {{ $backlog->deskripsi }}
+                                                </div>
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 {{ $backlog->kendala ?? '-' }}
@@ -1292,6 +1294,8 @@
         const status = document.getElementById('srStatusFilter').value;
         const unit = document.getElementById('filterUnitSR').value;
         const downtime = document.getElementById('srDowntimeFilter').value;
+        const startDate = document.getElementById('startDateSR').value;
+        const endDate = document.getElementById('endDateSR').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1312,6 +1316,18 @@
                 const downtimeCell = cells[6].textContent.trim();
                 if (downtime === 'Yes' && downtimeCell === '0') matchesFilter = false;
                 if (downtime === 'No' && downtimeCell !== '0') matchesFilter = false;
+            }
+
+            // Filter tanggal
+            if (startDate && endDate && cells[7].textContent.trim()) {
+                const rowDate = new Date(cells[7].textContent.trim());
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59); // Set end date to end of day
+
+                if (rowDate < start || rowDate > end) {
+                    matchesFilter = false;
+                }
             }
 
             // Cek apakah baris mengandung kata yang dicari
@@ -1346,6 +1362,8 @@
         // Simpan filter yang sedang aktif
         const status = document.getElementById('woStatusFilter').value;
         const unit = document.getElementById('filterUnitWO').value;
+        const startDate = document.getElementById('startDateWO').value;
+        const endDate = document.getElementById('endDateWO').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1361,6 +1379,18 @@
             if (unit) {
                 const unitCell = cells[2].textContent.trim();
                 if (!unitCell.includes(unit)) matchesFilter = false;
+            }
+
+            // Filter tanggal
+            if (startDate && endDate && cells[6].textContent.trim()) {
+                const rowDate = new Date(cells[6].textContent.trim());
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59); // Set end date to end of day
+
+                if (rowDate < start || rowDate > end) {
+                    matchesFilter = false;
+                }
             }
 
             // Cek apakah baris mengandung kata yang dicari
@@ -1395,6 +1425,8 @@
         // Simpan filter yang sedang aktif
         const status = document.getElementById('backlogStatusFilter').value;
         const unit = document.getElementById('filterUnitBacklog').value;
+        const startDate = document.getElementById('startDateBacklog').value;
+        const endDate = document.getElementById('endDateBacklog').value;
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1410,6 +1442,18 @@
             if (unit) {
                 const unitCell = cells[2].textContent.trim();
                 if (!unitCell.includes(unit)) matchesFilter = false;
+            }
+
+            // Filter tanggal
+            if (startDate && endDate && cells[8].textContent.trim()) {
+                const rowDate = new Date(cells[8].textContent.trim());
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59); // Set end date to end of day
+
+                if (rowDate < start || rowDate > end) {
+                    matchesFilter = false;
+                }
             }
 
             // Cek apakah baris mengandung kata yang dicari
@@ -1614,17 +1658,21 @@
         const unit = document.getElementById('filterUnitSR').value.toLowerCase();
         const status = document.getElementById('srStatusFilter').value;
         const downtime = document.getElementById('srDowntimeFilter').value;
+        const startDate = document.getElementById('startDateSR').value;
+        const endDate = document.getElementById('endDateSR').value;
         const rows = document.querySelectorAll('#srTable tbody tr');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const unitCell = row.querySelector('td[data-column="unit"]');
             const statusCell = row.querySelector('td[data-column="status"]');
-            const downtimeCell = row.querySelector('td:nth-child(7)'); // Sesuaikan dengan index kolom downtime
+            const downtimeCell = row.querySelector('td:nth-child(7)');
+            const dateCell = row.querySelector('td[data-column="created_at"]');
 
             const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
             const statusText = statusCell ? statusCell.textContent.trim() : '';
             const downtimeText = downtimeCell ? downtimeCell.textContent.trim() : '';
+            const dateText = dateCell ? dateCell.textContent.trim() : '';
 
             let showRow = true;
 
@@ -1647,6 +1695,18 @@
                 }
             }
 
+            // Filter tanggal
+            if (startDate && endDate && dateText) {
+                const rowDate = new Date(dateText);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59); // Set end date to end of day
+
+                if (rowDate < start || rowDate > end) {
+                    showRow = false;
+                }
+            }
+
             row.style.display = showRow ? '' : 'none';
             if (showRow) visibleCount++;
         });
@@ -1657,15 +1717,19 @@
     function filterWOTable() {
         const unit = document.getElementById('filterUnitWO').value.toLowerCase();
         const status = document.getElementById('woStatusFilter').value;
+        const startDate = document.getElementById('startDateWO').value;
+        const endDate = document.getElementById('endDateWO').value;
         const rows = document.querySelectorAll('#woTable tbody tr');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const unitCell = row.querySelector('td[data-column="unit"]');
             const statusCell = row.querySelector('td[data-column="status"]');
+            const dateCell = row.querySelector('td[data-column="created_at"]');
 
             const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
             const statusText = statusCell ? statusCell.textContent.trim() : '';
+            const dateText = dateCell ? dateCell.textContent.trim() : '';
 
             let showRow = true;
 
@@ -1677,6 +1741,18 @@
             // Filter status
             if (status && !statusText.includes(status)) {
                 showRow = false;
+            }
+
+            // Filter tanggal
+            if (startDate && endDate && dateText) {
+                const rowDate = new Date(dateText);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59); // Set end date to end of day
+
+                if (rowDate < start || rowDate > end) {
+                    showRow = false;
+                }
             }
 
             row.style.display = showRow ? '' : 'none';
@@ -1689,15 +1765,19 @@
     function filterBacklogTable() {
         const unit = document.getElementById('filterUnitBacklog').value.toLowerCase();
         const status = document.getElementById('backlogStatusFilter').value;
+        const startDate = document.getElementById('startDateBacklog').value;
+        const endDate = document.getElementById('endDateBacklog').value;
         const rows = document.querySelectorAll('#backlogTable tbody tr');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const unitCell = row.querySelector('td[data-column="unit"]');
-            const statusCell = row.querySelector('td:nth-child(5)'); // Sesuaikan dengan index kolom status
+            const statusCell = row.querySelector('td:nth-child(5)');
+            const dateCell = row.querySelector('td[data-column="created_at"]');
 
             const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
             const statusText = statusCell ? statusCell.textContent.trim() : '';
+            const dateText = dateCell ? dateCell.textContent.trim() : '';
 
             let showRow = true;
 
@@ -1709,6 +1789,18 @@
             // Filter status
             if (status && !statusText.includes(status)) {
                 showRow = false;
+            }
+
+            // Filter tanggal
+            if (startDate && endDate && dateText) {
+                const rowDate = new Date(dateText);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59); // Set end date to end of day
+
+                if (rowDate < start || rowDate > end) {
+                    showRow = false;
+                }
             }
 
             row.style.display = showRow ? '' : 'none';
