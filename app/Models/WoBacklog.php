@@ -45,91 +45,194 @@ class WoBacklog extends Model
     {
         parent::boot();
         
+        // Tambahkan event creating untuk cek sebelum data dibuat
+        static::creating(function ($woBacklog) {
+            // Cek duplikasi di database tujuan
+            $currentConnection = session('unit', 'mysql');
+            
+            if ($currentConnection !== 'mysql') {
+                // Jika dari unit, cek di database utama
+                $exists = DB::connection('mysql')
+                    ->table('wo_backlog')
+                    ->where('no_wo', $woBacklog->no_wo)
+                    ->where('unit_source', $currentConnection)
+                    ->exists();
+
+                if ($exists) {
+                    Log::info('Preventing duplicate WO Backlog creation', [
+                        'no_wo' => $woBacklog->no_wo,
+                        'unit_source' => $currentConnection,
+                        'connection' => 'mysql'
+                    ]);
+                    return false;
+                }
+            }
+        });
+
         static::created(function ($woBacklog) {
-            self::syncData('create', $woBacklog);
+            if (!self::$isSyncing && !session()->has('syncing_backlog')) {
+                self::syncData('create', $woBacklog);
+            }
         });
 
         static::updated(function ($woBacklog) {
-            self::syncData('update', $woBacklog);
+            if (!self::$isSyncing && !session()->has('syncing_backlog')) {
+                self::syncData('update', $woBacklog);
+            }
         });
 
         static::deleted(function ($woBacklog) {
-            self::syncData('delete', $woBacklog);
+            if (!self::$isSyncing && !session()->has('syncing_backlog')) {
+                self::syncData('delete', $woBacklog);
+            }
         });
     }
 
     protected static function syncData($action, $woBacklog)
     {
-        if (self::$isSyncing) return;
+        if (self::$isSyncing || session()->has('syncing_backlog')) {
+            Log::info('Skipping duplicate sync', [
+                'action' => $action,
+                'no_wo' => $woBacklog->no_wo,
+                'is_syncing' => self::$isSyncing,
+                'session_syncing' => session()->has('syncing_backlog')
+            ]);
+            return;
+        }
 
         try {
             self::$isSyncing = true;
+            session(['syncing_backlog' => true]);
             
             $powerPlant = PowerPlant::find($woBacklog->power_plant_id);
+            $currentConnection = session('unit', 'mysql');
             
-            // Skip sinkronisasi jika unit_source adalah mysql (database utama)
-            if (!$powerPlant || $powerPlant->unit_source === 'mysql') {
-                Log::info('Skipping sync for main database (mysql)', [
-                    'power_plant' => $powerPlant->name ?? 'unknown',
-                    'unit_source' => $powerPlant->unit_source ?? 'unknown'
-                ]);
-                return;
-            }
-
-            // Lanjutkan proses sinkronisasi untuk unit lain
-            $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
-            
-            // Data lengkap untuk sinkronisasi
-            $data = [
-                'no_wo' => $woBacklog->no_wo,
-                'deskripsi' => $woBacklog->deskripsi,
-                'type_wo' => $woBacklog->type_wo,           // tambahkan
-                'priority' => $woBacklog->priority,          // tambahkan
-                'schedule_start' => $woBacklog->schedule_start,   // tambahkan
-                'schedule_finish' => $woBacklog->schedule_finish, // tambahkan
-                'tanggal_backlog' => $woBacklog->tanggal_backlog,
-                'keterangan' => $woBacklog->keterangan,
-                'status' => $woBacklog->status,
-                'power_plant_id' => $woBacklog->power_plant_id,
-                'unit_source' => $powerPlant->unit_source,
-                'created_at' => $woBacklog->created_at,
-                'updated_at' => $woBacklog->updated_at
-            ];
-
-            $targetDB = DB::connection($targetConnection);
-
-            Log::info("Attempting to {$action} WO Backlog sync", [
-                'data' => $data,
-                'current_connection' => session('unit', 'mysql'),
-                'target_connection' => $targetDB->getName()
+            Log::info('Starting WO Backlog sync', [
+                'action' => $action,
+                'current_connection' => $currentConnection,
+                'power_plant' => $powerPlant ? $powerPlant->toArray() : null
             ]);
 
-            switch($action) {
-                case 'create':
-                    $targetDB->table('wo_backlog')->insert($data);
-                    break;
-                    
-                case 'update':
-                    $targetDB->table('wo_backlog')
+            // Jika koneksi saat ini bukan mysql (berarti dari unit)
+            if ($currentConnection !== 'mysql') {
+                // Double check untuk memastikan tidak ada duplikasi
+                $existingRecord = DB::connection('mysql')
+                    ->table('wo_backlog')
+                    ->where('no_wo', $woBacklog->no_wo)
+                    ->where('unit_source', $currentConnection)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existingRecord && $action === 'create') {
+                    Log::info('Skipping duplicate creation in main database', [
+                        'no_wo' => $woBacklog->no_wo,
+                        'unit_source' => $currentConnection
+                    ]);
+                    return;
+                }
+
+                $data = [
+                    'no_wo' => $woBacklog->no_wo,
+                    'deskripsi' => $woBacklog->deskripsi,
+                    'kendala' => $woBacklog->kendala,
+                    'tindak_lanjut' => $woBacklog->tindak_lanjut,
+                    'document_path' => $woBacklog->document_path,
+                    'type_wo' => $woBacklog->type_wo,
+                    'priority' => $woBacklog->priority,
+                    'schedule_start' => $woBacklog->schedule_start,
+                    'schedule_finish' => $woBacklog->schedule_finish,
+                    'tanggal_backlog' => $woBacklog->tanggal_backlog,
+                    'status' => $woBacklog->status,
+                    'keterangan' => $woBacklog->keterangan,
+                    'power_plant_id' => $woBacklog->power_plant_id,
+                    'unit_source' => $currentConnection,
+                    'created_at' => $woBacklog->created_at,
+                    'updated_at' => $woBacklog->updated_at
+                ];
+
+                DB::connection('mysql')->transaction(function () use ($action, $data, $woBacklog, $currentConnection) {
+                    switch($action) {
+                        case 'create':
+                            DB::connection('mysql')
+                                ->table('wo_backlog')
+                                ->insert($data);
+                            break;
+                            
+                        case 'update':
+                            DB::connection('mysql')
+                                ->table('wo_backlog')
+                                ->where('no_wo', $woBacklog->no_wo)
+                                ->where('unit_source', $currentConnection)
+                                ->update($data);
+                            break;
+                            
+                        case 'delete':
+                            DB::connection('mysql')
+                                ->table('wo_backlog')
+                                ->where('no_wo', $woBacklog->no_wo)
+                                ->where('unit_source', $currentConnection)
+                                ->delete();
+                            break;
+                    }
+                });
+            }
+            // Jika koneksi saat ini adalah mysql dan ada power plant
+            elseif ($powerPlant && $powerPlant->unit_source !== 'mysql') {
+                // Sync ke database unit
+                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
+                
+                $data = [
+                    'no_wo' => $woBacklog->no_wo,
+                    'deskripsi' => $woBacklog->deskripsi,
+                    'kendala' => $woBacklog->kendala,
+                    'tindak_lanjut' => $woBacklog->tindak_lanjut,
+                    'document_path' => $woBacklog->document_path,
+                    'type_wo' => $woBacklog->type_wo,
+                    'priority' => $woBacklog->priority,
+                    'schedule_start' => $woBacklog->schedule_start,
+                    'schedule_finish' => $woBacklog->schedule_finish,
+                    'tanggal_backlog' => $woBacklog->tanggal_backlog,
+                    'status' => $woBacklog->status,
+                    'keterangan' => $woBacklog->keterangan,
+                    'power_plant_id' => $woBacklog->power_plant_id,
+                    'unit_source' => $powerPlant->unit_source,
+                    'created_at' => $woBacklog->created_at,
+                    'updated_at' => $woBacklog->updated_at
+                ];
+
+                Log::info("Syncing to unit database", [
+                    'action' => $action,
+                    'target_connection' => $targetConnection,
+                    'data' => $data
+                ]);
+
+                switch($action) {
+                    case 'create':
+                        DB::connection($targetConnection)
+                            ->table('wo_backlog')
+                            ->insert($data);
+                        break;
+                        
+                    case 'update':
+                        DB::connection($targetConnection)
+                            ->table('wo_backlog')
                             ->where('no_wo', $woBacklog->no_wo)
                             ->update($data);
-                    break;
-                    
-                case 'delete':
-                    $targetDB->table('wo_backlog')
+                        break;
+                        
+                    case 'delete':
+                        DB::connection($targetConnection)
+                            ->table('wo_backlog')
                             ->where('no_wo', $woBacklog->no_wo)
                             ->delete();
-                    break;
+                        break;
+                }
             }
 
-            Log::info("WO Backlog Sync successful", [
+            Log::info("WO Backlog Sync completed successfully", [
                 'no_wo' => $woBacklog->no_wo,
-                'unit' => $powerPlant->unit_source,
                 'action' => $action,
-                'type_wo' => $data['type_wo'],
-                'priority' => $data['priority'],
-                'schedule_start' => $data['schedule_start'],
-                'schedule_finish' => $data['schedule_finish']
+                'current_connection' => $currentConnection
             ]);
 
         } catch (\Exception $e) {
@@ -141,6 +244,7 @@ class WoBacklog extends Model
             throw $e;
         } finally {
             self::$isSyncing = false;
+            session()->forget('syncing_backlog');
         }
     }
     public function powerPlant()

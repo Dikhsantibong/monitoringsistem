@@ -86,10 +86,16 @@
                                 <div class="mb-4">
                                     <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
                                     <select name="status" id="status" 
-                                        class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                        {{ !$backlog->document_path && !old('document') ? 'disabled' : '' }}
+                                        required>
                                         <option value="Open" {{ $backlog->status == 'Open' ? 'selected' : '' }}>Open</option>
                                         <option value="Closed" {{ $backlog->status == 'Closed' ? 'selected' : '' }}>Closed</option>
                                     </select>
+                                    @if(!$backlog->document_path)
+                                    <p class="text-red-500 text-sm mt-1">*Upload dokumen terlebih dahulu sebelum mengubah status menjadi Closed</p>
+                                    @endif
+                                    <input type="hidden" name="status" value="{{ $backlog->status }}" id="hidden_status">
                                 </div>
 
                                 <div class="mb-4">
@@ -180,11 +186,46 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     const submitButton = form.querySelector('button[type="submit"]');
+    const statusSelect = document.getElementById('status');
+    const hiddenStatus = document.getElementById('hidden_status');
+    const documentInput = document.getElementById('document');
     let isSubmitting = false;
+
+    // Check if document exists
+    const hasDocument = {{ $backlog->document_path ? 'true' : 'false' }};
+    
+    // Enable/disable status based on document
+    function updateStatusSelect() {
+        const hasFile = documentInput.files.length > 0 || hasDocument;
+        statusSelect.disabled = !hasFile;
+        if (!hasFile && statusSelect.value === 'Closed') {
+            statusSelect.value = 'Open';
+        }
+        // Update hidden status value
+        hiddenStatus.value = statusSelect.value;
+    }
+
+    // Update hidden status when select changes
+    statusSelect.addEventListener('change', function() {
+        hiddenStatus.value = this.value;
+    });
+
+    documentInput.addEventListener('change', updateStatusSelect);
+    updateStatusSelect();
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         if (isSubmitting) return;
+        
+        // Validate document requirement for Closed status
+        if (statusSelect.value === 'Closed' && !hasDocument && !documentInput.files.length) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Anda harus mengupload dokumen sebelum mengubah status menjadi Closed'
+            });
+            return;
+        }
         
         try {
             isSubmitting = true;
@@ -256,7 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // File Upload Preview
-    const documentInput = document.getElementById('document');
     const filePreview = document.getElementById('filePreview');
     const fileName = document.getElementById('fileName');
     const removeFile = document.getElementById('removeFile');
@@ -300,6 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
     removeFile.addEventListener('click', function() {
         documentInput.value = '';
         filePreview.classList.add('hidden');
+        updateStatusSelect();
     });
 
     // Drag and drop support

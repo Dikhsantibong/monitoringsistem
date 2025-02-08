@@ -89,10 +89,20 @@ class WorkOrder extends Model
 
     protected static function syncData($action, $workOrder)
     {
-        if (self::$isSyncing) return;
+        // Tambahkan pengecekan sesi sinkronisasi
+        if (self::$isSyncing || session()->has('syncing_wo')) {
+            Log::info('Skipping duplicate sync', [
+                'action' => $action,
+                'wo_id' => $workOrder->id,
+                'is_syncing' => self::$isSyncing,
+                'session_syncing' => session()->has('syncing_wo')
+            ]);
+            return;
+        }
 
         try {
             self::$isSyncing = true;
+            session(['syncing_wo' => true]);
             
             $powerPlant = PowerPlant::find($workOrder->power_plant_id);
             
@@ -113,6 +123,7 @@ class WorkOrder extends Model
                 'description' => $workOrder->description,
                 'kendala' => $workOrder->kendala,
                 'tindak_lanjut' => $workOrder->tindak_lanjut,
+                'document_path' => $workOrder->document_path,
                 'type' => $workOrder->type,
                 'status' => $workOrder->status,
                 'priority' => $workOrder->priority,
@@ -126,32 +137,38 @@ class WorkOrder extends Model
                 'updated_at' => $workOrder->updated_at
             ];
 
-            Log::info("Attempting to {$action} WO sync", ['data' => $data]);
+            Log::info("Attempting to {$action} WO sync", [
+                'data' => $data,
+                'current_connection' => session('unit', 'mysql'),
+                'target_connection' => $targetConnection
+            ]);
 
             switch($action) {
                 case 'create':
-                    $targetDB = DB::connection($targetConnection);
-                    $targetDB->table('work_orders')->insert($data);
+                    DB::connection($targetConnection)
+                        ->table('work_orders')
+                        ->insert($data);
                     break;
                     
                 case 'update':
-                    $targetDB = DB::connection($targetConnection);
-                    $targetDB->table('work_orders')
-                            ->where('id', $workOrder->id)
-                            ->update($data);
+                    DB::connection($targetConnection)
+                        ->table('work_orders')
+                        ->where('id', $workOrder->id)
+                        ->update($data);
                     break;
                     
                 case 'delete':
-                    $targetDB = DB::connection($targetConnection);
-                    $targetDB->table('work_orders')
-                            ->where('id', $workOrder->id)
-                            ->delete();
+                    DB::connection($targetConnection)
+                        ->table('work_orders')
+                        ->where('id', $workOrder->id)
+                        ->delete();
                     break;
             }
 
             Log::info("WO Sync successful", [
                 'id' => $workOrder->id,
-                'unit' => $powerPlant->unit_source
+                'unit' => $powerPlant->unit_source,
+                'action' => $action
             ]);
 
         } catch (\Exception $e) {
@@ -163,6 +180,7 @@ class WorkOrder extends Model
             throw $e;
         } finally {
             self::$isSyncing = false;
+            session()->forget('syncing_wo');
         }
     }
 

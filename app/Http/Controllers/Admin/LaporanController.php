@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 
 class LaporanController extends Controller
@@ -546,86 +547,151 @@ class LaporanController extends Controller
             
             $woBacklog = WoBacklog::findOrFail($id);
             
+            Log::info('Starting WO Backlog update', [
+                'backlog_id' => $id,
+                'current_status' => $woBacklog->status,
+                'new_status' => $request->input('status', $woBacklog->status), // Default ke status saat ini
+                'document_path' => $woBacklog->document_path
+            ]);
+
             // Validasi request
-            $request->validate([
+            $validatedData = $request->validate([
                 'no_wo' => 'required',
                 'deskripsi' => 'required',
                 'kendala' => 'nullable',
                 'tindak_lanjut' => 'nullable',
                 'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
-                'status' => 'required|in:Open,Closed',
+                'status' => 'required|in:Open,Closed', // Pastikan status selalu divalidasi
                 'keterangan' => 'nullable'
             ]);
 
             // Handle file upload jika ada
             if ($request->hasFile('document')) {
-                // Hapus file lama jika ada
-                if ($woBacklog->document_path) {
-                    Storage::delete($woBacklog->document_path);
+                try {
+                    if ($woBacklog->document_path) {
+                        Storage::disk('public')->delete($woBacklog->document_path);
+                    }
+                    
+                    $file = $request->file('document');
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $path = 'work-orders/' . $fileName;
+                    Storage::disk('public')->put($path, file_get_contents($file));
+                    $woBacklog->document_path = $path;
+
+                    Log::info('File uploaded successfully', [
+                        'path' => $path
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('File upload error', [
+                        'error' => $e->getMessage()
+                    ]);
+                    throw $e;
                 }
-                
-                $file = $request->file('document');
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('documents/backlog', $fileName);
-                
-                $woBacklog->document_path = $path;
             }
 
-            // Update data
+            // Update data dengan data yang sudah divalidasi
             $woBacklog->update([
-                'no_wo' => $request->no_wo,
-                'deskripsi' => $request->deskripsi,
-                'kendala' => $request->kendala,
-                'tindak_lanjut' => $request->tindak_lanjut,
-                'status' => $request->status,
-                'keterangan' => $request->keterangan
+                'no_wo' => $validatedData['no_wo'],
+                'deskripsi' => $validatedData['deskripsi'],
+                'kendala' => $validatedData['kendala'],
+                'tindak_lanjut' => $validatedData['tindak_lanjut'],
+                'status' => $validatedData['status'],
+                'keterangan' => $validatedData['keterangan']
             ]);
+
+            Log::info('WO Backlog updated', [
+                'id' => $id,
+                'new_status' => $validatedData['status']
+            ]);
+
+            // Jika status Closed, pindahkan ke WO
+            if ($validatedData['status'] === 'Closed') {
+                try {
+                    Log::info('Attempting to create new WO from backlog', [
+                        'backlog_id' => $id,
+                        'document_path' => $woBacklog->document_path
+                    ]);
+
+                    // Cek ID terakhir di work_orders
+                    $lastId = WorkOrder::max('id');
+                    $newId = $lastId ? $lastId + 1 : 1;
+
+                    // Buat WO baru dengan data dari backlog
+                    $workOrder = new WorkOrder([
+                        'id' => $newId, // Gunakan ID baru yang unique
+                        'description' => $woBacklog->deskripsi,
+                        'kendala' => $woBacklog->kendala,
+                        'tindak_lanjut' => $woBacklog->tindak_lanjut,
+                        'status' => 'Closed',
+                        'document_path' => $woBacklog->document_path,
+                        'power_plant_id' => $woBacklog->power_plant_id,
+                        'unit_source' => $woBacklog->unit_source ?? 'mysql',
+                        'created_at' => $woBacklog->created_at,
+                        'updated_at' => now()
+                    ]);
+                    
+                    $workOrder->save();
+                    
+                    Log::info('New WO created successfully', [
+                        'wo_id' => $workOrder->id,
+                        'original_backlog_no' => $woBacklog->no_wo
+                    ]);
+
+                    // Hapus backlog setelah dipindahkan
+                    $woBacklog->delete();
+                    
+                    Log::info('Backlog deleted successfully', [
+                        'backlog_id' => $id
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error creating WO from backlog', [
+                        'backlog_id' => $id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    throw $e;
+                }
+            }
 
             DB::commit();
 
-            Log::info('WO Backlog updated successfully', [
-                'no_wo' => $woBacklog->no_wo,
-                'status' => $woBacklog->status,
-                'kendala' => $woBacklog->kendala,
-                'tindak_lanjut' => $woBacklog->tindak_lanjut,
-                'document_path' => $woBacklog->document_path
-            ]);
-
-            // Ganti response JSON dengan redirect
             return redirect()
                 ->route('admin.laporan.sr_wo')
                 ->with('success', 'WO Backlog berhasil diupdate');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating WO Backlog: ' . $e->getMessage(), [
+            Log::error('Error updating WO Backlog', [
                 'id' => $id,
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
             ]);
 
-            // Ganti response JSON dengan redirect back
             return back()
-                ->with('error', 'Terjadi kesalahan saat mengupdate WO Backlog')
+                ->with('error', 'Terjadi kesalahan saat mengupdate WO Backlog: ' . $e->getMessage())
                 ->withInput();
         }
     }
 
     private function checkExpiredWO()
     {
-        // Skip jika request update status
         if (request()->is('*/update-wo-status/*')) {
             Log::info('Skipping expired WO check for status update request');
             return;
         }
 
-        Log::info('Starting expired WO check'); 
+        Log::info('Starting expired WO check');
         
         DB::beginTransaction();
         try {
-            // Debug: Tampilkan waktu sekarang
-            Log::debug('Current time: ' . now());
+            $currentConnection = session('unit', 'mysql');
+            
+            // Log untuk debugging
+            Log::info('Checking expired WOs with connection:', [
+                'connection' => $currentConnection
+            ]);
 
-            // Cari WO yang expired, belum di-backlog, dan statusnya bukan Closed
             $expiredWOs = WorkOrder::whereNotIn('status', ['Closed'])
                 ->where('is_backlogged', false)
                 ->where('schedule_finish', '<', now())
@@ -633,25 +699,42 @@ class LaporanController extends Controller
 
             Log::info('Found expired WOs:', [
                 'count' => $expiredWOs->count(),
-                'statuses' => $expiredWOs->pluck('status')->toArray()
+                'connection' => $currentConnection
             ]);
 
             foreach ($expiredWOs as $wo) {
-                Log::info('Processing expired WO:', [
-                    'wo_id' => $wo->id,
-                    'status' => $wo->status,
-                    'schedule_finish' => $wo->schedule_finish,
-                    'current_time' => now()
-                ]);
-
                 try {
-                    // Buat WO Backlog dengan data lengkap termasuk kolom baru
-                    $backlog = WoBacklog::create([
+                    // Cek duplikasi di kedua database
+                    $existsInMain = DB::connection('mysql')
+                        ->table('wo_backlog')
+                        ->where('no_wo', $wo->id)
+                        ->where('unit_source', $wo->unit_source)
+                        ->exists();
+
+                    $existsInUnit = DB::connection($wo->unit_source)
+                        ->table('wo_backlog')
+                        ->where('no_wo', $wo->id)
+                        ->exists();
+
+                    if ($existsInMain || $existsInUnit) {
+                        Log::info('Skipping - Backlog already exists', [
+                            'wo_id' => $wo->id,
+                            'unit_source' => $wo->unit_source,
+                            'exists_in_main' => $existsInMain,
+                            'exists_in_unit' => $existsInUnit
+                        ]);
+                        continue;
+                    }
+
+                    DB::connection($currentConnection)->beginTransaction();
+
+                    // Buat WO Backlog dengan data lengkap
+                    $backlog = new WoBacklog([
                         'no_wo' => $wo->id,
                         'deskripsi' => $wo->description,
-                        'kendala' => $wo->kendala,           // tambah kolom baru
-                        'tindak_lanjut' => $wo->tindak_lanjut, // tambah kolom baru
-                        'document_path' => $wo->document_path,  // tambah kolom baru
+                        'kendala' => $wo->kendala,
+                        'tindak_lanjut' => $wo->tindak_lanjut,
+                        'document_path' => $wo->document_path,
                         'type_wo' => $wo->type,
                         'priority' => $wo->priority,
                         'schedule_start' => $wo->schedule_start,
@@ -663,46 +746,42 @@ class LaporanController extends Controller
                         'unit_source' => $wo->unit_source
                     ]);
 
-                    // Update status WO dan tandai sebagai backlogged
+                    // Set koneksi yang benar sebelum menyimpan
+                    if ($currentConnection !== 'mysql') {
+                        $backlog->setConnection($currentConnection);
+                    }
+
+                    $backlog->save();
+
+                    // Update status WO
                     $wo->update([
                         'is_backlogged' => true,
                         'backlogged_at' => now()
                     ]);
 
-                    Log::info('Successfully moved WO to backlog', [
-                        'wo_id' => $wo->id,
-                        'original_status' => $wo->status,
-                        'backlog_id' => $backlog->id,
-                        'type_wo' => $backlog->type_wo,
-                        'priority' => $backlog->priority,
-                        'schedule_start' => $backlog->schedule_start,
-                        'schedule_finish' => $backlog->schedule_finish,
-                        'kendala' => $backlog->kendala,           // log kolom baru
-                        'tindak_lanjut' => $backlog->tindak_lanjut, // log kolom baru
-                        'document_path' => $backlog->document_path   // log kolom baru
-                    ]);
-
-                    // Hapus WO original
                     $wo->delete();
 
+                    DB::connection($currentConnection)->commit();
+
+                    Log::info('Successfully moved WO to backlog', [
+                        'wo_id' => $wo->id,
+                        'backlog_id' => $backlog->id,
+                        'unit_source' => $wo->unit_source,
+                        'current_connection' => $currentConnection
+                    ]);
+
                 } catch (\Exception $e) {
+                    DB::connection($currentConnection)->rollBack();
                     Log::error('Error processing individual WO:', [
                         'wo_id' => $wo->id,
-                        'status' => $wo->status,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
                     ]);
-                    continue; // Lanjut ke WO berikutnya jika ada error
+                    continue;
                 }
             }
 
             DB::commit();
-            Log::info('Completed expired WO check');
-
-            if ($expiredWOs->count() > 0) {
-                $message = 'Ada ' . $expiredWOs->count() . ' WO yang telah dipindahkan ke backlog karena expired.';
-                session()->flash('backlog_notification', $message);
-                Log::info($message);
-            }
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -969,6 +1048,7 @@ class LaporanController extends Controller
     public function downloadDocument($id)
     {
         try {
+            // Coba cari di WorkOrder dulu
             $workOrder = WorkOrder::findOrFail($id);
             
             if (!$workOrder->document_path) {
@@ -1003,10 +1083,49 @@ class LaporanController extends Controller
                 'Content-Disposition' => 'inline; filename="' . $fileName . '"'
             ]);
 
+        } catch (ModelNotFoundException $e) {
+            // Jika tidak ditemukan di WorkOrder, coba cari di WoBacklog
+            try {
+                $backlog = WoBacklog::where('no_wo', $id)->firstOrFail();
+                
+                if (!$backlog->document_path) {
+                    return back()->with('error', 'Dokumen tidak ditemukan');
+                }
+
+                $path = storage_path('app/public/' . $backlog->document_path);
+                
+                if (!file_exists($path)) {
+                    \Log::error('Backlog document file not found:', ['path' => $path]);
+                    return back()->with('error', 'File tidak ditemukan di server');
+                }
+
+                $extension = pathinfo($path, PATHINFO_EXTENSION);
+                $mime = $this->getMimeType($extension);
+                $fileName = basename($path);
+
+                \Log::info('Downloading backlog document:', [
+                    'path' => $path,
+                    'mime' => $mime,
+                    'extension' => $extension,
+                    'filename' => $fileName
+                ]);
+
+                return response()->file($path, [
+                    'Content-Type' => $mime,
+                    'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Error downloading document:', [
+                    'id' => $id,
+                    'error' => $e->getMessage()
+                ]);
+                return back()->with('error', 'Gagal mengunduh dokumen');
+            }
         } catch (\Exception $e) {
             \Log::error('Error downloading document:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'id' => $id,
+                'error' => $e->getMessage()
             ]);
             return back()->with('error', 'Gagal mengunduh dokumen');
         }

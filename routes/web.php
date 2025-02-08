@@ -646,7 +646,8 @@ Route::get('/admin/laporan/edit-wo/{id}', [LaporanController::class, 'editWO'])
 Route::post('/admin/laporan/update-wo/{id}', [LaporanController::class, 'updateWO'])
     ->name('admin.laporan.update-wo');
 
-    Route::get('/admin/laporan/download-document/{id}', [LaporanController::class, 'downloadDocument'])->name('admin.laporan.download-document');
+    Route::get('/admin/laporan/download-document/{id}', [LaporanController::class, 'downloadDocument'])
+        ->name('admin.laporan.download-document');
     
 Route::prefix('admin/daftar-hadir')->group(function () {
     Route::get('/export-excel', [AttendanceController::class, 'exportExcel'])
