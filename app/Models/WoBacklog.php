@@ -19,6 +19,9 @@ class WoBacklog extends Model
         'id',
         'no_wo',
         'deskripsi',
+        'kendala',
+        'tindak_lanjut',
+        'document_path',
         'type_wo',
         'priority',
         'schedule_start',
@@ -156,14 +159,16 @@ class WoBacklog extends Model
                     'status' => $this->status
                 ]);
 
-                // Buat WO baru dengan data asli
                 $workOrder = WorkOrder::create([
                     'id' => $this->no_wo,
                     'description' => $this->deskripsi,
-                    'type' => $this->type_wo,         // gunakan data asli
-                    'priority' => $this->priority,     // gunakan data asli
-                    'schedule_start' => $this->schedule_start, // gunakan data asli
-                    'schedule_finish' => $this->schedule_finish, // gunakan data asli
+                    'kendala' => $this->kendala,
+                    'tindak_lanjut' => $this->tindak_lanjut,
+                    'document_path' => $this->document_path,
+                    'type' => $this->type_wo,
+                    'priority' => $this->priority,
+                    'schedule_start' => $this->schedule_start,
+                    'schedule_finish' => $this->schedule_finish,
                     'status' => 'Closed',
                     'power_plant_id' => $this->power_plant_id,
                     'unit_source' => $this->unit_source,

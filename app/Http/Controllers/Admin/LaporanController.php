@@ -579,7 +579,7 @@ class LaporanController extends Controller
             Log::debug('Current time: ' . now());
 
             // Cari WO yang expired, belum di-backlog, dan statusnya bukan Closed
-            $expiredWOs = WorkOrder::whereNotIn('status', ['Closed'])  // Ubah kondisi ini
+            $expiredWOs = WorkOrder::whereNotIn('status', ['Closed'])
                 ->where('is_backlogged', false)
                 ->where('schedule_finish', '<', now())
                 ->get();
@@ -598,10 +598,13 @@ class LaporanController extends Controller
                 ]);
 
                 try {
-                    // Buat WO Backlog dengan data lengkap
+                    // Buat WO Backlog dengan data lengkap termasuk kolom baru
                     $backlog = WoBacklog::create([
                         'no_wo' => $wo->id,
                         'deskripsi' => $wo->description,
+                        'kendala' => $wo->kendala,           // tambah kolom baru
+                        'tindak_lanjut' => $wo->tindak_lanjut, // tambah kolom baru
+                        'document_path' => $wo->document_path,  // tambah kolom baru
                         'type_wo' => $wo->type,
                         'priority' => $wo->priority,
                         'schedule_start' => $wo->schedule_start,
@@ -626,7 +629,10 @@ class LaporanController extends Controller
                         'type_wo' => $backlog->type_wo,
                         'priority' => $backlog->priority,
                         'schedule_start' => $backlog->schedule_start,
-                        'schedule_finish' => $backlog->schedule_finish
+                        'schedule_finish' => $backlog->schedule_finish,
+                        'kendala' => $backlog->kendala,           // log kolom baru
+                        'tindak_lanjut' => $backlog->tindak_lanjut, // log kolom baru
+                        'document_path' => $backlog->document_path   // log kolom baru
                     ]);
 
                     // Hapus WO original

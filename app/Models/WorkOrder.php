@@ -182,6 +182,7 @@ class WorkOrder extends Model
                     'deskripsi' => $this->description,
                     'kendala' => $this->kendala,
                     'tindak_lanjut' => $this->tindak_lanjut,
+                    'document_path' => $this->document_path,
                     'type_wo' => $this->type,
                     'priority' => $this->priority,
                     'schedule_start' => $this->schedule_start,

@@ -105,12 +105,19 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar Service Request (SR)</h3>
                             <div class="flex gap-2">
+                                <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
+                                    title="Link Maximo" 
+                                    target="_blank" 
+                                    class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
+                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
+                                    koneksi maximo
+                                </a>
                                 <a href="{{ route('admin.laporan.manage', ['tab' => 'sr']) }}" 
-                                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                                    class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
                                     <i class="fas fa-cog mr-2"></i> Manage SR
                                 </a>
                                 <a href="{{ route('admin.laporan.create-sr') }}" 
-                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-plus-circle mr-2"></i> Tambah SR
                                 </a>
                             </div>
@@ -303,12 +310,19 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar Work Order (WO)</h3>
                             <div class="flex gap-2">
+                                <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
+                                    title="Link Maximo" 
+                                    target="_blank" 
+                                    class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
+                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
+                                    koneksi maximo
+                                </a>
                                 <a href="{{ route('admin.laporan.manage', ['tab' => 'wo']) }}" 
-                                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                                    class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
                                     <i class="fas fa-cog mr-2"></i> Manage WO
                                 </a>
                                 <a href="{{ route('admin.laporan.create-wo') }}" 
-                                   class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
                                     <i class="fas fa-plus-circle mr-2"></i> Tambah WO
                                 </a>
                             </div>
@@ -557,8 +571,15 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-md font-semibold">Daftar WO Backlog</h3>
                             <div class="flex gap-2">
+                                <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
+                                    title="Link Maximo" 
+                                    target="_blank" 
+                                    class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
+                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
+                                    koneksi maximo
+                                </a>
                                 <a href="{{ route('admin.laporan.manage', ['tab' => 'backlog']) }}" 
-                                   class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                                    class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
                                     <i class="fas fa-cog mr-2"></i> Manage Backlog
                                 </a>
                                 
@@ -649,7 +670,10 @@
                                                 </div>
                                             </div>
                                         </th>
-                                        <th class="py-2 px-4 border-b">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">Type</th>
+                                        <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">Kendala</th>
+                                        <th class="py-2 px-4 border-b">Tindak Lanjut</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">
                                                 <span>Status</span>
@@ -668,11 +692,11 @@
                                                 </div>
                                             </div>
                                         </th>
-                                        <th class="py-2 px-4 border-b">Type WO</th>
                                         <th class="py-2 px-4 border-b">Priority</th>
                                         <th class="py-2 px-4 border-b">Schedule Start</th>
                                         <th class="py-2 px-4 border-b">Schedule Finish</th>
                                         <th class="py-2 px-4 border-b">Tanggal Backlog</th>
+                                        <th class="py-2 px-4 border-b">Dokumen</th>
                                         <th class="py-2 px-4 border-b">Aksi</th>
                                     </tr>
                                 </thead>
@@ -699,15 +723,21 @@
                                             <td data-column="unit" class="px-4 py-2 border border-gray-200">
                                                 {{ $backlog->powerPlant->name ?? '-' }}
                                             </td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->type_wo ?? '-' }}</td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 {{ $backlog->deskripsi }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ $backlog->kendala ?? '-' }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ $backlog->tindak_lanjut ?? '-' }}
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 <span class="px-2 py-1 rounded-full {{ $backlog->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                     {{ $backlog->status }}
                                                 </span>
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->type_wo ?? '-' }}</td>
                                             <td class="py-2 px-4 border border-gray-200">{{ $backlog->priority ?? '-' }}</td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 {{ $backlog->schedule_start ? \Carbon\Carbon::parse($backlog->schedule_start)->format('d/m/Y') : '-' }}
@@ -717,6 +747,18 @@
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 {{ $backlog->tanggal_backlog ? \Carbon\Carbon::parse($backlog->tanggal_backlog)->format('d/m/Y') : '-' }}
+                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">
+                                                @if($backlog->document_path)
+                                                    <a href="{{ route('admin.laporan.download-document', $backlog->no_wo) }}" 
+                                                       class="text-blue-600 hover:text-blue-800 flex items-center"
+                                                       target="_blank">
+                                                        <i class="fas fa-file-alt mr-2"></i>
+                                                        Lihat Dokumen
+                                                    </a>
+                                                @else
+                                                    -
+                                                @endif
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 <div class="flex space-x-2">

@@ -87,7 +87,6 @@
                             </button>
                             <div class="text-center mt-3">
                                 {{-- <a class="btn btn-link" href="{{ route('password.request') }}">{{ __('Forgot Password?') }}</a> --}}
-                                <a class="btn btn-link" href="{{ route('register') }}">{{ __('Don\'t have an account? Register here') }}</a>
                             </div>
                         </div>
                     </form>
