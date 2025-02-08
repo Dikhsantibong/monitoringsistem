@@ -204,8 +204,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json'
                 },
-                body: formData
+                body: formData,
+                redirect: 'follow'
             });
+            
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
             
             const data = await response.json();
             

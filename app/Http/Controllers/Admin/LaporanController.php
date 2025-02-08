@@ -550,9 +550,9 @@ class LaporanController extends Controller
             $request->validate([
                 'no_wo' => 'required',
                 'deskripsi' => 'required',
-                'kendala' => 'nullable',              // kolom baru
-                'tindak_lanjut' => 'nullable',        // kolom baru
-                'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120', // kolom baru, max 5MB
+                'kendala' => 'nullable',
+                'tindak_lanjut' => 'nullable',
+                'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
                 'status' => 'required|in:Open,Closed',
                 'keterangan' => 'nullable'
             ]);
@@ -575,8 +575,8 @@ class LaporanController extends Controller
             $woBacklog->update([
                 'no_wo' => $request->no_wo,
                 'deskripsi' => $request->deskripsi,
-                'kendala' => $request->kendala,           // kolom baru
-                'tindak_lanjut' => $request->tindak_lanjut, // kolom baru
+                'kendala' => $request->kendala,
+                'tindak_lanjut' => $request->tindak_lanjut,
                 'status' => $request->status,
                 'keterangan' => $request->keterangan
             ]);
@@ -586,15 +586,15 @@ class LaporanController extends Controller
             Log::info('WO Backlog updated successfully', [
                 'no_wo' => $woBacklog->no_wo,
                 'status' => $woBacklog->status,
-                'kendala' => $woBacklog->kendala,         // log kolom baru
-                'tindak_lanjut' => $woBacklog->tindak_lanjut, // log kolom baru
-                'document_path' => $woBacklog->document_path    // log kolom baru
+                'kendala' => $woBacklog->kendala,
+                'tindak_lanjut' => $woBacklog->tindak_lanjut,
+                'document_path' => $woBacklog->document_path
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'WO Backlog berhasil diupdate'
-            ]);
+            // Ganti response JSON dengan redirect
+            return redirect()
+                ->route('admin.laporan.sr_wo')
+                ->with('success', 'WO Backlog berhasil diupdate');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -603,10 +603,10 @@ class LaporanController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengupdate WO Backlog'
-            ], 500);
+            // Ganti response JSON dengan redirect back
+            return back()
+                ->with('error', 'Terjadi kesalahan saat mengupdate WO Backlog')
+                ->withInput();
         }
     }
 
@@ -618,7 +618,7 @@ class LaporanController extends Controller
             return;
         }
 
-        Log::info('Starting expired WO check');
+        Log::info('Starting expired WO check'); 
         
         DB::beginTransaction();
         try {
