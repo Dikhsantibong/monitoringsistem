@@ -750,7 +750,7 @@
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 @if($backlog->document_path)
-                                                    <a href="{{ route('admin.laporan.download-document', $backlog->no_wo) }}" 
+                                                    <a href="{{ route('admin.laporan.download-backlog-document', $backlog->no_wo) }}" 
                                                        class="text-blue-600 hover:text-blue-800 flex items-center"
                                                        target="_blank">
                                                         <i class="fas fa-file-alt mr-2"></i>

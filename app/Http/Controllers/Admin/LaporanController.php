@@ -92,6 +92,9 @@ class LaporanController extends Controller
                     'schedule_start',
                     'schedule_finish',
                     'tanggal_backlog', 
+                    'document_path',
+                    'kendala',
+                    'tindak_lanjut',
                     'keterangan', 
                     'status', 
                     'created_at', 
@@ -539,27 +542,71 @@ class LaporanController extends Controller
     public function updateWoBacklog(Request $request, $id)
     {
         try {
-            $validated = $request->validate([
-                'deskripsi' => 'required|string',
-                'keterangan' => 'nullable|string',
-                'status' => 'required|in:Open,Closed' // Tambahkan validasi status
+            DB::beginTransaction();
+            
+            $woBacklog = WoBacklog::findOrFail($id);
+            
+            // Validasi request
+            $request->validate([
+                'no_wo' => 'required',
+                'deskripsi' => 'required',
+                'kendala' => 'nullable',              // kolom baru
+                'tindak_lanjut' => 'nullable',        // kolom baru
+                'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120', // kolom baru, max 5MB
+                'status' => 'required|in:Open,Closed',
+                'keterangan' => 'nullable'
             ]);
 
-            $backlog = WoBacklog::findOrFail($id);
-            $backlog->update([
-                'deskripsi' => $validated['deskripsi'],
-                'keterangan' => $validated['keterangan'],
-                'status' => $validated['status']
+            // Handle file upload jika ada
+            if ($request->hasFile('document')) {
+                // Hapus file lama jika ada
+                if ($woBacklog->document_path) {
+                    Storage::delete($woBacklog->document_path);
+                }
+                
+                $file = $request->file('document');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('documents/backlog', $fileName);
+                
+                $woBacklog->document_path = $path;
+            }
+
+            // Update data
+            $woBacklog->update([
+                'no_wo' => $request->no_wo,
+                'deskripsi' => $request->deskripsi,
+                'kendala' => $request->kendala,           // kolom baru
+                'tindak_lanjut' => $request->tindak_lanjut, // kolom baru
+                'status' => $request->status,
+                'keterangan' => $request->keterangan
             ]);
 
-            return redirect()
-                ->route('admin.laporan.sr_wo')
-                ->with('success', 'WO Backlog berhasil diupdate');
+            DB::commit();
+
+            Log::info('WO Backlog updated successfully', [
+                'no_wo' => $woBacklog->no_wo,
+                'status' => $woBacklog->status,
+                'kendala' => $woBacklog->kendala,         // log kolom baru
+                'tindak_lanjut' => $woBacklog->tindak_lanjut, // log kolom baru
+                'document_path' => $woBacklog->document_path    // log kolom baru
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'WO Backlog berhasil diupdate'
+            ]);
+
         } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error updating WO Backlog: ' . $e->getMessage(), [
+                'id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupdate WO Backlog'
+            ], 500);
         }
     }
 
@@ -1031,6 +1078,41 @@ class LaporanController extends Controller
         } catch (\Exception $e) {
             \Log::error('Print Error: ' . $e->getMessage());
             return back()->with('error', 'Gagal mencetak laporan');
+        }
+    }
+
+    public function downloadBacklogDocument($no_wo)
+    {
+        try {
+            $backlog = WoBacklog::where('no_wo', $no_wo)->first();
+            
+            if (!$backlog || !$backlog->document_path) {
+                Log::warning('Backlog document not found', ['no_wo' => $no_wo]);
+                return back()->with('error', 'Dokumen tidak ditemukan');
+            }
+
+            if (!Storage::exists($backlog->document_path)) {
+                Log::error('Backlog physical document not found', [
+                    'no_wo' => $no_wo,
+                    'path' => $backlog->document_path
+                ]);
+                return back()->with('error', 'File dokumen tidak ditemukan');
+            }
+
+            Log::info('Downloading backlog document', [
+                'no_wo' => $no_wo,
+                'path' => $backlog->document_path
+            ]);
+
+            return Storage::download($backlog->document_path);
+
+        } catch (\Exception $e) {
+            Log::error('Error downloading backlog document', [
+                'no_wo' => $no_wo,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Gagal mengunduh dokumen');
         }
     }
 }

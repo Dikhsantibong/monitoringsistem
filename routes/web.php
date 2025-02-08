@@ -647,7 +647,7 @@ Route::post('/admin/laporan/update-wo/{id}', [LaporanController::class, 'updateW
     ->name('admin.laporan.update-wo');
 
     Route::get('/admin/laporan/download-document/{id}', [LaporanController::class, 'downloadDocument'])->name('admin.laporan.download-document');
-
+    
 Route::prefix('admin/daftar-hadir')->group(function () {
     Route::get('/export-excel', [AttendanceController::class, 'exportExcel'])
         ->name('admin.daftar_hadir.export-excel');
@@ -679,8 +679,8 @@ Route::get('/admin/laporan/print/{type}', [LaporanController::class, 'print'])
 Route::post('/admin/daftar-hadir/backdate', [AttendanceController::class, 'storeBackdate'])
     ->name('admin.daftar_hadir.backdate');
 
-Route::post('/admin/daftar-hadir/generate-backdate-token', [AttendanceController::class, 'generateBackdateToken'])
-    ->name('admin.daftar_hadir.generate-backdate-token');
+Route::get('/admin/laporan/download-backlog-document/{no_wo}', [LaporanController::class, 'downloadBacklogDocument'])
+    ->name('admin.laporan.download-backlog-document');
 
 
     
