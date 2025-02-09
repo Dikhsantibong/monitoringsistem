@@ -683,14 +683,6 @@ Route::post('/admin/daftar-hadir/backdate', [AttendanceController::class, 'store
 Route::get('/admin/laporan/download-backlog-document/{no_wo}', [LaporanController::class, 'downloadBacklogDocument'])
     ->name('admin.laporan.download-backlog-document');
 
-Route::middleware(['auth', 'admin'])->group(function () {
-    // ... existing routes ...
-    
-    // Tambahkan route untuk generate backdate token
-    Route::post('/admin/daftar-hadir/generate-backdate-token', [
-        'as' => 'admin.daftar_hadir.generate-backdate-token',
-        'uses' => 'Admin\DaftarHadirController@generateBackdateToken'
-    ]);
-});
 
+    
         

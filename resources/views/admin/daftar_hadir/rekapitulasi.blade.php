@@ -303,6 +303,7 @@
     function generateBackdateQR() {
         const form = document.getElementById('backdateForm');
         const formData = new FormData(form);
+        const generateButton = form.querySelector('button[type="button"]');
 
         // Validasi form
         if (!form.checkValidity()) {
@@ -311,7 +312,6 @@
         }
 
         // Tampilkan loading state
-        const generateButton = form.querySelector('button[type="button"]');
         generateButton.disabled = true;
         generateButton.textContent = 'Generating...';
 
@@ -322,36 +322,18 @@
             alasan: formData.get('alasan')
         };
 
-        // Debug: Log data yang akan dikirim
-        console.log('Sending data:', requestData);
-
         // Kirim request untuk generate token backdate
         fetch('{{ route("admin.daftar_hadir.generate-backdate-token") }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(requestData)
         })
-        .then(async response => {
-            const responseData = await response.text();
-            console.log('Raw response:', responseData);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}, message: ${responseData}`);
-            }
-            
-            try {
-                return JSON.parse(responseData);
-            } catch (e) {
-                throw new Error('Invalid JSON response: ' + responseData);
-            }
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Parsed response:', data);
-            
             if (data.success) {
                 // Tampilkan container QR
                 const qrContainer = document.getElementById('qrCodeContainer');
@@ -376,19 +358,15 @@
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
-
-                // Tampilkan pesan sukses
-                console.log('QR Code generated successfully');
             } else {
-                throw new Error(data.message || 'Failed to generate QR Code');
+                throw new Error(data.message || 'Gagal generate QR Code');
             }
         })
         .catch(error => {
-            console.error('Error details:', error);
-            alert('Terjadi kesalahan saat generate QR Code: ' + error.message);
+            console.error('Error:', error);
+            alert('Terjadi kesalahan: ' + error.message);
         })
         .finally(() => {
-            // Reset button state
             generateButton.disabled = false;
             generateButton.textContent = 'Generate QR';
         });

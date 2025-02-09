@@ -146,46 +146,43 @@ class AttendanceController extends Controller
             ]);
 
             DB::beginTransaction();
-            try {
-                // Generate token untuk backdate
-                $token = 'BACK-' . strtoupper(Str::random(8));
-                
-                // Simpan token tanpa kolom is_backdate
-                $tokenId = DB::table('attendance_tokens')->insertGetId([
-                    'token' => $token,
-                    'user_id' => auth()->id(),
-                    'expires_at' => now()->addMinutes(5),
-                    'unit_source' => session('unit', 'mysql'), // Sesuaikan dengan unit_source default
-                    'backdate_data' => json_encode([
-                        'tanggal_absen' => $request->tanggal_absen,
-                        'waktu_absen' => $request->waktu_absen,
-                        'alasan' => $request->alasan
-                    ]),
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
-
-                if (!$tokenId) {
-                    throw new \Exception('Gagal menyimpan token');
-                }
-
-                // URL untuk QR
-                $qrUrl = url("/attendance/scan/{$token}");
-
-                DB::commit();
-
-                return response()->json([
-                    'success' => true,
-                    'qr_url' => $qrUrl,
-                    'message' => 'QR Code berhasil dibuat'
-                ]);
-                
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            }
             
+            // Generate token untuk backdate
+            $token = 'BACK-' . strtoupper(Str::random(8));
+            
+            // Tambahkan is_backdate ke data yang disimpan
+            $tokenId = DB::table('attendance_tokens')->insertGetId([
+                'token' => $token,
+                'user_id' => auth()->id(),
+                'expires_at' => now()->addMinutes(5),
+                'unit_source' => session('unit', 'mysql'),
+                'is_backdate' => true, // Tambahkan field ini
+                'backdate_data' => json_encode([
+                    'tanggal_absen' => $request->tanggal_absen,
+                    'waktu_absen' => $request->waktu_absen,
+                    'alasan' => $request->alasan
+                ]),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            if (!$tokenId) {
+                throw new \Exception('Gagal menyimpan token');
+            }
+
+            DB::commit();
+
+            // URL untuk QR Code
+            $qrUrl = url("/attendance/scan/{$token}");
+
+            return response()->json([
+                'success' => true,
+                'qr_url' => $qrUrl,
+                'message' => 'QR Code berhasil dibuat'
+            ]);
+
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::error('Generate QR Code Error:', [
                 'message' => $e->getMessage(),
                 'request_data' => $request->all()
