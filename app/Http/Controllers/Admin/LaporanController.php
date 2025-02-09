@@ -56,10 +56,8 @@ class LaporanController extends Controller
                     'power_plant_id',
                     'unit_source'
                 ])
-                ->orderBy('created_at', 'desc')
-                ->paginate(25);
+                ->orderBy('created_at', 'desc');
 
-            // 3. Optimasi query Work Orders dengan kolom baru
             $workOrders = WorkOrder::with(['powerPlant:id,name'])
                 ->select([
                     'id', 
@@ -78,11 +76,8 @@ class LaporanController extends Controller
                     'is_active',
                     'is_backlogged'
                 ])
-                ->latest()
-                ->take(100)
-                ->get();
+                ->latest();
 
-            // 4. Optimasi query Backlogs
             $woBacklogs = WoBacklog::with(['powerPlant:id,name'])
                 ->select([
                     'id', 
@@ -102,9 +97,22 @@ class LaporanController extends Controller
                     'power_plant_id',
                     'unit_source'
                 ])
-                ->latest()
-                ->take(100)
-                ->get();
+                ->latest();
+
+            // Apply date filters if provided
+            if ($request->filled(['start_date', 'end_date'])) {
+                $startDate = Carbon::parse($request->start_date)->startOfDay();
+                $endDate = Carbon::parse($request->end_date)->endOfDay();
+
+                $serviceRequests->whereBetween('created_at', [$startDate, $endDate]);
+                $workOrders->whereBetween('created_at', [$startDate, $endDate]);
+                $woBacklogs->whereBetween('created_at', [$startDate, $endDate]);
+            }
+
+            // 3. Get results
+            $serviceRequests = $serviceRequests->paginate(25);
+            $workOrders = $workOrders->take(100)->get();
+            $woBacklogs = $woBacklogs->take(100)->get();
 
             // 5. Update table counts
             $srCount = $serviceRequests->total();
