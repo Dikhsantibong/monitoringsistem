@@ -683,6 +683,20 @@ Route::post('/admin/daftar-hadir/backdate', [AttendanceController::class, 'store
 Route::get('/admin/laporan/download-backlog-document/{no_wo}', [LaporanController::class, 'downloadBacklogDocument'])
     ->name('admin.laporan.download-backlog-document');
 
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
+        // ... existing routes ...
+        
+        // Daftar Hadir routes
+        Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
+            Route::get('/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])->name('rekapitulasi');
+            Route::post('/generate-backdate-token', [AttendanceController::class, 'generateBackdateToken'])->name('generate-backdate-token');
+            Route::get('/export-excel', [AttendanceController::class, 'exportExcel'])->name('export-excel');
+            Route::get('/export-pdf', [AttendanceController::class, 'exportPDF'])->name('export-pdf');
+            Route::get('/print', [AttendanceController::class, 'printView'])->name('print');
+        });
+    });
+});
 
-    
+// ... existing code ...
         
