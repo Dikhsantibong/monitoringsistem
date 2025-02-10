@@ -569,8 +569,19 @@ class HomeController extends Controller
                 'url' => request()->fullUrl()
             ]);
             
+            $errorDetail = config('app.debug') ? [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'url' => request()->fullUrl(),
+                'method' => request()->method(),
+                'time' => now()->toDateTimeString()
+            ] : ['message' => 'Terjadi kesalahan pada server'];
+
             return response()->json([
-                'error' => 'Gagal memuat data: ' . $e->getMessage()
+                'error' => true,
+                'detail' => $errorDetail,
+                'message' => 'Gagal memuat data: ' . $e->getMessage()
             ], 500);
         }
     }

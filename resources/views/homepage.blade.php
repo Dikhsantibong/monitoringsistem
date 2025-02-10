@@ -2085,26 +2085,28 @@ function switchPeriod(period) {
     
     // Fetch new data
     fetch(`/monitoring-data/${period}`)
-        .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers.get('content-type'));
-            
-            // Check if response is JSON
+        .then(async response => {
             const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error(`Expected JSON response but got ${contentType}. Status: ${response.status}`);
+            
+            if (!response.ok) {
+                let errorMessage = `Status: ${response.status}`;
+                try {
+                    // Coba parse response sebagai text
+                    const responseText = await response.text();
+                    errorMessage += `\n\nResponse:\n${responseText.substring(0, 200)}...`;  // Tampilkan 200 karakter pertama
+                } catch (e) {
+                    errorMessage += '\n\nTidak dapat membaca response body';
+                }
+                throw new Error(errorMessage);
             }
 
-            if (!response.ok) {
-                return response.text().then(text => {
-                    console.error('Error response body:', text);
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                });
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error(`Invalid response type: ${contentType || 'unknown'}`);
             }
+
             return response.json();
         })
         .then(data => {
-            console.log('Received data:', data);
             if (data.error) {
                 throw new Error(data.error);
             }
@@ -2112,23 +2114,54 @@ function switchPeriod(period) {
             hideLoading();
         })
         .catch(error => {
-            console.error('Fetch error:', error);
-            console.error('Error details:', {
-                message: error.message,
-                stack: error.stack
-            });
-            
+            console.error('Error:', error);
             hideLoading();
+            
+            // Tampilkan error detail menggunakan SweetAlert2
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal memuat data',
-                text: `Error: ${error.message}`,
-                confirmButtonText: 'Tutup'
+                html: `
+                    <div class="text-left">
+                        <p class="font-bold mb-2">Detail Error:</p>
+                        <pre class="bg-gray-100 p-3 rounded text-sm overflow-auto max-h-60" style="white-space: pre-wrap;">
+${error.message}
+                        </pre>
+                        <p class="mt-2 text-sm text-gray-600">
+                            Waktu: ${new Date().toLocaleString()}
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'Tutup',
+                customClass: {
+                    container: 'error-modal',
+                    popup: 'error-popup',
+                    content: 'error-content'
+                },
+                width: '600px'
             });
         });
     
     currentPeriod = period;
 }
+
+// Tambahkan style untuk error modal
+const style = document.createElement('style');
+style.textContent = `
+    .error-modal .error-popup {
+        font-family: 'Arial', sans-serif;
+    }
+    .error-modal .error-content {
+        text-align: left;
+    }
+    .error-modal pre {
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+`;
+document.head.appendChild(style);
 
 function showLoading() {
     // Tambahkan overlay loading di atas charts
