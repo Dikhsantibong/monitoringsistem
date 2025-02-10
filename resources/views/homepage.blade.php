@@ -2083,19 +2083,26 @@ function switchPeriod(period) {
     // Show loading state
     showLoading();
     
+    // Gunakan URL yang benar sesuai dengan base URL aplikasi
+    const baseUrl = window.location.origin; // Mendapatkan base URL dinamis
+    
     // Fetch new data
-    fetch(`/monitoring-data/${period}`)
+    fetch(`${baseUrl}/monitoring-data/${period}`)
         .then(async response => {
             const contentType = response.headers.get('content-type');
             
             if (!response.ok) {
-                let errorMessage = `Status: ${response.status}`;
-                try {
-                    // Coba parse response sebagai text
-                    const responseText = await response.text();
-                    errorMessage += `\n\nResponse:\n${responseText.substring(0, 200)}...`;  // Tampilkan 200 karakter pertama
-                } catch (e) {
-                    errorMessage += '\n\nTidak dapat membaca response body';
+                let errorMessage = '';
+                if (response.status === 404) {
+                    errorMessage = `Endpoint tidak ditemukan (404)\n\nURL: ${baseUrl}/monitoring-data/${period}\n\nMohon periksa konfigurasi route di server.`;
+                } else {
+                    errorMessage = `Status: ${response.status}`;
+                    try {
+                        const responseText = await response.text();
+                        errorMessage += `\n\nResponse:\n${responseText.substring(0, 200)}...`;
+                    } catch (e) {
+                        errorMessage += '\n\nTidak dapat membaca response body';
+                    }
                 }
                 throw new Error(errorMessage);
             }
@@ -2117,7 +2124,7 @@ function switchPeriod(period) {
             console.error('Error:', error);
             hideLoading();
             
-            // Tampilkan error detail menggunakan SweetAlert2
+            // Tampilkan error detail dengan SweetAlert2
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal memuat data',
@@ -2129,6 +2136,9 @@ ${error.message}
                         </pre>
                         <p class="mt-2 text-sm text-gray-600">
                             Waktu: ${new Date().toLocaleString()}
+                        </p>
+                        <p class="mt-2 text-sm text-gray-600">
+                            Environment: ${process.env.NODE_ENV || 'production'}
                         </p>
                     </div>
                 `,
