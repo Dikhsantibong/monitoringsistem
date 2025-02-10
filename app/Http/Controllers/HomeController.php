@@ -429,4 +429,233 @@ class HomeController extends Controller
             ], 500);
         }
     }
+
+    public function getMonitoringData($period)
+    {
+        try {
+            \Log::info('Starting getMonitoringData', ['period' => $period]);
+            
+            // Set tanggal berdasarkan periode
+            $endDate = now();
+            $startDate = match($period) {
+                'daily' => now()->subDays(7),
+                'weekly' => now()->subWeeks(4),
+                'monthly' => now()->subMonths(12),
+                default => now()->subDays(7)
+            };
+
+            \Log::info('Date range', [
+                'startDate' => $startDate->format('Y-m-d'),
+                'endDate' => $endDate->format('Y-m-d')
+            ]);
+
+            // Ambil data sesuai periode
+            $powerPlants = PowerPlant::with(['machines.statusLogs' => function($query) use ($startDate) {
+                $query->where('tanggal', '>=', $startDate)
+                      ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
+                      ->latest();
+            }])->get();
+
+            \Log::info('Power Plants retrieved', ['count' => $powerPlants->count()]);
+
+            // Siapkan data untuk response
+            $dates = [];
+            $datasets = [];
+            
+            // Format tanggal sesuai periode
+            $dateFormat = match($period) {
+                'daily' => 'd M',
+                'weekly' => 'W/Y',
+                'monthly' => 'M Y',
+                default => 'd M'
+            };
+
+            // Generate dates
+            $currentDate = clone $startDate;
+            while ($currentDate <= $endDate) {
+                $dates[] = $currentDate->format($dateFormat);
+                $currentDate = match($period) {
+                    'daily' => $currentDate->addDay(),
+                    'weekly' => $currentDate->addWeek(),
+                    'monthly' => $currentDate->addMonth(),
+                    default => $currentDate->addDay()
+                };
+            }
+
+            \Log::info('Dates generated', ['dates' => $dates]);
+
+            // Hitung data untuk setiap pembangkit
+            foreach ($powerPlants as $plant) {
+                $unservedLoadData = array_fill(0, count($dates), 0);
+                
+                foreach ($plant->machines as $machine) {
+                    foreach ($machine->statusLogs as $log) {
+                        $logDate = Carbon::parse($log->tanggal)->format($dateFormat);
+                        $dateIndex = array_search($logDate, $dates);
+                        
+                        if ($dateIndex !== false) {
+                            $lastOperation = MachineOperation::where('machine_id', $machine->id)
+                                ->whereDate('recorded_at', '<=', $log->tanggal)
+                                ->orderBy('recorded_at', 'desc')
+                                ->first();
+
+                            if ($lastOperation) {
+                                $unservedLoadData[$dateIndex] += floatval($lastOperation->dmp);
+                            }
+                        }
+                    }
+                }
+                
+                if (array_sum($unservedLoadData) > 0) {
+                    $datasets[] = [
+                        'name' => $plant->name,
+                        'data' => array_map(function($value) {
+                            return round($value, 2);
+                        }, $unservedLoadData)
+                    ];
+                }
+            }
+
+            \Log::info('Datasets prepared', ['datasets' => $datasets]);
+
+            // Hitung statistik terkini
+            $currentStats = $this->calculateCurrentStats($powerPlants);
+
+            \Log::info('Current stats calculated', $currentStats);
+
+            $response = [
+                'dates' => $dates,
+                'datasets' => $datasets,
+                'machineReadiness' => $currentStats['machineReadiness'] ?? 0,
+                'statusDetails' => $currentStats['statusDetails'] ?? [
+                    'ready' => ['count' => 0, 'percentage' => 0],
+                    'notReady' => ['count' => 0, 'percentage' => 0],
+                    'breakdown' => [
+                        'Operasi' => 0,
+                        'Standby' => 0,
+                        'Gangguan' => 0,
+                        'Pemeliharaan' => 0,
+                        'Mothballed' => 0,
+                        'Overhaul' => 0
+                    ]
+                ],
+                'powerDeliveryDetails' => $currentStats['powerDeliveryDetails'] ?? [
+                    'total' => 0,
+                    'delivered' => 0,
+                    'undelivered' => 0,
+                    'percentage' => 0
+                ],
+                'powerDeliveryPercentage' => $currentStats['powerDeliveryPercentage'] ?? 0
+            ];
+
+            \Log::info('Response prepared', ['response' => $response]);
+
+            return response()->json($response);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in getMonitoringData', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Gagal memuat data: ' . $e->getMessage(),
+                'details' => config('app.debug') ? [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ] : null
+            ], 500);
+        }
+    }
+
+    private function calculateCurrentStats($powerPlants)
+    {
+        try {
+            // Hitung status mesin untuk hari ini
+            $machineStatus = [
+                'Operasi' => 0,
+                'Standby' => 0,
+                'Gangguan' => 0,
+                'Pemeliharaan' => 0,
+                'Mothballed' => 0,
+                'Overhaul' => 0
+            ];
+
+            $totalMachines = 0;
+            $totalCapacity = 0;
+            $totalUnserved = 0;
+            
+            foreach ($powerPlants as $plant) {
+                foreach ($plant->machines as $machine) {
+                    $totalMachines++;
+                    
+                    // Ambil status terakhir mesin
+                    $latestStatus = $machine->statusLogs()
+                        ->whereDate('tanggal', now())
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    if ($latestStatus) {
+                        $machineStatus[$latestStatus->status]++;
+                    }
+
+                    // Ambil data operasi terakhir
+                    $lastOperation = MachineOperation::where('machine_id', $machine->id)
+                        ->whereDate('recorded_at', '<=', now())
+                        ->orderBy('recorded_at', 'desc')
+                        ->first();
+
+                    if ($lastOperation) {
+                        $dmp = floatval($lastOperation->dmp);
+                        $totalCapacity += $dmp;
+                        
+                        // Cek jika mesin dalam kondisi tidak beroperasi
+                        if ($latestStatus && in_array($latestStatus->status, ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])) {
+                            $totalUnserved += $dmp;
+                        }
+                    }
+                }
+            }
+
+            // Hitung persentase kesiapan
+            $readyMachines = $machineStatus['Operasi'] + $machineStatus['Standby'];
+            $machineReadiness = $totalMachines > 0 ? 
+                round(($readyMachines / $totalMachines) * 100, 1) : 0;
+
+            // Hitung persentase daya tersalur
+            $delivered = $totalCapacity - $totalUnserved;
+            $powerDeliveryPercentage = $totalCapacity > 0 ? 
+                round(($delivered / $totalCapacity) * 100, 1) : 0;
+
+            return [
+                'machineReadiness' => $machineReadiness,
+                'statusDetails' => [
+                    'ready' => [
+                        'count' => $readyMachines,
+                        'percentage' => $machineReadiness
+                    ],
+                    'notReady' => [
+                        'count' => $totalMachines - $readyMachines,
+                        'percentage' => 100 - $machineReadiness
+                    ],
+                    'breakdown' => $machineStatus
+                ],
+                'powerDeliveryDetails' => [
+                    'total' => $totalCapacity,
+                    'delivered' => $delivered,
+                    'undelivered' => $totalUnserved,
+                    'percentage' => $powerDeliveryPercentage
+                ],
+                'powerDeliveryPercentage' => $powerDeliveryPercentage
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error in calculateCurrentStats', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
 }

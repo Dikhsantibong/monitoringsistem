@@ -699,4 +699,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ... existing code ...
+
+Route::get('/monitoring-data/{period}', [HomeController::class, 'getMonitoringData'])
+    ->name('monitoring.data')
+    ->where('period', 'daily|weekly|monthly');
         

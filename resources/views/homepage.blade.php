@@ -697,7 +697,28 @@
 
             <div class="container mx-auto px-4 py-6">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200" style="background-color: rgba(17, 24, 39, 0.08);">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 px-2">MONITORING KESIAPAN PEMBANGKIT</h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 px-2">MONITORING KESIAPAN PEMBANGKIT</h2>
+                        
+                        <!-- Tambahkan tombol switch periode -->
+                        <div class="flex gap-2">
+                            <button onclick="switchPeriod('daily')" 
+                                    id="dailyBtn"
+                                    class="period-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                <i class="fas fa-calendar-day mr-2"></i>Harian
+                            </button>
+                            <button onclick="switchPeriod('weekly')" 
+                                    id="weeklyBtn"
+                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                                <i class="fas fa-calendar-week mr-2"></i>Mingguan
+                            </button>
+                            <button onclick="switchPeriod('monthly')" 
+                                    id="monthlyBtn"
+                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                                <i class="fas fa-calendar-alt mr-2"></i>Bulanan
+                            </button>
+                        </div>
+                    </div>
                     
                     <!-- Grid untuk diagram circle berdampingan -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -2043,3 +2064,181 @@
     });
 </script>
 @endsection
+
+<script>
+let currentPeriod = 'daily';
+let charts = {};
+
+function switchPeriod(period) {
+    if (currentPeriod === period) return;
+    
+    // Update button styles
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.replace('bg-blue-500', 'bg-gray-500');
+        btn.classList.replace('hover:bg-blue-600', 'hover:bg-gray-600');
+    });
+    document.getElementById(`${period}Btn`).classList.replace('bg-gray-500', 'bg-blue-500');
+    document.getElementById(`${period}Btn`).classList.replace('hover:bg-gray-600', 'hover:bg-blue-600');
+    
+    // Show loading state
+    showLoading();
+    
+    // Fetch new data
+    fetch(`/monitoring-data/${period}`)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || 'Terjadi kesalahan pada server');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            updateCharts(data);
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            hideLoading();
+            // Tampilkan pesan error yang lebih informatif
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal memuat data',
+                text: error.message || 'Terjadi kesalahan saat memuat data',
+                confirmButtonText: 'Tutup'
+            });
+        });
+    
+    currentPeriod = period;
+}
+
+function showLoading() {
+    // Tambahkan overlay loading di atas charts
+    const charts = document.querySelectorAll('#machineReadinessChart, #powerDeliveryChart, #unservedLoadChart');
+    charts.forEach(chart => {
+        chart.style.opacity = '0.5';
+        chart.insertAdjacentHTML('beforeend', `
+            <div class="loading-overlay flex items-center justify-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+        `);
+    });
+}
+
+function hideLoading() {
+    // Hapus overlay loading
+    document.querySelectorAll('.loading-overlay').forEach(overlay => overlay.remove());
+    const charts = document.querySelectorAll('#machineReadinessChart, #powerDeliveryChart, #unservedLoadChart');
+    charts.forEach(chart => chart.style.opacity = '1');
+}
+
+function updateCharts(data) {
+    try {
+        // Update Machine Readiness Chart
+        if (charts.machineReadiness) {
+            charts.machineReadiness.updateOptions({
+                series: [data.machineReadiness]
+            });
+        }
+        
+        // Update Power Delivery Chart
+        if (charts.powerDelivery) {
+            charts.powerDelivery.updateOptions({
+                series: [data.powerDeliveryPercentage]
+            });
+        }
+        
+        // Update Unserved Load Chart
+        if (charts.unservedLoad) {
+            charts.unservedLoad.updateOptions({
+                xaxis: {
+                    categories: data.dates
+                },
+                series: data.datasets
+            });
+        }
+
+        // Update status details jika ada
+        if (data.statusDetails) {
+            updateStatusDetails(data.statusDetails);
+        }
+
+        // Update power delivery details jika ada
+        if (data.powerDeliveryDetails) {
+            updatePowerDetails(data.powerDeliveryDetails);
+        }
+    } catch (error) {
+        console.error('Error updating charts:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal memperbarui grafik',
+            text: 'Terjadi kesalahan saat memperbarui tampilan grafik',
+            confirmButtonText: 'Tutup'
+        });
+    }
+}
+
+function updateStatusDetails(details) {
+    try {
+        // Update status breakdown numbers
+        if (details.breakdown) {
+            Object.keys(details.breakdown).forEach(status => {
+                const element = document.querySelector(`[data-status="${status}"]`);
+                if (element) {
+                    element.textContent = `${details.breakdown[status]} Unit`;
+                }
+            });
+        }
+
+        // Update ready/not ready percentages jika ada
+        const readyElement = document.querySelector('[data-readiness="ready"]');
+        const notReadyElement = document.querySelector('[data-readiness="not-ready"]');
+        
+        if (readyElement && details.ready) {
+            readyElement.textContent = `${details.ready.count} Unit (${details.ready.percentage}%)`;
+        }
+        if (notReadyElement && details.notReady) {
+            notReadyElement.textContent = `${details.notReady.count} Unit (${details.notReady.percentage}%)`;
+        }
+    } catch (error) {
+        console.error('Error updating status details:', error);
+    }
+}
+
+function updatePowerDetails(details) {
+    try {
+        // Update power delivery details
+        const deliveredElement = document.querySelector('[data-power="delivered"]');
+        const undeliveredElement = document.querySelector('[data-power="undelivered"]');
+        const totalElement = document.querySelector('[data-power="total"]');
+        
+        if (deliveredElement) {
+            deliveredElement.textContent = `${Number(details.delivered).toFixed(1)} MW`;
+        }
+        if (undeliveredElement) {
+            undeliveredElement.textContent = `${Number(details.undelivered).toFixed(1)} MW`;
+        }
+        if (totalElement) {
+            totalElement.textContent = `${Number(details.total).toFixed(1)} MW`;
+        }
+    } catch (error) {
+        console.error('Error updating power details:', error);
+    }
+}
+
+// Initialize charts object when charts are created
+document.addEventListener('DOMContentLoaded', () => {
+    // Inisialisasi chart dengan konfigurasi yang sudah ada
+    charts = {
+        machineReadiness: new ApexCharts(document.querySelector("#machineReadinessChart"), readinessOptions),
+        powerDelivery: new ApexCharts(document.querySelector("#powerDeliveryChart"), powerDeliveryOptions),
+        unservedLoad: new ApexCharts(document.querySelector("#unservedLoadChart"), barOptions)
+    };
+
+    // Render semua chart
+    Object.values(charts).forEach(chart => chart.render());
+});
+</script>
