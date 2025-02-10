@@ -827,18 +827,22 @@
                                 </tr>
                             </thead>
                             <tbody id="unit-table-body">
-                                @php
-                                    $nonOperationalStatuses = ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'];
-                                @endphp
-                                
                                 @foreach($powerPlants as $plant)
                                     @foreach($plant->machines as $machine)
                                         @php
-                                            $latestStatus = $machine->statusLogs->first();
-                                            // Skip jika tidak ada status atau status bukan non-operational
-                                            if (!$latestStatus || !in_array($latestStatus->status, $nonOperationalStatuses)) {
-                                                continue;
-                                            }
+                                            // Ambil status log terbaru untuk mesin ini
+                                            $latestStatus = $machine->statusLogs()
+                                                ->latest('created_at')
+                                                ->first();
+                                            
+                                            // Skip jika tidak ada status
+                                            if (!$latestStatus) continue;
+
+                                            // Definisikan status non-operasional
+                                            $nonOperationalStatuses = ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'];
+                                            
+                                            // Skip jika status bukan non-operasional
+                                            if (!in_array($latestStatus->status, $nonOperationalStatuses)) continue;
 
                                             // Set style berdasarkan status
                                             $statusStyle = match($latestStatus->status) {
@@ -855,9 +859,9 @@
                                                     'icon' => '🔧'
                                                 ],
                                                 'Mothballed' => [
-                                                    'bg' => '#FEF3C7',
-                                                    'text' => '#D97706',
-                                                    'border' => '#FCD34D',
+                                                    'bg' => '#E0F2FE',
+                                                    'text' => '#0369A1',
+                                                    'border' => '#7DD3FC',
                                                     'icon' => '🔒'
                                                 ],
                                                 'Overhaul' => [
