@@ -433,6 +433,13 @@ class HomeController extends Controller
     public function getMonitoringData($period)
     {
         try {
+            \Log::info('getMonitoringData called', [
+                'period' => $period,
+                'url' => request()->fullUrl(),
+                'method' => request()->method(),
+                'headers' => request()->headers->all()
+            ]);
+            
             \Log::info('Starting getMonitoringData', ['period' => $period]);
             
             // Set tanggal berdasarkan periode
@@ -553,19 +560,17 @@ class HomeController extends Controller
             return response()->json($response);
 
         } catch (\Exception $e) {
-            \Log::error('Error in getMonitoringData', [
+            \Log::error('getMonitoringData error', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'period' => $period,
+                'url' => request()->fullUrl()
             ]);
             
             return response()->json([
-                'error' => 'Gagal memuat data: ' . $e->getMessage(),
-                'details' => config('app.debug') ? [
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ] : null
+                'error' => 'Gagal memuat data: ' . $e->getMessage()
             ], 500);
         }
     }

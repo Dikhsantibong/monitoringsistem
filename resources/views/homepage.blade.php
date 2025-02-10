@@ -2086,14 +2086,25 @@ function switchPeriod(period) {
     // Fetch new data
     fetch(`/monitoring-data/${period}`)
         .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error(`Expected JSON response but got ${contentType}. Status: ${response.status}`);
+            }
+
             if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || 'Terjadi kesalahan pada server');
+                return response.text().then(text => {
+                    console.error('Error response body:', text);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 });
             }
             return response.json();
         })
         .then(data => {
+            console.log('Received data:', data);
             if (data.error) {
                 throw new Error(data.error);
             }
@@ -2101,13 +2112,17 @@ function switchPeriod(period) {
             hideLoading();
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Fetch error:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
+            
             hideLoading();
-            // Tampilkan pesan error yang lebih informatif
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal memuat data',
-                text: error.message || 'Terjadi kesalahan saat memuat data',
+                text: `Error: ${error.message}`,
                 confirmButtonText: 'Tutup'
             });
         });
