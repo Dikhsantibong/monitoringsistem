@@ -67,19 +67,19 @@
                             
                             <div class="bg-blue-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">DMN:</p>
-                                <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 1) }} MW</p>
+                                <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 2) }} MW</p>
                             </div>
                             <div class="bg-green-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">DMP:</p>
-                                <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 1) }} MW</p>
+                                <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 2) }} MW</p>
                             </div>
                             
                             <div class="bg-red-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Derating:</p>
                                 <p class="text-xl font-bold text-red-700">
-                                    {{ number_format($totalDMN - $totalDMP, 1) }} MW 
+                                    {{ number_format($totalDMN - $totalDMP, 2) }} MW 
                                     @if($totalDMN > 0)
-                                        ({{ number_format((($totalDMN - $totalDMP) / $totalDMN) * 100, 1) }}%)
+                                        ({{ number_format((($totalDMN - $totalDMP) / $totalDMN) * 100, 2) }}%)
                                     @else
                                         (0%)
                                     @endif
@@ -87,7 +87,7 @@
                             </div>
                             <div class="bg-purple-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total Beban:</p>
-                                <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 1) }} MW</p>
+                                <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 2) }} MW</p>
                             </div>
                             <div class="bg-orange-50 p-3 rounded-lg">
                                 <p class="text-sm text-gray-600">Total HOP:</p>
