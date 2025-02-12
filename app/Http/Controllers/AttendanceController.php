@@ -464,4 +464,70 @@ class AttendanceController extends Controller
                 ->withInput();
         }
     }
+
+    public function scanQR(Request $request)
+    {
+        try {
+            $currentUnit = session('unit', 'mysql');
+            
+            \Log::debug('Scanning QR Code', [
+                'unit' => $currentUnit,
+                'database' => Attendance::getDatabaseName()
+            ]);
+
+            // Validasi token
+            $token = $request->token;
+            $attendanceToken = DB::connection($currentUnit)
+                ->table('attendance_tokens')
+                ->where('token', $token)
+                ->where('expires_at', '>=', now())
+                ->first();
+
+            if (!$attendanceToken) {    
+                return response()->json([
+                    'success' => false,
+                    'message' => 'QR Code tidak valid atau sudah kadaluarsa'
+                ], 400);
+            }
+
+            // Generate ID baru
+            $lastId = DB::connection($currentUnit)
+                ->table('attendance')
+                ->max('id') ?? 0;
+            $newId = $lastId + 1;
+
+            // Simpan attendance
+            DB::connection($currentUnit)
+                ->table('attendance')
+                ->insert([
+                    'id' => $newId,
+                    'name' => auth()->user()->name,
+                    'position' => auth()->user()->position,
+                    'division' => auth()->user()->division,
+                    'time' => now(),
+                    'token' => $token,
+                    'unit_source' => $currentUnit,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Absensi berhasil disimpan'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Scan QR Error:', [
+                'message' => $e->getMessage(),
+                'unit' => session('unit'),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memproses QR Code'
+            ], 500);
+        }
+    }
 } 
