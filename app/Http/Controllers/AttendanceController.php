@@ -156,30 +156,55 @@ class AttendanceController extends Controller
     public function scanQR($token)
     {
         try {
-            $currentUnit = session('unit', 'mysql');
-            
-            // Cek token di database yang sesuai
-            $tokenData = DB::connection($currentUnit)
-                ->table('attendance_tokens')
-                ->where('token', $token)
-                ->where('expires_at', '>', now())
-                ->first();
+            // Cek token di semua database yang ada
+            $databases = [
+                'mysql_bau_bau' => 'u478221055_ulpltd_bau_bau',
+                'mysql_kolaka' => 'u478221055_ulpltd_kolaka',
+                'mysql_poasia' => 'u478221055_ulpltd_poasia',
+                'mysql_wua_wua' => 'u478221055_ulpltd_wua_wua',
+                'mysql' => 'u478221055_up_kendari'
+            ];
+
+            $tokenData = null;
+            $correctUnit = null;
+
+            foreach ($databases as $unit => $database) {
+                $result = DB::connection($unit)
+                    ->table('attendance_tokens')
+                    ->where('token', $token)
+                    ->where('expires_at', '>', now())
+                    ->first();
+
+                if ($result) {
+                    $tokenData = $result;
+                    $correctUnit = $unit;
+                    break;
+                }
+            }
 
             if (!$tokenData) {
                 return redirect()->route('attendance.error')
                     ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
             }
 
+            // Set session unit berdasarkan token yang ditemukan
+            session(['unit' => $correctUnit]);
+
+            Log::debug('Scan QR Success', [
+                'token' => $token,
+                'unit' => $correctUnit,
+                'database' => $databases[$correctUnit]
+            ]);
+
             return view('admin.daftar_hadir.scan', [
                 'token' => $token,
-                'unit' => $currentUnit
+                'unit' => $correctUnit
             ]);
 
         } catch (\Exception $e) {
             Log::error('QR Scan Error:', [
                 'message' => $e->getMessage(),
-                'token' => $token,
-                'session_unit' => session('unit', 'mysql')
+                'token' => $token
             ]);
             
             return redirect()->route('attendance.error')
@@ -255,13 +280,6 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            $currentUnit = session('unit', 'mysql');
-            
-            Log::debug('Store Attendance Start', [
-                'session_unit' => $currentUnit,
-                'database' => Attendance::getCurrentDatabase()
-            ]);
-
             // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -271,16 +289,18 @@ class AttendanceController extends Controller
                 'signature' => 'required|string'
             ]);
 
+            $currentUnit = session('unit', 'mysql');
+            
             DB::beginTransaction();
             
             try {
-                // Generate ID baru menggunakan koneksi yang benar
+                // Generate ID baru
                 $lastId = DB::connection($currentUnit)
                            ->table('attendance')
                            ->max('id') ?? 0;
                 $newId = $lastId + 1;
 
-                // Simpan attendance dengan koneksi yang benar
+                // Simpan attendance
                 $attendance = new Attendance();
                 $attendance->setConnection($currentUnit);
                 $attendance->fill([
@@ -294,14 +314,13 @@ class AttendanceController extends Controller
                     'unit_source' => $currentUnit
                 ]);
 
-                Log::debug('Before Save Attendance', [
-                    'unit' => $currentUnit,
-                    'connection' => $attendance->getConnectionName(),
-                    'database' => Attendance::getCurrentDatabase(),
-                    'id' => $newId
-                ]);
-
                 $attendance->save();
+
+                // Update token status
+                DB::connection($currentUnit)
+                    ->table('attendance_tokens')
+                    ->where('token', $validated['token'])
+                    ->update(['used_at' => now()]);
 
                 DB::commit();
 
@@ -318,8 +337,7 @@ class AttendanceController extends Controller
         } catch (\Exception $e) {
             Log::error('Attendance Store Error:', [
                 'message' => $e->getMessage(),
-                'unit' => $currentUnit,
-                'trace' => $e->getTraceAsString()
+                'unit' => session('unit', 'mysql')
             ]);
             
             return response()->json([

@@ -282,6 +282,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scan'])->name('attendance.scan');
 Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
 Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])->name('attendance.generate-qr');
+Route::get('/attendance/error', [AttendanceController::class, 'error'])->name('attendance.error');
 
 Route::get('/attendance/success', [AttendanceController::class, 'success'])->name('attendance.success');
 
@@ -703,4 +704,26 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/monitoring-data/{period}', [HomeController::class, 'getMonitoringData'])
     ->name('monitoring.data')
     ->where('period', 'daily|weekly|monthly');
+        
+// Route untuk QR Code
+Route::middleware(['web'])->group(function () {
+    Route::get('/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])
+        ->name('attendance.generate-qr');
+    
+    Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scanQR'])
+        ->name('attendance.scan')
+        ->withoutMiddleware(['auth']); // Hapus auth middleware untuk halaman scan
+    
+    Route::post('/attendance/store', [AttendanceController::class, 'store'])
+        ->name('attendance.store')
+        ->withoutMiddleware(['auth']); // Hapus auth middleware untuk store
+    
+    Route::get('/attendance/success', [AttendanceController::class, 'success'])
+        ->name('attendance.success')
+        ->withoutMiddleware(['auth']); // Hapus auth middleware untuk success page
+    
+    Route::get('/attendance/error', [AttendanceController::class, 'error'])
+        ->name('attendance.error')
+        ->withoutMiddleware(['auth']); // Hapus auth middleware untuk error page
+});
         
