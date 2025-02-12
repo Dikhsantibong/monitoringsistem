@@ -63,4 +63,27 @@ class Attendance extends Model
     {
         return Carbon::parse($value)->setTimezone('Asia/Makassar');
     }
+
+    public static function getUnitConnection()
+    {
+        $unitSession = session('unit', 'mysql');
+        \Log::debug('Getting Unit Connection', [
+            'session' => $unitSession,
+            'database' => self::$connectionMapping[$unitSession] ?? 'u478221055_up_kendari'
+        ]);
+        return $unitSession;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($model) {
+            $model->setConnection(self::getUnitConnection());
+        });
+        
+        static::saving(function ($model) {
+            $model->setConnection(self::getUnitConnection());
+        });
+    }
 }

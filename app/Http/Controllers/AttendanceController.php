@@ -18,35 +18,21 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         try {
-            $currentUnit = session('unit', 'mysql');
+            $query = Attendance::query();
             
-            \Log::debug('Attendance Index', [
-                'unit' => $currentUnit,
-                'database' => Attendance::getDatabaseName()
-            ]);
-
-            $query = DB::connection($currentUnit)->table('attendance');
-            
-            // Filter berdasarkan tanggal jika ada
             if ($request->has('date')) {
-                $date = $request->date;
-                $query->whereDate('time', $date);
+                $query->whereDate('time', $request->date);
             } else {
-                // Default tampilkan hari ini
                 $query->whereDate('time', Carbon::today());
             }
-
-            // Filter berdasarkan unit_source
-            $query->where('unit_source', $currentUnit);
 
             $attendances = $query->orderBy('time', 'desc')->get();
             
             return view('admin.daftar_hadir.index', compact('attendances'));
+            
         } catch (\Exception $e) {
-            \Log::error('Error in attendance index:', [
-                'message' => $e->getMessage(),
-                'unit' => session('unit'),
-                'trace' => $e->getTraceAsString()
+            Log::error('Error in attendance index:', [
+                'message' => $e->getMessage()
             ]);
             
             return back()->with('error', 'Terjadi kesalahan saat memuat data kehadiran');
@@ -465,56 +451,71 @@ class AttendanceController extends Controller
         }
     }
 
+    protected function getUnitConnection()
+    {
+        return Attendance::getUnitConnection();
+    }
+
     public function scanQR(Request $request)
     {
         try {
-            $currentUnit = session('unit', 'mysql');
+            $currentUnit = $this->getUnitConnection();
             
             \Log::debug('Scanning QR Code', [
                 'unit' => $currentUnit,
                 'database' => Attendance::getDatabaseName()
             ]);
 
-            // Validasi token
-            $token = $request->token;
-            $attendanceToken = DB::connection($currentUnit)
-                ->table('attendance_tokens')
-                ->where('token', $token)
-                ->where('expires_at', '>=', now())
-                ->first();
+            DB::connection($currentUnit)->beginTransaction();
+            
+            try {
+                // Validasi token
+                $token = $request->token;
+                $attendanceToken = DB::connection($currentUnit)
+                    ->table('attendance_tokens')
+                    ->where('token', $token)
+                    ->where('expires_at', '>=', now())
+                    ->first();
 
-            if (!$attendanceToken) {    
+                if (!$attendanceToken) {    
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'QR Code tidak valid atau sudah kadaluarsa'
+                    ], 400);
+                }
+
+                // Generate ID baru
+                $lastId = DB::connection($currentUnit)
+                    ->table('attendance')
+                    ->max('id') ?? 0;
+                $newId = $lastId + 1;
+
+                // Simpan attendance
+                DB::connection($currentUnit)
+                    ->table('attendance')
+                    ->insert([
+                        'id' => $newId,
+                        'name' => auth()->user()->name,
+                        'position' => auth()->user()->position,
+                        'division' => auth()->user()->division,
+                        'time' => now(),
+                        'token' => $token,
+                        'unit_source' => $currentUnit,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+
+                DB::connection($currentUnit)->commit();
+
                 return response()->json([
-                    'success' => false,
-                    'message' => 'QR Code tidak valid atau sudah kadaluarsa'
-                ], 400);
-            }
-
-            // Generate ID baru
-            $lastId = DB::connection($currentUnit)
-                ->table('attendance')
-                ->max('id') ?? 0;
-            $newId = $lastId + 1;
-
-            // Simpan attendance
-            DB::connection($currentUnit)
-                ->table('attendance')
-                ->insert([
-                    'id' => $newId,
-                    'name' => auth()->user()->name,
-                    'position' => auth()->user()->position,
-                    'division' => auth()->user()->division,
-                    'time' => now(),
-                    'token' => $token,
-                    'unit_source' => $currentUnit,
-                    'created_at' => now(),
-                    'updated_at' => now()
+                    'success' => true,
+                    'message' => 'Absensi berhasil disimpan'
                 ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Absensi berhasil disimpan'
-            ]);
+            } catch (\Exception $e) {
+                DB::connection($currentUnit)->rollBack();
+                throw $e;
+            }
 
         } catch (\Exception $e) {
             \Log::error('Scan QR Error:', [
