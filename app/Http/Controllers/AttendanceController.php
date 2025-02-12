@@ -210,54 +210,28 @@ class AttendanceController extends Controller
             ]);
 
             DB::beginTransaction();
+            
+            // Ambil koneksi dari session
+            $currentUnit = session('unit', 'mysql');
+            
+            Log::debug('Storing Attendance', [
+                'unit' => $currentUnit,
+                'name' => $validated['name']
+            ]);
+
             try {
-                // Cek token dan ambil data backdate jika ada
-                $tokenData = DB::table('attendance_tokens')
-                    ->where('token', $validated['token'])
-                    ->where('expires_at', '>=', now())
-                    ->first();
-
-                if (!$tokenData) {
-                    throw new \Exception('Token tidak valid atau sudah kadaluarsa');
-                }
-
-                // Generate ID baru
-                $lastId = DB::connection(session('unit'))
-                           ->table('attendance')
-                           ->max('id') ?? 0;
-                $newId = $lastId + 1;
-
-                // Set waktu absen
-                $attendanceTime = now();
-                $isBackdate = false;
-                $backdateReason = null;
-
-                // Jika ini adalah token backdate, gunakan waktu yang sudah ditentukan
-                if ($tokenData->is_backdate && $tokenData->backdate_data) {
-                    $backdateData = json_decode($tokenData->backdate_data, true);
-                    $attendanceTime = Carbon::parse($backdateData['tanggal_absen'] . ' ' . $backdateData['waktu_absen'])
-                                         ->setTimezone('Asia/Makassar');
-                    $isBackdate = true;
-                    $backdateReason = $backdateData['alasan'];
-                }
-
-                // Simpan attendance
-                DB::connection(session('unit'))
-                  ->table('attendance')
-                  ->insert([
-                    'id' => $newId,
+                // Simpan attendance menggunakan model
+                $attendance = new Attendance([
                     'name' => $validated['name'],
                     'position' => $validated['position'],
                     'division' => $validated['division'],
                     'token' => $validated['token'],
                     'signature' => $validated['signature'],
-                    'time' => $attendanceTime,
-                    'is_backdate' => $isBackdate,
-                    'backdate_reason' => $backdateReason,
-                    'unit_source' => session('unit', 'poasia'),
-                    'created_at' => now(),
-                    'updated_at' => now()
+                    'time' => now(),
+                    'unit_source' => $currentUnit
                 ]);
+
+                $attendance->save();
 
                 DB::commit();
 
@@ -272,12 +246,10 @@ class AttendanceController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Attendance Store Error:', [
+            Log::error('Attendance Store Error:', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
+                'unit' => session('unit', 'mysql'),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([

@@ -32,14 +32,42 @@ class Attendance extends Model
         'time' => 'datetime',
     ];
 
-    public function getConnectionName()
-    
+    // Override koneksi database berdasarkan session unit
+    protected $connection = null;
+
+    public function __construct(array $attributes = [])
     {
-        return session('unit', 'mysql');
+        parent::__construct($attributes);
+        
+        // Set koneksi berdasarkan session unit
+        $this->connection = session('unit', 'mysql');
+        
+        // Set unit_source sesuai dengan koneksi yang aktif
+        $this->attributes['unit_source'] = $this->connection;
+        
+        Log::debug('Attendance Model Connection', [
+            'connection' => $this->connection,
+            'unit_source' => $this->attributes['unit_source'] ?? null
+        ]);
     }
 
     public function getTimeAttribute($value)
     {
         return Carbon::parse($value)->setTimezone('Asia/Makassar');
+    }
+
+    // Override method save untuk memastikan data tersimpan di koneksi yang benar
+    public function save(array $options = [])
+    {
+        if (!isset($this->attributes['unit_source'])) {
+            $this->attributes['unit_source'] = $this->connection;
+        }
+        
+        Log::debug('Saving Attendance', [
+            'connection' => $this->connection,
+            'unit_source' => $this->attributes['unit_source']
+        ]);
+
+        return parent::save($options);
     }
 }
