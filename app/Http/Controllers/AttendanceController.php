@@ -96,32 +96,29 @@ class AttendanceController extends Controller
     {
         try {
             $currentConnection = $this->getCurrentConnection();
-            \Log::debug('Generating QR for unit', [
-                'connection' => $currentConnection,
-                'database' => Attendance::getDatabaseName()
+            
+            // Generate URL dengan menyertakan unit dan token
+            $token = 'ATT-' . strtoupper(Str::random(8));
+            $qrUrl = route('attendance.scan', [
+                'token' => $token,
+                'unit' => $currentConnection
             ]);
 
             DB::connection($currentConnection)->beginTransaction();
             
             try {
-                $token = 'ATT-' . strtoupper(Str::random(8));
-                
-                // Simpan token ke database sesuai unit
                 DB::connection($currentConnection)
                     ->table('attendance_tokens')
                     ->insert([
                         'token' => $token,
                         'user_id' => auth()->id(),
-                        'expires_at' => now()->addMinutes(5), // Kurangi waktu expire untuk testing
+                        'expires_at' => now()->addMinutes(5),
                         'unit_source' => $currentConnection,
                         'created_at' => now(),
                         'updated_at' => now()
                     ]);
 
                 DB::connection($currentConnection)->commit();
-                
-                // Generate URL dengan menyertakan unit
-                $qrUrl = url("/attendance/scan/{$token}?unit=" . $currentConnection);
                 
                 \Log::debug('QR Generated successfully', [
                     'token' => $token,
@@ -141,8 +138,7 @@ class AttendanceController extends Controller
         } catch (\Exception $e) {
             \Log::error('QR Generation Error', [
                 'message' => $e->getMessage(),
-                'unit' => $currentConnection,
-                'trace' => $e->getTraceAsString()
+                'unit' => $currentConnection
             ]);
             return response()->json([
                 'success' => false,
@@ -158,8 +154,19 @@ class AttendanceController extends Controller
             \Log::debug('Scanning QR in scan method', [
                 'token' => $token,
                 'unit' => $currentConnection,
-                'database' => Attendance::getDatabaseName()
+                'database' => Attendance::getDatabaseName(),
+                'is_authenticated' => auth()->check()
             ]);
+
+            // Cek autentikasi
+            if (!auth()->check()) {
+                \Log::warning('Unauthenticated access attempt', [
+                    'token' => $token,
+                    'unit' => $currentConnection
+                ]);
+                return redirect()->route('login')
+                               ->with('error', 'Silakan login terlebih dahulu');
+            }
 
             // Cek token dari database yang sesuai dengan unit
             $attendanceToken = DB::connection($currentConnection)
@@ -167,11 +174,6 @@ class AttendanceController extends Controller
                 ->where('token', $token)
                 ->where('expires_at', '>=', now())
                 ->first();
-
-            \Log::debug('Token check result', [
-                'token_exists' => !is_null($attendanceToken),
-                'connection' => $currentConnection
-            ]);
 
             if (!$attendanceToken) {
                 \Log::warning('Invalid token access attempt', [
@@ -182,7 +184,6 @@ class AttendanceController extends Controller
                                ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
             }
 
-            // Tambahkan informasi unit ke view
             return view('admin.daftar_hadir.scan', [
                 'token' => $token,
                 'unit' => $currentConnection,
