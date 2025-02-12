@@ -32,6 +32,15 @@ class Attendance extends Model
         'time' => 'datetime',
     ];
 
+    // Mapping session ke database
+    private static $databaseMapping = [
+        'mysql_bau_bau' => 'u478221055_ulpltd_bau_bau',
+        'mysql_kolaka' => 'u478221055_ulpltd_kolaka',
+        'mysql_poasia' => 'u478221055_ulpltd_poasia',
+        'mysql_wua_wua' => 'u478221055_ulpltd_wua_wua',
+        'mysql' => 'u478221055_up_kendari'
+    ];
+
     // Override koneksi database berdasarkan session unit
     protected $connection = null;
 
@@ -40,15 +49,23 @@ class Attendance extends Model
         parent::__construct($attributes);
         
         // Set koneksi berdasarkan session unit
-        $this->connection = session('unit', 'mysql');
+        $currentUnit = session('unit', 'mysql');
+        $this->connection = $currentUnit;
         
         // Set unit_source sesuai dengan koneksi yang aktif
-        $this->attributes['unit_source'] = $this->connection;
+        $this->attributes['unit_source'] = $currentUnit;
         
-        Log::debug('Attendance Model Connection', [
-            'connection' => $this->connection,
-            'unit_source' => $this->attributes['unit_source'] ?? null
+        Log::debug('Attendance Model Initialized', [
+            'session_unit' => $currentUnit,
+            'database' => self::$databaseMapping[$currentUnit] ?? 'unknown',
+            'connection' => $this->connection
         ]);
+    }
+
+    public static function getCurrentDatabase()
+    {
+        $currentUnit = session('unit', 'mysql');
+        return self::$databaseMapping[$currentUnit] ?? 'u478221055_up_kendari';
     }
 
     public function getTimeAttribute($value)
@@ -59,12 +76,15 @@ class Attendance extends Model
     // Override method save untuk memastikan data tersimpan di koneksi yang benar
     public function save(array $options = [])
     {
+        $currentUnit = session('unit', 'mysql');
+        
         if (!isset($this->attributes['unit_source'])) {
-            $this->attributes['unit_source'] = $this->connection;
+            $this->attributes['unit_source'] = $currentUnit;
         }
         
         Log::debug('Saving Attendance', [
-            'connection' => $this->connection,
+            'session_unit' => $currentUnit,
+            'database' => self::$databaseMapping[$currentUnit],
             'unit_source' => $this->attributes['unit_source']
         ]);
 

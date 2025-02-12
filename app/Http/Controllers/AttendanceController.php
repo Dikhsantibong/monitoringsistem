@@ -18,19 +18,34 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Attendance::query();
+            $currentUnit = session('unit', 'mysql');
+            
+            // Gunakan query builder dengan koneksi yang sesuai
+            $query = DB::connection($currentUnit)->table('attendance');
 
             // Filter berdasarkan tanggal
             $date = $request->date ?? Carbon::today();
             $query->whereDate('time', $date);
+            
+            // Filter berdasarkan unit_source
+            $query->where('unit_source', $currentUnit);
 
             // Ambil data
             $attendances = $query->orderBy('time', 'desc')->get();
 
+            Log::debug('Fetching Attendance Data', [
+                'session_unit' => $currentUnit,
+                'database' => Attendance::getCurrentDatabase(),
+                'record_count' => $attendances->count()
+            ]);
+
             return view('admin.daftar_hadir.index', compact('attendances'));
             
         } catch (\Exception $e) {
-            Log::error('Error in attendance index: ' . $e->getMessage());
+            Log::error('Error in attendance index: ' . $e->getMessage(), [
+                'session_unit' => session('unit', 'mysql'),
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'Terjadi kesalahan saat memuat data kehadiran');
         }
     }
@@ -360,10 +375,12 @@ class AttendanceController extends Controller
                 'alasan' => 'required|string'
             ]);
 
+            $currentUnit = session('unit', 'mysql');
+
             DB::beginTransaction();
             try {
                 // Generate ID baru
-                $lastId = DB::connection(session('unit'))
+                $lastId = DB::connection($currentUnit)
                            ->table('attendance')
                            ->max('id') ?? 0;
                 $newId = $lastId + 1;
@@ -373,7 +390,7 @@ class AttendanceController extends Controller
                                  ->setTimezone('Asia/Makassar');
 
                 // Simpan attendance dengan ID manual
-                DB::connection(session('unit'))
+                DB::connection($currentUnit)
                   ->table('attendance')
                   ->insert([
                     'id' => $newId,
@@ -383,7 +400,7 @@ class AttendanceController extends Controller
                     'time' => $datetime,
                     'is_backdate' => true,
                     'backdate_reason' => $request->alasan,
-                    'unit_source' => session('unit', 'poasia'),
+                    'unit_source' => $currentUnit,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
@@ -398,10 +415,10 @@ class AttendanceController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Backdate Store Error:', [
+            Log::error('Backdate Store Error:', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'session_unit' => session('unit', 'mysql'),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return redirect()->back()
