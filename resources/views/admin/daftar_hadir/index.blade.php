@@ -60,10 +60,31 @@
             </div>  
             <main class="px-6">
                 <div class="bg-white rounded-lg shadow p-6 mb-3">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold text-gray-800">Daftar Kehadiran</h2>
-                        <div class="text-sm text-gray-600">
-                            Unit: {{ ucwords(str_replace('mysql_', '', session('unit', 'mysql'))) }}
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
+
+                    <!-- Informasi Session dan Database -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600">
+                                    <span class="font-semibold">Unit Active:</span> 
+                                    <span class="text-blue-600">{{ session('unit', 'mysql') }}</span>
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    <span class="font-semibold">Database Active:</span> 
+                                    <span class="text-blue-600">{{ App\Models\Attendance::getDatabaseName() }}</span>
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">
+                                    <span class="font-semibold">Timezone:</span> 
+                                    <span class="text-blue-600">Asia/Makassar (WITA)</span>
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    <span class="font-semibold">Server Time:</span> 
+                                    <span class="text-blue-600">{{ now()->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s') }}</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -227,33 +248,24 @@
         
         document.getElementById('qrModal').classList.remove('hidden');
         
-        // Tambahkan current unit ke URL
-        fetch('{{ url("/attendance/generate-qr") }}', {
-            headers: {
-                'X-Unit': '{{ session("unit", "mysql") }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                container.innerHTML = '';
-                new QRCode(container, {
-                    text: data.qr_url,
-                    width: 256,
-                    height: 256
-                });
-                // Tampilkan informasi unit
-                container.insertAdjacentHTML('afterend', 
-                    `<p class="mt-2 text-sm text-gray-600 text-center">Unit: ${data.unit}</p>`
-                );
-            } else {
-                throw new Error('Gagal membuat QR Code');
-            }
-        })
-        .catch(() => {
-            container.innerHTML = '<div class="text-red-500">Gagal membuat QR Code</div>';
-            setTimeout(closeModal, 3000);
-        });
+        fetch('{{ url("/public/attendance/generate-qr") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    container.innerHTML = '';
+                    new QRCode(container, {
+                        text: data.qr_url,
+                        width: 256,
+                        height: 256
+                    });
+                } else {
+                    throw new Error('Gagal membuat QR Code');
+                }
+            })
+            .catch(() => {
+                container.innerHTML = '<div class="text-red-500">Gagal membuat QR Code</div>';
+                setTimeout(closeModal, 3000);
+            });
     }
 
     function closeModal() {
