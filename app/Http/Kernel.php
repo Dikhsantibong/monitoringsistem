@@ -70,7 +70,6 @@ class Kernel extends HttpKernel
        'user' => \App\Http\Middleware\UserMiddleware::class,
         'role' => \App\Http\Middleware\CheckRole::class,
         'json.response' => \App\Http\Middleware\ForceJsonResponse::class,
-        'check.unit' => \App\Http\Middleware\CheckUnit::class,
     ];
 
     protected $middlewareAliases = [

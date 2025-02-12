@@ -714,9 +714,3 @@ Route::get('/monitoring-data/{period}', [HomeController::class, 'getMonitoringDa
     ->where('period', 'daily|weekly|monthly');
 
 Route::post('/attendance/scan-qr', [AttendanceController::class, 'scanQR'])->name('attendance.scan-qr');
-
-// Tambahkan route group untuk attendance dengan middleware auth dan session unit
-Route::middleware(['auth', 'check.unit'])->group(function () {
-    Route::get('/attendance/scan/{token}', [AttendanceController::class, 'scan'])->name('attendance.scan');
-    // ... route attendance lainnya ...
-});
