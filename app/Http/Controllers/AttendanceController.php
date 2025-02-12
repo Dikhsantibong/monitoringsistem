@@ -91,12 +91,13 @@ class AttendanceController extends Controller
             // Generate token sederhana
             $token = 'ATT-' . strtoupper(Str::random(8));
             
-            // Simpan token
-            DB::table('attendance_tokens')->insert([
+            // Gunakan koneksi yang sesuai dengan session
+            DB::connection(session('unit'))->table('attendance_tokens')->insert([
                 'token' => $token,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addHours(24),
-                'unit_source' => session('unit', 'u478221055_up_kendari'),
+                // Gunakan session unit langsung
+                'unit_source' => session('unit'),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -150,13 +151,14 @@ class AttendanceController extends Controller
             // Generate token untuk backdate
             $token = 'BACK-' . strtoupper(Str::random(8));
             
-            // Tambahkan is_backdate ke data yang disimpan
-            $tokenId = DB::table('attendance_tokens')->insertGetId([
+            // Gunakan koneksi yang sesuai dengan session
+            $tokenId = DB::connection(session('unit'))->table('attendance_tokens')->insertGetId([
                 'token' => $token,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addMinutes(5),
-                'unit_source' => session('unit', 'mysql'),
-                'is_backdate' => true, // Tambahkan field ini
+                // Gunakan session unit langsung
+                'unit_source' => session('unit'),
+                'is_backdate' => true,
                 'backdate_data' => json_encode([
                     'tanggal_absen' => $request->tanggal_absen,
                     'waktu_absen' => $request->waktu_absen,
@@ -209,8 +211,9 @@ class AttendanceController extends Controller
 
             DB::beginTransaction();
             try {
-                // Cek token dan ambil data backdate jika ada
-                $tokenData = DB::table('attendance_tokens')
+                // Cek token menggunakan koneksi yang sesuai
+                $tokenData = DB::connection(session('unit'))
+                    ->table('attendance_tokens')
                     ->where('token', $validated['token'])
                     ->where('expires_at', '>=', now())
                     ->first();
@@ -239,7 +242,7 @@ class AttendanceController extends Controller
                     $backdateReason = $backdateData['alasan'];
                 }
 
-                // Simpan attendance
+                // Simpan attendance dengan koneksi yang sesuai
                 DB::connection(session('unit'))
                   ->table('attendance')
                   ->insert([
@@ -252,7 +255,8 @@ class AttendanceController extends Controller
                     'time' => $attendanceTime,
                     'is_backdate' => $isBackdate,
                     'backdate_reason' => $backdateReason,
-                    'unit_source' => session('unit', 'poasia'),
+                    // Gunakan session unit langsung
+                    'unit_source' => session('unit'),
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
