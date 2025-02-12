@@ -121,12 +121,22 @@ class AttendanceController extends Controller
     public function scan($token)
     {
         try {
-            // Gunakan koneksi yang sesuai dengan session untuk mencari token
+            Log::info('Scanning QR Code', [
+                'token' => $token,
+                'connection' => session('unit'),
+                'session_data' => session()->all()
+            ]);
+
             $attendanceToken = DB::connection(session('unit'))
                 ->table('attendance_tokens')
                 ->where('token', $token)
                 ->where('expires_at', '>=', now())
                 ->first();
+
+            Log::info('Token check result', [
+                'token_found' => !is_null($attendanceToken),
+                'token_data' => $attendanceToken
+            ]);
 
             if (!$attendanceToken) {
                 return redirect()->route('attendance.error')->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
@@ -134,7 +144,12 @@ class AttendanceController extends Controller
 
             return view('admin.daftar_hadir.scan', compact('token'));
         } catch (\Exception $e) {
-            Log::error('Scan error: ' . $e->getMessage());
+            Log::error('Scan error: ' . $e->getMessage(), [
+                'token' => $token,
+                'connection' => session('unit'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->route('attendance.error')->with('error', 'Terjadi kesalahan saat memproses QR Code');
         }
     }
