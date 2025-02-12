@@ -34,7 +34,10 @@ class Attendance extends Model
 
     public function getConnectionName()
     {
-        return session('unit', 'mysql');
+        // Pastikan nilai default adalah yang sesuai dengan konfigurasi
+        $unit = session('unit');
+        Log::info('Current database connection', ['unit' => $unit]);
+        return $unit ?? 'mysql';
     }
 
     protected static function boot()
