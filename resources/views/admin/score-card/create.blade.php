@@ -405,6 +405,7 @@
         // Event listener untuk tombol tambah peserta
         document.getElementById('addPesertaBtn').addEventListener('click', function() {
             try {
+                console.log('Add Participant button clicked'); // Debugging
                 const newId = pesertaList.length > 0 
                     ? Math.max(...pesertaList.map(p => parseInt(p.id))) + 1 
                     : 1;
@@ -414,6 +415,7 @@
                     jabatan: 'Jabatan Baru'
                 });
                 
+                console.log('New participant added:', { id: newId, jabatan: 'Jabatan Baru' }); // Debugging
                 renderPesertaTable();
                 
                 // Scroll ke baris baru
@@ -429,7 +431,7 @@
                     }
                 }
             } catch (error) {
-                console.error('Error menambah peserta:', error);
+                console.error('Error menambah peserta:', error); // Logging error
                 alert('Terjadi kesalahan saat menambah peserta');
             }
         });
@@ -437,43 +439,59 @@
         // Event listener untuk tombol simpan dengan AJAX
         document.getElementById('savePesertaBtn').addEventListener('click', async function() {
             try {
-                // Update pesertaList dari input fields
+                // Debug data before sending
+                console.log('Current pesertaList:', pesertaList);
+
+                // Update pesertaList dari input fields dengan validasi data
+                const updatedPesertaList = [];
                 document.querySelectorAll('.jabatan-input').forEach(input => {
                     const id = parseInt(input.dataset.id);
-                    const peserta = pesertaList.find(p => p.id === id);
-                    if (peserta) {
-                        peserta.jabatan = input.value;
+                    const jabatan = input.value.trim();
+                    
+                    // Validasi data
+                    if (!jabatan) {
+                        throw new Error('Jabatan tidak boleh kosong');
                     }
+
+                    updatedPesertaList.push({
+                        id: id,
+                        jabatan: jabatan,
+                        // Tambahkan flag untuk membedakan data baru dan existing
+                        is_new: !pesertaList.find(p => p.id === id)?.id
+                    });
                 });
 
-                // Tampilkan loading
-                Swal.fire({
-                    title: 'Menyimpan...',
-                    text: 'Mohon tunggu sebentar',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    allowEnterKey: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+                console.log('Updated pesertaList:', updatedPesertaList);
 
                 // Kirim data ke server
                 const response = await fetch('{{ route("admin.peserta.update") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ peserta: pesertaList })
+                    body: JSON.stringify({ 
+                        peserta: updatedPesertaList,
+                        _method: 'POST' // Explicitly set method
+                    })
                 });
 
+                // Debug response
+                console.log('Response Status:', response.status);
+                const responseBody = await response.json();
+                console.log('Response Body:', responseBody);
+
                 if (!response.ok) {
-                    throw new Error('Gagal menyimpan perubahan');
+                    throw new Error(responseBody.message || 'Gagal menyimpan perubahan');
                 }
+
+                // Update local pesertaList with server response
+                pesertaList = responseBody.data || updatedPesertaList;
 
                 // Render ulang form peserta
                 renderPesertaForm();
+                renderPesertaTable();
                 
                 // Sembunyikan modal
                 document.getElementById('pesertaModal').classList.add('hidden');
@@ -489,11 +507,11 @@
                 });
 
             } catch (error) {
-                // Tampilkan pesan error
+                console.error('Error details:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Terjadi kesalahan: ' + error.message,
+                    text: error.message || 'Terjadi kesalahan saat menyimpan data',
                     confirmButtonText: 'Tutup',
                     confirmButtonColor: '#d33'
                 });

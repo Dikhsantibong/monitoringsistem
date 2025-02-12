@@ -13,6 +13,9 @@ class Peserta extends Model
         'jabatan'
     ];
 
+    public $incrementing = true;
+    protected $keyType = 'int';
+
     // Jika Anda ingin menambahkan relasi dengan tabel score_card
     public function scoreCards()
     {
