@@ -177,6 +177,15 @@ Route::middleware(['auth'])->group(function () {
     // Tambahkan route untuk Zoom meeting
     Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoomMeeting'])
         ->name('admin.create-zoom-meeting');
+
+    // Route untuk attendance
+    Route::get('/attendance/error', function() {
+        return view('admin.daftar_hadir.error');
+    })->name('attendance.error');
+    
+    Route::get('/attendance/success', function() {
+        return view('admin.daftar_hadir.success');
+    })->name('attendance.success');
 });
 
 // Tambahkan route untuk AJAX
@@ -705,4 +714,3 @@ Route::get('/monitoring-data/{period}', [HomeController::class, 'getMonitoringDa
     ->where('period', 'daily|weekly|monthly');
 
 Route::post('/attendance/scan-qr', [AttendanceController::class, 'scanQR'])->name('attendance.scan-qr');
-        
