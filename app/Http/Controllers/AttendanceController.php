@@ -17,7 +17,7 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DB::table('attendance');
+        $query = Attendance::query();
         
         // Filter berdasarkan tanggal jika ada
         if ($request->has('date')) {
@@ -85,48 +85,31 @@ class AttendanceController extends Controller
         }
     }
 
-    protected function getCurrentConnection()
-    {
-        $currentUnit = session('unit', 'mysql');
-        \Log::debug('Current Unit Connection', ['unit' => $currentUnit]);
-        return $currentUnit;
-    }
-
     public function generateQRCode()
     {
         try {
-            $currentConnection = $this->getCurrentConnection();
-            \Log::debug('Generating QR for unit', ['connection' => $currentConnection]);
-
-            DB::connection($currentConnection)->beginTransaction();
-            
+            // Generate token sederhana
             $token = 'ATT-' . strtoupper(Str::random(8));
             
-            // Simpan token ke database sesuai unit
-            DB::connection($currentConnection)->table('attendance_tokens')->insert([
+            // Simpan token
+            DB::table('attendance_tokens')->insert([
                 'token' => $token,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addHours(24),
-                'unit_source' => $currentConnection,
+                'unit_source' => session('unit', 'poasia'),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
 
-            DB::connection($currentConnection)->commit();
-            
+            // URL untuk QR
             $qrUrl = url("/attendance/scan/{$token}");
-            
+
             return response()->json([
                 'success' => true,
                 'qr_url' => $qrUrl
             ]);
             
         } catch (\Exception $e) {
-            DB::connection($currentConnection)->rollBack();
-            \Log::error('QR Generation Error', [
-                'message' => $e->getMessage(),
-                'unit' => $currentConnection
-            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal membuat QR Code'
@@ -137,34 +120,18 @@ class AttendanceController extends Controller
     public function scan($token)
     {
         try {
-            $currentConnection = $this->getCurrentConnection();
-            
-            // Cek token dari database yang sesuai dengan unit
-            $attendanceToken = DB::connection($currentConnection)
-                ->table('attendance_tokens')
-                ->where('token', $token)
+            $attendanceToken = AttendanceToken::where('token', $token)
                 ->where('expires_at', '>=', now())
                 ->first();
 
             if (!$attendanceToken) {
-                return redirect()->route('attendance.error')
-                               ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
+                return redirect()->route('attendance.error')->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
             }
 
-            \Log::debug('Scanning QR Code', [
-                'token' => $token,
-                'unit' => $currentConnection
-            ]);
-
             return view('admin.daftar_hadir.scan', compact('token'));
-            
         } catch (\Exception $e) {
-            Log::error('Scan error: ' . $e->getMessage(), [
-                'token' => $token,
-                'unit' => $currentConnection
-            ]);
-            return redirect()->route('attendance.error')
-                           ->with('error', 'Terjadi kesalahan saat memproses QR Code');
+            Log::error('Scan error: ' . $e->getMessage());
+            return redirect()->route('attendance.error')->with('error', 'Terjadi kesalahan saat memproses QR Code');
         }
     }
 
@@ -231,8 +198,6 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            $currentConnection = $this->getCurrentConnection();
-            
             // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -242,12 +207,10 @@ class AttendanceController extends Controller
                 'signature' => 'required|string'
             ]);
 
-            DB::connection($currentConnection)->beginTransaction();
-            
+            DB::beginTransaction();
             try {
-                // Cek token dari database yang sesuai
-                $tokenData = DB::connection($currentConnection)
-                    ->table('attendance_tokens')
+                // Cek token dan ambil data backdate jika ada
+                $tokenData = DB::table('attendance_tokens')
                     ->where('token', $validated['token'])
                     ->where('expires_at', '>=', now())
                     ->first();
@@ -257,7 +220,7 @@ class AttendanceController extends Controller
                 }
 
                 // Generate ID baru
-                $lastId = DB::connection($currentConnection)
+                $lastId = DB::connection(session('unit'))
                            ->table('attendance')
                            ->max('id') ?? 0;
                 $newId = $lastId + 1;
@@ -276,8 +239,8 @@ class AttendanceController extends Controller
                     $backdateReason = $backdateData['alasan'];
                 }
 
-                // Simpan attendance ke database yang sesuai
-                DB::connection($currentConnection)
+                // Simpan attendance
+                DB::connection(session('unit'))
                   ->table('attendance')
                   ->insert([
                     'id' => $newId,
@@ -289,23 +252,12 @@ class AttendanceController extends Controller
                     'time' => $attendanceTime,
                     'is_backdate' => $isBackdate,
                     'backdate_reason' => $backdateReason,
-                    'unit_source' => $currentConnection,
+                    'unit_source' => session('unit', 'poasia'),
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
 
-                // Hapus atau tandai token sebagai terpakai
-                DB::connection($currentConnection)
-                  ->table('attendance_tokens')
-                  ->where('token', $validated['token'])
-                  ->delete();
-
-                DB::connection($currentConnection)->commit();
-
-                \Log::info('Attendance stored successfully', [
-                    'unit' => $currentConnection,
-                    'name' => $validated['name']
-                ]);
+                DB::commit();
 
                 return response()->json([
                     'success' => true,
@@ -313,15 +265,17 @@ class AttendanceController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                DB::connection($currentConnection)->rollBack();
+                DB::rollBack();
                 throw $e;
             }
 
         } catch (\Exception $e) {
             \Log::error('Attendance Store Error:', [
                 'message' => $e->getMessage(),
-                'unit' => session('unit'),
-                'trace' => $e->getTraceAsString()
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
             ]);
             
             return response()->json([

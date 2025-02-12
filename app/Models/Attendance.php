@@ -32,23 +32,9 @@ class Attendance extends Model
         'time' => 'datetime',
     ];
 
-    public static function getDatabaseName()
-    {
-        $unitMapping = [
-            'mysql' => 'u478221055_up_kendari',
-            'mysql_wua_wua' => 'u478221055_ulpltd_wua_wua',
-            'mysql_poasia' => 'u478221055_ulpltd_poasia',
-            'mysql_kolaka' => 'u478221055_ulpltd_kolaka',
-            'mysql_bau_bau' => 'u478221055_ulpltd_bau_bau'
-        ];
-
-        $currentUnit = session('unit', 'mysql');
-        return $unitMapping[$currentUnit] ?? 'u478221055_up_kendari';
-    }
-
     public function getConnectionName()
     {
-        return session('unit', 'mysql');
+        return session('unit', 'u478221055_up_kendari');
     }
 
     protected static function boot()
