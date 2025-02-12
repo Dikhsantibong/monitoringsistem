@@ -16,15 +16,6 @@ class Attendance extends Model
 
     protected $table = 'attendance';
 
-    // Mapping untuk koneksi database
-    protected static $connectionMapping = [
-        'mysql_bau_bau' => 'u478221055_ulpltd_bau_bau',
-        'mysql_kolaka' => 'u478221055_ulpltd_kolaka',
-        'mysql_poasia' => 'u478221055_ulpltd_poasia',
-        'mysql_wua_wua' => 'u478221055_ulpltd_wua_wua',
-        'mysql' => 'u478221055_up_kendari'
-    ];
-
     protected $fillable = [
         'name',
         'position',
@@ -41,49 +32,105 @@ class Attendance extends Model
         'time' => 'datetime',
     ];
 
-    public function getConnectionName()
-    {
-        $unitSession = session('unit', 'mysql');
-        
-        \Log::debug('Current Connection Details', [
-            'session_unit' => $unitSession,
-            'mapped_database' => self::$connectionMapping[$unitSession] ?? 'u478221055_up_kendari'
-        ]);
-
-        return $unitSession;
-    }
-
     public static function getDatabaseName()
     {
-        $unitSession = session('unit', 'mysql');
-        return self::$connectionMapping[$unitSession] ?? 'u478221055_up_kendari';
+        $unitMapping = [
+            'mysql' => 'u478221055_up_kendari',
+            'mysql_wua_wua' => 'u478221055_ulpltd_wua_wua',
+            'mysql_poasia' => 'u478221055_ulpltd_poasia',
+            'mysql_kolaka' => 'u478221055_ulpltd_kolaka',
+            'mysql_bau_bau' => 'u478221055_ulpltd_bau_bau'
+        ];
+
+        $currentUnit = session('unit', 'mysql');
+        return $unitMapping[$currentUnit] ?? 'u478221055_up_kendari';
     }
 
-    public function getTimeAttribute($value)
+    public function getConnectionName()
     {
-        return Carbon::parse($value)->setTimezone('Asia/Makassar');
-    }
-
-    public static function getUnitConnection()
-    {
-        $unitSession = session('unit', 'mysql');
-        \Log::debug('Getting Unit Connection', [
-            'session' => $unitSession,
-            'database' => self::$connectionMapping[$unitSession] ?? 'u478221055_up_kendari'
-        ]);
-        return $unitSession;
+        return session('unit', 'mysql');
     }
 
     protected static function boot()
     {
         parent::boot();
         
-        static::creating(function ($model) {
-            $model->setConnection(self::getUnitConnection());
+        // Semua event listener dinonaktifkan dengan menghapus atau memberi komentar pada kode di bawah
+        /*
+        // Handle Created Event
+        static::created(function ($attendance) {
+            self::syncToUpKendari('create', $attendance);
         });
-        
-        static::saving(function ($model) {
-            $model->setConnection(self::getUnitConnection());
+
+        // Handle Updated Event
+        static::updated(function ($attendance) {
+            self::syncToUpKendari('update', $attendance);
         });
+
+        // Handle Deleted Event
+        static::deleted(function ($attendance) {
+            self::syncToUpKendari('delete', $attendance);
+        });
+        */
+    }
+
+    protected static function syncToUpKendari($action, $attendance)
+    {
+        if (self::$isSyncing) return;
+
+        try {
+            self::$isSyncing = true;
+            
+            $data = [
+                'id' => $attendance->id,
+                'name' => $attendance->name,
+                'position' => $attendance->position,
+                'division' => $attendance->division,
+                'token' => $attendance->token,
+                'time' => $attendance->time,
+                'signature' => $attendance->signature,
+                'unit_source' => 'poasia',
+                'created_at' => $attendance->created_at,
+                'updated_at' => $attendance->updated_at
+            ];
+
+            Log::info("Attempting to {$action} Attendance sync", ['data' => $data]);
+
+            $upKendari = DB::connection('mysql')->table('attendance');
+
+            switch($action) {
+                case 'create':
+                    $upKendari->insert($data);
+                    break;
+                    
+                case 'update':
+                    $upKendari->where('id', $attendance->id)
+                             ->update($data);
+                    break;
+                    
+                case 'delete':
+                    $upKendari->where('id', $attendance->id)
+                             ->delete();
+                    break;
+            }
+
+            Log::info("Attendance {$action} sync successful", [
+                'id' => $attendance->id,
+                'unit' => 'poasia'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Attendance {$action} sync failed", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        } finally {
+            self::$isSyncing = false;
+        }
+    }
+
+    public function getTimeAttribute($value)
+    {
+        return Carbon::parse($value)->setTimezone('Asia/Makassar');
     }
 }
