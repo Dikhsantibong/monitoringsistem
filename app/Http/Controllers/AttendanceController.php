@@ -121,7 +121,10 @@ class AttendanceController extends Controller
     public function scan($token)
     {
         try {
-            $attendanceToken = AttendanceToken::where('token', $token)
+            // Gunakan koneksi yang sesuai dengan session untuk mencari token
+            $attendanceToken = DB::connection(session('unit'))
+                ->table('attendance_tokens')
+                ->where('token', $token)
                 ->where('expires_at', '>=', now())
                 ->first();
 
@@ -274,11 +277,10 @@ class AttendanceController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Attendance Store Error:', [
+            Log::error('Attendance Store Error:', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
+                'connection' => session('unit'), // Tambahkan log untuk koneksi yang digunakan
+                'token' => $request->token,
                 'request_data' => $request->all()
             ]);
             
