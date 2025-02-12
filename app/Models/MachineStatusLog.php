@@ -43,6 +43,7 @@ class MachineStatusLog extends Model
     protected $table = 'machine_status_logs';
 
     protected $fillable = [
+        'uuid',
         'machine_id',
         'tanggal',
         'status',
@@ -116,16 +117,50 @@ class MachineStatusLog extends Model
             }
         });
 
-        static::created(function ($machineStatus) {
-            self::syncData('create', $machineStatus);
+        static::saved(function ($machineStatus) {
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machineStatus->getPowerPlant();
+
+            // Trigger sync event
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    // Dari UP Kendari ke unit lokal
+                    event(new MachineStatusUpdated($machineStatus, 'update'));
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    // Dari unit lokal ke UP Kendari
+                    event(new MachineStatusUpdated($machineStatus, 'update'));
+                }
+            }
         });
 
-        static::updated(function ($machineStatus) {
-            self::syncData('update', $machineStatus);
+        static::created(function ($machineStatus) {
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machineStatus->getPowerPlant();
+
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    // Dari UP Kendari ke unit lokal
+                    event(new MachineStatusUpdated($machineStatus, 'create'));
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    // Dari unit lokal ke UP Kendari
+                    event(new MachineStatusUpdated($machineStatus, 'create'));
+                }
+            }
         });
 
         static::deleted(function ($machineStatus) {
-            self::syncData('delete', $machineStatus);
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machineStatus->getPowerPlant();
+
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    // Dari UP Kendari ke unit lokal
+                    event(new MachineStatusUpdated($machineStatus, 'delete'));
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    // Dari unit lokal ke UP Kendari
+                    event(new MachineStatusUpdated($machineStatus, 'delete'));
+                }
+            }
         });
     }
 
@@ -398,136 +433,69 @@ class MachineStatusLog extends Model
 
     protected static function syncData($action, $machineStatus)
     {
-        $sessionId = self::logSyncProcess('start', [
-            'action' => $action,
-            'machine_status_id' => $machineStatus->id
-        ]);
-
         try {
-            // Validasi data
-            self::validateSyncData($machineStatus);
-            self::debugSync($sessionId, 'Validation passed');
-            
-            // Dapatkan power plant
-            $powerPlant = $machineStatus->getPowerPlant();
-            self::debugSync($sessionId, 'Power plant retrieved', [
-                'power_plant_id' => $powerPlant->id,
-                'unit_source' => $powerPlant->unit_source
-            ]);
-            
-            // Cek apakah perlu sync
-            if (!self::shouldSync($powerPlant)) {
-                self::logSyncProcess('skipped', [
-                    'sync_id' => $sessionId,
-                    'reason' => 'Sync not needed'
-                ]);
+            // Skip jika sedang dalam proses sinkronisasi
+            if (self::$isSyncing) {
                 return;
             }
-            
-            self::$isSyncing = true;
-            
-            // Siapkan data
-            $data = self::prepareSyncData($machineStatus, $powerPlant);
-            self::debugSync($sessionId, 'Data prepared', [
-                'prepared_data' => $data
-            ]);
-            
-            // Tentukan target database
+
+            $powerPlant = $machineStatus->getPowerPlant();
+            if (!$powerPlant || !$powerPlant->unit_source) {
+                return;
+            }
+
             $currentSession = session('unit', 'mysql');
             
-            if ($currentSession === 'mysql') {
-                $targetConnection = PowerPlant::getConnectionByUnitSource($powerPlant->unit_source);
-                self::debugSync($sessionId, 'Syncing from UP Kendari to unit local', [
-                    'target_connection' => $targetConnection
-                ]);
-            } else {
-                $targetConnection = 'mysql';
-                $data['unit_source'] = $currentSession;
-                self::debugSync($sessionId, 'Syncing from unit local to UP Kendari', [
-                    'source_unit' => $currentSession
-                ]);
-            }
-
-            $targetDB = DB::connection($targetConnection);
-
-            self::logSyncProcess('executing', [
-                'sync_id' => $sessionId,
-                'data' => $data,
+            // Log untuk debugging
+            Log::info("Starting syncData", [
+                'action' => $action,
                 'current_session' => $currentSession,
-                'target_connection' => $targetConnection,
-                'power_plant_unit' => $powerPlant->unit_source
+                'machine_id' => $machineStatus->machine_id,
+                'uuid' => $machineStatus->uuid
             ]);
 
-            // Lakukan operasi database dengan transaction
-            DB::beginTransaction();
-            try {
-                switch($action) {
-                    case 'create':
-                        $targetDB->table('machine_status_logs')->insert($data);
-                        self::debugSync($sessionId, 'Insert operation completed');
-                        break;
-                        
-                    case 'update':
-                        // Log data sebelum update
-                        $oldData = $targetDB->table('machine_status_logs')
-                                          ->where('id', $machineStatus->id)
-                                          ->first();
-                        self::debugSync($sessionId, 'Previous data state', [
-                            'old_data' => $oldData
-                        ]);
-                        
-                        $targetDB->table('machine_status_logs')
-                                ->where('id', $machineStatus->id)
-                                ->update($data);
-                        self::debugSync($sessionId, 'Update operation completed');
-                        break;
-                        
-                    case 'delete':
-                        $targetDB->table('machine_status_logs')
-                                ->where('id', $machineStatus->id)
-                                ->delete();
-                        self::debugSync($sessionId, 'Delete operation completed');
-                        break;
-                }
-                DB::commit();
-                self::debugSync($sessionId, 'Transaction committed');
+            // Pastikan data tersimpan di database lokal terlebih dahulu
+            if ($currentSession !== 'mysql') {
+                $localDB = DB::connection($currentSession);
+                $localData = self::prepareSyncData($machineStatus, $powerPlant);
                 
-            } catch (\Exception $e) {
-                DB::rollBack();
-                self::debugSync($sessionId, 'Transaction rolled back', [
-                    'error' => $e->getMessage()
-                ]);
-                throw $e;
+                try {
+                    switch($action) {
+                        case 'create':
+                            $localDB->table('machine_status_logs')->insert($localData);
+                            break;
+                        case 'update':
+                            $localDB->table('machine_status_logs')
+                                ->where('uuid', $machineStatus->uuid)
+                                ->update($localData);
+                            break;
+                        case 'delete':
+                            $localDB->table('machine_status_logs')
+                                ->where('uuid', $machineStatus->uuid)
+                                ->delete();
+                            break;
+                    }
+
+                    Log::info("Local database updated successfully", [
+                        'action' => $action,
+                        'uuid' => $machineStatus->uuid,
+                        'connection' => $currentSession
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Failed to update local database", [
+                        'error' => $e->getMessage(),
+                        'uuid' => $machineStatus->uuid,
+                        'connection' => $currentSession
+                    ]);
+                    throw $e;
+                }
             }
 
-            // Verifikasi sync berhasil
-            if (self::verifySyncSuccess($action, $machineStatus, $targetDB)) {
-                self::recordSyncAttempt($action, $machineStatus, true);
-                
-                self::logSyncProcess('success', [
-                    'sync_id' => $sessionId,
-                    'id' => $machineStatus->id,
-                    'from_session' => $currentSession,
-                    'to_connection' => $targetConnection,
-                    'unit_source' => $data['unit_source']
-                ]);
-            } else {
-                throw new \Exception("Sync verification failed");
-            }
+            // Setelah data lokal tersimpan, lakukan sinkronisasi ke UP Kendari
+            event(new MachineStatusUpdated($machineStatus, $action));
 
         } catch (\Exception $e) {
             self::handleSyncFailure($action, $machineStatus, $e);
-            self::logSyncProcess('failed', [
-                'sync_id' => $sessionId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        } finally {
-            self::$isSyncing = false;
-            self::logSyncProcess('end', [
-                'sync_id' => $sessionId,
-                'duration' => now()->diffInMilliseconds(now())
-            ]);
         }
     }
 
@@ -600,7 +568,7 @@ class MachineStatusLog extends Model
     protected static function prepareSyncData($machineStatus, $powerPlant)
     {
         return [
-            'id' => $machineStatus->id,
+            'uuid' => $machineStatus->uuid,
             'machine_id' => $machineStatus->machine_id,
             'tanggal' => $machineStatus->tanggal,
             'status' => $machineStatus->status,
@@ -616,8 +584,8 @@ class MachineStatusLog extends Model
             'tanggal_mulai' => $machineStatus->tanggal_mulai,
             'target_selesai' => $machineStatus->target_selesai,
             'unit_source' => $powerPlant->unit_source,
-            'created_at' => $machineStatus->created_at,
-            'updated_at' => $machineStatus->updated_at
+            'created_at' => $machineStatus->created_at ?? now(),
+            'updated_at' => now()
         ];
     }
 } 

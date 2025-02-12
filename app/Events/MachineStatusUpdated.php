@@ -16,10 +16,8 @@ class MachineStatusUpdated
 
     public function __construct(MachineStatusLog $machineStatus, string $action)
     {
-        if (session('unit') !== 'mysql') {
-            $this->machineStatus = $machineStatus;
-            $this->sourceUnit = session('unit');
-            $this->action = $action;
-        }
+        $this->machineStatus = $machineStatus;
+        $this->sourceUnit = session('unit', 'mysql');
+        $this->action = $action;
     }
 } 
