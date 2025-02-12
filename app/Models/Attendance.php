@@ -33,8 +33,9 @@ class Attendance extends Model
     ];
 
     public function getConnectionName()
+    
     {
-        return session('unit', 'u478221055_up_kendari');
+        return session('unit', 'mysql');
     }
 
     public function getTimeAttribute($value)
