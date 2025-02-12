@@ -13,9 +13,9 @@
                             <p class="text-gray-600">{{ session('error') ?? 'Terjadi kesalahan dalam memproses permintaan Anda.' }}</p>
                             
                             <div class="mt-6">
-                                <a href="{{ route('admin.daftar_hadir.index') }}" 
+                                <a href="{{ route('homepage') }}" 
                                    class="bg-[#0A749B] text-white px-4 py-2 rounded-lg hover:bg-[#009BB9] transition duration-300">
-                                    Kembali ke Daftar Hadir
+                                    Kembali ke Homepage
                                 </a>
                             </div>
                         </div>
