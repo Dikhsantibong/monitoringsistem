@@ -93,32 +93,64 @@ class AttendanceController extends Controller
 
     public function generateQRCode()
     {
+        return $this->generateQR();
+    }
+
+    public function generateQR()
+    {
         try {
-            // Generate token sederhana
-            $token = 'ATT-' . strtoupper(Str::random(8));
+            $currentUnit = session('unit', 'mysql');
             
-            // Simpan token
-            DB::table('attendance_tokens')->insert([
-                'token' => $token,
-                'user_id' => auth()->id(),
-                'expires_at' => now()->addHours(24),
-                'unit_source' => session('unit', 'poasia'),
-                'created_at' => now(),
-                'updated_at' => now()
+            \Log::debug('Generating QR Code', [
+                'unit' => $currentUnit,
+                'database' => Attendance::getDatabaseName()
             ]);
 
-            // URL untuk QR
-            $qrUrl = url("/attendance/scan/{$token}");
-
-            return response()->json([
-                'success' => true,
-                'qr_url' => $qrUrl
-            ]);
+            DB::connection($currentUnit)->beginTransaction();
             
+            try {
+                $token = Str::random(32);
+                
+                $tokenId = DB::connection($currentUnit)
+                    ->table('attendance_tokens')
+                    ->insertGetId([
+                        'token' => $token,
+                        'expires_at' => now()->addMinutes(5),
+                        'unit_source' => $currentUnit,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+
+                if (!$tokenId) {
+                    throw new \Exception('Token gagal disimpan');
+                }
+
+                DB::connection($currentUnit)->commit();
+
+                $qrUrl = url("/attendance/scan/{$token}");
+
+                return response()->json([
+                    'success' => true,
+                    'qr_url' => $qrUrl,
+                    'message' => 'QR Code berhasil dibuat'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::connection($currentUnit)->rollBack();
+                throw $e;
+            }
+
         } catch (\Exception $e) {
+            \Log::error('Generate QR Error:', [
+                'message' => $e->getMessage(),
+                'unit' => session('unit'),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat QR Code'
+                'message' => 'Gagal membuat QR Code: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -204,6 +236,14 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
+            // Dapatkan koneksi unit yang aktif
+            $currentUnit = $this->getUnitConnection();
+            
+            \Log::debug('Storing Attendance', [
+                'unit' => $currentUnit,
+                'database' => Attendance::getDatabaseName()
+            ]);
+
             // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -213,10 +253,11 @@ class AttendanceController extends Controller
                 'signature' => 'required|string'
             ]);
 
-            DB::beginTransaction();
+            DB::connection($currentUnit)->beginTransaction();
             try {
-                // Cek token dan ambil data backdate jika ada
-                $tokenData = DB::table('attendance_tokens')
+                // Cek token di database unit yang aktif
+                $tokenData = DB::connection($currentUnit)
+                    ->table('attendance_tokens')
                     ->where('token', $validated['token'])
                     ->where('expires_at', '>=', now())
                     ->first();
@@ -226,27 +267,13 @@ class AttendanceController extends Controller
                 }
 
                 // Generate ID baru
-                $lastId = DB::connection(session('unit'))
+                $lastId = DB::connection($currentUnit)
                            ->table('attendance')
                            ->max('id') ?? 0;
                 $newId = $lastId + 1;
 
-                // Set waktu absen
-                $attendanceTime = now();
-                $isBackdate = false;
-                $backdateReason = null;
-
-                // Jika ini adalah token backdate, gunakan waktu yang sudah ditentukan
-                if ($tokenData->is_backdate && $tokenData->backdate_data) {
-                    $backdateData = json_decode($tokenData->backdate_data, true);
-                    $attendanceTime = Carbon::parse($backdateData['tanggal_absen'] . ' ' . $backdateData['waktu_absen'])
-                                         ->setTimezone('Asia/Makassar');
-                    $isBackdate = true;
-                    $backdateReason = $backdateData['alasan'];
-                }
-
-                // Simpan attendance
-                DB::connection(session('unit'))
+                // Simpan attendance ke database unit yang aktif
+                DB::connection($currentUnit)
                   ->table('attendance')
                   ->insert([
                     'id' => $newId,
@@ -255,15 +282,13 @@ class AttendanceController extends Controller
                     'division' => $validated['division'],
                     'token' => $validated['token'],
                     'signature' => $validated['signature'],
-                    'time' => $attendanceTime,
-                    'is_backdate' => $isBackdate,
-                    'backdate_reason' => $backdateReason,
-                    'unit_source' => session('unit', 'poasia'),
+                    'time' => now(),
+                    'unit_source' => $currentUnit,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
 
-                DB::commit();
+                DB::connection($currentUnit)->commit();
 
                 return response()->json([
                     'success' => true,
@@ -271,16 +296,15 @@ class AttendanceController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                DB::rollBack();
+                DB::connection($currentUnit)->rollBack();
                 throw $e;
             }
 
         } catch (\Exception $e) {
             \Log::error('Attendance Store Error:', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
+                'unit' => session('unit'),
+                'database' => Attendance::getDatabaseName(),
                 'request_data' => $request->all()
             ]);
             
@@ -453,7 +477,14 @@ class AttendanceController extends Controller
 
     protected function getUnitConnection()
     {
-        return Attendance::getUnitConnection();
+        $currentUnit = session('unit', 'mysql');
+        
+        \Log::debug('Current Unit Connection', [
+            'unit' => $currentUnit,
+            'database' => Attendance::getDatabaseName()
+        ]);
+        
+        return $currentUnit;
     }
 
     public function scanQR(Request $request)
