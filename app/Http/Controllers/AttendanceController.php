@@ -122,26 +122,22 @@ class AttendanceController extends Controller
                 'database' => Attendance::getCurrentDatabase()
             ]);
 
-            // Generate token sederhana dengan prefix unit
-            $token = strtoupper($currentUnit) . '-' . Str::random(8);
+            // Generate token dengan prefix unit
+            $token = 'ATT-' . strtoupper(Str::random(8));
             
             // Simpan token dengan koneksi yang benar
             DB::connection($currentUnit)->table('attendance_tokens')->insert([
                 'token' => $token,
-                'user_id' => auth()->id(),
-                'expires_at' => now()->addHours(24),
+                'expires_at' => now()->addDay(),
                 'unit_source' => $currentUnit,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
 
-            // URL untuk QR
-            $qrUrl = url("/attendance/scan/{$token}");
-
             return response()->json([
                 'success' => true,
-                'qr_url' => $qrUrl,
-                'unit' => $currentUnit
+                'qr_url' => route('attendance.scan', ['token' => $token]),
+                'unit' => ucwords(str_replace('mysql_', '', $currentUnit))
             ]);
             
         } catch (\Exception $e) {
@@ -157,22 +153,43 @@ class AttendanceController extends Controller
         }
     }
 
-    public function scan($token)
+    public function scanQR($token)
     {
         try {
-            $attendanceToken = AttendanceToken::where('token', $token)
-                ->where('expires_at', '>=', now())
+            $currentUnit = session('unit', 'mysql');
+            
+            // Cek token di database yang sesuai
+            $tokenData = DB::connection($currentUnit)
+                ->table('attendance_tokens')
+                ->where('token', $token)
+                ->where('expires_at', '>', now())
                 ->first();
 
-            if (!$attendanceToken) {
-                return redirect()->route('attendance.error')->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
+            if (!$tokenData) {
+                return redirect()->route('attendance.error')
+                    ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
             }
 
-            return view('admin.daftar_hadir.scan', compact('token'));
+            return view('admin.daftar_hadir.scan', [
+                'token' => $token,
+                'unit' => $currentUnit
+            ]);
+
         } catch (\Exception $e) {
-            Log::error('Scan error: ' . $e->getMessage());
-            return redirect()->route('attendance.error')->with('error', 'Terjadi kesalahan saat memproses QR Code');
+            Log::error('QR Scan Error:', [
+                'message' => $e->getMessage(),
+                'token' => $token,
+                'session_unit' => session('unit', 'mysql')
+            ]);
+            
+            return redirect()->route('attendance.error')
+                ->with('error', 'Terjadi kesalahan saat memproses QR Code');
         }
+    }
+
+    public function error()
+    {
+        return view('admin.daftar_hadir.error');
     }
 
     public function generateBackdateToken(Request $request)
