@@ -96,36 +96,53 @@ class AttendanceController extends Controller
     {
         try {
             $currentConnection = $this->getCurrentConnection();
-            \Log::debug('Generating QR for unit', ['connection' => $currentConnection]);
+            \Log::debug('Generating QR for unit', [
+                'connection' => $currentConnection,
+                'database' => Attendance::getDatabaseName()
+            ]);
 
             DB::connection($currentConnection)->beginTransaction();
             
-            $token = 'ATT-' . strtoupper(Str::random(8));
-            
-            // Simpan token ke database sesuai unit
-            DB::connection($currentConnection)->table('attendance_tokens')->insert([
-                'token' => $token,
-                'user_id' => auth()->id(),
-                'expires_at' => now()->addHours(24),
-                'unit_source' => $currentConnection,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+            try {
+                $token = 'ATT-' . strtoupper(Str::random(8));
+                
+                // Simpan token ke database sesuai unit
+                DB::connection($currentConnection)
+                    ->table('attendance_tokens')
+                    ->insert([
+                        'token' => $token,
+                        'user_id' => auth()->id(),
+                        'expires_at' => now()->addMinutes(5), // Kurangi waktu expire untuk testing
+                        'unit_source' => $currentConnection,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
 
-            DB::connection($currentConnection)->commit();
-            
-            $qrUrl = url("/attendance/scan/{$token}");
-            
-            return response()->json([
-                'success' => true,
-                'qr_url' => $qrUrl
-            ]);
-            
+                DB::connection($currentConnection)->commit();
+                
+                // Generate URL dengan menyertakan unit
+                $qrUrl = url("/attendance/scan/{$token}?unit=" . $currentConnection);
+                
+                \Log::debug('QR Generated successfully', [
+                    'token' => $token,
+                    'url' => $qrUrl,
+                    'unit' => $currentConnection
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'qr_url' => $qrUrl
+                ]);
+                
+            } catch (\Exception $e) {
+                DB::connection($currentConnection)->rollBack();
+                throw $e;
+            }
         } catch (\Exception $e) {
-            DB::connection($currentConnection)->rollBack();
             \Log::error('QR Generation Error', [
                 'message' => $e->getMessage(),
-                'unit' => $currentConnection
+                'unit' => $currentConnection,
+                'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
@@ -138,7 +155,12 @@ class AttendanceController extends Controller
     {
         try {
             $currentConnection = $this->getCurrentConnection();
-            
+            \Log::debug('Scanning QR in scan method', [
+                'token' => $token,
+                'unit' => $currentConnection,
+                'database' => Attendance::getDatabaseName()
+            ]);
+
             // Cek token dari database yang sesuai dengan unit
             $attendanceToken = DB::connection($currentConnection)
                 ->table('attendance_tokens')
@@ -146,22 +168,33 @@ class AttendanceController extends Controller
                 ->where('expires_at', '>=', now())
                 ->first();
 
+            \Log::debug('Token check result', [
+                'token_exists' => !is_null($attendanceToken),
+                'connection' => $currentConnection
+            ]);
+
             if (!$attendanceToken) {
+                \Log::warning('Invalid token access attempt', [
+                    'token' => $token,
+                    'unit' => $currentConnection
+                ]);
                 return redirect()->route('attendance.error')
                                ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
             }
 
-            \Log::debug('Scanning QR Code', [
+            // Tambahkan informasi unit ke view
+            return view('admin.daftar_hadir.scan', [
                 'token' => $token,
-                'unit' => $currentConnection
+                'unit' => $currentConnection,
+                'database' => Attendance::getDatabaseName()
             ]);
-
-            return view('admin.daftar_hadir.scan', compact('token'));
             
         } catch (\Exception $e) {
-            Log::error('Scan error: ' . $e->getMessage(), [
+            \Log::error('Scan QR Error:', [
+                'message' => $e->getMessage(),
                 'token' => $token,
-                'unit' => $currentConnection
+                'unit' => $currentConnection,
+                'trace' => $e->getTraceAsString()
             ]);
             return redirect()->route('attendance.error')
                            ->with('error', 'Terjadi kesalahan saat memproses QR Code');

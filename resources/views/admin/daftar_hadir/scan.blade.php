@@ -13,6 +13,17 @@
                             <span class="block sm:inline"></span>
                         </div>
 
+                        <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <p class="text-sm text-gray-600">
+                                <span class="font-semibold">Unit Active:</span> 
+                                <span class="text-blue-600">{{ $unit }}</span>
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-semibold">Database Active:</span> 
+                                <span class="text-blue-600">{{ $database }}</span>
+                            </p>
+                        </div>
+
                         <form id="attendance-form" class="space-y-4">
                             @csrf
                             <input type="hidden" name="token" value="{{ $token }}">
