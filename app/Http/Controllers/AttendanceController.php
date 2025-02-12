@@ -96,7 +96,7 @@ class AttendanceController extends Controller
                 'token' => $token,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addHours(24),
-                'unit_source' => session('unit', 'poasia'),
+                'unit_source' => session('unit', 'u478221055_up_kendari'),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -176,7 +176,7 @@ class AttendanceController extends Controller
             $qrUrl = url("/attendance/scan/{$token}");
 
             return response()->json([
-                'success' => true,
+                'success' => true,          
                 'qr_url' => $qrUrl,
                 'message' => 'QR Code berhasil dibuat'
             ]);
@@ -198,12 +198,6 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
-            $currentConnection = $this->getCurrentConnection();
-            \Log::debug('Storing attendance', [
-                'unit' => $currentConnection,
-                'database' => Attendance::getDatabaseName()
-            ]);
-
             // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -213,11 +207,10 @@ class AttendanceController extends Controller
                 'signature' => 'required|string'
             ]);
 
-            DB::connection($currentConnection)->beginTransaction();
+            DB::beginTransaction();
             try {
-                // Cek token dari database yang sesuai
-                $tokenData = DB::connection($currentConnection)
-                    ->table('attendance_tokens')
+                // Cek token dan ambil data backdate jika ada
+                $tokenData = DB::table('attendance_tokens')
                     ->where('token', $validated['token'])
                     ->where('expires_at', '>=', now())
                     ->first();
@@ -226,8 +219,8 @@ class AttendanceController extends Controller
                     throw new \Exception('Token tidak valid atau sudah kadaluarsa');
                 }
 
-                // Generate ID baru dari database yang sesuai
-                $lastId = DB::connection($currentConnection)
+                // Generate ID baru
+                $lastId = DB::connection(session('unit'))
                            ->table('attendance')
                            ->max('id') ?? 0;
                 $newId = $lastId + 1;
@@ -237,7 +230,7 @@ class AttendanceController extends Controller
                 $isBackdate = false;
                 $backdateReason = null;
 
-                // Jika ini adalah token backdate
+                // Jika ini adalah token backdate, gunakan waktu yang sudah ditentukan
                 if ($tokenData->is_backdate && $tokenData->backdate_data) {
                     $backdateData = json_decode($tokenData->backdate_data, true);
                     $attendanceTime = Carbon::parse($backdateData['tanggal_absen'] . ' ' . $backdateData['waktu_absen'])
@@ -246,8 +239,8 @@ class AttendanceController extends Controller
                     $backdateReason = $backdateData['alasan'];
                 }
 
-                // Simpan attendance ke database yang sesuai
-                DB::connection($currentConnection)
+                // Simpan attendance
+                DB::connection(session('unit'))
                   ->table('attendance')
                   ->insert([
                     'id' => $newId,
@@ -259,24 +252,12 @@ class AttendanceController extends Controller
                     'time' => $attendanceTime,
                     'is_backdate' => $isBackdate,
                     'backdate_reason' => $backdateReason,
-                    'unit_source' => $currentConnection,
+                    'unit_source' => session('unit', 'poasia'),
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
 
-                // Hapus token yang sudah digunakan
-                DB::connection($currentConnection)
-                  ->table('attendance_tokens')
-                  ->where('token', $validated['token'])
-                  ->delete();
-
-                DB::connection($currentConnection)->commit();
-
-                \Log::info('Attendance stored successfully', [
-                    'unit' => $currentConnection,
-                    'name' => $validated['name'],
-                    'token' => $validated['token']
-                ]);
+                DB::commit();
 
                 return response()->json([
                     'success' => true,
@@ -284,14 +265,13 @@ class AttendanceController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                DB::connection($currentConnection)->rollBack();
+                DB::rollBack();
                 throw $e;
             }
 
         } catch (\Exception $e) {
             \Log::error('Attendance Store Error:', [
                 'message' => $e->getMessage(),
-                'unit' => $currentConnection,
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
