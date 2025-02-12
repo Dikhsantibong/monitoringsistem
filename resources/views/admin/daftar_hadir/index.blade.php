@@ -62,32 +62,6 @@
                 <div class="bg-white rounded-lg shadow p-6 mb-3">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Kehadiran</h2>
 
-                    <!-- Informasi Session dan Database -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-semibold">Unit Active:</span> 
-                                    <span class="text-blue-600">{{ session('unit', 'mysql') }}</span>
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-semibold">Database Active:</span> 
-                                    <span class="text-blue-600">{{ App\Models\Attendance::getDatabaseName() }}</span>
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-semibold">Timezone:</span> 
-                                    <span class="text-blue-600">Asia/Makassar (WITA)</span>
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-semibold">Server Time:</span> 
-                                    <span class="text-blue-600">{{ now()->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s') }}</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Menampilkan Tanggal di bawah judul -->
                     <p class="text-gray-700 mb-4">
                         Tanggal: {{ \Carbon\Carbon::now()->setTimezone('Asia/Makassar')->isoFormat('dddd, D MMMM Y') }}
