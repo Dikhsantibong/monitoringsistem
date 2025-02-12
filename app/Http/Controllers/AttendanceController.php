@@ -17,20 +17,40 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DB::table('attendance');
-        
-        // Filter berdasarkan tanggal jika ada
-        if ($request->has('date')) {
-            $date = $request->date;
-            $query->whereDate('time', $date);
-        } else {
-            // Default tampilkan hari ini
-            $query->whereDate('time', Carbon::today());
-        }
+        try {
+            // Dapatkan unit yang sedang aktif dari session
+            $currentUnit = session('unit', 'mysql');
+            
+            // Buat query dasar dengan koneksi sesuai unit
+            $query = DB::connection($currentUnit)->table('attendance');
+            
+            // Filter berdasarkan tanggal jika ada
+            if ($request->has('date')) {
+                $date = $request->date;
+                $query->whereDate('time', $date);
+            } else {
+                // Default tampilkan hari ini
+                $query->whereDate('time', Carbon::today());
+            }
 
-        $attendances = $query->orderBy('time', 'desc')->get();
-        
-        return view('admin.daftar_hadir.index', compact('attendances'));
+            // Filter berdasarkan unit_source
+            $query->where('unit_source', $currentUnit);
+
+            // Ambil data
+            $attendances = $query->orderBy('time', 'desc')->get();
+            
+            // Log untuk debugging
+            \Log::debug('Fetching attendance data', [
+                'unit' => $currentUnit,
+                'count' => $attendances->count()
+            ]);
+
+            return view('admin.daftar_hadir.index', compact('attendances'));
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in attendance index: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data kehadiran');
+        }
     }
 
     
