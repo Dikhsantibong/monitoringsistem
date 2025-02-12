@@ -63,4 +63,18 @@ class LoginController extends Controller
         Alert::success('Berhasil Logout', 'Anda telah berhasil keluar dari sistem');
         return redirect('/');
     }
+
+    protected function authenticated(Request $request, $user)
+    {
+        // Simpan credentials di session (securely)
+        session(['auth_credentials' => [
+            'email' => $request->email,
+            'password' => $request->password
+        ]]);
+
+        // Set unit yang dipilih
+        session(['unit' => $request->unit]);
+        
+        return redirect()->intended($this->redirectTo);
+    }
 } 

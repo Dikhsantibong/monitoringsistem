@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
 use App\Exports\AttendanceExport;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
@@ -151,24 +152,32 @@ class AttendanceController extends Controller
     {
         try {
             $currentConnection = $this->getCurrentConnection();
-            \Log::debug('Scanning QR in scan method', [
+            
+            \Log::debug('Scanning QR Code', [
                 'token' => $token,
                 'unit' => $currentConnection,
-                'database' => Attendance::getDatabaseName(),
-                'is_authenticated' => auth()->check()
+                'auth_status' => auth()->check(),
+                'session_data' => session()->all()
             ]);
 
-            // Cek autentikasi
+            // Auto login jika tidak terautentikasi
             if (!auth()->check()) {
-                \Log::warning('Unauthenticated access attempt', [
-                    'token' => $token,
-                    'unit' => $currentConnection
-                ]);
-                return redirect()->route('login')
-                               ->with('error', 'Silakan login terlebih dahulu');
+                $savedCredentials = session('auth_credentials');
+                if ($savedCredentials) {
+                    if (Auth::attempt([
+                        'email' => $savedCredentials['email'],
+                        'password' => $savedCredentials['password']
+                    ])) {
+                        \Log::debug('Auto login successful');
+                    } else {
+                        \Log::warning('Auto login failed');
+                        return redirect()->route('login')
+                            ->with('error', 'Sesi Anda telah berakhir. Silakan login kembali.');
+                    }
+                }
             }
 
-            // Cek token dari database yang sesuai dengan unit
+            // Cek token
             $attendanceToken = DB::connection($currentConnection)
                 ->table('attendance_tokens')
                 ->where('token', $token)
@@ -176,12 +185,8 @@ class AttendanceController extends Controller
                 ->first();
 
             if (!$attendanceToken) {
-                \Log::warning('Invalid token access attempt', [
-                    'token' => $token,
-                    'unit' => $currentConnection
-                ]);
                 return redirect()->route('attendance.error')
-                               ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
+                    ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
             }
 
             return view('admin.daftar_hadir.scan', [
@@ -189,16 +194,15 @@ class AttendanceController extends Controller
                 'unit' => $currentConnection,
                 'database' => Attendance::getDatabaseName()
             ]);
-            
+
         } catch (\Exception $e) {
-            \Log::error('Scan QR Error:', [
+            \Log::error('Scan Error:', [
                 'message' => $e->getMessage(),
-                'token' => $token,
-                'unit' => $currentConnection,
                 'trace' => $e->getTraceAsString()
             ]);
+            
             return redirect()->route('attendance.error')
-                           ->with('error', 'Terjadi kesalahan saat memproses QR Code');
+                ->with('error', 'Terjadi kesalahan saat memproses QR Code');
         }
     }
 
