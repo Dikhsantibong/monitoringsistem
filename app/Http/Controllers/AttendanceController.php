@@ -229,14 +229,16 @@ class AttendanceController extends Controller
             // Ambil koneksi dari session
             $currentUnit = session('unit', 'mysql');
             
-            Log::debug('Storing Attendance', [
-                'unit' => $currentUnit,
-                'name' => $validated['name']
-            ]);
-
             try {
-                // Simpan attendance menggunakan model
+                // Generate ID baru
+                $lastId = DB::connection($currentUnit)
+                           ->table('attendance')
+                           ->max('id') ?? 0;
+                $newId = $lastId + 1;
+
+                // Simpan attendance dengan ID manual
                 $attendance = new Attendance([
+                    'id' => $newId,
                     'name' => $validated['name'],
                     'position' => $validated['position'],
                     'division' => $validated['division'],
@@ -244,6 +246,12 @@ class AttendanceController extends Controller
                     'signature' => $validated['signature'],
                     'time' => now(),
                     'unit_source' => $currentUnit
+                ]);
+
+                Log::debug('Storing Attendance', [
+                    'unit' => $currentUnit,
+                    'id' => $newId,
+                    'name' => $validated['name']
                 ]);
 
                 $attendance->save();
