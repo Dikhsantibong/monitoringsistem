@@ -20,31 +20,41 @@ class AttendanceController extends Controller
         try {
             $currentUnit = session('unit', 'mysql');
             
+            Log::debug('Loading Index Page', [
+                'session_unit' => $currentUnit,
+                'database' => Attendance::getCurrentDatabase()
+            ]);
+
             // Gunakan query builder dengan koneksi yang sesuai
             $query = DB::connection($currentUnit)->table('attendance');
 
             // Filter berdasarkan tanggal
-            $date = $request->date ?? Carbon::today();
-            $query->whereDate('time', $date);
-            
+            if ($request->has('date')) {
+                $date = Carbon::parse($request->date);
+                $query->whereDate('time', $date);
+            } else {
+                $query->whereDate('time', Carbon::today());
+            }
+
             // Filter berdasarkan unit_source
             $query->where('unit_source', $currentUnit);
 
-            // Ambil data
             $attendances = $query->orderBy('time', 'desc')->get();
 
-            Log::debug('Fetching Attendance Data', [
+            Log::debug('Fetched Attendance Data', [
                 'session_unit' => $currentUnit,
-                'database' => Attendance::getCurrentDatabase(),
                 'record_count' => $attendances->count()
             ]);
 
-            return view('admin.daftar_hadir.index', compact('attendances'));
+            return view('admin.daftar_hadir.index', [
+                'attendances' => $attendances,
+                'currentUnit' => $currentUnit
+            ]);
             
         } catch (\Exception $e) {
-            Log::error('Error in attendance index: ' . $e->getMessage(), [
-                'session_unit' => session('unit', 'mysql'),
-                'trace' => $e->getTraceAsString()
+            Log::error('Index Page Error:', [
+                'message' => $e->getMessage(),
+                'session_unit' => $currentUnit
             ]);
             return back()->with('error', 'Terjadi kesalahan saat memuat data kehadiran');
         }
@@ -105,15 +115,22 @@ class AttendanceController extends Controller
     public function generateQRCode()
     {
         try {
-            // Generate token sederhana
-            $token = 'ATT-' . strtoupper(Str::random(8));
+            $currentUnit = session('unit', 'mysql');
             
-            // Simpan token
-            DB::table('attendance_tokens')->insert([
+            Log::debug('Generating QR Code', [
+                'session_unit' => $currentUnit,
+                'database' => Attendance::getCurrentDatabase()
+            ]);
+
+            // Generate token sederhana dengan prefix unit
+            $token = strtoupper($currentUnit) . '-' . Str::random(8);
+            
+            // Simpan token dengan koneksi yang benar
+            DB::connection($currentUnit)->table('attendance_tokens')->insert([
                 'token' => $token,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addHours(24),
-                'unit_source' => session('unit', 'poasia'),
+                'unit_source' => $currentUnit,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -123,10 +140,16 @@ class AttendanceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'qr_url' => $qrUrl
+                'qr_url' => $qrUrl,
+                'unit' => $currentUnit
             ]);
             
         } catch (\Exception $e) {
+            Log::error('QR Generation Error:', [
+                'message' => $e->getMessage(),
+                'session_unit' => session('unit', 'mysql')
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal membuat QR Code'
