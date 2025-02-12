@@ -215,6 +215,13 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         try {
+            $currentUnit = session('unit', 'mysql');
+            
+            Log::debug('Store Attendance Start', [
+                'session_unit' => $currentUnit,
+                'database' => Attendance::getCurrentDatabase()
+            ]);
+
             // Validasi input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -226,18 +233,17 @@ class AttendanceController extends Controller
 
             DB::beginTransaction();
             
-            // Ambil koneksi dari session
-            $currentUnit = session('unit', 'mysql');
-            
             try {
-                // Generate ID baru
+                // Generate ID baru menggunakan koneksi yang benar
                 $lastId = DB::connection($currentUnit)
                            ->table('attendance')
                            ->max('id') ?? 0;
                 $newId = $lastId + 1;
 
-                // Simpan attendance dengan ID manual
-                $attendance = new Attendance([
+                // Simpan attendance dengan koneksi yang benar
+                $attendance = new Attendance();
+                $attendance->setConnection($currentUnit);
+                $attendance->fill([
                     'id' => $newId,
                     'name' => $validated['name'],
                     'position' => $validated['position'],
@@ -248,10 +254,11 @@ class AttendanceController extends Controller
                     'unit_source' => $currentUnit
                 ]);
 
-                Log::debug('Storing Attendance', [
+                Log::debug('Before Save Attendance', [
                     'unit' => $currentUnit,
-                    'id' => $newId,
-                    'name' => $validated['name']
+                    'connection' => $attendance->getConnectionName(),
+                    'database' => Attendance::getCurrentDatabase(),
+                    'id' => $newId
                 ]);
 
                 $attendance->save();
@@ -271,7 +278,7 @@ class AttendanceController extends Controller
         } catch (\Exception $e) {
             Log::error('Attendance Store Error:', [
                 'message' => $e->getMessage(),
-                'unit' => session('unit', 'mysql'),
+                'unit' => $currentUnit,
                 'trace' => $e->getTraceAsString()
             ]);
             

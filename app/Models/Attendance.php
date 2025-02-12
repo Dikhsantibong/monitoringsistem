@@ -33,7 +33,7 @@ class Attendance extends Model
         'time' => 'datetime',
     ];
 
-    // Mapping session ke database
+    // Mapping session ke database yang benar
     private static $databaseMapping = [
         'mysql_bau_bau' => 'u478221055_ulpltd_bau_bau',
         'mysql_kolaka' => 'u478221055_ulpltd_kolaka',
@@ -56,11 +56,18 @@ class Attendance extends Model
         // Set unit_source sesuai dengan koneksi yang aktif
         $this->attributes['unit_source'] = $currentUnit;
         
-        Log::debug('Attendance Model Initialized', [
+        Log::debug('Attendance Model Connection Check', [
             'session_unit' => $currentUnit,
-            'database' => self::$databaseMapping[$currentUnit] ?? 'unknown',
-            'connection' => $this->connection
+            'connection' => $this->connection,
+            'database_name' => self::$databaseMapping[$currentUnit] ?? 'unknown',
+            'unit_source' => $this->attributes['unit_source'] ?? null
         ]);
+    }
+
+    // Override method getConnectionName untuk memastikan koneksi yang benar
+    public function getConnectionName()
+    {
+        return session('unit', 'mysql');
     }
 
     public static function getCurrentDatabase()
@@ -78,14 +85,16 @@ class Attendance extends Model
     public function save(array $options = [])
     {
         $currentUnit = session('unit', 'mysql');
+        $this->connection = $currentUnit;
         
         if (!isset($this->attributes['unit_source'])) {
             $this->attributes['unit_source'] = $currentUnit;
         }
         
-        Log::debug('Saving Attendance', [
+        Log::debug('Saving Attendance Check', [
             'session_unit' => $currentUnit,
-            'database' => self::$databaseMapping[$currentUnit],
+            'connection' => $this->connection,
+            'database_name' => self::$databaseMapping[$currentUnit],
             'unit_source' => $this->attributes['unit_source']
         ]);
 
