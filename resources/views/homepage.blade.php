@@ -564,65 +564,100 @@
             color: #374151 !important;  /* Darker text for better readability */
         }
 
-        /* Mobile-specific adjustments - Updated */
+        /* Mobile-specific adjustments - Further Refined */
         @media (max-width: 768px) {
             /* Hero section adjustments */
             .hexagon-background {
-                padding: 60px 0 !important;
-                min-height: auto !important;
+                padding: 40px 0 !important;
+                min-height: 100vh !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
-            /* Logo text adjustments */
+            /* Title adjustments */
             .text-9xl {
-                font-size: 3.5rem !important;
-                line-height: 1.2 !important;
+                font-size: 2.5rem !important;
+                line-height: 1 !important;
+                margin-bottom: 0.5rem !important;
             }
             
             .text-6xl {
-                font-size: 1.75rem !important;
-                margin-top: 0.5rem !important;
+                font-size: 1.5rem !important;
+                margin-top: 0.25rem !important;
             }
             
             .text-3xl {
-                font-size: 1.25rem !important;
+                font-size: 1rem !important;
             }
 
-            /* Hexagon grid improvements */
+            /* Hexagon container adjustments */
             .flex.gap-2.lg\:gap-0.lg\:grid {
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 15px !important;
-            }
-
-            /* Individual hexagon container */
-            .flex.gap-2.lg\:gap-0.lg\:grid > div {
                 width: 100% !important;
+                max-width: 320px !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 20px !important;
+            }
+
+            /* Hexagon layout */
+            .flex.gap-2.lg\:gap-0.lg\:grid > div {
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
-                gap: 15px !important;
+                gap: 20px !important;
             }
 
-            /* Hexagon styling */
+            /* Individual hexagon */
             .hexagon {
-                width: 160px !important;
-                height: 90px !important;
-                margin: 5px auto !important;
-                transform: none !important;
+                width: 130px !important;
+                height: 75px !important;
+                margin: 0 !important;
+                position: relative !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: rgba(10, 116, 155, 0.8) !important;
+                transition: transform 0.3s ease !important;
             }
 
             /* Center hexagon (UP KENDARI) */
+            .hidden.lg\:block.md\:block {
+                display: block !important;
+                order: 2 !important; /* Reorder to middle */
+            }
+
             .hidden.lg\:block.md\:block .hexagon {
-                background-color: rgba(10, 116, 155, 0.9) !important;
-                margin: 5px auto !important;
+                background-color: rgba(10, 116, 155, 1) !important;
+                width: 150px !important;
+                height: 85px !important;
             }
 
             /* Text inside hexagons */
             .hexagon h5 {
-                font-size: 0.9rem !important;
+                font-size: 0.85rem !important;
                 line-height: 1.2 !important;
-                padding: 0 5px !important;
+                padding: 0 8px !important;
+                text-align: center !important;
+                color: white !important;
+                font-weight: bold !important;
+                margin: 0 !important;
+            }
+
+            /* Reorder hexagons for better mobile layout */
+            .flex.gap-2.lg\:gap-0.lg\:grid > div:nth-child(1) {
+                order: 1 !important;
+            }
+            .flex.gap-2.lg\:gap-0.lg\:grid > div:nth-child(3) {
+                order: 3 !important;
+            }
+
+            /* Map section adjustments */
+            #map {
+                margin: 10px !important;
+                height: 350px !important;
+                border-radius: 15px !important;
             }
 
             /* Navigation adjustments */
@@ -635,51 +670,64 @@
                 padding: 0 1rem !important;
                 margin: 0 auto !important;
             }
-
-            /* Map container */
-            #map {
-                margin: 15px !important;
-                height: 400px !important;
-            }
         }
 
         /* Extra small devices */
         @media (max-width: 480px) {
-            /* Further reduce sizes */
+            /* Further size reductions */
             .text-9xl {
-                font-size: 3rem !important;
+                font-size: 2rem !important;
             }
             
             .text-6xl {
-                font-size: 1.5rem !important;
+                font-size: 1.25rem !important;
             }
 
-            /* Smaller hexagons for very small screens */
+            /* Smaller hexagons */
             .hexagon {
+                width: 120px !important;
+                height: 70px !important;
+            }
+
+            .hidden.lg\:block.md\:block .hexagon {
                 width: 140px !important;
                 height: 80px !important;
             }
 
-            /* Adjust hexagon text */
+            /* Smaller text */
             .hexagon h5 {
                 font-size: 0.8rem !important;
             }
 
             /* Tighter spacing */
-            .flex.gap-2.lg\:gap-0.lg\:grid > div {
-                gap: 10px !important;
+            .flex.gap-2.lg\:gap-0.lg\:grid {
+                gap: 15px !important;
+                max-width: 280px !important;
             }
 
-            /* Map adjustments */
+            /* Adjust map */
             #map {
-                margin: 10px !important;
-                height: 350px !important;
+                margin: 8px !important;
+                height: 300px !important;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) {
+            .hexagon {
+                cursor: pointer !important;
+            }
+
+            .hexagon:active {
+                transform: scale(0.95) !important;
             }
         }
 
         /* Ensure smooth transitions */
         .hexagon {
-            transition: all 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out !important;
+            backdrop-filter: blur(5px) !important;
+            -webkit-backdrop-filter: blur(5px) !important;
         }
 
         /* Prevent text overflow */
@@ -689,133 +737,232 @@
             text-overflow: ellipsis !important;
         }
 
-        /* Chart and Filter Button Improvements */
-        @media (max-width: 768px) {
-            /* Filter buttons container */
-            .flex.gap-2 {
-                display: flex !important;
-                justify-content: center !important;
-                flex-wrap: wrap !important;
-                gap: 8px !important;
-                margin: 10px 0 !important;
-                padding: 0 10px !important;
-            }
-
-            /* Individual filter button */
-            .period-btn {
-                font-size: 0.9rem !important;
-                padding: 8px 12px !important;
-                border-radius: 8px !important;
-                min-width: 100px !important;
-                text-align: center !important;
-                white-space: nowrap !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 6px !important;
-            }
-
-            /* Chart container adjustments */
-            .bg-white.rounded-xl {
-                margin: 10px !important;
-                padding: 15px !important;
-            }
-
-            /* Chart title */
-            .text-2xl.font-bold {
-                font-size: 1.25rem !important;
-                margin-bottom: 15px !important;
-                padding: 0 5px !important;
-            }
-
-            /* Chart sections */
-            #machineReadinessChart,
-            #powerDeliveryChart,
-            #unservedLoadChart {
-                height: 300px !important;
-                margin: 10px 0 !important;
-                padding: 10px !important;
-                border-radius: 8px !important;
-            }
-
-            /* Status cards in chart area */
-            .grid.grid-cols-3 {
-                grid-template-columns: 1fr !important;
-                gap: 10px !important;
-                margin: 15px 0 !important;
-            }
-
-            /* Individual status card */
-            .bg-gray-50 {
-                padding: 12px !important;
-                border-radius: 8px !important;
-            }
-
-            /* Chart legend */
-            .chart-legend {
-                display: flex !important;
-                flex-wrap: wrap !important;
-                justify-content: center !important;
-                gap: 10px !important;
-                margin: 10px 0 !important;
-                font-size: 0.8rem !important;
-            }
+        /* Status Information Grid Improvements */
+        .status-info-container {
+            background: #e8f5e9 !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            margin: 15px 0 !important;
         }
 
-        /* Extra small devices */
+        .status-info-title {
+            text-align: center !important;
+            color: #2c3e50 !important;
+            font-size: 1.2rem !important;
+            font-weight: bold !important;
+            margin-bottom: 5px !important;
+        }
+
+        .status-info-subtitle {
+            text-align: center !important;
+            color: #666 !important;
+            font-size: 0.9rem !important;
+            margin-bottom: 20px !important;
+        }
+
+        .status-grid-container {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+            margin-top: 15px !important;
+        }
+
+        .status-item {
+            background: white !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        }
+
+        /* Status Colors */
+        .status-operasi {
+            border-left: 4px solid #4CAF50 !important;
+        }
+
+        .status-standby {
+            border-left: 4px solid #2196F3 !important;
+        }
+
+        .status-gangguan {
+            border-left: 4px solid #f44336 !important;
+        }
+
+        .status-pemeliharaan {
+            border-left: 4px solid #FF9800 !important;
+        }
+
+        .status-mothballed {
+            border-left: 4px solid #9C27B0 !important;
+        }
+
+        .status-overhaul {
+            border-left: 4px solid #795548 !important;
+        }
+
+        .status-label {
+            font-weight: 500 !important;
+            font-size: 0.9rem !important;
+        }
+
+        .status-value {
+            background: #f8f9fa !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-weight: bold !important;
+            font-size: 0.9rem !important;
+            min-width: 60px !important;
+            text-align: center !important;
+        }
+
+        /* Status Text Colors */
+        .status-operasi .status-label { color: #4CAF50 !important; }
+        .status-standby .status-label { color: #2196F3 !important; }
+        .status-gangguan .status-label { color: #f44336 !important; }
+        .status-pemeliharaan .status-label { color: #FF9800 !important; }
+        .status-mothballed .status-label { color: #9C27B0 !important; }
+        .status-overhaul .status-label { color: #795548 !important; }
+
+        /* Percentage Circle Styles */
+        .percentage-circle {
+            width: 120px !important;
+            height: 120px !important;
+            margin: 0 auto 20px auto !important;
+            position: relative !important;
+            background: white !important;
+            border-radius: 50% !important;
+            padding: 20px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        .percentage-value {
+            font-size: 1.8rem !important;
+            font-weight: bold !important;
+            color: #0095B7 !important;
+            text-align: center !important;
+            margin-bottom: 5px !important;
+        }
+
+        .percentage-label {
+            font-size: 0.8rem !important;
+            color: #666 !important;
+            text-align: center !important;
+        }
+
+        /* Mobile Adjustments */
         @media (max-width: 480px) {
-            /* Smaller filter buttons */
-            .period-btn {
-                font-size: 0.8rem !important;
-                padding: 6px 10px !important;
-                min-width: 90px !important;
+            .status-grid-container {
+                grid-template-columns: 1fr !important;
             }
 
-            /* Adjust chart containers */
-            #machineReadinessChart,
-            #powerDeliveryChart,
-            #unservedLoadChart {
-                height: 250px !important;
+            .status-item {
+                padding: 8px !important;
             }
 
-            /* Smaller chart title */
-            .text-2xl.font-bold {
-                font-size: 1.1rem !important;
+            .status-label {
+                font-size: 0.85rem !important;
             }
 
-            /* Compact status cards */
-            .bg-gray-50 {
-                padding: 10px !important;
+            .status-value {
+                font-size: 0.85rem !important;
+                min-width: 50px !important;
             }
 
-            /* More compact legend */
-            .chart-legend {
-                font-size: 0.75rem !important;
+            .percentage-circle {
+                width: 100px !important;
+                height: 100px !important;
+            }
+
+            .percentage-value {
+                font-size: 1.5rem !important;
             }
         }
 
-        /* Active state for filter buttons */
-        .period-btn.active {
-            background-color: #2563eb !important;
+        /* Filter Buttons Container */
+        .filter-buttons-container {
+            width: 100% !important;
+            padding: 10px !important;
+            margin-bottom: 20px !important;
+        }
+
+        /* Filter Buttons Wrapper */
+        .filter-buttons {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+            width: 100% !important;
+            max-width: 400px !important;
+            margin: 0 auto !important;
+        }
+
+        /* Individual Button Style */
+        .filter-btn {
+            width: 100% !important;
+            padding: 12px 20px !important;
+            border: none !important;
+            border-radius: 8px !important;
+            background-color: #f0f0f0 !important;
+            color: #333 !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Active Button State */
+        .filter-btn.active {
+            background-color: #0095B7 !important;
             color: white !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
         }
 
-        /* Hover state for filter buttons */
-        .period-btn:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        /* Hover State */
+        .filter-btn:hover {
+            opacity: 0.9 !important;
         }
 
-        /* Touch device optimizations for buttons */
-        @media (hover: none) {
-            .period-btn {
-                -webkit-tap-highlight-color: transparent !important;
+        /* Active State */
+        .filter-btn:active {
+            transform: scale(0.98) !important;
+        }
+
+        /* Icon Style */
+        .filter-btn i {
+            font-size: 18px !important;
+        }
+
+        /* Tablet and Desktop */
+        @media (min-width: 768px) {
+            .filter-buttons {
+                flex-direction: row !important;
+                justify-content: center !important;
             }
 
-            .period-btn:active {
-                transform: translateY(1px) !important;
+            .filter-btn {
+                width: auto !important;
+                min-width: 150px !important;
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 480px) {
+            .filter-buttons-container {
+                padding: 8px !important;
+            }
+
+            .filter-btn {
+                padding: 10px 16px !important;
+                font-size: 14px !important;
+            }
+
+            .filter-btn i {
+                font-size: 16px !important;
             }
         }
     </style>
@@ -954,22 +1101,21 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200" style="background-color: rgba(17, 24, 39, 0.08);">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 px-2">MONITORING KESIAPAN PEMBANGKIT</h2>
-                        
                         <!-- Tambahkan tombol switch periode -->
-                        <div class="flex gap-2">
+                        <div class="flex flex-col md:flex-row gap-2">
                             <button onclick="switchPeriod('daily')" 
                                     id="dailyBtn"
-                                    class="period-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                    class="period-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-full md:w-auto">
                                 <i class="fas fa-calendar-day mr-2"></i>Harian
                             </button>
                             <button onclick="switchPeriod('weekly')" 
                                     id="weeklyBtn"
-                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
                                 <i class="fas fa-calendar-week mr-2"></i>Mingguan
                             </button>
                             <button onclick="switchPeriod('monthly')" 
                                     id="monthlyBtn"
-                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
                                 <i class="fas fa-calendar-alt mr-2"></i>Bulanan
                             </button>
                         </div>
@@ -987,34 +1133,34 @@
                             
                             <!-- Detail status mesin -->
                             <div class="mt-4 space-y-2 text-sm">
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div class="flex justify-between items-center p-2 bg-green-50 rounded">
-                                        <span class="text-green-700">Operasi</span>
-                                        <span class="font-semibold text-green-800">{{ $chartData['statusDetails']['breakdown']['Operasi'] }} Unit</span>
+                                        <span class="text-green-700 text-xs sm:text-sm">Operasi</span>
+                                        <span class="font-semibold text-green-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Operasi'] }} Unit</span>
                                     </div>
                                     <div class="flex justify-between items-center p-2 bg-blue-50 rounded">
-                                        <span class="text-blue-700">Standby</span>
-                                        <span class="font-semibold text-blue-800">{{ $chartData['statusDetails']['breakdown']['Standby'] }} Unit</span>
+                                        <span class="text-blue-700 text-xs sm:text-sm">Standby</span>
+                                        <span class="font-semibold text-blue-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Standby'] }} Unit</span>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div class="flex justify-between items-center p-2 bg-red-50 rounded">
-                                        <span class="text-red-700">Gangguan</span>
-                                        <span class="font-semibold text-red-800">{{ $chartData['statusDetails']['breakdown']['Gangguan'] }} Unit</span>
+                                        <span class="text-red-700 text-xs sm:text-sm">Gangguan</span>
+                                        <span class="font-semibold text-red-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Gangguan'] }} Unit</span>
                                     </div>
                                     <div class="flex justify-between items-center p-2 bg-yellow-50 rounded">
-                                        <span class="text-yellow-700">Pemeliharaan</span>
-                                        <span class="font-semibold text-yellow-800">{{ $chartData['statusDetails']['breakdown']['Pemeliharaan'] }} Unit</span>
+                                        <span class="text-yellow-700 text-xs sm:text-sm">Pemeliharaan</span>
+                                        <span class="font-semibold text-yellow-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Pemeliharaan'] }} Unit</span>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div class="flex justify-between items-center p-2 bg-purple-50 rounded">
-                                        <span class="text-purple-700">Mothballed</span>
-                                        <span class="font-semibold text-purple-800">{{ $chartData['statusDetails']['breakdown']['Mothballed'] }} Unit</span>
+                                        <span class="text-purple-700 text-xs sm:text-sm">Mothballed</span>
+                                        <span class="font-semibold text-purple-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Mothballed'] }} Unit</span>
                                     </div>
                                     <div class="flex justify-between items-center p-2 bg-orange-50 rounded">
-                                        <span class="text-orange-700">Overhaul</span>
-                                        <span class="font-semibold text-orange-800">{{ $chartData['statusDetails']['breakdown']['Overhaul'] }} Unit</span>
+                                        <span class="text-orange-700 text-xs sm:text-sm">Overhaul</span>
+                                        <span class="font-semibold text-orange-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Overhaul'] }} Unit</span>
                                     </div>
                                 </div>
                             </div>
@@ -1031,19 +1177,19 @@
                             <!-- Detail beban tersalur -->
                             <div class="mt-4 space-y-2 text-sm">
                                 <div class="grid grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded">
-                                        <span class="text-green-700">Kesiapan Daya </span>
-                                        <span class="font-semibold text-green-800">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
+                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded overflow-hidden">
+                                        <span class="text-green-700 text-xs sm:text-sm truncate">Kesiapan Daya</span>
+                                        <span class="font-semibold text-green-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
                                     </div>
-                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded">
-                                        <span class="text-red-700"> Daya Tidak Siap</span>
-                                        <span class="font-semibold text-red-800">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
+                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded overflow-hidden">
+                                        <span class="text-red-700 text-xs sm:text-sm truncate">Daya Tidak Siap</span>
+                                        <span class="font-semibold text-red-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
                                     </div>
                                 </div>
                                 <div class="p-2 bg-blue-50 rounded">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-blue-700">Total Kapasitas</span>
-                                        <span class="font-semibold text-blue-800">{{ number_format($chartData['powerDeliveryDetails']['total'], 1) }} MW</span>
+                                    <div class="flex justify-between items-center overflow-hidden">
+                                        <span class="text-blue-700 text-xs sm:text-sm truncate">Total Kapasitas</span>
+                                        <span class="font-semibold text-blue-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['total'], 1) }} MW</span>
                                     </div>
                                 </div>
                             </div>
@@ -1051,9 +1197,9 @@
                     </div>
                     
                     <!-- Grafik Bar memanjang horizontal -->
-                    <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Ketidak Siapan Daya Mesin Per Unit</h3>
-                        <div id="unservedLoadChart" style="height: 450px;"></div>
+                    <div class="bg-gray-50 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-4 text-center">Ketidak Siapan Daya Mesin Per Unit</h3>
+                        <div id="unservedLoadChart" class="w-full" style="height: 300px; min-height: 250px; max-height: 450px;"></div>
                     </div>
                 </div>
             </div>
