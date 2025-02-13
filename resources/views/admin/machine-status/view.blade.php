@@ -71,13 +71,13 @@
                     <h2 class="text-2xl font-semibold text-gray-800">Status Mesin</h2>
                     
                     <!-- Filter Area -->
-                    <div class="flex items-center space-x-4">
+                    <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
                         <!-- Unit Source Filter - hanya tampil untuk session mysql -->
                         @if(session('unit') === 'mysql')
                         <div class="flex items-center">
                             <label for="unit-source" class="text-sm text-gray-700 font-medium mr-2">Filter Unit:</label>
                             <select id="unit-source" 
-                                class="border rounded px-3 py-2 text-sm w-40"
+                                class="border rounded px-3 py-2 text-sm w-full md:w-40"
                                 onchange="updateTable()">
                                 <option value="">Semua Unit</option>
                                 <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
@@ -92,7 +92,7 @@
                         <!-- Date Filter -->
                         <div>
                             <input type="date" id="date-picker" 
-                                class="border rounded px-3 py-2 text-sm"
+                                class="border rounded px-3 py-2 text-sm w-full md:w-auto"
                                 value="{{ $date }}"
                                 onchange="updateTable()">
                         </div>
@@ -101,14 +101,14 @@
                         <div>
                             <input type="text" id="searchInput" 
                                 placeholder="Cari unit/mesin/status..." 
-                                class="border rounded px-3 py-2 text-sm w-64"
+                                class="border rounded px-3 py-2 text-sm w-full md:w-64"
                                 value="{{ request('search') }}">
                         </div>
 
                         <!-- Update Mesin Button -->
                         <div>
                             <a href="{{ route('admin.pembangkit.ready') }}" 
-                               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                               class="inline-flex items-center justify-center w-full md:w-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <i class="fas fa-sync-alt mr-2"></i>
                                 Update Mesin
                             </a>

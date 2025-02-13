@@ -66,17 +66,17 @@
                                 @endphp
                                 
                                 
-                                <div class="bg-blue-50 p-3 rounded-lg">
+                                <div class="bg-blue-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">DMN:</p>
                                     <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 2) }} MW</p>
                                 </div>
-                                <div class="bg-green-50 p-3 rounded-lg">
+                                <div class="bg-green-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">DMP:</p>
                                     <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 2) }} MW</p>
                                 </div>
                                 
-                                <div class="bg-red-50 p-3 rounded-lg">
-                                    <p class="text-sm text-gray-600">Derating:</p>
+                                <div class="bg-red-50 p-3 rounded-lg md:col-span-1 col-span-5">
+                                    <p class="text-sm text-gray-600 ">Derating:</p>
                                     <p class="text-xl font-bold text-red-700">
                                         {{ number_format($totalDMN - $totalDMP, 2) }} MW 
                                         @if($totalDMN > 0)
@@ -86,11 +86,11 @@
                                         @endif
                                     </p>
                                 </div>
-                                <div class="bg-purple-50 p-3 rounded-lg">
+                                <div class="bg-purple-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">Total Beban:</p>
                                     <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 2) }} MW</p>
                                 </div>
-                                <div class="bg-orange-50 p-3 rounded-lg">
+                                <div class="bg-orange-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">Total HOP:</p>
                                     <p class="text-xl font-bold text-orange-700">{{ number_format($hopValue, 1) }} Hari</p>
                                     <p class="text-sm font-medium {{ $hopClass }}">
@@ -120,31 +120,31 @@
                                     $mothballedCount = $latestLogs->where('status', 'Mothballed')->count();
                                 @endphp
                                 
-                                <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300">
+                                <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300 md:col-span-1 col-span-7">
                                     <p class="text-sm text-gray-700 font-medium">Total Mesin</p>
                                     <p class="text-2xl font-bold text-gray-900">{{ $machineCount }}</p>
                                 </div>
-                                <div class="bg-emerald-100 p-4 rounded-lg shadow-md hover:bg-emerald-200 transition duration-300">
+                                <div class="bg-emerald-100 p-4 rounded-lg shadow-md hover:bg-emerald-200 transition duration-300 md:col-span-1 col-span-7">
                                     <p class="text-sm text-emerald-700 font-medium">Operasi</p>
                                     <p class="text-2xl font-bold text-emerald-900">{{ $operasiCount }}</p>
                                 </div>
-                                <div class="bg-rose-100 p-4 rounded-lg shadow-md hover:bg-rose-200 transition duration-300">
+                                <div class="bg-rose-100 p-4 rounded-lg shadow-md hover:bg-rose-200 transition duration-300 md:col-span-1 col-span-7">
                                     <p class="text-sm text-rose-700 font-medium">Gangguan</p>
                                     <p class="text-2xl font-bold text-rose-900">{{ $gangguanCount }}</p>
                                 </div>
-                                <div class="bg-amber-100 p-4 rounded-lg shadow-md hover:bg-amber-200 transition duration-300">
+                                <div class="bg-amber-100 p-4 rounded-lg shadow-md hover:bg-amber-200 transition duration-300 md:col-span-1 col-span-7">
                                     <p class="text-sm text-amber-700 font-medium">Pemeliharaan</p>
                                     <p class="text-2xl font-bold text-amber-900">{{ $pemeliharaanCount }}</p>
                                 </div>
-                                <div class="bg-sky-100 p-4 rounded-lg shadow-md hover:bg-sky-200 transition duration-300">
+                                <div class="bg-sky-100 p-4 rounded-lg shadow-md hover:bg-sky-200 transition duration-300 md:col-span-1 col-span-7">
                                     <p class="text-sm text-sky-700 font-medium">Standby</p>
                                     <p class="text-2xl font-bold text-sky-900">{{ $standbyCount }}</p>
                                 </div>
-                                <div class="bg-violet-100 p-4 rounded-lg shadow-md hover:bg-violet-200 transition duration-300">
+                                <div class="bg-violet-100 p-4 rounded-lg shadow-md hover:bg-violet-200 transition duration-300 md:col-span-1 col-span-7">
                                     <p class="text-sm text-violet-700 font-medium">Overhaul</p>
                                     <p class="text-2xl font-bold text-violet-900">{{ $overhaulCount }}</p>
                                 </div>
-                                <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300">
+                                <div class="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 transition duration-300 md:col-span-1 col-span-7">
                                     <p class="text-sm text-gray-700 font-medium">Mothballed</p>
                                     <p class="text-2xl font-bold text-gray-900">{{ $mothballedCount }}</p>
                                 </div>
