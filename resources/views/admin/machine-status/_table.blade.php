@@ -203,11 +203,31 @@
                                         </span>
                                     </td>
                                     <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->equipment ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->deskripsi ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200 "style="height: 100px; width: 300px;">{{ $log?->kronologi ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->action_plan ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->progres ?? '-' }}</td>
+                                    <td class="px-3 py-2 border-r border-gray-200">
+                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
+                                            {{ $log?->equipment ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2 border-r border-gray-200">
+                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
+                                            {{ $log?->deskripsi ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2 border-r border-gray-200">
+                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
+                                            {{ $log?->kronologi ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2 border-r border-gray-200">
+                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
+                                            {{ $log?->action_plan ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2 border-r border-gray-200">
+                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
+                                            {{ $log?->progres ?? '-' }}
+                                        </div>
+                                    </td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">
                                         {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                     </td>
