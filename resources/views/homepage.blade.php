@@ -563,6 +563,261 @@
         .apexcharts-legend-text {
             color: #374151 !important;  /* Darker text for better readability */
         }
+
+        /* Mobile-specific adjustments - Updated */
+        @media (max-width: 768px) {
+            /* Hero section adjustments */
+            .hexagon-background {
+                padding: 60px 0 !important;
+                min-height: auto !important;
+            }
+
+            /* Logo text adjustments */
+            .text-9xl {
+                font-size: 3.5rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .text-6xl {
+                font-size: 1.75rem !important;
+                margin-top: 0.5rem !important;
+            }
+            
+            .text-3xl {
+                font-size: 1.25rem !important;
+            }
+
+            /* Hexagon grid improvements */
+            .flex.gap-2.lg\:gap-0.lg\:grid {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 15px !important;
+            }
+
+            /* Individual hexagon container */
+            .flex.gap-2.lg\:gap-0.lg\:grid > div {
+                width: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 15px !important;
+            }
+
+            /* Hexagon styling */
+            .hexagon {
+                width: 160px !important;
+                height: 90px !important;
+                margin: 5px auto !important;
+                transform: none !important;
+            }
+
+            /* Center hexagon (UP KENDARI) */
+            .hidden.lg\:block.md\:block .hexagon {
+                background-color: rgba(10, 116, 155, 0.9) !important;
+                margin: 5px auto !important;
+            }
+
+            /* Text inside hexagons */
+            .hexagon h5 {
+                font-size: 0.9rem !important;
+                line-height: 1.2 !important;
+                padding: 0 5px !important;
+            }
+
+            /* Navigation adjustments */
+            .nav-background .container {
+                padding: 0 0.5rem !important;
+            }
+
+            /* Content spacing */
+            .container {
+                padding: 0 1rem !important;
+                margin: 0 auto !important;
+            }
+
+            /* Map container */
+            #map {
+                margin: 15px !important;
+                height: 400px !important;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            /* Further reduce sizes */
+            .text-9xl {
+                font-size: 3rem !important;
+            }
+            
+            .text-6xl {
+                font-size: 1.5rem !important;
+            }
+
+            /* Smaller hexagons for very small screens */
+            .hexagon {
+                width: 140px !important;
+                height: 80px !important;
+            }
+
+            /* Adjust hexagon text */
+            .hexagon h5 {
+                font-size: 0.8rem !important;
+            }
+
+            /* Tighter spacing */
+            .flex.gap-2.lg\:gap-0.lg\:grid > div {
+                gap: 10px !important;
+            }
+
+            /* Map adjustments */
+            #map {
+                margin: 10px !important;
+                height: 350px !important;
+            }
+        }
+
+        /* Ensure smooth transitions */
+        .hexagon {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Prevent text overflow */
+        .hexagon h5 {
+            white-space: normal !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        /* Chart and Filter Button Improvements */
+        @media (max-width: 768px) {
+            /* Filter buttons container */
+            .flex.gap-2 {
+                display: flex !important;
+                justify-content: center !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                margin: 10px 0 !important;
+                padding: 0 10px !important;
+            }
+
+            /* Individual filter button */
+            .period-btn {
+                font-size: 0.9rem !important;
+                padding: 8px 12px !important;
+                border-radius: 8px !important;
+                min-width: 100px !important;
+                text-align: center !important;
+                white-space: nowrap !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 6px !important;
+            }
+
+            /* Chart container adjustments */
+            .bg-white.rounded-xl {
+                margin: 10px !important;
+                padding: 15px !important;
+            }
+
+            /* Chart title */
+            .text-2xl.font-bold {
+                font-size: 1.25rem !important;
+                margin-bottom: 15px !important;
+                padding: 0 5px !important;
+            }
+
+            /* Chart sections */
+            #machineReadinessChart,
+            #powerDeliveryChart,
+            #unservedLoadChart {
+                height: 300px !important;
+                margin: 10px 0 !important;
+                padding: 10px !important;
+                border-radius: 8px !important;
+            }
+
+            /* Status cards in chart area */
+            .grid.grid-cols-3 {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+                margin: 15px 0 !important;
+            }
+
+            /* Individual status card */
+            .bg-gray-50 {
+                padding: 12px !important;
+                border-radius: 8px !important;
+            }
+
+            /* Chart legend */
+            .chart-legend {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 10px !important;
+                margin: 10px 0 !important;
+                font-size: 0.8rem !important;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            /* Smaller filter buttons */
+            .period-btn {
+                font-size: 0.8rem !important;
+                padding: 6px 10px !important;
+                min-width: 90px !important;
+            }
+
+            /* Adjust chart containers */
+            #machineReadinessChart,
+            #powerDeliveryChart,
+            #unservedLoadChart {
+                height: 250px !important;
+            }
+
+            /* Smaller chart title */
+            .text-2xl.font-bold {
+                font-size: 1.1rem !important;
+            }
+
+            /* Compact status cards */
+            .bg-gray-50 {
+                padding: 10px !important;
+            }
+
+            /* More compact legend */
+            .chart-legend {
+                font-size: 0.75rem !important;
+            }
+        }
+
+        /* Active state for filter buttons */
+        .period-btn.active {
+            background-color: #2563eb !important;
+            color: white !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Hover state for filter buttons */
+        .period-btn:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Touch device optimizations for buttons */
+        @media (hover: none) {
+            .period-btn {
+                -webkit-tap-highlight-color: transparent !important;
+            }
+
+            .period-btn:active {
+                transform: translateY(1px) !important;
+            }
+        }
     </style>
 @endsection
 
