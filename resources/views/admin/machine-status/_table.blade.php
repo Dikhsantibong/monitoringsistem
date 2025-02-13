@@ -203,27 +203,27 @@
                                         </span>
                                     </td>
                                     <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200">
+                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
                                         <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
                                             {{ $log?->equipment ?? '-' }}
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200">
+                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
                                         <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
                                             {{ $log?->deskripsi ?? '-' }}
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200">
+                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
                                         <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
                                             {{ $log?->kronologi ?? '-' }}
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200">
+                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
                                         <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
                                             {{ $log?->action_plan ?? '-' }}
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200">
+                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
                                         <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
                                             {{ $log?->progres ?? '-' }}
                                         </div>
