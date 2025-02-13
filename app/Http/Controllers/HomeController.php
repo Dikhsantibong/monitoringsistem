@@ -19,15 +19,17 @@ class HomeController extends Controller
         try {
             // Ambil data power plants dengan eager loading yang tepat
             $powerPlants = PowerPlant::with(['machines.statusLogs' => function($query) {
-                $query->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
-                      ->latest();
+                $query->whereDate('tanggal', now())
+                      ->latest('created_at')
+                      ->take(1);
             }])->get();
             
-            // Ambil status logs
+            // Ambil status logs untuk hari ini
             $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
                 ->whereIn('id', function($query) {
                     $query->selectRaw('MAX(id)')
                         ->from('machine_status_logs')
+                        ->whereDate('tanggal', now())
                         ->groupBy('machine_id');
                 })
                 ->get();
@@ -56,11 +58,12 @@ class HomeController extends Controller
                     return $plant->machines->count();
                 });
 
-                // Hitung active units
+                // Hitung active units berdasarkan status terbaru hari ini
                 $active_units_data[] = $powerPlants->sum(function($plant) {
                     return $plant->machines->filter(function($machine) {
                         return $machine->statusLogs->first() && 
-                               $machine->statusLogs->first()->status === 'Operasi';
+                               $machine->statusLogs->first()->status === 'Operasi' &&
+                               $machine->statusLogs->first()->tanggal->isToday();
                     })->count();
                 });
             }
