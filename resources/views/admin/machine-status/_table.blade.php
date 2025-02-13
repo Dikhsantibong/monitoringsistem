@@ -192,11 +192,11 @@
                                     </span>
                                 </td>
                                 <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? '-' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->equipment ?? '-' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->deskripsi ?? '-' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->kronologi ?? '-' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->action_plan ?? '-' }}</td>
-                                <td class="px-3 py-2 border-r border-gray-200">{{ $log?->progres ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 max-w-[400px] whitespace-normal break-words">{{ $log?->equipment ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 max-w-[400px] whitespace-normal break-words">{{ $log?->deskripsi ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 max-w-[400px] whitespace-normal break-words">{{ $log?->kronologi ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 max-w-[400px] whitespace-normal break-words">{{ $log?->action_plan ?? '-' }}</td>
+                                <td class="px-3 py-2 border-r border-gray-200 max-w-[400px] whitespace-normal break-words">{{ $log?->progres ?? '-' }}</td>
                                 <td class="px-3 py-2 border-r border-gray-200 text-center">
                                     {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                 </td>
