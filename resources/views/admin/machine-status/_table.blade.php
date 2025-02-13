@@ -205,7 +205,7 @@
                                     <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->equipment ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->deskripsi ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden" style="max-height: 100px; overflow-y: auto;">{{ $log?->kronologi ?? '-' }}</td>
+                                    <td class="px-3 py-2 border-r border-gray-200" style="max-width: 400px; max-height: 100px; overflow-y: auto; white-space: normal; word-break: break-word;">{{ $log?->kronologi ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->action_plan ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 w-[400px] max-w-[400px] whitespace-normal break-words overflow-hidden">{{ $log?->progres ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">
