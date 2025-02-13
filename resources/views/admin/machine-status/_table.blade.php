@@ -203,29 +203,39 @@
                                         </span>
                                     </td>
                                     <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? '-' }}</td>
-                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
-                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
-                                            {{ $log?->equipment ?? '-' }}
+                                    <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="equipment" style="text-align: left !important;">
+                                        <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                                <span style="text-align: left !important; display: block;">{{ $log?->equipment ?? '-' }}</span>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
-                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
-                                            {{ $log?->deskripsi ?? '-' }}
+                                    <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="description" style="text-align: left !important;">
+                                        <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                                <span style="text-align: left !important; display: block;">{{ $log?->deskripsi ?? '-' }}</span>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
-                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
-                                            {{ $log?->kronologi ?? '-' }}
+                                    <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="kronologi" style="text-align: left !important;">
+                                        <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                                <span style="text-align: left !important; display: block;">{{ $log?->kronologi ?? '-' }}</span>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
-                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
-                                            {{ $log?->action_plan ?? '-' }}
+                                    <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="action-plan" style="text-align: left !important;">
+                                        <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                                <span style="text-align: left !important; display: block;">{{ $log?->action_plan ?? '-' }}</span>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200 min-w-[300px]">
-                                        <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words">
-                                            {{ $log?->progres ?? '-' }}
+                                    <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="progress" style="text-align: left !important;">
+                                        <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                                <span style="text-align: left !important; display: block;">{{ $log?->progres ?? '-' }}</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">
@@ -251,3 +261,33 @@
         @endunless
     @endforeach
 @endif 
+
+<style>
+/* Highest specificity selectors */
+table.min-w-full td[data-content-type="equipment"],
+table.min-w-full td[data-content-type="description"],
+table.min-w-full td[data-content-type="kronologi"],
+table.min-w-full td[data-content-type="action-plan"],
+table.min-w-full td[data-content-type="progress"],
+table.min-w-full td[data-content-type] div,
+table.min-w-full td[data-content-type] div div {
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
+
+/* Additional specificity for nested elements */
+.table-responsive table.min-w-full td[data-content-type] *,
+.table-responsive table.min-w-full td[data-content-type] div *,
+.table-responsive table.min-w-full td[data-content-type] div div * {
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
+
+/* Force left alignment with max specificity */
+body .table-responsive table.min-w-full td[data-content-type],
+body .table-responsive table.min-w-full td[data-content-type] > div,
+body .table-responsive table.min-w-full td[data-content-type] > div > div {
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
+</style> 

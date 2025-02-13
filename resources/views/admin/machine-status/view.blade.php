@@ -283,5 +283,24 @@ function fetchWithLoading(url, options = {}) {
 #main-content.sidebar-collapsed {
     margin-left: 0;
 }
+
+/* Override any potential center alignment */
+.table-responsive td[class*="text-left"],
+.table-responsive td div {
+    text-align: left !important;
+}
+
+/* Specific overrides for the columns */
+.table-responsive td div.max-h-[150px] {
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
+
+/* Additional specific column overrides */
+.table-responsive td[data-content-type="equipment"] div,
+.table-responsive td div.whitespace-pre-wrap {
+    text-align: left !important;
+    justify-content: left !important;
+}
 </style>
 @endsection 

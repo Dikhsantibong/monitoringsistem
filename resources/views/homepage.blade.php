@@ -965,7 +965,355 @@
                 font-size: 16px !important;
             }
         }
+
+        /* Chart Container Improvements */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 15px !important;
+            padding: 15px !important;
+            margin: 10px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Chart Title */
+        .chart-title {
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            color: #2c3e50 !important;
+            margin-bottom: 10px !important;
+            padding: 0 5px !important;
+            text-align: center !important;
+        }
+
+        /* Chart Content */
+        .chart-content {
+            width: 100% !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important; /* Firefox */
+            position: relative !important;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .chart-content::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        /* Chart Canvas Container */
+        .chart-canvas-container {
+            min-width: 100% !important;
+            padding-bottom: 10px !important;
+        }
+
+        /* Mobile Specific Chart Adjustments */
+        @media (max-width: 768px) {
+            /* Adjust chart container */
+            .chart-container {
+                margin: 8px !important;
+                padding: 12px 8px !important;
+            }
+
+            /* Adjust chart size */
+            .apexcharts-canvas {
+                width: 100% !important;
+                height: auto !important;
+                max-height: 300px !important;
+            }
+
+            /* Adjust legend */
+            .apexcharts-legend {
+                position: relative !important;
+                padding: 5px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 10px !important;
+            }
+
+            .apexcharts-legend-series {
+                margin: 2px 8px !important;
+            }
+
+            /* Adjust axis labels */
+            .apexcharts-xaxis-label, 
+            .apexcharts-yaxis-label {
+                font-size: 10px !important;
+            }
+
+            /* Adjust tooltip */
+            .apexcharts-tooltip {
+                font-size: 12px !important;
+                padding: 5px 8px !important;
+            }
+
+            /* Chart Grid */
+            .apexcharts-grid line {
+                stroke-width: 0.5 !important;
+            }
+
+            /* Data Labels */
+            .apexcharts-datalabel {
+                font-size: 10px !important;
+            }
+
+            /* Unit Labels */
+            .unit-label {
+                font-size: 0.8rem !important;
+                margin-right: 5px !important;
+            }
+
+            /* Date Labels */
+            .date-label {
+                font-size: 0.75rem !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+
+            /* Value Labels */
+            .value-label {
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+            }
+        }
+
+        /* Extra Small Devices */
+        @media (max-width: 480px) {
+            .chart-container {
+                padding: 8px 5px !important;
+            }
+
+            .chart-title {
+                font-size: 0.9rem !important;
+            }
+
+            /* Adjust chart dimensions */
+            .apexcharts-canvas {
+                max-height: 250px !important;
+            }
+
+            /* Smaller text for very small screens */
+            .apexcharts-xaxis-label, 
+            .apexcharts-yaxis-label {
+                font-size: 9px !important;
+            }
+
+            .unit-label {
+                font-size: 0.7rem !important;
+            }
+
+            .value-label {
+                font-size: 0.8rem !important;
+            }
+        }
+
+        /* Ensure chart responsiveness */
+        .apexcharts-canvas {
+            margin: 0 auto !important;
+        }
+
+        /* Fix for chart overflow */
+        .apexcharts-inner {
+            transform-origin: left center !important;
+        }
+
+        /* Mobile Chart Specific Styles */
+        @media (max-width: 768px) {
+            /* Chart Container */
+            .chart-box {
+                background: #f8fdf5 !important;
+                border-radius: 12px !important;
+                padding: 15px 10px !important;
+                margin: 10px !important;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+            }
+
+            /* Chart Title */
+            .chart-title {
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                color: #1a5d1a !important;
+                margin-bottom: 10px !important;
+                text-align: left !important;
+                padding: 0 5px !important;
+            }
+
+            /* Chart Area */
+            .apexcharts-canvas {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            /* Y-axis Labels */
+            .apexcharts-yaxis-label {
+                font-size: 11px !important;
+                font-weight: normal !important;
+            }
+
+            /* X-axis Labels */
+            .apexcharts-xaxis-label {
+                font-size: 11px !important;
+                transform: rotate(-45deg) !important;
+                transform-origin: right !important;
+            }
+
+            /* Bar Labels */
+            .apexcharts-bar-area {
+                stroke-width: 1px !important;
+            }
+
+            /* Data Labels */
+            .apexcharts-datalabel {
+                font-size: 10px !important;
+                font-weight: 500 !important;
+            }
+
+            /* Legend */
+            .apexcharts-legend {
+                padding: 5px !important;
+                font-size: 12px !important;
+            }
+
+            .apexcharts-legend-text {
+                margin-left: 5px !important;
+            }
+
+            /* Grid Lines */
+            .apexcharts-grid line {
+                stroke-width: 0.5 !important;
+                stroke-dasharray: 3 !important;
+            }
+
+            /* Chart Tooltip */
+            .apexcharts-tooltip {
+                font-size: 11px !important;
+                padding: 5px 8px !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+            }
+
+            /* Unit Names */
+            .unit-name {
+                font-size: 11px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                max-width: 120px !important;
+            }
+
+            /* Value Display */
+            .value-display {
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                color: #1a5d1a !important;
+            }
+        }
+
+        /* Extra Small Devices */
+        @media (max-width: 480px) {
+            .chart-box {
+                padding: 10px 5px !important;
+                margin: 8px !important;
+            }
+
+            .chart-title {
+                font-size: 13px !important;
+            }
+
+            .apexcharts-yaxis-label,
+            .apexcharts-xaxis-label {
+                font-size: 10px !important;
+            }
+
+            .unit-name {
+                max-width: 100px !important;
+                font-size: 10px !important;
+            }
+        }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile-specific chart options
+            const mobileChartOptions = {
+                chart: {
+                    height: 'auto',
+                    toolbar: {
+                        show: false
+                    },
+                    animations: {
+                        enabled: false
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        barHeight: '80%',
+                        distributed: true
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    textAnchor: 'start',
+                    style: {
+                        fontSize: '11px'
+                    },
+                    formatter: function(val) {
+                        return val.toFixed(2);
+                    },
+                    offsetX: 0
+                },
+                xaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontSize: '11px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontSize: '11px'
+                        }
+                    }
+                },
+                grid: {
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    },
+                    yaxis: {
+                        lines: {
+                            show: false
+                        }
+                    }
+                },
+                legend: {
+                    show: false
+                }
+            };
+
+            // Apply mobile options only on mobile devices
+            if (window.innerWidth <= 768) {
+                if (typeof chart !== 'undefined') {
+                    chart.updateOptions(mobileChartOptions);
+                }
+            }
+
+            // Handle resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    if (typeof chart !== 'undefined') {
+                        chart.updateOptions(mobileChartOptions);
+                    }
+                }
+            });
+        });
+    </script>
 @endsection
 
 @section('content')
@@ -1176,7 +1524,7 @@
                             
                             <!-- Detail beban tersalur -->
                             <div class="mt-4 space-y-2 text-sm">
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     <div class="flex justify-between items-center p-2 bg-green-50 rounded overflow-hidden">
                                         <span class="text-green-700 text-xs sm:text-sm truncate">Kesiapan Daya</span>
                                         <span class="font-semibold text-green-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
@@ -1185,9 +1533,7 @@
                                         <span class="text-red-700 text-xs sm:text-sm truncate">Daya Tidak Siap</span>
                                         <span class="font-semibold text-red-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
                                     </div>
-                                </div>
-                                <div class="p-2 bg-blue-50 rounded">
-                                    <div class="flex justify-between items-center overflow-hidden">
+                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded overflow-hidden sm:col-span-2">
                                         <span class="text-blue-700 text-xs sm:text-sm truncate">Total Kapasitas</span>
                                         <span class="font-semibold text-blue-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['total'], 1) }} MW</span>
                                     </div>
