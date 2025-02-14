@@ -91,8 +91,21 @@
                                     <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 2) }} MW</p>
                                 </div>
                                 <div class="bg-orange-50 p-3 rounded-lg md:col-span-1 col-span-5">
-                                    <p class="text-sm text-gray-600">Total HOP:</p>
-                                    <p class="text-xl font-bold text-orange-700">{{ number_format($hopValue, 1) }} Hari</p>
+                                    <p class="text-sm text-gray-600">
+                                        @if(str_starts_with(trim(strtoupper($powerPlant->name)), 'PLTM '))
+                                            Total Inflow:
+                                        @else
+                                            Total HOP:
+                                        @endif
+                                    </p>
+                                    <p class="text-xl font-bold text-orange-700">
+                                        {{ number_format($hopValue, 1) }} 
+                                        @if(str_starts_with(trim(strtoupper($powerPlant->name)), 'PLTM '))
+                                            liter/detik
+                                        @else
+                                            Hari
+                                        @endif
+                                    </p>
                                     <p class="text-sm font-medium {{ $hopClass }}">
                                         Status: {{ ucfirst($hopStatus) }}
                                     </p>

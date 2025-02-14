@@ -154,15 +154,27 @@
                                     </div>
                                     <!-- Tambahkan input HOP di sini -->
                                     <div class="flex items-center gap-x-2">
-                                        <label for="hop_{{ $unit->id }}" class="text-sm font-medium text-gray-700">HOP:</label>
+                                        <label for="hop_{{ $unit->id }}" class="text-sm font-medium text-gray-700">
+                                            @if(str_starts_with(trim(strtoupper($unit->name)), 'PLTM '))
+                                                Inflow:
+                                            @else
+                                                HOP:
+                                            @endif
+                                        </label>
                                         <input type="number" 
                                                id="hop_{{ $unit->id }}" 
                                                name="hop_{{ $unit->id }}"
                                                class="w-24 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                               placeholder="Masukkan HOP"
+                                               placeholder="@if(str_starts_with(trim(strtoupper($unit->name)), 'PLTM '))Masukkan Inflow @else Masukkan HOP @endif"
                                                min="0"
                                                value="{{ old('hop_' . $unit->id) }}">
-                                        <span class="text-sm text-gray-600">hari</span>
+                                        <span class="text-sm text-gray-600">
+                                            @if(str_starts_with(trim(strtoupper($unit->name)), 'PLTM '))
+                                                liter/detik
+                                            @else
+                                                hari
+                                            @endif
+                                        </span> 
                                     </div>
                                 </div>
                                 <!-- Tabel Status Pembangkit -->
