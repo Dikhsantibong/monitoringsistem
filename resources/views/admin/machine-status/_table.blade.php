@@ -106,9 +106,11 @@
                                             Hari
                                         @endif
                                     </p>
-                                    <p class="text-sm font-medium {{ $hopClass }}">
-                                        Status: {{ ucfirst($hopStatus) }}
-                                    </p>
+                                    @unless(str_starts_with(trim(strtoupper($powerPlant->name)), 'PLTM '))
+                                        <p class="text-sm font-medium {{ $hopClass }}">
+                                            Status: {{ ucfirst($hopStatus) }}
+                                        </p>
+                                    @endunless
                                 </div>
                             </div>
 
