@@ -100,9 +100,10 @@
 @section('styles')
 <style>
     body {
-        background-image: url('/background/backgorund.jpg');
+        background-image: url('{{ asset('background/background.jpg') }}');
         background-size: cover;
-        background-position: fixed;
+        background-position: center;
+        background-attachment: fixed;
         margin: 0;
         opacity: 0; /* Tidak terlihat saat awal */
         animation: fadeIn ease 1s;
