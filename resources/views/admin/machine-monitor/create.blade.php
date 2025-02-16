@@ -172,15 +172,36 @@
         
         submitButton.disabled = true;
         
+        // Convert FormData to JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
         fetch(this.action, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: formData
+            body: JSON.stringify({
+                name: data.name,
+                type: data.type,
+                serial_number: data.serial_number,
+                power_plant_id: parseInt(data.power_plant_id),
+                dmn: parseFloat(data.dmn),
+                dmp: parseFloat(data.dmp),
+                load_value: parseFloat(data.load_value),
+                _token: data._token
+            })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 Swal.fire({
@@ -193,7 +214,7 @@
                     window.location.href = data.redirect_url;
                 });
             } else {
-                throw new Error(data.message);
+                throw new Error(data.message || 'Terjadi kesalahan');
             }
         })
         .catch(error => {
@@ -203,6 +224,8 @@
                 title: 'Error!',
                 text: error.message || 'Terjadi kesalahan saat menambahkan mesin'
             });
+        })
+        .finally(() => {
             submitButton.disabled = false;
         });
     });

@@ -16,6 +16,7 @@ use App\Models\PowerPlant;
 use App\Models\Issue;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MachineMonitorController extends Controller
 {
@@ -196,7 +197,9 @@ class MachineMonitorController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
+            // Validate the request
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'type' => 'required|string|max:50',
@@ -207,29 +210,43 @@ class MachineMonitorController extends Controller
                 'load_value' => 'required|numeric',
             ]);
 
-            // Buat mesin baru
+            // Create the machine first
             $machine = Machine::create([
                 'name' => $validated['name'],
                 'type' => $validated['type'],
                 'serial_number' => $validated['serial_number'],
                 'power_plant_id' => $validated['power_plant_id'],
+                'status' => 'STOP',
+                'unit_source' => session('unit')
             ]);
 
-            // Buat data operasi mesin
-            MachineOperation::create([
-                'machine_id' => $machine->id,
-                'dmn' => $validated['dmn'],
-                'dmp' => $validated['dmp'],
-                'load_value' => $validated['load_value'],
-                'recorded_at' => now(),
-            ]);
+            // Then create the machine operation
+            if ($machine) {
+                MachineOperation::create([
+                    'machine_id' => $machine->id,
+                    'dmn' => $validated['dmn'],
+                    'dmp' => $validated['dmp'],
+                    'load_value' => $validated['load_value'],
+                    'recorded_at' => now(),
+                    'unit_source' => session('unit')
+                ]);
+            }
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data mesin berhasil ditambahkan!',
                 'redirect_url' => route('admin.machine-monitor.show')
             ]);
+
         } catch (\Exception $e) {
+            DB::rollback();
+            
+            \Log::error('Failed to create machine: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menambahkan mesin: ' . $e->getMessage()

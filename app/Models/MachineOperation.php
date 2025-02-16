@@ -47,19 +47,59 @@ class MachineOperation extends Model
     {
         parent::boot();
         
-        // Handle Created Event
+        static::creating(function ($machineOperation) {
+            // Generate ID manually if not set
+            if (!$machineOperation->id) {
+                $lastId = DB::connection(session('unit'))
+                           ->table('machine_operations')
+                           ->max('id');
+                $machineOperation->id = ($lastId ?? 0) + 1;
+            }
+
+            // Set default values for required fields
+            $machineOperation->dmn = $machineOperation->dmn ?? 0;
+            $machineOperation->dmp = $machineOperation->dmp ?? 0;
+            $machineOperation->load_value = $machineOperation->load_value ?? 0;
+            $machineOperation->recorded_at = $machineOperation->recorded_at ?? now();
+        });
+
         static::created(function ($machineOperation) {
-            self::syncToUpKendari('create', $machineOperation);
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machineOperation->machine->powerPlant;
+
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    self::syncToUpKendari('create', $machineOperation);
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    self::syncToUpKendari('create', $machineOperation);
+                }
+            }
         });
 
-        // Handle Updated Event
         static::updated(function ($machineOperation) {
-            self::syncToUpKendari('update', $machineOperation);
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machineOperation->machine->powerPlant;
+
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    self::syncToUpKendari('update', $machineOperation);
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    self::syncToUpKendari('update', $machineOperation);
+                }
+            }
         });
 
-        // Handle Deleted Event
         static::deleted(function ($machineOperation) {
-            self::syncToUpKendari('delete', $machineOperation);
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machineOperation->machine->powerPlant;
+
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    self::syncToUpKendari('delete', $machineOperation);
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    self::syncToUpKendari('delete', $machineOperation);
+                }
+            }
         });
     }
 
@@ -86,27 +126,37 @@ class MachineOperation extends Model
 
             Log::info("Attempting to {$action} Machine Operation sync", ['data' => $data]);
 
-            $upKendari = DB::connection('mysql')->table('machine_operations');
+            $targetConnection = session('unit') === 'mysql' 
+                ? $machineOperation->machine->powerPlant->unit_source 
+                : 'mysql';
+
+            $targetDB = DB::connection($targetConnection);
 
             switch($action) {
                 case 'create':
-                    $upKendari->insert($data);
+                    // Ensure ID exists in target database
+                    if (!$targetDB->table('machine_operations')->where('id', $machineOperation->id)->exists()) {
+                        $targetDB->table('machine_operations')->insert($data);
+                    }
                     break;
                     
                 case 'update':
-                    $upKendari->where('id', $machineOperation->id)
+                    $targetDB->table('machine_operations')
+                             ->where('id', $machineOperation->id)
                              ->update($data);
                     break;
                     
                 case 'delete':
-                    $upKendari->where('id', $machineOperation->id)
+                    $targetDB->table('machine_operations')
+                             ->where('id', $machineOperation->id)
                              ->delete();
                     break;
             }
 
             Log::info("Machine Operation {$action} sync successful", [
                 'id' => $machineOperation->id,
-                'unit' => 'poasia'
+                'unit' => session('unit'),
+                'target' => $targetConnection
             ]);
 
         } catch (\Exception $e) {
@@ -114,6 +164,7 @@ class MachineOperation extends Model
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            throw $e; // Re-throw exception to handle it in the controller
         } finally {
             self::$isSyncing = false;
         }

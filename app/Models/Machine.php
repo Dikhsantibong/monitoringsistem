@@ -63,19 +63,69 @@ class Machine extends Model
     {
         parent::boot();
         
-        // Handle Created Event
+        static::creating(function ($machine) {
+            // Generate ID manually if not set
+            if (!$machine->id) {
+                $lastId = DB::connection(session('unit'))
+                           ->table('machines')
+                           ->max('id');
+                $machine->id = ($lastId ?? 0) + 1;
+            }
+        });
+
         static::created(function ($machine) {
-            self::syncToUpKendari('create', $machine);
+            try {
+                // Refresh model untuk memastikan relasi ter-load
+                $machine = $machine->fresh();
+                
+                if (!$machine || !$machine->powerPlant) {
+                    \Log::warning('Skipping sync - Power Plant not found for machine:', [
+                        'machine_id' => $machine->id ?? null
+                    ]);
+                    return;
+                }
+
+                $currentSession = session('unit', 'mysql');
+                $powerPlant = $machine->powerPlant;
+
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    self::syncToUpKendari('create', $machine);
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    self::syncToUpKendari('create', $machine);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error in Machine sync:', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                // Tidak throw exception agar proses create tetap berhasil
+            }
         });
 
-        // Handle Updated Event
         static::updated(function ($machine) {
-            self::syncToUpKendari('update', $machine);
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machine->powerPlant;
+
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    self::syncToUpKendari('update', $machine);
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    self::syncToUpKendari('update', $machine);
+                }
+            }
         });
 
-        // Handle Deleted Event
         static::deleted(function ($machine) {
-            self::syncToUpKendari('delete', $machine);
+            $currentSession = session('unit', 'mysql');
+            $powerPlant = $machine->powerPlant;
+
+            if ($powerPlant) {
+                if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
+                    self::syncToUpKendari('delete', $machine);
+                } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
+                    self::syncToUpKendari('delete', $machine);
+                }
+            }
         });
     }
 
@@ -86,11 +136,18 @@ class Machine extends Model
         try {
             self::$isSyncing = true;
             
+            // Get the last ID from target database
+            $targetConnection = session('unit') === 'mysql' 
+                ? $machine->powerPlant->unit_source 
+                : 'mysql';
+            
+            $targetDB = DB::connection($targetConnection);
+            
             $data = [
                 'id' => $machine->id,
                 'power_plant_id' => $machine->power_plant_id,
                 'name' => $machine->name,
-                'status' => $machine->status,
+                'status' => $machine->status ?? 'STOP',
                 'capacity' => $machine->capacity,
                 'type' => $machine->type,
                 'serial_number' => $machine->serial_number,
@@ -102,27 +159,31 @@ class Machine extends Model
 
             Log::info("Attempting to {$action} Machine sync", ['data' => $data]);
 
-            $upKendari = DB::connection('mysql')->table('machines');
-
             switch($action) {
                 case 'create':
-                    $upKendari->insert($data);
+                    // Ensure ID exists in target database
+                    if (!$targetDB->table('machines')->where('id', $machine->id)->exists()) {
+                        $targetDB->table('machines')->insert($data);
+                    }
                     break;
                     
                 case 'update':
-                    $upKendari->where('id', $machine->id)
+                    $targetDB->table('machines')
+                             ->where('id', $machine->id)
                              ->update($data);
                     break;
                     
                 case 'delete':
-                    $upKendari->where('id', $machine->id)
+                    $targetDB->table('machines')
+                             ->where('id', $machine->id)
                              ->delete();
                     break;
             }
 
             Log::info("Machine {$action} sync successful", [
                 'id' => $machine->id,
-                'unit' => 'poasia'
+                'unit' => session('unit'),
+                'target' => $targetConnection
             ]);
 
         } catch (\Exception $e) {
@@ -130,6 +191,7 @@ class Machine extends Model
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            throw $e; // Re-throw exception to handle it in the controller
         } finally {
             self::$isSyncing = false;
         }
