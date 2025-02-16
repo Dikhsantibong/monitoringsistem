@@ -2,6 +2,12 @@
 
 @section('content')
 <div class="container d-flex justify-content-center align-items-center vh-100">
+    <!-- Tambahkan div untuk background -->
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;">
+        <img src="{{ asset('images/bg.jpg') }}" alt="Background" 
+             style="width: 100%; height: 100%; object-fit: cover; position: absolute;">
+    </div>
+
     <div class="card login-card">
         <div class="row no-gutters">
             <!-- Kolom kiri -->
@@ -100,12 +106,8 @@
 @section('styles')
 <style>
     body {
-        background-image: url('{{ asset('background/background.jpg') }}');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
         margin: 0;
-        opacity: 0; /* Tidak terlihat saat awal */
+        opacity: 0;
         animation: fadeIn ease 1s;
         animation-iteration-count: 1;
         animation-fill-mode: forwards;
