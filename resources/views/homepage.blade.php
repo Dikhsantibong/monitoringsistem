@@ -975,6 +975,38 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
         }
 
+        /* Add horizontal scroll for unserved load chart on mobile */
+        @media (max-width: 768px) {
+            #unservedLoadChart-wrapper {
+                width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            
+            #unservedLoadChart {
+                width: 1024px !important; /* Fixed desktop width */
+            }
+
+            /* Move unit names to the right side */
+            .apexcharts-yaxis {
+                position: absolute !important;
+                right: 0 !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                background: rgba(255, 255, 255, 0.9) !important; /* Slight background to ensure readability */
+            }
+
+            .apexcharts-yaxis-label {
+                text-align: left !important;
+                padding-left: 10px !important;
+            }
+
+            /* Ensure bar labels remain visible */
+            .apexcharts-bar-series .apexcharts-datalabel {
+                padding-right: 150px !important; /* Give space for unit names */
+            }
+        }
+
         /* Chart Title */
         .chart-title {
             font-size: 1rem !important;
@@ -1229,6 +1261,42 @@
             .unit-name {
                 max-width: 100px !important;
                 font-size: 10px !important;
+            }
+        }
+
+        /* Live Data Table Styles */
+        @media (max-width: 768px) {
+            #live-data {
+                width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+
+            #live-data table {
+                min-width: 800px !important; /* Maintain desktop table width */
+                width: 100% !important;
+            }
+
+            /* Maintain table styles */
+            .table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+
+            /* Ensure horizontal scroll is smooth */
+            .table-responsive {
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: thin !important;
+            }
+
+            /* Hide scrollbar but maintain functionality */
+            .table-responsive::-webkit-scrollbar {
+                height: 6px !important;
+            }
+
+            .table-responsive::-webkit-scrollbar-thumb {
+                background-color: rgba(0, 0, 0, 0.2) !important;
+                border-radius: 3px !important;
             }
         }
     </style>
@@ -1545,7 +1613,9 @@
                     <!-- Grafik Bar memanjang horizontal -->
                     <div class="bg-gray-50 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
                         <h3 class="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-4 text-center">Ketidak Siapan Daya Mesin Per Unit</h3>
-                        <div id="unservedLoadChart" class="w-full" style="height: 300px; min-height: 250px; max-height: 450px;"></div>
+                        <div id="unservedLoadChart-wrapper">
+                            <div id="unservedLoadChart"></div>
+                        </div>
                     </div>
                 </div>
             </div>
