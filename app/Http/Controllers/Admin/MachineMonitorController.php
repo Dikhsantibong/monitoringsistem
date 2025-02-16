@@ -17,6 +17,7 @@ use App\Models\Issue;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MachineMonitorController extends Controller
 {
@@ -210,6 +211,9 @@ class MachineMonitorController extends Controller
                 'load_value' => 'required|numeric',
             ]);
 
+            // Get PowerPlant untuk unit_source
+            $powerPlant = PowerPlant::findOrFail($validated['power_plant_id']);
+
             // Create the machine first
             $machine = Machine::create([
                 'name' => $validated['name'],
@@ -217,7 +221,7 @@ class MachineMonitorController extends Controller
                 'serial_number' => $validated['serial_number'],
                 'power_plant_id' => $validated['power_plant_id'],
                 'status' => 'STOP',
-                'unit_source' => session('unit')
+                'unit_source' => $powerPlant->unit_source // Tambahkan unit_source dari PowerPlant
             ]);
 
             // Then create the machine operation
@@ -228,12 +232,11 @@ class MachineMonitorController extends Controller
                     'dmp' => $validated['dmp'],
                     'load_value' => $validated['load_value'],
                     'recorded_at' => now(),
-                    'unit_source' => session('unit')
+                    'unit_source' => $powerPlant->unit_source // Tambahkan unit_source dari PowerPlant
                 ]);
             }
 
             DB::commit();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Data mesin berhasil ditambahkan!',
@@ -242,11 +245,9 @@ class MachineMonitorController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            
             \Log::error('Failed to create machine: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menambahkan mesin: ' . $e->getMessage()
@@ -287,14 +288,40 @@ class MachineMonitorController extends Controller
 
     public function destroyMachine(Machine $machine)
     {
+        DB::beginTransaction();
         try {
+            // Verifikasi bahwa mesin ada
+            if (!$machine) {
+                throw new \Exception('Mesin tidak ditemukan');
+            }
+
+            // Catat informasi mesin sebelum dihapus untuk logging
+            $machineInfo = [
+                'id' => $machine->id,
+                'name' => $machine->name,
+                'unit_source' => $machine->unit_source
+            ];
+
+            // Hapus mesin (akan mentrigger event deleting di model)
             $machine->delete();
+
+            DB::commit();
+
+            Log::info('Machine deleted successfully', $machineInfo);
+
             Alert::success('Berhasil', 'Mesin berhasil dihapus');
             return response()->json([
                 'success' => true,
                 'message' => 'Mesin berhasil dihapus'
             ]);
+
         } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Failed to delete machine:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             Alert::error('Gagal', 'Gagal menghapus mesin: ' . $e->getMessage());
             return response()->json([
                 'success' => false,

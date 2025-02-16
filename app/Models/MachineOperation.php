@@ -56,7 +56,7 @@ class MachineOperation extends Model
                 $machineOperation->id = ($lastId ?? 0) + 1;
             }
 
-            // Set default values for required fields
+            // Set default values
             $machineOperation->dmn = $machineOperation->dmn ?? 0;
             $machineOperation->dmp = $machineOperation->dmp ?? 0;
             $machineOperation->load_value = $machineOperation->load_value ?? 0;
@@ -64,15 +64,31 @@ class MachineOperation extends Model
         });
 
         static::created(function ($machineOperation) {
-            $currentSession = session('unit', 'mysql');
-            $powerPlant = $machineOperation->machine->powerPlant;
+            try {
+                // Refresh model untuk memastikan relasi ter-load
+                $machineOperation = $machineOperation->fresh(['machine.powerPlant']);
+                
+                if (!$machineOperation->machine || !$machineOperation->machine->powerPlant) {
+                    \Log::warning('Skipping sync - Invalid relations for operation:', [
+                        'operation_id' => $machineOperation->id
+                    ]);
+                    return;
+                }
 
-            if ($powerPlant) {
+                $currentSession = session('unit', 'mysql');
+                $powerPlant = $machineOperation->machine->powerPlant;
+
+                // Sinkronisasi hanya jika kondisi terpenuhi
                 if ($currentSession === 'mysql' && $powerPlant->unit_source !== 'mysql') {
                     self::syncToUpKendari('create', $machineOperation);
                 } elseif ($currentSession !== 'mysql' && $currentSession === $powerPlant->unit_source) {
                     self::syncToUpKendari('create', $machineOperation);
                 }
+            } catch (\Exception $e) {
+                \Log::error('Error in MachineOperation sync:', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
             }
         });
 

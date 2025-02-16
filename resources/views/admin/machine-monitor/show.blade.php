@@ -122,7 +122,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMN</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMP</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Beban (MW)</th>
+                                @if(session('unit') === 'mysql')
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         
@@ -177,6 +179,7 @@
                                 <td class="px-6 py-4 text-center whitespace-nowrap border-r border-gray-200">
                                     {{ $machine->operations->first()->load_value ?? '0' }} MW
                                 </td>
+                                @if(session('unit') === 'mysql')
                                 <td class="py-2 whitespace-nowrap flex justify-center gap-2">
                                     <div>
                                         <a href="{{ route('admin.machine-monitor.edit', $machine->id) }}" 
@@ -198,6 +201,7 @@
                                         </form>
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                             @empty
                             <tr>
