@@ -66,148 +66,136 @@
         <!-- Main Content -->
         <div class="container mx-auto px-2 sm:px-6 py-4 sm:py-8">
             <div class="bg-white rounded-lg shadow p-3 sm:p-6">
-                <!-- Header Section -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <h2 class="text-2xl font-semibold text-gray-800">Pembahasan Lain-lain</h2>
+                <!-- Header Section - More compact with better spacing -->
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Pembahasan Lain-lain</h2>
                     
-                    <!-- Link Maximo dan Tombol Tambah -->
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <!-- Link Maximo -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Link Maximo - Simplified -->
                         <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
                            title="Link Maximo" 
                            target="_blank" 
-                           class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
-                            <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
-                            koneksi maximo
+                           class="inline-flex items-center px-3 py-1.5 border border-blue-500 rounded text-blue-500 hover:bg-blue-50">
+                            <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-4 mr-1.5">
+                            <span class="text-sm">Maximo</span>
                         </a>
                         
-                        <!-- Tombol Tambah Data -->
+                        <!-- Add Data Button - Simplified -->
                         <a href="{{ route('admin.other-discussions.create') }}" 
-                           class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-lg px-4 py-2">
-                            <i class="fas fa-plus mr-2"></i> Tambah Data
+                           class="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            <i class="fas fa-plus text-sm mr-1.5"></i>
+                            <span class="text-sm">Tambah Data</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- Alert Messages -->
+                <!-- Alert Messages - More compact -->
+                @if(session('success') || session('warning') || session('error'))
                 <div class="mb-4">
                     @if(session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                            <span class="block sm:inline">{{ session('success') }}</span>
+                        <div class="flex items-center p-2 bg-green-100 border-l-4 border-green-500 text-green-700 text-sm">
+                            {{ session('success') }}
                         </div>
                     @endif
 
                     @if(session('warning'))
-                        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
-                            <span class="block sm:inline">{{ session('warning') }}</span>
+                        <div class="flex items-center p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 text-sm">
+                            {{ session('warning') }}
                         </div>
                     @endif
 
                     @if(session('error'))
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                            <strong class="font-bold">Error!</strong>
-                            <span class="block sm:inline">{{ session('error') }}</span>
-                            <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <title>Close</title>
-                                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
-                                </svg>
-                            </span>
+                        <div class="flex items-center justify-between p-2 bg-red-100 border-l-4 border-red-500 text-red-700 text-sm">
+                            <span>{{ session('error') }}</span>
+                            <button class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     @endif
                 </div>
+                @endif
 
-                <!-- Filter Section -->
-                <div class="mb-6 bg-white p-6 rounded-lg shadow justify-between">
+                <!-- Filter Section - Reorganized and more compact -->
+                <div class="bg-white rounded-lg shadow mb-6">
                     <form action="{{ route('admin.other-discussions.index') }}" method="GET">
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
-                            <!-- Search Box -->
-                            <div class="lg:col-span-3">
-                                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
-                                <div class="relative">
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <!-- Search Box - Simplified -->
+                            <div>
+                                <label for="search" class="text-sm text-gray-600">Pencarian</label>
+                                <div class="relative mt-1">
                                     <input type="text" 
                                            name="search" 
                                            id="search" 
-                                           placeholder="Cari t  opik, PIC, unit..."
+                                           placeholder="Cari topik, PIC, unit..."
                                            value="{{ request('search') }}"
-                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
-                                    </div>
+                                           class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                                    <i class="fas fa-search absolute left-2.5 top-2.5 text-gray-400 text-sm"></i>
                                 </div>
                             </div>
 
-                            <!-- Tanggal Mulai -->
-                            <div class="lg:col-span-3">
-                                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
-                                <div class="relative">
-                                    <input type="date" 
-                                           id="start_date" 
-                                           name="start_date" 
-                                           value="{{ request('start_date') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                                </div>
+                            <!-- Date Filters - Simplified -->
+                            <div>
+                                <label for="start_date" class="text-sm text-gray-600">Tanggal Mulai</label>
+                                <input type="date" 
+                                       id="start_date" 
+                                       name="start_date" 
+                                       value="{{ request('start_date') }}"
+                                       class="mt-1 w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                             </div>
 
-                            <!-- Tanggal Akhir -->
-                            <div class="lg:col-span-3">
-                                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
-                                <div class="relative">
-                                    <input type="date" 
-                                           id="end_date" 
-                                           name="end_date" 
-                                           value="{{ request('end_date') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                                </div>
+                            <div>
+                                <label for="end_date" class="text-sm text-gray-600">Tanggal Akhir</label>
+                                <input type="date" 
+                                       id="end_date" 
+                                       name="end_date" 
+                                       value="{{ request('end_date') }}"
+                                       class="mt-1 w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                             </div>
 
-                            <!-- Action Buttons -->
-                            <div class="lg:col-span-3 flex justify-end gap-2">
-                                <!-- Print Button -->
-                                <button onclick="handlePrint()" 
-                                        class="inline-flex justify-center items-center p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors" 
-                                        title="Print">
-                                    <i class="fas fa-print"></i>
-                                </button>
-                                
-                                <!-- Download Dropdown -->
+                            <!-- Action Buttons - Consolidated -->
+                            <div class="flex items-end gap-2">
+                                <div class="flex-grow">
+                                    <button type="submit" 
+                                            class="w-full px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                                        <i class="fas fa-search mr-1"></i> Filter
+                                    </button>
+                                </div>
+
+                                <!-- Actions Dropdown -->
                                 <div class="relative" x-data="{ open: false }">
                                     <button type="button" 
                                             @click="open = !open"
-                                            class="inline-flex justify-center items-center p-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors" 
-                                            title="Download">
-                                        <i class="fas fa-download"></i>
+                                            class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     
-                                    <!-- Dropdown Menu -->
                                     <div x-show="open" 
                                          @click.away="open = false"
-                                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200"
-                                         style="min-width: 12rem;">
-                                        <div class="py-1">
-                                            <a href="{{ route('admin.other-discussions.export.xlsx', request()->query()) }}" 
-                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-                                                <i class="fas fa-file-excel mr-2 text-green-600"></i>
-                                                Export Excel
-                                            </a>
-                                            <a href="{{ route('admin.other-discussions.export', array_merge(request()->all(), ['format' => 'pdf'])) }}" 
-                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-                                                <i class="fas fa-file-pdf mr-2 text-red-600"></i>
-                                                Export PDF
-                                            </a>
-                                        </div>
+                                         class="absolute right-0 mt-1 w-48 bg-white rounded shadow-lg z-50 border text-sm">
+                                        <button type="button" 
+                                                onclick="handlePrint()" 
+                                                class="w-full px-4 py-2 text-left hover:bg-gray-50">
+                                            <i class="fas fa-print mr-2 text-gray-600"></i>
+                                            Print
+                                        </button>
+                                        <a href="{{ route('admin.other-discussions.export.xlsx', request()->query()) }}" 
+                                           class="block px-4 py-2 hover:bg-gray-50">
+                                            <i class="fas fa-file-excel mr-2 text-green-600"></i>
+                                            Export Excel
+                                        </a>
+                                        <a href="{{ route('admin.other-discussions.export', array_merge(request()->all(), ['format' => 'pdf'])) }}" 
+                                           class="block px-4 py-2 hover:bg-gray-50">
+                                            <i class="fas fa-file-pdf mr-2 text-red-600"></i>
+                                            Export PDF
+                                        </a>
+                                        <a href="{{ route('admin.other-discussions.index') }}" 
+                                           class="block px-4 py-2 hover:bg-gray-50">
+                                            <i class="fas fa-undo mr-2 text-gray-600"></i>
+                                            Reset Filter
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Reset Filter -->
-                        <div class="mt-4 flex justify-end">
-                            <a href="{{ route('admin.other-discussions.index') }}" 
-                               class="text-sm text-gray-600 hover:text-gray-900">
-                                <i class="fas fa-undo mr-1"></i>
-                                Reset Filter
-                            </a>
                         </div>
                     </form>
                 </div>

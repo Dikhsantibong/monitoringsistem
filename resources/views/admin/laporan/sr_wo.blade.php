@@ -101,64 +101,89 @@
 
                 <!-- SR Table -->
                 <div id="sr-tab" class="tab-content active">
-                    <div class="bg-white rounded-lg shadow p-6 mb-4">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800">Daftar Service Request (SR)</h3>
-                            <div class="flex items-center gap-3">
-                                <!-- Filter Tanggal -->
-                                <div class="flex items-center gap-2">
+                    <div class="bg-white rounded-lg shadow p-4 mb-4">
+                        <!-- Header Section dengan 2 baris -->
+                        <div class="space-y-4">
+                            <!-- Baris 1: Judul dan Filter Tanggal -->
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Daftar Service Request (SR)</h3>
+                                
+                                <!-- Filter Tanggal dengan layout yang lebih compact -->
+                                <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                                    <span class="text-sm text-gray-600">Filter:</span>
                                     <input type="date" 
                                            id="sr_start_date" 
-                                           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="dd/mm/yyyy"
+                                           class="text-sm px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                            value="{{ request('start_date') }}">
-                                    <span class="text-gray-500">s/d</span>
+                                    <span class="text-sm text-gray-500">s/d</span>
                                     <input type="date" 
                                            id="sr_end_date" 
-                                           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="dd/mm/yyyy"
+                                           class="text-sm px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                            value="{{ request('end_date') }}">
                                 </div>
-                                <!-- Existing buttons -->
+                            </div>
+
+                            <!-- Baris 2: Action Buttons dengan layout yang lebih efisien -->
+                            <div class="flex flex-wrap items-center gap-2">
+                                <!-- Koneksi Maximo Button -->
                                 <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
-                                   class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
-                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
-                                    koneksi maximo
+                                   class="inline-flex items-center px-3 py-1.5 bg-white border border-blue-500 rounded-md text-sm text-blue-500 hover:bg-blue-50 transition-colors"
+                                   title="Koneksi ke Maximo">
+                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-4 mr-1.5">
+                                    <span>Maximo</span>
                                 </a>
+
+                                <!-- Manage SR Button -->
                                 <a href="{{ route('admin.laporan.manage', ['tab' => 'sr']) }}" 
-                                   class="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                                    <i class="fas fa-cog mr-2"></i> Manage SR
+                                   class="inline-flex items-center px-3 py-1.5 bg-gray-500 text-white rounded-md text-sm hover:bg-gray-600 transition-colors"
+                                   title="Kelola Service Request">
+                                    <i class="fas fa-cog mr-1.5"></i>
+                                    <span>Manage SR</span>
                                 </a>
+
+                                <!-- Tambah SR Button -->
                                 <a href="{{ route('admin.laporan.create-sr') }}" 
-                                   class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                    <i class="fas fa-plus-circle mr-2"></i> Tambah SR
+                                   class="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors"
+                                   title="Tambah Service Request Baru">
+                                    <i class="fas fa-plus-circle mr-1.5"></i>
+                                    <span>Tambah SR</span>
                                 </a>
+
+                                <!-- Quick Actions Menu (Optional) -->
+                                <div class="relative ml-auto">
+                                    <button type="button" 
+                                            class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            title="Opsi Tambahan">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- Header section dengan search dan counter -->
-                        <div class="flex justify-between items-center mb-4">
-                            <!-- Search dengan style baru -->
-                            <div class="w-1/3">
+
+                        <!-- Search dan Counter dengan margin yang disesuaikan -->
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 mb-3">
+                            <!-- Search dengan style yang konsisten -->
+                            <div class="w-full md:w-1/3">
                                 <div class="relative">
                                     <input type="text" 
                                            id="searchSR" 
                                            placeholder="Cari SR, unit, atau status..."
                                            onkeyup="if(event.key === 'Enter') searchSRTable()"
-                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                           class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
+                                        <i class="fas fa-search text-gray-400 text-sm"></i>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Counter -->
-                            <div class="text-gray-600">
-                                Menampilkan <span id="srVisibleCount">0</span> dari <span id="srTotalCount">0</span> data
+                            
+                            <!-- Counter dengan style yang konsisten -->
+                            <div class="text-sm text-gray-600">
+                                Menampilkan <span id="srVisibleCount" class="font-medium">0</span> dari <span id="srTotalCount" class="font-medium">0</span> data
                             </div>
                         </div>
 
-                        <!-- Tabel SR -->
-                        <div class="overflow-auto max-h-96">
+                        <!-- Tabel content tetap sama seperti sebelumnya -->
+                        <div class="overflow-auto max-h-[calc(100vh-300px)]">
                             <table id="srTable"
                                 class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
@@ -319,62 +344,78 @@
 
                 <!-- WO Table -->
                 <div id="wo-tab" class="tab-content hidden">
-                    <div class="bg-white rounded-lg shadow p-6 mb-4">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800">Daftar Work Order (WO)</h3>
-                            <div class="flex items-center gap-3">
-                                <!-- Filter Tanggal -->
-                                <div class="flex items-center gap-2">
+                    <div class="bg-white rounded-lg shadow p-4 mb-4">
+                        <!-- Header Section dengan 2 baris -->
+                        <div class="space-y-4">
+                            <!-- Baris 1: Judul dan Filter Tanggal -->
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Daftar Work Order (WO)</h3>
+                                
+                                <!-- Filter Tanggal dengan layout yang lebih compact -->
+                                <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                                    <span class="text-sm text-gray-600">Filter:</span>
                                     <input type="date" 
                                            id="wo_start_date" 
-                                           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                           value="{{ request('start_date', now()->format('Y-m-d')) }}">
-                                    <span class="text-gray-500">s/d</span>
+                                           class="text-sm px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                           value="{{ request('start_date') }}">
+                                    <span class="text-sm text-gray-500">s/d</span>
                                     <input type="date" 
                                            id="wo_end_date" 
-                                           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                           value="{{ request('end_date', now()->format('Y-m-d')) }}">
+                                           class="text-sm px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                           value="{{ request('end_date') }}">
                                 </div>
-                                <!-- Existing buttons -->
+                            </div>
+
+                            <!-- Baris 2: Action Buttons -->
+                            <div class="flex flex-wrap items-center gap-2">
+                                <!-- Koneksi Maximo Button -->
                                 <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
-                                   class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
-                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
-                                    koneksi maximo
+                                   class="inline-flex items-center px-3 py-1.5 bg-white border border-blue-500 rounded-md text-sm text-blue-500 hover:bg-blue-50 transition-colors"
+                                   title="Koneksi ke Maximo">
+                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-4 mr-1.5">
+                                    <span>Maximo</span>
                                 </a>
+
+                                <!-- Manage WO Button -->
                                 <a href="{{ route('admin.laporan.manage', ['tab' => 'wo']) }}" 
-                                   class="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                                    <i class="fas fa-cog mr-2"></i> Manage WO
+                                   class="inline-flex items-center px-3 py-1.5 bg-gray-500 text-white rounded-md text-sm hover:bg-gray-600 transition-colors"
+                                   title="Kelola Work Order">
+                                    <i class="fas fa-cog mr-1.5"></i>
+                                    <span>Manage WO</span>
                                 </a>
+
+                                <!-- Tambah WO Button -->
                                 <a href="{{ route('admin.laporan.create-wo') }}" 
-                                   class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                    <i class="fas fa-plus-circle mr-2"></i> Tambah WO
+                                   class="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors"
+                                   title="Tambah Work Order Baru">
+                                    <i class="fas fa-plus-circle mr-1.5"></i>
+                                    <span>Tambah WO</span>
                                 </a>
                             </div>
                         </div>
-                        
-                        <!-- Header section dengan search dan counter -->
-                        <div class="flex justify-between items-center mb-4">
-                            <!-- Search dengan style baru -->
-                            <div class="w-1/3">
+
+                        <!-- Search dan Counter -->
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 mb-3">
+                            <div class="w-full md:w-1/3">
                                 <div class="relative">
                                     <input type="text" 
                                            id="searchWO" 
                                            placeholder="Cari WO, unit, atau status..."
                                            onkeyup="if(event.key === 'Enter') searchWOTable()"
-                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                           class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
+                                        <i class="fas fa-search text-gray-400 text-sm"></i>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Counter -->
-                            <div class="text-gray-600">
-                                Menampilkan <span id="woVisibleCount">0</span> dari <span id="woTotalCount">0</span> data
+                            
+                            <div class="text-sm text-gray-600">
+                                Menampilkan <span id="woVisibleCount" class="font-medium">0</span> dari <span id="woTotalCount" class="font-medium">0</span> data
                             </div>
                         </div>
 
                         <!-- Tabel WO -->
-                        <div class="overflow-auto max-h-96">
+                        <div class="overflow-auto max-h-[calc(100vh-300px)]">
                             @if(session('backlog_notification'))
                             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
                                 <p class="font-bold">Perhatian!</p>
@@ -591,62 +632,78 @@
 
                 <!-- Backlog Table -->
                 <div id="backlog-tab" class="tab-content hidden">
-                    <div class="bg-white rounded-lg shadow p-6 mb-4">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800">Daftar WO Backlog</h3>
-                            <div class="flex items-center gap-3">
-                                <!-- Filter Tanggal -->
-                                <div class="flex items-center gap-2">
+                    <div class="bg-white rounded-lg shadow p-4 mb-4">
+                        <!-- Header Section dengan 2 baris -->
+                        <div class="space-y-4">
+                            <!-- Baris 1: Judul dan Filter Tanggal -->
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Daftar WO Backlog</h3>
+                                
+                                <!-- Filter Tanggal dengan layout yang lebih compact -->
+                                <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                                    <span class="text-sm text-gray-600">Filter:</span>
                                     <input type="date" 
                                            id="backlog_start_date" 
-                                           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                           value="{{ request('start_date', now()->format('Y-m-d')) }}">
-                                    <span class="text-gray-500">s/d</span>
+                                           class="text-sm px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                           value="{{ request('start_date') }}">
+                                    <span class="text-sm text-gray-500">s/d</span>
                                     <input type="date" 
                                            id="backlog_end_date" 
-                                           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                           value="{{ request('end_date', now()->format('Y-m-d')) }}">
+                                           class="text-sm px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                           value="{{ request('end_date') }}">
                                 </div>
-                                <!-- Existing buttons -->
+                            </div>
+
+                            <!-- Baris 2: Action Buttons -->
+                            <div class="flex flex-wrap items-center gap-2">
+                                <!-- Koneksi Maximo Button -->
                                 <a href="http://maximo.plnnusantarapower.co.id/maximo/ui/?event=loadapp&value=wotrack&uisessionid=6851&_tt=mku67dchhvlb9t7lmqm05io6v" 
-                                   class="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
-                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-5 mr-2">
-                                    koneksi maximo
+                                   class="inline-flex items-center px-3 py-1.5 bg-white border border-blue-500 rounded-md text-sm text-blue-500 hover:bg-blue-50 transition-colors"
+                                   title="Koneksi ke Maximo">
+                                    <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-4 mr-1.5">
+                                    <span>Maximo</span>
                                 </a>
+
+                                <!-- Manage Backlog Button -->
                                 <a href="{{ route('admin.laporan.manage', ['tab' => 'backlog']) }}" 
-                                   class="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                                    <i class="fas fa-cog mr-2"></i> Manage Backlog
+                                   class="inline-flex items-center px-3 py-1.5 bg-gray-500 text-white rounded-md text-sm hover:bg-gray-600 transition-colors"
+                                   title="Kelola Backlog">
+                                    <i class="fas fa-cog mr-1.5"></i>
+                                    <span>Manage Backlog</span>
                                 </a>
+
+                                <!-- Tambah Backlog Button -->
                                 <a href="{{ route('admin.laporan.create-backlog') }}" 
-                                   class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                    <i class="fas fa-plus-circle mr-2"></i> Tambah Backlog
+                                   class="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors"
+                                   title="Tambah Backlog Baru">
+                                    <i class="fas fa-plus-circle mr-1.5"></i>
+                                    <span>Tambah Backlog</span>
                                 </a>
                             </div>
                         </div>
-                        
-                        <!-- Header section dengan search dan counter -->
-                        <div class="flex justify-between items-center mb-4">
-                            <!-- Search dengan style baru -->
-                            <div class="w-1/3">
+
+                        <!-- Search dan Counter -->
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 mb-3">
+                            <div class="w-full md:w-1/3">
                                 <div class="relative">
                                     <input type="text" 
                                            id="searchBacklog" 
                                            placeholder="Cari backlog, unit, atau status..."
                                            onkeyup="if(event.key === 'Enter') searchBacklogTable()"
-                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                           class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
+                                        <i class="fas fa-search text-gray-400 text-sm"></i>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Counter -->
-                            <div class="text-gray-600">
-                                Menampilkan <span id="backlogVisibleCount">0</span> dari <span id="backlogTotalCount">0</span> data
+                            
+                            <div class="text-sm text-gray-600">
+                                Menampilkan <span id="backlogVisibleCount" class="font-medium">0</span> dari <span id="backlogTotalCount" class="font-medium">0</span> data
                             </div>
                         </div>
 
                         <!-- Tabel Backlog -->
-                        <div class="overflow-auto max-h-96">
+                        <div class="overflow-auto max-h-[calc(100vh-300px)]">
                             <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
