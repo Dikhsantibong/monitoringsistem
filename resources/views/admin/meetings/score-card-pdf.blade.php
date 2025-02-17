@@ -103,6 +103,88 @@
             background-color: #f8f9fa;
             border-radius: 4px;
         }
+
+        /* Update and add these styles */
+        .report-table th, .sr-table th, .wo-table th, .attendance-table th { 
+            background-color: #0A749B;
+            color: white;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #0A749B;
+            text-align: left;
+        }
+
+        .report-table td, .sr-table td, .wo-table td, .attendance-table td {
+            border: 1px solid #000;
+        }
+
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 10px;
+            display: inline-block;
+        }
+
+        .priority-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .priority-high { background-color: #fee2e2; color: #991b1b; }
+        .priority-medium { background-color: #fef3c7; color: #92400e; }
+        .priority-low { background-color: #dcfce7; color: #166534; }
+
+        .status-operasi { background-color: #dcfce7; color: #166534; }
+        .status-standby { background-color: #dbeafe; color: #1e40af; }
+        .status-gangguan { background-color: #fee2e2; color: #991b1b; }
+        .status-pemeliharaan { background-color: #ffedd5; color: #9a3412; }
+        .status-overhaul { background-color: #ede9fe; color: #5b21b6; }
+        .status-default { background-color: #f3f4f6; color: #374151; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stat-item {
+            padding: 0.5rem;
+            background-color: #f3f4f6;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+        .stat-item span {
+            display: block;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        .stat-item strong {
+            display: block;
+            font-size: 1.125rem;
+            color: #1f2937;
+        }
+        .unit-section {
+            margin-bottom: 2rem;
+            page-break-inside: avoid;
+        }
+
+        @media print {
+            .error {
+                display: none;
+            }
+            html, body {
+                width: 210mm;
+                height: 297mm;
+            }
+            table { 
+                page-break-inside: avoid;
+                margin-bottom: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -331,29 +413,29 @@
          </div>
 
          <!-- Statistik Unit -->
-         <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+         <div class="stats-grid">
              @php
                  $plantLogs = $logs->filter(function($log) use ($powerPlant) {
                      return $log->machine->power_plant_id === $powerPlant->id;
                  });
 
                  $totalDMP = $plantLogs->sum('dmp');
-                 $totalDMN = $plantLogs->sum('dmn');
+                 $totalDMN = $plantLogs->sum('dmn'); 
                  $totalBeban = $plantLogs->where('status', 'OPERASI')->sum('load_value');
              @endphp
              
-             <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
-                 <span style="font-size: 14px; color: #6c757d;">DMP Total:</span>
+             <div class="stat-item">
+                 <span >DMP Total:</span>
                  <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMP, 1) }} MW</strong>
              </div>
-             <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
-                 <span style="font-size: 14px; color: #6c757d;">DMN Total:</span>
+             <div class="stat-item">
+                 <span>DMN Total:</span>
                  <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalDMN, 1) }} MW</strong>
              </div>
-             <div class="stat-item" style="text-align: center; padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
-                 <span style="font-size: 14px; color: #6c757d;">Total Beban:</span>
+             <div class="stat-item">
+                 <span >Total Beban:</span>
                  <strong style="display: block; font-size: 16px; color: #2d3748;">{{ number_format($totalBeban, 1) }} MW</strong>
-             </div>
+             </div>     
          </div>
 
          <table class="report-table">
