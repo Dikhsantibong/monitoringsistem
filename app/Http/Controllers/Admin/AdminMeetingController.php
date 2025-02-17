@@ -513,21 +513,32 @@ class AdminMeetingController extends Controller
                 ->orderBy('created_at')
                 ->get();
 
-            // Tambahkan query untuk Other Discussions
-            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)
-                ->with('commitments')
-                ->orderBy('created_at')
+            // Modifikasi query untuk Other Discussions - hanya ambil yang masih open
+            $otherDiscussions = OtherDiscussion::where('status', 'open')
+                ->where(function($query) use ($date) {
+                    $query->whereDate('created_at', '<=', $date)
+                          ->whereNull('closed_at');
+                })
+                ->with(['commitments' => function($query) {
+                    $query->where('status', 'open');
+                }])
+                ->orderBy('created_at', 'desc')
                 ->get();
 
-            // Definisi koneksi database
-            $connections = [
-                'u478221055_up_kendari' => 'UP Kendari',
-                'mysql_bau_bau' => 'Bau-Bau',
-                'mysql_kolaka' => 'Kolaka', 
-                'mysql_poasia' => 'Poasia',
-                'mysql_wua_wua' => 'Wua-Wua',
-            ];
-
+            // Tambahkan logging untuk memantau data
+            \Log::info('Open Other Discussions data:', [
+                'count' => $otherDiscussions->count(),
+                'date' => $date,
+                'discussions' => $otherDiscussions->map(function($discussion) {
+                    return [
+                        'id' => $discussion->id,
+                        'topic' => $discussion->topic,
+                        'created_at' => $discussion->created_at,
+                        'open_commitments_count' => $discussion->commitments->count()
+                    ];
+                })
+            ]);
+            
             foreach ($activeConnections as $connection => $unitName) {
                 try {
                     \Log::info("Trying to fetch data for connection: {$connection}");
