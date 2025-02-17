@@ -824,65 +824,59 @@
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
 
-        <table class="report-table">
+        <table class="report-table" style="margin: 0 auto; width: 95%;">
             <thead>
                 <tr>
                     <th style="width: 5%">No</th>
-                    <th style="width: 10%">No SR</th>
-                    <th style="width: 10%">No Pembahasan</th>
-                    <th style="width: 10%">Unit</th>
-                    <th style="width: 15%">Topic</th>
-                    <th style="width: 25%">Target</th>
-                    <th style="width: 15%">PIC</th>
-                    <th style="width: 10%">Status</th>
-                    <th style="width: 10%">Deadline</th>
+                    <th style="width: 15%">No Pembahasan</th>
+                    <th style="width: 40%">Topik</th>
+                    <th style="width: 25%">PIC</th>
+                    <th style="width: 15%">Status</th>
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $discussions = collect()
-                        ->concat(App\Models\OtherDiscussion::whereDate('created_at', $date)->get())
-                        ->concat(App\Models\ClosedDiscussion::whereDate('created_at', $date)->get())
-                        ->concat(App\Models\OverdueDiscussion::whereDate('created_at', $date)->get())
-                        ->sortBy('created_at');
-                @endphp
-
-                @forelse($discussions as $discussion)
+                @forelse($otherDiscussions as $discussion)
                     <tr>
                         <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $discussion->sr_number ?? '-' }}</td>
-                        <td>{{ $discussion->no_pembahasan }}</td>
-                        <td>{{ $discussion->unit }}</td>
-                        <td>{{ $discussion->topic }}</td>
-                        <td>{{ $discussion->target }}</td>
-                        <td>{{ $discussion->pic }}</td>
-                        <td>
+                        <td style="font-size: 10px;">{{ $discussion->no_pembahasan }}</td>
+                        <td style="font-size: 10px;">{{ $discussion->topic }}</td>
+                        <td style="font-size: 10px;">{{ $discussion->pic }}</td>
+                        <td style="font-size: 10px; text-align: center;">
                             <span class="status-badge status-{{ strtolower($discussion->status) }}">
                                 {{ $discussion->status }}
                             </span>
                         </td>
-                        <td>{{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}</td>
                     </tr>
-                    @if($discussion->commitments && $discussion->commitments->count() > 0)
-                        <tr>
-                            <td colspan="9">
-                                <strong>Commitments:</strong>
-                                <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
-                                    @foreach($discussion->commitments as $commitment)
-                                        <li style="margin-bottom: 5px;">
-                                            • {{ $commitment->description }} 
-                                            (PIC: {{ $commitment->pic }}, 
-                                            Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}, 
-                                            Status: {{ $commitment->status }})
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </td>
-                        </tr>
-                    @endif
+                    <tr>
+                        <td colspan="5" style="padding: 10px; background-color: #f9f9f9;">
+                            <div style="font-size: 10px; margin-bottom: 5px;">
+                                <strong>Unit:</strong> {{ $discussion->unit }} |
+                                <strong>No SR:</strong> {{ $discussion->sr_number ?? '-' }} |
+                                <strong>Target:</strong> {{ $discussion->target }} |
+                                <strong>Deadline:</strong> {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}
+                            </div>
+                            @if($discussion->commitments && $discussion->commitments->count() > 0)
+                                <div style="margin-top: 8px;">
+                                    <strong style="font-size: 10px;">Commitments:</strong>
+                                    <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
+                                        @foreach($discussion->commitments as $commitment)
+                                            <li style="margin-bottom: 5px; font-size: 10px; padding-left: 10px;">
+                                                • {{ $commitment->description }} 
+                                                <div style="padding-left: 12px; color: #666;">
+                                                    PIC: {{ $commitment->pic }} | 
+                                                    Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }} | 
+                                                    Status: {{ $commitment->status }}
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </td>
+                    </tr>
                 @empty
                     <tr>
-                        <td colspan="9" style="text-align: center;">Tidak ada pembahasan untuk tanggal ini</td>
+                        <td colspan="5" style="text-align: center;">Tidak ada pembahasan yang masih open untuk tanggal ini</td>
                     </tr>
                 @endforelse
             </tbody>

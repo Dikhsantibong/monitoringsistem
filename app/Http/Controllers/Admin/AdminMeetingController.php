@@ -359,16 +359,30 @@ class AdminMeetingController extends Controller
                 ->orderBy('created_at')
                 ->get();
 
-            // Tambahkan query untuk Other Discussions
-            $otherDiscussions = OtherDiscussion::whereDate('created_at', $date)
-                ->with('commitments') // Load relasi commitments
-                ->orderBy('created_at')
+            // Modifikasi query untuk Other Discussions - hanya ambil yang masih open
+            $otherDiscussions = OtherDiscussion::where('status', 'open')
+                ->where(function($query) use ($date) {
+                    $query->whereDate('created_at', '<=', $date)
+                          ->whereNull('closed_at');
+                })
+                ->with(['commitments' => function($query) {
+                    $query->where('status', 'open');
+                }])
+                ->orderBy('created_at', 'desc')
                 ->get();
 
-            // Tambahkan logging untuk other discussions
-            \Log::info('Other Discussions data:', [
+            // Tambahkan logging untuk memantau data
+            \Log::info('Open Other Discussions data for print:', [
                 'count' => $otherDiscussions->count(),
-                'date' => $date
+                'date' => $date,
+                'discussions' => $otherDiscussions->map(function($discussion) {
+                    return [
+                        'id' => $discussion->id,
+                        'topic' => $discussion->topic,
+                        'created_at' => $discussion->created_at,
+                        'open_commitments_count' => $discussion->commitments->count()
+                    ];
+                })
             ]);
             
             foreach ($activeConnections as $connection => $unitName) {
@@ -455,12 +469,8 @@ class AdminMeetingController extends Controller
             $date = $request->get('tanggal');
             $startOfMonth = Carbon::parse($date)->startOfMonth();
             $endOfMonth = Carbon::parse($date)->endOfMonth();
-            \Log::info('Starting PDF download process for date:', ['date' => $date]);
-            
             $allScoreCards = [];
-            $allMachineStatuses = [];
             $currentSession = session('unit');
-            $logoSrc = public_path('logo/navlog1.png'); // Pastikan path logo benar
 
             // Mapping koneksi database dengan nama unit yang sesuai
             $connections = [
@@ -636,20 +646,20 @@ class AdminMeetingController extends Controller
                 'workOrdersCount' => $workOrders->count()
             ]);
 
-            $pdf = PDF::loadView('admin.meetings.score-card-pdf', compact(
-                'date',
-                'allScoreCards',
-                'attendances',
-                'powerPlants',
-                'logs',
-                'serviceRequests',
-                'workOrders',
-                'woBacklogs',
-                'logoSrc',
-                'otherDiscussions'
-            ));
+            $pdf = PDF::loadView('admin.meetings.score-card-pdf', [
+                'allScoreCards' => $allScoreCards,
+                'date' => $date,
+                'attendances' => $attendances,
+                'powerPlants' => $powerPlants,
+                'logs' => $logs,
+                'serviceRequests' => $serviceRequests,
+                'workOrders' => $workOrders,
+                'woBacklogs' => $woBacklogs,
+                'otherDiscussions' => $otherDiscussions,
+                'logoSrc' => public_path('logo/navlog1.png')
+            ]);
 
-            return $pdf->download('score_card_' . $date . '.pdf');
+            return $pdf->stream('score-card.pdf');
 
         } catch (\Exception $e) {
             \Log::error('PDF generation failed:', [
