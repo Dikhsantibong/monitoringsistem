@@ -1640,6 +1640,7 @@
                                     <th class="text-center">DMP</th>
                                     <th class="text-center">Beban</th>
                                     <th class="text-center">Status</th>
+                                    <th class="text-center">progres</th>
                                     <th class="text-center">Waktu Update</th>
                                 </tr>
                             </thead>
@@ -1712,6 +1713,9 @@
                                                 ">
                                                     {{ $statusStyle['icon'] }} {{ $latestStatus->status }}
                                                 </span>
+                                            </td>
+                                            <td class="text-center text-sm text-gray-500">
+                                                {{ $latestStatus->progres }}
                                             </td>
                                             <td class="text-center text-sm text-gray-500">
                                                 {{ $latestStatus->created_at->format('d/m/Y H:i:s') }}
