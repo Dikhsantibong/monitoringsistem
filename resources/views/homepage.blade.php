@@ -1715,7 +1715,9 @@
                                                 </span>
                                             </td>
                                             <td class="text-center text-sm text-gray-500">
-                                                {{ $latestStatus->progres }}
+                                                <div class="max-w-[300px] mx-auto break-words">
+                                                    {{ $latestStatus->progres }}
+                                                </div>
                                             </td>
                                             <td class="text-center text-sm text-gray-500">
                                                 {{ $latestStatus->created_at->format('d/m/Y H:i:s') }}
