@@ -43,7 +43,10 @@ class LaporanController extends Controller
                 'data' => $powerPlants->toArray()
             ]);
 
-            // 2. Optimasi query Service Requests
+            // Add search functionality
+            $search = $request->input('search');
+            
+            // Modify Service Requests query
             $serviceRequests = ServiceRequest::with(['powerPlant:id,name'])
                 ->select([
                     'id', 
@@ -56,6 +59,16 @@ class LaporanController extends Controller
                     'power_plant_id',
                     'unit_source'
                 ])
+                ->when($search, function($query) use ($search) {
+                    return $query->where(function($q) use ($search) {
+                        $q->where('id', 'LIKE', "%{$search}%")
+                          ->orWhere('description', 'LIKE', "%{$search}%")
+                          ->orWhere('status', 'LIKE', "%{$search}%")
+                          ->orWhereHas('powerPlant', function($q) use ($search) {
+                              $q->where('name', 'LIKE', "%{$search}%");
+                          });
+                    });
+                })
                 ->orderBy('created_at', 'desc');
 
             $workOrders = WorkOrder::with(['powerPlant:id,name'])
@@ -76,6 +89,17 @@ class LaporanController extends Controller
                     'is_active',
                     'is_backlogged'
                 ])
+                ->when($search, function($query) use ($search) {
+                    return $query->where(function($q) use ($search) {
+                        $q->where('id', 'LIKE', "%{$search}%")
+                          ->orWhere('description', 'LIKE', "%{$search}%")
+                          ->orWhere('status', 'LIKE', "%{$search}%")
+                          ->orWhere('type', 'LIKE', "%{$search}%")
+                          ->orWhereHas('powerPlant', function($q) use ($search) {
+                              $q->where('name', 'LIKE', "%{$search}%");
+                          });
+                    });
+                })
                 ->latest();
 
             $woBacklogs = WoBacklog::with(['powerPlant:id,name'])
@@ -97,6 +121,17 @@ class LaporanController extends Controller
                     'power_plant_id',
                     'unit_source'
                 ])
+                ->when($search, function($query) use ($search) {
+                    return $query->where(function($q) use ($search) {
+                        $q->where('no_wo', 'LIKE', "%{$search}%")
+                          ->orWhere('deskripsi', 'LIKE', "%{$search}%")
+                          ->orWhere('status', 'LIKE', "%{$search}%")
+                          ->orWhere('type_wo', 'LIKE', "%{$search}%")
+                          ->orWhereHas('powerPlant', function($q) use ($search) {
+                              $q->where('name', 'LIKE', "%{$search}%");
+                          });
+                    });
+                })
                 ->latest();
 
             // Apply date filters if provided
@@ -133,7 +168,8 @@ class LaporanController extends Controller
                 'powerPlants',
                 'srCount',
                 'woCount',
-                'backlogCount'
+                'backlogCount',
+                'search'
             ));
 
         } catch (\Exception $e) {

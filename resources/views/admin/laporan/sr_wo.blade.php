@@ -1210,20 +1210,40 @@
         
         // Search di tabel WO
         searchTable('woTable', searchValue);
+        
+        // Search di tabel Backlog
+        searchTable('backlogTable', searchValue);
+
+        // Update URL with search parameter
+        updateSearchParam(searchValue);
     }
 
+    // Add new function to update URL
+    function updateSearchParam(searchValue) {
+        const url = new URL(window.location.href);
+        if (searchValue) {
+            url.searchParams.set('search', searchValue);
+        } else {
+            url.searchParams.delete('search');
+        }
+        window.history.pushState({}, '', url);
+    }
+
+    // Update the searchTable function
     function searchTable(tableId, searchValue) {
         const table = document.getElementById(tableId);
+        if (!table) return;
+
         const rows = table.getElementsByTagName('tr');
         let visibleCount = 0;
 
-        // Loop melalui semua baris, mulai dari index 1 untuk melewati header
+        // Loop through all rows, start from index 1 to skip header
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             const cells = row.getElementsByTagName('td');
             let found = false;
 
-            // Cek setiap sel dalam baris
+            // Check each cell in row
             for (let j = 0; j < cells.length; j++) {
                 const cellText = cells[j].textContent.toLowerCase();
                 if (cellText.includes(searchValue)) {
@@ -1232,7 +1252,7 @@
                 }
             }
 
-            // Tampilkan/sembunyikan baris berdasarkan hasil pencarian
+            // Show/hide row based on search result
             row.style.display = found ? '' : 'none';
             if (found) visibleCount++;
         }
@@ -1244,10 +1264,25 @@
         }
     }
 
-    // Event listener untuk search input
-    document.getElementById('searchInput').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
-            searchTables();
+    // Add event listener for search input
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            // Set initial search value from URL if exists
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchValue = urlParams.get('search');
+            if (searchValue) {
+                searchInput.value = searchValue;
+                searchTables();
+            }
+
+            // Add event listeners
+            searchInput.addEventListener('input', debounce(searchTables, 300));
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchTables();
+                }
+            });
         }
     });
 
@@ -1380,178 +1415,52 @@
 
     // Fungsi pencarian untuk tabel SR
     function searchSRTable() {
-        const searchValue = document.getElementById('searchSR').value.toLowerCase();
+        const searchInput = document.getElementById('searchSR');
+        if (!searchInput) return;
+
+        const searchValue = searchInput.value.toLowerCase();
         const table = document.getElementById('srTable');
-        const rows = table.getElementsByTagName('tr');
-        let visibleCount = 0;
+        if (!table) return;
 
-        // Simpan filter yang sedang aktif
-        const status = document.getElementById('srStatusFilter').value;
-        const unit = document.getElementById('filterUnitSR').value;
-        const downtime = document.getElementById('srDowntimeFilter').value;
-        const startDate = document.getElementById('startDateSR').value;
-        const endDate = document.getElementById('endDateSR').value;
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-            let matchesFilter = true;
-
-            // Cek apakah baris memenuhi kriteria filter
-            if (status) {
-                const statusCell = cells[4].textContent.trim();
-                if (!statusCell.includes(status)) matchesFilter = false;
-            }
-            if (unit) {
-                const unitCell = cells[2].textContent.trim();
-                if (!unitCell.includes(unit)) matchesFilter = false;
-            }
-            if (downtime) {
-                const downtimeCell = cells[6].textContent.trim();
-                if (downtime === 'Yes' && downtimeCell === '0') matchesFilter = false;
-                if (downtime === 'No' && downtimeCell !== '0') matchesFilter = false;
-            }
-
-            // Filter tanggal
-            if (startDate && endDate && cells[7].textContent.trim()) {
-                const rowDate = new Date(cells[7].textContent.trim());
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                end.setHours(23, 59, 59); // Set end date to end of day
-
-                if (rowDate < start || rowDate > end) {
-                    matchesFilter = false;
-                }
-            }
-
-            // Cek apakah baris mengandung kata yang dicari
-            for (let j = 0; j < cells.length; j++) {
-                const cellText = cells[j].textContent.toLowerCase();
-                if (cellText.includes(searchValue)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
-            if (found && matchesFilter) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        }
-
-        // Update counter
-        document.getElementById('srVisibleCount').textContent = visibleCount;
+        searchTableContent(table, searchValue, 'srVisibleCount');
     }
 
     // Fungsi pencarian untuk tabel WO
     function searchWOTable() {
-        const searchValue = document.getElementById('searchWO').value.toLowerCase();
+        const searchInput = document.getElementById('searchWO');
+        if (!searchInput) return;
+
+        const searchValue = searchInput.value.toLowerCase();
         const table = document.getElementById('woTable');
-        const rows = table.getElementsByTagName('tr');
-        let visibleCount = 0;
+        if (!table) return;
 
-        // Simpan filter yang sedang aktif
-        const status = document.getElementById('woStatusFilter').value;
-        const unit = document.getElementById('filterUnitWO').value;
-        const startDate = document.getElementById('startDateWO').value;
-        const endDate = document.getElementById('endDateWO').value;
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-            let matchesFilter = true;
-
-            // Cek apakah baris memenuhi kriteria filter
-            if (status) {
-                const statusCell = row.querySelector('td[data-column="status"]').textContent.trim();
-                if (!statusCell.includes(status)) matchesFilter = false;
-            }
-            if (unit) {
-                const unitCell = cells[2].textContent.trim();
-                if (!unitCell.includes(unit)) matchesFilter = false;
-            }
-
-            // Filter tanggal
-            if (startDate && endDate && cells[6].textContent.trim()) {
-                const rowDate = new Date(cells[6].textContent.trim());
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                end.setHours(23, 59, 59); // Set end date to end of day
-
-                if (rowDate < start || rowDate > end) {
-                    matchesFilter = false;
-                }
-            }
-
-            // Cek apakah baris mengandung kata yang dicari
-            for (let j = 0; j < cells.length; j++) {
-                const cellText = cells[j].textContent.toLowerCase();
-                if (cellText.includes(searchValue)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
-            if (found && matchesFilter) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        }
-
-        // Update counter
-        document.getElementById('woVisibleCount').textContent = visibleCount;
+        searchTableContent(table, searchValue, 'woVisibleCount');
     }
 
     // Fungsi pencarian untuk tabel Backlog
     function searchBacklogTable() {
-        const searchValue = document.getElementById('searchBacklog').value.toLowerCase();
+        const searchInput = document.getElementById('searchBacklog');
+        if (!searchInput) return;
+
+        const searchValue = searchInput.value.toLowerCase();
         const table = document.getElementById('backlogTable');
+        if (!table) return;
+
+        searchTableContent(table, searchValue, 'backlogVisibleCount');
+    }
+
+    // Fungsi umum untuk mencari konten tabel
+    function searchTableContent(table, searchValue, counterId) {
         const rows = table.getElementsByTagName('tr');
         let visibleCount = 0;
 
-        // Simpan filter yang sedang aktif
-        const status = document.getElementById('backlogStatusFilter').value;
-        const unit = document.getElementById('filterUnitBacklog').value;
-        const startDate = document.getElementById('startDateBacklog').value;
-        const endDate = document.getElementById('endDateBacklog').value;
-
+        // Loop through all rows, skip header
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             const cells = row.getElementsByTagName('td');
             let found = false;
-            let matchesFilter = true;
 
-            // Cek apakah baris memenuhi kriteria filter
-            if (status) {
-                const statusCell = cells[5].textContent.trim();
-                if (!statusCell.includes(status)) matchesFilter = false;
-            }
-            if (unit) {
-                const unitCell = cells[2].textContent.trim();
-                if (!unitCell.includes(unit)) matchesFilter = false;
-            }
-
-            // Filter tanggal
-            if (startDate && endDate && cells[8].textContent.trim()) {
-                const rowDate = new Date(cells[8].textContent.trim());
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                end.setHours(23, 59, 59); // Set end date to end of day
-
-                if (rowDate < start || rowDate > end) {
-                    matchesFilter = false;
-                }
-            }
-
-            // Cek apakah baris mengandung kata yang dicari
+            // Check each cell in row
             for (let j = 0; j < cells.length; j++) {
                 const cellText = cells[j].textContent.toLowerCase();
                 if (cellText.includes(searchValue)) {
@@ -1560,50 +1469,60 @@
                 }
             }
 
-            // Tampilkan baris jika memenuhi kriteria pencarian dan filter
-            if (found && matchesFilter) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
+            // Show/hide row based on search result
+            row.style.display = found ? '' : 'none';
+            if (found) visibleCount++;
         }
 
-        // Update counter
-        document.getElementById('backlogVisibleCount').textContent = visibleCount;
+        // Update counter if element exists
+        const counter = document.getElementById(counterId);
+        if (counter) {
+            counter.textContent = visibleCount;
+        }
     }
 
-    // Event listeners untuk pencarian real-time
+    // Event listeners untuk pencarian
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInputs = {
-            'searchSR': searchSRTable,
-            'searchWO': searchWOTable,  
-            'searchBacklog': searchBacklogTable
-        };
+        // Setup SR search
+        const searchSR = document.getElementById('searchSR');
+        if (searchSR) {
+            searchSR.addEventListener('input', debounce(searchSRTable, 300));
+            searchSR.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchSRTable();
+            });
+        }
 
-        Object.entries(searchInputs).forEach(([inputId, searchFunction]) => {
-            const input = document.getElementById(inputId);
-            if (input) {
-                const debouncedSearch = debounce(searchFunction, 300);
-                
-                // Event listener untuk input
-                input.addEventListener('input', debouncedSearch);
-                
-                // Event listener untuk tombol Enter
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchFunction();
-                    }
-                });
+        // Setup WO search
+        const searchWO = document.getElementById('searchWO');
+        if (searchWO) {
+            searchWO.addEventListener('input', debounce(searchWOTable, 300));
+            searchWO.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchWOTable();
+            });
+        }
 
-                // Event listener untuk tombol search
-                const searchButton = input.nextElementSibling;
-                if (searchButton) {
-                    searchButton.addEventListener('click', searchFunction);
-                }
-            }
-        });
+        // Setup Backlog search
+        const searchBacklog = document.getElementById('searchBacklog');
+        if (searchBacklog) {
+            searchBacklog.addEventListener('input', debounce(searchBacklogTable, 300));
+            searchBacklog.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchBacklogTable();
+            });
+        }
     });
+
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
     // Tambahkan debounce untuk pencarian real-time
     const debouncedSRSearch = debounce(() => searchSRTable(), 300);
