@@ -169,21 +169,40 @@ class PembangkitController extends Controller
                             }
                         })->first();
 
-                    $updateData = [
-                        'dmn' => $operation ? $operation->dmn : 0,
-                        'dmp' => $dmp,
-                        'load_value' => $log['load_value'],
-                        'status' => $log['status'],
-                        'component' => $log['component'],
-                        'equipment' => $equipment,
-                        'deskripsi' => $log['deskripsi'] ?? null,
-                        'kronologi' => $log['kronologi'] ?? null,
-                        'action_plan' => $log['action_plan'] ?? null,
-                        'progres' => $log['progres'] ?? null,
-                        'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
-                        'target_selesai' => $log['target_selesai'] ?? null,
-                        'unit_source' => $currentSession
-                    ];
+                    // Kosongkan field tertentu jika status adalah Standby
+                    if (in_array($log['status'], ['Standby', 'Operasi'])) {
+                        $updateData = [
+                            'dmn' => $operation ? $operation->dmn : 0,
+                            'dmp' => $dmp,
+                            'load_value' => $log['load_value'],
+                            'status' => $log['status'],
+                            'component' => null,
+                            'equipment' => null,
+                            'deskripsi' => null,
+                            'kronologi' => null,
+                            'action_plan' => null,
+                            'progres' => null,
+                            'tanggal_mulai' => null,
+                            'target_selesai' => null,
+                            'unit_source' => $currentSession
+                        ];
+                    } else {
+                        $updateData = [
+                            'dmn' => $operation ? $operation->dmn : 0,
+                            'dmp' => $dmp,
+                            'load_value' => $log['load_value'],
+                            'status' => $log['status'],
+                            'component' => $log['component'],
+                            'equipment' => $equipment,
+                            'deskripsi' => $log['deskripsi'] ?? null,
+                            'kronologi' => $log['kronologi'] ?? null,
+                            'action_plan' => $log['action_plan'] ?? null,
+                            'progres' => $log['progres'] ?? null,
+                            'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
+                            'target_selesai' => $log['target_selesai'] ?? null,
+                            'unit_source' => $currentSession
+                        ];
+                    }
 
                     if ($existingLog) {
                         // Pastikan UUID tetap sama saat update
