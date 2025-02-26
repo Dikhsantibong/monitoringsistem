@@ -97,6 +97,20 @@
                             <input type="date" id="filterDate" value="{{ date('Y-m-d') }}"
                                 class="px-4 py-2 border rounded-lg">
 
+                            <!-- Tambahkan filter unit -->
+                            @if(session('unit') === 'mysql')
+                            <select id="unitFilter" 
+                                    class="px-4 py-2 border rounded-lg"
+                                    onchange="filterUnits()">
+                                <option value="">Semua Unit</option>
+                                <option value="mysql">UP Kendari</option>
+                                <option value="mysql_wua_wua">Wua Wua</option>
+                                <option value="mysql_poasia">Poasia</option>
+                                <option value="mysql_kolaka">Kolaka</option>
+                                <option value="mysql_bau_bau">Bau Bau</option>
+                            </select>
+                            @endif
+
                             <div class="relative">
                                 <div class="relative">
                                     <input type="text" 
@@ -133,7 +147,7 @@
                     <h1 class="text-lg font-semibold uppercase mb-5">KESIAPAN PEMBANGKIT UP KENDARI ( MEGAWATT )</h1>
 
                     @foreach ($units as $unit)
-                        <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table">
+                        <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table" data-unit-source="{{ $unit->unit_source }}">
                             <div class="overflow-auto">
                                 <div class="flex justify-between items-center mb-4">
                                     <div class="flex flex-col">
@@ -492,71 +506,76 @@
             logs: [],
             hops: []
         };
-        const tables = document.querySelectorAll('.unit-table table');
+        const tables = document.querySelectorAll('.unit-table');
         const tanggal = document.getElementById('filterDate').value;
+        const unitFilter = document.getElementById('unitFilter')?.value;
 
         tables.forEach(table => {
-            const unitTable = table.closest('.unit-table');
-            const powerPlantId = unitTable.querySelector('input[id^="hop_"]').id.split('_')[1];
-            const hopValue = unitTable.querySelector(`input[id="hop_${powerPlantId}"]`).value;
+            const unitSource = table.getAttribute('data-unit-source');
+            // Hanya proses data jika tidak ada filter atau unit sesuai filter
+            if (!unitFilter || unitFilter === unitSource) {
+                const unitTable = table;
+                const powerPlantId = unitTable.querySelector('input[id^="hop_"]').id.split('_')[1];
+                const hopValue = unitTable.querySelector(`input[id="hop_${powerPlantId}"]`).value;
 
-            // Tambahkan data HOP
-            if (hopValue) {
-                data.hops.push({
-                    power_plant_id: powerPlantId,
-                    tanggal: tanggal,
-                    hop_value: hopValue
-                });
-            }
-
-            // Tambahkan data status mesin (kode yang sudah ada)
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
-                const statusSelect = row.querySelector('select');
-                const componentSelect = row.querySelector('.system-select');
-                
-                // Perbaikan pengambilan nilai equipment
-                const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
-                const equipmentValue = equipmentTextarea ? equipmentTextarea.value.trim() : '';
-                
-                // Ambil nilai-nilai lain
-                const dmpInput = row.querySelector('td:nth-child(3) input');
-                const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
-                const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
-                const inputBeban = row.querySelector('td:nth-child(4) input');
-                const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
-                const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
-                const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
-                const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
-
-                // Perbaiki selector untuk input beban
-                const loadInput = row.querySelector('td:nth-child(5) input[type="number"]'); // Sesuaikan dengan posisi kolom beban
-                const loadValue = loadInput ? parseFloat(loadInput.value) || 0 : 0;
-
-                // Debug log untuk memastikan nilai beban terambil
-                console.log('Load value for machine', machineId, ':', loadValue);
-
-                if (statusSelect && statusSelect.value) {
-                    data.logs.push({
-                        machine_id: machineId,
+                // Tambahkan data HOP jika ada
+                if (hopValue) {
+                    data.hops.push({
+                        power_plant_id: powerPlantId,
                         tanggal: tanggal,
-                        hop: hopValue,
-                        status: statusSelect.value,
-                        component: componentSelect ? componentSelect.value : null,
-                        equipment: equipmentValue,
-                        dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
-                        dmp: dmpInput ? dmpInput.value.trim() : null,
-                        load_value: loadValue, // Pastikan nilai load_value selalu terisi
-                        deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
-                        action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
-                        progres: inputProgres ? inputProgres.value.trim() : null,
-                        kronologi: inputKronologi ? inputKronologi.value.trim() : null,
-                        tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
-                        target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
+                        hop_value: hopValue
                     });
                 }
-            });
+
+                // Proses data mesin seperti sebelumnya
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const machineId = row.querySelector('td[data-id]').getAttribute('data-id');
+                    const statusSelect = row.querySelector('select');
+                    const componentSelect = row.querySelector('.system-select');
+                    
+                    // Perbaikan pengambilan nilai equipment
+                    const equipmentTextarea = row.querySelector('textarea[name^="equipment"]');
+                    const equipmentValue = equipmentTextarea ? equipmentTextarea.value.trim() : '';
+                    
+                    // Ambil nilai-nilai lain
+                    const dmpInput = row.querySelector('td:nth-child(3) input');
+                    const inputDeskripsi = row.querySelector(`textarea[name="deskripsi[${machineId}]"]`);
+                    const inputActionPlan = row.querySelector(`textarea[name="action_plan[${machineId}]"]`);
+                    const inputBeban = row.querySelector('td:nth-child(4) input');
+                    const inputProgres = row.querySelector(`textarea[name="progres[${machineId}]"]`);
+                    const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
+                    const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
+                    const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
+
+                    // Perbaiki selector untuk input beban
+                    const loadInput = row.querySelector('td:nth-child(5) input[type="number"]'); // Sesuaikan dengan posisi kolom beban
+                    const loadValue = loadInput ? parseFloat(loadInput.value) || 0 : 0;
+
+                    // Debug log untuk memastikan nilai beban terambil
+                    console.log('Load value for machine', machineId, ':', loadValue);
+
+                    if (statusSelect && statusSelect.value) {
+                        data.logs.push({
+                            machine_id: machineId,
+                            tanggal: tanggal,
+                            hop: hopValue,
+                            status: statusSelect.value,
+                            component: componentSelect ? componentSelect.value : null,
+                            equipment: equipmentValue,
+                            dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
+                            dmp: dmpInput ? dmpInput.value.trim() : null,
+                            load_value: loadValue, // Pastikan nilai load_value selalu terisi
+                            deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
+                            action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
+                            progres: inputProgres ? inputProgres.value.trim() : null,
+                            kronologi: inputKronologi ? inputKronologi.value.trim() : null,
+                            tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
+                            target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
+                        });
+                    }
+                });
+            }
         });
 
         // Debug log untuk melihat data yang akan dikirim
@@ -715,7 +734,7 @@
     // Perbaikan fungsi loadData
     function loadData() {
         const tanggal = document.getElementById('filterDate').value;
-        const refreshButton = document.getElementById('refreshButton');
+        const unitFilter = document.getElementById('unitFilter')?.value || '';
         
         // Tampilkan loading indicator
         Swal.fire({
@@ -727,33 +746,43 @@
             }
         });
 
-        // Nonaktifkan tombol selama proses
-        refreshButton.disabled = true;
-
-        // Tambahkan animasi pada ikon
-        const icon = refreshButton.querySelector('i.fas.fa-redo');
-        if (icon) {
-            icon.classList.add('fa-spin');
-        }
-
-        // Lakukan request AJAX
-        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}`, {
+        // Modifikasi URL untuk include unit_source
+        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}&unit_source=${unitFilter}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(result => {
             if (result.success) {
+                // Reset form untuk unit yang dipilih saja
+                const tables = document.querySelectorAll('.unit-table');
+                tables.forEach(table => {
+                    const unitSource = table.getAttribute('data-unit-source');
+                    if (!unitFilter || unitFilter === unitSource) {
+                        // Reset form fields untuk unit ini
+                        const inputs = table.querySelectorAll('input[type="number"], input[type="text"], textarea');
+                        inputs.forEach(input => {
+                            if (!input.id.startsWith('hop_')) { // Jangan reset nilai HOP
+                                input.value = '';
+                            }
+                        });
+                        
+                        const selects = table.querySelectorAll('select');
+                        selects.forEach(select => {
+                            select.value = '';
+                            select.style.backgroundColor = '';
+                        });
+                    }
+                });
+
                 // Update form dengan data baru
                 updateFormWithData(result.data);
+                
+                // Terapkan filter untuk menampilkan hanya unit yang dipilih
+                filterUnits();
                 
                 Swal.fire({
                     icon: 'success',
@@ -773,16 +802,64 @@
                 title: 'Error',
                 text: `Gagal memuat data: ${error.message}`
             });
-        })
-        .finally(() => {
-            // Aktifkan kembali tombol
-            refreshButton.disabled = false;
+        });
+    }
+
+    // Tambahkan fungsi filterUnits
+    function filterUnits() {
+        const selectedUnit = document.getElementById('unitFilter')?.value;
+        const unitTables = document.getElementsByClassName('unit-table');
+        let visibleUnitsCount = 0;
+        
+        console.log('Selected Unit:', selectedUnit); // Debug
+
+        Array.from(unitTables).forEach(table => {
+            const unitSource = table.getAttribute('data-unit-source');
+            console.log('Table Unit Source:', unitSource); // Debug
             
-            // Hentikan animasi
-            if (icon) {
-                icon.classList.remove('fa-spin');
+            if (!selectedUnit || selectedUnit === unitSource) {
+                table.style.display = '';
+                visibleUnitsCount++;
+                console.log('Showing table for:', unitSource); // Debug
+            } else {
+                table.style.display = 'none';
+                console.log('Hiding table for:', unitSource); // Debug
             }
         });
+
+        // Update judul section jika ada filter yang dipilih
+        const sectionTitle = document.querySelector('h1.text-lg.font-semibold.uppercase.mb-5');
+        if (sectionTitle) {
+            const unitNames = {
+                'mysql': 'UP KENDARI',
+                'mysql_wua_wua': 'WUA WUA',
+                'mysql_poasia': 'POASIA',
+                'mysql_kolaka': 'KOLAKA',
+                'mysql_bau_bau': 'BAU BAU'
+            };
+            
+            if (selectedUnit && unitNames[selectedUnit]) {
+                sectionTitle.textContent = `KESIAPAN PEMBANGKIT ${unitNames[selectedUnit]} ( MEGAWATT )`;
+            } else {
+                sectionTitle.textContent = 'KESIAPAN PEMBANGKIT UP KENDARI ( MEGAWATT )';
+            }
+        }
+
+        // Tampilkan pesan jika tidak ada unit yang ditampilkan
+        const noDataMessage = document.getElementById('no-data-message');
+        if (visibleUnitsCount === 0) {
+            if (!noDataMessage) {
+                const message = document.createElement('div');
+                message.id = 'no-data-message';
+                message.className = 'text-center py-8 text-gray-600 font-semibold text-lg';
+                message.textContent = 'Tidak ada data untuk unit yang dipilih';
+                document.querySelector('.bg-white.rounded-lg.shadow.p-6').appendChild(message);
+            }
+        } else if (noDataMessage) {
+            noDataMessage.remove();
+        }
+
+        console.log('Visible Units Count:', visibleUnitsCount); // Debug
     }
 
     // Fungsi untuk mengupdate form dengan data baru

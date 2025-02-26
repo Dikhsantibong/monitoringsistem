@@ -20,30 +20,59 @@ class PembangkitController extends Controller
 {
     public function ready()
     {
-        $units = PowerPlant::orderByRaw("
-            CASE 
-                WHEN name LIKE 'PLTU%' THEN 1
-                WHEN name LIKE 'PLTM%' THEN 2
-                WHEN name LIKE 'PLTD%' THEN 3
-                WHEN name LIKE 'PLTMG%' THEN 4
-                ELSE 5
-            END
-        ")->get();
-        $machines = Machine::with('issues', 'metrics')->get();
-        
-        // Modifikasi query operations untuk include unit_id
-        $operations = MachineOperation::select('machine_operations.*', 'machines.power_plant_id as unit_id')
-            ->join('machines', 'machines.id', 'machine_operations.machine_id')
+        // Modifikasi query untuk units dengan select unit_source
+        $units = PowerPlant::select('*')
+            ->when(session('unit') !== 'mysql', function ($query) {
+                return $query->where('unit_source', session('unit'));
+            })
+            ->orderByRaw("
+                CASE 
+                    WHEN name LIKE 'PLTU%' THEN 1
+                    WHEN name LIKE 'PLTM%' THEN 2
+                    WHEN name LIKE 'PLTD%' THEN 3
+                    WHEN name LIKE 'PLTMG%' THEN 4
+                    ELSE 5
+                END
+            ")->get();
+
+        $machines = Machine::with(['issues', 'metrics'])
+            ->when(session('unit') !== 'mysql', function ($query) {
+                return $query->whereHas('powerPlant', function($q) {
+                    $q->where('unit_source', session('unit'));
+                });
+            })
             ->get();
         
-        // Ambil status log dengan relasi machine dan updated_at
+        // Modifikasi query operations
+        $operations = MachineOperation::select('machine_operations.*', 'machines.power_plant_id as unit_id')
+            ->join('machines', 'machines.id', 'machine_operations.machine_id')
+            ->when(session('unit') !== 'mysql', function ($query) {
+                return $query->whereHas('machine.powerPlant', function($q) {
+                    $q->where('unit_source', session('unit'));
+                });
+            })
+            ->get();
+        
+        // Modifikasi query untuk status logs
         $todayLogs = MachineStatusLog::with(['machine'])
             ->select('machine_status_logs.*', 'machines.power_plant_id as unit_id')
             ->join('machines', 'machines.id', 'machine_status_logs.machine_id')
+            ->when(session('unit') !== 'mysql', function ($query) {
+                return $query->whereHas('machine.powerPlant', function($q) {
+                    $q->where('unit_source', session('unit'));
+                });
+            })
             ->whereDate('tanggal', Carbon::today())
             ->get();
         
-        $todayHops = UnitOperationHour::whereDate('tanggal', Carbon::today())->get();
+        // Modifikasi query untuk HOP
+        $todayHops = UnitOperationHour::when(session('unit') !== 'mysql', function ($query) {
+                return $query->whereHas('powerPlant', function($q) {
+                    $q->where('unit_source', session('unit'));
+                });
+            })
+            ->whereDate('tanggal', Carbon::today())
+            ->get();
 
         return view('admin.pembangkit.ready', compact('units', 'machines', 'operations', 'todayLogs', 'todayHops'));
     }
@@ -245,36 +274,56 @@ class PembangkitController extends Controller
         try {
             $tanggal = $request->tanggal ?? now()->toDateString();
             $currentSession = session('unit', 'mysql');
+            $unitSource = $request->unit_source;
 
             // Subquery untuk mendapatkan tanggal terakhir update untuk setiap mesin
             $lastUpdateDates = MachineStatusLog::select('machine_id', DB::raw('MAX(tanggal) as last_date'))
+                ->when($unitSource, function ($query) use ($unitSource) {
+                    return $query->whereHas('machine.powerPlant', function($q) use ($unitSource) {
+                        $q->where('unit_source', $unitSource);
+                    });
+                })
                 ->groupBy('machine_id');
 
-            // Modifikasi query untuk mengambil data terakhir untuk setiap mesin
-            $logs = MachineStatusLog::with(['machine.powerPlant'])
+            // Query utama untuk logs
+            $logsQuery = MachineStatusLog::with(['machine.powerPlant'])
                 ->select('machine_status_logs.*', 'machines.power_plant_id as unit_id')
                 ->join('machines', 'machines.id', 'machine_status_logs.machine_id')
+                ->join('power_plants', 'power_plants.id', '=', 'machines.power_plant_id')
                 ->joinSub($lastUpdateDates, 'last_updates', function ($join) {
                     $join->on('machine_status_logs.machine_id', '=', 'last_updates.machine_id')
                         ->on('machine_status_logs.tanggal', '=', 'last_updates.last_date');
-                })
-                ->get();
+                });
 
-            // Ambil data HOP terakhir untuk setiap unit
+            // Filter berdasarkan unit_source
+            if ($unitSource) {
+                $logsQuery->where('power_plants.unit_source', $unitSource);
+            }
+
+            $logs = $logsQuery->get();
+
+            // Query untuk HOP
             $lastHopDates = UnitOperationHour::select('power_plant_id', DB::raw('MAX(tanggal) as last_date'))
+                ->when($unitSource, function ($query) use ($unitSource) {
+                    return $query->whereHas('powerPlant', function($q) use ($unitSource) {
+                        $q->where('unit_source', $unitSource);
+                    });
+                })
                 ->groupBy('power_plant_id');
 
-            $hops = UnitOperationHour::with('powerPlant')
+            $hopsQuery = UnitOperationHour::with('powerPlant')
                 ->joinSub($lastHopDates, 'last_updates', function ($join) {
                     $join->on('unit_operation_hours.power_plant_id', '=', 'last_updates.power_plant_id')
                         ->on('unit_operation_hours.tanggal', '=', 'last_updates.last_date');
-                })
-                ->when($currentSession !== 'mysql', function($query) use ($currentSession) {
-                    $query->whereHas('powerPlant', function($q) use ($currentSession) {
-                        $q->where('unit_source', $currentSession);
-                    });
-                })
-                ->get();
+                });
+
+            if ($unitSource) {
+                $hopsQuery->whereHas('powerPlant', function($query) use ($unitSource) {
+                    $query->where('unit_source', $unitSource);
+                });
+            }
+
+            $hops = $hopsQuery->get();
 
             return response()->json([
                 'success' => true,
