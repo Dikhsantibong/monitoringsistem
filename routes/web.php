@@ -714,6 +714,3 @@ Route::get('/monitoring-data/{period}', [HomeController::class, 'getMonitoringDa
     ->where('period', 'daily|weekly|monthly');
 
 Route::post('/attendance/scan-qr', [AttendanceController::class, 'scanQR'])->name('attendance.scan-qr');
-
-Route::get('/admin/dashboard/chart-data', [DashboardController::class, 'getChartData'])
-    ->name('admin.dashboard.chart-data');

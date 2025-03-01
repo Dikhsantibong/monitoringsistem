@@ -15,17 +15,16 @@ use App\Models\WoBacklog;
 use App\Models\OtherDiscussion;
 use App\Models\Commitment;
 use App\Models\Attendance;
-use Illuminate\Http\Request;
 
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Get selected month from request, default to current month
-        $selectedDate = request('month') ? Carbon::parse(request('month')) : now();
-        $startDate = $selectedDate->copy()->startOfMonth();
-        $endDate = $selectedDate->copy()->endOfMonth();
+        // Ambil tanggal awal dan akhir bulan ini
+        $currentMonth = now()->startOfMonth();
+        $startDate = $currentMonth->copy()->startOfMonth();
+        $endDate = $currentMonth->copy()->endOfMonth();
         
         // Debug tanggal
         \Log::info('Date Range:', [
@@ -297,97 +296,5 @@ class DashboardController extends Controller
             \Log::error('Error in calculateTotalScore: ' . $e->getMessage());
             return 0;
         }
-    }
-
-    // Add new method to handle AJAX requests for chart data
-    public function getChartData(Request $request)
-    {
-        $selectedDate = Carbon::parse($request->month);
-        $startDate = $selectedDate->copy()->startOfMonth();
-        $endDate = $selectedDate->copy()->endOfMonth();
-
-        // Buat array tanggal untuk satu bulan
-        $dates = collect();
-        for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
-            $dates->push($date->format('Y-m-d'));
-        }
-
-        // Get attendance data for selected month
-        $attendanceData = collect();
-        for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
-            $dateStr = $date->format('Y-m-d');
-            $totalAttendance = Attendance::whereDate('time', $dateStr)->count();
-            $expectedAttendance = 50;
-            $percentage = $totalAttendance > 0 ? 
-                round(($totalAttendance / $expectedAttendance) * 100, 2) : 0;
-            
-            $attendanceData->push([
-                'date' => $dateStr,
-                'percentage' => $percentage
-            ]);
-        }
-
-        // Get ScoreCardDaily data for selected month
-        $scoreCardData = ScoreCardDaily::whereBetween('tanggal', [$startDate, $endDate])
-            ->get()
-            ->map(function($scoreCard) {
-                try {
-                    // Hitung total score peserta
-                    $pesertaScore = 0;
-                    if ($scoreCard->peserta) {
-                        $pesertaData = is_string($scoreCard->peserta) 
-                            ? json_decode($scoreCard->peserta, true) 
-                            : (is_array($scoreCard->peserta) ? $scoreCard->peserta : []);
-                        $pesertaScore = collect($pesertaData)->sum(function($peserta) {
-                            return intval($peserta['skor'] ?? 0);
-                        });
-                    }
-
-                    // Hitung total score ketentuan rapat
-                    $ketentuanScore = intval($scoreCard->kesiapan_panitia ?? 0) +
-                        intval($scoreCard->kesiapan_bahan ?? 0) +
-                        intval($scoreCard->aktivitas_luar ?? 0) +
-                        intval($scoreCard->gangguan_diskusi ?? 0) +
-                        intval($scoreCard->gangguan_keluar_masuk ?? 0) +
-                        intval($scoreCard->gangguan_interupsi ?? 0) +
-                        intval($scoreCard->ketegasan_moderator ?? 0) +
-                        intval($scoreCard->skor_waktu_mulai ?? 0) +
-                        intval($scoreCard->skor_waktu_selesai ?? 0) +
-                        intval($scoreCard->kelengkapan_sr ?? 0);
-
-                    return [
-                        'date' => $scoreCard->tanggal->format('Y-m-d'),
-                        'score' => round(($pesertaScore + $ketentuanScore) / 2, 2) // Rata-rata dari kedua score
-                    ];
-                } catch (\Exception $e) {
-                    \Log::error('Error calculating score: ' . $e->getMessage());
-                    return [
-                        'date' => $scoreCard->tanggal->format('Y-m-d'),
-                        'score' => 0
-                    ];
-                }
-            })
-            ->groupBy('date')
-            ->map(function($group) {
-                return round($group->avg('score'), 2);
-            });
-
-        // Pastikan semua tanggal memiliki nilai, isi 0 jika tidak ada data
-        $formattedScoreCard = $dates->mapWithKeys(function($date) use ($scoreCardData) {
-            return [
-                $date => $scoreCardData[$date] ?? 0
-            ];
-        })->sortKeys();
-
-        return response()->json([
-            'attendanceData' => [
-                'dates' => $attendanceData->pluck('date')->toArray(),
-                'scores' => $attendanceData->pluck('percentage')->toArray(),
-            ],
-            'scoreCardData' => [
-                'dates' => $formattedScoreCard->keys()->toArray(),
-                'scores' => $formattedScoreCard->values()->toArray(),
-            ]
-        ]);
     }
 } 
