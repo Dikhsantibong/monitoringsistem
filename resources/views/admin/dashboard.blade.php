@@ -96,21 +96,27 @@
 
             <!-- Dashboard Content -->
             <main class="px-6">
-                <!-- Charts -->
+                <!-- Add month selector above the charts -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Card Ketepatan Waktu -->
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Persentasi Kehadiran</h3>
-                            <div class="flex space-x-2">
-                                <button onclick="toggleChartType('activityChart', 'line')"
-                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
-                                    <i class="fas fa-chart-line"></i>
-                                </button>
-                                <button onclick="toggleChartType('activityChart', 'bar')"
-                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Batang">
-                                    <i class="fas fa-chart-bar"></i>
-                                </button>
+                            <div class="flex items-center space-x-4">
+                                <input type="month" 
+                                       id="attendanceMonth" 
+                                       class="form-input rounded-md shadow-sm"
+                                       value="{{ now()->format('Y-m') }}">
+                                <div class="flex space-x-2">
+                                    <button onclick="toggleChartType('activityChart', 'line')"
+                                        class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
+                                        <i class="fas fa-chart-line"></i>
+                                    </button>
+                                    <button onclick="toggleChartType('activityChart', 'bar')"
+                                        class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Batang">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div style="height: 300px;">
@@ -122,15 +128,21 @@
                     <div class="bg-white rounded-lg shadow p-6" style="height: 400px;">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Score Daily Meeting</h3>
-                            <div class="flex space-x-2">
-                                <button onclick="toggleChartType('meetingChart', 'line')"
-                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
-                                    <i class="fas fa-chart-line"></i>
-                                </button>
-                                <button onclick="toggleChartType('meetingChart', 'bar')"
-                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Batang">
-                                    <i class="fas fa-chart-bar"></i>
-                                </button>
+                            <div class="flex items-center space-x-4">
+                                <input type="month" 
+                                       id="scoreCardMonth" 
+                                       class="form-input rounded-md shadow-sm"
+                                       value="{{ now()->format('Y-m') }}">
+                                <div class="flex space-x-2">
+                                    <button onclick="toggleChartType('meetingChart', 'line')"
+                                        class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Garis">
+                                        <i class="fas fa-chart-line"></i>
+                                    </button>
+                                    <button onclick="toggleChartType('meetingChart', 'bar')"
+                                        class="p-2 hover:bg-gray-100 rounded-lg" title="Tampilkan Grafik Batang">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div style="height: 300px;">
@@ -766,6 +778,42 @@
             if (!button && !dropdown.contains(event.target)) {
                 dropdown.classList.add('hidden');
             }
+        });
+
+        // Function to update charts based on selected month
+        function updateCharts(month) {
+            fetch(`/admin/dashboard/chart-data?month=${month}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update Activity Chart
+                    const formattedDates = data.attendanceData.dates.map(date => {
+                        const d = new Date(date);
+                        return d.toLocaleDateString('id-ID', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    });
+
+                    activityChart.data.labels = formattedDates;
+                    activityChart.data.datasets[0].data = data.attendanceData.scores;
+                    activityChart.update();
+
+                    // Update Meeting Chart
+                    meetingChart.data.labels = formattedDates;
+                    meetingChart.data.datasets[0].data = data.scoreCardData.scores;
+                    meetingChart.update();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Add event listeners for month inputs
+        document.getElementById('attendanceMonth').addEventListener('change', function(e) {
+            updateCharts(e.target.value);
+        });
+
+        document.getElementById('scoreCardMonth').addEventListener('change', function(e) {
+            updateCharts(e.target.value);
         });
     </script>
     @push('scripts')
