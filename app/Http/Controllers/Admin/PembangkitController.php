@@ -152,7 +152,14 @@ class PembangkitController extends Controller
                     $dmp = 0;
                 }
 
-                if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($log['load_value']) || !empty($log['progres'])) {
+                // Cek status untuk menentukan nilai load_value
+                $loadValue = $log['load_value'];
+                if (in_array($log['status'], ['Standby', 'Operasi'])) {
+                    $loadValue = '0';
+                }
+
+                // Pastikan load_value adalah 0 jika status Standby atau Operasi
+                if (!empty($log['status']) || !empty($log['deskripsi']) || !empty($loadValue) || !empty($log['progres'])) {
                     // Pastikan kita menggunakan model dengan koneksi yang benar
                     $machineStatusLog = new MachineStatusLog();
                     $machineStatusLog->setConnection($currentSession);
@@ -164,7 +171,7 @@ class PembangkitController extends Controller
                                 'machine_id' => $log['machine_id'],
                                 'tanggal' => $log['tanggal']
                             ]);
-                            if (!empty($log['uuid'])) {
+                            if (!empty($log['uuid'])) {   
                                 $query->orWhere('uuid', $log['uuid']);
                             }
                         })->first();
@@ -174,7 +181,7 @@ class PembangkitController extends Controller
                         $updateData = [
                             'dmn' => $operation ? $operation->dmn : 0,
                             'dmp' => $dmp,
-                            'load_value' => $log['load_value'],
+                            'load_value' => $loadValue,
                             'status' => $log['status'],
                             'component' => null,
                             'equipment' => null,
@@ -190,7 +197,7 @@ class PembangkitController extends Controller
                         $updateData = [
                             'dmn' => $operation ? $operation->dmn : 0,
                             'dmp' => $dmp,
-                            'load_value' => $log['load_value'],
+                            'load_value' => $loadValue,
                             'status' => $log['status'],
                             'component' => $log['component'],
                             'equipment' => $equipment,

@@ -921,10 +921,11 @@
                         dmpInput.value = log.dmp || '0';
                     }
 
-                    // Update Load Value
+                    // Update Load Value dengan mempertimbangkan status
                     const loadInput = row.querySelector(`input[name="load_value[${log.machine_id}]"]`);
                     if (loadInput) {
-                        loadInput.value = log.load_value || '0';
+                        loadInput.value = log.status === 'Standby' ? '0' : (log.load_value || '0');
+                        loadInput.readOnly = log.status === 'Standby';
                     }
 
                     // Update Tanggal
