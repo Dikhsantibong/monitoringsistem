@@ -241,7 +241,7 @@
                                             </tr>
                                         </thead>
                                         <tbody class="text-sm">
-                                           
+                                            
                                             @foreach ($unit->machines as $machine)
                                                 <tr class="hover:bg-gray-50 border border-gray-200" data-machine-id="{{ $machine->id }}">
                                                     <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
@@ -642,6 +642,10 @@
         tables.forEach(table => {
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
+                // Simpan nilai DMN sebelum reset
+                const dmnInput = row.querySelector('td:nth-child(4) input');
+                const dmnValue = dmnInput ? dmnInput.value : '0';
+
                 // Cek status saat ini
                 const statusSelect = row.querySelector('select');
                 const currentStatus = statusSelect.value;
@@ -687,6 +691,11 @@
                     
                     const targetSelesaiInput = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
                     if (targetSelesaiInput) targetSelesaiInput.value = '';
+                }
+
+                // Kembalikan nilai DMN
+                if (dmnInput) {
+                    dmnInput.value = dmnValue;
                 }
             });
         });
@@ -871,42 +880,15 @@
 
         // Update data mesin
         if (data.logs) {
-            // Kelompokkan log berdasarkan unit_id
-            const logsByUnit = {};
-            data.logs.forEach(log => {
-                if (!logsByUnit[log.unit_id]) {
-                    logsByUnit[log.unit_id] = [];
-                }
-                logsByUnit[log.unit_id].push(log);
-            });
-
-            // Update waktu terakhir untuk setiap unit
-            Object.keys(logsByUnit).forEach(unitId => {
-                const logs = logsByUnit[unitId];
-                const latestUpdate = logs.reduce((latest, log) => {
-                    const updateTime = new Date(log.updated_at);
-                    return latest < updateTime ? updateTime : latest;
-                }, new Date(0));
-
-                const lastUpdateElement = document.getElementById(`last_update_${unitId}`);
-                if (lastUpdateElement) {
-                    lastUpdateElement.textContent = latestUpdate.toLocaleString('id-ID', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-                }
-            });
-
-            // Update data mesin seperti sebelumnya
             data.logs.forEach(log => {
                 const row = document.querySelector(`tr[data-machine-id="${log.machine_id}"]`);
                 if (row) {
-                    // Debug untuk melihat data yang akan diupdate
-                    console.log('Updating machine:', log.machine_id, log);
+                    // Update DMN
+                    const dmnCell = row.querySelector('td:nth-child(4) input'); // Sesuaikan dengan posisi kolom DMN
+                    if (dmnCell) {
+                        dmnCell.value = log.dmn || '0';
+                        console.log('DMN updated:', log.dmn);
+                    }
 
                     // Update Status dan warnanya
                     const statusSelect = row.querySelector(`select[name="status[${log.machine_id}]"]`);
@@ -934,11 +916,6 @@
                     }
 
                     // Update DMN dan DMP
-                    const dmnInput = row.querySelector(`input[name="dmn[${log.machine_id}]"]`);
-                    if (dmnInput) {
-                        dmnInput.value = log.dmn || '0';
-                    }
-
                     const dmpInput = row.querySelector(`input[name="dmp[${log.machine_id}]"]`);
                     if (dmpInput) {
                         dmpInput.value = log.dmp || '0';

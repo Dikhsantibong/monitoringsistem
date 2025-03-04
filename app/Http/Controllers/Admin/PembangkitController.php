@@ -304,11 +304,23 @@ class PembangkitController extends Controller
                 })
                 ->groupBy('machine_id');
 
-            // Query utama untuk logs
+            // Query utama untuk logs dengan tambahan dmn
             $logsQuery = MachineStatusLog::with(['machine.powerPlant'])
-                ->select('machine_status_logs.*', 'machines.power_plant_id as unit_id')
-                ->join('machines', 'machines.id', 'machine_status_logs.machine_id')
+                ->select([
+                    'machine_status_logs.*',
+                    'machines.power_plant_id as unit_id',
+                    'machine_operations.dmn' // Tambahkan kolom dmn
+                ])
+                ->join('machines', 'machines.id', '=', 'machine_status_logs.machine_id')
                 ->join('power_plants', 'power_plants.id', '=', 'machines.power_plant_id')
+                ->leftJoin('machine_operations', function($join) {
+                    $join->on('machines.id', '=', 'machine_operations.machine_id')
+                        ->whereRaw('machine_operations.recorded_at = (
+                            SELECT MAX(recorded_at) 
+                            FROM machine_operations 
+                            WHERE machine_id = machines.id
+                        )');
+                })
                 ->joinSub($lastUpdateDates, 'last_updates', function ($join) {
                     $join->on('machine_status_logs.machine_id', '=', 'last_updates.machine_id')
                         ->on('machine_status_logs.tanggal', '=', 'last_updates.last_date');
