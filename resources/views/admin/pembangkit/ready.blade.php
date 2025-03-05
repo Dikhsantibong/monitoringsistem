@@ -1162,34 +1162,51 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const statusSelects = document.querySelectorAll('select[name^="status["]');
-    
-    statusSelects.forEach(select => {
-        select.addEventListener('change', function() {
-            const machineId = this.closest('tr').dataset.machineId;
-            const dmnInput = this.closest('tr').querySelector('input[name^="dmn["]');
-            const loadValueInput = this.closest('tr').querySelector('input[name^="load_value["]');
-            
-            if (this.value === 'Standby' || this.value === 'Operasi') {
-                // Fetch last DMN value from MachineStatusLog
-                fetch(`/admin/pembangkit/get-last-dmn/${machineId}`)
-                    .then(response => response.json())
-                    .then(data => {
+    // Set up CSRF token for all AJAX requests
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    // Event delegation for status changes
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('select[name^="status"]')) {
+            const row = e.target.closest('tr');
+            const machineId = row.getAttribute('data-machine-id');
+            const dmnInput = row.querySelector('td:nth-child(4) input');
+            const loadValueInput = row.querySelector('input[name^="load_value"]');
+            const selectedStatus = e.target.value;
+
+            console.log('Status changed:', selectedStatus);
+            console.log('Machine ID:', machineId);
+            console.log('DMN Input:', dmnInput);
+
+            if (selectedStatus === 'Standby' || selectedStatus === 'Operasi') {
+                // Store previous value
+                const previousValue = dmnInput.value;
+                dmnInput.dataset.previousValue = previousValue;
+
+                // Make the request using jQuery AJAX
+                $.ajax({
+                    url: `/admin/pembangkit/get-last-dmn/${machineId}`,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log('Response data:', data);
                         if (data.success) {
                             dmnInput.value = data.dmn;
-                            dmnInput.readOnly = false;
-                            loadValueInput.readOnly = false;
+                        } else {
+                            dmnInput.value = dmnInput.dataset.previousValue;
                         }
-                    })
-                    .catch(error => console.error('Error:', error));
-            } else {
-                // For other statuses (Gangguan, Pemeliharaan, etc.)
-                dmnInput.value = '0';
-                loadValueInput.value = '0';
-                dmnInput.readOnly = true;
-                loadValueInput.readOnly = true;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        dmnInput.value = dmnInput.dataset.previousValue;
+                    }
+                });
             }
-        });
+        }
     });
 });
 </script>
