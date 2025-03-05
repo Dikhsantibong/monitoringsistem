@@ -148,14 +148,13 @@ class PembangkitController extends Controller
 
                 // Cek status untuk menentukan nilai DMP
                 $dmp = $operation ? $operation->dmp : 0;
-                if (in_array($log['status'], ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])) {
-                    $dmp = 0;
-                }
-
-                // Cek status untuk menentukan nilai load_value
+                
+                // Cek status untuk menentukan nilai load_value dan dmn
                 $loadValue = $log['load_value'];
-                if (in_array($log['status'], ['Standby', 'Operasi'])) {
+                $dmn = $operation ? $operation->dmn : 0;
+                if (in_array($log['status'], ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])) {
                     $loadValue = '0';
+                    $dmn = 0;
                 }
 
                 // Pastikan load_value adalah 0 jika status Standby atau Operasi
@@ -179,7 +178,7 @@ class PembangkitController extends Controller
                     // Kosongkan field tertentu jika status adalah Standby
                     if (in_array($log['status'], ['Standby', 'Operasi'])) {
                         $updateData = [
-                            'dmn' => $operation ? $operation->dmn : 0,
+                            'dmn' => $dmn,
                             'dmp' => $dmp,
                             'load_value' => $loadValue,
                             'status' => $log['status'],
@@ -195,7 +194,7 @@ class PembangkitController extends Controller
                         ];
                     } else {
                         $updateData = [
-                            'dmn' => $operation ? $operation->dmn : 0,
+                            'dmn' => $dmn,
                             'dmp' => $dmp,
                             'load_value' => $loadValue,
                             'status' => $log['status'],
@@ -578,6 +577,42 @@ class PembangkitController extends Controller
                 'success' => false,
                 'message' => 'Gagal mereset data: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    public function getLastDmn($machineId)
+    {
+        try {
+            $lastLog = MachineStatusLog::where('machine_id', $machineId)
+                ->where('status', '!=', 'Gangguan')
+                ->where('status', '!=', 'Pemeliharaan')
+                ->where('status', '!=', 'Mothballed')
+                ->where('status', '!=', 'Overhaul')
+                ->latest('created_at')
+                ->first();
+
+            if ($lastLog) {
+                return response()->json([
+                    'success' => true,
+                    'dmn' => $lastLog->dmn
+                ]);
+            }
+
+            // If no previous value found, get from MachineOperation
+            $operation = MachineOperation::where('machine_id', $machineId)
+                ->latest('recorded_at')
+                ->first();
+
+            return response()->json([
+                'success' => true,
+                'dmn' => $operation ? $operation->dmn : 0
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error getting DMN value: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

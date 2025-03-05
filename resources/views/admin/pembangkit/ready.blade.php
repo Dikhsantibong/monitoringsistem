@@ -884,9 +884,16 @@
                 const row = document.querySelector(`tr[data-machine-id="${log.machine_id}"]`);
                 if (row) {
                     // Update DMN
-                    const dmnCell = row.querySelector('td:nth-child(4) input'); // Sesuaikan dengan posisi kolom DMN
-                    if (dmnCell) {
-                        dmnCell.value = log.dmn || '0';
+                    const dmnInput = row.querySelector('td:nth-child(4) input');
+                    if (dmnInput) {
+                        // Set DMN berdasarkan status
+                        if (['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'].includes(log.status)) {
+                            dmnInput.value = '0';
+                            dmnInput.readOnly = true;
+                        } else {
+                            dmnInput.value = log.dmn || '0';
+                            dmnInput.readOnly = false;
+                        }
                         console.log('DMN updated:', log.dmn);
                     }
 
@@ -897,35 +904,45 @@
                         statusSelect.style.backgroundColor = getStatusColor(log.status);
                         statusSelect.style.color = ['Operasi', 'Standby'].includes(log.status) ? 'black' : 'white';
                         console.log('Status updated:', log.status);
-                    }
 
-                    // Update Component
-                    const componentSelect = row.querySelector(`select[name="system[${log.machine_id}]"]`);
-                    if (componentSelect) {
-                        componentSelect.value = log.component || '';
-                        componentSelect.dispatchEvent(new Event('change'));
-                        console.log('Component updated:', log.component);
-                    }
+                        // Tambahkan event listener untuk status
+                        statusSelect.addEventListener('change', function() {
+                            const status = this.value;
+                            const dmnInput = row.querySelector('td:nth-child(4) input');
+                            const loadInput = row.querySelector(`input[name="load_value[${log.machine_id}]"]`);
 
-                    // Update Equipment
-                    const equipmentInput = row.querySelector(`textarea[name="equipment[${log.machine_id}]"]`);
-                    if (equipmentInput) {
-                        equipmentInput.value = log.equipment || '';
-                        autoResize(equipmentInput);
-                        console.log('Equipment updated:', log.equipment);
-                    }
-
-                    // Update DMN dan DMP
-                    const dmpInput = row.querySelector(`input[name="dmp[${log.machine_id}]"]`);
-                    if (dmpInput) {
-                        dmpInput.value = log.dmp || '0';
+                            if (['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'].includes(status)) {
+                                // Set DMN dan load_value ke 0 untuk status non-operasional
+                                if (dmnInput) {
+                                    dmnInput.value = '0';
+                                    dmnInput.readOnly = true;
+                                }
+                                if (loadInput) {
+                                    loadInput.value = '0';
+                                    loadInput.readOnly = true;
+                                }
+                            } else {
+                                // Biarkan DMN dan load_value bisa diisi untuk status Operasi dan Standby
+                                if (dmnInput) {
+                                    dmnInput.readOnly = false;
+                                }
+                                if (loadInput) {
+                                    loadInput.readOnly = false;
+                                }
+                            }
+                        });
                     }
 
                     // Update Load Value dengan mempertimbangkan status
                     const loadInput = row.querySelector(`input[name="load_value[${log.machine_id}]"]`);
                     if (loadInput) {
-                        loadInput.value = log.status === 'Standby' ? '0' : (log.load_value || '0');
-                        loadInput.readOnly = log.status === 'Standby';
+                        if (['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'].includes(log.status)) {
+                            loadInput.value = '0';
+                            loadInput.readOnly = true;
+                        } else {
+                            loadInput.value = log.load_value || '0';
+                            loadInput.readOnly = false;
+                        }
                     }
 
                     // Update Tanggal
@@ -1140,6 +1157,40 @@ document.getElementById('systemTableBody').addEventListener('change', function(e
     if (e.target.classList.contains('system-select')) {
         updateComponentOptions(e.target);
     }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelects = document.querySelectorAll('select[name^="status["]');
+    
+    statusSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const machineId = this.closest('tr').dataset.machineId;
+            const dmnInput = this.closest('tr').querySelector('input[name^="dmn["]');
+            const loadValueInput = this.closest('tr').querySelector('input[name^="load_value["]');
+            
+            if (this.value === 'Standby' || this.value === 'Operasi') {
+                // Fetch last DMN value from MachineStatusLog
+                fetch(`/admin/pembangkit/get-last-dmn/${machineId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            dmnInput.value = data.dmn;
+                            dmnInput.readOnly = false;
+                            loadValueInput.readOnly = false;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                // For other statuses (Gangguan, Pemeliharaan, etc.)
+                dmnInput.value = '0';
+                loadValueInput.value = '0';
+                dmnInput.readOnly = true;
+                loadValueInput.readOnly = true;
+            }
+        });
+    });
 });
 </script>
 @push('scripts')
