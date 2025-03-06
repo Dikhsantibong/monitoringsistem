@@ -347,15 +347,17 @@ class AdminMeetingController extends Controller
                 ->get();
 
             // Modifikasi query untuk data bulanan
-            $serviceRequests = ServiceRequest::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            $serviceRequests = ServiceRequest::where('status', 'open')
                 ->orderBy('priority', 'desc')
                 ->get();
 
-            $workOrders = WorkOrder::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            // Update query work orders untuk mengambil semua yang open
+            $workOrders = WorkOrder::where('status', 'open')
                 ->orderBy('created_at')
                 ->get();
 
-            $woBacklogs = WoBacklog::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            // Update query wo backlogs untuk mengambil semua yang open
+            $woBacklogs = WoBacklog::where('status', 'open')
                 ->orderBy('created_at')
                 ->get();
 
@@ -515,11 +517,13 @@ class AdminMeetingController extends Controller
                 ->orderBy('priority', 'desc')
                 ->get();
 
-            $workOrders = WorkOrder::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            // Update query work orders untuk mengambil semua yang open
+            $workOrders = WorkOrder::where('status', 'open')
                 ->orderBy('created_at')
                 ->get();
 
-            $woBacklogs = WoBacklog::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            // Update query wo backlogs untuk mengambil semua yang open
+            $woBacklogs = WoBacklog::where('status', 'open')
                 ->orderBy('created_at')
                 ->get();
 
