@@ -119,8 +119,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Tipe</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">No. Seri</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Unit</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMN</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMP</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">DMN</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Beban (MW)</th>
                                 @if(session('unit') === 'mysql')
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase">Aksi</th>

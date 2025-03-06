@@ -104,7 +104,7 @@
                         <!-- DMN -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="dmn">
-                                DMN <span class="text-red-500">*</span>
+                                DMP <span class="text-red-500">*</span>
                             </label>
                             <input type="number" 
                                    name="dmn" 
@@ -118,7 +118,7 @@
                         <!-- DMP -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="dmp">
-                                DMP <span class="text-red-500">*</span>
+                                DMN <span class="text-red-500">*</span>
                             </label>
                             <input type="number" 
                                    name="dmp" 
