@@ -7,12 +7,12 @@
             Print
         </button>
 
-        <!-- Tambahkan tombol Download PDF -->
+        {{-- <!-- Tambahkan tombol Download PDF -->
         <button onclick="downloadPDF()" 
                 class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-150 ease-in-out">
             <i class="fas fa-download mr-2"></i>
             Download PDF
-        </button>
+        </button> --}}
 
         <script>
         function printTable() {
