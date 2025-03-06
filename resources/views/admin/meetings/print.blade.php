@@ -606,23 +606,32 @@
                 <!-- Statistik Unit -->
                 <div class="stats-grid">
                     @php
-                        $plantLogs = $logs->filter(function($log) use ($powerPlant) {
-                            return $log->machine->power_plant_id === $powerPlant->id;
-                        });
+                        $totalDMP = 0;
+                        $totalDMN = 0;
+                        $totalBeban = 0;
 
-                        $totalDMP = $plantLogs->sum('dmp');
-                        $totalDMN = $plantLogs->sum('dmn');
-                        $totalBeban = $plantLogs->where('status', 'Operasi')->sum('load_value');
+                        // Hitung total dari data yang ditampilkan di tabel
+                        foreach($powerPlant->machines as $machine) {
+                            $machineLog = $logs->where('machine_id', $machine->id)->first();
+                            if ($machineLog) {
+                                $totalDMP += is_numeric($machineLog->dmp) ? (float) $machineLog->dmp : 0;
+                                $totalDMN += is_numeric($machineLog->dmn) ? (float) $machineLog->dmn : 0;
+                                if ($machineLog->status === 'Operasi') {
+                                    $totalBeban += is_numeric($machineLog->load_value) ? (float) $machineLog->load_value : 0;
+                                }
+                            }
+                        }
                     @endphp
                     
-                    <div class="stat-item">
-                        <span>DMP Total:</span>
-                        <strong>{{ number_format($totalDMP, 1) }} MW</strong>
-                    </div>
                     <div class="stat-item">
                         <span>DMN Total:</span>
                         <strong>{{ number_format($totalDMN, 1) }} MW</strong>
                     </div>
+                    <div class="stat-item">
+                        <span>DMP Total:</span>
+                        <strong>{{ number_format($totalDMP, 1) }} MW</strong>
+                    </div>
+                    
                     <div class="stat-item">
                         <span>Total Beban:</span>
                         <strong>{{ number_format($totalBeban, 1) }} MW</strong>
@@ -658,17 +667,17 @@
                                 };
                             @endphp
                             <tr>
-                                <td>{{ $index + 1 }}</td>
+                                <td style="text-align: center;">{{ $index + 1 }}</td>
                                 <td>{{ $machine->name }}</td>
-                                <td class="text-center">{{ $machineLog?->dmn ?? '-' }}</td>
-                                <td class="text-center">{{ $machineLog?->dmp ?? '-' }}</td>
-                                <td class="text-center">{{ $machineLog?->load_value ?? '-' }}</td>
-                                <td class="text-center">
+                                <td style="text-align: center;">{{ $machineLog?->dmn ?? '-' }}</td>
+                                <td style="text-align: center;">{{ $machineLog?->dmp ?? '-' }}</td>
+                                <td style="text-align: center;">{{ $machineLog?->load_value ?? '-' }}</td>
+                                <td style="text-align: center;">
                                     <span class="status-badge {{ $statusClass }}">
                                         {{ $status }}
                                     </span>
                                 </td>
-                                <td class="text-center">{{ $machineLog?->component ?? '-' }}</td>
+                                <td style="text-align: center;">{{ $machineLog?->component ?? '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -866,28 +875,31 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="5" style="padding: 10px; background-color: #f9f9f9;">
-                            <div style="font-size: 10px; margin-bottom: 5px;">
-                                <strong>Unit:</strong> {{ $discussion->unit }} |
-                                <strong>No SR:</strong> {{ $discussion->sr_number ?? '-' }} |
-                                <strong>Target:</strong> {{ $discussion->target }} |
-                                <strong>Deadline:</strong> {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}
+                        <td colspan="5" style="padding: 15px; background-color: #f9fafb; border: 1px solid #e5e7eb;">
+                            <div style="font-size: 11px; margin-bottom: 8px; display: flex; gap: 15px;">
+                                <div><strong>Unit:</strong> {{ $discussion->unit }}</div>
+                                <div><strong>No SR:</strong> {{ $discussion->sr_number ?? '-' }}</div>  
+                                <div><strong>Target:</strong> {{ $discussion->target }}</div>
+                                <div><strong>Deadline:</strong> {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}</div>
                             </div>
+                            
                             @if($discussion->commitments && $discussion->commitments->count() > 0)
-                                <div style="margin-top: 8px;">
-                                    <strong style="font-size: 10px;">Commitments:</strong>
-                                    <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
+                                <div style="margin-top: 10px;">
+                                    <strong style="font-size: 11px; display: block; margin-bottom: 8px;">Commitments:</strong>
+                                    <div style="display: grid; gap: 8px;">
                                         @foreach($discussion->commitments as $commitment)
-                                            <li style="margin-bottom: 5px; font-size: 10px; padding-left: 10px;">
-                                                • {{ $commitment->description }} 
-                                                <div style="padding-left: 12px; color: #666;">
-                                                    PIC: {{ $commitment->pic }} | 
-                                                    Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }} | 
-                                                    Status: {{ $commitment->status }}
+                                            <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                                                <div style="font-size: 11px; margin-bottom: 5px;">
+                                                    {{ $commitment->description }}
                                                 </div>
-                                            </li>
+                                                <div style="font-size: 11px; color: #6b7280; display: flex; gap: 15px;">
+                                                    <span><strong>PIC:</strong> {{ $commitment->pic }}</span>
+                                                    <span><strong>Deadline:</strong> {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                    <span><strong>Status:</strong> {{ $commitment->status }}</span>
+                                                </div>
+                                            </div>
                                         @endforeach
-                                    </ul>
+                                    </div>
                                 </div>
                             @endif
                         </td>
