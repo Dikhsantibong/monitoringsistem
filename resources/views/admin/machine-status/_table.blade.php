@@ -97,11 +97,11 @@
                                         @else
                                             Total HOP:
                                         @endif
-                                    </p>
+                                    </p>    
                                     <p class="text-xl font-bold text-orange-700">
                                         {{ number_format($hopValue, 1) }} 
                                         @if(str_starts_with(trim(strtoupper($powerPlant->name)), 'PLTM '))
-                                            liter/detik
+                                            m³/s
                                         @else
                                             Hari
                                         @endif
