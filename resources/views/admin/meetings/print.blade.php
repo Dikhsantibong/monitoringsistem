@@ -15,55 +15,69 @@
         }
         .logo {
             position: absolute;
-            top: 25px;
+            top: 20px;
             left: 25px;
-            width: 240px;
+            width: 200px;
             height: auto;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-top: 80px;
+            margin-bottom: 20px;
+            padding-top: 60px;
         }
         .header h2 {
             margin: 0;
-            font-size: 22px;
-            margin-bottom: 15px;
+            font-size: 20px;
+            margin-bottom: 10px;
             font-weight: bold;
         }
         .header p {
-            margin: 6px 0;
-            font-size: 15px;
+            margin: 4px 0;
+            font-size: 14px;
             text-align: left;
         }
         table { 
             width: 100%;
             border-collapse: collapse;
             margin-top: 25px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         th, td { 
-            border: 1px solid #000;
+            border: 1px solid #e5e7eb;
             padding: 12px 14px;
             text-align: left;
             font-size: 14px;
             line-height: 1.5;
+            color: #374151;
         }
         th { 
-            background-color: #0A749B;
+            background: linear-gradient(180deg, #0A749B 0%, #086384 100%);
             color: white;
-            font-size: 15px;
-            font-weight: bold;
-            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 14px;
             text-align: left;
-            border: 1px solid #0A749B;
+            border: none;
+            white-space: nowrap;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        tr:hover {
+            background-color: #f3f4f6;
         }
         td.keterangan {
-            font-size: 14px;
+            font-size: 13px;
+            color: #6b7280;
         }
         .total-row td {
-            padding: 14px;
-            font-size: 15px;
-            font-weight: bold;
+            background-color: #f8fafc;
+            font-weight: 600;
+            border-top: 2px solid #e5e7eb;
+            padding: 16px 14px;
         }
         @media print {
             .error {
@@ -76,6 +90,31 @@
             table { 
                 page-break-inside: avoid;
                 margin-bottom: 0;
+                box-shadow: none;
+            }
+            th {
+                background: #0A749B !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .status-badge,
+            .priority-badge {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .stat-item {
+                box-shadow: none;
+                border: 1px solid #e5e7eb;
+            }
+            .scorecard-table-first-page {
+                page-break-inside: avoid;
+                margin-bottom: 0;
+            }
+            
+            /* Ensure content fits on first page */
+            .first-page-content {
+                max-height: calc(297mm - 4.4cm);
+                overflow: visible;
             }
         }
 
@@ -84,93 +123,92 @@
             page-break-before: always;
         }
         .report-table {
-            margin-top: 20px;
-            width: 100%;
-            border-collapse: collapse;
+            margin: 20px 0;
         }
         .report-table th {
-            background-color: #0A749B;
-            color: white;
-            font-size: 12px;
-            padding: 10px;
-            border: 1px solid #0A749B;
-            text-align: left;
+            font-size: 13px;
+            padding: 12px;
+            text-align: center;
         }
         .report-table td {
-            font-size: 10px;
-            padding: 6px;
-            border: 1px solid #000;
+            font-size: 13px;
+            padding: 10px;
+            vertical-align: middle;
         }
         .status-badge {
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
             display: inline-block;
+            text-align: center;
+            min-width: 80px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .status-operasi {
+        .status-operasi { 
             background-color: #dcfce7;
             color: #166534;
+            border: 1px solid #bbf7d0;
         }
-        .status-gangguan {
+        .status-gangguan { 
             background-color: #fee2e2;
             color: #991b1b;
+            border: 1px solid #fecaca;
         }
-        .status-standby {
+        .status-standby { 
             background-color: #fef9c3;
             color: #854d0e;
+            border: 1px solid #fef08a;
         }
         .sr-table {
-            margin-top: 20px;
-            width: 100%;
-            border-collapse: collapse;
+            margin: 20px 0;
         }
         .sr-table th {
-            background-color: #0A749B;
-            color: white;
-            font-size: 12px;
-            padding: 10px;
-            border: 1px solid #0A749B;
-            text-align: left;
+            font-size: 13px;
+            padding: 12px;
         }
         .sr-table td {
-            font-size: 11px;
-            padding: 8px;
-            border: 1px solid #000;
+            font-size: 13px;
+            padding: 10px;
             vertical-align: middle;
         }
         .priority-badge {
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+            text-align: center;
+            min-width: 80px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .priority-high {
             background-color: #fee2e2;
             color: #991b1b;
+            border: 1px solid #fecaca;
         }
         .priority-medium {
             background-color: #fef9c3;
             color: #854d0e;
+            border: 1px solid #fef08a;
         }
         .priority-low {
             background-color: #dcfce7;
             color: #166534;
+            border: 1px solid #bbf7d0;
         }
         .notes-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 12px; /* Ukuran font lebih kecil */
-        }
-        .notes-table th, .notes-table td {
-            border: 1px solid black;
-            padding: 5px;
-            text-align: left;
+            margin: 20px 0;
         }
         .notes-table th {
-            background-color: #f0f0f0;
-            font-weight: bold;
+            background-color: #f8fafc;
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .notes-table td {
+            font-size: 13px;
+            padding: 10px;
         }
         .signatures-grid {
             display: grid;
@@ -205,52 +243,49 @@
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 16px;
+            margin: 20px 0;
         }
         .stat-item {
-            padding: 0.5rem;
-            background-color: #f3f4f6;
-            border-radius: 0.375rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
             text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .stat-item span {
+            color: #6b7280;
+            font-size: 13px;
             display: block;
-            font-size: 0.875rem;
-            color: #4b5563;
+            margin-bottom: 4px;
         }
         .stat-item strong {
-            display: block;
-            font-size: 1.125rem;
             color: #1f2937;
+            font-size: 18px;
+            font-weight: 600;
+            display: block;
         }
-        .report-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        .report-table th {
-            background-color: #0A749B;
-            color: white;
-            padding: 0.75rem;
-            font-size: 0.875rem;
-            text-align: center;
-            border: 1px solid #0A749B;
-        }
-        .report-table td {
-            padding: 0.75rem;
-            border: 1px solid #e5e7eb;
+        .attendance-table th {
+            font-size: 13px;
+            padding: 12px;
             text-align: center;
         }
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
+        .attendance-table td {
+            font-size: 13px;
+            padding: 10px;
+            vertical-align: middle;
         }
-        .status-operasi { background-color: #dcfce7; color: #166534; }
-        .status-standby { background-color: #dbeafe; color: #1e40af; }
-        .status-gangguan { background-color: #fee2e2; color: #991b1b; }
+        .wo-table th {
+            font-size: 13px;
+            padding: 12px;
+            text-align: center;
+        }
+        .wo-table td {
+            font-size: 13px;
+            padding: 10px;
+            vertical-align: middle;
+        }
         .status-pemeliharaan { background-color: #ffedd5; color: #9a3412; }
         .status-overhaul { background-color: #ede9fe; color: #5b21b6; }
         .status-default { background-color: #f3f4f6; color: #374151; }
@@ -282,9 +317,6 @@
         .risk-mt { background-color: #fef3c7; color: #92400e; }
         .risk-mr { background-color: #f3f4f6; color: #374151; }
         .risk-r { background-color: #dcfce7; color: #166534; }
-        .priority-high { background-color: #fee2e2; color: #991b1b; }
-        .priority-medium { background-color: #fef3c7; color: #92400e; }
-        .priority-low { background-color: #dcfce7; color: #166534; }
         .status-open { background-color: #fee2e2; color: #991b1b; }
         .status-closed { background-color: #dcfce7; color: #166534; }
         .overdue-row {
@@ -309,45 +341,31 @@
             font-size: 10px;
         }
 
-        /* Update style untuk thead */
-        th { 
-            background-color: #0A749B;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            padding: 12px 14px;
-            text-align: left;
-            border: 1px solid #0A749B;
+        /* Specific styles for first page scorecard table */
+        .scorecard-table-first-page {
+            margin-top: 15px;
+            font-size: 13px;
         }
 
-        /* Style untuk tabel spesifik */
-        .report-table th,
-        .sr-table th,
-        .wo-table th,
-        .attendance-table th { 
-            background-color: #0A749B;
-            color: white;
+        .scorecard-table-first-page th {
+            padding: 8px 10px;
+            font-size: 13px;
+            white-space: normal;
+        }
+
+        .scorecard-table-first-page td {
+            padding: 6px 8px;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+
+        .scorecard-table-first-page .keterangan {
             font-size: 12px;
-            padding: 10px;
-            border: 1px solid #0A749B;
-            text-align: left;
         }
 
-        /* Pastikan border tetap terlihat */
-        .report-table td,
-        .sr-table td,
-        .wo-table td,
-        .attendance-table td {
-            border: 1px solid #000;
-        }
-
-        /* Style untuk status badge */
-        .status-badge {
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 10px;
-            display: inline-block;
+        .scorecard-table-first-page .total-row td {
+            padding: 8px 10px;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -397,15 +415,15 @@
                              {{ \Carbon\Carbon::parse($data['waktu_selesai'])->format('H:i') }}</p>
                 </div>
 
-                <table>
+                <table class="scorecard-table-first-page">
                     <thead>
                         <tr>
-                            <th style="width: 5%">No</th>   
-                            <th style="width: 27%">Peserta</th>
-                            <th style="width: 10%">Awal</th>
-                            <th style="width: 10%">Akhir</th>
-                            <th style="width: 13%">Skor</th>
-                            <th>Keterangan</th>
+                            <th style="width: 5%; text-align: center;">No</th>   
+                            <th style="width: 27%; text-align: center;">Peserta</th>
+                            <th style="width: 10%; text-align: center;">Awal</th>
+                            <th style="width: 10%; text-align: center;">Akhir</th>
+                            <th style="width: 13%; text-align: center;">Skor</th>
+                            <th style="text-align: center;">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -540,12 +558,12 @@
         <table class="attendance-table">
             <thead>
                 <tr>
-                    <th style="width: 5%">No</th>
-                    <th style="width: 25%">Nama</th>
-                    <th style="width: 20%">Jabatan</th>
-                    <th style="width: 20%">Divisi</th>
-                    <th style="width: 15%">Waktu</th>
-                    <th style="width: 15%">Tanda Tangan</th>
+                    <th style="width: 5%; text-align: center;">No</th>
+                    <th style="width: 25%; text-align: center;">Nama</th>
+                    <th style="width: 20%; text-align: center;">Jabatan</th>
+                    <th style="width: 20%; text-align: center;">Divisi</th>
+                    <th style="width: 15%; text-align: center;">Waktu</th>
+                    <th style="width: 15%; text-align: center;">Tanda Tangan</th>
                 </tr>
             </thead>
             <tbody>
@@ -614,13 +632,13 @@
                 <table class="report-table">
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Mesin</th>
-                            <th>DMN</th>
-                            <th>DMP</th>
-                            <th>Beban</th>
-                            <th>Status</th>
-                            <th>Component</th>
+                            <th style="text-align: center;">No</th>
+                            <th style="text-align: center;">Mesin</th>
+                            <th style="text-align: center;">DMN</th>
+                            <th style="text-align: center;">DMP</th>
+                            <th style="text-align: center;">Beban</th>
+                            <th style="text-align: center;">Status</th>
+                            <th style="text-align: center;">Component</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -642,15 +660,15 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $machine->name }}</td>
-                                <td>{{ $machineLog?->dmn ?? '-' }}</td>
-                                <td>{{ $machineLog?->dmp ?? '-' }}</td>
-                                <td>{{ $machineLog?->load_value ?? '-' }}</td>
-                                <td>
+                                <td class="text-center">{{ $machineLog?->dmn ?? '-' }}</td>
+                                <td class="text-center">{{ $machineLog?->dmp ?? '-' }}</td>
+                                <td class="text-center">{{ $machineLog?->load_value ?? '-' }}</td>
+                                <td class="text-center">
                                     <span class="status-badge {{ $statusClass }}">
                                         {{ $status }}
                                     </span>
                                 </td>
-                                <td>{{ $machineLog?->component ?? '-' }}</td>
+                                <td class="text-center">{{ $machineLog?->component ?? '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -671,13 +689,13 @@
         <table class="sr-table">
             <thead>
                 <tr>
-                    <th style="width: 5%">No</th>
-                    <th style="width: 15%">ID SR</th>
-                    <th style="width: 30%">Deskripsi</th>
-                    <th style="width: 10%">Status</th>
-                    <th style="width: 10%">Downtime</th>
-                    <th style="width: 15%">Tipe SR</th>
-                    <th style="width: 15%">Prioritas</th>
+                    <th style="width: 5%; text-align: center;">No</th>
+                    <th style="width: 15%; text-align: center;">ID SR</th>
+                    <th style="width: 30%; text-align: center;">Deskripsi</th>
+                    <th style="width: 10%; text-align: center;">Status</th>
+                    <th style="width: 10%; text-align: center;">Downtime</th>
+                    <th style="width: 15%; text-align: center;">Tipe SR</th>
+                    <th style="width: 15%; text-align: center;">Prioritas</th>
                 </tr>
             </thead>
             <tbody>
@@ -686,7 +704,7 @@
                         <td style="text-align: center;">{{ $loop->iteration }}</td>
                         <td>{{ $sr->id }}</td>
                         <td>{{ $sr->description }}</td>
-                        <td>
+                        <td class="text-center">
                             <span class="status-badge {{ 
                                 $sr->status === 'Completed' ? 'status-operasi' : 
                                 ($sr->status === 'In Progress' ? 'status-standby' : 
@@ -695,9 +713,9 @@
                                 {{ $sr->status }}
                             </span>
                         </td>
-                        <td>{{ $sr->downtime }}</td>
-                        <td>{{ $sr->tipe_sr }}</td>
-                        <td>
+                        <td class="text-center">{{ $sr->downtime }}</td>
+                        <td class="text-center">{{ $sr->tipe_sr }}</td>
+                        <td class="text-center">
                             <span class="priority-badge priority-{{ strtolower($sr->priority) }}">
                                 {{ $sr->priority }}
                             </span>
@@ -724,13 +742,13 @@
         <table class="wo-table">
             <thead>
                 <tr>
-                    <th style="width: 5%">No</th>
-                    <th style="width: 15%">No WO</th>
-                    <th style="width: 30%">Deskripsi</th>
-                    <th style="width: 10%">Tipe</th>
-                    <th style="width: 10%">Status</th>
-                    <th style="width: 15%">Prioritas</th>
-                    <th style="width: 15%">Jadwal</th>
+                    <th style="width: 5%; text-align: center;">No</th>
+                    <th style="width: 15%; text-align: center;">No WO</th>
+                    <th style="width: 30%; text-align: center;">Deskripsi</th>
+                    <th style="width: 10%; text-align: center;">Tipe</th>
+                    <th style="width: 10%; text-align: center;">Status</th>
+                    <th style="width: 15%; text-align: center;">Prioritas</th>
+                    <th style="width: 15%; text-align: center;">Jadwal</th>
                 </tr>
             </thead>
             <tbody>
@@ -780,12 +798,12 @@
         <table class="wo-table">
             <thead>
                 <tr>
-                    <th style="width: 5%">No</th>
-                    <th style="width: 15%">No WO</th>
-                    <th style="width: 35%">Deskripsi</th>
-                    <th style="width: 15%">Tanggal Backlog</th>
-                    <th style="width: 15%">Status</th>
-                    <th style="width: 15%">Keterangan</th>
+                    <th style="width: 5%; text-align: center;">No</th>
+                    <th style="width: 15%; text-align: center;">No WO</th>
+                    <th style="width: 35%; text-align: center;">Deskripsi</th>
+                    <th style="width: 15%; text-align: center;">Tanggal Backlog</th>
+                    <th style="width: 15%; text-align: center;">Status</th>
+                    <th style="width: 15%; text-align: center;">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
@@ -795,7 +813,7 @@
                         <td>{{ $wo->no_wo }}</td>
                         <td>{{ $wo->deskripsi }}</td>
                         <td>{{ \Carbon\Carbon::parse($wo->tanggal_backlog)->format('d/m/Y') }}</td>
-                        <td>
+                        <td >
                             <span class="status-badge {{ 
                                 $wo->status === 'Completed' ? 'status-operasi' : 
                                 ($wo->status === 'In Progress' ? 'status-standby' : 
@@ -827,11 +845,11 @@
         <table class="report-table" style="margin: 0 auto; width: 95%;">
             <thead>
                 <tr>
-                    <th style="width: 5%">No</th>
-                    <th style="width: 15%">No Pembahasan</th>
-                    <th style="width: 40%">Topik</th>
-                    <th style="width: 25%">PIC</th>
-                    <th style="width: 15%">Status</th>
+                    <th style="width: 5%; text-align: center;">No</th>
+                    <th style="width: 15%; text-align: center;">No Pembahasan</th>
+                    <th style="width: 40%; text-align: center;">Topik</th>
+                    <th style="width: 25%; text-align: center;">PIC</th>
+                    <th style="width: 15%; text-align: center;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -907,3 +925,4 @@
     </script>
 </body>
 </html>
+            
