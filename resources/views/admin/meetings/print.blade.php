@@ -787,10 +787,12 @@
                     <tr>
                         <th style="width: 5%;">No</th>
                         <th style="width: 15%;">No SR</th>
+                        <th style="width: 20%;">Unit</th> <!-- Added Unit column -->
                         <th style="width: 35%;">Deskripsi</th>
                         <th style="width: 15%;">Status</th>
-                        <th style="width: 15%;">PIC</th>
-                        <th style="width: 15%;">Target</th>
+                        <th style="width: 15%;">Type SR</th>
+                        <th style="width: 15%;">Prioritas</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -798,6 +800,7 @@
                         <tr>
                             <td style="text-align: center;">{{ $loop->iteration }}</td>
                             <td>{{ $sr->id }}</td>
+                            <td>{{ $sr->unit ?? '-' }}</td> <!-- Displaying unit name -->
                             <td>{{ $sr->description }}</td>
                             <td class="text-center">
                                 <span class="status-badge {{ 
@@ -808,8 +811,8 @@
                                     {{ $sr->status }}
                                 </span>
                             </td>
-                            <td class="text-center">{{ $sr->pic }}</td>
-                            <td class="text-center">{{ $sr->target }}</td>
+                            <td class="text-center">{{ $sr->tipe_sr }}</td>
+                            <td class="text-center">{{ $sr->priority }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -837,7 +840,8 @@
                         <th style="width: 35%;">Deskripsi</th>
                         <th style="width: 15%;">Tanggal</th>
                         <th style="width: 15%;">Status</th>
-                        <th style="width: 15%;">Keterangan</th>
+                        <th style="width: 15%;">Prioritas</th>
+                        <th style="width: 15%;">Jadwal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -859,7 +863,11 @@
                                     {{ $wo->status }}
                                 </span>
                             </td>
-                            <td>{{ $wo->keterangan }}</td>
+                            <td>{{ $wo->priority }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($wo->schedule_start)->format('d/m/Y') }} - 
+                                {{ \Carbon\Carbon::parse($wo->schedule_finish)->format('d/m/Y') }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
