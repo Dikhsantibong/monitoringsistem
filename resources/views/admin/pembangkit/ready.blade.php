@@ -755,12 +755,14 @@
             }
         });
 
-        // Modifikasi URL untuk include unit_source
-        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}&unit_source=${unitFilter}`, {
+        // Tambahkan timestamp untuk mencegah cache
+        const timestamp = new Date().getTime();
+        fetch(`{{ route('admin.pembangkit.get-status') }}?tanggal=${tanggal}&unit_source=${unitFilter}&_=${timestamp}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Cache-Control': 'no-cache'
             }
         })
         .then(response => response.json())
@@ -877,6 +879,30 @@
             console.error('Data tidak valid:', data);
             return;
         }
+
+        // Update last_update untuk setiap unit
+        const units = new Set(data.logs.map(log => log.unit_id));
+        units.forEach(unitId => {
+            const lastUpdateSpan = document.getElementById(`last_update_${unitId}`);
+            if (lastUpdateSpan) {
+                const unitLogs = data.logs.filter(log => log.unit_id === unitId);
+                const latestUpdate = unitLogs.reduce((latest, log) => {
+                    return log.updated_at > latest ? log.updated_at : latest;
+                }, '');
+                
+                if (latestUpdate) {
+                    const formattedDate = new Date(latestUpdate).toLocaleString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    }).replace(/\./g, ':');
+                    lastUpdateSpan.textContent = formattedDate;
+                }
+            }
+        });
 
         // Update data mesin
         if (data.logs) {
