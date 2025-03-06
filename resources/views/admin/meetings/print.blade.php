@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Laporan Daily {{ session('unit') === 'mysql' ? 'UP Kendari' : str_replace(['mysql_', '_'], ['', ' '], ucwords(session('unit'))) }} {{ \Carbon\Carbon::parse($date)->locale('id')->isoFormat('D MMMM Y') }}</title>
    
     <style>
         @page {
