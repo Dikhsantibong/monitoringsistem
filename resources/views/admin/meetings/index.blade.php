@@ -303,16 +303,27 @@
                 <script>
                 function printTable() {
                     const dateSelect = document.querySelector('#tanggal-filter');
+                    const unitSourceSelect = document.querySelector('#unit-source');
                     const date = dateSelect.value;
+                    const unitSource = unitSourceSelect && unitSourceSelect.value !== '' ? unitSourceSelect.value : '';
                     
                     if (!date) {
                         alert('Pilih tanggal terlebih dahulu');
                         return;
                     }
 
-                    // Langsung buka window print tanpa loading
-                    const printUrl = "{{ route('admin.meetings.print') }}?date=" + encodeURIComponent(date);
-                    window.open(printUrl, '_blank');
+                    const params = new URLSearchParams();
+                    params.append('date', date);
+                    if (unitSource) {
+                        params.append('unit_source', unitSource);
+                    }
+                   
+                    const printUrl = "{{ route('admin.meetings.print') }}?" + params.toString();
+                    
+                    const printWindow = window.open(printUrl, '_blank');
+                    if (!printWindow) {
+                        alert('Popup blocker mungkin menghalangi membuka jendela print. Mohon izinkan popup untuk situs ini.');
+                    }
                 }
                 </script>
 
@@ -578,30 +589,14 @@
                     document.getElementById('loadingOverlay').classList.add('hidden');
                 }
 
-                // Update fungsi print
-                function printTable() {
-                    const dateSelect = document.querySelector('#tanggal-filter');
-                    const date = dateSelect.value;
-                    
-                    if (!date) {
-                        alert('Pilih tanggal terlebih dahulu');
-                        return;
+                // Add event listener to handle page visibility changes
+                document.addEventListener('visibilitychange', function() {
+                    if (document.visibilityState === 'visible') {
+                        hideLoading(); // Hide loading when returning to the page
                     }
+                });
 
-                   
-                    const printUrl = "{{ route('admin.meetings.print') }}?date=" + encodeURIComponent(date);
-                    
-                    const printWindow = window.open(printUrl, '_blank');
-                    if (printWindow) {
-                        printWindow.onload = function() {
-                            hideLoading();
-                        };
-                    } else {
-                        hideLoading();
-                    }
-                }
-
-                // Update fungsi download PDF
+                // Update downloadPDF function to handle loading state better
                 function downloadPDF() {
                     const dateSelect = document.querySelector('#tanggal-filter');
                     const date = dateSelect.value;
@@ -610,8 +605,6 @@
                         alert('Pilih tanggal terlebih dahulu');
                         return;
                     }
-
-                    showLoading('Mengunduh PDF...');
                     
                     fetch("{{ route('admin.meetings.download-pdf') }}?tanggal=" + encodeURIComponent(date))
                         .then(response => {
@@ -627,12 +620,10 @@
                             a.click();
                             window.URL.revokeObjectURL(url);
                             document.body.removeChild(a);
-                            hideLoading();
                         })
                         .catch(error => {
                             console.error('Error:', error);
                             alert('Gagal mengunduh PDF. Silakan coba lagi.');
-                            hideLoading();
                         });
                 }
                 </script>

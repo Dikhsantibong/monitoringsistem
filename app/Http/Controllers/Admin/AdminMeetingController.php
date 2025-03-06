@@ -19,6 +19,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\WorkOrder;
 use App\Models\PowerPlant;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class AdminMeetingController extends Controller
@@ -29,7 +30,7 @@ class AdminMeetingController extends Controller
             $selectedDate = request('tanggal', now()->format('Y-m-d'));
             $unitSource = request('unit_source');
             
-            \Log::info('Request parameters:', [
+            Log::info('Request parameters:', [
                 'date' => $selectedDate,
                 'unit' => $unitSource
             ]);
@@ -39,7 +40,7 @@ class AdminMeetingController extends Controller
             // Filter berdasarkan unit jika ada
             if ($unitSource && session('unit') === 'mysql') {
                 $query->where('unit_source', $unitSource);
-                \Log::info('Applying unit filter:', ['unit' => $unitSource]);
+                Log::info('Applying unit filter:', ['unit' => $unitSource]);
             }
             
             // Query untuk data score card dengan tanggal yang dipilih
@@ -47,7 +48,7 @@ class AdminMeetingController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
             
-            \Log::info('Query results:', ['count' => $scoreCards->count()]);
+            Log::info('Query results:', ['count' => $scoreCards->count()]);
             
             $scoreCards = $scoreCards->map(function ($scoreCard) {
                 $peserta = json_decode($scoreCard->peserta, true) ?? [];
@@ -104,7 +105,7 @@ class AdminMeetingController extends Controller
                 'availableDates' => $availableDates
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error in AdminMeetingController@index: ' . $e->getMessage());
+            Log::error('Error in AdminMeetingController@index: ' . $e->getMessage());
             if (request()->ajax()) {
                 return response()->json(['error' => 'Terjadi kesalahan saat memuat data.'], 500);
             }
@@ -145,13 +146,13 @@ class AdminMeetingController extends Controller
         try {
             $tanggal = $request->tanggal ?? now()->format('Y-m-d');
             
-            \Log::info('Mencari data untuk tanggal: ' . $tanggal);
+            Log::info('Mencari data untuk tanggal: ' . $tanggal);
             
             $scoreCard = ScoreCardDaily::whereDate('tanggal', $tanggal)
                 ->latest()
                 ->first();
 
-            \Log::info('Data ScoreCard:', ['data' => $scoreCard]);
+            Log::info('Data ScoreCard:', ['data' => $scoreCard]);
 
             if (!$scoreCard) {
                 return response()->json([
@@ -186,7 +187,7 @@ class AdminMeetingController extends Controller
             return response()->json($data);
 
         } catch (\Exception $e) {
-            \Log::error('Error dalam getScoreCardData: ' . $e->getMessage());
+            Log::error('Error dalam getScoreCardData: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat memuat data'
@@ -264,7 +265,7 @@ class AdminMeetingController extends Controller
                         $allScoreCards[$unitName] = $this->formatScoreCardData($scoreCards->first(), $unitName);
                     }
                 } catch (\Exception $e) {
-                    \Log::error("Error accessing {$connection}: " . $e->getMessage());
+                    Log::error("Error accessing {$connection}: " . $e->getMessage());
                     continue;
                 }
             }
@@ -275,7 +276,7 @@ class AdminMeetingController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Print error: ' . $e->getMessage());
+            Log::error('Print error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
         }
     }
@@ -303,15 +304,14 @@ class AdminMeetingController extends Controller
     {
         try {
             $date = $request->get('date');
-            $startOfMonth = Carbon::parse($date)->startOfMonth();
-            $endOfMonth = Carbon::parse($date)->endOfMonth();
+            $unitSource = $request->get('unit_source');
             $allScoreCards = [];
             $currentSession = session('unit');
 
             // Mapping koneksi database dengan nama unit yang sesuai
             $connections = [
                 'mysql' => [
-                    'u478221055_up_kendari' => 'UP Kendari',
+                    'mysql' => 'UP Kendari',
                     'mysql_bau_bau' => 'Bau-Bau',
                     'mysql_kolaka' => 'Kolaka', 
                     'mysql_poasia' => 'Poasia',
@@ -323,93 +323,50 @@ class AdminMeetingController extends Controller
                 'mysql_wua_wua' => ['mysql_wua_wua' => 'Wua-Wua']
             ];
 
-            // Pilih koneksi berdasarkan session
-            $activeConnections = $connections[$currentSession] ?? [];
-            
-            \Log::info('Current session and connections:', [
-                'session' => $currentSession,
-                'activeConnections' => $activeConnections
-            ]);
+            // Determine which connections to use
+            if ($currentSession === 'mysql') {
+                // If admin (mysql) and no specific unit selected, show all units
+                if (empty($unitSource)) {
+                    $activeConnections = $connections['mysql'];
+                }
+                // If admin and specific unit selected, show only that unit
+                else {
+                    $activeConnections = [$unitSource => $connections['mysql'][$unitSource] ?? ''];
+                }
+            } else {
+                // For non-admin users, only show their own unit
+                $activeConnections = $connections[$currentSession] ?? [];
+            }
 
-            // Data untuk semua unit
-            $attendances = Attendance::whereDate('created_at', $date)
-                ->orderBy('created_at')
-                ->get();
-
-            $powerPlants = PowerPlant::with(['machines' => function($query) use ($date) {
-                $query->whereHas('statusLogs', function($q) use ($date) {
-                    $q->whereDate('created_at', $date);
-                });
-            }])->get();
-
-            $logs = MachineStatusLog::whereDate('created_at', $date)
-                ->with('machine.powerPlant')
-                ->get();
-
-            // Modifikasi query untuk data bulanan
-            $serviceRequests = ServiceRequest::where('status', 'open')
-                ->orderBy('priority', 'desc')
-                ->get();
-
-            // Update query work orders untuk mengambil semua yang open
-            $workOrders = WorkOrder::where('status', 'open')
-                ->orderBy('created_at')
-                ->get();
-
-            // Update query wo backlogs untuk mengambil semua yang open
-            $woBacklogs = WoBacklog::where('status', 'open')
-                ->orderBy('created_at')
-                ->get();
-
-            // Modifikasi query untuk Other Discussions - hanya ambil yang masih open
-            $otherDiscussions = OtherDiscussion::where('status', 'open')
-                ->where(function($query) use ($date) {
-                    $query->whereDate('created_at', '<=', $date)
-                          ->whereNull('closed_at');
-                })
-                ->with(['commitments' => function($query) {
-                    $query->where('status', 'open');
-                }])
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            // Tambahkan logging untuk memantau data
-            \Log::info('Open Other Discussions data for print:', [
-                'count' => $otherDiscussions->count(),
-                'date' => $date,
-                'discussions' => $otherDiscussions->map(function($discussion) {
-                    return [
-                        'id' => $discussion->id,
-                        'topic' => $discussion->topic,
-                        'created_at' => $discussion->created_at,
-                        'open_commitments_count' => $discussion->commitments->count()
-                    ];
-                })
-            ]);
-            
+            // Retrieve ScoreCard data for each active connection
             foreach ($activeConnections as $connection => $unitName) {
                 try {
-                    \Log::info("Trying to fetch data for connection: {$connection}");
-                    
-                    // Score Card Data - Menggunakan nama tabel yang benar
-                    $scoreCard = DB::connection($connection)
-                        ->table('score_card_daily') // Menggunakan nama tabel yang benar
-                        ->whereDate('tanggal', $date)
-                        ->orderBy('created_at', 'desc')
-                        ->first();
+                    // Special handling for UP Kendari (mysql connection)
+                    if ($connection === 'mysql') {
+                        $scoreCard = DB::table('score_card_daily')
+                            ->whereDate('tanggal', $date)
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+                    } else {
+                        $scoreCard = DB::connection($connection)
+                            ->table('score_card_daily')
+                            ->whereDate('tanggal', $date)
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+                    }
 
                     if ($scoreCard) {
-                        // Hitung skor waktu mulai
+                        // Calculate waktu mulai score
                         $waktuMulaiTarget = "07:30:00";
                         $waktuMulaiActual = $scoreCard->waktu_mulai;
                         $selisihMenit = round((strtotime($waktuMulaiActual) - strtotime($waktuMulaiTarget)) / 60);
                         $skorWaktuMulai = max(0, 100 - (floor($selisihMenit / 3) * 10));
 
                         $allScoreCards[$unitName] = [
-                            'lokasi' => $scoreCard->lokasi,
+                            'lokasi' => $scoreCard->lokasi ?? $unitName,
                             'waktu_mulai' => $scoreCard->waktu_mulai,
                             'waktu_selesai' => $scoreCard->waktu_selesai,
-                            'peserta' => json_decode($scoreCard->peserta, true),
+                            'peserta' => json_decode($scoreCard->peserta, true) ?? [],
                             'kesiapan_panitia' => $scoreCard->kesiapan_panitia,
                             'kesiapan_bahan' => $scoreCard->kesiapan_bahan,
                             'aktivitas_luar' => $scoreCard->aktivitas_luar,
@@ -418,27 +375,68 @@ class AdminMeetingController extends Controller
                             'gangguan_interupsi' => $scoreCard->gangguan_interupsi,
                             'ketegasan_moderator' => $scoreCard->ketegasan_moderator,
                             'kelengkapan_sr' => $scoreCard->kelengkapan_sr,
-                            'skor_waktu_mulai' => $skorWaktuMulai
+                            'skor_waktu_mulai' => $skorWaktuMulai,
+                            'tanggal' => $scoreCard->tanggal
                         ];
-
-                        \Log::info("Successfully fetched score card for {$unitName}", [
-                            'data' => $allScoreCards[$unitName]
-                        ]);
-                    } else {
-                        \Log::info("No score card found for {$unitName} on date {$date}");
                     }
                 } catch (\Exception $e) {
-                    \Log::error("Error accessing {$connection}: " . $e->getMessage(), [
-                        'trace' => $e->getTraceAsString()
-                    ]);
+                    Log::error("Error accessing {$connection}: " . $e->getMessage());
                     continue;
                 }
             }
 
-            \Log::info('Final score cards data:', [
-                'count' => count($allScoreCards),
-                'units' => array_keys($allScoreCards)
-            ]);
+            // Get other data
+            $attendancesQuery = Attendance::whereDate('created_at', $date);
+            $powerPlantsQuery = PowerPlant::with(['machines' => function($query) use ($date) {
+                $query->whereHas('statusLogs', function($q) use ($date) {
+                    $q->whereDate('created_at', $date);
+                });
+            }]);
+            $logsQuery = MachineStatusLog::whereDate('created_at', $date)->with('machine.powerPlant');
+            $serviceRequestsQuery = ServiceRequest::where('status', 'open');
+            $workOrdersQuery = WorkOrder::where('status', 'open');
+            $woBacklogsQuery = WoBacklog::where('status', 'open');
+            $otherDiscussionsQuery = OtherDiscussion::where('status', 'open')
+                ->where(function($query) use ($date) {
+                    $query->whereDate('created_at', '<=', $date)
+                          ->whereNull('closed_at');
+                });
+
+            // Apply unit_source filter only if specific unit is selected
+            if ($unitSource) {
+                $attendancesQuery->where('unit_source', $unitSource);
+                $powerPlantsQuery->where('unit_source', $unitSource);
+                $logsQuery->whereHas('machine.powerPlant', function($q) use ($unitSource) {
+                    $q->where('unit_source', $unitSource);
+                });
+                $serviceRequestsQuery->where('unit_source', $unitSource);
+                $workOrdersQuery->where('unit_source', $unitSource);
+                $woBacklogsQuery->where('unit_source', $unitSource);
+                $otherDiscussionsQuery->where('unit_source', $unitSource);
+            }
+            // If no specific unit selected and user is not admin, filter by their unit
+            elseif ($currentSession !== 'mysql') {
+                $attendancesQuery->where('unit_source', $currentSession);
+                $powerPlantsQuery->where('unit_source', $currentSession);
+                $logsQuery->whereHas('machine.powerPlant', function($q) use ($currentSession) {
+                    $q->where('unit_source', $currentSession);
+                });
+                $serviceRequestsQuery->where('unit_source', $currentSession);
+                $workOrdersQuery->where('unit_source', $currentSession);
+                $woBacklogsQuery->where('unit_source', $currentSession);
+                $otherDiscussionsQuery->where('unit_source', $currentSession);
+            }
+
+            // Execute queries
+            $attendances = $attendancesQuery->orderBy('created_at')->get();
+            $powerPlants = $powerPlantsQuery->get();
+            $logs = $logsQuery->get();
+            $serviceRequests = $serviceRequestsQuery->orderBy('priority', 'desc')->get();
+            $workOrders = $workOrdersQuery->orderBy('created_at')->get();
+            $woBacklogs = $woBacklogsQuery->orderBy('created_at')->get();
+            $otherDiscussions = $otherDiscussionsQuery->with(['commitments' => function($query) {
+                $query->where('status', 'open');
+            }])->orderBy('created_at', 'desc')->get();
 
             return view('admin.meetings.print', [
                 'allScoreCards' => $allScoreCards,
@@ -453,7 +451,7 @@ class AdminMeetingController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Print error: ' . $e->getMessage());
+            Log::error('Print error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memuat data print.');
         }
     }
@@ -491,7 +489,7 @@ class AdminMeetingController extends Controller
             // Pilih koneksi berdasarkan session
             $activeConnections = $connections[$currentSession] ?? [];
             
-            \Log::info('PDF Generation Debug:', [
+            Log::info('PDF Generation Debug:', [
                 'session' => $currentSession,
                 'date' => $date,
                 'activeConnections' => $activeConnections
@@ -540,7 +538,7 @@ class AdminMeetingController extends Controller
                 ->get();
 
             // Tambahkan logging untuk memantau data
-            \Log::info('Open Other Discussions data:', [
+            Log::info('Open Other Discussions data:', [
                 'count' => $otherDiscussions->count(),
                 'date' => $date,
                 'discussions' => $otherDiscussions->map(function($discussion) {
@@ -555,7 +553,7 @@ class AdminMeetingController extends Controller
             
             foreach ($activeConnections as $connection => $unitName) {
                 try {
-                    \Log::info("Trying to fetch data for connection: {$connection}");
+                    Log::info("Trying to fetch data for connection: {$connection}");
                     
                     // Score Card Data - Menggunakan nama tabel yang benar
                     $scoreCard = DB::connection($connection)
@@ -565,7 +563,7 @@ class AdminMeetingController extends Controller
                         ->first();
 
                     if ($scoreCard) {
-                        \Log::info("Found scorecard data for {$unitName}", [
+                        Log::info("Found scorecard data for {$unitName}", [
                             'scoreCard' => $scoreCard,
                             'peserta' => json_decode($scoreCard->peserta, true)
                         ]);
@@ -623,7 +621,7 @@ class AdminMeetingController extends Controller
                     }
 
                 } catch (\Exception $e) {
-                    \Log::error("Error processing {$unitName} data:", [
+                    Log::error("Error processing {$unitName} data:", [
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
                     ]);
@@ -631,7 +629,7 @@ class AdminMeetingController extends Controller
                 }
             }
 
-            \Log::info('Data collected for PDF:', [
+            Log::info('Data collected for PDF:', [
                 'scoreCards' => count($allScoreCards),
                 'machineStatuses' => count($allMachineStatuses),
                 'attendances' => $attendances->count(),
@@ -641,7 +639,7 @@ class AdminMeetingController extends Controller
             ]);
 
             // Sebelum generate PDF, log semua data yang akan dikirim ke view
-            \Log::info('Data being sent to PDF view:', [
+            Log::info('Data being sent to PDF view:', [
                 'scoreCardsCount' => count($allScoreCards),
                 'attendancesCount' => $attendances->count(),
                 'powerPlantsCount' => $powerPlants->count(),
@@ -666,7 +664,7 @@ class AdminMeetingController extends Controller
             return $pdf->stream('score-card.pdf');
 
         } catch (\Exception $e) {
-            \Log::error('PDF generation failed:', [
+            Log::error('PDF generation failed:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

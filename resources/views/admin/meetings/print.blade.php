@@ -471,18 +471,11 @@
                 } else {
                     // Untuk unit lain, hanya tampilkan data unit mereka sendiri
                     $unitMapping = [
-                        'mysql_wua_wua' => 'Wua-Wua',  // Sesuaikan dengan format nama yang dikirim dari controller
-                        'mysql_bau_bau' => 'Bau-Bau',  // Sesuaikan dengan format nama yang dikirim dari controller
-                        'mysql_poasia' => 'Poasia',    // Sesuaikan dengan format nama yang dikirim dari controller
-                        'mysql_kolaka' => 'Kolaka'     // Sesuaikan dengan format nama yang dikirim dari controller
+                        'mysql_wua_wua' => 'Wua-Wua',
+                        'mysql_bau_bau' => 'Bau-Bau',
+                        'mysql_poasia' => 'Poasia',
+                        'mysql_kolaka' => 'Kolaka'
                     ];
-                    
-                    // Debug information
-                    \Log::info('Print View Debug:', [
-                        'currentSession' => $currentSession,
-                        'unitName' => $unitName,
-                        'mappedUnit' => $unitMapping[$currentSession] ?? null
-                    ]);
                     
                     $shouldDisplay = ($currentSession && isset($unitMapping[$currentSession]) && $unitName === $unitMapping[$currentSession]);
                 }
@@ -515,18 +508,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($data['peserta'] as $index => $peserta)
+                        @foreach($data['peserta'] as $jabatan => $pesertaData)
                             <tr>
                                 <td style="text-align: center;">{{ $loop->iteration }}</td>
-                                <td>{{ $peserta['jabatan'] }}</td>
-                                <td style="text-align: center;">{{ $peserta['skor'] == 50 ? 0 : '' }}</td>
-                                <td style="text-align: center;">{{ $peserta['skor'] == 100 ? 1 : '' }}</td>
-                                <td style="text-align: center;">{{ $peserta['skor'] }}</td>
-                                <td class="keterangan">{{ $peserta['keterangan'] }}</td>
+                                <td>{{ is_array($pesertaData) ? $jabatan : $pesertaData['jabatan'] }}</td>
+                                <td style="text-align: center;">{{ is_array($pesertaData) ? ($pesertaData['skor'] == 50 ? '0' : '') : ($pesertaData['awal'] ?? '') }}</td>
+                                <td style="text-align: center;">{{ is_array($pesertaData) ? ($pesertaData['skor'] == 100 ? '1' : '') : ($pesertaData['akhir'] ?? '') }}</td>
+                                <td style="text-align: center;">{{ is_array($pesertaData) ? $pesertaData['skor'] : ($pesertaData['skor'] ?? 0) }}</td>
+                                <td class="keterangan">{{ is_array($pesertaData) ? ($pesertaData['keterangan'] ?? '-') : '-' }}</td>
                             </tr>
                         @endforeach
 
-                        <!-- Baris Ketentuan dengan spacing yang lebih besar -->
+                        <!-- Ketentuan rows -->
                         <tr>
                             <td style="text-align: center;">{{ count($data['peserta']) + 1 }}</td>
                             <td>Ketepatan waktu mulai</td>
@@ -629,8 +622,15 @@
             @endif
         @endforeach
     @else
-        <div class="error">
-            Tidak ada data score card yang tersedia untuk tanggal ini
+        <div class="content-section">
+            <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+            <div class="header">
+                <h2>SCORE CARD DAILY</h2>
+                <p>Tanggal: {{ is_string($date) ? \Carbon\Carbon::parse($date)->format('d F Y') : $date->format('d F Y') }}</p>
+            </div>
+            <div class="alert-message" style="text-align: center; padding: 20px; margin: 20px 0; background-color: #f3f4f6; border-radius: 8px;">
+                <p style="color: #6b7280; font-size: 16px;">Tidak ada data score card yang tersedia untuk tanggal ini</p>
+            </div>
         </div>
     @endif
 
@@ -1014,9 +1014,8 @@
 
     <script>
         window.onload = function() {
-            if (!document.querySelector('.error')) {
-                window.print();
-            }
+            // Always trigger print dialog regardless of data existence
+            window.print();
         }
     </script>
 </body>
