@@ -19,7 +19,7 @@
             top: 20px;
             left: 25px;
             width: 200px;
-            height: auto;
+            height: auto;   
         }
         .header {
             text-align: center;
@@ -37,13 +37,41 @@
             font-size: 14px;
             text-align: left;
         }
+
+        /* Content section styles */
+        .content-section {
+            margin-bottom: 30px;
+            break-inside: avoid;
+        }
+
+        /* Table container styles */
+        .table-container {
+            margin: 20px 0;
+            break-inside: auto;
+        }
+
         table { 
             width: 100%;
             border-collapse: collapse;
             margin-top: 25px;
             background-color: #ffffff;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            page-break-inside: auto;
         }
+
+        tr { 
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tbody {
+            display: table-row-group;
+        }
+
         th, td { 
             border: 1px solid #e5e7eb;
             padding: 12px 14px;
@@ -89,9 +117,42 @@
                 height: 297mm;
             }
             table { 
-                page-break-inside: avoid;
+                page-break-inside: auto;
                 margin-bottom: 0;
                 box-shadow: none;
+            }
+            tr {
+                page-break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+            
+            .report-table, .sr-table, .wo-table {
+                page-break-inside: auto;
+            }
+            
+            .report-table tr, .sr-table tr, .wo-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            .unit-section {
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            /* Only create new page when content exceeds page height */
+            .page-break {
+                page-break-before: auto;
+            }
+            
+            /* Force page break only when needed */
+            .force-break {
+                page-break-before: always;
             }
             th {
                 background: #0A749B !important;
@@ -117,11 +178,37 @@
                 max-height: calc(297mm - 4.4cm);
                 overflow: visible;
             }
+
+            /* Content wrapper for page height control */
+            .content-wrapper {
+                max-height: calc(297mm - 40mm);
+                overflow: hidden;
+            }
+
+            .content-section {
+                break-inside: avoid;
+                margin-bottom: 20px;
+            }
+
+            .table-container {
+                break-inside: auto;
+            }
+
+            /* Remove forced page breaks */
+            .page-break {
+                page-break-before: auto;
+            }
+
+            /* Only break page when content exceeds height */
+            .content-section:not(:first-child) {
+                page-break-before: auto;
+            }
         }
 
         /* Style untuk halaman kedua */
         .page-break {
             page-break-before: always;
+            clear: both;
         }
         .report-table {
             margin: 20px 0;
@@ -687,160 +774,148 @@
         @endforeach
     </div>
 
-    <!-- Halaman keempat - Service Request Table -->
-    <div class="page-break">
-        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
-        
+    <!-- Service Request Table -->
+    <div class="content-section">
         <div class="header">
             <h2>DAFTAR SERVICE REQUEST</h2>
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
-
-        <table class="sr-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%; text-align: center;">No</th>
-                    <th style="width: 15%; text-align: center;">ID SR</th>
-                    <th style="width: 30%; text-align: center;">Deskripsi</th>
-                    <th style="width: 10%; text-align: center;">Status</th>
-                    <th style="width: 10%; text-align: center;">Downtime</th>
-                    <th style="width: 15%; text-align: center;">Tipe SR</th>
-                    <th style="width: 15%; text-align: center;">Prioritas</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($serviceRequests as $index => $sr)
+        
+        <div class="table-container">
+            <table class="sr-table">
+                <thead>
                     <tr>
-                        <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $sr->id }}</td>
-                        <td>{{ $sr->description }}</td>
-                        <td class="text-center">
-                            <span class="status-badge {{ 
-                                $sr->status === 'Completed' ? 'status-operasi' : 
-                                ($sr->status === 'In Progress' ? 'status-standby' : 
-                                'status-gangguan') 
-                            }}">
-                                {{ $sr->status }}
-                            </span>
-                        </td>
-                        <td class="text-center">{{ $sr->downtime }}</td>
-                        <td class="text-center">{{ $sr->tipe_sr }}</td>
-                        <td class="text-center">
-                            <span class="priority-badge priority-{{ strtolower($sr->priority) }}">
-                                {{ $sr->priority }}
-                            </span>
-                        </td>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 15%;">No SR</th>
+                        <th style="width: 35%;">Deskripsi</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">PIC</th>
+                        <th style="width: 15%;">Target</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align: center;">Tidak ada Service Request untuk tanggal ini</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($serviceRequests as $sr)
+                        <tr>
+                            <td style="text-align: center;">{{ $loop->iteration }}</td>
+                            <td>{{ $sr->id }}</td>
+                            <td>{{ $sr->description }}</td>
+                            <td class="text-center">
+                                <span class="status-badge {{ 
+                                    $sr->status === 'Completed' ? 'status-operasi' : 
+                                    ($sr->status === 'In Progress' ? 'status-standby' : 
+                                    'status-gangguan') 
+                                }}">
+                                    {{ $sr->status }}
+                                </span>
+                            </td>
+                            <td class="text-center">{{ $sr->pic }}</td>
+                            <td class="text-center">{{ $sr->target }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align: center;">Tidak ada Service Request untuk tanggal ini</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Halaman Work Orders -->
-    <div class="page-break">
-        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
-        
+    <!-- Work Order Table -->
+    <div class="content-section">
         <div class="header">
             <h2>DAFTAR WORK ORDER</h2>
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
-
-        <table class="wo-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%; text-align: center;">No</th>
-                    <th style="width: 15%; text-align: center;">No WO</th>
-                    <th style="width: 30%; text-align: center;">Deskripsi</th>
-                    <th style="width: 10%; text-align: center;">Tipe</th>
-                    <th style="width: 10%; text-align: center;">Status</th>
-                    <th style="width: 15%; text-align: center;">Prioritas</th>
-                    <th style="width: 15%; text-align: center;">Jadwal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($workOrders as $index => $wo)
+        
+        <div class="table-container">
+            <table class="wo-table">
+                <thead>
                     <tr>
-                        <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $wo->id }}</td>
-                        <td>{{ $wo->description }}</td>
-                        <td>{{ $wo->type }}</td>
-                        <td>
-                            <span class="status-badge {{ 
-                                $wo->status === 'Completed' ? 'status-operasi' : 
-                                ($wo->status === 'In Progress' ? 'status-standby' : 
-                                'status-gangguan') 
-                            }}">
-                                {{ $wo->status }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="priority-badge priority-{{ strtolower($wo->priority) }}">
-                                {{ $wo->priority }}
-                            </span>
-                        </td>
-                        <td>
-                            {{ \Carbon\Carbon::parse($wo->schedule_start)->format('d/m/Y') }} - 
-                            {{ \Carbon\Carbon::parse($wo->schedule_finish)->format('d/m/Y') }}
-                        </td>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 15%;">No WO</th>
+                        <th style="width: 35%;">Deskripsi</th>
+                        <th style="width: 15%;">Tanggal</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Keterangan</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align: center;">Tidak ada Work Order untuk tanggal ini</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($workOrders as $wo)
+                        <tr>
+                            <td style="text-align: center;">{{ $loop->iteration }}</td>
+                            <td>{{ $wo->id }}</td>
+                            <td>{{ $wo->description }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($wo->schedule_start)->format('d/m/Y') }} - 
+                                {{ \Carbon\Carbon::parse($wo->schedule_finish)->format('d/m/Y') }}
+                            </td>
+                            <td>
+                                <span class="status-badge {{ 
+                                    $wo->status === 'Completed' ? 'status-operasi' : 
+                                    ($wo->status === 'In Progress' ? 'status-standby' : 
+                                    'status-gangguan') 
+                                }}">
+                                    {{ $wo->status }}
+                                </span>
+                            </td>
+                            <td>{{ $wo->keterangan }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align: center;">Tidak ada Work Order untuk tanggal ini</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Halaman WO Backlog -->
-    <div class="page-break">
-        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
-        
+    <!-- WO Backlog Table -->
+    <div class="content-section">
         <div class="header">
             <h2>DAFTAR WORK ORDER BACKLOG</h2>
             <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
         </div>
-
-        <table class="wo-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%; text-align: center;">No</th>
-                    <th style="width: 15%; text-align: center;">No WO</th>
-                    <th style="width: 35%; text-align: center;">Deskripsi</th>
-                    <th style="width: 15%; text-align: center;">Tanggal Backlog</th>
-                    <th style="width: 15%; text-align: center;">Status</th>
-                    <th style="width: 15%; text-align: center;">Keterangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($woBacklogs as $index => $wo)
+        
+        <div class="table-container">
+            <table class="wo-table">
+                <thead>
                     <tr>
-                        <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $wo->no_wo }}</td>
-                        <td>{{ $wo->deskripsi }}</td>
-                        <td>{{ \Carbon\Carbon::parse($wo->tanggal_backlog)->format('d/m/Y') }}</td>
-                        <td >
-                            <span class="status-badge {{ 
-                                $wo->status === 'Completed' ? 'status-operasi' : 
-                                ($wo->status === 'In Progress' ? 'status-standby' : 
-                                'status-gangguan') 
-                            }}">
-                                {{ $wo->status }}
-                            </span>
-                        </td>
-                        <td>{{ $wo->keterangan }}</td>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 15%;">No WO</th>
+                        <th style="width: 35%;">Deskripsi</th>
+                        <th style="width: 15%;">Tanggal Backlog</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Keterangan</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" style="text-align: center;">Tidak ada Work Order Backlog untuk tanggal ini</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($woBacklogs as $wo)
+                        <tr>
+                            <td style="text-align: center;">{{ $loop->iteration }}</td>
+                            <td>{{ $wo->no_wo }}</td>
+                            <td>{{ $wo->deskripsi }}</td>
+                            <td>{{ \Carbon\Carbon::parse($wo->tanggal_backlog)->format('d/m/Y') }}</td>
+                            <td >
+                                <span class="status-badge {{ 
+                                    $wo->status === 'Completed' ? 'status-operasi' : 
+                                    ($wo->status === 'In Progress' ? 'status-standby' : 
+                                    'status-gangguan') 
+                                }}">
+                                    {{ $wo->status }}
+                                </span>
+                            </td>
+                            <td>{{ $wo->keterangan }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Tidak ada Work Order Backlog untuk tanggal ini</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Halaman Pembahasan Lain-lain -->
