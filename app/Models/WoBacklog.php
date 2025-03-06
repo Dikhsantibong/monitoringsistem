@@ -260,46 +260,134 @@ class WoBacklog extends Model
                 
                 Log::info('Starting moveBackToWorkOrder process', [
                     'no_wo' => $this->no_wo,
-                    'status' => $this->status
+                    'status' => $this->status,
+                    'unit_source' => $this->unit_source,
+                    'current_connection' => session('unit', 'mysql')
                 ]);
 
-                $workOrder = WorkOrder::create([
+                // Persiapkan data untuk WorkOrder dengan format yang benar
+                $workOrderData = [
                     'id' => $this->no_wo,
                     'description' => $this->deskripsi,
                     'kendala' => $this->kendala,
                     'tindak_lanjut' => $this->tindak_lanjut,
                     'document_path' => $this->document_path,
-                    'type' => $this->type_wo,
-                    'priority' => $this->priority,
+                    'type' => ucfirst(strtolower($this->type_wo)),
+                    'priority' => ucfirst(strtolower($this->priority)),
                     'schedule_start' => $this->schedule_start,
                     'schedule_finish' => $this->schedule_finish,
                     'status' => 'Closed',
                     'power_plant_id' => $this->power_plant_id,
                     'unit_source' => $this->unit_source,
                     'is_active' => false,
-                    'is_backlogged' => false
-                ]);
+                    'is_backlogged' => false,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
 
-                Log::info('Created new WorkOrder with original data', [
-                    'work_order_id' => $workOrder->id,
-                    'type' => $this->type_wo,
-                    'priority' => $this->priority,
-                    'schedule_start' => $this->schedule_start,
-                    'schedule_finish' => $this->schedule_finish
-                ]);
+                // 1. Hapus data dari wo_backlog di kedua database terlebih dahulu
+                $connections = [$this->unit_source];
+                if ($this->unit_source !== 'mysql') {
+                    $connections[] = 'mysql';
+                }
 
-                // Hapus dari backlog
-                $this->delete();
-                
-                Log::info('Deleted from backlog', [
-                    'no_wo' => $this->no_wo
-                ]);
+                foreach ($connections as $connection) {
+                    try {
+                        // Disable foreign key checks
+                        DB::connection($connection)->statement('SET FOREIGN_KEY_CHECKS=0');
+                        
+                        // Hapus data
+                        $deleted = DB::connection($connection)
+                            ->table('wo_backlog')
+                            ->where('no_wo', $this->no_wo)
+                            ->delete();
+
+                        // Enable foreign key checks kembali
+                        DB::connection($connection)->statement('SET FOREIGN_KEY_CHECKS=1');
+
+                        Log::info('Deleted from wo_backlog', [
+                            'connection' => $connection,
+                            'wo_id' => $this->no_wo,
+                            'deleted' => $deleted
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to delete from wo_backlog', [
+                            'connection' => $connection,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+
+                // 2. Cek dan update atau insert Work Order di database unit
+                if ($this->unit_source !== 'mysql') {
+                    try {
+                        $exists = DB::connection($this->unit_source)
+                            ->table('work_orders')
+                            ->where('id', $this->no_wo)
+                            ->exists();
+
+                        if ($exists) {
+                            DB::connection($this->unit_source)
+                                ->table('work_orders')
+                                ->where('id', $this->no_wo)
+                                ->update($workOrderData);
+                            Log::info('Updated existing WorkOrder in unit database', [
+                                'connection' => $this->unit_source,
+                                'wo_id' => $this->no_wo
+                            ]);
+                        } else {
+                            DB::connection($this->unit_source)
+                                ->table('work_orders')
+                                ->insert($workOrderData);
+                            Log::info('Created new WorkOrder in unit database', [
+                                'connection' => $this->unit_source,
+                                'wo_id' => $this->no_wo
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Failed to create/update WorkOrder in unit database', [
+                            'error' => $e->getMessage(),
+                            'connection' => $this->unit_source
+                        ]);
+                        throw $e;
+                    }
+                }
+
+                // 3. Cek dan update atau insert Work Order di database utama (mysql)
+                try {
+                    $exists = DB::connection('mysql')
+                        ->table('work_orders')
+                        ->where('id', $this->no_wo)
+                        ->exists();
+
+                    if ($exists) {
+                        DB::connection('mysql')
+                            ->table('work_orders')
+                            ->where('id', $this->no_wo)
+                            ->update($workOrderData);
+                        Log::info('Updated existing WorkOrder in main database', [
+                            'wo_id' => $this->no_wo
+                        ]);
+                    } else {
+                        DB::connection('mysql')
+                            ->table('work_orders')
+                            ->insert($workOrderData);
+                        Log::info('Created new WorkOrder in main database', [
+                            'wo_id' => $this->no_wo
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to create/update WorkOrder in main database', [
+                        'error' => $e->getMessage()
+                    ]);
+                    throw $e;
+                }
 
                 DB::commit();
                 return true;
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Error moving backlog to WO', [
+                Log::error('Error in moveBackToWorkOrder', [
                     'no_wo' => $this->no_wo,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
