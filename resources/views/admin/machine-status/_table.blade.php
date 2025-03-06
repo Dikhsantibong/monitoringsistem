@@ -68,11 +68,11 @@
                                 
                                 <div class="bg-blue-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">DMN:</p>
-                                    <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 2) }} MW</p>
+                                    <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMP, 2) }} MW</p>
                                 </div>
                                 <div class="bg-green-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">DMP:</p>
-                                    <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 2) }} MW</p>
+                                    <p class="text-xl font-bold text-green-700">{{ number_format($totalDMN, 2) }} MW</p>
                                 </div>
                                 
                                 <div class="bg-red-50 p-3 rounded-lg md:col-span-1 col-span-5">
