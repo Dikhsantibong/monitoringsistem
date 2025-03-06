@@ -78,9 +78,9 @@
                                 <div class="bg-red-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600 ">Derating:</p>
                                     <p class="text-xl font-bold text-red-700">
-                                        {{ number_format($totalDMN - $totalDMP, 2) }} MW 
+                                        {{ number_format($totalDMP - $totalDMN, 2) }} MW 
                                         @if($totalDMN > 0)
-                                            ({{ number_format((($totalDMN - $totalDMP) / $totalDMN) * 100, 2) }}%)
+                                            ({{ number_format((($totalDMP - $totalDMN) / $totalDMP) * 100, 2) }}%)
                                         @else
                                             (0%)
                                         @endif
