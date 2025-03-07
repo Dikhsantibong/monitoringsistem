@@ -312,7 +312,7 @@
                                             <td data-column="unit" class="px-4 py-2 border border-gray-200">
                                                 {{ $sr->powerPlant->name ?? '-' }}
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
+                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow-wrap: break-word; white-space: normal;">{{ $sr->description }}</td>
                                             <td data-column="status" class="py-2 px-4 border border-gray-200">
                                                 <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                     {{ $sr->status }}
