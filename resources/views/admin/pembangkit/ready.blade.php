@@ -184,7 +184,7 @@
                                                value="{{ old('hop_' . $unit->id) }}">
                                         <span class="text-sm text-gray-600">
                                             @if(str_starts_with(trim(strtoupper($unit->name)), 'PLTM '))
-                                                liter/detik
+                                                m3/s
                                             @else
                                                 hari
                                             @endif
