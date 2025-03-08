@@ -1408,10 +1408,10 @@
                                 <ul class="flex space-x-8">
                                     <li><a href="#" class="nav-link">Home</a></li>
                                     <li><a href="#map" class="nav-link">Peta Pembangkit</a></li>
-                                    {{-- <li><a href="#grafik" class="nav-link">Grafik Kinerja</a></li> --}}
                                     <li><a href="#live-data" class="nav-link">Live Data Unit Operasional</a></li>
                                     <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
-                                    <!-- Tambah Menu Login -->
+                                    <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link" target="_blank">Bid. Pemeliharaan</a></li>
+                                    <!-- Login button -->
                                     <li>
                                         <a href="{{ route('login') }}" class="login-button">
                                             <i class="fas fa-user mr-2"></i> Login
@@ -1435,10 +1435,10 @@
                             <ul class="space-y-4">
                                 <li><a href="#" class="nav-link-mobile">Home</a></li>
                                 <li><a href="#map" class="nav-link-mobile">Peta Pembangkit</a></li>
-                                {{-- <li><a href="#grafik" class="nav-link-mobile">Grafik Kinerja</a></li> --}}
                                 <li><a href="#live-data" class="nav-link-mobile">Live Data Unit Operasional</a></li>
                                 <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link-mobile">Dashboard Pemantauan</a></li>
-                                <!-- Tambah Menu Login di Mobile -->
+                                <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link-mobile" target="_blank">Bid. Pemeliharaan</a></li>
+                                <!-- Login button in mobile -->
                                 <li>
                                     <a href="{{ route('login') }}" class="nav-link-mobile login-mobile">
                                         <i class="fas fa-user mr-2"></i> Login
