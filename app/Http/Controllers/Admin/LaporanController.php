@@ -187,6 +187,16 @@ class LaporanController extends Controller
         try {
             \Log::info('Received SR data:', $request->all());
             
+            // Cek duplikasi SR
+            $existingSR = ServiceRequest::where('id', $request->sr_id)->first();
+            if ($existingSR) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'SR dengan nomor ' . $request->sr_id . ' sudah ada dalam sistem',
+                    'isDuplicate' => true
+                ], 422);
+            }
+
             $sr = ServiceRequest::create([
                 'id' => $request->sr_id,
                 'description' => $request->description,
@@ -219,7 +229,29 @@ class LaporanController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Dapatkan power plant dan unit source
+            // Cek duplikasi WO di semua database
+            $connections = ['mysql', 'mysql_wua_wua', 'mysql_poasia', 'mysql_kolaka', 'mysql_bau_bau'];
+            foreach ($connections as $connection) {
+                try {
+                    $exists = DB::connection($connection)
+                        ->table('work_orders')
+                        ->where('id', $request->wo_id)
+                        ->exists();
+                    
+                    if ($exists) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'WO dengan nomor ' . $request->wo_id . ' sudah ada dalam sistem',
+                            'isDuplicate' => true
+                        ], 422);
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+
+            // Lanjutkan dengan kode yang ada untuk membuat WO
             $powerPlant = PowerPlant::findOrFail($request->unit);
             $unitSource = $powerPlant->unit_source ?? 'mysql';
 
