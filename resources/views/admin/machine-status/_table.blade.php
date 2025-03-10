@@ -40,20 +40,36 @@
                                         return $log->created_at->format('Y-m-d') === $date;
                                     });
 
-                                    $totalDMP = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                        ->sum(fn($log) => (float) $log->dmp);
-                                    
-                                    $totalDMN = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                        ->sum(fn($log) => (float) $log->dmn);
-                                    
-                                    
-                                    $totalBeban = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                    // Hitung total DMP (Daya Mampu Pasok)
+                                    // DMP dihitung dari total nilai dmn untuk mesin yang status-nya Operasi atau Standby
+                                    $totalDMP = $filteredLogs
+                                        ->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                        ->filter(function($log) {
+                                            return in_array($log->status, ['Operasi', 'Standby']);
+                                        })
                                         ->sum(function($log) {
-                                            if ($log->status === 'Operasi') {
-                                                return (float) $log->load_value;
-                                            }
-                                            return 0;
+                                            return is_numeric($log->dmn) ? (float) $log->dmn : 0;
                                         });
+                                    
+                                    // Hitung total DMN (Daya Mampu Netto)
+                                    // DMN dihitung dari total nilai dmn untuk semua mesin
+                                    $totalDMN = $filteredLogs
+                                        ->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                        ->sum(function($log) {
+                                            return is_numeric($log->dmn) ? (float) $log->dmn : 0;
+                                        });
+                                    
+                                    // Hitung total beban
+                                    $totalBeban = $filteredLogs
+                                        ->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                        ->where('status', 'Operasi')
+                                        ->sum(function($log) {
+                                            return is_numeric($log->load_value) ? (float) $log->load_value : 0;
+                                        });
+
+                                    // Hitung derating
+                                    $derating = $totalDMP - $totalDMN;
+                                    $deratingPercentage = $totalDMP > 0 ? ($derating / $totalDMP) * 100 : 0;
 
                                     // Ambil data HOP untuk power plant ini
                                     $hopValue = \App\Models\UnitOperationHour::where('power_plant_id', $powerPlant->id)
@@ -68,22 +84,18 @@
                                 
                                 <div class="bg-blue-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">DMN:</p>
-                                    <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMP, 2) }} MW</p>
+                                    <p class="text-xl font-bold text-blue-700">{{ number_format($totalDMN, 2) }} MW</p>
                                 </div>
                                 <div class="bg-green-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">DMP:</p>
-                                    <p class="text-xl font-bold text-green-700">{{ number_format($totalDMN, 2) }} MW</p>
+                                    <p class="text-xl font-bold text-green-700">{{ number_format($totalDMP, 2) }} MW</p>
                                 </div>
                                 
                                 <div class="bg-red-50 p-3 rounded-lg md:col-span-1 col-span-5">
-                                    <p class="text-sm text-gray-600 ">Derating:</p>
+                                    <p class="text-sm text-gray-600">Derating:</p>
                                     <p class="text-xl font-bold text-red-700">
-                                        {{ number_format($totalDMP - $totalDMN, 2) }} MW 
-                                        @if($totalDMN > 0)
-                                            ({{ number_format((($totalDMP - $totalDMN) / $totalDMP) * 100, 2) }}%)
-                                        @else
-                                            (0%)
-                                        @endif
+                                        {{ number_format($derating, 2) }} MW 
+                                        ({{ number_format($deratingPercentage, 2) }}%)
                                     </p>
                                 </div>
                                 <div class="bg-purple-50 p-3 rounded-lg md:col-span-1 col-span-5">
