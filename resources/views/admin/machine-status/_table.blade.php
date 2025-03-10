@@ -40,20 +40,29 @@
                                         return $log->created_at->format('Y-m-d') === $date;
                                     });
 
-                                    $totalDMP = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                        ->sum(fn($log) => (float) $log->dmp);
-                                    
-                                    $totalDMN = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                        ->sum(fn($log) => (float) $log->dmn);
-                                    
-                                    
-                                    $totalBeban = $filteredLogs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                        ->sum(function($log) {
-                                            if ($log->status === 'Operasi') {
-                                                return (float) $log->load_value;
-                                            }
-                                            return 0;
+                                    // Mengambil log terakhir untuk setiap mesin
+                                    $latestLogs = $filteredLogs
+                                        ->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                        ->groupBy('machine_id')
+                                        ->map(function ($machineLogs) {
+                                            return $machineLogs->sortByDesc('created_at')->first();
                                         });
+
+                                    // Menghitung total DMP dan DMN dari log terakhir setiap mesin
+                                    $totalDMP = $latestLogs->sum(function($log) {
+                                        return is_numeric($log->dmp) ? (float) $log->dmp : 0;
+                                    });
+                                    
+                                    $totalDMN = $latestLogs->sum(function($log) {
+                                        return is_numeric($log->dmn) ? (float) $log->dmn : 0;
+                                    });
+                                    
+                                    $totalBeban = $latestLogs->sum(function($log) {
+                                        if ($log->status === 'Operasi') {
+                                            return is_numeric($log->load_value) ? (float) $log->load_value : 0;
+                                        }
+                                        return 0;
+                                    });
 
                                     // Ambil data HOP untuk power plant ini
                                     $hopValue = \App\Models\UnitOperationHour::where('power_plant_id', $powerPlant->id)
@@ -117,14 +126,6 @@
                             <div class="grid grid-cols-7 gap-4">
                                 @php
                                     $machineCount = $powerPlant->machines->count();
-                                    
-                                    // Mengambil log terakhir untuk setiap mesin pada tanggal yang dipilih
-                                    $latestLogs = $filteredLogs
-                                        ->whereIn('machine_id', $powerPlant->machines->pluck('id'))
-                                        ->groupBy('machine_id')
-                                        ->map(function ($machineLogs) {
-                                            return $machineLogs->sortByDesc('created_at')->first();
-                                        });
                                     
                                     // Menghitung status berdasarkan log terakhir
                                     $operasiCount = $latestLogs->where('status', 'Operasi')->count();
