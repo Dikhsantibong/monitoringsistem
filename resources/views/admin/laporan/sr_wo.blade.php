@@ -820,7 +820,7 @@
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">{{ $backlog->type_wo ?? '-' }}</td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px;">
-                                                <div class="whitespace-pre-wrap break-words">
+                                                <div class="py-2 px-4 " style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ">
                                                     {{ $backlog->deskripsi }}
                                                 </div>
                                             </td>
