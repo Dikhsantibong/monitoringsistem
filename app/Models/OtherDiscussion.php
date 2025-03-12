@@ -95,60 +95,60 @@ class OtherDiscussion extends Model
         return session('unit', 'mysql');
     }
 
-    // protected static function boot()
-    // {
-    //     parent::boot();
+    protected static function boot()
+    {
+        parent::boot();
         
-    //     static::created(function ($discussion) {
-    //         if (!static::$isSyncing) {
-    //             static::$isSyncing = true;
-    //             try {
-    //                 event(new OtherDiscussionUpdated($discussion, 'create'));
-    //             } finally {
-    //                 static::$isSyncing = false;
-    //             }
-    //         }
-    //     });
+        static::created(function ($discussion) {
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'create'));
+                } finally {
+                    static::$isSyncing = false;
+                }
+            }
+        });
 
-    //     static::updated(function ($discussion) {
-    //         // Cek jika status berubah menjadi 'Closed'
-    //         if ($discussion->isDirty('status') && 
-    //             $discussion->status === 'Closed' && 
-    //             !static::$isUpdatingClosedAt) {
+        static::updated(function ($discussion) {
+            // Cek jika status berubah menjadi 'Closed'
+            if ($discussion->isDirty('status') && 
+                $discussion->status === 'Closed' && 
+                !static::$isUpdatingClosedAt) {
                 
-    //             static::$isUpdatingClosedAt = true;
-    //             try {
-    //                 DB::transaction(function() use ($discussion) {
-    //                     $discussion->closed_at = Carbon::now();
-    //                     $discussion->saveQuietly(); // Menggunakan saveQuietly() untuk menghindari trigger events
-    //                 });
-    //             } finally {
-    //                 static::$isUpdatingClosedAt = false;
-    //             }
-    //         }
+                static::$isUpdatingClosedAt = true;
+                try {
+                    DB::transaction(function() use ($discussion) {
+                        $discussion->closed_at = Carbon::now();
+                        $discussion->saveQuietly(); // Menggunakan saveQuietly() untuk menghindari trigger events
+                    });
+                } finally {
+                    static::$isUpdatingClosedAt = false;
+                }
+            }
 
-    //         // Trigger event update hanya jika bukan update closed_at
-    //         if (!static::$isSyncing && !static::$isUpdatingClosedAt) {
-    //             static::$isSyncing = true;
-    //             try {
-    //                 event(new OtherDiscussionUpdated($discussion, 'update'));
-    //             } finally {
-    //                 static::$isSyncing = false;
-    //             }
-    //         }
-    //     });
+            // Trigger event update hanya jika bukan update closed_at
+            if (!static::$isSyncing && !static::$isUpdatingClosedAt) {
+                static::$isSyncing = true;
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'update'));
+                } finally {
+                    static::$isSyncing = false;
+                }
+            }
+        });
 
-    //     static::deleted(function ($discussion) {
-    //         if (!static::$isSyncing) {
-    //             static::$isSyncing = true;
-    //             try {
-    //                 event(new OtherDiscussionUpdated($discussion, 'delete'));
-    //             } finally {
-    //                 static::$isSyncing = false;
-    //             }
-    //         }
-    //     });
-    // }
+        static::deleted(function ($discussion) {
+            if (!static::$isSyncing) {
+                static::$isSyncing = true;
+                try {
+                    event(new OtherDiscussionUpdated($discussion, 'delete'));
+                } finally {
+                    static::$isSyncing = false;
+                }
+            }
+        });
+    }
 
     public static function getUnits()
     {
