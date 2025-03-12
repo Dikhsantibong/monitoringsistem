@@ -1680,18 +1680,36 @@
         rows.forEach(row => {
             let showRow = true;
             
-            // Filter existing
+            // Filter unit
             if (unit) {
                 const unitCell = row.querySelector('td[data-column="unit"]');
-                const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
+                const unitText = unitCell ? unitCell.textContent.toLowerCase().trim() : '';
                 if (!unitText.includes(unit)) showRow = false;
             }
-            
-            // ... (pertahankan filter status dan downtime yang ada)
+
+            // Filter status
+            if (status) {
+                const statusCell = row.querySelector('td[data-column="status"]');
+                const statusText = statusCell ? statusCell.textContent.trim() : '';
+                if (!statusText.includes(status)) showRow = false;
+            }
+
+            // Filter downtime - Perbaikan logika filter downtime
+            if (downtime) {
+                const downtimeCell = row.cells[6]; // Index 6 adalah kolom downtime
+                if (downtimeCell) {
+                    const downtimeText = downtimeCell.textContent.trim().toLowerCase();
+                    const isYes = downtimeText === 'yes' || downtimeText === 'ya';
+                    const isNo = downtimeText === 'no' || downtimeText === 'tidak';
+                    
+                    if (downtime === 'Yes' && !isYes) showRow = false;
+                    if (downtime === 'No' && !isNo) showRow = false;
+                }
+            }
 
             // Filter tanggal
             if (startDate && endDate) {
-                const dateCell = row.querySelector('td[data-column="created_at"]');
+                const dateCell = row.cells[5]; // Index 5 adalah kolom tanggal
                 if (dateCell) {
                     const rowDate = new Date(dateCell.textContent);
                     const start = new Date(startDate);
@@ -1704,13 +1722,50 @@
                 }
             }
 
+            // Tampilkan atau sembunyikan baris
             row.style.display = showRow ? '' : 'none';
             if (showRow) visibleCount++;
         });
 
         // Update counter
-        document.getElementById('srVisibleCount').textContent = visibleCount;
+        const visibleCounter = document.getElementById('srVisibleCount');
+        const totalCounter = document.getElementById('srTotalCount');
+        if (visibleCounter) visibleCounter.textContent = visibleCount;
+        if (totalCounter) totalCounter.textContent = rows.length;
+
+        // Debug log untuk membantu troubleshooting
+        console.log('Filter SR Table:', {
+            unit,
+            status,
+            downtime,
+            startDate,
+            endDate,
+            visibleCount,
+            totalRows: rows.length
+        });
     }
+
+    // Tambahkan event listener untuk filter status
+    document.addEventListener('DOMContentLoaded', function() {
+        const srStatusFilter = document.getElementById('srStatusFilter');
+        if (srStatusFilter) {
+            srStatusFilter.addEventListener('change', function() {
+                console.log('Status filter changed:', this.value); // Debug log
+                filterSRTable();
+            });
+        }
+    });
+
+    // Tambahkan event listener untuk filter downtime
+    document.addEventListener('DOMContentLoaded', function() {
+        const srDowntimeFilter = document.getElementById('srDowntimeFilter');
+        if (srDowntimeFilter) {
+            srDowntimeFilter.addEventListener('change', function() {
+                console.log('Downtime filter changed:', this.value); // Debug log
+                filterSRTable();
+            });
+        }
+    });
 
     function filterWOTable() {
         const unit = document.getElementById('filterUnitWO').value.toLowerCase();
@@ -1723,14 +1778,19 @@
         rows.forEach(row => {
             let showRow = true;
             
-            // Filter existing
+            // Filter unit
             if (unit) {
                 const unitCell = row.querySelector('td[data-column="unit"]');
                 const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
                 if (!unitText.includes(unit)) showRow = false;
             }
-            
-            // ... (pertahankan filter status dan startDate yang ada)
+
+            // Filter status
+            if (status) {
+                const statusCell = row.querySelector('td[data-column="status"]');
+                const statusText = statusCell ? statusCell.textContent.trim() : '';
+                if (statusText !== status) showRow = false;
+            }
 
             // Filter tanggal
             if (startDate && endDate) {
@@ -1751,7 +1811,6 @@
             if (showRow) visibleCount++;
         });
 
-        // Update counter
         document.getElementById('woVisibleCount').textContent = visibleCount;
     }
 
@@ -1766,14 +1825,19 @@
         rows.forEach(row => {
             let showRow = true;
             
-            // Filter existing
+            // Filter unit
             if (unit) {
                 const unitCell = row.querySelector('td[data-column="unit"]');
                 const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
                 if (!unitText.includes(unit)) showRow = false;
             }
-            
-            // ... (pertahankan filter status dan startDate yang ada)
+
+            // Filter status
+            if (status) {
+                const statusCell = row.querySelector('td[data-column="status"]');
+                const statusText = statusCell ? statusCell.textContent.trim() : '';
+                if (statusText !== status) showRow = false;
+            }
 
             // Filter tanggal
             if (startDate && endDate) {
@@ -1794,7 +1858,6 @@
             if (showRow) visibleCount++;
         });
 
-        // Update counter
         document.getElementById('backlogVisibleCount').textContent = visibleCount;
     }
 
@@ -2155,6 +2218,8 @@
 
     // Modifikasi fungsi filter yang sudah ada
     function filterWOTable() {
+        const unit = document.getElementById('filterUnitWO').value.toLowerCase();
+        const status = document.getElementById('woStatusFilter').value;
         const startDate = document.getElementById('wo_start_date').value;
         const endDate = document.getElementById('wo_end_date').value;
         const rows = document.querySelectorAll('#woTable tbody tr');
@@ -2162,30 +2227,72 @@
 
         rows.forEach(row => {
             let showRow = true;
-            const dateCell = row.querySelector('td[data-column="created_at"]');
             
-            if (startDate && endDate && dateCell) {
-                const rowDate = new Date(dateCell.textContent);
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                end.setHours(23, 59, 59);
+            // Filter unit
+            if (unit) {
+                const unitCell = row.querySelector('td[data-column="unit"]');
+                const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
+                if (!unitText.includes(unit)) showRow = false;
+            }
 
-                if (rowDate < start || rowDate > end) {
-                    showRow = false;
+            // Filter status
+            if (status) {
+                const statusCell = row.querySelector('td[data-column="status"]');
+                if (statusCell) {
+                    const statusText = statusCell.textContent.trim();
+                    if (statusText !== status) {
+                        showRow = false;
+                    }
                 }
             }
 
-            // Aplikasikan filter lain yang sudah ada
-            // ... (kode filter lain tetap sama)
+            // Filter tanggal
+            if (startDate && endDate) {
+                const dateCell = row.querySelector('td[data-column="created_at"]');
+                if (dateCell) {
+                    const rowDate = new Date(dateCell.textContent);
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59);
 
+                    if (rowDate < start || rowDate > end) {
+                        showRow = false;
+                    }
+                }
+            }
+
+            // Tampilkan atau sembunyikan baris
             row.style.display = showRow ? '' : 'none';
             if (showRow) visibleCount++;
         });
 
         // Update counter
-        document.getElementById('woVisibleCount').textContent = visibleCount;
-        document.getElementById('woTotalCount').textContent = rows.length;
+        const visibleCounter = document.getElementById('woVisibleCount');
+        if (visibleCounter) {
+            visibleCounter.textContent = visibleCount;
+        }
+
+        // Debug log untuk membantu troubleshooting
+        console.log('Filter WO Table:', {
+            unit,
+            status,
+            startDate,
+            endDate,
+            visibleCount,
+            totalRows: rows.length
+        });
     }
+
+    // Tambahkan event listener untuk filter status
+    document.addEventListener('DOMContentLoaded', function() {
+        const woStatusFilter = document.getElementById('woStatusFilter');
+        if (woStatusFilter) {
+            woStatusFilter.addEventListener('change', function() {
+                console.log('Status filter changed:', this.value); // Debug log
+                filterWOTable();
+            });
+        }
+    });
 
     // Lakukan hal yang sama untuk filterBacklogTable()
     // ... (kode untuk filterBacklogTable serupa dengan filterWOTable)
