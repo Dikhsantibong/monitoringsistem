@@ -145,9 +145,9 @@ class LaporanController extends Controller
             }
 
             // 3. Get results
-            $serviceRequests = $serviceRequests->paginate(25);
-            $workOrders = $workOrders->take(100)->get();
-            $woBacklogs = $woBacklogs->take(100)->get();
+            $serviceRequests = $serviceRequests->paginate(10000);
+            $workOrders = $workOrders->take(10000)->get();
+            $woBacklogs = $woBacklogs->take(10000)->get();
 
             // 5. Update table counts
             $srCount = $serviceRequests->total();
