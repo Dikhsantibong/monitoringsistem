@@ -346,11 +346,7 @@
                 labels: formattedDates,
                 datasets: [{
                     label: 'Score Daily Meeting (%)',
-                    data: chartData.attendanceData.scores.map(score => {
-                        // Pastikan hasil tidak lebih dari 100%
-                        const percentage = Math.round((score / 1000) * 100);
-                        return Math.min(percentage, 100); // Membatasi nilai maksimum ke 100
-                    }),
+                    data: chartData.attendanceData.scores,
                     borderColor: 'rgb(16, 185, 129)',
                     backgroundColor: 'rgba(16, 185, 129, 0.5)',
                     tension: 0.1,
@@ -432,12 +428,29 @@
                     scales: {
                         ...commonOptions.scales,
                         y: {
-                            ...commonOptions.scales.y,
-                            max: 100, // Set maksimum skala Y ke 100
+                            beginAtZero: true,
+                            max: 100,
                             ticks: {
                                 callback: function(value) {
                                     return value + '%';
                                 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Score: ${context.parsed.y}%`;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Score Daily Meeting',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
                             }
                         }
                     }
