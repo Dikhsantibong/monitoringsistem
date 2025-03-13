@@ -33,6 +33,18 @@ class WorkOrder extends Model
 
     public $incrementing = false;
 
+    // Mutator untuk memastikan type selalu dalam huruf kapital
+    public function setTypeAttribute($value)
+    {
+        $this->attributes['type'] = strtoupper($value);
+    }
+
+    // Accessor untuk memastikan type selalu dalam huruf kapital
+    public function getTypeAttribute($value)
+    {
+        return strtoupper($value);
+    }
+
     public function isExpired()
     {
         return Carbon::parse($this->schedule_finish)->isPast() && $this->status == 'Open';

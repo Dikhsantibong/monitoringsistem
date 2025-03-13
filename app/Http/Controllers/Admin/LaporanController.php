@@ -601,12 +601,95 @@ class LaporanController extends Controller
     // Method untuk update status WO Backlog
     public function updateBacklogStatus(Request $request, $id)
     {
-        $backlog = WoBacklog::findOrFail($id);
-        $backlog->status = $request->status;
-        $backlog->save();
+        try {
+            $request->validate([
+                'status' => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL'
+            ]);
 
-        return response()->json(['success' => true]);
-        return redirect()->route('admin.laporan.sr_wo')->with('success', 'Status WO Back');
+            // Cari Backlog di database saat ini
+            $backlog = WoBacklog::findOrFail($id);
+
+            if ($backlog->status === 'Closed') {
+                throw new \Exception('Backlog yang sudah Closed tidak dapat diubah statusnya');
+            }
+
+            // Cek jika status akan diubah ke Closed dan belum ada dokumen
+            if ($request->status === 'Closed' && !$backlog->document_path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda harus mengupload dokumen terlebih dahulu sebelum mengubah status menjadi Closed',
+                    'redirect_url' => route('admin.laporan.edit-wo-backlog', $id)
+                ], 400);
+            }
+
+            $oldStatus = $backlog->status;
+            $backlog->status = $request->status;
+            
+            // Simpan perubahan di database saat ini
+            $backlog->save();
+
+            // Sinkronisasi ke semua database unit
+            $powerPlant = PowerPlant::find($backlog->power_plant_id);
+            if ($powerPlant) {
+                $allConnections = [
+                    'mysql',
+                    'mysql_wua_wua',
+                    'mysql_poasia',
+                    'mysql_kolaka',
+                    'mysql_bau_bau'
+                ];
+
+                // Filter koneksi saat ini
+                $currentConnection = $powerPlant->unit_source ?? 'mysql';
+                $targetConnections = array_filter($allConnections, function($conn) use ($currentConnection) {
+                    return $conn !== $currentConnection;
+                });
+
+                foreach ($targetConnections as $connection) {
+                    try {
+                        // Gunakan prepared statement untuk menghindari masalah dengan tanda kutip
+                        DB::connection($connection)
+                            ->statement("UPDATE wo_backlog SET status = ?, updated_at = ? WHERE id = ?", [
+                                $request->status,
+                                now(),
+                                $backlog->id
+                            ]);
+
+                        Log::info("Backlog Status synced to {$connection}", [
+                            'backlog_id' => $backlog->id,
+                            'new_status' => $request->status
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error("Failed to sync Backlog status to {$connection}", [
+                            'backlog_id' => $backlog->id,
+                            'error' => $e->getMessage()
+                        ]);
+                        continue; // Lanjut ke koneksi berikutnya jika gagal
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Status berhasil diubah dari {$oldStatus} ke {$request->status}",
+                'data' => [
+                    'id' => $id,
+                    'newStatus' => $request->status,
+                    'formattedId' => 'WO-' . $backlog->no_wo
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in updateBacklogStatus: ' . $e->getMessage(), [
+                'backlog_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status: ' . $e->getMessage()
+            ], 400);
+        }
     }
 
     // Method untuk edit WO Backlog

@@ -35,6 +35,17 @@ class WoBacklog extends Model
         'updated_at'
     ];
 
+    // Mutator untuk memastikan type_wo selalu dalam huruf kapital
+    public function setTypeWoAttribute($value)
+    {
+        $this->attributes['type_wo'] = strtoupper($value);
+    }
+
+    // Accessor untuk memastikan type_wo selalu dalam huruf kapital
+    public function getTypeWoAttribute($value)
+    {
+        return strtoupper($value);
+    }
 
     public function getConnectionName()
     {
@@ -272,8 +283,8 @@ class WoBacklog extends Model
                     'kendala' => $this->kendala,
                     'tindak_lanjut' => $this->tindak_lanjut,
                     'document_path' => $this->document_path,
-                    'type' => ucfirst(strtolower($this->type_wo)),
-                    'priority' => ucfirst(strtolower($this->priority)),
+                    'type' => strtoupper($this->type_wo),
+                    'priority' => $this->priority,
                     'schedule_start' => $this->schedule_start,
                     'schedule_finish' => $this->schedule_finish,
                     'status' => 'Closed',

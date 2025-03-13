@@ -94,6 +94,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/upload-image', [PembangkitController::class, 'uploadImage'])->name('admin.pembangkit.upload-image');
         Route::delete('/delete-image', [PembangkitController::class, 'deleteImage'])->name('admin.pembangkit.delete-image');
         Route::get('/get-images/{machineId}', [PembangkitController::class, 'getImages'])->name('admin.pembangkit.get-images');
+        Route::get('/get-last-dmn/{machineId}', [PembangkitController::class, 'getLastDmn'])->name('admin.pembangkit.get-last-dmn');
     });
 
     Route::prefix('laporan')->group(function () {
@@ -707,10 +708,13 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// ... existing code ...
+
 
 Route::get('/monitoring-data/{period}', [HomeController::class, 'getMonitoringData'])
     ->name('monitoring.data')
     ->where('period', 'daily|weekly|monthly');
 
 Route::post('/attendance/scan-qr', [AttendanceController::class, 'scanQR'])->name('attendance.scan-qr');
+
+Route::get('/admin/meetings/_table', [MeetingController::class, 'table'])
+    ->name('admin.meetings._table');
