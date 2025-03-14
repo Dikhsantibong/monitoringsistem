@@ -1699,8 +1699,8 @@
                                         <tr class="table-row">
                                             <td class="text-center">{{ $plant->name }}</td>
                                             <td class="text-center">{{ $machine->name }}</td>
-                                            <td class="text-center">{{ number_format($latestStatus->dmn, 1) }}</td>
                                             <td class="text-center">{{ number_format($latestStatus->dmp, 1) }}</td>
+                                            <td class="text-center">{{ number_format($latestStatus->dmn, 1) }}</td>
                                             <td class="text-center">{{ number_format($latestStatus->load_value, 1) }} MW</td>
                                             <td class="text-center">
                                                 <span style="
