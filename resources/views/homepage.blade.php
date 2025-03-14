@@ -2170,13 +2170,13 @@
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <span style="color: #666;">DMN:</span>
+                                                        <span style="color: #666;">DMP:</span>
                                                         <span style="color: {{ $statusStyle['text'] }}; font-weight: 600;">
                                                             {{ $latestStatus ? $latestStatus->dmn : 0 }}
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <span style="color: #666;">DMP:</span>
+                                                        <span style="color: #666;">DMN:</span>
                                                         <span style="color: {{ $statusStyle['text'] }}; font-weight: 600;">
                                                             {{ $latestStatus ? $latestStatus->dmp : 0 }}
                                                         </span>
