@@ -27,7 +27,7 @@ class LoginController extends Controller
 
         // Attempt login
         if (Auth::attempt($request->only('email', 'password'))) {
-            if (Auth::user()->role == 'admin') {
+            if (Auth::user()->role == 'admin' || Auth::user()->role == 'super_admin') {
                 return redirect()->route('admin.dashboard');
             } else {
                 return redirect()->route('user.dashboard');

@@ -217,4 +217,110 @@ class MachineStatusController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Edit machine status log
+     */
+    public function edit($machineId, $logId)
+    {
+        try {
+            $machine = Machine::with('powerPlant')->findOrFail($machineId);
+            
+            // Cari log dan tambahkan pengecekan apakah log tersebut milik mesin yang dimaksud
+            $log = MachineStatusLog::where('id', $logId)
+                ->where('machine_id', $machineId)
+                ->first();
+                
+            if (!$log) {
+                return back()->with('error', 'Data log tidak ditemukan atau sudah tidak tersedia');
+            }
+
+            return view('admin.machine-status.edit', compact('machine', 'log'));
+        } catch (\Exception $e) {
+            \Log::error('Error in machine status edit: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengambil data. Silakan coba lagi');
+        }
+    }
+
+    /**
+     * Update machine status log
+     */
+    public function update(Request $request, $machineId, $logId)
+    {
+        try {
+            // Cari log dan tambahkan pengecekan apakah log tersebut milik mesin yang dimaksud
+            $log = MachineStatusLog::where('id', $logId)
+                ->where('machine_id', $machineId)
+                ->first();
+                
+            if (!$log) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data log tidak ditemukan atau sudah tidak tersedia'
+                ], 404);
+            }
+            
+            $validatedData = $request->validate([
+                'status' => 'required|string',
+                'dmp' => 'nullable|numeric',
+                'dmn' => 'nullable|numeric',
+                'load_value' => 'nullable|numeric',
+                'component' => 'nullable|string',
+                'equipment' => 'nullable|string',
+                'deskripsi' => 'nullable|string',
+                'kronologi' => 'nullable|string',
+                'action_plan' => 'nullable|string',
+                'progres' => 'nullable|string',
+                'tanggal_mulai' => 'nullable|date',
+                'target_selesai' => 'nullable|date'
+            ]);
+
+            $log->update($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil diperbarui',
+                'data' => $log
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in machine status update: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete machine status log
+     */
+    public function destroy($machineId, $logId)
+    {
+        try {
+            // Cari log dan tambahkan pengecekan apakah log tersebut milik mesin yang dimaksud
+            $log = MachineStatusLog::where('id', $logId)
+                ->where('machine_id', $machineId)
+                ->first();
+                
+            if (!$log) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data log tidak ditemukan atau sudah tidak tersedia'
+                ], 404);
+            }
+
+            $log->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in machine status delete: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

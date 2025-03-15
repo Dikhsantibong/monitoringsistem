@@ -718,3 +718,10 @@ Route::post('/attendance/scan-qr', [AttendanceController::class, 'scanQR'])->nam
 
 Route::get('/admin/meetings/_table', [MeetingController::class, 'table'])
     ->name('admin.meetings._table');
+
+Route::prefix('admin/machine-status')->name('admin.machine-status.')->middleware(['auth'])->group(function () {
+    Route::get('/', [MachineStatusController::class, 'view'])->name('view');
+    Route::get('/{machineId}/edit/{logId}', [MachineStatusController::class, 'edit'])->name('edit');
+    Route::put('/{machineId}/update/{logId}', [MachineStatusController::class, 'update'])->name('update');
+    Route::delete('/{machineId}/destroy/{logId}', [MachineStatusController::class, 'destroy'])->name('destroy');
+});

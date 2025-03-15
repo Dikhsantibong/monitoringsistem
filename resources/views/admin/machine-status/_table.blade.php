@@ -190,6 +190,9 @@
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Progress</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Tanggal Mulai</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Target Selesai</th>
+                                @if(auth()->user()->role === 'super_admin')
+                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="text-sm">
@@ -257,9 +260,23 @@
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">
                                         {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                     </td>
-                                    <td class="px-3 py-2 text-center">
+                                    <td class="px-3 py-2 text-center border-r border-gray-200">
                                         {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                     </td>
+                                    @if(auth()->user()->role === 'super_admin')
+                                    <td class="px-3 py-2 text-center">
+                                        <div class="flex items-center justify-center space-x-2">
+                                            <button onclick="editMachineStatus({{ $machine->id }}, '{{ $log?->id ?? 0 }}')" 
+                                                    class="flex items-center px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                                <i class="fas fa-edit mr-1"></i> Edit
+                                            </button>
+                                            <button onclick="deleteMachineStatus({{ $machine->id }}, '{{ $log?->id ?? 0 }}')" 
+                                                    class="flex items-center px-3 py-1 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
+                                                <i class="fas fa-trash mr-1"></i> Hapus
+                                            </button>
+                                        </div>
+                                    </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
@@ -306,4 +323,66 @@ body .table-responsive table.min-w-full td[data-content-type] > div > div {
     text-align: left !important;
     justify-content: flex-start !important;
 }
-</style> 
+</style>
+
+<script>
+function editMachineStatus(machineId, logId) {
+    if (logId == 0) {
+        alert('Tidak ada data log untuk diedit');
+        return;
+    }
+    
+    // Tambahkan error handling untuk fetch
+    fetch(`/admin/machine-status/${machineId}/edit/${logId}`)
+        .then(response => {
+            if (response.status === 404) {
+                alert('Data log tidak ditemukan atau sudah tidak tersedia');
+                window.location.reload(); // Reload untuk memperbarui tampilan
+                return;
+            }
+            window.location.href = `/admin/machine-status/${machineId}/edit/${logId}`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengakses data');
+        });
+}
+
+function deleteMachineStatus(machineId, logId) {
+    if (logId == 0) {
+        alert('Tidak ada data log untuk dihapus');
+        return;
+    }
+    
+    if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+        
+        fetch(`/admin/machine-status/${machineId}/destroy/${logId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Data berhasil dihapus');
+                window.location.reload();
+            } else {
+                if (response.status === 404) {
+                    alert('Data log tidak ditemukan atau sudah tidak tersedia');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Terjadi kesalahan saat menghapus data');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menghapus data');
+        });
+    }
+}
+</script> 
