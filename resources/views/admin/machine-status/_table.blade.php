@@ -3,9 +3,9 @@
         Tidak ada data untuk ditampilkan
     </div>
 @else
-    <div class="mb-4">
+    {{-- <div class="mb-4">
         <p class="text-sm text-gray-600">Data untuk tanggal: <span class="font-semibold">{{ \Carbon\Carbon::parse($date)->format('d F Y') }}</span></p>
-    </div>
+    </div> --}}
     
     @foreach($powerPlants as $powerPlant)
         @unless($powerPlant->name === 'UP KENDARI')

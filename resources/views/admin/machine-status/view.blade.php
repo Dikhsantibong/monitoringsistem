@@ -69,6 +69,8 @@
             <div class="bg-white rounded-lg shadow">
                 <!-- Sticky Filter Section -->
                 <div class="sticky top-[57px] bg-white z-10 p-6 border-b">
+                    <!-- Informasi Tanggal -->
+                    
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-semibold text-gray-800">Status Mesin</h2>
                         
@@ -116,6 +118,10 @@
                             </div>
                         </div>
                     </div>
+                    <div class="mb-2 mt-3">
+                        <p class="text-sm text-gray-600">Data untuk tanggal: <span id="displayed-date" class="font-semibold">{{ \Carbon\Carbon::parse($date)->isoFormat('D MMMM Y') }}</span></p>
+                    </div>
+
                 </div>
 
                 <!-- Table Container with padding top -->
@@ -158,6 +164,11 @@ function updateTable() {
     const date = document.getElementById('date-picker').value;
     const unitSource = @json(session('unit')) === 'mysql' ? document.getElementById('unit-source')?.value : null;
     const searchText = document.getElementById('searchInput').value;
+    
+    // Update displayed date
+    const displayDate = new Date(date);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    document.getElementById('displayed-date').textContent = displayDate.toLocaleDateString('id-ID', options);
     
     showLoading();
     
