@@ -85,66 +85,67 @@
             <main class="px-6">
                 <!-- Konten Kesiapan Pembangkit -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h1 class="text-xl font-semibold text-gray-800">Penyusunan Data Pembangkit</h1>
-                        <a href="{{ route('admin.machine-status.view') }}" 
-                           class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i>Lihat Status Mesin
-                        </a>
-                    </div>
-                    <div class="mb-4 flex flex-col lg:flex-row justify-between items-center gap-3">
-                        <div class="flex flex-col lg:flex-row gap-y-3 sm:gap-y-3 space-x-4">
-                            <input type="date" id="filterDate" value="{{ date('Y-m-d') }}"
-                                class="px-4 py-2 border rounded-lg">
+                    <!-- Tambahkan div wrapper dengan sticky positioning -->
+                    <div class="sticky top-16 bg-white  z-20 pb-4"> <!-- top-16 menyesuaikan dengan header utama -->
+                        <div class="flex justify-between items-center mb-4">
+                            <h1 class="text-xl font-semibold text-gray-800">Penyusunan Data Pembangkit</h1>
+                            <a href="{{ route('admin.machine-status.view') }}" 
+                               class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-eye mr-2"></i>Lihat Status Mesin
+                            </a>
+                        </div>
+                        <div class="mb-4 flex flex-col lg:flex-row justify-between items-center gap-3">
+                            <div class="flex flex-col lg:flex-row gap-y-3 sm:gap-y-3 space-x-4">
+                                <input type="date" id="filterDate" value="{{ date('Y-m-d') }}"
+                                    class="px-4 py-2 border rounded-lg">
 
-                            <!-- Tambahkan filter unit -->
-                            @if(session('unit') === 'mysql')
-                            <select id="unitFilter" 
-                                    class="px-4 py-2 border rounded-lg"
-                                    onchange="filterUnits()">
-                                <option value="">Semua Unit</option>
-                                <option value="mysql">UP Kendari</option>
-                                <option value="mysql_wua_wua">Wua Wua</option>
-                                <option value="mysql_poasia">Poasia</option>
-                                <option value="mysql_kolaka">Kolaka</option>
-                                <option value="mysql_bau_bau">Bau Bau</option>
-                            </select>
-                            @endif
+                                @if(session('unit') === 'mysql')
+                                <select id="unitFilter" 
+                                        class="px-4 py-2 border rounded-lg"
+                                        onchange="filterUnits()">
+                                    <option value="">Semua Unit</option>
+                                    <option value="mysql">UP Kendari</option>
+                                    <option value="mysql_wua_wua">Wua Wua</option>
+                                    <option value="mysql_poasia">Poasia</option>
+                                    <option value="mysql_kolaka">Kolaka</option>
+                                    <option value="mysql_bau_bau">Bau Bau</option>
+                                </select>
+                                @endif
 
-                            <div class="relative">
                                 <div class="relative">
-                                    <input type="text" 
-                                           id="searchInput" 
-                                           placeholder="Cari mesin, unit, atau status..."
-                                           onkeyup="if(event.key === 'Enter') searchTables()"
-                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
+                                    <div class="relative">
+                                        <input type="text" 
+                                               id="searchInput" 
+                                               placeholder="Cari mesin, unit, atau status..."
+                                               onkeyup="if(event.key === 'Enter') searchTables()"
+                                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-4">
+                                <div class="max-w-full">
+                                    <button id="refreshButton" 
+                                            onclick="loadData()"
+                                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                        <i class="fas fa-redo mr-2"></i>Refresh Data
+                                    </button>
+                                </div>
+
+                                <div class="max-w-full">
+                                    <button onclick="saveData()"
+                                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                        <i class="fas fa-save mr-2"></i>Simpan
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex space-x-4">
-                            <div class="max-w-full">
-                                <button id="refreshButton" 
-                                        onclick="loadData()"
-                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                    <i class="fas fa-redo mr-2"></i>Refresh Data
-                                </button>
-                            </div>
-
-                            <div class="max-w-full">
-                                <button onclick="saveData()"
-                                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                                    <i class="fas fa-save mr-2"></i>Simpan
-                                </button>
-                            </div>
-                        </div>
+                        <h1 class="text-lg font-semibold uppercase mb-5">KESIAPAN PEMBANGKIT UP KENDARI ( MEGAWATT )</h1>
                     </div>
-
-                    <!-- Search Bar -->
-                    <h1 class="text-lg font-semibold uppercase mb-5">KESIAPAN PEMBANGKIT UP KENDARI ( MEGAWATT )</h1>
 
                     @foreach ($units as $unit)
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table" data-unit-source="{{ $unit->unit_source }}">
