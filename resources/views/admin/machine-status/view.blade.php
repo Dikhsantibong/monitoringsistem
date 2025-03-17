@@ -66,59 +66,63 @@
 
         <!-- Main Content -->
         <div class="container mx-auto px-4 py-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-semibold text-gray-800">Status Mesin</h2>
-                    
-                    <!-- Filter Area -->
-                    <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
-                        <!-- Unit Source Filter - hanya tampil untuk session mysql -->
-                        @if(session('unit') === 'mysql')
-                        <div class="flex items-center">
-                            <label for="unit-source" class="text-sm text-gray-700 font-medium mr-2">Filter Unit:</label>
-                            <select id="unit-source" 
-                                class="border rounded px-3 py-2 text-sm w-full md:w-40"
-                                onchange="updateTable()">
-                                <option value="">Semua Unit</option>
-                                <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
-                                <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Wua Wua</option>
-                                <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Poasia</option>
-                                <option value="mysql_kolaka" {{ request('unit_source') == 'mysql_kolaka' ? 'selected' : '' }}>Kolaka</option>
-                                <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Bau Bau</option>
-                            </select>
-                        </div>
-                        @endif
-
-                        <!-- Date Filter -->
-                        <div>
-                            <input type="date" id="date-picker" 
-                                class="border rounded px-3 py-2 text-sm w-full md:w-auto"
-                                value="{{ $date }}"
-                                onchange="updateTable()">
-                        </div>
+            <div class="bg-white rounded-lg shadow">
+                <!-- Sticky Filter Section -->
+                <div class="sticky top-[57px] bg-white z-10 p-6 border-b">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-semibold text-gray-800">Status Mesin</h2>
                         
-                        <!-- Search dengan debounce -->
-                        <div>
-                            <input type="text" id="searchInput" 
-                                placeholder="Cari unit/mesin/status..." 
-                                class="border rounded px-3 py-2 text-sm w-full md:w-64"
-                                value="{{ request('search') }}">
-                        </div>
+                        <!-- Filter Area -->
+                        <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+                            @if(session('unit') === 'mysql')
+                            <div class="flex items-center">
+                                <label for="unit-source" class="text-sm text-gray-700 font-medium mr-2">Filter Unit:</label>
+                                <select id="unit-source" 
+                                    class="border rounded px-3 py-2 text-sm w-full md:w-40"
+                                    onchange="updateTable()">
+                                    <option value="">Semua Unit</option>
+                                    <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
+                                    <option value="mysql_wua_wua" {{ request('unit_source') == 'mysql_wua_wua' ? 'selected' : '' }}>Wua Wua</option>
+                                    <option value="mysql_poasia" {{ request('unit_source') == 'mysql_poasia' ? 'selected' : '' }}>Poasia</option>
+                                    <option value="mysql_kolaka" {{ request('unit_source') == 'mysql_kolaka' ? 'selected' : '' }}>Kolaka</option>
+                                    <option value="mysql_bau_bau" {{ request('unit_source') == 'mysql_bau_bau' ? 'selected' : '' }}>Bau Bau</option>
+                                </select>
+                            </div>
+                            @endif
 
-                        <!-- Update Mesin Button -->
-                        <div>
-                            <a href="{{ route('admin.pembangkit.ready') }}" 
-                               class="inline-flex items-center justify-center w-full md:w-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                <i class="fas fa-sync-alt mr-2"></i>
-                                Update Mesin
-                            </a>
+                            <!-- Date Filter -->
+                            <div>
+                                <input type="date" id="date-picker" 
+                                    class="border rounded px-3 py-2 text-sm w-full md:w-auto"
+                                    value="{{ $date }}"
+                                    onchange="updateTable()">
+                            </div>
+                            
+                            <!-- Search dengan debounce -->
+                            <div>
+                                <input type="text" id="searchInput" 
+                                    placeholder="Cari unit/mesin/status..." 
+                                    class="border rounded px-3 py-2 text-sm w-full md:w-64"
+                                    value="{{ request('search') }}">
+                            </div>
+
+                            <!-- Update Mesin Button -->
+                            <div>
+                                <a href="{{ route('admin.pembangkit.ready') }}" 
+                                   class="inline-flex items-center justify-center w-full md:w-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-sync-alt mr-2"></i>
+                                    Update Mesin
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Table Container -->
-                <div class="overflow-x-auto">
-                    @include('admin.machine-status._table')
+                <!-- Table Container with padding top -->
+                <div class="p-6 pt-4">
+                    <div class="overflow-x-auto">
+                        @include('admin.machine-status._table')
+                    </div>
                 </div>
             </div>
         </div>
