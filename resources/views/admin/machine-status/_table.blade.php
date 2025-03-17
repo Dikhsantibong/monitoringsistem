@@ -244,15 +244,15 @@
                                         </div>
                                     </td>
                                     <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="action-plan" style="text-align: left !important;">
-                                        <div class="min-w-[400px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
-                                            <div class="max-h-[200px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                        <div class="min-w-[450px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[250px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
                                                 <span style="text-align: left !important; display: block;">{{ $log?->action_plan ?? '-' }}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="progress" style="text-align: left !important;">
-                                        <div class="min-w-[400px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
-                                            <div class="max-h-[200px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                        <div class="min-w-[450px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[250px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
                                                 <span style="text-align: left !important; display: block;">{{ $log?->progres ?? '-' }}</span>
                                             </div>
                                         </div>
