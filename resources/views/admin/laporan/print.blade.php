@@ -86,14 +86,14 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     @if($type == 'sr')
-                        <td>SR-{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</td>
+                        <td>SR{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</td>
                         <td>{{ $item->description }}</td>
                         <td>{{ $item->status }}</td>
                         <td>{{ $item->priority }}</td>
                         <td>{{ optional($item->powerPlant)->name ?? '-' }}</td>
                         <td>{{ $item->created_at->format('d/m/Y') }}</td>
                     @elseif($type == 'wo')
-                        <td>WO-{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</td>
+                        <td>WO{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</td>
                         <td>{{ optional($item->powerPlant)->name ?? '-' }}</td>
                         <td>{{ $item->description }}</td>
                         <td>{{ $item->type }}</td>
@@ -101,7 +101,7 @@
                         <td>{{ $item->priority }}</td>
                         
                     @else
-                        <td>BL-{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</td>
+                        <td>BL{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</td>
                         <td>{{ $item->no_wo }}</td>
                         <td>{{ $item->deskripsi }}</td>
                         <td>{{ date('d/m/Y', strtotime($item->tanggal_backlog)) }}</td>

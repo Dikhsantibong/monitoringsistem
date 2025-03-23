@@ -53,6 +53,7 @@ class LaporanController extends Controller
                     'description', 
                     'status', 
                     'created_at', 
+                    'updated_at',
                     'downtime',
                     'tipe_sr', 
                     'priority', 
@@ -69,7 +70,7 @@ class LaporanController extends Controller
                           });
                     });
                 })
-                ->orderBy('created_at', 'desc');
+                ->orderBy('updated_at', 'desc');
 
             $workOrders = WorkOrder::with(['powerPlant:id,name'])
                 ->select([
@@ -373,7 +374,7 @@ class LaporanController extends Controller
             ->map(function($item) {
                 return [
                     'id' => $item->id,
-                    'nomor' => 'SR-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
+                    'nomor' => 'SR' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
                     'tanggal' => $item->tanggal,
                     'deskripsi' => $item->description,
                     'status' => $item->status,
@@ -388,7 +389,7 @@ class LaporanController extends Controller
             ->map(function($item) {
                 return [
                     'id' => $item->id,
-                    'nomor' => 'WO-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
+                    'nomor' => 'WO' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
                     'tanggal' => $item->tanggal,
                     'deskripsi' => $item->description,
                     'status' => $item->status,
@@ -441,7 +442,7 @@ class LaporanController extends Controller
                 'data' => [
                     'id' => $id,
                     'newStatus' => $sr->status,
-                    'formattedId' => 'SR-' . str_pad($id, 4, '0', STR_PAD_LEFT)
+                    'formattedId' => 'SR' . str_pad($id, 4, '0', STR_PAD_LEFT)
                 ]
             ]);
         } catch (\Exception $e) {
@@ -519,7 +520,7 @@ class LaporanController extends Controller
                 'data' => [
                     'id' => $id,
                     'newStatus' => $request->status,
-                    'formattedId' => 'WO-' . str_pad($id, 4, '0', STR_PAD_LEFT)
+                    'formattedId' => 'WO' . str_pad($id, 4, '0', STR_PAD_LEFT)
                 ]
             ]);
 
@@ -675,7 +676,7 @@ class LaporanController extends Controller
                 'data' => [
                     'id' => $id,
                     'newStatus' => $request->status,
-                    'formattedId' => 'WO-' . $backlog->no_wo
+                    'formattedId' => 'WO' . $backlog->no_wo
                 ]
             ]);
 

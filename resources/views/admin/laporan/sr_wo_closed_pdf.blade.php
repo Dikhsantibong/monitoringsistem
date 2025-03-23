@@ -142,7 +142,7 @@
                 @forelse($srReports as $index => $sr)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td>SR{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}</td>
                     <td>{{ $sr->description }}</td>
                     <td><span class="status">{{ $sr->status }}</span></td>
                     <td>{{ $sr->created_at->format('d/m/Y H:i') }}</td>
@@ -172,7 +172,7 @@
                 @forelse($woReports as $index => $wo)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td>WO{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}</td>
                     <td>{{ $wo->description }}</td>
                     <td><span class="status">{{ $wo->status }}</span></td>
                     <td>{{ $wo->created_at->format('d/m/Y H:i') }}</td>
