@@ -2622,22 +2622,29 @@
     }
 
     function processStatusUpdate(id, newStatus) {
-        // Gunakan URL yang benar dengan prefix yang sesuai
-        const url = '{{ route("laporan.update-wo-status", ["id" => ""]) }}' + id;
+        // Perbaiki URL dengan menggunakan helper Laravel yang benar
+        const url = '/admin/laporan/update-wo-status/' + id;
         
         fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({ status: newStatus })
         })
         .then(response => {
             if (!response.ok) {
                 return response.text().then(text => {
-                    throw new Error(text || 'Network response was not ok');
+                    try {
+                        // Coba parse sebagai JSON
+                        const jsonError = JSON.parse(text);
+                        throw new Error(jsonError.message || 'Terjadi kesalahan');
+                    } catch (e) {
+                        // Jika bukan JSON, gunakan text error
+                        throw new Error('Terjadi kesalahan pada server');
+                    }
                 });
             }
             return response.json();
@@ -2701,9 +2708,6 @@
             }
         })
         .catch(error => {
-            // Play error sound
-            playSound('error');
-            
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
