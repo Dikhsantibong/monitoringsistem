@@ -2254,6 +2254,7 @@
                 }
                 // Cek jika status Closed dipilih tapi belum ada dokumen
                 if (value === 'Closed' && !hasDocument) {
+                    // Tampilkan modal konfirmasi untuk upload dokumen
                     Swal.fire({
                         icon: 'warning',
                         title: 'Dokumen Diperlukan',
@@ -2264,8 +2265,9 @@
                         confirmButtonColor: '#3085d6'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Redirect ke halaman edit backlog
-                            window.location.href = `/admin/laporan/edit-wo-backlog/${backlogId}#document`;
+                            // Redirect ke halaman edit backlog dengan anchor ke section dokumen
+                            const editUrl = `{{ url('/admin/laporan/edit-wo-backlog') }}/${backlogId}#document`;
+                            window.location.href = editUrl;
                         }
                     });
                     return false;
@@ -2277,6 +2279,22 @@
             }
         });
     }
+
+    // Tambahkan event listener untuk scroll ke section dokumen jika ada hash di URL
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.location.hash === '#document') {
+            const documentSection = document.getElementById('document');
+            if (documentSection) {
+                documentSection.scrollIntoView({ behavior: 'smooth' });
+                // Highlight section dokumen
+                documentSection.closest('.mb-4').classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                // Fokus ke input file
+                setTimeout(() => {
+                    documentSection.click();
+                }, 500);
+            }
+        }
+    });
 
     function processBacklogStatusUpdate(id, newStatus) {
         const url = `{{ url('/admin/laporan/update-backlog-status') }}/${id}`;
