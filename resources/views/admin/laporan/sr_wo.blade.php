@@ -797,7 +797,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($woBacklogs as $index => $backlog)
-                                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                        <tr data-backlog-id="{{ $backlog->id }}" class="hover:bg-gray-50 transition-colors duration-150">
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
@@ -858,12 +858,38 @@
                                                     -
                                                 @endif
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">
+                                            <td data-column="action" class="py-2 px-4 border border-gray-200">
                                                 <div class="flex space-x-2">
-                                                    <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
-                                                        class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center">
-                                                        <i class="fas fa-edit mr-2"></i> Edit
-                                                    </a>
+                                                    @if ($backlog->status != 'Closed')
+                                                        <!-- Tombol Status -->
+                                                        <button onclick="showBacklogStatusOptions('{{ $backlog->id }}', '{{ $backlog->status }}')"
+                                                            class="p-2 flex items-center text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors group"
+                                                            title="Ubah Status">
+                                                            <i class="fas fa-exchange-alt mr-2"></i>
+                                                            <span class="opacity-100">
+                                                                Update Status
+                                                            </span>
+                                                        </button>
+                                                        
+                                                        <!-- Tombol Edit -->
+                                                        <a href="{{ route('admin.laporan.edit-wo-backlog', $backlog->id) }}"
+                                                            class="p-2 flex items-center text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors group"
+                                                            title="Edit Backlog">
+                                                            <i class="fas fa-edit mr-2 text-green-600"></i>
+                                                            <span class="opacity-100">
+                                                                Edit Backlog
+                                                            </span>
+                                                        </a>
+                                                    @else
+                                                        <!-- Status Closed -->
+                                                        <span class="p-2 flex items-center text-gray-400" title="Backlog Closed">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                            </svg>
+                                                            <span class="ml-2">Closed</span>
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>
@@ -2189,6 +2215,148 @@
 
     // Lakukan hal yang sama untuk filterBacklogTable()
     // ... (kode untuk filterBacklogTable serupa dengan filterWOTable)
+
+    function showBacklogStatusOptions(backlogId, currentStatus) {
+        if (currentStatus === 'Closed') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi',
+                text: 'Backlog sudah ditutup dan tidak dapat diubah lagi.'
+            });
+            return;
+        }
+
+        // Cek apakah dokumen sudah diupload sebelum mengubah status ke Closed
+        const row = document.querySelector(`tr[data-backlog-id="${backlogId}"]`);
+        const documentCell = row.querySelector('td:nth-last-child(2)'); // Kolom dokumen
+        const hasDocument = documentCell.textContent.trim() !== '-';
+
+        Swal.fire({
+            title: 'Pilih Status',
+            input: 'select',
+            inputOptions: {
+                'Open': 'Open',
+                'Closed': 'Closed',
+                'Comp': 'Comp',
+                'APPR': 'APPR',
+                'WAPPR': 'WAPPR',
+                'WMATL': 'WMATL'
+            },
+            inputValue: currentStatus,
+            showCancelButton: true,
+            cancelButtonText: 'Batal',
+            confirmButtonText: 'Simpan',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Anda harus memilih status!';
+                }
+                // Cek jika status Closed dipilih tapi belum ada dokumen
+                if (value === 'Closed' && !hasDocument) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Dokumen Diperlukan',
+                        text: 'Silahkan Upload Job Card yang telah di validasi.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Upload Dokumen',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#3085d6'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Redirect ke halaman edit backlog
+                            window.location.href = `/admin/laporan/edit-wo-backlog/${backlogId}#document`;
+                        }
+                    });
+                    return false;
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                processBacklogStatusUpdate(backlogId, result.value);
+            }
+        });
+    }
+
+    function processBacklogStatusUpdate(id, newStatus) {
+        const url = `{{ url('/admin/laporan/update-backlog-status') }}/${id}`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Play success sound
+                playSound('success');
+                
+                // Update tampilan status secara real-time
+                const row = document.querySelector(`tr[data-backlog-id="${id}"]`);
+                const statusCell = row.querySelector('td[data-column="status"]');
+                if (statusCell) {
+                    statusCell.innerHTML = `
+                        <span class="px-2 py-1 rounded-full ${getStatusColorClass(newStatus)}">
+                            ${newStatus}
+                        </span>
+                    `;
+                }
+
+                // Update action buttons
+                const actionCell = row.querySelector('td[data-column="action"]');
+                if (actionCell) {
+                    if (newStatus === 'Closed') {
+                        actionCell.innerHTML = `
+                            <span class="p-2 flex items-center text-gray-400" title="Backlog Closed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <span class="ml-2">Closed</span>
+                            </span>
+                        `;
+                    }
+                }
+
+                // Tampilkan alert sukses
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Berhasil Diubah!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    toast: true,
+                    position: 'top-end'
+                });
+
+                // Jika ada redirect URL dari server, arahkan ke halaman tersebut
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
+            } else {
+                throw new Error(data.message || 'Terjadi kesalahan saat mengubah status');
+            }
+        })
+        .catch(error => {
+            // Play error sound
+            playSound('error');
+            
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: error.message || 'Terjadi kesalahan saat mengubah status',
+                toast: true,
+                position: 'top-end',
+                timer: 3000
+            });
+        });
+    }
 </script>
 
 <!-- Add this style -->
