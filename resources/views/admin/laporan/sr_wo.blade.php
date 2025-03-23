@@ -485,7 +485,6 @@
                                                 </div>
                                             </div>
                                         </th>
-                                        <th class="py-2 px-4 border-b">Type</th>
                                         <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
                                         <th class="py-2 px-4 border-b">Kendala</th>
                                         <th class="py-2 px-4 border-b">Tindak Lanjut</th>
@@ -494,23 +493,24 @@
                                                 <span>Status</span>
                                                 <div class="relative">
                                                     <select id="woStatusFilter" onchange="filterWOTable()" 
-                                                            class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
-                                                        <option value="" class="text-gray-700">Semua</option>
-                                                        <option value="Open" class="text-gray-700">Open</option>
-                                                        <option value="Closed" class="text-gray-700">Closed</option>
-                                                        <option value="Comp" class="text-gray-700">Comp</option>
-                                                        <option value="APPR" class="text-gray-700">APPR</option>
-                                                        <option value="WAPPR" class="text-gray-700">WAPPR</option>
-                                                        <option value="WMATL" class="text-gray-700">WMATL</option>
-                                                    </select>
-                                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                                        <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
-                                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                        </svg>
-                                                    </div>
+                                                    class="appearance-none bg-transparent text-white cursor-pointer pl-2 pr-6 py-0 text-sm focus:outline-none">
+                                                    <option value="" class="text-gray-700">Semua</option>
+                                                    <option value="Open" class="text-gray-700">Open</option>
+                                                    <option value="Closed" class="text-gray-700">Closed</option>
+                                                    <option value="Comp" class="text-gray-700">Comp</option>
+                                                    <option value="APPR" class="text-gray-700">APPR</option>
+                                                    <option value="WAPPR" class="text-gray-700">WAPPR</option>
+                                                    <option value="WMATL" class="text-gray-700">WMATL</option>
+                                                </select>
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                                    <svg class="h-4 w-4 fill-current text-white" viewBox="0 0 20 20">
+                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                    </svg>
                                                 </div>
                                             </div>
+                                        </div>
                                         </th>
+                                        <th class="py-2 px-4 border-b">Type</th>
                                         <th class="py-2 px-4 border-b">Tanggal</th>
                                         <th class="py-2 px-4 border-b">Priority</th>
                                         <th class="py-2 px-4 border-b">Schedule Start</th>
@@ -557,16 +557,11 @@
                                                     </span>
                                                 @endif
                                             </td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $wo->type ?? '-' }}</td>
                                             <td class="py-2 px-4 border border-gray-200">{{ $wo->created_at }}</td>
-                                            <td class="py-2 px-4 border border-gray-200">
-                                                {{ $wo->priority }}
-                                            </td>   
-                                            <td class="py-2 px-4 border border-gray-200">
-                                                {{ $wo->schedule_start }}
-                                            </td>
-                                            <td class="py-2 px-4 border border-gray-200">
-                                                {{ $wo->schedule_finish }}
-                                            </td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $wo->priority }}</td>   
+                                            <td class="py-2 px-4 border border-gray-200">{{ $wo->schedule_start }}</td>
+                                            <td class="py-2 px-4 border border-gray-200">{{ $wo->schedule_finish }}</td>
                                             <td class="py-2 px-4 border border-gray-200">
                                                 @if($wo->document_path)
                                                     <a href="{{ route('admin.laporan.download-document', $wo->id) }}" 
@@ -1682,162 +1677,142 @@
     // Panggil updateTableCounts saat halaman dimuat
     document.addEventListener('DOMContentLoaded', updateTableCounts);
 
+    // Unified filter function for all tables
+    function filterTable(tableId, filters) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tbody tr');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            let showRow = true;
+
+            // Unit filter
+            if (filters.unit) {
+                const unitCell = row.querySelector('td[data-column="unit"]');
+                const unitText = unitCell ? unitCell.textContent.toLowerCase().trim() : '';
+                if (!unitText.includes(filters.unit.toLowerCase())) {
+                    showRow = false;
+                }
+            }
+
+            // Status filter
+            if (filters.status) {
+                const statusCell = row.querySelector('td[data-column="status"]');
+                const statusText = statusCell ? statusCell.textContent.trim() : '';
+                if (statusText !== filters.status) {
+                    showRow = false;
+                }
+            }
+
+            // Date range filter
+            if (filters.startDate && filters.endDate) {
+                const dateCell = row.cells[8]; // Adjust index based on your table structure
+                if (dateCell) {
+                    const rowDate = new Date(dateCell.textContent);
+                    const startDate = new Date(filters.startDate);
+                    const endDate = new Date(filters.endDate);
+                    endDate.setHours(23, 59, 59);
+
+                    if (rowDate < startDate || rowDate > endDate) {
+                        showRow = false;
+                    }
+                }
+            }
+
+            // Downtime filter (SR specific)
+            if (filters.downtime !== undefined) {
+                const downtimeCell = row.cells[6]; // Adjust index based on your table structure
+                const downtimeText = downtimeCell ? downtimeCell.textContent.trim() : '';
+                if (filters.downtime === 'Yes' && downtimeText !== 'Yes' ||
+                    filters.downtime === 'No' && downtimeText !== 'No') {
+                    showRow = false;
+                }
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+
+        // Update counter
+        const counterId = tableId === 'srTable' ? 'srVisibleCount' :
+                         tableId === 'woTable' ? 'woVisibleCount' : 'backlogVisibleCount';
+        const counter = document.getElementById(counterId);
+        if (counter) {
+            counter.textContent = visibleCount;
+        }
+
+        // Update total count
+        const totalCounterId = tableId === 'srTable' ? 'srTotalCount' :
+                              tableId === 'woTable' ? 'woTotalCount' : 'backlogTotalCount';
+        const totalCounter = document.getElementById(totalCounterId);
+        if (totalCounter) {
+            totalCounter.textContent = rows.length;
+        }
+    }
+
+    // SR Table filter
     function filterSRTable() {
-        const unit = document.getElementById('filterUnitSR').value.toLowerCase();
-        const status = document.getElementById('srStatusFilter').value;
-        const downtime = document.getElementById('srDowntimeFilter').value;
-        const startDate = document.getElementById('sr_start_date').value;
-        const endDate = document.getElementById('sr_end_date').value;
-        const rows = document.querySelectorAll('#srTable tbody tr');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            let showRow = true;
-            
-            // Filter existing
-            if (unit) {
-                const unitCell = row.querySelector('td[data-column="unit"]');
-                const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
-                if (!unitText.includes(unit)) showRow = false;
-            }
-            
-            // ... (pertahankan filter status dan downtime yang ada)
-
-            // Filter tanggal
-            if (startDate && endDate) {
-                const dateCell = row.querySelector('td[data-column="created_at"]');
-                if (dateCell) {
-                    const rowDate = new Date(dateCell.textContent);
-                    const start = new Date(startDate);
-                    const end = new Date(endDate);
-                    end.setHours(23, 59, 59);
-
-                    if (rowDate < start || rowDate > end) {
-                        showRow = false;
-                    }
-                }
-            }
-
-            row.style.display = showRow ? '' : 'none';
-            if (showRow) visibleCount++;
+        filterTable('srTable', {
+            unit: document.getElementById('filterUnitSR').value,
+            status: document.getElementById('srStatusFilter').value,
+            downtime: document.getElementById('srDowntimeFilter').value,
+            startDate: document.getElementById('sr_start_date').value,
+            endDate: document.getElementById('sr_end_date').value
         });
-
-        // Update counter
-        document.getElementById('srVisibleCount').textContent = visibleCount;
     }
 
+    // WO Table filter
     function filterWOTable() {
-        const unit = document.getElementById('filterUnitWO').value.toLowerCase();
-        const status = document.getElementById('woStatusFilter').value;
-        const startDate = document.getElementById('wo_start_date').value;
-        const endDate = document.getElementById('wo_end_date').value;
-        const rows = document.querySelectorAll('#woTable tbody tr');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            let showRow = true;
-            
-            // Filter existing
-            if (unit) {
-                const unitCell = row.querySelector('td[data-column="unit"]');
-                const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
-                if (!unitText.includes(unit)) showRow = false;
-            }
-            
-            // ... (pertahankan filter status dan startDate yang ada)
-
-            // Filter tanggal
-            if (startDate && endDate) {
-                const dateCell = row.querySelector('td[data-column="created_at"]');
-                if (dateCell) {
-                    const rowDate = new Date(dateCell.textContent);
-                    const start = new Date(startDate);
-                    const end = new Date(endDate);
-                    end.setHours(23, 59, 59);
-
-                    if (rowDate < start || rowDate > end) {
-                        showRow = false;
-                    }
-                }
-            }
-
-            row.style.display = showRow ? '' : 'none';
-            if (showRow) visibleCount++;
+        filterTable('woTable', {
+            unit: document.getElementById('filterUnitWO').value,
+            status: document.getElementById('woStatusFilter').value,
+            startDate: document.getElementById('wo_start_date').value,
+            endDate: document.getElementById('wo_end_date').value
         });
-
-        // Update counter
-        document.getElementById('woVisibleCount').textContent = visibleCount;
     }
 
+    // Backlog Table filter
     function filterBacklogTable() {
-        const unit = document.getElementById('filterUnitBacklog').value.toLowerCase();
-        const status = document.getElementById('backlogStatusFilter').value;
-        const startDate = document.getElementById('backlog_start_date').value;
-        const endDate = document.getElementById('backlog_end_date').value;
-        const rows = document.querySelectorAll('#backlogTable tbody tr');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            let showRow = true;
-            
-            // Filter existing
-            if (unit) {
-                const unitCell = row.querySelector('td[data-column="unit"]');
-                const unitText = unitCell ? unitCell.textContent.toLowerCase() : '';
-                if (!unitText.includes(unit)) showRow = false;
-            }
-            
-            // ... (pertahankan filter status dan startDate yang ada)
-
-            // Filter tanggal
-            if (startDate && endDate) {
-                const dateCell = row.querySelector('td[data-column="created_at"]');
-                if (dateCell) {
-                    const rowDate = new Date(dateCell.textContent);
-                    const start = new Date(startDate);
-                    const end = new Date(endDate);
-                    end.setHours(23, 59, 59);
-
-                    if (rowDate < start || rowDate > end) {
-                        showRow = false;
-                    }
-                }
-            }
-
-            row.style.display = showRow ? '' : 'none';
-            if (showRow) visibleCount++;
+        filterTable('backlogTable', {
+            unit: document.getElementById('filterUnitBacklog').value,
+            status: document.getElementById('backlogStatusFilter').value,
+            startDate: document.getElementById('backlog_start_date').value,
+            endDate: document.getElementById('backlog_end_date').value
         });
-
-        // Update counter
-        document.getElementById('backlogVisibleCount').textContent = visibleCount;
     }
 
-    // Tambahkan event listener untuk filter status
+    // Add event listeners when document is ready
     document.addEventListener('DOMContentLoaded', function() {
-        // Event listeners untuk filter SR
-        const srStatusFilter = document.getElementById('srStatusFilter');
-        const srUnitFilter = document.getElementById('filterUnitSR');
-        const srDowntimeFilter = document.getElementById('srDowntimeFilter');
-        
-        if (srStatusFilter) srStatusFilter.addEventListener('change', filterSRTable);
-        if (srUnitFilter) srUnitFilter.addEventListener('change', filterSRTable);
-        if (srDowntimeFilter) srDowntimeFilter.addEventListener('change', filterSRTable);
+        // SR Table filters
+        const srFilters = ['filterUnitSR', 'srStatusFilter', 'srDowntimeFilter', 'sr_start_date', 'sr_end_date'];
+        srFilters.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', filterSRTable);
+            }
+        });
 
-        // Event listeners untuk filter WO
-        const woStatusFilter = document.getElementById('woStatusFilter');
-        const woUnitFilter = document.getElementById('filterUnitWO');
-        
-        if (woStatusFilter) woStatusFilter.addEventListener('change', filterWOTable);
-        if (woUnitFilter) woUnitFilter.addEventListener('change', filterWOTable);
+        // WO Table filters
+        const woFilters = ['filterUnitWO', 'woStatusFilter', 'wo_start_date', 'wo_end_date'];
+        woFilters.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', filterWOTable);
+            }
+        });
 
-        // Event listeners untuk filter Backlog
-        const backlogStatusFilter = document.getElementById('backlogStatusFilter');
-        const backlogUnitFilter = document.getElementById('filterUnitBacklog');
-        
-        if (backlogStatusFilter) backlogStatusFilter.addEventListener('change', filterBacklogTable);
-        if (backlogUnitFilter) backlogUnitFilter.addEventListener('change', filterBacklogTable);
+        // Backlog Table filters
+        const backlogFilters = ['filterUnitBacklog', 'backlogStatusFilter', 'backlog_start_date', 'backlog_end_date'];
+        backlogFilters.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', filterBacklogTable);
+            }
+        });
 
-        // Inisialisasi filter pertama kali
+        // Initialize filters
         filterSRTable();
         filterWOTable();
         filterBacklogTable();
