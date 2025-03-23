@@ -2622,9 +2622,8 @@
     }
 
     function processStatusUpdate(id, newStatus) {
-        // Gunakan URL yang dinamis dari Laravel
-        const baseUrl = '{{ url("/") }}';
-        const url = `${baseUrl}/admin/laporan/update-wo-status/${id}`;
+        // Gunakan URL yang benar dengan prefix yang sesuai
+        const url = '{{ route("laporan.update-wo-status", ["id" => ""]) }}' + id;
         
         fetch(url, {
             method: 'POST',
@@ -2637,7 +2636,9 @@
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                return response.text().then(text => {
+                    throw new Error(text || 'Network response was not ok');
+                });
             }
             return response.json();
         })
@@ -2665,12 +2666,24 @@
                 // Update action button
                 const actionCell = row.querySelector('td[data-column="action"]');
                 if (actionCell) {
-                    actionCell.innerHTML = `
-                        <button onclick="showWOStatusOptions(this, ${id}, '${newStatus}')"
-                            class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white">
-                            Ubah Status
-                        </button>
-                    `;
+                    if (newStatus === 'Closed') {
+                        actionCell.innerHTML = `
+                            <span class="p-2 flex items-center text-gray-400" title="WO Closed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <span class="ml-2">Closed</span>
+                            </span>
+                        `;
+                    } else {
+                        actionCell.innerHTML = `
+                            <button onclick="showWOStatusOptions(this, ${id}, '${newStatus}')"
+                                class="px-3 py-1 text-sm rounded-full bg-blue-500 hover:bg-blue-600 text-white">
+                                Ubah Status
+                            </button>
+                        `;
+                    }
                 }
 
                 // Tampilkan alert sukses
