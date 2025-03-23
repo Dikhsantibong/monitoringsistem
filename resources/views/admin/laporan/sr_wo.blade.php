@@ -295,7 +295,7 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
-                                                    SR{{ str_pad($sr->id, 5, '0', STR_PAD_LEFT) }}
+                                                    SR{{ $sr->id }}
                                                     @if($sr->updated_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
@@ -525,7 +525,7 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
-                                                    WO{{ str_pad($wo->id, 5, '0', STR_PAD_LEFT) }}
+                                                    WO{{ $wo->id }}
                                                     @if($wo->created_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
