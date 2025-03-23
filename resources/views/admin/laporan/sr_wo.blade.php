@@ -1359,7 +1359,9 @@
 
     // Perbaiki selector untuk baris SR
     function processSRStatusUpdate(id, newStatus) {
-        const url = `{{ url('/admin/laporan/update-sr-status') }}/${id}`;
+        // Gunakan URL yang dinamis dari Laravel
+        const baseUrl = '{{ url("/") }}';
+        const url = `${baseUrl}/admin/laporan/update-sr-status/${id}`;
         
         fetch(url, {
             method: 'POST',
@@ -1370,16 +1372,22 @@
             },
             body: JSON.stringify({ status: newStatus })
         })
-        .then(response => response.json())
+        .then(response => {
+            // Tambahkan pengecekan response
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Play success sound
                 playSound('success');
                 
-                // Perbaiki selector untuk mencari baris SR
-                const row = document.querySelector(`tr[data-sr-id="SR${id}"]`); // Hapus padding dan dash
+                // Update tampilan status secara real-time
+                const row = document.querySelector(`tr[data-sr-id="SR${id}"]`);
                 if (!row) {
-                    console.error('Row not found for SR:', id);
+                    console.error('Row not found after status update for SR:', id);
                     return;
                 }
 
@@ -1396,7 +1404,7 @@
                 const actionCell = row.querySelector('td[data-column="action"]');
                 if (actionCell) {
                     actionCell.innerHTML = `
-                        <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
+                        <button onclick="showStatusOptions(this, ${id}, '${newStatus}')"
                             class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
                             ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
                         </button>
@@ -1425,7 +1433,7 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal!',
-                text: error.message || 'Terjadi kesalahan saat mengubah status',
+                text: 'Terjadi kesalahan saat mengubah status. Silakan coba lagi.',
                 toast: true,
                 position: 'top-end',
                 timer: 3000
@@ -2619,6 +2627,88 @@
             'WMATL': 'gray-500'
         };
         return colors[status] || 'gray-500';
+    }
+
+    // Fungsi untuk update status WO
+    function processStatusUpdate(id, newStatus) {
+        // Gunakan URL yang dinamis dari Laravel
+        const baseUrl = '{{ url("/") }}';
+        const url = `${baseUrl}/admin/laporan/update-wo-status/${id}`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Play success sound
+                playSound('success');
+                
+                // Update tampilan status
+                const row = document.querySelector(`tr[data-wo-id="WO${id}"]`);
+                if (!row) {
+                    console.error('Row not found after status update for WO:', id);
+                    return;
+                }
+
+                const statusCell = row.querySelector('td[data-column="status"]');
+                if (statusCell) {
+                    statusCell.innerHTML = `
+                        <span class="px-2 py-1 rounded-full ${getStatusColorClass(newStatus)}">
+                            ${newStatus}
+                        </span>
+                    `;
+                }
+
+                // Update action button
+                const actionCell = row.querySelector('td[data-column="action"]');
+                if (actionCell) {
+                    actionCell.innerHTML = `
+                        <button onclick="updateStatus('wo', ${id}, '${newStatus}')"
+                            class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
+                            ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
+                        </button>
+                    `;
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Berhasil Diubah!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    toast: true,
+                    position: 'top-end'
+                });
+            } else {
+                throw new Error(data.message || 'Terjadi kesalahan saat mengubah status');
+            }
+        })
+        .catch(error => {
+            // Play error sound
+            playSound('error');
+            
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: 'Terjadi kesalahan saat mengubah status. Silakan coba lagi.',
+                toast: true,
+                position: 'top-end',
+                timer: 3000
+            });
+        });
     }
 </script>
 
