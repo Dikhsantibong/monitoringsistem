@@ -751,8 +751,7 @@
                                                 </div>
                                             </div>
                                         </th>
-                                        <th class="py-2 px-4 border-b">Type</th>
-                                        <th class="py-2 px-4 border-b" style="max-width: 300px;">Deskripsi</th>
+                                        <th class="py-2 px-4 border-b">Deskripsi</th>
                                         <th class="py-2 px-4 border-b">Kendala</th>
                                         <th class="py-2 px-4 border-b">Tindak Lanjut</th>
                                         <th class="py-2 px-4 border-b">
@@ -813,7 +812,7 @@
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 {{ $backlog->tindak_lanjut ?? '-' }}
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">
+                                            <td data-column="status" class="py-2 px-4 border border-gray-200">
                                                 <span class="px-2 py-1 rounded-full {{ $backlog->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                     {{ $backlog->status }}
                                                 </span>
@@ -1767,12 +1766,67 @@
 
     // WO Table filter
     function filterWOTable() {
-        filterTable('woTable', {
-            unit: document.getElementById('filterUnitWO').value,
-            status: document.getElementById('woStatusFilter').value,
-            startDate: document.getElementById('wo_start_date').value,
-            endDate: document.getElementById('wo_end_date').value
-        });
+        const unit = document.getElementById('filterUnitWO').value.toLowerCase();
+        const status = document.getElementById('woStatusFilter').value;
+        const startDate = document.getElementById('wo_start_date').value;
+        const endDate = document.getElementById('wo_end_date').value;
+        
+        const table = document.getElementById('woTable');
+        if (!table) return;
+
+        const rows = table.getElementsByTagName('tr');
+        let visibleCount = 0;
+
+        // Start from index 1 to skip header row
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            let showRow = true;
+
+            // Unit filter
+            const unitCell = row.querySelector('td[data-column="unit"]');
+            if (unit && unitCell) {
+                const unitText = unitCell.textContent.toLowerCase().trim();
+                if (!unitText.includes(unit)) {
+                    showRow = false;
+                }
+            }
+
+            // Status filter
+            const statusCell = row.querySelector('td[data-column="status"]');
+            if (status && statusCell) {
+                const statusText = statusCell.textContent.trim();
+                // Check if the status text contains the selected status
+                if (!statusText.includes(status)) {
+                    showRow = false;
+                }
+            }
+
+            // Date filter
+            if (startDate && endDate) {
+                const dateCell = row.querySelector('td:nth-child(9)'); // Adjust index based on date column
+                if (dateCell) {
+                    const rowDate = new Date(dateCell.textContent);
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59);
+
+                    if (rowDate < start || rowDate > end) {
+                        showRow = false;
+                    }
+                }
+            }
+
+            // Show/hide row
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        }
+
+        // Update counters
+        const visibleCounter = document.getElementById('woVisibleCount');
+        const totalCounter = document.getElementById('woTotalCount');
+        
+        if (visibleCounter) visibleCounter.textContent = visibleCount;
+        if (totalCounter) totalCounter.textContent = rows.length - 1; // Subtract header row
     }
 
     // Backlog Table filter
@@ -2146,36 +2200,67 @@
 
     // Modifikasi fungsi filter yang sudah ada
     function filterWOTable() {
+        const unit = document.getElementById('filterUnitWO').value.toLowerCase();
+        const status = document.getElementById('woStatusFilter').value;
         const startDate = document.getElementById('wo_start_date').value;
         const endDate = document.getElementById('wo_end_date').value;
-        const rows = document.querySelectorAll('#woTable tbody tr');
+        
+        const table = document.getElementById('woTable');
+        if (!table) return;
+
+        const rows = table.getElementsByTagName('tr');
         let visibleCount = 0;
 
-        rows.forEach(row => {
+        // Start from index 1 to skip header row
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
             let showRow = true;
-            const dateCell = row.querySelector('td[data-column="created_at"]');
-            
-            if (startDate && endDate && dateCell) {
-                const rowDate = new Date(dateCell.textContent);
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                end.setHours(23, 59, 59);
 
-                if (rowDate < start || rowDate > end) {
+            // Unit filter
+            const unitCell = row.querySelector('td[data-column="unit"]');
+            if (unit && unitCell) {
+                const unitText = unitCell.textContent.toLowerCase().trim();
+                if (!unitText.includes(unit)) {
                     showRow = false;
                 }
             }
 
-            // Aplikasikan filter lain yang sudah ada
-            // ... (kode filter lain tetap sama)
+            // Status filter
+            const statusCell = row.querySelector('td[data-column="status"]');
+            if (status && statusCell) {
+                const statusText = statusCell.textContent.trim();
+                // Check if the status text contains the selected status
+                if (!statusText.includes(status)) {
+                    showRow = false;
+                }
+            }
 
+            // Date filter
+            if (startDate && endDate) {
+                const dateCell = row.querySelector('td:nth-child(9)'); // Adjust index based on date column
+                if (dateCell) {
+                    const rowDate = new Date(dateCell.textContent);
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59);
+
+                    if (rowDate < start || rowDate > end) {
+                        showRow = false;
+                    }
+                }
+            }
+
+            // Show/hide row
             row.style.display = showRow ? '' : 'none';
             if (showRow) visibleCount++;
-        });
+        }
 
-        // Update counter
-        document.getElementById('woVisibleCount').textContent = visibleCount;
-        document.getElementById('woTotalCount').textContent = rows.length;
+        // Update counters
+        const visibleCounter = document.getElementById('woVisibleCount');
+        const totalCounter = document.getElementById('woTotalCount');
+        
+        if (visibleCounter) visibleCounter.textContent = visibleCount;
+        if (totalCounter) totalCounter.textContent = rows.length - 1; // Subtract header row
     }
 
     // Lakukan hal yang sama untuk filterBacklogTable()
