@@ -291,7 +291,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($serviceRequests as $index => $sr)
-                                        <tr data-sr-id="SR-{{ $sr->id }}" class="hover:bg-gray-50 transition-colors duration-150">
+                                        <tr data-sr-id="SR{{ $sr->id }}" class="hover:bg-gray-50 transition-colors duration-150">
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
@@ -1357,6 +1357,7 @@
         }
     }
 
+    // Perbaiki selector untuk baris SR
     function processSRStatusUpdate(id, newStatus) {
         const url = `{{ url('/admin/laporan/update-sr-status') }}/${id}`;
         
@@ -1375,8 +1376,13 @@
                 // Play success sound
                 playSound('success');
                 
-                // Update tampilan status secara real-time
-                const row = document.querySelector(`tr[data-sr-id="SR-${String(id).padStart(4, '0')}"]`);
+                // Perbaiki selector untuk mencari baris SR
+                const row = document.querySelector(`tr[data-sr-id="SR${id}"]`); // Hapus padding dan dash
+                if (!row) {
+                    console.error('Row not found for SR:', id);
+                    return;
+                }
+
                 const statusCell = row.querySelector('td[data-column="status"]');
                 if (statusCell) {
                     statusCell.innerHTML = `
@@ -1389,20 +1395,12 @@
                 // Update action button
                 const actionCell = row.querySelector('td[data-column="action"]');
                 if (actionCell) {
-                    if (newStatus === 'Closed') {
-                        actionCell.innerHTML = `
-                            <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
-                                Closed
-                            </button>
-                        `;
-                    } else {
-                        actionCell.innerHTML = `
-                            <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
-                                class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
-                                ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
-                            </button>
-                        `;
-                    }
+                    actionCell.innerHTML = `
+                        <button onclick="updateStatus('sr', ${id}, '${newStatus}')"
+                            class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
+                            ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
+                        </button>
+                    `;
                 }
 
                 // Tampilkan alert sukses
