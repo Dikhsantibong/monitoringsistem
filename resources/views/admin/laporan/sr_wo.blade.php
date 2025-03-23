@@ -295,15 +295,15 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
-                                                    SR-{{ str_pad($sr->id, 5, '0', STR_PAD_LEFT) }}
-                                                    @if($sr->created_at->diffInHours(now()) < 24)
+                                                    SR{{ str_pad($sr->id, 5, '0', STR_PAD_LEFT) }}
+                                                    @if($sr->updated_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                                                                 <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
                                                                 New
                                                             </span>
                                                             <span class="text-xs text-gray-500">
-                                                                {{ $sr->created_at->diffForHumans(['parts' => 1, 'short' => true]) }}
+                                                                {{ $sr->updated_at->diffForHumans(['parts' => 1, 'short' => true]) }}
                                                             </span>
                                                         </div>
                                                     @endif
@@ -312,7 +312,9 @@
                                             <td data-column="unit" class="px-4 py-2 border border-gray-200">
                                                 {{ $sr->powerPlant->name ?? '-' }}
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $sr->description }}</td>
+                                            <td class="px-6 py-4 border border-gray-200">
+                                                <span class="inline-block w-96 break-words">{{ $sr->description }}</span>
+                                            </td>
                                             <td data-column="status" class="py-2 px-4 border border-gray-200">
                                                 <span class="px-2 py-1 rounded-full {{ $sr->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
                                                     {{ $sr->status }}
@@ -523,7 +525,7 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
-                                                    WO-{{ str_pad($wo->id, 5, '0', STR_PAD_LEFT) }}
+                                                    WO{{ str_pad($wo->id, 5, '0', STR_PAD_LEFT) }}
                                                     @if($wo->created_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
@@ -540,20 +542,9 @@
                                             <td data-column="unit" class="px-4 py-2 border border-gray-200">
                                                 {{ $wo->powerPlant->name ?? '-' }}
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">
-                                                <span class="px-2 py-1 rounded-full text-xs
-                                                    {{ $wo->type == 'CM' ? 'bg-blue-100 text-blue-600' : 
-                                                       ($wo->type == 'PM' ? 'bg-green-100 text-green-600' : 
-                                                       ($wo->type == 'PDM' ? 'bg-yellow-100 text-yellow-600' : 
-                                                       ($wo->type == 'PAM' ? 'bg-purple-100 text-purple-600' : 
-                                                       ($wo->type == 'OH' ? 'bg-red-100 text-red-600' : 
-                                                       ($wo->type == 'EJ' ? 'bg-indigo-100 text-indigo-600' : 
-                                                       ($wo->type == 'EM' ? 'bg-gray-100 text-gray-600' : 
-                                                       'bg-gray-100 text-gray-600')))))) }}">
-                                                    {{ $wo->type }}
-                                                </span>
+                                            <td class="px-6 py-4 border border-gray-200">
+                                                <span class="inline-block w-96 break-words">{{ $wo->description }}</span>
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->description }}</td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->kendala ?? '-' }}</td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $wo->tindak_lanjut ?? '-' }}</td>
                                             <td data-column="status" class="py-2 px-4 border border-gray-200">
@@ -801,7 +792,7 @@
                                             <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
-                                                    WO-{{ str_pad($backlog->no_wo, 5, '0', STR_PAD_LEFT) }}
+                                                    WO{{ str_pad($backlog->no_wo, 5, '0', STR_PAD_LEFT) }}
                                                     @if($backlog->created_at->diffInHours(now()) < 24)
                                                         <div class="flex items-center gap-1.5">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
@@ -818,11 +809,8 @@
                                             <td data-column="unit" class="px-4 py-2 border border-gray-200">
                                                 {{ $backlog->powerPlant->name ?? '-' }}
                                             </td>
-                                            <td class="py-2 px-4 border border-gray-200">{{ $backlog->type_wo ?? '-' }}</td>
-                                            <td class="py-2 px-4 border border-gray-200" style="max-width: 300px;">
-                                                <div class="whitespace-pre-wrap break-words">
-                                                    {{ $backlog->deskripsi }}
-                                                </div>
+                                            <td class="px-6 py-4 border border-gray-200">
+                                                <span class="inline-block w-96 break-words">{{ $backlog->deskripsi }}</span>
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 {{ $backlog->kendala ?? '-' }}
