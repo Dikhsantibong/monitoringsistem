@@ -1706,6 +1706,8 @@
                 }
             }
 
+            
+
             // Date range filter
             if (filters.startDate && filters.endDate) {
                 const dateCell = row.cells[8]; // Adjust index based on your table structure
@@ -1725,8 +1727,8 @@
             if (filters.downtime !== undefined) {
                 const downtimeCell = row.cells[6]; // Adjust index based on your table structure
                 const downtimeText = downtimeCell ? downtimeCell.textContent.trim() : '';
-                if (filters.downtime === 'Yes' && downtimeText !== 'Yes' ||
-                    filters.downtime === 'No' && downtimeText !== 'No') {
+                if (filters.downtime === 'Yes' && downtimeText !== 'ya' ||
+                    filters.downtime === 'No' && downtimeText !== 'tidak') {
                     showRow = false;
                 }
             }
