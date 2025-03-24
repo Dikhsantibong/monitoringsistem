@@ -332,12 +332,25 @@ function editMachineStatus(machineId, logId) {
         return;
     }
     
-    // Gunakan URL lengkap dengan protokol https
-    const baseUrl = 'https://mondayplnnpupkendari.com';
-    const editUrl = `${baseUrl}/admin/machine-status/${machineId}/edit/${logId}`;
-    
-    console.log('Redirecting to:', editUrl); // untuk debugging
-    window.location.href = editUrl;
+    fetch(`/admin/machine-status/${machineId}/edit/${logId}`)
+        .then(response => response.text())
+        .then(text => {
+            try {
+                // Coba parse sebagai JSON untuk menangani error response
+                const json = JSON.parse(text);
+                if (!json.success) {
+                    throw new Error(json.message);
+                }
+            } catch (e) {
+                // Jika bukan JSON, berarti response adalah HTML view
+                document.location.href = `/admin/machine-status/${machineId}/edit/${logId}`;
+                return;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message || 'Terjadi kesalahan saat mengakses data');
+        });
 }
 
 function deleteMachineStatus(machineId, logId) {
@@ -348,9 +361,8 @@ function deleteMachineStatus(machineId, logId) {
     
     if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
         const token = document.querySelector('meta[name="csrf-token"]').content;
-        const baseUrl = 'https://mondayplnnpupkendari.com';
         
-        fetch(`${baseUrl}/admin/machine-status/${machineId}/destroy/${logId}`, {
+        fetch(`/admin/machine-status/${machineId}/destroy/${logId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': token,
@@ -364,7 +376,12 @@ function deleteMachineStatus(machineId, logId) {
                 alert('Data berhasil dihapus');
                 window.location.reload();
             } else {
-                alert(data.message || 'Terjadi kesalahan saat menghapus data');
+                if (response.status === 404) {
+                    alert('Data log tidak ditemukan atau sudah tidak tersedia');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Terjadi kesalahan saat menghapus data');
+                }
             }
         })
         .catch(error => {

@@ -77,8 +77,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Status -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 ">Status</label>
+                            <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 h-10 text-left pl-2">
                                 <option value="Operasi" {{ $log->status === 'Operasi' ? 'selected' : '' }}>Operasi</option>
                                 <option value="Standby" {{ $log->status === 'Standby' ? 'selected' : '' }}>Standby</option>
                                 <option value="Gangguan" {{ $log->status === 'Gangguan' ? 'selected' : '' }}>Gangguan</option>

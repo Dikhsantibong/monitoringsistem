@@ -226,19 +226,63 @@ class MachineStatusController extends Controller
         try {
             $machine = Machine::with('powerPlant')->findOrFail($machineId);
             
-            // Cari log dan tambahkan pengecekan apakah log tersebut milik mesin yang dimaksud
+            // Tambahkan logging untuk debug di production
+            \Log::info('Searching for log', [
+                'machine_id' => $machineId,
+                'log_id' => $logId
+            ]);
+            
+            // Modifikasi query untuk lebih spesifik dan tambahkan logging
             $log = MachineStatusLog::where('id', $logId)
                 ->where('machine_id', $machineId)
+                ->whereDate('tanggal', now()->toDateString()) // Pastikan untuk tanggal hari ini
                 ->first();
                 
+            \Log::info('Log search result', [
+                'found' => $log ? true : false,
+                'log_details' => $log
+            ]);
+            
             if (!$log) {
-                return back()->with('error', 'Data log tidak ditemukan atau sudah tidak tersedia');
+                // Coba cari log tanpa filter tanggal untuk debugging
+                $alternativeLog = MachineStatusLog::where('id', $logId)
+                    ->where('machine_id', $machineId)
+                    ->first();
+                    
+                \Log::info('Alternative log search result', [
+                    'found' => $alternativeLog ? true : false,
+                    'log_details' => $alternativeLog
+                ]);
+                
+                if ($alternativeLog) {
+                    $log = $alternativeLog; // Gunakan log yang ditemukan
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data log tidak ditemukan atau sudah tidak tersedia',
+                        'machine_id' => $machineId,
+                        'log_id' => $logId
+                    ], 404);
+                }
             }
 
             return view('admin.machine-status.edit', compact('machine', 'log'));
         } catch (\Exception $e) {
-            \Log::error('Error in machine status edit: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan saat mengambil data. Silakan coba lagi');
+            \Log::error('Error in machine status edit', [
+                'error' => $e->getMessage(),
+                'machine_id' => $machineId,
+                'log_id' => $logId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage(),
+                'details' => [
+                    'machine_id' => $machineId,
+                    'log_id' => $logId
+                ]
+            ], 500);
         }
     }
 
