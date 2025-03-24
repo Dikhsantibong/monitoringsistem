@@ -148,11 +148,13 @@
                     </div>
 
                     @foreach ($units as $unit)
+                    @if($unit->name !== 'UP KENDARI')
                         <div class="bg-white rounded-lg shadow p-6 mb-4 unit-table" data-unit-source="{{ $unit->unit_source }}">
                             <div class="overflow-auto">
                                 <div class="flex justify-between items-center mb-4">
                                     <div class="flex flex-col">
-                                        <h2 class="text-lg font-semibold text-gray-800">{{ $unit->name }}</h2>
+                                            <h2 class="text-lg font-semibold text-gray-800">{{ $unit->name }}</h2>
+                                       
                                         <div class="text-sm text-gray-600">
                                             <span class="font-medium">Update Terakhir:</span>
                                             <span id="last_update_{{ $unit->id }}" class="ml-1">
@@ -349,6 +351,7 @@
                                                     </td>
                                                 </tr>
                                             @endforeach
+                                            @endif
                                         </tbody>
                                     </table>
                                 </div>
