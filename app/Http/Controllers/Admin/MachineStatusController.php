@@ -226,62 +226,30 @@ class MachineStatusController extends Controller
         try {
             $machine = Machine::with('powerPlant')->findOrFail($machineId);
             
-            // Tambahkan logging untuk debug di production
-            \Log::info('Searching for log', [
-                'machine_id' => $machineId,
-                'log_id' => $logId
-            ]);
-            
-            // Modifikasi query untuk lebih spesifik dan tambahkan logging
+            // Hilangkan filter tanggal karena bisa menyebabkan masalah
             $log = MachineStatusLog::where('id', $logId)
                 ->where('machine_id', $machineId)
-                ->whereDate('tanggal', now()->toDateString()) // Pastikan untuk tanggal hari ini
                 ->first();
                 
-            \Log::info('Log search result', [
-                'found' => $log ? true : false,
-                'log_details' => $log
-            ]);
-            
             if (!$log) {
-                // Coba cari log tanpa filter tanggal untuk debugging
-                $alternativeLog = MachineStatusLog::where('id', $logId)
-                    ->where('machine_id', $machineId)
-                    ->first();
-                    
-                \Log::info('Alternative log search result', [
-                    'found' => $alternativeLog ? true : false,
-                    'log_details' => $alternativeLog
-                ]);
-                
-                if ($alternativeLog) {
-                    $log = $alternativeLog; // Gunakan log yang ditemukan
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Data log tidak ditemukan atau sudah tidak tersedia',
-                        'machine_id' => $machineId,
-                        'log_id' => $logId
-                    ], 404);
-                }
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data log tidak ditemukan atau sudah tidak tersedia'
+                ], 404);
             }
 
+            // Gunakan url() helper untuk generate URL lengkap
             return view('admin.machine-status.edit', compact('machine', 'log'));
         } catch (\Exception $e) {
             \Log::error('Error in machine status edit', [
                 'error' => $e->getMessage(),
                 'machine_id' => $machineId,
-                'log_id' => $logId,
-                'trace' => $e->getTraceAsString()
+                'log_id' => $logId
             ]);
             
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage(),
-                'details' => [
-                    'machine_id' => $machineId,
-                    'log_id' => $logId
-                ]
+                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage()
             ], 500);
         }
     }
