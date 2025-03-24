@@ -332,20 +332,8 @@ function editMachineStatus(machineId, logId) {
         return;
     }
     
-    // Tambahkan error handling untuk fetch
-    fetch(`/admin/machine-status/${machineId}/edit/${logId}`)
-        .then(response => {
-            if (response.status === 404) {
-                alert('Data log tidak ditemukan atau sudah tidak tersedia');
-                window.location.reload(); // Reload untuk memperbarui tampilan
-                return;
-            }
-            window.location.href = `/admin/machine-status/${machineId}/edit/${logId}`;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat mengakses data');
-        });
+    // Perbaikan: Langsung redirect ke halaman edit
+    window.location.href = `/admin/machine-status/${machineId}/edit/${logId}`;
 }
 
 function deleteMachineStatus(machineId, logId) {
