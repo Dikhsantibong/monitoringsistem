@@ -332,8 +332,15 @@ function editMachineStatus(machineId, logId) {
         return;
     }
     
-    // Perbaikan: Langsung redirect ke halaman edit
-    window.location.href = `/admin/machine-status/${machineId}/edit/${logId}`;
+    // Gunakan route() helper untuk generate URL yang benar
+    const editUrl = `/admin/machine-status/${machineId}/edit/${logId}`;
+    console.log('Edit URL:', editUrl); // untuk debugging
+    
+    // Tambahkan base URL jika diperlukan
+    const baseUrl = window.location.origin; // Mendapatkan domain
+    const fullUrl = baseUrl + editUrl;
+    
+    window.location.href = fullUrl;
 }
 
 function deleteMachineStatus(machineId, logId) {
