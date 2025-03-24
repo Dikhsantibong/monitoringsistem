@@ -332,15 +332,12 @@ function editMachineStatus(machineId, logId) {
         return;
     }
     
-    // Gunakan route() helper untuk generate URL yang benar
-    const editUrl = `/admin/machine-status/${machineId}/edit/${logId}`;
-    console.log('Edit URL:', editUrl); // untuk debugging
+    // Gunakan URL lengkap dengan protokol https
+    const baseUrl = 'https://mondayplnnpupkendari.com';
+    const editUrl = `${baseUrl}/admin/machine-status/${machineId}/edit/${logId}`;
     
-    // Tambahkan base URL jika diperlukan
-    const baseUrl = window.location.origin; // Mendapatkan domain
-    const fullUrl = baseUrl + editUrl;
-    
-    window.location.href = fullUrl;
+    console.log('Redirecting to:', editUrl); // untuk debugging
+    window.location.href = editUrl;
 }
 
 function deleteMachineStatus(machineId, logId) {
@@ -351,8 +348,9 @@ function deleteMachineStatus(machineId, logId) {
     
     if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
         const token = document.querySelector('meta[name="csrf-token"]').content;
+        const baseUrl = 'https://mondayplnnpupkendari.com';
         
-        fetch(`/admin/machine-status/${machineId}/destroy/${logId}`, {
+        fetch(`${baseUrl}/admin/machine-status/${machineId}/destroy/${logId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': token,
@@ -366,12 +364,7 @@ function deleteMachineStatus(machineId, logId) {
                 alert('Data berhasil dihapus');
                 window.location.reload();
             } else {
-                if (response.status === 404) {
-                    alert('Data log tidak ditemukan atau sudah tidak tersedia');
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Terjadi kesalahan saat menghapus data');
-                }
+                alert(data.message || 'Terjadi kesalahan saat menghapus data');
             }
         })
         .catch(error => {
