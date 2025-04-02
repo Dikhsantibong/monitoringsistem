@@ -67,15 +67,17 @@
                 <div class="bg-white rounded-lg shadow mb-6">
                     <div class="p-6">
                         <!-- Header dengan filter -->
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg font-semibold text-gray-800">Score Card Daily</h2>
-                            <div class="flex items-center gap-4">
+                        <div class="flex flex-col mb-4">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4">Score Card Daily</h2>
+                            
+                            <!-- Filter Controls Container -->
+                            <div class="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 sm:items-center">
                                 <!-- Filter Unit - hanya tampil untuk session mysql -->
                                 @if(session('unit') === 'mysql')
-                                <div class="flex items-center">
-                                    <label for="unit-source" class="text-gray-700 text-sm font-bold mr-2">Filter Unit:</label>
+                                <div class="flex flex-col sm:flex-row sm:items-center">
+                                    <label for="unit-source" class="text-gray-700 text-sm font-bold mb-1 sm:mb-0 sm:mr-2">Filter Unit:</label>
                                     <select id="unit-source" 
-                                        class="border rounded-md px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        class="border rounded-md px-3 py-2 text-sm w-full sm:w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         onchange="updateData()">
                                         <option value="">Semua Unit</option>
                                         <option value="mysql" {{ request('unit_source') == 'mysql' ? 'selected' : '' }}>UP Kendari</option>
@@ -86,57 +88,28 @@
                                     </select>
                                 </div>
                                 @endif
-                                
 
                                 <!-- Filter Tanggal dengan Datepicker -->
-                                <div class="flex items-center">
-                                    <label for="tanggal-filter" class="text-gray-700 text-sm font-bold mr-2">Pilih Tanggal:</label>
-                                    <div class="relative">
+                                <div class="flex flex-col sm:flex-row sm:items-center">
+                                    <label for="tanggal-filter" class="text-gray-700 text-sm font-bold mb-1 sm:mb-0 sm:mr-2">Pilih Tanggal:</label>
+                                    <div class="relative w-full sm:w-auto">
                                         <input type="text" 
                                                id="tanggal-filter" 
-                                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+                                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-[200px]"
                                                placeholder="mm/dd/yyyy"
                                                value="{{ $selectedDate }}"
                                                data-available-dates='@json($availableDates)'
                                                onfocus="(this.type='date')"
                                                onblur="(this.type='text')">
-                                        <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                            <!-- <i class="fas fa-calendar text-gray-400"></i> -->
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Dropdown untuk Tanggal Tersedia -->
-                                <div class="relative">
-                                    
-
-                                    <!-- Dropdown Content -->
-                                    <div id="availableDatesList" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                                        <div class="py-1 max-h-60 overflow-auto" role="menu">
-                                            <div class="px-4 py-2 text-sm text-gray-700 border-b">
-                                                <input type="text" 
-                                                       id="dateSearch" 
-                                                       class="w-full px-2 py-1 border rounded-md" 
-                                                       placeholder="Cari tanggal...">
-                                            </div>
-                                            <div id="datesList">
-                                                @foreach($availableDates as $date)
-                                                <a href="#" 
-                                                   class="date-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
-                                                   data-date="{{ $date }}">
-                                                    {{ \Carbon\Carbon::parse($date)->isoFormat('dddd, D MMMM Y') }}
-                                                </a>
-                                                @endforeach
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 
                                 <!-- Search -->
-                                <div class="relative">
-                                    <input type="text" id="search-input" 
+                                <div class="relative w-full sm:w-auto">
+                                    <input type="text" 
+                                           id="search-input" 
                                            placeholder="Cari peserta..."
-                                           class="border rounded-md pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                           class="border rounded-md pl-10 pr-4 py-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 </div>
                             </div>
