@@ -800,7 +800,7 @@
                         <tr>
                             <td style="text-align: center;">{{ $loop->iteration }}</td>
                             <td>{{ $sr->id }}</td>
-                            <td>{{ $sr->power_plant->name ?? '-' }}</td> <!-- Displaying unit name -->
+                            <td>{{ $sr->powerPlant->name ?? '-' }}</td>
                             <td>{{ $sr->description }}</td>
                             <td class="text-center">
                                 <span class="status-badge {{ 

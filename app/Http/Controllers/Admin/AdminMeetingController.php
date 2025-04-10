@@ -393,7 +393,7 @@ class AdminMeetingController extends Controller
                 });
             }]);
             $logsQuery = MachineStatusLog::whereDate('created_at', $date)->with('machine.powerPlant');
-            $serviceRequestsQuery = ServiceRequest::where('status', 'open');
+            $serviceRequestsQuery = ServiceRequest::with('powerPlant')->where('status', 'open');
             $workOrdersQuery = WorkOrder::where('status', 'open');
             $woBacklogsQuery = WoBacklog::where('status', 'open');
             $otherDiscussionsQuery = OtherDiscussion::where('status', 'open')
