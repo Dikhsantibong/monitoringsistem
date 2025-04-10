@@ -800,7 +800,7 @@
                         <tr>
                             <td style="text-align: center;">{{ $loop->iteration }}</td>
                             <td>{{ $sr->id }}</td>
-                            <td>{{ $sr->powerPlant->name ?? '-' }}</td>
+                            <td class="text-center">{{ $sr->powerPlant->name ?? '-' }}</td>
                             <td>{{ $sr->description }}</td>
                             <td class="text-center">
                                 <span class="status-badge {{ 
@@ -848,13 +848,13 @@
                     @forelse($workOrders as $wo)
                         <tr>
                             <td style="text-align: center;">{{ $loop->iteration }}</td>
-                            <td>{{ $wo->id }}</td>
+                            <td class="text-center">{{ $wo->id }}</td>
                             <td>{{ $wo->description }}</td>
-                            <td>
+                            <td class="text-center">
                                 {{ \Carbon\Carbon::parse($wo->schedule_start)->format('d/m/Y') }} - 
                                 {{ \Carbon\Carbon::parse($wo->schedule_finish)->format('d/m/Y') }}
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <span class="status-badge {{ 
                                     $wo->status === 'Completed' ? 'status-operasi' : 
                                     ($wo->status === 'In Progress' ? 'status-standby' : 
@@ -863,8 +863,8 @@
                                     {{ $wo->status }}
                                 </span>
                             </td>
-                            <td>{{ $wo->priority }}</td>
-                            <td>
+                            <td class="text-center">{{ $wo->priority }}</td>
+                            <td class="text-center">
                                 {{ \Carbon\Carbon::parse($wo->schedule_start)->format('d/m/Y') }} - 
                                 {{ \Carbon\Carbon::parse($wo->schedule_finish)->format('d/m/Y') }}
                             </td>
