@@ -933,76 +933,83 @@
         </div>
     </div>
 
-    <!-- Halaman Pembahasan Lain-lain -->
-    <div class="page-break">
-        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
-        
-        <div class="header">
-            <h2>PEMBAHASAN LAIN-LAIN</h2>
-            <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
-        </div>
+    <!-- Halaman Pembahasan Lain-lain - Dikelompokkan per unit -->
+    @php
+        $groupedDiscussions = $otherDiscussions->groupBy('unit_name');
+    @endphp
 
-        <table class="report-table" style="margin: 0 auto; width: 95%;">
-            <thead>
-                <tr>
-                    <th style="width: 5%; text-align: center;">No</th>
-                    <th style="width: 15%; text-align: center;">No Pembahasan</th>
-                    <th style="width: 40%; text-align: center;">Topik</th>
-                    <th style="width: 25%; text-align: center;">PIC</th>
-                    <th style="width: 15%; text-align: center;">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($otherDiscussions as $discussion)
+    @foreach($groupedDiscussions as $unitName => $discussions)
+        <div class="page-break">
+            <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+            
+            <div class="header">
+                <h2>PEMBAHASAN LAIN-LAIN - {{ strtoupper($unitName) }}</h2>
+                <p>Tanggal: {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
+            </div>
+
+            <table class="report-table" style="margin: 0 auto; width: 95%;">
+                <thead>
                     <tr>
-                        <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td style="font-size: 10px;">{{ $discussion->no_pembahasan }}</td>
-                        <td style="font-size: 10px;">{{ $discussion->topic }}</td>
-                        <td style="font-size: 10px;">{{ $discussion->pic }}</td>
-                        <td style="font-size: 10px; text-align: center;">
-                            <span class="status-badge status-{{ strtolower($discussion->status) }}">
-                                {{ $discussion->status }}
-                            </span>
-                        </td>
+                        <th style="width: 5%; text-align: center;">No</th>
+                        <th style="width: 15%; text-align: center;">No Pembahasan</th>
+                        <th style="width: 40%; text-align: center;">Topik</th>
+                        <th style="width: 25%; text-align: center;">PIC</th>
+                        <th style="width: 15%; text-align: center;">Status</th>
                     </tr>
-                    <tr>
-                        <td colspan="5" style="padding: 15px; background-color: #f9fafb; border: 1px solid #e5e7eb;">
-                            <div style="font-size: 11px; margin-bottom: 8px; display: flex; gap: 15px;">
-                                <div><strong>Unit:</strong> {{ $discussion->unit }}</div>
-                                <div><strong>No SR:</strong> {{ $discussion->sr_number ?? '-' }}</div>  
-                                <div><strong>Target:</strong> {{ $discussion->target }}</div>
-                                <div><strong>Deadline:</strong> {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}</div>
-                            </div>
-                            
-                            @if($discussion->commitments && $discussion->commitments->count() > 0)
-                                <div style="margin-top: 10px;">
-                                    <strong style="font-size: 11px; display: block; margin-bottom: 8px;">Commitments:</strong>
-                                    <div style="display: grid; gap: 8px;">
-                                        @foreach($discussion->commitments as $commitment)
-                                            <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e5e7eb;">
-                                                <div style="font-size: 11px; margin-bottom: 5px;">
-                                                    {{ $commitment->description }}
-                                                </div>
-                                                <div style="font-size: 11px; color: #6b7280; display: flex; gap: 15px;">
-                                                    <span><strong>PIC:</strong> {{ $commitment->pic }}</span>
-                                                    <span><strong>Deadline:</strong> {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
-                                                    <span><strong>Status:</strong> {{ $commitment->status }}</span>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
+                </thead>
+                <tbody>
+                    @forelse($discussions as $discussion)
+                        <tr>
+                            <td style="text-align: center;">{{ $loop->iteration }}</td>
+                            <td style="font-size: 10px;">{{ $discussion->no_pembahasan }}</td>
+                            <td style="font-size: 10px;">{{ $discussion->topic }}</td>
+                            <td style="font-size: 10px;">{{ $discussion->pic }}</td>
+                            <td style="font-size: 10px; text-align: center;">
+                                <span class="status-badge status-{{ strtolower($discussion->status) }}">
+                                    {{ $discussion->status }}
+                                </span>
+                            </td>
+                        </tr>
+                        <!-- Detail row -->
+                        <tr>
+                            <td colspan="5" style="padding: 15px; background-color: #f9fafb; border: 1px solid #e5e7eb;">
+                                <div style="font-size: 11px; margin-bottom: 8px; display: flex; gap: 15px;">
+                                    <div><strong>Unit:</strong> {{ $discussion->unit }}</div>
+                                    <div><strong>No SR:</strong> {{ $discussion->sr_number ?? '-' }}</div>  
+                                    <div><strong>Target:</strong> {{ $discussion->target }}</div>
+                                    <div><strong>Deadline:</strong> {{ $discussion->deadline ? \Carbon\Carbon::parse($discussion->deadline)->format('d/m/Y') : '-' }}</div>
                                 </div>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" style="text-align: center;">Tidak ada pembahasan yang masih open untuk tanggal ini</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                                
+                                @if($discussion->commitments && count($discussion->commitments) > 0)
+                                    <div style="margin-top: 10px;">
+                                        <strong style="font-size: 11px; display: block; margin-bottom: 8px;">Commitments:</strong>
+                                        <div style="display: grid; gap: 8px;">
+                                            @foreach($discussion->commitments as $commitment)
+                                                <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                                                    <div style="font-size: 11px; margin-bottom: 5px;">
+                                                        {{ $commitment->description }}
+                                                    </div>
+                                                    <div style="font-size: 11px; color: #6b7280; display: flex; gap: 15px;">
+                                                        <span><strong>PIC:</strong> {{ $commitment->pic }}</span>
+                                                        <span><strong>Deadline:</strong> {{ \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') }}</span>
+                                                        <span><strong>Status:</strong> {{ $commitment->status }}</span>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Tidak ada pembahasan yang masih open untuk {{ $unitName }}</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    @endforeach
 
     <!-- Setelah halaman Notes, tambahkan halaman Pengesahan -->
     <div class="page-break">

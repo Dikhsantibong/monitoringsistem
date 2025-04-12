@@ -441,6 +441,9 @@ class AdminMeetingController extends Controller
             // Gunakan fungsi helper untuk mendapatkan semua attendance
             $attendances = $this->getAllAttendances($date);
 
+            // Ganti cara mengambil other discussions
+            $otherDiscussions = $this->getAllOtherDiscussions($date);
+
             return view('admin.meetings.print', [
                 'allScoreCards' => $allScoreCards,
                 'date' => $date,
@@ -727,5 +730,84 @@ class AdminMeetingController extends Controller
         }
 
         return $allAttendances->sortBy('time');
+    }
+
+    private function getAllOtherDiscussions($date)
+    {
+        $allDiscussions = collect();
+        
+        // Daftar koneksi database dengan nama unit yang sesuai
+        $connections = [
+            'mysql' => 'UP Kendari',
+            'mysql_bau_bau' => 'Bau-Bau',
+            'mysql_kolaka' => 'Kolaka',
+            'mysql_poasia' => 'Poasia',
+            'mysql_wua_wua' => 'Wua-Wua'
+        ];
+
+        // Jika user adalah admin (mysql), ambil data dari semua database
+        if (session('unit') === 'mysql') {
+            foreach ($connections as $connection => $unitName) {
+                try {
+                    $discussions = DB::connection($connection)
+                        ->table('other_discussions')
+                        ->where('status', 'open')
+                        ->where(function($query) use ($date) {
+                            $query->whereDate('created_at', '<=', $date)
+                                  ->whereNull('closed_at');
+                        })
+                        ->get()
+                        ->map(function ($discussion) use ($unitName) {
+                            $discussion->unit_name = $unitName;
+                            
+                            // Ambil commitments untuk setiap discussion
+                            $commitments = DB::connection($discussion->unit_source ?? session('unit'))
+                                ->table('commitments')
+                                ->where('other_discussion_id', $discussion->id)
+                                ->where('status', 'open')
+                                ->get();
+                                
+                            $discussion->commitments = $commitments;
+                            return $discussion;
+                        });
+                    
+                    $allDiscussions = $allDiscussions->concat($discussions);
+                    
+                } catch (\Exception $e) {
+                    Log::error("Error accessing {$connection} for other discussions: " . $e->getMessage());
+                    continue;
+                }
+            }
+        } else {
+            // Jika bukan admin, hanya ambil data dari database saat ini
+            $currentConnection = session('unit');
+            $unitName = $connections[$currentConnection] ?? 'Unknown Unit';
+            
+            $discussions = DB::connection($currentConnection)
+                ->table('other_discussions')
+                ->where('status', 'open')
+                ->where(function($query) use ($date) {
+                    $query->whereDate('created_at', '<=', $date)
+                          ->whereNull('closed_at');
+                })
+                ->get()
+                ->map(function ($discussion) use ($unitName) {
+                    $discussion->unit_name = $unitName;
+                    
+                    // Ambil commitments untuk setiap discussion
+                    $commitments = DB::connection(session('unit'))
+                        ->table('commitments')
+                        ->where('other_discussion_id', $discussion->id)
+                        ->where('status', 'open')
+                        ->get();
+                        
+                    $discussion->commitments = $commitments;
+                    return $discussion;
+                });
+                
+            $allDiscussions = $allDiscussions->concat($discussions);
+        }
+
+        return $allDiscussions;
     }
 }
