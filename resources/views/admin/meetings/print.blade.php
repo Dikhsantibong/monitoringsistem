@@ -634,48 +634,55 @@
         </div>
     @endif
 
-    <!-- Halaman kedua - Daftar Hadir (dipindah ke sini) -->
-    <div class="page-break">
-        <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
-        
-        <div class="header">
-            <h2>DAFTAR HADIR RAPAT</h2>
-            <p>Tanggal: {{ is_string($date) ? \Carbon\Carbon::parse($date)->format('d F Y') : $date->format('d F Y') }}</p>
-        </div>
+    <!-- Halaman Daftar Hadir - Dikelompokkan per unit -->
+    @php
+        // Kelompokkan attendance berdasarkan unit
+        $groupedAttendances = $attendances->groupBy('unit_name');
+    @endphp
 
-        <table class="attendance-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%; text-align: center;">No</th>
-                    <th style="width: 25%; text-align: center;">Nama</th>
-                    <th style="width: 20%; text-align: center;">Jabatan</th>
-                    <th style="width: 20%; text-align: center;">Divisi</th>
-                    <th style="width: 15%; text-align: center;">Waktu</th>
-                    <th style="width: 15%; text-align: center;">Tanda Tangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($attendances as $index => $attendance)
+    @foreach($groupedAttendances as $unitName => $unitAttendances)
+        <div class="page-break">
+            <img src="{{ asset('logo/navlog1.png') }}" alt="PLN Logo" class="logo">
+            
+            <div class="header">
+                <h2>DAFTAR HADIR RAPAT - {{ strtoupper($unitName) }}</h2>
+                <p>Tanggal: {{ is_string($date) ? \Carbon\Carbon::parse($date)->format('d F Y') : $date->format('d F Y') }}</p>
+            </div>
+
+            <table class="attendance-table">
+                <thead>
                     <tr>
-                        <td style="text-align: center;">{{ $loop->iteration }}</td>
-                        <td>{{ $attendance->name }}</td>
-                        <td>{{ $attendance->position }}</td>
-                        <td>{{ $attendance->division }}</td>
-                        <td style="text-align: center;">{{ \Carbon\Carbon::parse($attendance->time)->format('H:i') }}</td>
-                        <td>
-                            @if($attendance->signature)
-                                <img src="{{ $attendance->signature }}" alt="Tanda tangan" style="max-height: 40px;">
-                            @endif
-                        </td>
+                        <th style="width: 5%; text-align: center;">No</th>
+                        <th style="width: 25%; text-align: center;">Nama</th>
+                        <th style="width: 20%; text-align: center;">Jabatan</th>
+                        <th style="width: 20%; text-align: center;">Divisi</th>
+                        <th style="width: 15%; text-align: center;">Waktu</th>
+                        <th style="width: 15%; text-align: center;">Tanda Tangan</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" style="text-align: center;">Tidak ada data kehadiran</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @forelse($unitAttendances as $attendance)
+                        <tr>
+                            <td style="text-align: center;">{{ $loop->iteration }}</td>
+                            <td>{{ $attendance->name }}</td>
+                            <td>{{ $attendance->position }}</td>
+                            <td>{{ $attendance->division }}</td>
+                            <td style="text-align: center;">{{ \Carbon\Carbon::parse($attendance->time)->format('H:i') }}</td>
+                            <td>
+                                @if($attendance->signature)
+                                    <img src="{{ $attendance->signature }}" alt="Tanda tangan" style="max-height: 40px;">
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Tidak ada data kehadiran untuk {{ $unitName }}</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    @endforeach
 
     <!-- Halaman ketiga - Report Table -->
     <div class="page-break">

@@ -402,7 +402,7 @@ class AdminMeetingController extends Controller
                           ->whereNull('closed_at');
                 });
 
-            // Apply unit_source filter only if specific unit is selected
+            
             if ($unitSource) {
                 $attendancesQuery->where('unit_source', $unitSource);
                 $powerPlantsQuery->where('unit_source', $unitSource);
@@ -414,7 +414,7 @@ class AdminMeetingController extends Controller
                 $woBacklogsQuery->where('unit_source', $unitSource);
                 $otherDiscussionsQuery->where('unit_source', $unitSource);
             }
-            // If no specific unit selected and user is not admin, filter by their unit
+           
             elseif ($currentSession !== 'mysql') {
                 $attendancesQuery->where('unit_source', $currentSession);
                 $powerPlantsQuery->where('unit_source', $currentSession);
@@ -437,6 +437,9 @@ class AdminMeetingController extends Controller
             $otherDiscussions = $otherDiscussionsQuery->with(['commitments' => function($query) {
                 $query->where('status', 'open');
             }])->orderBy('created_at', 'desc')->get();
+
+            // Gunakan fungsi helper untuk mendapatkan semua attendance
+            $attendances = $this->getAllAttendances($date);
 
             return view('admin.meetings.print', [
                 'allScoreCards' => $allScoreCards,
@@ -670,5 +673,59 @@ class AdminMeetingController extends Controller
             ]);
             return back()->with('error', 'Gagal mengunduh PDF. Error: ' . $e->getMessage());
         }
+    }
+
+    private function getAllAttendances($date)
+    {
+        $allAttendances = collect();
+        
+        // Daftar koneksi database dengan nama unit yang sesuai
+        $connections = [
+            'mysql' => 'UP Kendari',
+            'mysql_bau_bau' => 'Bau-Bau',
+            'mysql_kolaka' => 'Kolaka',
+            'mysql_poasia' => 'Poasia',
+            'mysql_wua_wua' => 'Wua-Wua'
+        ];
+
+        // Jika user adalah admin (mysql), ambil data dari semua database
+        if (session('unit') === 'mysql') {
+            foreach ($connections as $connection => $unitName) {
+                try {
+                    $attendances = DB::connection($connection)
+                        ->table('attendance')
+                        ->whereDate('created_at', $date)
+                        ->get()
+                        ->map(function ($attendance) use ($unitName) {
+                            // Tambahkan informasi unit pada setiap record
+                            $attendance->unit_name = $unitName;
+                            return $attendance;
+                        });
+                    
+                    $allAttendances = $allAttendances->concat($attendances);
+                    
+                } catch (\Exception $e) {
+                    Log::error("Error accessing {$connection} for attendance data: " . $e->getMessage());
+                    continue;
+                }
+            }
+        } else {
+            // Jika bukan admin, hanya ambil data dari database saat ini
+            $currentConnection = session('unit');
+            $unitName = $connections[$currentConnection] ?? 'Unknown Unit';
+            
+            $attendances = DB::connection($currentConnection)
+                ->table('attendance')
+                ->whereDate('created_at', $date)
+                ->get()
+                ->map(function ($attendance) use ($unitName) {
+                    $attendance->unit_name = $unitName;
+                    return $attendance;
+                });
+                
+            $allAttendances = $allAttendances->concat($attendances);
+        }
+
+        return $allAttendances->sortBy('time');
     }
 }
