@@ -8,12 +8,12 @@ use App\Models\ClosedDiscussion;
 use App\Models\OverdueDiscussion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\PowerPlant;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use App\Events\OtherDiscussionUpdated;
-use Illuminate\Support\Facades\Log;
 use PDF;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\OtherDiscussionsExport;
@@ -25,94 +25,223 @@ class OtherDiscussionController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->search;
-        $status = $request->status;
-        $unit = $request->unit;
+        try {
+            $search = $request->search;
+            $status = $request->status;
+            $unit = $request->unit;
+            $allDiscussions = collect();
 
-        // Base query untuk semua tab
-        $query = OtherDiscussion::query()
-            ->with(['commitments' => function($q) {
-                $q->with(['department', 'section']);
-            }]);
+            // Daftar koneksi database dengan nama unit yang sesuai
+            $connections = [
+                'mysql' => 'UP Kendari',
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka',
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua'
+            ];
 
-        // Filter berdasarkan pencarian
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('topic', 'like', "%{$search}%")
-                  ->orWhere('unit', 'like', "%{$search}%")
-                  ->orWhere('pic', 'like', "%{$search}%");
-            });
+            // Jika user adalah admin (mysql), ambil data dari semua database
+            if (session('unit') === 'mysql') {
+                foreach ($connections as $connection => $unitName) {
+                    try {
+                        // Base query untuk setiap koneksi
+                        $query = DB::connection($connection)
+                            ->table('other_discussions')
+                            ->select('*')
+                            ->selectRaw("'$connection' as unit_source")
+                            ->selectRaw("'$unitName' as unit_name");
+
+                        // Filter berdasarkan pencarian
+                        if ($search) {
+                            $query->where(function($q) use ($search) {
+                                $q->where('topic', 'like', "%{$search}%")
+                                  ->orWhere('unit', 'like', "%{$search}%")
+                                  ->orWhere('pic', 'like', "%{$search}%");
+                            });
+                        }
+
+                        // Filter berdasarkan unit (nama unit)
+                        if ($unit) {
+                            $query->where('unit', 'like', "%{$unit}%");
+                        }
+
+                        // Filter berdasarkan status
+                        if ($status) {
+                            $query->where('status', $status);
+                        }
+
+                        // Get discussions dengan commitments
+                        $discussions = $query->get()->map(function ($discussion) use ($connection) {
+                            // Convert to object for consistency
+                            $discussion = (object) $discussion;
+                            
+                            // Get commitments for each discussion
+                            $commitments = DB::connection($connection)
+                                ->table('commitments')
+                                ->where('other_discussion_id', $discussion->id)
+                                ->get();
+                                
+                            $discussion->commitments = $commitments;
+                            return $discussion;
+                        });
+
+                        $allDiscussions = $allDiscussions->concat($discussions);
+
+                    } catch (\Exception $e) {
+                        \Log::error("Error accessing {$connection}: " . $e->getMessage());
+                        continue;
+                    }
+                }
+            } else {
+                // Jika bukan admin, hanya ambil data dari database saat ini
+                $currentConnection = session('unit');
+                $unitName = $connections[$currentConnection] ?? 'Unknown Unit';
+
+                // Base query untuk database saat ini
+                $query = OtherDiscussion::query()
+                    ->with(['commitments' => function($q) {
+                        $q->with(['department', 'section']);
+                    }]);
+
+                // Filter berdasarkan pencarian
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('topic', 'like', "%{$search}%")
+                          ->orWhere('unit', 'like', "%{$search}%")
+                          ->orWhere('pic', 'like', "%{$search}%");
+                    });
+                }
+
+                // Filter berdasarkan unit
+                if ($unit) {
+                    $query->where('unit', 'like', "%{$unit}%");
+                }
+
+                // Filter berdasarkan status
+                if ($status) {
+                    $query->where('status', $status);
+                }
+
+                $allDiscussions = $query->get()->map(function ($discussion) use ($unitName) {
+                    $discussion->unit_name = $unitName;
+                    return $discussion;
+                });
+            }
+
+            // Paginate the merged collection
+            $perPage = 10;
+            $page = $request->input('page', 1);
+            $offset = ($page - 1) * $perPage;
+
+            // Sort discussions
+            $allDiscussions = $allDiscussions->sortByDesc('created_at');
+
+            // Split into different status collections
+            $activeDiscussions = $allDiscussions->where('status', 'Open')
+                ->map(function($discussion) {
+                    // Convert created_at to Carbon object if it's a string
+                    if (is_string($discussion->created_at)) {
+                        $discussion->created_at = Carbon::parse($discussion->created_at);
+                    }
+                    return $discussion;
+                })
+                ->slice($offset, $perPage)
+                ->values();
+
+            $targetOverdueDiscussions = $allDiscussions->where('status', 'Open')
+                ->filter(function($discussion) {
+                    return Carbon::parse($discussion->target_deadline)->isPast();
+                })
+                ->slice($offset, $perPage)
+                ->values();
+
+            $commitmentOverdueDiscussions = $allDiscussions
+                ->filter(function($discussion) {
+                    return collect($discussion->commitments)
+                        ->where('status', 'Open')
+                        ->filter(function($commitment) {
+                            return Carbon::parse($commitment->deadline)->isPast();
+                        })->isNotEmpty();
+                })
+                ->slice($offset, $perPage)
+                ->values();
+
+            $closedDiscussions = $allDiscussions->where('status', 'Closed')
+                ->map(function($discussion) {
+                    // Convert created_at to Carbon object if it's a string
+                    if (is_string($discussion->created_at)) {
+                        $discussion->created_at = Carbon::parse($discussion->created_at);
+                    }
+                    return $discussion;
+                })
+                ->slice($offset, $perPage)
+                ->values();
+
+            // Ambil data PowerPlant untuk dropdown filter
+            $powerPlants = PowerPlant::select('name', 'unit_source')
+                ->orderBy('name')
+                ->get();
+
+            return view('admin.other-discussions.index', [
+                'activeDiscussions' => new \Illuminate\Pagination\LengthAwarePaginator(
+                    $activeDiscussions,
+                    $allDiscussions->where('status', 'Open')->count(),
+                    $perPage,
+                    $page,
+                    ['path' => $request->url(), 'query' => $request->query()]
+                ),
+                'targetOverdueDiscussions' => new \Illuminate\Pagination\LengthAwarePaginator(
+                    $targetOverdueDiscussions,
+                    $allDiscussions->where('status', 'Open')->filter(function($d) {
+                        return Carbon::parse($d->target_deadline)->isPast();
+                    })->count(),
+                    $perPage,
+                    $page,
+                    ['path' => $request->url(), 'query' => $request->query()]
+                ),
+                'commitmentOverdueDiscussions' => new \Illuminate\Pagination\LengthAwarePaginator(
+                    $commitmentOverdueDiscussions,
+                    $allDiscussions->filter(function($d) {
+                        return collect($d->commitments)
+                            ->where('status', 'Open')
+                            ->filter(function($c) {
+                                return Carbon::parse($c->deadline)->isPast();
+                            })->isNotEmpty();
+                    })->count(),
+                    $perPage,
+                    $page,
+                    ['path' => $request->url(), 'query' => $request->query()]
+                ),
+                'closedDiscussions' => new \Illuminate\Pagination\LengthAwarePaginator(
+                    $closedDiscussions,
+                    $allDiscussions->where('status', 'Closed')->count(),
+                    $perPage,
+                    $page,
+                    ['path' => $request->url(), 'query' => $request->query()]
+                ),
+                'powerPlants' => $powerPlants,
+                'counts' => [
+                    'active' => $allDiscussions->where('status', 'Open')->count(),
+                    'target_overdue' => $allDiscussions->where('status', 'Open')
+                        ->filter(function($d) {
+                            return Carbon::parse($d->target_deadline)->isPast();
+                        })->count(),
+                    'commitment_overdue' => $allDiscussions
+                        ->filter(function($d) {
+                            return collect($d->commitments)
+                                ->where('status', 'Open')
+                                ->filter(function($c) {
+                                    return Carbon::parse($c->deadline)->isPast();
+                                })->isNotEmpty();
+                        })->count(),
+                    'closed' => $allDiscussions->where('status', 'Closed')->count()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in OtherDiscussionController@index: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat data.');
         }
-
-        // Filter berdasarkan unit (nama unit)
-        if ($unit) {
-            // Debug log untuk melihat nilai unit yang dipilih
-            \Log::info('Selected unit:', ['unit' => $unit]);
-            
-            $query->where('unit', 'like', "%{$unit}%");
-            
-            // Debug log untuk melihat SQL query yang dijalankan
-            \Log::info('SQL Query:', ['sql' => $query->toSql()]);
-        }
-
-        // Filter berdasarkan status
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        // Active Discussions
-        $activeDiscussions = (clone $query)
-            ->where('status', 'Open')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'active_page');
-
-        // Target Overdue
-        $targetOverdueDiscussions = (clone $query)
-            ->where('status', 'Open')
-            ->whereDate('target_deadline', '<', now())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'target_page');
-
-        // Commitment Overdue
-        $commitmentOverdueDiscussions = (clone $query)
-            ->whereHas('commitments', function ($query) {
-                $query->where('status', 'Open')
-                    ->whereDate('deadline', '<', now());
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'commitment_page');
-
-        // Closed Discussions
-        $closedDiscussions = (clone $query)
-            ->where('status', 'Closed')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'closed_page');
-
-        // Ambil data PowerPlant untuk dropdown filter
-        $powerPlants = PowerPlant::select('name', 'unit_source')
-            ->orderBy('name')
-            ->get();
-
-        // Debug log untuk melihat hasil query
-        \Log::info('Active Discussions Count:', ['count' => $activeDiscussions->count()]);
-        \Log::info('Target Overdue Count:', ['count' => $targetOverdueDiscussions->count()]);
-        \Log::info('Closed Discussions Count:', ['count' => $closedDiscussions->count()]);
-
-        return view('admin.other-discussions.index', [
-            'activeDiscussions' => $activeDiscussions,
-            'targetOverdueDiscussions' => $targetOverdueDiscussions,
-            'commitmentOverdueDiscussions' => $commitmentOverdueDiscussions,
-            'closedDiscussions' => $closedDiscussions,
-            'powerPlants' => $powerPlants,
-            'counts' => [
-                'active' => $activeDiscussions->total(),
-                'target_overdue' => $targetOverdueDiscussions->total(),
-                'commitment_overdue' => (clone $query)->whereHas('commitments', function ($query) {
-                    $query->where('status', 'Open')->whereDate('deadline', '<', now());
-                })->count(),
-                'closed' => $closedDiscussions->total()
-            ]
-        ]);
     }
 
     public function destroy($id)
@@ -1055,7 +1184,9 @@ class OtherDiscussionController extends Controller
             'jpg' => 'image/jpeg',
             'jpeg' => 'image/jpeg',
             'png' => 'image/png',
-            'gif' => 'image/gif'
+            'gif' => 'image/gif',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         ];
 
         return $mimes[strtolower($extension)] ?? 'application/octet-stream';

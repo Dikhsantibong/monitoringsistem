@@ -71,7 +71,7 @@
                                            name="documents[]" 
                                            id="documents" 
                                            class="hidden"
-                                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
                                            multiple>
                                     <div class="text-center" id="drop-zone-content">
                                         <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
@@ -88,7 +88,7 @@
                                         </div>
                                     </div>
                                     <p class="text-xs text-gray-500 mt-2">
-                                        Format yang diizinkan: PDF, Word (doc/docx), Gambar (jpg/jpeg/png). Maksimal 5MB per file
+                                        Format yang diizinkan: PDF, Word (doc/docx), Excel (xls/xlsx), Gambar (jpg/jpeg/png). Maksimal 5MB per file
                                     </p>
                                 </div>
                             </div>
@@ -717,7 +717,11 @@ document.getElementById('editDiscussionForm').addEventListener('submit', functio
     }
 
     // Validasi tipe file
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+    const allowedTypes = ['application/pdf', 'application/msword', 
+                          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                          'image/jpeg', 'image/png',
+                          'application/vnd.ms-excel',
+                          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
     for (const file of files) {
         if (!allowedTypes.includes(file.type)) {
             e.preventDefault();
@@ -739,7 +743,9 @@ function handleFiles(e) {
     const invalidFiles = files.filter(file => {
         const validTypes = ['application/pdf', 'application/msword', 
                           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                          'image/jpeg', 'image/png'];
+                          'image/jpeg', 'image/png',
+                          'application/vnd.ms-excel',
+                          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
         const maxSize = 5 * 1024 * 1024; // 5MB
         
         if (!validTypes.includes(file.type)) {
@@ -981,6 +987,8 @@ function getFileIconClass(fileType) {
         return 'fa-file-pdf text-red-500';
     } else if (fileType.includes('word') || fileType.includes('document')) {
         return 'fa-file-word text-blue-500';
+    } else if (fileType.includes('excel') || fileType.includes('spreadsheet')) {
+        return 'fa-file-excel text-green-600';
     }
     return 'fa-file text-blue-500';
 }

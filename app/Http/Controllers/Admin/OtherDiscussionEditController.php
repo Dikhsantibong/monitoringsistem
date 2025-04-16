@@ -123,7 +123,7 @@ class OtherDiscussionEditController extends Controller
         try {
             // Validasi file
             $request->validate([
-                'documents.*' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+                'documents.*' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120',
                 'document_descriptions.*' => 'required|string|max:255',
             ]);
 
