@@ -3210,11 +3210,29 @@ function switchView(view) {
             }
         });
     } else {
-        // Show all rows for disruption view
-        allRows.forEach(row => row.style.display = '');
         // Show disruption columns, hide issue columns
         issueColumns.forEach(col => col.style.display = 'none');
         disruptionColumns.forEach(col => col.style.display = '');
+        
+        // Filter rows to only show machines with non-operational status
+        allRows.forEach(row => {
+            const statusSpan = row.querySelector('td:nth-child(6) span');
+            if (!statusSpan) return;
+            
+            const statusText = statusSpan.textContent.trim();
+            // Remove emoji and extra spaces from status text
+            const cleanStatus = statusText.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
+            
+            // Define operational statuses that should be hidden
+            const operationalStatuses = ['Operasi', 'Standby', '⚡ Operasi', '🔆 Standby'];
+            
+            // Hide rows with operational status
+            if (operationalStatuses.includes(cleanStatus) || operationalStatuses.includes(statusText)) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = '';
+            }
+        });
     }
 }
 
@@ -3241,15 +3259,36 @@ function updateTableData() {
 }
 
 function updateDisruptionData(row, data) {
-    // Update cells for disruption view
-    // ... existing disruption data update code ...
+    if (data && data.length > 0) {
+        const issue = data[0];
+        const cells = row.querySelectorAll('td');
+        
+        // Update status if needed
+        const statusCell = cells[5];
+        const statusText = statusCell.querySelector('span').textContent.trim();
+        // Remove emoji and extra spaces from status text
+        const cleanStatus = statusText.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
+        
+        // Define operational statuses that should be hidden
+        const operationalStatuses = ['Operasi', 'Standby', '⚡ Operasi', '🔆 Standby'];
+        
+        // Only show and update rows with non-operational status
+        if (!operationalStatuses.includes(cleanStatus) && !operationalStatuses.includes(statusText)) {
+            cells[8].querySelector('div').textContent = issue.progres || 'N/A';
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    } else {
+        row.style.display = 'none';
+    }
 }
 
 function updateEngineIssueData(row, data) {
     // Update cells for engine issue view
     const cells = row.querySelectorAll('td');
     if (data && data.length > 0) {
-        const issue = data[0]; // Get the most recent issue
+        const issue = data[0];
         if (issue.component === 'Ada') {
             cells[6].innerHTML = `<span style="
                 background: #E0F2FE; 
