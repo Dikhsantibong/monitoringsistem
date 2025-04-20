@@ -289,7 +289,7 @@
                                                         <select name="system[{{ $machine->id }}]" 
                                                             style="width: 110px;"
                                                             class="system-select w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
-                                                            <option value="">Pilih Component</option>
+                                                            <option value="">Pilih issue</option>
                                                             <option value="Ada">Ada</option>
                                                             <option value="Tidak Ada">Tidak Ada</option>
                                                         </select>
