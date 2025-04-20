@@ -331,7 +331,8 @@ Route::post('/admin/laporan/wo-backlog/{id}/status', [LaporanController::class, 
 Route::delete('/admin/machine-monitor/{id}', [MachineMonitorController::class, 'destroy'])
     ->name('admin.machine-monitor.destroy');
 
-Route::get('/accumulation-data/{markerId}', [HomeController::class, 'getAccumulationData']);
+Route::get('/accumulation-data/{markerId}', [HomeController::class, 'getAccumulationData'])->name('getAccumulationData');
+Route::get('/get-engine-issues/{markerId}', [HomeController::class, 'getEngineIssues'])->name('getEngineIssues');
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {

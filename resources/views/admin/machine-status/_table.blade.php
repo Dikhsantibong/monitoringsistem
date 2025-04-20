@@ -221,7 +221,11 @@
                                             {{ $status }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->component ?? '-' }}</td>
+                                    <td class="px-3 py-2 border-r border-gray-200 text-center">
+                                        <span class="{{ $log?->component ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }} px-2 py-1 rounded-full text-xs font-medium">
+                                            {{ $log?->component ?? '-' }}
+                                        </span>
+                                    </td>
                                     <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="equipment" style="text-align: left !important;">
                                         <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
                                             <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-center" style="text-align: center !important; justify-content: flex-start !important;">

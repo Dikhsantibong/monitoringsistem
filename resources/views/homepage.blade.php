@@ -1630,6 +1630,18 @@
 
             <div class="w-full flex justify-center flex-col items-center mb-5">
                 <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4 w-4/5">
+                    <div class="flex justify-end mb-4 gap-2">
+                        <button onclick="switchView('disruption')" 
+                                id="disruptionBtn"
+                                class="view-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Data Gangguan
+                        </button>
+                        <button onclick="switchView('engine')" 
+                                id="engineBtn"
+                                class="view-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                            <i class="fas fa-cogs mr-2"></i>Issue Engine
+                        </button>
+                    </div>
                     <div class="overflow-auto">
                         <table class="table table-striped table-bordered min-w-full">
                             <thead>
@@ -1640,69 +1652,74 @@
                                     <th class="text-center">DMP</th>
                                     <th class="text-center">Beban</th>
                                     <th class="text-center">Status</th>
-                                    <th class="text-center">progres</th>
+                                    <!-- Kolom untuk Issue Engine View -->
+                                    <th class="text-center issue-column" style="display: none;">Issue Engine</th>
+                                    <th class="text-center issue-column" style="display: none;">Catatan Issue</th>
+                                    <!-- Kolom untuk Data Gangguan View -->
+                                    
+                                    <th class="text-center disruption-column">Progres</th>
                                     <th class="text-center">Waktu Update</th>
                                 </tr>
                             </thead>
-                            <tbody id="unit-table-body">
-                                @foreach($powerPlants as $plant)
-                                    @foreach($plant->machines as $machine)
+                            <tbody>
+                                @foreach ($powerPlants as $plant)
+                                    @foreach ($plant->machines as $machine)
                                         @php
-                                            // Ambil status log terbaru untuk mesin ini
-                                            $latestStatus = $machine->statusLogs()
-                                                ->latest('created_at')
-                                                ->first();
-                                            
-                                            // Skip jika tidak ada status
+                                            $latestStatus = $machine->statusLogs->first();
                                             if (!$latestStatus) continue;
-
-                                            // Definisikan status non-operasional
-                                            $nonOperationalStatuses = ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'];
                                             
-                                            // Skip jika status bukan non-operasional
-                                            if (!in_array($latestStatus->status, $nonOperationalStatuses)) continue;
-
-                                            // Set style berdasarkan status
                                             $statusStyle = match($latestStatus->status) {
+                                                'Operasi' => [
+                                                    'bg' => '#DCFCE7',
+                                                    'text' => '#166534',
+                                                    'border' => '#86EFAC',
+                                                    'icon' => '⚡'
+                                                ],
+                                                'Standby' => [
+                                                    'bg' => '#FEF9C3',
+                                                    'text' => '#854D0E',
+                                                    'border' => '#FDE047',
+                                                    'icon' => '🔆'
+                                                ],
                                                 'Gangguan' => [
                                                     'bg' => '#FEE2E2',
-                                                    'text' => '#DC2626',
-                                                    'border' => '#FCA5A5',
+                                                    'text' => '#991B1B',
+                                                    'border' => '#FECACA',
                                                     'icon' => '⚠️'
                                                 ],
                                                 'Pemeliharaan' => [
-                                                    'bg' => '#FEF3C7',
-                                                    'text' => '#D97706',
-                                                    'border' => '#FCD34D',
+                                                    'bg' => '#E0F2FE',
+                                                    'text' => '#075985',
+                                                    'border' => '#BAE6FD',
                                                     'icon' => '🔧'
                                                 ],
                                                 'Mothballed' => [
-                                                    'bg' => '#E0F2FE',
-                                                    'text' => '#0369A1',
-                                                    'border' => '#7DD3FC',
-                                                    'icon' => '🔒'
+                                                    'bg' => '#F3F4F6',
+                                                    'text' => '#374151',
+                                                    'border' => '#D1D5DB',
+                                                    'icon' => '💤'
                                                 ],
                                                 'Overhaul' => [
-                                                    'bg' => '#FFE4B5',
-                                                    'text' => '#FF8C00',
-                                                    'border' => '#FFB74D',
-                                                    'icon' => '🔧'
+                                                    'bg' => '#FFE4E6',
+                                                    'text' => '#9F1239',
+                                                    'border' => '#FDA4AF',
+                                                    'icon' => '🔨'
                                                 ],
                                                 default => [
                                                     'bg' => '#F3F4F6',
-                                                    'text' => '#6B7280',
+                                                    'text' => '#374151',
                                                     'border' => '#D1D5DB',
-                                                    'icon' => '❔'
+                                                    'icon' => '❓'
                                                 ]
                                             };
                                         @endphp
-                                        <tr class="table-row">
+                                        <tr class="table-row" data-plant-id="{{ $plant->id }}">
                                             <td class="text-center">{{ $plant->name }}</td>
                                             <td class="text-center">{{ $machine->name }}</td>
-                                            <td class="text-center">{{ number_format($latestStatus->dmp, 1) }}</td>
                                             <td class="text-center">{{ number_format($latestStatus->dmn, 1) }}</td>
+                                            <td class="text-center">{{ number_format($latestStatus->dmp, 1) }}</td>
                                             <td class="text-center">{{ number_format($latestStatus->load_value, 1) }} MW</td>
-                                            <td class="text-center">
+                                            <td class="text-center w-40">
                                                 <span style="
                                                     background: {{ $statusStyle['bg'] }}; 
                                                     color: {{ $statusStyle['text'] }}; 
@@ -1714,13 +1731,31 @@
                                                     {{ $statusStyle['icon'] }} {{ $latestStatus->status }}
                                                 </span>
                                             </td>
-                                            <td class="text-center text-sm text-gray-500">
-                                                <div class="max-w-[300px] mx-auto break-words">
+                                            <!-- Kolom untuk Issue Engine View -->
+                                            <td class="text-center w-40 issue-column" style="display: none;">
+                                                <span style="
+                                                    background: {{ $latestStatus->component ? '#E0F2FE' : '#F3F4F6' }}; 
+                                                    color: {{ $latestStatus->component ? '#0369A1' : '#6B7280' }};
+                                                    padding: 4px 12px;
+                                                    border-radius: 12px;
+                                                    font-size: 0.85em;
+                                                    border: 1px solid {{ $latestStatus->component ? '#7DD3FC' : '#D1D5DB' }};
+                                                ">
+                                                    {{ $latestStatus->component ?: 'N/A' }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center w-40 issue-column" style="display: none;">
+                                                {{ $latestStatus->equipment ?: 'N/A' }}
+                                            </td>
+                                            <!-- Kolom untuk Data Gangguan View -->
+                                            
+                                            <td class="text-center text-sm text-gray-500 disruption-column">
+                                                <div class="max-w-[400px] mx-auto break-words">
                                                     {{ $latestStatus->progres }}
                                                 </div>
                                             </td>
                                             <td class="text-center text-sm text-gray-500">
-                                                {{ $latestStatus->created_at->format('d/m/Y H:i:s') }}
+                                                {{ $latestStatus->created_at ? $latestStatus->created_at->format('d/m/Y H:i:s') : '-' }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -3126,4 +3161,111 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render semua chart
     Object.values(charts).forEach(chart => chart.render());
 });
+</script>
+
+<script>
+let currentView = 'disruption';
+let allRows = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Store all rows initially
+    allRows = Array.from(document.querySelectorAll('tr.table-row'));
+    switchView('disruption');
+});
+
+function switchView(view) {
+    currentView = view;
+    
+    // Update button styles
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-500', 'bg-gray-500', 'hover:bg-blue-600', 'hover:bg-gray-600');
+        btn.classList.add('bg-gray-500', 'hover:bg-gray-600');
+    });
+    
+    const activeBtn = document.getElementById(`${view}Btn`);
+    activeBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+    activeBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+    
+    // Toggle column visibility based on view
+    const issueColumns = document.querySelectorAll('.issue-column');
+    const disruptionColumns = document.querySelectorAll('.disruption-column');
+    
+    if (view === 'engine') {
+        // Show issue columns, hide disruption columns
+        issueColumns.forEach(col => col.style.display = '');
+        disruptionColumns.forEach(col => col.style.display = 'none');
+        
+        // Filter rows to only show machines with component "Ada"
+        allRows.forEach(row => {
+            const componentSpan = row.querySelector('td.issue-column span');
+            if (!componentSpan) return;
+            
+            const componentText = componentSpan.textContent.trim();
+            
+            // Only show rows where component is "Ada"
+            if (componentText === 'Ada') {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    } else {
+        // Show all rows for disruption view
+        allRows.forEach(row => row.style.display = '');
+        // Show disruption columns, hide issue columns
+        issueColumns.forEach(col => col.style.display = 'none');
+        disruptionColumns.forEach(col => col.style.display = '');
+    }
+}
+
+function updateTableData() {
+    const url = currentView === 'disruption' 
+        ? '{{ route("getAccumulationData", ["markerId" => ":id"]) }}'
+        : '{{ route("getEngineIssues", ["markerId" => ":id"]) }}';
+        
+    // Update data for each power plant
+    document.querySelectorAll('[data-plant-id]').forEach(row => {
+        const plantId = row.getAttribute('data-plant-id');
+        fetch(url.replace(':id', plantId))
+            .then(response => response.json())
+            .then(data => {
+                // Update table cells based on the view type
+                if (currentView === 'disruption') {
+                    updateDisruptionData(row, data);
+                } else {
+                    updateEngineIssueData(row, data);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+}
+
+function updateDisruptionData(row, data) {
+    // Update cells for disruption view
+    // ... existing disruption data update code ...
+}
+
+function updateEngineIssueData(row, data) {
+    // Update cells for engine issue view
+    const cells = row.querySelectorAll('td');
+    if (data && data.length > 0) {
+        const issue = data[0]; // Get the most recent issue
+        if (issue.component === 'Ada') {
+            cells[6].innerHTML = `<span style="
+                background: #E0F2FE; 
+                color: #0369A1;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 0.85em;
+                border: 1px solid #7DD3FC;
+            ">Ada</span>`;
+            cells[7].textContent = issue.equipment || 'N/A';
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    } else {
+        row.style.display = 'none';
+    }
+}
 </script>

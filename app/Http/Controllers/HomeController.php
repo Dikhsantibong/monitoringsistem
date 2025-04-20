@@ -11,6 +11,7 @@ use App\Models\MachineOperation;
 use App\Models\MachineStatusLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -675,6 +676,60 @@ class HomeController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             throw $e;
+        }
+    }
+
+    public function getEngineIssues($markerId)
+    {
+        try {
+            // Get the power plant
+            $powerPlant = PowerPlant::find($markerId);
+            
+            if (!$powerPlant) {
+                return response()->json([
+                    'message' => 'Power Plant tidak ditemukan',
+                    'status' => 'error'
+                ], 404);
+            }
+
+            // Get all machines from the power plant
+            $machineIds = $powerPlant->machines()->pluck('id')->toArray();
+
+            // Get the latest status logs with component and equipment issues
+            $engineIssues = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+                ->whereIn('machine_id', $machineIds)
+                ->whereNotNull('component')
+                ->whereNotNull('equipment')
+                ->orderBy('tanggal', 'desc')
+                ->get()
+                ->map(function ($log) {
+                    return [
+                        'id' => $log->id,
+                        'tanggal' => $log->tanggal,
+                        'machine_name' => $log->machine->name,
+                        'power_plant_name' => $log->machine->powerPlant->name,
+                        'component' => $log->component,
+                        'equipment' => $log->equipment,
+                        'progres' => $log->progres,
+                        'status' => $log->status
+                    ];
+                });
+
+            if ($engineIssues->isEmpty()) {
+                return response()->json([
+                    'message' => 'Tidak ada issue engine untuk pembangkit ini',
+                    'status' => 'empty'
+                ]);
+            }
+
+            return response()->json($engineIssues);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in getEngineIssues: ' . $e->getMessage());
+            return response()->json([
+                'error' => $e->getMessage(),
+                'status' => 'error'
+            ], 500);
         }
     }
 }
