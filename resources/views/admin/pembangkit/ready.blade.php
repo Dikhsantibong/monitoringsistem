@@ -218,10 +218,10 @@
                                                     Status
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Comp
+                                                    Issue Engine
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Equipment
+                                                    Catatan Issue
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Deskripsi
@@ -289,17 +289,15 @@
                                                         <select name="system[{{ $machine->id }}]" 
                                                             style="width: 110px;"
                                                             class="system-select w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
-                                                            <option value="">Pilih System</option>
-                                                            <option value="MESIN">MESIN</option>
-                                                            <option value="GENERATOR">GENERATOR</option>
-                                                            <option value="PANEL_SINKRON">PANEL SINKRON</option>
-                                                            <option value="KUBIKAL">KUBIKAL</option>
-                                                            <option value="AUXILIARY">AUXILIARY</option>
+                                                            <option value="">Pilih Component</option>
+                                                            <option value="Ada">Ada</option>
+                                                            <option value="Tidak Ada">Tidak Ada</option>
                                                         </select>
                                                     </td>
                                                     <td class="px-3 py-2 border-r border-gray-200">
                                                         <textarea name="equipment[{{ $machine->id }}]" 
                                                         style="width: 200px; height: 100px;"
+                                                        placeholder="Masukkan catatan issue..."
                                                         class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
                                                         oninput="autoResize(this)"></textarea>
                                                     </td>
@@ -934,33 +932,21 @@
                         statusSelect.style.backgroundColor = getStatusColor(log.status);
                         statusSelect.style.color = ['Operasi', 'Standby'].includes(log.status) ? 'black' : 'white';
                         console.log('Status updated:', log.status);
+                    }
 
-                        // Tambahkan event listener untuk status
-                        statusSelect.addEventListener('change', function() {
-                            const status = this.value;
-                            const dmnInput = row.querySelector('td:nth-child(4) input');
-                            const loadInput = row.querySelector(`input[name="load_value[${log.machine_id}]"]`);
+                    // Update Component (regardless of status)
+                    const componentSelect = row.querySelector(`select[name="system[${log.machine_id}]"]`);
+                    if (componentSelect) {
+                        componentSelect.value = log.component || '';
+                        console.log('Component updated:', log.component);
+                    }
 
-                            if (['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'].includes(status)) {
-                                // Set DMN dan load_value ke 0 untuk status non-operasional
-                                if (dmnInput) {
-                                    dmnInput.value = '0';
-                                    dmnInput.readOnly = true;
-                                }
-                                if (loadInput) {
-                                    loadInput.value = '0';
-                                    loadInput.readOnly = true;
-                                }
-                            } else {
-                                // Biarkan DMN dan load_value bisa diisi untuk status Operasi dan Standby
-                                if (dmnInput) {
-                                    dmnInput.readOnly = false;
-                                }
-                                if (loadInput) {
-                                    loadInput.readOnly = false;
-                                }
-                            }
-                        });
+                    // Update Equipment (regardless of status)
+                    const equipmentTextarea = row.querySelector(`textarea[name="equipment[${log.machine_id}]"]`);
+                    if (equipmentTextarea) {
+                        equipmentTextarea.value = log.equipment || '';
+                        autoResize(equipmentTextarea);
+                        console.log('Equipment updated:', log.equipment);
                     }
 
                     // Update Load Value dengan mempertimbangkan status
@@ -975,33 +961,36 @@
                         }
                     }
 
-                    // Update Tanggal
-                    const tanggalMulaiInput = row.querySelector(`input[name="tanggal_mulai[${log.machine_id}]"]`);
-                    if (tanggalMulaiInput && log.tanggal_mulai) {
-                        tanggalMulaiInput.value = log.tanggal_mulai;
-                        console.log('Tanggal Mulai updated:', log.tanggal_mulai);
-                    }
+                    // Update fields yang hanya diisi untuk status selain Operasi dan Standby
+                    if (!['Operasi', 'Standby'].includes(log.status)) {
+                        // Update Tanggal
+                        const tanggalMulaiInput = row.querySelector(`input[name="tanggal_mulai[${log.machine_id}]"]`);
+                        if (tanggalMulaiInput && log.tanggal_mulai) {
+                            tanggalMulaiInput.value = log.tanggal_mulai;
+                            console.log('Tanggal Mulai updated:', log.tanggal_mulai);
+                        }
 
-                    const targetSelesaiInput = row.querySelector(`input[name="target_selesai[${log.machine_id}]"]`);
-                    if (targetSelesaiInput && log.target_selesai) {
-                        targetSelesaiInput.value = log.target_selesai;
-                        console.log('Target Selesai updated:', log.target_selesai);
-                    }
+                        const targetSelesaiInput = row.querySelector(`input[name="target_selesai[${log.machine_id}]"]`);
+                        if (targetSelesaiInput && log.target_selesai) {
+                            targetSelesaiInput.value = log.target_selesai;
+                            console.log('Target Selesai updated:', log.target_selesai);
+                        }
 
-                    // Update textarea fields
-                    const textareaFields = {
-                        'deskripsi': log.deskripsi,
-                        'kronologi': log.kronologi,
-                        'action_plan': log.action_plan,
-                        'progres': log.progres
-                    };
+                        // Update textarea fields
+                        const textareaFields = {
+                            'deskripsi': log.deskripsi,
+                            'kronologi': log.kronologi,
+                            'action_plan': log.action_plan,
+                            'progres': log.progres
+                        };
 
-                    for (const [field, value] of Object.entries(textareaFields)) {
-                        const textarea = row.querySelector(`textarea[name="${field}[${log.machine_id}]"]`);
-                        if (textarea) {
-                            textarea.value = value || '';
-                            autoResize(textarea);
-                            console.log(`${field} updated:`, value);
+                        for (const [field, value] of Object.entries(textareaFields)) {
+                            const textarea = row.querySelector(`textarea[name="${field}[${log.machine_id}]"]`);
+                            if (textarea) {
+                                textarea.value = value || '';
+                                autoResize(textarea);
+                                console.log(`${field} updated:`, value);
+                            }
                         }
                     }
                 }
@@ -1109,84 +1098,53 @@
     });
 </script>
 <script>
-const componentOptions = {
-    MESIN: [
-        'Cylinder Head',
-        'Blok Mesin'
-    ],
-    GENERATOR: [
-        'Stator',
-        'Generator',
-        'Bearing',
-        'Exciter'
-    ],
-    PANEL_SINKRON: [
-        'MCB',
-        'Relay',
-        'Kontaktor',
-        'Fuse'
-    ],
-    KUBIKAL: [
-        'MCB',
-        'CT',
-        'PT',
-        'Busbar',
-        'Relay'
-    ],
-    AUXILIARY: [
-        'AVR',
-        'PCC'
-    ]
-};
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up CSRF token for all AJAX requests
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
 
-function updateComponentOptions(systemSelect) {
-    const componentSelect = systemSelect.closest('tr').querySelector('.component-select');
-    const selectedSystem = systemSelect.value;
-    
-    componentSelect.innerHTML = '<option value="">Pilih Component</option>';
-    componentSelect.disabled = !selectedSystem;
-    
-    if (selectedSystem) {
-        componentOptions[selectedSystem].forEach(component => {
-            const option = document.createElement('option');
-            option.value = component;
-            option.textContent = component;
-            componentSelect.appendChild(option);
-        });
-    }
-}
+    // Event delegation for status changes
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('select[name^="status"]')) {
+            const row = e.target.closest('tr');
+            const machineId = row.getAttribute('data-machine-id');
+            const dmnInput = row.querySelector('td:nth-child(4) input');
+            const loadValueInput = row.querySelector('input[name^="load_value"]');
+            const selectedStatus = e.target.value;
 
-function addNewRow() {
-    const tbody = document.getElementById('systemTableBody');
-    const newRow = tbody.querySelector('.system-row').cloneNode(true);
-    
-    // Reset nilai-nilai pada baris baru
-    newRow.querySelector('.system-select').value = '';
-    newRow.querySelector('.component-select').value = '';
-    newRow.querySelector('.component-select').disabled = true;
-    newRow.querySelector('input[type="date"]').value = '';
-    
-    tbody.appendChild(newRow);
-}
+            console.log('Status changed:', selectedStatus);
+            console.log('Machine ID:', machineId);
+            console.log('DMN Input:', dmnInput);
 
-function deleteRow(button) {
-    const tbody = document.getElementById('systemTableBody');
-    if (tbody.children.length > 1) {
-        button.closest('tr').remove();
-    } else {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan',
-            text: 'Minimal harus ada satu baris!'
-        });
-    }
-}
+            if (selectedStatus === 'Standby' || selectedStatus === 'Operasi') {
+                // Store previous value
+                const previousValue = dmnInput.value;
+                dmnInput.dataset.previousValue = previousValue;
 
-// Event delegation untuk system-select
-document.getElementById('systemTableBody').addEventListener('change', function(e) {
-    if (e.target.classList.contains('system-select')) {
-        updateComponentOptions(e.target);
-    }
+                // Make the request using jQuery AJAX
+                $.ajax({
+                    url: `/admin/pembangkit/get-last-dmn/${machineId}`,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            dmnInput.value = data.dmn;
+                        } else {
+                            dmnInput.value = dmnInput.dataset.previousValue;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        dmnInput.value = dmnInput.dataset.previousValue;
+                    }
+                });
+            }
+        }
+    });
 });
 </script>
 

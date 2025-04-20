@@ -182,8 +182,8 @@
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Beban (MW)</th>
                                 
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Status</th>
-                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Component</th>
-                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Equipment</th>
+                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Issue Engine</th>
+                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Catatan Issue</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Deskripsi</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Kronologi</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Action Plan</th>
@@ -221,10 +221,10 @@
                                             {{ $status }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2 border-r border-gray-200">{{ $log?->component ?? '-' }}</td>
+                                    <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->component ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="equipment" style="text-align: left !important;">
                                         <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
-                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-center" style="text-align: center !important; justify-content: flex-start !important;">
                                                 <span style="text-align: left !important; display: block;">{{ $log?->equipment ?? '-' }}</span>
                                             </div>
                                         </div>

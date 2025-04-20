@@ -175,15 +175,15 @@ class PembangkitController extends Controller
                             }
                         })->first();
 
-                    // Kosongkan field tertentu jika status adalah Standby
+                    // Kosongkan field tertentu jika status adalah Standby atau Operasi
                     if (in_array($log['status'], ['Standby', 'Operasi'])) {
                         $updateData = [
                             'dmn' => $dmn,
                             'dmp' => $dmp,
                             'load_value' => $loadValue,
                             'status' => $log['status'],
-                            'component' => null,
-                            'equipment' => null,
+                            'component' => $log['component'],
+                            'equipment' => $equipment,
                             'deskripsi' => null,
                             'kronologi' => null,
                             'action_plan' => null,
