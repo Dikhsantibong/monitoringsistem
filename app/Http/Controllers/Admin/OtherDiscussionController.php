@@ -1109,8 +1109,88 @@ class OtherDiscussionController extends Controller
 
     public function printSingle($id)
     {
-        $discussion = OtherDiscussion::with('commitments')->findOrFail($id);
-        return view('admin.other-discussions.print-single', compact('discussion'));
+        try {
+            // Daftar koneksi database dengan nama unit yang sesuai
+            $connections = [
+                'mysql' => 'UP Kendari',
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka',
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua'
+            ];
+
+            $discussion = null;
+
+            // Jika user adalah admin, cek di semua database
+            if (session('unit') === 'mysql') {
+                foreach ($connections as $connection => $unitName) {
+                    try {
+                        // Coba cari diskusi di database ini
+                        $discussion = DB::connection($connection)
+                            ->table('other_discussions')
+                            ->where('id', $id)
+                            ->first();
+
+                        if ($discussion) {
+                            // Convert to object and add unit info
+                            $discussion = (object) $discussion;
+                            $discussion->unit_source = $connection;
+                            $discussion->unit_name = $unitName;
+
+                            // Get commitments for this discussion
+                            $commitments = DB::connection($connection)
+                                ->table('commitments')
+                                ->where('other_discussion_id', $discussion->id)
+                                ->get();
+
+                            $discussion->commitments = $commitments;
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Error accessing {$connection} in printSingle: " . $e->getMessage());
+                        continue;
+                    }
+                }
+            } else {
+                // Jika bukan admin, hanya cek di database saat ini
+                $currentConnection = session('unit');
+                $unitName = $connections[$currentConnection] ?? 'Unknown Unit';
+
+                $discussion = DB::connection($currentConnection)
+                    ->table('other_discussions')
+                    ->where('id', $id)
+                    ->first();
+
+                if ($discussion) {
+                    $discussion = (object) $discussion;
+                    $discussion->unit_source = $currentConnection;
+                    $discussion->unit_name = $unitName;
+
+                    // Get commitments
+                    $commitments = DB::connection($currentConnection)
+                        ->table('commitments')
+                        ->where('other_discussion_id', $discussion->id)
+                        ->get();
+
+                    $discussion->commitments = $commitments;
+                }
+            }
+
+            if (!$discussion) {
+                throw new ModelNotFoundException('Discussion not found');
+            }
+
+            return view('admin.other-discussions.print-single', compact('discussion'));
+
+        } catch (ModelNotFoundException $e) {
+            return back()->with('error', 'Data tidak ditemukan');
+        } catch (\Exception $e) {
+            \Log::error('Error in printSingle method:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat mencetak data');
+        }
     }
 
     public function exportSingle($id, $format)
