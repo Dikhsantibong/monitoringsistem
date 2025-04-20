@@ -43,6 +43,11 @@ class OtherDiscussionController extends Controller
             // Jika user adalah admin (mysql), ambil data dari semua database
             if (session('unit') === 'mysql') {
                 foreach ($connections as $connection => $unitName) {
+                    // Skip if unit filter is set and doesn't match current connection
+                    if ($unit && $unit !== $connection) {
+                        continue;
+                    }
+
                     try {
                         // Base query untuk setiap koneksi
                         $query = DB::connection($connection)
@@ -58,11 +63,6 @@ class OtherDiscussionController extends Controller
                                   ->orWhere('unit', 'like', "%{$search}%")
                                   ->orWhere('pic', 'like', "%{$search}%");
                             });
-                        }
-
-                        // Filter berdasarkan unit (nama unit)
-                        if ($unit) {
-                            $query->where('unit', 'like', "%{$unit}%");
                         }
 
                         // Filter berdasarkan status
