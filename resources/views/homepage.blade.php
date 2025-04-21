@@ -3407,15 +3407,18 @@ function updateEngineIssueData(row, data) {
 // ... existing code ...
 
 function createDiscussion(plant, machine, equipment) {
+    const baseUrl = window.location.href.includes('/public/') ? '/public' : '';
     const issueDescription = `Issue pada ${machine}: ${equipment}`;
     const defaultCommitment = `Penyelesaian issue ${equipment} pada ${machine}`;
     
-    window.location.href = `/admin/other-discussions/create?` + new URLSearchParams({
+    const params = new URLSearchParams({
         unit: 'UP KENDARI',
         topic: issueDescription,
         default_commitment: defaultCommitment,
         machine_name: machine
-    }).toString();
+    });
+
+    window.location.href = `${baseUrl}/admin/other-discussions/create?${params.toString()}`;
 }
 
 // ... existing code ...
