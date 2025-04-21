@@ -356,7 +356,7 @@ class OtherDiscussionController extends Controller
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
         try {
             $units = PowerPlant::pluck('name')->toArray();
@@ -392,9 +392,29 @@ class OtherDiscussionController extends Controller
                     ['id' => 17, 'name' => 'UNIT LAYANAN PUSAT LISTRIK TENAGA DIESEL WUA-WUA']
                 ]
             ];
+
+            // Get parameters from issue engine if they exist
+            $defaultUnit = $request->query('unit');
+            $defaultMachine = $request->query('machine');
+            $defaultIssue = $request->query('issue');
+
+            // Create topic from machine and issue if they exist
+            $defaultTopic = null;
+            if ($defaultMachine && $defaultIssue) {
+                $defaultTopic = "Issue pada {$defaultMachine}: {$defaultIssue}";
+            }
             
-            return view('admin.other-discussions.create', compact('units', 'sections'));
+            return view('admin.other-discussions.create', compact(
+                'units', 
+                'sections',
+                'defaultUnit',
+                'defaultTopic'
+            ));
         } catch (\Exception $e) {
+            \Log::error('Error in create method:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'Terjadi kesalahan saat memuat halaman');
         }
     }

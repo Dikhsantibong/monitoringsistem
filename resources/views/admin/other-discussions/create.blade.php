@@ -98,12 +98,13 @@
                                     id="unit" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                     required>
-                                <option value="">Pilih Unit</option>
                                 @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
                                     @php
-                                        $shortName = Str::limit($powerPlant->name, 50, '');  // Memotong nama unit jika terlalu panjang
+                                        $shortName = Str::limit($powerPlant->name, 50, '');
                                     @endphp
-                                    <option value="{{ $shortName }}" {{ old('unit') == $shortName ? 'selected' : '' }}
+                                    <option value="{{ $shortName }}" 
+                                            {{ $shortName == 'UP KENDARI' ? 'selected' : '' }}
+                                            {{ $shortName != 'UP KENDARI' ? 'disabled' : '' }}
                                             class="bg-white">
                                         {{ $powerPlant->name }}
                                     </option>
@@ -123,7 +124,7 @@
                                    name="topic" 
                                    id="topic" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('topic') }}"
+                                   value="{{ old('topic', request('topic')) }}"
                                    required>
                             @error('topic')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -255,7 +256,7 @@
                                                         class="status-select text-sm px-3 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                         onchange="updateStatusStyle(this)"
                                                         required>
-                                                    <option value="Open">Open</option>
+                                                    <option value="Open" selected>Open</option>
                                                     <option value="Closed">Closed</option>
                                                 </select>
                                             </div>
@@ -266,6 +267,7 @@
                                                 <input type="date" 
                                                        name="commitment_deadlines[]" 
                                                        class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                       value="{{ date('Y-m-d', strtotime('+7 days')) }}"
                                                        required>
                                             </div>
                                         </div>
@@ -276,7 +278,7 @@
                                                       class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
                                                       placeholder="Masukkan komitmen"
-                                                      required></textarea>
+                                                      required>{{ old('commitments.0', request('default_commitment')) }}</textarea>
                                         </div>
                                     </div>
                                     <div class="md:col-span-4">
@@ -933,4 +935,22 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @push('scripts')
 @endpush
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default values from URL parameters if available
+    const urlParams = new URLSearchParams(window.location.search);
+    const topic = urlParams.get('topic');
+    const defaultCommitment = urlParams.get('default_commitment');
+    
+    if (topic) {
+        document.getElementById('topic').value = topic;
+    }
+    
+    const firstCommitmentTextarea = document.querySelector('textarea[name="commitments[]"]');
+    if (firstCommitmentTextarea && defaultCommitment) {
+        firstCommitmentTextarea.value = defaultCommitment;
+    }
+});
+</script>
 @endsection     
