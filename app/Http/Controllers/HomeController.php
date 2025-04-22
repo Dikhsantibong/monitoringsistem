@@ -20,7 +20,8 @@ class HomeController extends Controller
         try {
             // Ambil data power plants dengan eager loading yang tepat
             $powerPlants = PowerPlant::with(['machines.statusLogs' => function($query) {
-                $query->latest('created_at')
+                $query->whereNotIn('status', ['Operasi', 'Standby'])
+                      ->latest('created_at')
                       ->take(1);
             }])->get();
             
@@ -29,6 +30,7 @@ class HomeController extends Controller
                 ->whereIn('id', function($query) {
                     $query->selectRaw('MAX(id)')
                         ->from('machine_status_logs')
+                        ->whereNotIn('status', ['Operasi', 'Standby'])
                         ->groupBy('machine_id');
                 })
                 ->orderBy('tanggal', 'desc')
