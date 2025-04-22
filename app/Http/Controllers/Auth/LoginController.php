@@ -27,8 +27,16 @@ class LoginController extends Controller
 
         // Attempt login
         if (Auth::attempt($request->only('email', 'password'))) {
+            // Cek jika ada intended URL dari middleware auth
+            if ($request->has('redirect_to')) {
+                return redirect($request->redirect_to);
+            }
+            
             if (Auth::user()->role == 'admin' || Auth::user()->role == 'super_admin') {
-                return redirect()->route('admin.dashboard');
+                // Return response dengan script untuk mengecek session storage
+                return response()->view('auth.check-redirect', [
+                    'defaultRedirect' => route('admin.dashboard')
+                ]);
             } else {
                 return redirect()->route('user.dashboard');
             }

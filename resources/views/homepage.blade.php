@@ -1668,7 +1668,7 @@
                                         @php
                                             $latestStatus = $machine->statusLogs->first();
                                             if (!$latestStatus) continue;
-                                            
+
                                             $statusStyle = match($latestStatus->status) {
                                                 'Operasi' => [
                                                     'bg' => '#DCFCE7',
@@ -3411,15 +3411,57 @@ function createDiscussion(plant, machine, equipment) {
     const issueDescription = `Issue pada ${machine}: ${equipment}`;
     const defaultCommitment = `Penyelesaian issue ${equipment} pada ${machine}`;
     
-    const params = new URLSearchParams({
+    const discussionParams = {
         unit: 'UP KENDARI',
         topic: issueDescription,
         default_commitment: defaultCommitment,
         machine_name: machine
-    });
+    };
 
-    window.location.href = `${baseUrl}/admin/other-discussions/create?${params.toString()}`;
+    @auth   
+        // Jika sudah login, langsung ke halaman create
+        window.location.href = `${baseUrl}/admin/other-discussions/create?${new URLSearchParams(discussionParams).toString()}`;
+    @else
+        // Jika belum login, simpan parameter ke session storage
+        sessionStorage.setItem('pendingDiscussion', JSON.stringify({
+            params: discussionParams,
+            returnUrl: `${baseUrl}/admin/other-discussions/create`
+        }));
+        
+        // Tampilkan pesan dan arahkan ke halaman login
+        Swal.fire({
+            title: 'Login Diperlukan',
+            text: 'Anda harus login terlebih dahulu untuk membuat pembahasan',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Login',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `${baseUrl}/login`;
+            }
+        });
+    @endauth
 }
+
+// Cek pendingDiscussion setelah login
+document.addEventListener('DOMContentLoaded', function() {
+    @auth
+        const pendingDiscussion = sessionStorage.getItem('pendingDiscussion');
+        if (pendingDiscussion) {
+            const data = JSON.parse(pendingDiscussion);
+            const baseUrl = window.location.href.includes('/public/') ? '/public' : '';
+            
+            // Redirect ke halaman create dengan parameter yang tersimpan
+            window.location.href = `${data.returnUrl}?${new URLSearchParams(data.params).toString()}`;
+            
+            // Hapus data dari session storage
+            sessionStorage.removeItem('pendingDiscussion');
+        }
+    @endauth
+});
 
 // ... existing code ...
 </script>
