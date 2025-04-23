@@ -3420,7 +3420,7 @@ function createDiscussion(plant, machine, equipment) {
 
     @auth   
         // Jika sudah login, langsung ke halaman create
-        window.location.href = `${baseUrl}/admin/other-discussions/create?${new URLSearchParams(discussionParams).toString()}`;
+        window.location.href = `${baseUrl}/public/admin/other-discussions/create?${new URLSearchParams(discussionParams).toString()}`;
     @else
         // Jika belum login, simpan parameter ke session storage
         sessionStorage.setItem('pendingDiscussion', JSON.stringify({
@@ -3440,7 +3440,7 @@ function createDiscussion(plant, machine, equipment) {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `${baseUrl}/login`;
+                window.location.href = `${baseUrl}/public/login`;
             }
         });
     @endauth
