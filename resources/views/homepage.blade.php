@@ -3425,7 +3425,7 @@ function createDiscussion(plant, machine, equipment) {
         // Jika belum login, simpan parameter ke session storage
         sessionStorage.setItem('pendingDiscussion', JSON.stringify({
             params: discussionParams,
-            returnUrl: '/admin/other-discussions/create'
+            returnUrl: '/public/admin/other-discussions/create'
         }));
         
         // Tampilkan pesan dan arahkan ke halaman login
