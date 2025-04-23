@@ -3407,7 +3407,7 @@ function updateEngineIssueData(row, data) {
 // ... existing code ...
 
 function createDiscussion(plant, machine, equipment) {
-    const baseUrl = window.location.href.includes('/public/') ? '/public' : '';
+    const baseUrl = window.location.origin + '/public';
     const issueDescription = `Issue pada ${machine}: ${equipment}`;
     const defaultCommitment = `Penyelesaian issue ${equipment} pada ${machine}`;
     
@@ -3425,7 +3425,7 @@ function createDiscussion(plant, machine, equipment) {
         // Jika belum login, simpan parameter ke session storage
         sessionStorage.setItem('pendingDiscussion', JSON.stringify({
             params: discussionParams,
-            returnUrl: `${baseUrl}/admin/other-discussions/create`
+            returnUrl: '/admin/other-discussions/create'
         }));
         
         // Tampilkan pesan dan arahkan ke halaman login
@@ -3452,10 +3452,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const pendingDiscussion = sessionStorage.getItem('pendingDiscussion');
         if (pendingDiscussion) {
             const data = JSON.parse(pendingDiscussion);
-            const baseUrl = window.location.href.includes('/public/') ? '/public' : '';
+            const baseUrl = window.location.origin + '/public';
             
             // Redirect ke halaman create dengan parameter yang tersimpan
-            window.location.href = `${data.returnUrl}?${new URLSearchParams(data.params).toString()}`;
+            window.location.href = `${baseUrl}${data.returnUrl}?${new URLSearchParams(data.params).toString()}`;
             
             // Hapus data dari session storage
             sessionStorage.removeItem('pendingDiscussion');
