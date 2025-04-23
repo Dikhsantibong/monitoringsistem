@@ -3407,7 +3407,7 @@ function updateEngineIssueData(row, data) {
 // ... existing code ...
 
 function createDiscussion(plant, machine, equipment) {
-    const baseUrl = window.location.origin;
+    const baseUrl = window.location.href.includes('/public/'): '';
     const issueDescription = `Issue pada ${machine}: ${equipment}`;
     const defaultCommitment = `Penyelesaian issue ${equipment} pada ${machine}`;
     
@@ -3420,12 +3420,12 @@ function createDiscussion(plant, machine, equipment) {
 
     @auth   
         // Jika sudah login, langsung ke halaman create
-        window.location.href = `${baseUrl}/public/admin/other-discussions/create?${new URLSearchParams(discussionParams).toString()}`;
+        window.location.href = `${baseUrl}/admin/other-discussions/create?${new URLSearchParams(discussionParams).toString()}`;
     @else
         // Jika belum login, simpan parameter ke session storage
         sessionStorage.setItem('pendingDiscussion', JSON.stringify({
             params: discussionParams,
-            returnUrl: '/public/admin/other-discussions/create'
+            returnUrl: `${baseUrl}/admin/other-discussions/create`
         }));
         
         // Tampilkan pesan dan arahkan ke halaman login
@@ -3440,7 +3440,7 @@ function createDiscussion(plant, machine, equipment) {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `${baseUrl}/public/login`;
+                window.location.href = `${baseUrl}/login`;
             }
         });
     @endauth
@@ -3452,10 +3452,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const pendingDiscussion = sessionStorage.getItem('pendingDiscussion');
         if (pendingDiscussion) {
             const data = JSON.parse(pendingDiscussion);
-            const baseUrl = window.location.origin;
+            const baseUrl = window.location.href.includes('/public/') ? '/public' : '';
             
             // Redirect ke halaman create dengan parameter yang tersimpan
-            window.location.href = `${baseUrl}${data.returnUrl}?${new URLSearchParams(data.params).toString()}`;
+            window.location.href = `${data.returnUrl}?${new URLSearchParams(data.params).toString()}`;
             
             // Hapus data dari session storage
             sessionStorage.removeItem('pendingDiscussion');
