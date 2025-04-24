@@ -1882,7 +1882,7 @@
                         <h4>Kontak/Contact</h4>
                         <p>Jl. Chairil Anwar No. 01, Kendari, Sulawesi tenggara, Indonesia</p>
                         <p>Email: info@plnnusantarapower.co.id</p>
-                        <p>Telepon: +62 31 8283180</p>
+                        <p>Telepon: +62 82293118410</p>
                     </div>
                     {{-- <div class="column">
                         <h4>Strategic Office</h4>
