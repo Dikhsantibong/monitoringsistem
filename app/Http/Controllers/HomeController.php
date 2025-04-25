@@ -683,10 +683,13 @@ class HomeController extends Controller
     public function getEngineIssues($markerId)
     {
         try {
+            Log::info('Starting getEngineIssues', ['markerId' => $markerId]);
+            
             // Get the power plant
             $powerPlant = PowerPlant::find($markerId);
             
             if (!$powerPlant) {
+                Log::warning('Power Plant not found', ['markerId' => $markerId]);
                 return response()->json([
                     'message' => 'Power Plant tidak ditemukan',
                     'status' => 'error'
@@ -696,19 +699,20 @@ class HomeController extends Controller
             // Get all machines from the power plant
             $machineIds = $powerPlant->machines()->pluck('id')->toArray();
 
-            // Get the latest status for each machine that has issues
-            $engineIssues = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+            // First get the latest status for each machine
+            $latestStatuses = MachineStatusLog::select('machine_id', DB::raw('MAX(id) as latest_id'))
                 ->whereIn('machine_id', $machineIds)
-                ->whereIn('id', function($query) use ($machineIds) {
-                    $query->select(\DB::raw('MAX(id)'))
-                        ->from('machine_status_logs')
-                        ->whereIn('machine_id', $machineIds)
-                        ->groupBy('machine_id');
+                ->groupBy('machine_id');
+
+            // Then get the full details of machines that are currently having issues
+            $engineIssues = MachineStatusLog::with(['machine', 'machine.powerPlant'])
+                ->joinSub($latestStatuses, 'latest_statuses', function($join) {
+                    $join->on('machine_status_logs.id', '=', 'latest_statuses.latest_id');
                 })
                 ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
                 ->whereNotNull('component')
                 ->whereNotNull('equipment')
-                ->orderBy('tanggal', 'desc')
+                ->orderBy('machine_status_logs.tanggal', 'desc')
                 ->get()
                 ->map(function ($log) {
                     return [
@@ -723,6 +727,11 @@ class HomeController extends Controller
                     ];
                 });
 
+            Log::info('Engine Issues found', [
+                'count' => $engineIssues->count(),
+                'issues' => $engineIssues->toArray()
+            ]);
+
             if ($engineIssues->isEmpty()) {
                 return response()->json([
                     'message' => 'Tidak ada issue engine untuk pembangkit ini',
@@ -733,7 +742,11 @@ class HomeController extends Controller
             return response()->json($engineIssues);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error in getEngineIssues: ' . $e->getMessage());
+            Log::error('Error in getEngineIssues: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'error' => $e->getMessage(),
                 'status' => 'error'
