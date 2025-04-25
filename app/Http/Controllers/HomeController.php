@@ -28,8 +28,7 @@ class HomeController extends Controller
                 $query->joinSub($latestStatusSubquery, 'latest_status', function($join) {
                     $join->on('machine_status_logs.machine_id', '=', 'latest_status.machine_id')
                         ->on('machine_status_logs.created_at', '=', 'latest_status.max_created_at');
-                })
-                ->whereNotIn('status', ['Operasi', 'Standby']);
+                });
             }])->get();
             
             // Ambil status logs untuk menampilkan riwayat gangguan
@@ -702,12 +701,13 @@ class HomeController extends Controller
             // Get all machines from the power plant
             $machineIds = $powerPlant->machines()->pluck('id')->toArray();
 
-            // Get the latest status logs with component and equipment issues
+            // Get all status logs with component and equipment issues
+            // Remove any potential date filtering to show all records
             $engineIssues = MachineStatusLog::with(['machine', 'machine.powerPlant'])
                 ->whereIn('machine_id', $machineIds)
-                ->whereNotNull('component')
+                ->where('component', 'Ada')
                 ->whereNotNull('equipment')
-                ->orderBy('tanggal', 'desc')
+                ->orderBy('created_at', 'desc') // Changed from tanggal to created_at to ensure we get latest entries first
                 ->get()
                 ->map(function ($log) {
                     return [
@@ -721,6 +721,9 @@ class HomeController extends Controller
                         'status' => $log->status
                     ];
                 });
+
+            // Debug log to check the count of records
+            \Log::info('Engine Issues Count:', ['count' => $engineIssues->count()]);
 
             if ($engineIssues->isEmpty()) {
                 return response()->json([

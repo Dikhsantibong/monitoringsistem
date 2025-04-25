@@ -1667,7 +1667,7 @@
                                     @foreach ($plant->machines as $machine)
                                         @php
                                             $latestStatus = $machine->statusLogs->first();
-                                            if (!$latestStatus || in_array($latestStatus->status, ['Operasi', 'Standby'])) continue;
+                                            if (!$latestStatus) continue;
 
                                             $statusStyle = match($latestStatus->status) {
                                                 'Gangguan' => [
@@ -1688,11 +1688,17 @@
                                                     'border' => '#D1D5DB',
                                                     'icon' => '💤'
                                                 ],
-                                                'Overhaul' => [
-                                                    'bg' => '#FFE4E6',
-                                                    'text' => '#9F1239',
-                                                    'border' => '#FDA4AF',
-                                                    'icon' => '🔨'
+                                                'Operasi' => [
+                                                    'bg' => '#DCFCE7',
+                                                    'text' => '#166534',
+                                                    'border' => '#BBF7D0',
+                                                    'icon' => '⚡'
+                                                ],
+                                                'Standby' => [
+                                                    'bg' => '#FEF9C3',
+                                                    'text' => '#854D0E',
+                                                    'border' => '#FEF08A',
+                                                    'icon' => '🔆'
                                                 ],
                                                 default => [
                                                     'bg' => '#F3F4F6',
@@ -1737,19 +1743,19 @@
                                                 {{ $latestStatus->equipment ?: 'N/A' }}
                                             </td>
                                             <td class="issue-column px-4 py-2" style="display: none;">
-                                                @php
-                                                    $discussion = \App\Models\OtherDiscussion::where('unit', 'UP KENDARI')
-                                                        ->where(function($query) use ($machine) {
-                                                            $query->where('topic', 'LIKE', '%' . $machine->name . '%')
-                                                                ->orWhereHas('commitments', function($q) use ($machine) {
-                                                                    $q->where('description', 'LIKE', '%' . $machine->name . '%');
-                                                                });
-                                                        })
-                                                        ->latest()
-                                                        ->first();
-                                                @endphp
-
                                                 @if($latestStatus->component === 'Ada')
+                                                    @php
+                                                        $discussion = \App\Models\OtherDiscussion::where('unit', 'UP KENDARI')
+                                                            ->where(function($query) use ($machine) {
+                                                                $query->where('topic', 'LIKE', '%' . $machine->name . '%')
+                                                                    ->orWhereHas('commitments', function($q) use ($machine) {
+                                                                        $q->where('description', 'LIKE', '%' . $machine->name . '%');
+                                                                    });
+                                                            })
+                                                            ->latest()
+                                                            ->first();
+                                                    @endphp
+
                                                     @if($discussion)
                                                         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                                                             <div class="flex items-center justify-between mb-3">
@@ -1822,10 +1828,13 @@
                                                             </div>
                                                         </div>
                                                     @else
-                                                        <button onclick="createDiscussion('{{ $plant->name }}', '{{ $machine->name }}', '{{ $latestStatus->equipment }}')" 
-                                                                class="px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 transition-colors duration-200">
-                                                            <i class="fas fa-plus-circle mr-1"></i> Buat Pembahasan
-                                                        </button>
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="text-sm text-gray-500">Belum ada pembahasan</div>
+                                                            <button onclick="createDiscussion('{{ $plant->name }}', '{{ $machine->name }}', '{{ $latestStatus->equipment }}')" 
+                                                                    class="px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 transition-colors duration-200">
+                                                                <i class="fas fa-plus-circle mr-1"></i> Buat Pembahasan
+                                                            </button>
+                                                        </div>
                                                     @endif
                                                 @endif
                                             </td>
@@ -3284,7 +3293,7 @@ function switchView(view) {
             
             const componentText = componentSpan.textContent.trim();
             
-            // Only show rows where component is "Ada"
+            // Only show rows where component is "Ada", regardless of status
             if (componentText === 'Ada') {
                 row.style.display = '';
             } else {
