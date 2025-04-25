@@ -702,19 +702,10 @@ class HomeController extends Controller
             // Get all machines from the power plant
             $machineIds = $powerPlant->machines()->pluck('id')->toArray();
 
-            // Get the latest status for each machine
-            $latestStatusSubquery = MachineStatusLog::select('machine_id', 
-                DB::raw('MAX(created_at) as max_created_at'))
-                ->groupBy('machine_id');
-
             // Get the latest status logs with component and equipment issues
             $engineIssues = MachineStatusLog::with(['machine', 'machine.powerPlant'])
-                ->joinSub($latestStatusSubquery, 'latest_status', function($join) {
-                    $join->on('machine_status_logs.machine_id', '=', 'latest_status.machine_id')
-                        ->on('machine_status_logs.created_at', '=', 'latest_status.max_created_at');
-                })
                 ->whereIn('machine_id', $machineIds)
-                ->where('component', 'Ada') // Only show machines with active issues
+                ->whereNotNull('component')
                 ->whereNotNull('equipment')
                 ->orderBy('tanggal', 'desc')
                 ->get()
