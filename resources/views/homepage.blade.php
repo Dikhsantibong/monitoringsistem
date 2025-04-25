@@ -1714,12 +1714,13 @@
                                             <td class="text-center">{{ number_format($latestStatus->dmn, 1) }}</td>
                                             <td class="text-center">{{ number_format($latestStatus->dmp, 1) }}</td>
                                             <td class="text-center">{{ number_format($latestStatus->load_value, 1) }} MW</td>
-                                            <td class="text-center w-40">
+                                            <td class="text-center w-[150px]">
                                                 <span style="
                                                     background: {{ $statusStyle['bg'] }}; 
                                                     color: {{ $statusStyle['text'] }}; 
                                                     padding: 4px 12px;
                                                     border-radius: 12px;
+                                                    width: 150px;
                                                     font-size: 0.85em;
                                                     border: 1px solid {{ $statusStyle['border'] }};
                                                 ">
@@ -1727,7 +1728,7 @@
                                                 </span>
                                             </td>
                                             <!-- Kolom untuk Issue Engine View -->
-                                            <td class="text-center w-40 issue-column" style="display: none;">
+                                            <td class="text-center w-40 issue-column " style="display: none;">
                                                 <span style="
                                                     background: {{ $latestStatus->component ? '#E0F2FE' : '#F3F4F6' }}; 
                                                     color: {{ $latestStatus->component ? '#0369A1' : '#6B7280' }};
@@ -1745,9 +1746,10 @@
                                             <td class="issue-column px-4 py-2" style="display: none;">
                                                 @if($latestStatus->component === 'Ada')
                                                     @php
-                                                        $discussion = \App\Models\OtherDiscussion::where('unit', 'UP KENDARI')
-                                                            ->where(function($query) use ($machine) {
+                                                        $discussion = \App\Models\OtherDiscussion::where('status', '!=', 'Deleted')
+                                                            ->where(function($query) use ($machine, $plant) {
                                                                 $query->where('topic', 'LIKE', '%' . $machine->name . '%')
+                                                                    ->where('unit', $plant->name)  // Tambahkan filter berdasarkan unit
                                                                     ->orWhereHas('commitments', function($q) use ($machine) {
                                                                         $q->where('description', 'LIKE', '%' . $machine->name . '%');
                                                                     });
