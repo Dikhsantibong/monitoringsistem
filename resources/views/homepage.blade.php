@@ -1667,21 +1667,9 @@
                                     @foreach ($plant->machines as $machine)
                                         @php
                                             $latestStatus = $machine->statusLogs->first();
-                                            if (!$latestStatus) continue;
+                                            if (!$latestStatus || in_array($latestStatus->status, ['Operasi', 'Standby'])) continue;
 
                                             $statusStyle = match($latestStatus->status) {
-                                                'Operasi' => [
-                                                    'bg' => '#DCFCE7',
-                                                    'text' => '#166534',
-                                                    'border' => '#86EFAC',
-                                                    'icon' => '⚡'
-                                                ],
-                                                'Standby' => [
-                                                    'bg' => '#FEF9C3',
-                                                    'text' => '#854D0E',
-                                                    'border' => '#FDE047',
-                                                    'icon' => '🔆'
-                                                ],
                                                 'Gangguan' => [
                                                     'bg' => '#FEE2E2',
                                                     'text' => '#991B1B',

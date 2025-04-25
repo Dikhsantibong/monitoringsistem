@@ -18,21 +18,27 @@ class HomeController extends Controller
     public function index()
     {
         try {
+            // Get the latest status for each machine
+            $latestStatusSubquery = MachineStatusLog::select('machine_id', 
+                \DB::raw('MAX(created_at) as max_created_at'))
+                ->groupBy('machine_id');
+
             // Ambil data power plants dengan eager loading yang tepat
-            $powerPlants = PowerPlant::with(['machines.statusLogs' => function($query) {
-                $query->whereNotIn('status', ['Operasi', 'Standby'])
-                      ->latest('created_at')
-                      ->take(1);
+            $powerPlants = PowerPlant::with(['machines.statusLogs' => function($query) use ($latestStatusSubquery) {
+                $query->joinSub($latestStatusSubquery, 'latest_status', function($join) {
+                    $join->on('machine_status_logs.machine_id', '=', 'latest_status.machine_id')
+                        ->on('machine_status_logs.created_at', '=', 'latest_status.max_created_at');
+                })
+                ->whereNotIn('status', ['Operasi', 'Standby']);
             }])->get();
             
             // Ambil status logs untuk menampilkan riwayat gangguan
             $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
-                ->whereIn('id', function($query) {
-                    $query->selectRaw('MAX(id)')
-                        ->from('machine_status_logs')
-                        ->whereNotIn('status', ['Operasi', 'Standby'])
-                        ->groupBy('machine_id');
+                ->joinSub($latestStatusSubquery, 'latest_status', function($join) {
+                    $join->on('machine_status_logs.machine_id', '=', 'latest_status.machine_id')
+                        ->on('machine_status_logs.created_at', '=', 'latest_status.max_created_at');
                 })
+                ->whereNotIn('status', ['Operasi', 'Standby'])
                 ->orderBy('tanggal', 'desc')
                 ->get();
 
