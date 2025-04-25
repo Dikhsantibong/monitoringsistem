@@ -117,7 +117,7 @@ class HomeController extends Controller
             }
 
             // Debug log
-            Log::info('Chart Data:', [
+            \Log::info('Chart Data:', [
                 'dates' => $dates,
                 'datasets' => $datasets
             ]);
@@ -272,8 +272,8 @@ class HomeController extends Controller
             ));
             
         } catch (\Exception $e) {
-            Log::error('Error in HomeController@index: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Error in HomeController@index: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return view('homepage', [
                 'statusLogs' => collect([]),
@@ -352,7 +352,7 @@ class HomeController extends Controller
                 });
 
             // Debug: Log data yang diambil
-            Log::info('Status Logs Data:', ['data' => $statusLogs]);
+            \Log::info('Status Logs Data:', ['data' => $statusLogs]);
 
             if ($statusLogs->isEmpty()) {
                 return response()->json([
@@ -364,7 +364,7 @@ class HomeController extends Controller
             return response()->json($statusLogs);
 
         } catch (\Exception $e) {
-            Log::error('Error in getAccumulationData: ' . $e->getMessage());
+            \Log::error('Error in getAccumulationData: ' . $e->getMessage());
             return response()->json([
                 'error' => $e->getMessage(),
                 'status' => 'error'
@@ -375,7 +375,7 @@ class HomeController extends Controller
     public function getPlantChartData($plantId)
     {
         try {
-            Log::info('Starting getPlantChartData', ['plant_id' => $plantId]);
+            \Log::info('Starting getPlantChartData', ['plant_id' => $plantId]);
             
             $endDate = Carbon::now();
             $startDate = Carbon::now()->subDays(6);
@@ -392,12 +392,12 @@ class HomeController extends Controller
                 ->groupBy('date')
                 ->orderBy('date');
 
-            Log::info('Query:', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
+            \Log::info('Query:', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
 
             $chartData = $query->get();
 
             if ($chartData->isEmpty()) {
-                Log::warning('No data found for plant', ['plant_id' => $plantId]);
+                \Log::warning('No data found for plant', ['plant_id' => $plantId]);
                 return response()->json([
                     'dates' => [],
                     'beban' => [],
@@ -417,12 +417,12 @@ class HomeController extends Controller
                 })->values()->all()
             ];
 
-            Log::info('Successfully retrieved chart data', ['data' => $formattedData]);
+            \Log::info('Successfully retrieved chart data', ['data' => $formattedData]);
 
             return response()->json($formattedData);
 
         } catch (\Exception $e) {
-            Log::error('Error in getPlantChartData', [
+            \Log::error('Error in getPlantChartData', [
                 'plant_id' => $plantId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -438,14 +438,14 @@ class HomeController extends Controller
     public function getMonitoringData($period)
     {
         try {
-            Log::info('getMonitoringData called', [
+            \Log::info('getMonitoringData called', [
                 'period' => $period,
                 'url' => request()->fullUrl(),
                 'method' => request()->method(),
                 'headers' => request()->headers->all()
             ]);
             
-            Log::info('Starting getMonitoringData', ['period' => $period]);
+            \Log::info('Starting getMonitoringData', ['period' => $period]);
             
             // Set tanggal berdasarkan periode
             $endDate = now();
@@ -456,7 +456,7 @@ class HomeController extends Controller
                 default => now()->subDays(7)
             };
 
-            Log::info('Date range', [
+            \Log::info('Date range', [
                 'startDate' => $startDate->format('Y-m-d'),
                 'endDate' => $endDate->format('Y-m-d')
             ]);
@@ -468,7 +468,7 @@ class HomeController extends Controller
                       ->latest();
             }])->get();
 
-            Log::info('Power Plants retrieved', ['count' => $powerPlants->count()]);
+            \Log::info('Power Plants retrieved', ['count' => $powerPlants->count()]);
 
             // Siapkan data untuk response
             $dates = [];
@@ -494,7 +494,7 @@ class HomeController extends Controller
                 };
             }
 
-            Log::info('Dates generated', ['dates' => $dates]);
+            \Log::info('Dates generated', ['dates' => $dates]);
 
             // Hitung data untuk setiap pembangkit
             foreach ($powerPlants as $plant) {
@@ -528,12 +528,12 @@ class HomeController extends Controller
                 }
             }
 
-            Log::info('Datasets prepared', ['datasets' => $datasets]);
+            \Log::info('Datasets prepared', ['datasets' => $datasets]);
 
             // Hitung statistik terkini
             $currentStats = $this->calculateCurrentStats($powerPlants);
 
-            Log::info('Current stats calculated', $currentStats);
+            \Log::info('Current stats calculated', $currentStats);
 
             $response = [
                 'dates' => $dates,
@@ -560,12 +560,12 @@ class HomeController extends Controller
                 'powerDeliveryPercentage' => $currentStats['powerDeliveryPercentage'] ?? 0
             ];
 
-            Log::info('Response prepared', ['response' => $response]);
+            \Log::info('Response prepared', ['response' => $response]);
 
             return response()->json($response);
 
         } catch (\Exception $e) {
-            Log::error('getMonitoringData error', [
+            \Log::error('getMonitoringData error', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -672,7 +672,7 @@ class HomeController extends Controller
                 'powerDeliveryPercentage' => $powerDeliveryPercentage
             ];
         } catch (\Exception $e) {
-            Log::error('Error in calculateCurrentStats', [
+            \Log::error('Error in calculateCurrentStats', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -683,69 +683,38 @@ class HomeController extends Controller
     public function getEngineIssues($markerId)
     {
         try {
-            Log::info('Starting getEngineIssues', ['markerId' => $markerId]);
-            
             // Get the power plant
             $powerPlant = PowerPlant::find($markerId);
             
             if (!$powerPlant) {
-                Log::warning('Power Plant not found', ['markerId' => $markerId]);
                 return response()->json([
                     'message' => 'Power Plant tidak ditemukan',
                     'status' => 'error'
                 ], 404);
             }
 
-            Log::info('Found Power Plant', ['name' => $powerPlant->name]);
-
             // Get all machines from the power plant
             $machineIds = $powerPlant->machines()->pluck('id')->toArray();
-            Log::info('Machine IDs found', ['machineIds' => $machineIds]);
 
-            // Get the latest status for each machine that has issues
-            $latestStatuses = MachineStatusLog::whereIn('machine_id', $machineIds)
-                ->whereIn('id', function($query) use ($machineIds) {
-                    $query->select(DB::raw('MAX(id)'))
-                        ->from('machine_status_logs')
-                        ->whereIn('machine_id', $machineIds)
-                        ->groupBy('machine_id');
-                })
-                ->get()
-                ->pluck('status', 'machine_id');
-
-            // Get machines that currently have issues (not in Operasi or Standby)
-            $machinesWithIssues = $latestStatuses->filter(function($status) {
-                return !in_array($status, ['Operasi', 'Standby']);
-            })->keys()->toArray();
-
-            // Get the latest issue records for machines that currently have problems
+            // Get the latest status logs with component and equipment issues
             $engineIssues = MachineStatusLog::with(['machine', 'machine.powerPlant'])
-                ->whereIn('machine_id', $machinesWithIssues)
+                ->whereIn('machine_id', $machineIds)
                 ->whereNotNull('component')
                 ->whereNotNull('equipment')
-                ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
-                ->whereIn('id', function($query) use ($machinesWithIssues) {
-                    $query->select(DB::raw('MAX(id)'))
-                        ->from('machine_status_logs')
-                        ->whereIn('machine_id', $machinesWithIssues)
-                        ->whereNotNull('component')
-                        ->whereNotNull('equipment')
-                        ->groupBy('machine_id');
-                })
                 ->orderBy('tanggal', 'desc')
-                ->get();
-
-            Log::info('Engine Issues found', [
-                'count' => $engineIssues->count(),
-                'issues' => $engineIssues->map(function($issue) {
+                ->get()
+                ->map(function ($log) {
                     return [
-                        'machine' => $issue->machine->name,
-                        'status' => $issue->status,
-                        'component' => $issue->component,
-                        'equipment' => $issue->equipment
+                        'id' => $log->id,
+                        'tanggal' => $log->tanggal,
+                        'machine_name' => $log->machine->name,
+                        'power_plant_name' => $log->machine->powerPlant->name,
+                        'component' => $log->component,
+                        'equipment' => $log->equipment,
+                        'progres' => $log->progres,
+                        'status' => $log->status
                     ];
-                })
-            ]);
+                });
 
             if ($engineIssues->isEmpty()) {
                 return response()->json([
@@ -754,26 +723,10 @@ class HomeController extends Controller
                 ]);
             }
 
-            $formattedIssues = $engineIssues->map(function ($log) {
-                return [
-                    'id' => $log->id,
-                    'tanggal' => $log->tanggal,
-                    'machine_name' => $log->machine->name,
-                    'power_plant_name' => $log->machine->powerPlant->name,
-                    'component' => $log->component,
-                    'equipment' => $log->equipment,
-                    'progres' => $log->progres,
-                    'status' => $log->status
-                ];
-            });
-
-            return response()->json($formattedIssues);
+            return response()->json($engineIssues);
 
         } catch (\Exception $e) {
-            Log::error('Error in getEngineIssues: ' . $e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString()
-            ]);
+            \Log::error('Error in getEngineIssues: ' . $e->getMessage());
             return response()->json([
                 'error' => $e->getMessage(),
                 'status' => 'error'
