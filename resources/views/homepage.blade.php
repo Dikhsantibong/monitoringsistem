@@ -1667,7 +1667,11 @@
                                     @foreach ($plant->machines as $machine)
                                         @php
                                             $latestStatus = $machine->statusLogs->first();
-                                            if (!$latestStatus || in_array($latestStatus->status, ['Operasi', 'Standby'])) continue;
+                                            if (!$latestStatus) continue;
+
+                                            // Different filtering based on view type
+                                            $showInDisruptionView = !in_array($latestStatus->status, ['Operasi', 'Standby']);
+                                            $showInEngineView = $latestStatus->component === 'Ada' && !empty($latestStatus->equipment);
 
                                             $statusStyle = match($latestStatus->status) {
                                                 'Gangguan' => [
@@ -1702,7 +1706,10 @@
                                                 ]
                                             };
                                         @endphp
-                                        <tr class="table-row" data-plant-id="{{ $plant->id }}">
+                                        <tr class="table-row" 
+                                            data-plant-id="{{ $plant->id }}"
+                                            data-show-disruption="{{ $showInDisruptionView ? 'true' : 'false' }}"
+                                            data-show-engine="{{ $showInEngineView ? 'true' : 'false' }}">
                                             <td class="text-center">{{ $plant->name }}</td>
                                             <td class="text-center">{{ $machine->name }}</td>
                                             <td class="text-center">{{ number_format($latestStatus->dmn, 1) }}</td>
@@ -1722,34 +1729,51 @@
                                             </td>
                                             <!-- Kolom untuk Issue Engine View -->
                                             <td class="text-center w-40 issue-column" style="display: none;">
+                                                @if($latestStatus->component === 'Ada')
                                                 <span style="
-                                                    background: {{ $latestStatus->component ? '#E0F2FE' : '#F3F4F6' }}; 
-                                                    color: {{ $latestStatus->component ? '#0369A1' : '#6B7280' }};
+                                                    background: #E0F2FE; 
+                                                    color: #0369A1;
                                                     padding: 4px 12px;
                                                     border-radius: 12px;
                                                     font-size: 0.85em;
-                                                    border: 1px solid {{ $latestStatus->component ? '#7DD3FC' : '#D1D5DB' }};
+                                                    border: 1px solid #7DD3FC;
                                                 ">
-                                                    {{ $latestStatus->component ?: 'N/A' }}
+                                                    <i class="fas fa-exclamation-circle"></i> Ada Issue
                                                 </span>
+                                                @else
+                                                <span style="
+                                                    background: #F3F4F6;
+                                                    color: #6B7280;
+                                                    padding: 4px 12px;
+                                                    border-radius: 12px;
+                                                    font-size: 0.85em;
+                                                    border: 1px solid #D1D5DB;
+                                                ">
+                                                    Tidak Ada Issue
+                                                </span>
+                                                @endif
                                             </td>
                                             <td class="text-center w-40 issue-column" style="display: none;">
-                                                {{ $latestStatus->equipment ?: 'N/A' }}
+                                                @if($latestStatus->equipment)
+                                                    <div class="text-sm text-gray-800">{{ $latestStatus->equipment }}</div>
+                                                @else
+                                                    <span class="text-gray-400">-</span>
+                                                @endif
                                             </td>
                                             <td class="issue-column px-4 py-2" style="display: none;">
-                                                @php
-                                                    $discussion = \App\Models\OtherDiscussion::where('unit', 'UP KENDARI')
-                                                        ->where(function($query) use ($machine) {
-                                                            $query->where('topic', 'LIKE', '%' . $machine->name . '%')
-                                                                ->orWhereHas('commitments', function($q) use ($machine) {
-                                                                    $q->where('description', 'LIKE', '%' . $machine->name . '%');
-                                                                });
-                                                        })
-                                                        ->latest()
-                                                        ->first();
-                                                @endphp
-
                                                 @if($latestStatus->component === 'Ada')
+                                                    @php
+                                                        $discussion = \App\Models\OtherDiscussion::where('unit', 'UP KENDARI')
+                                                            ->where(function($query) use ($machine) {
+                                                                $query->where('topic', 'LIKE', '%' . $machine->name . '%')
+                                                                    ->orWhereHas('commitments', function($q) use ($machine) {
+                                                                        $q->where('description', 'LIKE', '%' . $machine->name . '%');
+                                                                    });
+                                                            })
+                                                            ->latest()
+                                                            ->first();
+                                                    @endphp
+
                                                     @if($discussion)
                                                         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                                                             <div class="flex items-center justify-between mb-3">
@@ -1827,6 +1851,8 @@
                                                             <i class="fas fa-plus-circle mr-1"></i> Buat Pembahasan
                                                         </button>
                                                     @endif
+                                                @else
+                                                    <span class="text-gray-400">-</span>
                                                 @endif
                                             </td>
                                             <!-- Kolom untuk Data Gangguan View -->
@@ -3452,4 +3478,41 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ... existing code ...
+</script>
+
+<script>
+    function switchView(view) {
+        // Update button styles
+        document.getElementById('disruptionBtn').classList.toggle('bg-blue-500', view === 'disruption');
+        document.getElementById('disruptionBtn').classList.toggle('bg-gray-500', view !== 'disruption');
+        document.getElementById('engineBtn').classList.toggle('bg-blue-500', view === 'engine');
+        document.getElementById('engineBtn').classList.toggle('bg-gray-500', view !== 'engine');
+
+        // Show/hide columns
+        const issueColumns = document.querySelectorAll('.issue-column');
+        const disruptionColumns = document.querySelectorAll('.disruption-column');
+        
+        issueColumns.forEach(col => {
+            col.style.display = view === 'engine' ? 'table-cell' : 'none';
+        });
+        
+        disruptionColumns.forEach(col => {
+            col.style.display = view === 'disruption' ? 'table-cell' : 'none';
+        });
+
+        // Show/hide rows based on view type
+        const rows = document.querySelectorAll('.table-row');
+        rows.forEach(row => {
+            if (view === 'disruption') {
+                row.style.display = row.dataset.showDisruption === 'true' ? 'table-row' : 'none';
+            } else {
+                row.style.display = row.dataset.showEngine === 'true' ? 'table-row' : 'none';
+            }
+        });
+    }
+
+    // Initialize with disruption view
+    document.addEventListener('DOMContentLoaded', function() {
+        switchView('disruption');
+    });
 </script>
