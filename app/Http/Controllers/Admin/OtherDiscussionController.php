@@ -8,6 +8,7 @@ use App\Models\ClosedDiscussion;
 use App\Models\OverdueDiscussion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\PowerPlant;
@@ -18,8 +19,8 @@ use PDF;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\OtherDiscussionsExport;
 use App\Exports\SingleOtherDiscussionExport;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Commitment;
+use App\Models\Machine;
 
 class OtherDiscussionController extends Controller
 {
@@ -395,27 +396,29 @@ class OtherDiscussionController extends Controller
 
             // Get parameters from issue engine if they exist
             $defaultUnit = $request->query('unit');
-            $defaultMachine = $request->query('machine');
-            $defaultIssue = $request->query('issue');
+            $defaultMachineId = $request->query('machine_id');
+            $defaultMachineName = null;
 
-            // Create topic from machine and issue if they exist
-            $defaultTopic = null;
-            if ($defaultMachine && $defaultIssue) {
-                $defaultTopic = "Issue pada {$defaultMachine}: {$defaultIssue}";
+            if ($defaultMachineId) {
+                $machine = Machine::find($defaultMachineId);
+                if ($machine) {
+                    $defaultMachineName = $machine->name;
+                }
             }
-            
+
             return view('admin.other-discussions.create', compact(
-                'units', 
+                'units',
                 'sections',
                 'defaultUnit',
-                'defaultTopic'
+                'defaultMachineId',
+                'defaultMachineName'
             ));
         } catch (\Exception $e) {
             \Log::error('Error in create method:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->with('error', 'Terjadi kesalahan saat memuat halaman');
+            return back()->with('error', 'Terjadi kesalahan saat memuat form.');
         }
     }
 
@@ -442,6 +445,9 @@ class OtherDiscussionController extends Controller
                 'commitment_section_ids' => 'required|array',
                 'commitment_status' => 'required|array',
                 'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // max 10MB
+                'machine_id' => 'nullable|exists:machines,id',
+                'machine_reference' => 'nullable|string',
+                'issue_active' => 'nullable|boolean',
             ]);
 
             if ($request->hasFile('document')) {
@@ -491,6 +497,9 @@ class OtherDiscussionController extends Controller
                 'priority_level' => $validated['priority_level'],
                 'status' => $validated['status'],
                 'unit_source' => session('unit', 'mysql'), // Tambahkan unit_source
+                'machine_id' => $validated['machine_id'] ?? null,
+                'machine_reference' => $validated['machine_reference'] ?? null,
+                'issue_active' => $validated['issue_active'] ?? false,
             ]);
 
             // Log sebelum menyimpan commitments
@@ -535,7 +544,7 @@ class OtherDiscussionController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->withInput()->with('error', 'Gagal menambahkan pembahasan: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan pembahasan.');
         }
     }
 
@@ -1375,4 +1384,4 @@ class OtherDiscussionController extends Controller
             ], 500);
         }
     }
-}   
+}

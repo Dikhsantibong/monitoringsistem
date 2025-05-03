@@ -1743,100 +1743,85 @@
                                             <td class="text-center w-40 issue-column" style="display: none;">
                                                 {{ $latestStatus->equipment ?: 'N/A' }}
                                             </td>
-                                            <td class="issue-column px-4 py-2" style="display: none;">
+                                            <td class="issue-column px-4 py-2 w-[600px]" style="display: none;">
                                                 @if($latestStatus->component === 'Ada')
                                                     @php
                                                         $discussion = \App\Models\OtherDiscussion::where('status', '!=', 'Deleted')
-                                                            ->where(function($query) use ($machine, $plant) {
-                                                                $query->where('topic', 'LIKE', '%' . $machine->name . '%')
-                                                                    ->where('unit', $plant->name)  // Tambahkan filter berdasarkan unit
-                                                                    ->orWhereHas('commitments', function($q) use ($machine) {
-                                                                        $q->where('description', 'LIKE', '%' . $machine->name . '%');
-                                                                    });
+                                                            ->where(function($query) use ($machine) {
+                                                                $query->where('machine_id', $machine->id)
+                                                                      ->orWhere('machine_reference', $machine->name);
                                                             })
+                                                            ->where('issue_active', true)
+                                                            ->with(['commitments.section.department']) // Eager load relationships
                                                             ->latest()
                                                             ->first();
                                                     @endphp
 
                                                     @if($discussion)
-                                                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                                                            <div class="flex items-center justify-between mb-3">
+                                                        <div class="bg-white rounded-lg shadow p-4 mb-4">
+                                                            <div class="flex justify-between items-start mb-3">
                                                                 <div>
-                                                                    <span class="text-sm font-semibold text-gray-700">Progress Pembahasan</span>
-                                                                    <span class="ml-2 text-xs text-gray-500">#{{ $discussion->no_pembahasan }}</span>
+                                                                    <span class="text-sm font-semibold text-gray-700">No. Pembahasan:</span>
+                                                                    <a href="{{ route('admin.other-discussions.show', $discussion->id) }}" 
+                                                                       class="ml-2 text-blue-600 hover:text-blue-800">
+                                                                        {{ $discussion->no_pembahasan }}
+                                                                    </a>
                                                                 </div>
-                                                                <div class="flex items-center gap-2">
-                                                                    <span class="px-3 py-1 text-xs rounded-full {{ $discussion->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                                                        {{ $discussion->status }}
-                                                                    </span>
-                                                                    <span class="text-xs text-gray-500">
-                                                                        {{ \Carbon\Carbon::parse($discussion->created_at)->format('d M Y') }}
-                                                                    </span>
-                                                                </div>
+                                                                <span class="px-2 py-1 text-xs rounded-full {{ $discussion->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                                    {{ $discussion->status }}
+                                                                </span>
                                                             </div>
 
                                                             <div class="mb-3">
-                                                                <h4 class="text-sm font-medium text-gray-700">Topik:</h4>
+                                                                <span class="text-sm font-semibold text-gray-700">Topic:</span>
                                                                 <p class="text-sm text-gray-600">{{ $discussion->topic }}</p>
                                                             </div>
-                                                            
-                                                            <div class="space-y-3">
-                                                                @foreach($discussion->commitments as $commitment)
-                                                                    <div class="border-l-4 {{ $commitment->status === 'Open' ? 'border-yellow-400' : 'border-green-400' }} pl-3">
-                                                                        <div class="flex items-center justify-between mb-1">
-                                                                            <div class="flex items-center gap-2">
-                                                                                <span class="text-xs font-medium text-gray-600">PIC:</span>
-                                                                                <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                                                                                    {{ $commitment->section->department->name }} - {{ $commitment->section->name }}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div class="flex items-center gap-2">
-                                                                                <i class="fas fa-calendar text-xs text-gray-400"></i>
-                                                                                <span class="text-xs text-gray-600">
-                                                                                    {{ \Carbon\Carbon::parse($commitment->deadline)->format('d M Y') }}
-                                                                                </span>
-                                                                                @if($commitment->status === 'Open')
-                                                                                    <span class="text-xs {{ \Carbon\Carbon::parse($commitment->deadline)->isPast() ? 'text-red-500' : 'text-gray-500' }}">
-                                                                                        ({{ \Carbon\Carbon::parse($commitment->deadline)->diffForHumans() }})
-                                                                                    </span>
-                                                                                @endif
-                                                                            </div>
-                                                                        </div>
-                                                                        <p class="text-sm text-gray-700 mt-1">{{ $commitment->description }}</p>
-                                                                        <div class="flex items-center gap-2 mt-2">
-                                                                            <span class="px-2 py-1 text-xs rounded {{ $commitment->status === 'Open' ? 'bg-yellow-50 text-yellow-700' : 'bg-green-50 text-green-700' }}">
-                                                                                <i class="fas {{ $commitment->status === 'Open' ? 'fa-clock' : 'fa-check' }} mr-1"></i>
-                                                                                {{ $commitment->status }}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                @endforeach
+
+                                                            <div class="mb-3">
+                                                                <span class="text-sm font-semibold text-gray-700">PIC:</span>
+                                                                <p class="text-sm text-gray-600">{{ $discussion->pic }}</p>
                                                             </div>
 
-                                                            <div class="mt-3 pt-3 border-t border-gray-100">
-                                                                <div class="flex items-center justify-between">
-                                                                    <div class="flex items-center gap-2">
-                                                                        <i class="fas fa-user-clock text-xs text-gray-400"></i>
-                                                                        <span class="text-xs text-gray-500">
-                                                                            Dibuat: {{ $discussion->created_at->diffForHumans() }}
-                                                                        </span>
+                                                            @if($discussion->commitments->isNotEmpty())
+                                                                <div class="mb-3">
+                                                                    <span class="text-sm font-semibold text-gray-700">Commitments:</span>
+                                                                    <div class="mt-2 space-y-2">
+                                                                        @foreach($discussion->commitments as $commitment)
+                                                                            <div class="border-l-4 {{ $commitment->status === 'Open' ? 'border-yellow-400' : 'border-green-400' }} pl-3 py-2">
+                                                                                <div class="flex justify-between items-start">
+                                                                                    <div class="text-sm text-gray-600">{{ $commitment->description }}</div>
+                                                                                    <span class="px-2 py-1 text-xs rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                                                                        {{ $commitment->status }}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div class="mt-1 flex items-center text-xs text-gray-500">
+                                                                                    <span class="mr-2">{{ $commitment->section->department->name }} - {{ $commitment->section->name }}</span>
+                                                                                    <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d M Y') }}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        @endforeach
                                                                     </div>
-                                                                    <a href="{{ route('admin.other-discussions.show', $discussion->id) }}" 
-                                                                       class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                                                        <i class="fas fa-external-link-alt"></i>
-                                                                        Lihat Detail
-                                                                    </a>
+                                                                </div>
+                                                            @endif
+
+                                                            <div class="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200">
+                                                                <div class="flex justify-between">
+                                                                    <span>Created: {{ $discussion->created_at->format('d M Y H:i') }}</span>
+                                                                    @if($discussion->target_deadline)
+                                                                        <span>Target: {{ \Carbon\Carbon::parse($discussion->target_deadline)->format('d M Y') }}</span>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     @else
-                                                        <div class="flex items-center justify-between">
-                                                            <div class="text-sm text-gray-500">Belum ada pembahasan</div>
-                                                            <button onclick="createDiscussion('{{ $plant->name }}', '{{ $machine->name }}', '{{ $latestStatus->equipment }}')" 
-                                                                    class="px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 transition-colors duration-200">
-                                                                <i class="fas fa-plus-circle mr-1"></i> Buat Pembahasan
-                                                            </button>
-                                                        </div>
+                                                        <a href="{{ route('admin.other-discussions.create', [
+                                                            'unit' => $plant->name,
+                                                            'machine_id' => $machine->id,
+                                                            'machine_name' => $machine->name,
+                                                            'issue_active' => 1
+                                                        ]) }}" class="text-blue-600 hover:text-blue-800">
+                                                            + Buat Pembahasan
+                                                        </a>
                                                     @endif
                                                 @endif
                                             </td>

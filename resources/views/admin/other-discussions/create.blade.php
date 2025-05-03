@@ -48,6 +48,12 @@
                 <form id="createDiscussionForm" action="{{ route('admin.other-discussions.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onsubmit="return validateForm()">
                     @csrf
 
+                    @if($defaultMachineId)
+                    <input type="hidden" name="machine_id" value="{{ $defaultMachineId }}">
+                    <input type="hidden" name="machine_reference" value="{{ $defaultMachineName }}">
+                    <input type="hidden" name="issue_active" value="1">
+                    @endif
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- No SR (manual input) -->
                         <div class="mb-4">

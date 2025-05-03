@@ -66,6 +66,7 @@ class OtherDiscussion extends Model
     protected $fillable = [
         'sr_number',
         'no_pembahasan',
+        'tanggal',
         'unit',
         'topic',
         'target',
@@ -80,7 +81,10 @@ class OtherDiscussion extends Model
         'unit_source',
         'closed_at',
         'document_path',
-        'document_description'
+        'document_description',
+        'machine_id',
+        'machine_reference',
+        'issue_active'
     ];
 
     protected $dates = [
@@ -282,5 +286,11 @@ class OtherDiscussion extends Model
             ]);
             throw $e;
         }
+    }
+
+    // Add machine relationship
+    public function machine()
+    {
+        return $this->belongsTo(Machine::class);
     }
 } 
