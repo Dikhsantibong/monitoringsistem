@@ -1550,31 +1550,49 @@
                             <!-- Detail status mesin -->
                             <div class="mt-4 space-y-2 text-sm">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded">
+                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded hover:bg-green-100 transition-colors duration-200 cursor-help" 
+                                         data-status="Operasi"
+                                         onmouseover="showMachineTooltip(event, 'Operasi')"
+                                         onmouseout="hideMachineTooltip()">
                                         <span class="text-green-700 text-xs sm:text-sm">Operasi</span>
                                         <span class="font-semibold text-green-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Operasi'] }} Unit</span>
                                     </div>
-                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded">
+                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors duration-200 cursor-help"
+                                         data-status="Standby"
+                                         onmouseover="showMachineTooltip(event, 'Standby')"
+                                         onmouseout="hideMachineTooltip()">
                                         <span class="text-blue-700 text-xs sm:text-sm">Standby</span>
                                         <span class="font-semibold text-blue-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Standby'] }} Unit</span>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded">
+                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded hover:bg-red-100 transition-colors duration-200 cursor-help"
+                                         data-status="Gangguan"
+                                         onmouseover="showMachineTooltip(event, 'Gangguan')"
+                                         onmouseout="hideMachineTooltip()">
                                         <span class="text-red-700 text-xs sm:text-sm">Gangguan</span>
                                         <span class="font-semibold text-red-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Gangguan'] }} Unit</span>
                                     </div>
-                                    <div class="flex justify-between items-center p-2 bg-yellow-50 rounded">
+                                    <div class="flex justify-between items-center p-2 bg-yellow-50 rounded hover:bg-yellow-100 transition-colors duration-200 cursor-help"
+                                         data-status="Pemeliharaan"
+                                         onmouseover="showMachineTooltip(event, 'Pemeliharaan')"
+                                         onmouseout="hideMachineTooltip()">
                                         <span class="text-yellow-700 text-xs sm:text-sm">Pemeliharaan</span>
                                         <span class="font-semibold text-yellow-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Pemeliharaan'] }} Unit</span>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-purple-50 rounded">
+                                    <div class="flex justify-between items-center p-2 bg-purple-50 rounded hover:bg-purple-100 transition-colors duration-200 cursor-help"
+                                         data-status="Mothballed"
+                                         onmouseover="showMachineTooltip(event, 'Mothballed')"
+                                         onmouseout="hideMachineTooltip()">
                                         <span class="text-purple-700 text-xs sm:text-sm">Mothballed</span>
                                         <span class="font-semibold text-purple-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Mothballed'] }} Unit</span>
                                     </div>
-                                    <div class="flex justify-between items-center p-2 bg-orange-50 rounded">
+                                    <div class="flex justify-between items-center p-2 bg-orange-50 rounded hover:bg-orange-100 transition-colors duration-200 cursor-help"
+                                         data-status="Overhaul"
+                                         onmouseover="showMachineTooltip(event, 'Overhaul')"
+                                         onmouseout="hideMachineTooltip()">
                                         <span class="text-orange-700 text-xs sm:text-sm">Overhaul</span>
                                         <span class="font-semibold text-orange-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Overhaul'] }} Unit</span>
                                     </div>
@@ -2850,7 +2868,39 @@
                         height: 180,
                         type: 'radialBar',
                         background: 'transparent',
-                        offsetY: -10 // Sesuaikan offset untuk posisi yang lebih baik
+                        offsetY: -10, // Sesuaikan offset untuk posisi yang lebih baik
+                        events: {
+                            dataPointMouseEnter: function(event, chartContext, config) {
+                                const status = config.w.config.labels[config.dataPointIndex];
+                                const machineNames = chartData.statusDetails.machineNames[status];
+                                if (machineNames && machineNames.length > 0) {
+                                    const tooltip = document.createElement('div');
+                                    tooltip.className = 'apexcharts-tooltip';
+                                    tooltip.style.position = 'absolute';
+                                    tooltip.style.backgroundColor = 'rgba(255, 255, 255, 0.96)';
+                                    tooltip.style.padding = '10px';
+                                    tooltip.style.borderRadius = '5px';
+                                    tooltip.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+                                    tooltip.style.maxWidth = '200px';
+                                    tooltip.style.zIndex = '12000';
+                                    tooltip.innerHTML = `
+                                        <div style="font-weight: bold; margin-bottom: 5px;">${status}</div>
+                                        <div style="font-size: 12px;">${machineNames.join('<br>')}</div>
+                                    `;
+                                    
+                                    const chart = document.querySelector('#machineReadinessChart');
+                                    chart.appendChild(tooltip);
+                                    
+                                    // Position tooltip near mouse
+                                    tooltip.style.left = event.pageX - chart.getBoundingClientRect().left + 10 + 'px';
+                                    tooltip.style.top = event.pageY - chart.getBoundingClientRect().top + 10 + 'px';
+                                }
+                            },
+                            dataPointMouseLeave: function() {
+                                const tooltips = document.querySelectorAll('#machineReadinessChart .apexcharts-tooltip');
+                                tooltips.forEach(tooltip => tooltip.remove());
+                            }
+                        }
                     },
                     plotOptions: {
                         radialBar: {
@@ -2910,6 +2960,23 @@
                         dashArray: 0
                     },
                     labels: ['Kesiapan'],
+                    tooltip: {
+                        enabled: true,
+                        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                            const status = w.config.labels[dataPointIndex];
+                            const machineNames = chartData.statusDetails.machineNames[status];
+                            if (!machineNames || machineNames.length === 0) return '';
+                            
+                            return `
+                                <div class="apexcharts-tooltip-title">${status}</div>
+                                <div class="apexcharts-tooltip-series-group">
+                                    <div class="apexcharts-tooltip-text">
+                                        ${machineNames.join('<br>')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    },
                     responsive: [{
                         breakpoint: 480,
                         options: {
@@ -3448,4 +3515,84 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ... existing code ...
+</script>
+
+<script>
+// Add this at the beginning of your script section to make machine names data available
+const machineNamesByStatus = @json($chartData['statusDetails']['machineNames'] ?? []);
+
+function showMachineTooltip(event, status) {
+    const machineNames = machineNamesByStatus[status] || [];
+    if (machineNames.length === 0) return;
+
+    // Remove any existing tooltips
+    hideMachineTooltip();
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'machine-tooltip';
+    tooltip.className = 'fixed bg-white p-4 rounded-lg shadow-lg z-50 text-sm min-w-[200px] max-w-[300px] border border-gray-200';
+    
+    // Get the clicked element's position
+    const element = event.currentTarget;
+    const rect = element.getBoundingClientRect();
+    
+    // Position tooltip to the right of the element
+    tooltip.style.left = (rect.right + 10) + 'px';
+    tooltip.style.top = rect.top + 'px';
+    
+    tooltip.innerHTML = `
+        <div class="font-semibold mb-2 pb-2 border-b border-gray-200">${status}</div>
+        <div class="text-gray-600 max-h-[200px] overflow-y-auto">
+            ${machineNames.map(name => `<div class="py-1">${name}</div>`).join('')}
+        </div>
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    // Adjust position if tooltip would go off screen
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    if (tooltipRect.right > viewportWidth) {
+        // If tooltip would go off right edge, show it to the left of the element instead
+        tooltip.style.left = (rect.left - tooltipRect.width - 10) + 'px';
+    }
+    
+    if (tooltipRect.bottom > viewportHeight) {
+        // If tooltip would go off bottom edge, align it with bottom of viewport
+        tooltip.style.top = (viewportHeight - tooltipRect.height - 10) + 'px';
+    }
+
+    // Add smooth fade-in animation
+    tooltip.style.opacity = '0';
+    tooltip.style.transition = 'opacity 0.2s ease-in-out';
+    requestAnimationFrame(() => {
+        tooltip.style.opacity = '1';
+    });
+}
+
+function hideMachineTooltip() {
+    const tooltip = document.getElementById('machine-tooltip');
+    if (tooltip) {
+        // Add fade-out animation
+        tooltip.style.opacity = '0';
+        setTimeout(() => tooltip.remove(), 200);
+    }
+}
+
+// Add global event listener to hide tooltip when clicking outside
+document.addEventListener('click', function(event) {
+    const tooltip = document.getElementById('machine-tooltip');
+    if (tooltip && !event.target.closest('#machine-tooltip') && !event.target.closest('[data-status]')) {
+        hideMachineTooltip();
+    }
+});
+
+// Add global event listener to hide tooltip when scrolling
+document.addEventListener('scroll', function() {
+    hideMachineTooltip();
+}, true);
+
+// ... rest of the existing code ...
 </script>

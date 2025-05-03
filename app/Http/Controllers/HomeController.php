@@ -20,7 +20,7 @@ class HomeController extends Controller
         try {
             // Get the latest status for each machine
             $latestStatusSubquery = MachineStatusLog::select('machine_id', 
-                \DB::raw('MAX(created_at) as max_created_at'))
+                DB::raw('MAX(created_at) as max_created_at'))
                 ->groupBy('machine_id');
 
             // Ambil data power plants dengan eager loading yang tepat
@@ -122,7 +122,7 @@ class HomeController extends Controller
             }
 
             // Debug log
-            \Log::info('Chart Data:', [
+            Log::info('Chart Data:', [
                 'dates' => $dates,
                 'datasets' => $datasets
             ]);
@@ -168,22 +168,59 @@ class HomeController extends Controller
             ];
 
             $totalMachines = 0;
+            $machinesByStatus = [
+                'Operasi' => [],
+                'Standby' => [],
+                'Gangguan' => [],
+                'Pemeliharaan' => [],
+                'Mothballed' => [],
+                'Overhaul' => []
+            ];
             
             foreach ($powerPlants as $plant) {
                 foreach ($plant->machines as $machine) {
                     $totalMachines++;
                     
-                    // Ambil status terakhir mesin hari ini
-                    $latestStatus = $machine->statusLogs()
-                        ->whereDate('tanggal', now())
+                    // Get the latest status log for this machine
+                    $latestStatus = MachineStatusLog::where('machine_id', $machine->id)
+                        ->orderBy('tanggal', 'desc')
                         ->orderBy('created_at', 'desc')
                         ->first();
 
                     if ($latestStatus) {
-                        $machineStatus[$latestStatus->status]++;
+                        $status = $latestStatus->status;
+                        // Make sure the status exists in our arrays
+                        if (!isset($machineStatus[$status])) {
+                            $machineStatus[$status] = 0;
+                            $machinesByStatus[$status] = [];
+                        }
+                        
+                        $machineStatus[$status]++;
+                        $machineName = $machine->name . ' (' . $plant->name . ')';
+                        $machinesByStatus[$status][] = $machineName;
+                        
+                        // Debug log
+                        Log::info("Machine status recorded", [
+                            'machine' => $machineName,
+                            'status' => $status,
+                            'date' => $latestStatus->tanggal
+                        ]);
+                    } else {
+                        // If no status found, log it
+                        Log::warning("No status found for machine", [
+                            'machine_id' => $machine->id,
+                            'machine_name' => $machine->name,
+                            'plant_name' => $plant->name
+                        ]);
                     }
                 }
             }
+
+            // Debug log for final counts
+            Log::info("Final machine status counts", [
+                'status_counts' => $machineStatus,
+                'machines_by_status' => array_map('count', $machinesByStatus)
+            ]);
 
             // Hitung persentase kesiapan (Operasi + Standby)
             $readyMachines = $machineStatus['Operasi'] + $machineStatus['Standby'];
@@ -207,7 +244,8 @@ class HomeController extends Controller
                     'Pemeliharaan' => $machineStatus['Pemeliharaan'],
                     'Mothballed' => $machineStatus['Mothballed'],
                     'Overhaul' => $machineStatus['Overhaul']
-                ]
+                ],
+                'machineNames' => $machinesByStatus
             ];
 
             $chartData['machineReadiness'] = $machineReadiness;
@@ -277,8 +315,8 @@ class HomeController extends Controller
             ));
             
         } catch (\Exception $e) {
-            \Log::error('Error in HomeController@index: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error in HomeController@index: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return view('homepage', [
                 'statusLogs' => collect([]),
@@ -357,7 +395,7 @@ class HomeController extends Controller
                 });
 
             // Debug: Log data yang diambil
-            \Log::info('Status Logs Data:', ['data' => $statusLogs]);
+            Log::info('Status Logs Data:', ['data' => $statusLogs]);
 
             if ($statusLogs->isEmpty()) {
                 return response()->json([
@@ -369,7 +407,7 @@ class HomeController extends Controller
             return response()->json($statusLogs);
 
         } catch (\Exception $e) {
-            \Log::error('Error in getAccumulationData: ' . $e->getMessage());
+            Log::error('Error in getAccumulationData: ' . $e->getMessage());
             return response()->json([
                 'error' => $e->getMessage(),
                 'status' => 'error'
@@ -380,7 +418,7 @@ class HomeController extends Controller
     public function getPlantChartData($plantId)
     {
         try {
-            \Log::info('Starting getPlantChartData', ['plant_id' => $plantId]);
+            Log::info('Starting getPlantChartData', ['plant_id' => $plantId]);
             
             $endDate = Carbon::now();
             $startDate = Carbon::now()->subDays(6);
@@ -397,12 +435,12 @@ class HomeController extends Controller
                 ->groupBy('date')
                 ->orderBy('date');
 
-            \Log::info('Query:', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
+            Log::info('Query:', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
 
             $chartData = $query->get();
 
             if ($chartData->isEmpty()) {
-                \Log::warning('No data found for plant', ['plant_id' => $plantId]);
+                Log::warning('No data found for plant', ['plant_id' => $plantId]);
                 return response()->json([
                     'dates' => [],
                     'beban' => [],
@@ -422,12 +460,12 @@ class HomeController extends Controller
                 })->values()->all()
             ];
 
-            \Log::info('Successfully retrieved chart data', ['data' => $formattedData]);
+            Log::info('Successfully retrieved chart data', ['data' => $formattedData]);
 
             return response()->json($formattedData);
 
         } catch (\Exception $e) {
-            \Log::error('Error in getPlantChartData', [
+            Log::error('Error in getPlantChartData', [
                 'plant_id' => $plantId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -443,14 +481,14 @@ class HomeController extends Controller
     public function getMonitoringData($period)
     {
         try {
-            \Log::info('getMonitoringData called', [
+            Log::info('getMonitoringData called', [
                 'period' => $period,
                 'url' => request()->fullUrl(),
                 'method' => request()->method(),
                 'headers' => request()->headers->all()
             ]);
             
-            \Log::info('Starting getMonitoringData', ['period' => $period]);
+            Log::info('Starting getMonitoringData', ['period' => $period]);
             
             // Set tanggal berdasarkan periode
             $endDate = now();
@@ -461,7 +499,7 @@ class HomeController extends Controller
                 default => now()->subDays(7)
             };
 
-            \Log::info('Date range', [
+            Log::info('Date range', [
                 'startDate' => $startDate->format('Y-m-d'),
                 'endDate' => $endDate->format('Y-m-d')
             ]);
@@ -473,7 +511,7 @@ class HomeController extends Controller
                       ->latest();
             }])->get();
 
-            \Log::info('Power Plants retrieved', ['count' => $powerPlants->count()]);
+            Log::info('Power Plants retrieved', ['count' => $powerPlants->count()]);
 
             // Siapkan data untuk response
             $dates = [];
@@ -499,7 +537,7 @@ class HomeController extends Controller
                 };
             }
 
-            \Log::info('Dates generated', ['dates' => $dates]);
+            Log::info('Dates generated', ['dates' => $dates]);
 
             // Hitung data untuk setiap pembangkit
             foreach ($powerPlants as $plant) {
@@ -533,12 +571,12 @@ class HomeController extends Controller
                 }
             }
 
-            \Log::info('Datasets prepared', ['datasets' => $datasets]);
+            Log::info('Datasets prepared', ['datasets' => $datasets]);
 
             // Hitung statistik terkini
             $currentStats = $this->calculateCurrentStats($powerPlants);
 
-            \Log::info('Current stats calculated', $currentStats);
+            Log::info('Current stats calculated', $currentStats);
 
             $response = [
                 'dates' => $dates,
@@ -565,12 +603,12 @@ class HomeController extends Controller
                 'powerDeliveryPercentage' => $currentStats['powerDeliveryPercentage'] ?? 0
             ];
 
-            \Log::info('Response prepared', ['response' => $response]);
+            Log::info('Response prepared', ['response' => $response]);
 
             return response()->json($response);
 
         } catch (\Exception $e) {
-            \Log::error('getMonitoringData error', [
+            Log::error('getMonitoringData error', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -610,45 +648,73 @@ class HomeController extends Controller
             ];
 
             $totalMachines = 0;
-            $totalCapacity = 0;
-            $totalUnserved = 0;
+            $machinesByStatus = [
+                'Operasi' => [],
+                'Standby' => [],
+                'Gangguan' => [],
+                'Pemeliharaan' => [],
+                'Mothballed' => [],
+                'Overhaul' => []
+            ];
             
             foreach ($powerPlants as $plant) {
                 foreach ($plant->machines as $machine) {
                     $totalMachines++;
                     
-                    // Ambil status terakhir mesin
-                    $latestStatus = $machine->statusLogs()
-                        ->whereDate('tanggal', now())
+                    // Get the latest status log for this machine
+                    $latestStatus = MachineStatusLog::where('machine_id', $machine->id)
+                        ->orderBy('tanggal', 'desc')
                         ->orderBy('created_at', 'desc')
                         ->first();
 
                     if ($latestStatus) {
-                        $machineStatus[$latestStatus->status]++;
-                    }
-
-                    // Ambil data operasi terakhir
-                    $lastOperation = MachineOperation::where('machine_id', $machine->id)
-                        ->whereDate('recorded_at', '<=', now())
-                        ->orderBy('recorded_at', 'desc')
-                        ->first();
-
-                    if ($lastOperation) {
-                        $dmp = floatval($lastOperation->dmp);
-                        $totalCapacity += $dmp;
-                        
-                        // Cek jika mesin dalam kondisi tidak beroperasi
-                        if ($latestStatus && in_array($latestStatus->status, ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])) {
-                            $totalUnserved += $dmp;
+                        $status = $latestStatus->status;
+                        // Make sure the status exists in our arrays
+                        if (!isset($machineStatus[$status])) {
+                            $machineStatus[$status] = 0;
+                            $machinesByStatus[$status] = [];
                         }
+                        
+                        $machineStatus[$status]++;
+                        $machineName = $machine->name . ' (' . $plant->name . ')';
+                        $machinesByStatus[$status][] = $machineName;
                     }
                 }
             }
 
-            // Hitung persentase kesiapan
+            // Hitung persentase kesiapan (Operasi + Standby)
             $readyMachines = $machineStatus['Operasi'] + $machineStatus['Standby'];
             $machineReadiness = $totalMachines > 0 ? 
                 round(($readyMachines / $totalMachines) * 100, 1) : 0;
+
+            // Hitung total kapasitas dan beban tak tersalur
+            $totalCapacity = 0;
+            $totalUnserved = 0;
+            $today = now()->format('Y-m-d');
+            
+            foreach ($powerPlants as $plant) {
+                foreach ($plant->machines as $machine) {
+                    // Ambil DMP terakhir dari MachineOperation
+                    $lastOperation = MachineOperation::where('machine_id', $machine->id)
+                        ->whereDate('recorded_at', '<=', $today)
+                        ->orderBy('recorded_at', 'desc')
+                        ->first();
+
+                    if ($lastOperation) {
+                        $totalCapacity += floatval($lastOperation->dmp);
+                        
+                        // Cek apakah ada status gangguan
+                        $statusLog = MachineStatusLog::where('machine_id', $machine->id)
+                            ->whereDate('tanggal', $today)
+                            ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
+                            ->first();
+                            
+                        if ($statusLog) {
+                            $totalUnserved += floatval($lastOperation->dmp);
+                        }
+                    }
+                }
+            }
 
             // Hitung persentase daya tersalur
             $delivered = $totalCapacity - $totalUnserved;
@@ -666,7 +732,8 @@ class HomeController extends Controller
                         'count' => $totalMachines - $readyMachines,
                         'percentage' => 100 - $machineReadiness
                     ],
-                    'breakdown' => $machineStatus
+                    'breakdown' => $machineStatus,
+                    'machineNames' => $machinesByStatus
                 ],
                 'powerDeliveryDetails' => [
                     'total' => $totalCapacity,
@@ -677,7 +744,7 @@ class HomeController extends Controller
                 'powerDeliveryPercentage' => $powerDeliveryPercentage
             ];
         } catch (\Exception $e) {
-            \Log::error('Error in calculateCurrentStats', [
+            Log::error('Error in calculateCurrentStats', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -723,7 +790,7 @@ class HomeController extends Controller
                 });
 
             // Debug log to check the count of records
-            \Log::info('Engine Issues Count:', ['count' => $engineIssues->count()]);
+            Log::info('Engine Issues Count:', ['count' => $engineIssues->count()]);
 
             if ($engineIssues->isEmpty()) {
                 return response()->json([
@@ -735,7 +802,7 @@ class HomeController extends Controller
             return response()->json($engineIssues);
 
         } catch (\Exception $e) {
-            \Log::error('Error in getEngineIssues: ' . $e->getMessage());
+            Log::error('Error in getEngineIssues: ' . $e->getMessage());
             return response()->json([
                 'error' => $e->getMessage(),
                 'status' => 'error'
