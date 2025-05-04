@@ -76,7 +76,6 @@
                            title="Link Maximo" 
                            target="_blank"
                            rel="noopener noreferrer"
-                           onclick="window.open(this.href, '_blank'); return false;"
                            class="inline-flex items-center px-3 py-1.5 border border-blue-500 rounded text-blue-500 hover:bg-blue-50">
                             <img src="{{ asset('logo/logo-maximo.png') }}" alt="Logo Maximo" class="h-4 mr-1.5">
                             <span class="text-sm">Maximo</span>
