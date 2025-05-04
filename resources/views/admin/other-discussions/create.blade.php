@@ -48,9 +48,9 @@
                 <form id="createDiscussionForm" action="{{ route('admin.other-discussions.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onsubmit="return validateForm()">
                     @csrf
 
-                    @if($defaultMachineId)
-                    <input type="hidden" name="machine_id" value="{{ $defaultMachineId }}">
-                    <input type="hidden" name="machine_reference" value="{{ $defaultMachineName }}">
+                    @if(request('machine_id'))
+                    <input type="hidden" name="machine_id" value="{{ request('machine_id') }}">
+                    <input type="hidden" name="machine_reference" value="{{ request('machine_name') }}">
                     <input type="hidden" name="issue_active" value="1">
                     @endif
 

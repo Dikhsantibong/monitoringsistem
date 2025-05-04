@@ -3633,6 +3633,8 @@ function handleCreateDiscussion(plantName, machineName) {
     const discussionParams = {
         unit: 'UP KENDARI',
         machine_name: machineName,
+        machine_id: '{{ $machine->id }}',
+        machine_reference: machineName,
         topic: 'Issue pada ' + machineName,
         default_commitment: 'Penyelesaian issue pada ' + machineName,
         issue_active: 1
