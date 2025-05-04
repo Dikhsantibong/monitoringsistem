@@ -4,19 +4,15 @@
     <title>Redirecting...</title>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const pendingDiscussion = sessionStorage.getItem('pendingDiscussion');
-            if (pendingDiscussion) {
-                const data = JSON.parse(pendingDiscussion);
-                const baseUrl = window.location.href.includes('/public/') ? '/public' : '';
-                const redirectUrl = `${baseUrl}${data.returnUrl}?${new URLSearchParams(data.params).toString()}`;
-                
-                // Hapus data dari session storage
-                sessionStorage.removeItem('pendingDiscussion');
-                
-                // Redirect ke halaman create discussion
+            // Check for redirectAfterLogin in sessionStorage
+            const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+            if (redirectUrl) {
+                // Clear the stored URL
+                sessionStorage.removeItem('redirectAfterLogin');
+                // Redirect to the stored URL
                 window.location.href = redirectUrl;
             } else {
-                // Jika tidak ada pending discussion, redirect ke dashboard
+                // If no redirect URL, go to default route
                 window.location.href = '{{ $defaultRedirect }}';
             }
         });

@@ -1832,12 +1832,9 @@
                                                             </div>
                                                         </div>
                                                     @else
-                                                        <a href="{{ route('admin.other-discussions.create', [
-                                                            'unit' => $plant->name,
-                                                            'machine_id' => $machine->id,
-                                                            'machine_name' => $machine->name,
-                                                            'issue_active' => 1
-                                                        ]) }}" class="text-blue-600 hover:text-blue-800">
+                                                        <a href="#" 
+                                                           onclick="handleCreateDiscussion('{{ $plant->name }}', '{{ $machine->name }}')"
+                                                           class="text-blue-600 hover:text-blue-800">
                                                             + Buat Pembahasan
                                                         </a>
                                                     @endif
@@ -3595,4 +3592,84 @@ document.addEventListener('scroll', function() {
 }, true);
 
 // ... rest of the existing code ...
+</script>
+
+<script>
+// Add this to your existing JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.create-discussion-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.href;
+            
+            // Check if user is logged in
+            @guest
+                Swal.fire({
+                    title: 'Login Diperlukan',
+                    text: 'Anda harus login terlebih dahulu untuk membuat pembahasan',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Login',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Store the target URL in session storage
+                        sessionStorage.setItem('redirectAfterLogin', url);
+                        window.location.href = '{{ route("login") }}';
+                    }
+                });
+            @else
+                window.location.href = url;
+            @endguest
+        });
+    });
+});
+</script>
+
+<script>
+function handleCreateDiscussion(plantName, machineName) {
+    const discussionParams = {
+        unit: 'UP KENDARI',
+        machine_name: machineName,
+        topic: 'Issue pada ' + machineName,
+        default_commitment: 'Penyelesaian issue pada ' + machineName,
+        issue_active: 1
+    };
+
+    // Store the target URL in session storage
+    const targetUrl = '{{ route('admin.other-discussions.create') }}?' + new URLSearchParams(discussionParams).toString();
+    sessionStorage.setItem('redirectAfterLogin', targetUrl);
+
+    // Show login prompt
+    Swal.fire({
+        title: 'Login Diperlukan',
+        text: 'Anda harus login terlebih dahulu untuk membuat pembahasan',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Force logout if user is already logged in
+            @auth
+                // Perform logout via AJAX
+                fetch('{{ route('logout') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                }).then(() => {
+                    window.location.href = '{{ route('login') }}';
+                });
+            @else
+                window.location.href = '{{ route('login') }}';
+            @endauth
+        }
+    });
+}
 </script>

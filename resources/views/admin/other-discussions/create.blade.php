@@ -106,11 +106,8 @@
                                     required>
                                 <option value="">Pilih Unit</option>
                                 @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
-                                    @php
-                                        $shortName = Str::limit($powerPlant->name, 50, '');
-                                    @endphp
                                     <option value="{{ $powerPlant->name }}" 
-                                            {{ old('unit') == $powerPlant->name ? 'selected' : '' }}
+                                            {{ old('unit', request('unit')) == $powerPlant->name ? 'selected' : '' }}
                                             class="bg-white">
                                         {{ $powerPlant->name }}
                                     </option>
@@ -944,18 +941,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Set default values from URL parameters if available
-    const urlParams = new URLSearchParams(window.location.search);
-    const topic = urlParams.get('topic');
-    const defaultCommitment = urlParams.get('default_commitment');
+    // Check if redirected from login
+    const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+    if (redirectUrl) {
+        // Clear the stored URL
+        sessionStorage.removeItem('redirectAfterLogin');
+        
+        // Parse the URL parameters
+        const urlParams = new URLSearchParams(new URL(redirectUrl).search);
+        
+        // Auto-fill the fields
+        if (urlParams.has('topic')) {
+            document.getElementById('topic').value = urlParams.get('topic');
+        }
+        
+        if (urlParams.has('default_commitment')) {
+            const commitmentTextarea = document.querySelector('textarea[name="commitments[]"]');
+            if (commitmentTextarea) {
+                commitmentTextarea.value = urlParams.get('default_commitment');
+            }
+        }
+        
+        if (urlParams.has('unit')) {
+            const unitSelect = document.getElementById('unit');
+            if (unitSelect) {
+                unitSelect.value = urlParams.get('unit');
+            }
+        }
+    }
     
+    // Handle the existing form fields
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Auto-fill topic if provided
+    const topic = urlParams.get('topic');
     if (topic) {
         document.getElementById('topic').value = topic;
     }
     
-    const firstCommitmentTextarea = document.querySelector('textarea[name="commitments[]"]');
-    if (firstCommitmentTextarea && defaultCommitment) {
-        firstCommitmentTextarea.value = defaultCommitment;
+    // Auto-fill first commitment if provided
+    const defaultCommitment = urlParams.get('default_commitment');
+    if (defaultCommitment) {
+        const firstCommitmentTextarea = document.querySelector('textarea[name="commitments[]"]');
+        if (firstCommitmentTextarea) {
+            firstCommitmentTextarea.value = defaultCommitment;
+        }
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // If coming from issue engine (check for issue_active parameter)
+    if (urlParams.get('issue_active') === '1') {
+        const unitSelect = document.getElementById('unit');
+        // Set default unit to UP KENDARI if no unit is selected
+        if (!urlParams.get('unit')) {
+            const upKendariOption = Array.from(unitSelect.options).find(option => option.text.includes('UP KENDARI'));
+            if (upKendariOption) {
+                upKendariOption.selected = true;
+            }
+        }
     }
 });
 </script>
