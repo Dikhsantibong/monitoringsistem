@@ -281,6 +281,7 @@
                                                       class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
                                                       placeholder="Masukkan komitmen"
+                                                      oninput="autoResize(this)"
                                                       required>{{ old('commitments.0', request('default_commitment')) }}</textarea>
                                         </div>
                                     </div>
@@ -500,6 +501,7 @@ function addCommitment() {
                           class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                           rows="3"
                           placeholder="Masukkan komitmen"
+                          oninput="autoResize(this)"
                           required></textarea>
             </div>
         </div>
@@ -1008,4 +1010,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+@push('scripts')
+<script>
+// Add auto-resize function
+function autoResize(textarea) {
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    // Set the height to scrollHeight to fit the content
+    textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+// Initialize auto-resize for existing textareas
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.commitment-text').forEach(textarea => {
+        autoResize(textarea);
+    });
+});
+</script>
+@endpush
 @endsection     
