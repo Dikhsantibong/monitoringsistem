@@ -1817,7 +1817,7 @@
                                                                                 <div class="mt-1 flex items-center text-xs text-gray-500">
                                                                                     <span class="mr-2">{{ $commitment->section->department->name }} - {{ $commitment->section->name }}</span>
                                                                                     <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d M Y') }}</span>
-                                                                                </div>
+                                                                        </div>
                                                                     </div>
                                                                 @endforeach
                                                             </div>

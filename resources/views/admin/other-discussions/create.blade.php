@@ -45,6 +45,13 @@
             <h3 class="text-gray-700 text-3xl font-medium">Tambah Pembahasan Baru</h3>
 
             <div class="mt-8">
+                @php
+                    // Ambil default unit dari parameter atau fallback ke 'UP KENDARI'
+                    $selectedUnit = $defaultMachineId ? 'UP KENDARI' : old('unit', $defaultUnit ?? null);
+                    $autoTopic = $defaultMachineName ? 'Issue pada ' . $defaultMachineName : old('topic', request('topic'));
+                    $autoCommitment = $defaultMachineName ? 'Penyelesaian issue pada ' . $defaultMachineName : old('commitments.0', request('default_commitment'));
+                @endphp
+
                 <form id="createDiscussionForm" action="{{ route('admin.other-discussions.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onsubmit="return validateForm()">
                     @csrf
 
@@ -52,7 +59,12 @@
                         <input type="hidden" name="machine_id" value="{{ $defaultMachineId }}">
                         <input type="hidden" name="machine_reference" value="{{ $defaultMachineName }}">
                         <input type="hidden" name="issue_active" value="1">
-                        <input type="hidden" name="unit_asal" value="{{ $defaultUnit ?? $plant->name }}">
+                        @php
+                            // Ambil unit_asal dari PowerPlant berdasarkan machine_id
+                            $machine = \App\Models\Machine::find($defaultMachineId);
+                            $unitAsal = $machine && $machine->power_plant ? $machine->power_plant->name : null;
+                        @endphp
+                        <input type="hidden" name="unit_asal" value="{{ $unitAsal }}">
                     @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -106,12 +118,8 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                     required>
                                 <option value="">Pilih Unit</option>
-                                @foreach(\App\Models\PowerPlant::select('name')->distinct()->get() as $powerPlant)
-                                    <option value="{{ $powerPlant->name }}" 
-                                            {{ old('unit', request('unit')) == $powerPlant->name ? 'selected' : '' }}
-                                            class="bg-white">
-                                        {{ $powerPlant->name }}
-                                    </option>
+                                @foreach($units as $unit)
+                                    <option value="{{ $unit }}" {{ $selectedUnit == $unit ? 'selected' : '' }}>{{ $unit }}</option>
                                 @endforeach
                             </select>
                             @error('unit')
@@ -128,7 +136,7 @@
                                    name="topic" 
                                    id="topic" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                   value="{{ old('topic', request('topic')) }}"
+                                   value="{{ $autoTopic }}"
                                    required>
                             @error('topic')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -282,7 +290,7 @@
                                                       class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
                                                       placeholder="Masukkan komitmen"
-                                                      required>{{ old('commitments.0', request('default_commitment')) }}</textarea>
+                                                      required>{{ $autoCommitment }}</textarea>
                                         </div>
                                     </div>
                                     <div class="md:col-span-4">
