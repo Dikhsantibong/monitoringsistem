@@ -84,7 +84,8 @@ class OtherDiscussion extends Model
         'document_description',
         'machine_id',
         'machine_reference',
-        'issue_active'
+        'issue_active',
+        'unit_asal',
     ];
 
     protected $dates = [

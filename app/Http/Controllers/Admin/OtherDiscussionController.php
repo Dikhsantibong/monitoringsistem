@@ -405,9 +405,9 @@ class OtherDiscussionController extends Controller
                     $defaultMachineName = $machine->name;
                 }
             }
-
+            
             return view('admin.other-discussions.create', compact(
-                'units',
+                'units', 
                 'sections',
                 'defaultUnit',
                 'defaultMachineId',
@@ -1384,4 +1384,4 @@ class OtherDiscussionController extends Controller
             ], 500);
         }
     }
-}
+}   

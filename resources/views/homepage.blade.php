@@ -1765,12 +1765,14 @@
                                                 @if($latestStatus->component === 'Ada')
                                                     @php
                                                         $discussion = \App\Models\OtherDiscussion::where('status', '!=', 'Deleted')
-                                                            ->where(function($query) use ($machine) {
+                                                            ->where(function($query) use ($machine, $plant) {
                                                                 $query->where('machine_id', $machine->id)
-                                                                      ->orWhere('machine_reference', $machine->name);
+                                                                      ->orWhere(function($q) use ($machine, $plant) {
+                                                                          $q->where('machine_reference', $machine->name)
+                                                                            ->where('unit_asal', $plant->name);
+                                                                    });
                                                             })
                                                             ->where('issue_active', true)
-                                                            ->with(['commitments.section.department']) // Eager load relationships
                                                             ->latest()
                                                             ->first();
                                                     @endphp
@@ -1786,19 +1788,19 @@
                                                                     </a>
                                                                 </div>
                                                                 <span class="px-2 py-1 text-xs rounded-full {{ $discussion->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                                                    {{ $discussion->status }}
-                                                                </span>
+                                                                        {{ $discussion->status }}
+                                                                    </span>
                                                             </div>
 
                                                             <div class="mb-3">
                                                                 <span class="text-sm font-semibold text-gray-700">Topic:</span>
                                                                 <p class="text-sm text-gray-600">{{ $discussion->topic }}</p>
                                                             </div>
-
+                                                            
                                                             <div class="mb-3">
                                                                 <span class="text-sm font-semibold text-gray-700">PIC:</span>
                                                                 <p class="text-sm text-gray-600">{{ $discussion->pic }}</p>
-                                                            </div>
+                                                                            </div>
 
                                                             @if($discussion->commitments->isNotEmpty())
                                                                 <div class="mb-3">
@@ -1809,16 +1811,16 @@
                                                                                 <div class="flex justify-between items-start">
                                                                                     <div class="text-sm text-gray-600">{{ $commitment->description }}</div>
                                                                                     <span class="px-2 py-1 text-xs rounded {{ $commitment->status === 'Open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                                                                        {{ $commitment->status }}
-                                                                                    </span>
-                                                                                </div>
+                                                                                {{ $commitment->status }}
+                                                                            </span>
+                                                                        </div>
                                                                                 <div class="mt-1 flex items-center text-xs text-gray-500">
                                                                                     <span class="mr-2">{{ $commitment->section->department->name }} - {{ $commitment->section->name }}</span>
                                                                                     <span>Deadline: {{ \Carbon\Carbon::parse($commitment->deadline)->format('d M Y') }}</span>
                                                                                 </div>
-                                                                            </div>
-                                                                        @endforeach
                                                                     </div>
+                                                                @endforeach
+                                                            </div>
                                                                 </div>
                                                             @endif
 
@@ -1832,9 +1834,13 @@
                                                             </div>
                                                         </div>
                                                     @else
-                                                        <a href="#" 
-                                                           onclick="handleCreateDiscussion('{{ $plant->name }}', '{{ $machine->name }}')"
-                                                           class="text-blue-600 hover:text-blue-800">
+                                                        <a href="{{ route('admin.other-discussions.create', [
+                                                            'unit' => $plant->name,
+                                                            'unit_asal' => $plant->name,
+                                                            'machine_id' => $machine->id,
+                                                            'machine_name' => $machine->name,
+                                                            'issue_active' => 1
+                                                        ]) }}" class="text-blue-600 hover:text-blue-800">
                                                             + Buat Pembahasan
                                                         </a>
                                                     @endif

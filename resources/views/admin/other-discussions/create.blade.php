@@ -48,10 +48,11 @@
                 <form id="createDiscussionForm" action="{{ route('admin.other-discussions.store') }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onsubmit="return validateForm()">
                     @csrf
 
-                    @if(request('machine_id'))
-                    <input type="hidden" name="machine_id" value="{{ request('machine_id') }}">
-                    <input type="hidden" name="machine_reference" value="{{ request('machine_name') }}">
-                    <input type="hidden" name="issue_active" value="1">
+                    @if($defaultMachineId)
+                        <input type="hidden" name="machine_id" value="{{ $defaultMachineId }}">
+                        <input type="hidden" name="machine_reference" value="{{ $defaultMachineName }}">
+                        <input type="hidden" name="issue_active" value="1">
+                        <input type="hidden" name="unit_asal" value="{{ $defaultUnit ?? $plant->name }}">
                     @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -281,7 +282,6 @@
                                                       class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                       rows="3"
                                                       placeholder="Masukkan komitmen"
-                                                      oninput="autoResize(this)"
                                                       required>{{ old('commitments.0', request('default_commitment')) }}</textarea>
                                         </div>
                                     </div>
@@ -501,7 +501,6 @@ function addCommitment() {
                           class="commitment-text w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                           rows="3"
                           placeholder="Masukkan komitmen"
-                          oninput="autoResize(this)"
                           required></textarea>
             </div>
         </div>
@@ -984,9 +983,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-fill first commitment if provided
     const defaultCommitment = urlParams.get('default_commitment');
     if (defaultCommitment) {
-        const firstCommitmentTextarea = document.querySelector('textarea[name="commitments[]"]');
+    const firstCommitmentTextarea = document.querySelector('textarea[name="commitments[]"]');
         if (firstCommitmentTextarea) {
-            firstCommitmentTextarea.value = defaultCommitment;
+        firstCommitmentTextarea.value = defaultCommitment;
         }
     }
 });
@@ -1010,23 +1009,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
-@push('scripts')
-<script>
-// Add auto-resize function
-function autoResize(textarea) {
-    // Reset height to auto to get the correct scrollHeight
-    textarea.style.height = 'auto';
-    // Set the height to scrollHeight to fit the content
-    textarea.style.height = textarea.scrollHeight + 'px';
-}
-
-// Initialize auto-resize for existing textareas
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.commitment-text').forEach(textarea => {
-        autoResize(textarea);
-    });
-});
-</script>
-@endpush
 @endsection     
