@@ -74,7 +74,7 @@
             .navbar-toggler {
                 display: block;
             }
-            
+
             .desktop-menu {
                 display: none;
             }
@@ -118,7 +118,7 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             transform-style: preserve-3d;
             text-shadow: 1px 1px 2px #000000;
-            
+
         }
 
         .hexagon:hover {
@@ -173,12 +173,12 @@
             opacity: 0;
             visibility: hidden;
         }
-        
+
         .page-transition {
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
-        
+
         .page-visible {
             opacity: 1;
         }
@@ -238,7 +238,7 @@
             .nav-link {
                 color: #fff;
             }
-            
+
             .nav-link-mobile {
                 color: #fff;
             }
@@ -325,7 +325,7 @@
 
         /* Shadow effect */
         .shadow-lg {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
                         0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
@@ -345,7 +345,7 @@
         .login-button:hover {
             background-color: #3182ce;
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
                         0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
@@ -581,12 +581,12 @@
                 line-height: 1 !important;
                 margin-bottom: 0.5rem !important;
             }
-            
+
             .text-6xl {
                 font-size: 1.5rem !important;
                 margin-top: 0.25rem !important;
             }
-            
+
             .text-3xl {
                 font-size: 1rem !important;
             }
@@ -678,7 +678,7 @@
             .text-9xl {
                 font-size: 2rem !important;
             }
-            
+
             .text-6xl {
                 font-size: 1.25rem !important;
             }
@@ -982,7 +982,7 @@
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
             }
-            
+
             #unservedLoadChart {
                 width: 1024px !important; /* Fixed desktop width */
             }
@@ -1067,7 +1067,7 @@
             }
 
             /* Adjust axis labels */
-            .apexcharts-xaxis-label, 
+            .apexcharts-xaxis-label,
             .apexcharts-yaxis-label {
                 font-size: 10px !important;
             }
@@ -1125,7 +1125,7 @@
             }
 
             /* Smaller text for very small screens */
-            .apexcharts-xaxis-label, 
+            .apexcharts-xaxis-label,
             .apexcharts-yaxis-label {
                 font-size: 9px !important;
             }
@@ -1411,6 +1411,8 @@
                                     <li><a href="#live-data" class="nav-link">Live Data Unit Operasional</a></li>
                                     <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
                                     <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link" target="_blank">Bid. Pemeliharaan</a></li>
+                                    <li><a href="{{ route('notulen.form') }}" class="nav-link">Notulen</a></li>
+
                                     <!-- Login button -->
                                     <li>
                                         <a href="{{ route('login') }}" class="login-button">
@@ -1438,6 +1440,7 @@
                                 <li><a href="#live-data" class="nav-link-mobile">Live Data Unit Operasional</a></li>
                                 <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link-mobile">Dashboard Pemantauan</a></li>
                                 <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link-mobile" target="_blank">Bid. Pemeliharaan</a></li>
+                                <li><a href="{{ route('notulen.form') }}" class="nav-link-mobile">Notulen</a></li>
                                 <!-- Login button in mobile -->
                                 <li>
                                     <a href="{{ route('login') }}" class="nav-link-mobile login-mobile">
@@ -1519,24 +1522,24 @@
                         <h2 class="text-2xl font-bold text-gray-800 px-2">MONITORING KESIAPAN PEMBANGKIT</h2>
                         <!-- Tambahkan tombol switch periode -->
                         <div class="flex flex-col md:flex-row gap-2">
-                            <button onclick="switchPeriod('daily')" 
+                            <button onclick="switchPeriod('daily')"
                                     id="dailyBtn"
                                     class="period-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-full md:w-auto">
                                 <i class="fas fa-calendar-day mr-2"></i>Harian
                             </button>
-                            <button onclick="switchPeriod('weekly')" 
+                            <button onclick="switchPeriod('weekly')"
                                     id="weeklyBtn"
                                     class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
                                 <i class="fas fa-calendar-week mr-2"></i>Mingguan
                             </button>
-                            <button onclick="switchPeriod('monthly')" 
+                            <button onclick="switchPeriod('monthly')"
                                     id="monthlyBtn"
                                     class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
                                 <i class="fas fa-calendar-alt mr-2"></i>Bulanan
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Grid untuk diagram circle berdampingan -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                         <!-- Ring Progress Kesiapan Mesin -->
@@ -1546,11 +1549,11 @@
                                 <p class="text-sm text-gray-500">Status operasional unit pembangkit</p>
                             </div>
                             <div id="machineReadinessChart" class="mx-auto" style="height: 200px;"></div>
-                            
+
                             <!-- Detail status mesin -->
                             <div class="mt-4 space-y-2 text-sm">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded hover:bg-green-100 transition-colors duration-200 cursor-help" 
+                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded hover:bg-green-100 transition-colors duration-200 cursor-help"
                                          data-status="Operasi"
                                          onmouseover="showMachineTooltip(event, 'Operasi')"
                                          onmouseout="hideMachineTooltip()">
@@ -1599,7 +1602,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Ring Progress Beban Tersalur -->
                         <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
                             <div class="text-center mb-4">
@@ -1607,7 +1610,7 @@
                                 <p class="text-sm text-gray-500">Kapasitas daya yang tersedia</p>
                             </div>
                             <div id="powerDeliveryChart" class="mx-auto" style="height: 200px;"></div>
-                            
+
                             <!-- Detail beban tersalur -->
                             <div class="mt-4 space-y-2 text-sm">
                                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -1627,7 +1630,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Grafik Bar memanjang horizontal -->
                     <div class="bg-gray-50 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
                         <h3 class="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-4 text-center">Ketidak Siapan Daya Mesin Per Unit</h3>
@@ -1649,12 +1652,12 @@
             <div class="w-full flex justify-center flex-col items-center mb-5">
                 <div id="live-data" class="bg-white border border-gray-300 rounded-lg p-4 w-4/5">
                     <div class="flex justify-end mb-4 gap-2">
-                        <button onclick="switchView('disruption')" 
+                        <button onclick="switchView('disruption')"
                                 id="disruptionBtn"
                                 class="view-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                             <i class="fas fa-exclamation-triangle mr-2"></i>Data Gangguan
                         </button>
-                        <button onclick="switchView('engine')" 
+                        <button onclick="switchView('engine')"
                                 id="engineBtn"
                                 class="view-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
                             <i class="fas fa-cogs mr-2"></i>Issue Engine
@@ -1675,7 +1678,7 @@
                                     <th class="text-center issue-column" style="display: none;">Catatan Issue</th>
                                     <th class="text-center issue-column" style="display: none;">Progres Pembahasan</th>
                                     <!-- Kolom untuk Data Gangguan View -->
-                                    
+
                                     <th class="text-center disruption-column">Progres</th>
                                     <th class="text-center">Waktu Update</th>
                                 </tr>
@@ -1734,8 +1737,8 @@
                                             <td class="text-center">{{ number_format($latestStatus->load_value, 1) }} MW</td>
                                             <td class="text-center w-[150px]">
                                                 <span style="
-                                                    background: {{ $statusStyle['bg'] }}; 
-                                                    color: {{ $statusStyle['text'] }}; 
+                                                    background: {{ $statusStyle['bg'] }};
+                                                    color: {{ $statusStyle['text'] }};
                                                     padding: 4px 12px;
                                                     border-radius: 12px;
                                                     width: 150px;
@@ -1748,7 +1751,7 @@
                                             <!-- Kolom untuk Issue Engine View -->
                                             <td class="text-center w-40 issue-column " style="display: none;">
                                                 <span style="
-                                                    background: {{ $latestStatus->component ? '#E0F2FE' : '#F3F4F6' }}; 
+                                                    background: {{ $latestStatus->component ? '#E0F2FE' : '#F3F4F6' }};
                                                     color: {{ $latestStatus->component ? '#0369A1' : '#6B7280' }};
                                                     padding: 4px 12px;
                                                     border-radius: 12px;
@@ -1782,7 +1785,7 @@
                                                             <div class="flex justify-between items-start mb-3">
                                                                 <div>
                                                                     <span class="text-sm font-semibold text-gray-700">No. Pembahasan:</span>
-                                                                    <a href="{{ route('admin.other-discussions.show', $discussion->id) }}" 
+                                                                    <a href="{{ route('admin.other-discussions.show', $discussion->id) }}"
                                                                        class="ml-2 text-blue-600 hover:text-blue-800">
                                                                         {{ $discussion->no_pembahasan }}
                                                                     </a>
@@ -1796,7 +1799,7 @@
                                                                 <span class="text-sm font-semibold text-gray-700">Topic:</span>
                                                                 <p class="text-sm text-gray-600">{{ $discussion->topic }}</p>
                                                             </div>
-                                                            
+
                                                             <div class="mb-3">
                                                                 <span class="text-sm font-semibold text-gray-700">PIC:</span>
                                                                 <p class="text-sm text-gray-600">{{ $discussion->pic }}</p>
@@ -1847,7 +1850,7 @@
                                                 @endif
                                             </td>
                                             <!-- Kolom untuk Data Gangguan View -->
-                                            
+
                                             <td class="text-center text-sm text-gray-500 disruption-column">
                                                 <div class="max-w-[400px] mx-auto break-words">
                                                     {{ $latestStatus->progres }}
@@ -1867,7 +1870,7 @@
             {{-- </div> --}}
 
             <!-- Setelah section peta pembangkit -->
-          
+
 
             <!-- Footer -->
             <footer class="footer w-full">
@@ -2130,7 +2133,7 @@
                         .bindPopup(`
                             <div style="min-width: 350px;">
                                 <h3 style="margin: 0 0 10px 0; text-align: center; color: #0095B7;">{{ $plant->name }}</h3>
-                                
+
                                 <!-- Info Derating dan HOP -->
                                 <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; font-size: 0.9em;">
                                     @php
@@ -2145,10 +2148,10 @@
                                         $deratingPercentage = $totalCapacity > 0 ? round(($totalDerating / $totalCapacity) * 100, 2) : 0;
                                     @endphp
                                     <div style="
-                                        background: #FEF3C7; 
-                                        color: #D97706; 
-                                        padding: 4px 10px; 
-                                        border-radius: 8px; 
+                                        background: #FEF3C7;
+                                        color: #D97706;
+                                        padding: 4px 10px;
+                                        border-radius: 8px;
                                         border: 1px solid #FCD34D;
                                         font-weight: 600;
                                         display: flex;
@@ -2160,10 +2163,10 @@
                                         <span>({{ $deratingPercentage }}%)</span>
                                     </div>
                                     <div style="
-                                        background: #E0F2FE; 
-                                        color: #0369A1; 
-                                        padding: 4px 10px; 
-                                        border-radius: 8px; 
+                                        background: #E0F2FE;
+                                        color: #0369A1;
+                                        padding: 4px 10px;
+                                        border-radius: 8px;
                                         border: 1px solid #7DD3FC;
                                         font-weight: 600;
                                     ">
@@ -2188,14 +2191,14 @@
                                     $unitTidakSiap = $plant->machines->filter(function($machine) {
                                         $latestStatus = $machine->statusLogs->first();
                                         return $latestStatus && in_array($latestStatus->status, [
-                                            'Gangguan', 
-                                            'Pemeliharaan', 
-                                            'Mothballed', 
+                                            'Gangguan',
+                                            'Pemeliharaan',
+                                            'Mothballed',
                                             'Overhaul'
                                         ]);
                                     })->count();
                                 @endphp
-                                
+
                                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
                                     <div style="background: #D1FAE5; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #6EE7B7;">
                                         <div style="font-size: 0.8em; color: #059669;">Unit Aktif</div>
@@ -2285,8 +2288,8 @@
                                                     <div>
                                                         <span style="color: #666;">Status:</span>
                                                         <span style="
-                                                            background: {{ $statusStyle['bg'] }}; 
-                                                            color: {{ $statusStyle['text'] }}; 
+                                                            background: {{ $statusStyle['bg'] }};
+                                                            color: {{ $statusStyle['text'] }};
                                                             padding: 2px 8px;
                                                             border-radius: 12px;
                                                             font-size: 0.85em;
@@ -2333,9 +2336,9 @@
                                     <div id="chart-{{ $plant->id }}" style="height: 200px;"></div>
                                 </div>
 
-                                <button onclick="showAccumulationData({{ $plant->id }})" 
-                                        style="background: #0095B7; color: white; border: none; 
-                                               padding: 8px 15px; border-radius: 5px; 
+                                <button onclick="showAccumulationData({{ $plant->id }})"
+                                        style="background: #0095B7; color: white; border: none;
+                                               padding: 8px 15px; border-radius: 5px;
                                                cursor: pointer; width: 100%; margin-top: 10px;">
                                     Lihat Detail Lengkap
                                 </button>
@@ -2355,7 +2358,7 @@
 
                 function createLineChart(plantId) {
                     const chartContainer = document.querySelector("#chart-" + plantId);
-                    
+
                     // Tampilkan loading state
                     chartContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Loading chart data...</div>';
 
@@ -2444,7 +2447,7 @@
                                                 const val = value[dataPointIndex].toFixed(2);
                                                 total += parseFloat(val);
                                                 const color = w.globals.colors[index];
-                                                
+
                                                 content += `
                                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 3px 0;">
                                                         <div style="display: flex; align-items: center;">
@@ -2515,7 +2518,7 @@
 
                             // Hapus loading state
                             chartContainer.innerHTML = '';
-                            
+
                             var chart = new ApexCharts(chartContainer, options);
                             chart.render();
                         })
@@ -2581,7 +2584,7 @@
                         'live-data': document.querySelector('#live-data')
                     };
 
-                    
+
                     // Fungsi untuk smooth scroll
                     navLinks.forEach(link => {
                         link.addEventListener('click', function(e) {
@@ -2589,11 +2592,11 @@
                                 e.preventDefault();
                                 const targetId = this.getAttribute('href').substring(1); // Hapus karakter '#'
                                 const targetElement = sections[targetId];
-                                
+
                                 if (targetElement) {
                                     // Hapus kelas active dari semua link
                                     navLinks.forEach(link => link.classList.remove('active'));
-                                    
+
                                     // Tambah kelas active ke link yang diklik
                                     this.classList.add('active');
 
@@ -2622,7 +2625,7 @@
                     // Update active state berdasarkan posisi scroll
                     function updateActiveLink() {
                         const scrollPosition = window.scrollY;
-                        
+
                         // Cek untuk home section
                         if (scrollPosition < 100) { // Sesuaikan dengan kebutuhan
                             navLinks.forEach(link => link.classList.remove('active'));
@@ -2636,7 +2639,7 @@
                                 const rect = element.getBoundingClientRect();
                                 const elementTop = rect.top + window.pageYOffset;
                                 const elementBottom = elementTop + rect.height;
-                                
+
                                 if (scrollPosition >= elementTop - 200 && scrollPosition < elementBottom) {
                                     navLinks.forEach(link => link.classList.remove('active'));
                                     document.querySelector(`a[href="#${id}"]`).classList.add('active');
@@ -2647,7 +2650,7 @@
 
                     // Tambahkan event listener untuk scroll
                     window.addEventListener('scroll', updateActiveLink);
-                    
+
                     // Panggil updateActiveLink saat halaman dimuat
                     updateActiveLink();
                 });
@@ -2655,10 +2658,10 @@
                 // Tambahkan fungsi untuk update waktu
                 function updateLiveTime() {
                     const now = new Date();
-                    const options = { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
+                    const options = {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit',
@@ -2680,7 +2683,7 @@
                 mobileMenuButton.addEventListener('click', function() {
                     // Toggle menu visibility
                     mobileMenu.classList.toggle('hidden');
-                    
+
                     // Optional: Add slide animation
                     if (!mobileMenu.classList.contains('hidden')) {
                         mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
@@ -2702,7 +2705,7 @@
                 document.addEventListener('click', function(event) {
                     const isClickInsideMenu = mobileMenu.contains(event.target);
                     const isClickOnButton = mobileMenuButton.contains(event.target);
-                    
+
                     if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
                         mobileMenu.classList.add('hidden');
                         mobileMenu.style.maxHeight = '0';
@@ -2714,7 +2717,7 @@
             <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const chartData = @json($chartData);
-                
+
                 // Konfigurasi grafik bar
                 const barOptions = {
                     series: chartData.datasets,
@@ -2795,7 +2798,7 @@
                                     const val = value[dataPointIndex].toFixed(2);
                                     total += parseFloat(val);
                                     const color = w.globals.colors[index];
-                                    
+
                                     content += `
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 3px 0;">
                                             <div style="display: flex; align-items: center;">
@@ -2863,7 +2866,7 @@
                         }
                     }
                 };
-                
+
                 // Konfigurasi ring progress tetap sama
                 const readinessOptions = {
                     series: [chartData.machineReadiness],
@@ -2890,10 +2893,10 @@
                                         <div style="font-weight: bold; margin-bottom: 5px;">${status}</div>
                                         <div style="font-size: 12px;">${machineNames.join('<br>')}</div>
                                     `;
-                                    
+
                                     const chart = document.querySelector('#machineReadinessChart');
                                     chart.appendChild(tooltip);
-                                    
+
                                     // Position tooltip near mouse
                                     tooltip.style.left = event.pageX - chart.getBoundingClientRect().left + 10 + 'px';
                                     tooltip.style.top = event.pageY - chart.getBoundingClientRect().top + 10 + 'px';
@@ -2969,7 +2972,7 @@
                             const status = w.config.labels[dataPointIndex];
                             const machineNames = chartData.statusDetails.machineNames[status];
                             if (!machineNames || machineNames.length === 0) return '';
-                            
+
                             return `
                                 <div class="apexcharts-tooltip-title">${status}</div>
                                 <div class="apexcharts-tooltip-series-group">
@@ -2989,7 +2992,7 @@
                         }
                     }]
                 };
-                
+
                 const powerDeliveryOptions = {
                     ...readinessOptions,
                     series: [chartData.powerDeliveryPercentage],
@@ -3023,14 +3026,14 @@
                     },
                     labels: ['Tersalur']
                 };
-                
+
                 // Render charts
                 const charts = {
                     bar: new ApexCharts(document.querySelector("#unservedLoadChart"), barOptions),
                     readiness: new ApexCharts(document.querySelector("#machineReadinessChart"), readinessOptions),
                     power: new ApexCharts(document.querySelector("#powerDeliveryChart"), powerDeliveryOptions)
                 };
-                
+
                 Object.values(charts).forEach(chart => chart.render());
             });
             </script>
@@ -3044,10 +3047,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         const loader = document.getElementById('loader');
         const pageContent = document.getElementById('page-content');
-        
+
         // Show loader initially
         loader.classList.remove('loader-hidden');
-        
+
         // Hide loader and show content when page is fully loaded
         window.addEventListener('load', function() {
             setTimeout(() => {
@@ -3061,10 +3064,10 @@
             link.addEventListener('click', function(e) {
                 e.preventDefault();
                 const href = this.getAttribute('href');
-                
+
                 // Show loader
                 loader.classList.remove('loader-hidden');
-                
+
                 // Navigate after small delay
                 setTimeout(() => {
                     window.location.href = href;
@@ -3081,7 +3084,7 @@ let charts = {};
 
 function switchPeriod(period) {
     if (currentPeriod === period) return;
-    
+
     // Update button styles
     document.querySelectorAll('.period-btn').forEach(btn => {
         btn.classList.replace('bg-blue-500', 'bg-gray-500');
@@ -3089,18 +3092,18 @@ function switchPeriod(period) {
     });
     document.getElementById(`${period}Btn`).classList.replace('bg-gray-500', 'bg-blue-500');
     document.getElementById(`${period}Btn`).classList.replace('hover:bg-gray-600', 'hover:bg-blue-600');
-    
+
     // Show loading state
     showLoading();
-    
+
     // Gunakan URL yang benar sesuai dengan base URL aplikasi
     const baseUrl = window.location.origin; // Mendapatkan base URL dinamis
-    
+
     // Fetch new data
     fetch(`${baseUrl}/monitoring-data/${period}`)
         .then(async response => {
             const contentType = response.headers.get('content-type');
-            
+
             if (!response.ok) {
                 let errorMessage = '';
                 if (response.status === 404) {
@@ -3133,7 +3136,7 @@ function switchPeriod(period) {
         .catch(error => {
             console.error('Error:', error);
             hideLoading();
-            
+
             // Tampilkan error detail dengan SweetAlert2
             Swal.fire({
                 icon: 'error',
@@ -3161,7 +3164,7 @@ ${error.message}
                 width: '600px'
             });
         });
-    
+
     currentPeriod = period;
 }
 
@@ -3211,14 +3214,14 @@ function updateCharts(data) {
                 series: [data.machineReadiness]
             });
         }
-        
+
         // Update Power Delivery Chart
         if (charts.powerDelivery) {
             charts.powerDelivery.updateOptions({
                 series: [data.powerDeliveryPercentage]
             });
         }
-        
+
         // Update Unserved Load Chart
         if (charts.unservedLoad) {
             charts.unservedLoad.updateOptions({
@@ -3264,7 +3267,7 @@ function updateStatusDetails(details) {
         // Update ready/not ready percentages jika ada
         const readyElement = document.querySelector('[data-readiness="ready"]');
         const notReadyElement = document.querySelector('[data-readiness="not-ready"]');
-        
+
         if (readyElement && details.ready) {
             readyElement.textContent = `${details.ready.count} Unit (${details.ready.percentage}%)`;
         }
@@ -3282,7 +3285,7 @@ function updatePowerDetails(details) {
         const deliveredElement = document.querySelector('[data-power="delivered"]');
         const undeliveredElement = document.querySelector('[data-power="undelivered"]');
         const totalElement = document.querySelector('[data-power="total"]');
-        
+
         if (deliveredElement) {
             deliveredElement.textContent = `${Number(details.delivered).toFixed(1)} MW`;
         }
@@ -3323,33 +3326,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function switchView(view) {
     currentView = view;
-    
+
     // Update button styles
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.classList.remove('bg-blue-500', 'bg-gray-500', 'hover:bg-blue-600', 'hover:bg-gray-600');
         btn.classList.add('bg-gray-500', 'hover:bg-gray-600');
     });
-    
+
     const activeBtn = document.getElementById(`${view}Btn`);
     activeBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
     activeBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
-    
+
     // Toggle column visibility based on view
     const issueColumns = document.querySelectorAll('.issue-column');
     const disruptionColumns = document.querySelectorAll('.disruption-column');
-    
+
     if (view === 'engine') {
         // Show issue columns, hide disruption columns
         issueColumns.forEach(col => col.style.display = '');
         disruptionColumns.forEach(col => col.style.display = 'none');
-        
+
         // Filter rows to only show machines with component "Ada"
         allRows.forEach(row => {
             const componentSpan = row.querySelector('td.issue-column span');
             if (!componentSpan) return;
-            
+
             const componentText = componentSpan.textContent.trim();
-            
+
             // Only show rows where component is "Ada", regardless of status
             if (componentText === 'Ada') {
                 row.style.display = '';
@@ -3361,19 +3364,19 @@ function switchView(view) {
         // Show disruption columns, hide issue columns
         issueColumns.forEach(col => col.style.display = 'none');
         disruptionColumns.forEach(col => col.style.display = '');
-        
+
         // Filter rows to only show machines with non-operational status
         allRows.forEach(row => {
             const statusSpan = row.querySelector('td:nth-child(6) span');
             if (!statusSpan) return;
-            
+
             const statusText = statusSpan.textContent.trim();
             // Remove emoji and extra spaces from status text
             const cleanStatus = statusText.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
-            
+
             // Define operational statuses that should be hidden
             const operationalStatuses = ['Operasi', 'Standby', '⚡ Operasi', '🔆 Standby'];
-            
+
             // Hide rows with operational status
             if (operationalStatuses.includes(cleanStatus) || operationalStatuses.includes(statusText)) {
                 row.style.display = 'none';
@@ -3385,10 +3388,10 @@ function switchView(view) {
 }
 
 function updateTableData() {
-    const url = currentView === 'disruption' 
+    const url = currentView === 'disruption'
         ? '{{ route("getAccumulationData", ["markerId" => ":id"]) }}'
         : '{{ route("getEngineIssues", ["markerId" => ":id"]) }}';
-        
+
     // Update data for each power plant
     document.querySelectorAll('[data-plant-id]').forEach(row => {
         const plantId = row.getAttribute('data-plant-id');
@@ -3410,16 +3413,16 @@ function updateDisruptionData(row, data) {
     if (data && data.length > 0) {
         const issue = data[0];
         const cells = row.querySelectorAll('td');
-        
+
         // Update status if needed
         const statusCell = cells[5];
         const statusText = statusCell.querySelector('span').textContent.trim();
         // Remove emoji and extra spaces from status text
         const cleanStatus = statusText.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
-        
+
         // Define operational statuses that should be hidden
         const operationalStatuses = ['Operasi', 'Standby', '⚡ Operasi', '🔆 Standby'];
-        
+
         // Only show and update rows with non-operational status
         if (!operationalStatuses.includes(cleanStatus) && !operationalStatuses.includes(statusText)) {
             cells[8].querySelector('div').textContent = issue.progres || 'N/A';
@@ -3439,7 +3442,7 @@ function updateEngineIssueData(row, data) {
         const issue = data[0];
         if (issue.component === 'Ada') {
             cells[6].innerHTML = `<span style="
-                background: #E0F2FE; 
+                background: #E0F2FE;
                 color: #0369A1;
                 padding: 4px 12px;
                 border-radius: 12px;
@@ -3464,7 +3467,7 @@ function createDiscussion(plant, machine, equipment) {
     const baseUrl = window.location.origin + '/public';
     const issueDescription = `Issue pada ${machine}: ${equipment}`;
     const defaultCommitment = `Penyelesaian issue ${equipment} pada ${machine}`;
-    
+
     const discussionParams = {
         unit: 'UP KENDARI',
         topic: issueDescription,
@@ -3472,7 +3475,7 @@ function createDiscussion(plant, machine, equipment) {
         machine_name: machine
     };
 
-    @auth   
+    @auth
         // Jika sudah login, langsung ke halaman create
         window.location.href = `${baseUrl}/admin/other-discussions/create?${new URLSearchParams(discussionParams).toString()}`;
     @else
@@ -3481,7 +3484,7 @@ function createDiscussion(plant, machine, equipment) {
             params: discussionParams,
             returnUrl: '/admin/other-discussions/create'
         }));
-        
+
         // Tampilkan pesan dan arahkan ke halaman login
         Swal.fire({
             title: 'Login Diperlukan',
@@ -3507,10 +3510,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pendingDiscussion) {
             const data = JSON.parse(pendingDiscussion);
             const baseUrl = window.location.origin + '/public';
-            
+
             // Redirect ke halaman create dengan parameter yang tersimpan
             window.location.href = `${baseUrl}${data.returnUrl}?${new URLSearchParams(data.params).toString()}`;
-            
+
             // Hapus data dari session storage
             sessionStorage.removeItem('pendingDiscussion');
         }
@@ -3534,34 +3537,34 @@ function showMachineTooltip(event, status) {
     const tooltip = document.createElement('div');
     tooltip.id = 'machine-tooltip';
     tooltip.className = 'fixed bg-white p-4 rounded-lg shadow-lg z-50 text-sm min-w-[200px] max-w-[300px] border border-gray-200';
-    
+
     // Get the clicked element's position
     const element = event.currentTarget;
     const rect = element.getBoundingClientRect();
-    
+
     // Position tooltip to the right of the element
     tooltip.style.left = (rect.right + 10) + 'px';
     tooltip.style.top = rect.top + 'px';
-    
+
     tooltip.innerHTML = `
         <div class="font-semibold mb-2 pb-2 border-b border-gray-200">${status}</div>
         <div class="text-gray-600 max-h-[200px] overflow-y-auto">
             ${machineNames.map(name => `<div class="py-1">${name}</div>`).join('')}
         </div>
     `;
-    
+
     document.body.appendChild(tooltip);
-    
+
     // Adjust position if tooltip would go off screen
     const tooltipRect = tooltip.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     if (tooltipRect.right > viewportWidth) {
         // If tooltip would go off right edge, show it to the left of the element instead
         tooltip.style.left = (rect.left - tooltipRect.width - 10) + 'px';
     }
-    
+
     if (tooltipRect.bottom > viewportHeight) {
         // If tooltip would go off bottom edge, align it with bottom of viewport
         tooltip.style.top = (viewportHeight - tooltipRect.height - 10) + 'px';
@@ -3607,7 +3610,7 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const url = this.href;
-            
+
             // Check if user is logged in
             @guest
                 Swal.fire({

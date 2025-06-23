@@ -34,6 +34,11 @@ use App\Http\Controllers\Admin\PasswordVerificationController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
+// Add notulen route
+Route::get('/notulen', function () {
+    return view('notulen.form');
+})->name('notulen.form');
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -62,7 +67,7 @@ Route::prefix('attendance')->group(function () {
         ->name('attendance.scan-form')
         ->withoutMiddleware(['auth'])
         ->where('token', '.*');
-    
+
     Route::post('/submit', [AttendanceController::class, 'submitAttendance'])
         ->name('attendance.submit')
         ->withoutMiddleware(['auth']);
@@ -70,7 +75,7 @@ Route::prefix('attendance')->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     Route::get('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
 
     Route::prefix('machine-monitor')->group(function () {
@@ -106,10 +111,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/sr_wo/closed/print', [LaporanController::class, 'printSrWoClosed'])->name('laporan.sr_wo.closed.print');
         Route::post('/store-sr', [LaporanController::class, 'storeSR'])->name('laporan.store-sr');
         Route::post('/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
-        
+
 
     });
-   
+
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
         Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
@@ -120,7 +125,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     Route::prefix('meetings')->group(function () {
-        Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');    
+        Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');
         Route::get('/create', [AdminMeetingController::class, 'create'])->name('meetings.create');
         Route::post('/upload', [AdminMeetingController::class, 'upload'])->name('meetings.upload');
         Route::get('/print', [AdminMeetingController::class, 'print'])->name('meetings.print');
@@ -131,7 +136,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/admin/score-card/data', [AdminMeetingController::class, 'getScoreCardData'])->name('admin.score-card.data');
         Route::get('/admin/score-card/download', [AdminMeetingController::class, 'downloadScoreCard']);
         Route::get('/admin/meetings/print', [AdminMeetingController::class, 'print'])
-        ->name('admin.meetings.print'); 
+        ->name('admin.meetings.print');
     });
 
     Route::prefix('users')->group(function () {
@@ -143,7 +148,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::get('/search', [AdminUserController::class, 'search'])->name('users.search');
     });
-    
+
 
     Route::prefix('activities')->group(function () {
         Route::get('/export', [ActivityController::class, 'export'])->name('activities.export');
@@ -157,7 +162,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::prefix('score-card')->group(function () {
         Route::resource('score-card', ScoreCardDailyController::class);
-      
+
     });
 
     Route::get('/machine-monitor', [MachineMonitorController::class, 'index'])->name('machine-monitor');
@@ -174,7 +179,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/record-attendance', [AttendanceController::class, 'recordAttendance'])->name('record.attendance');
     Route::get('/daftar-hadir', [AttendanceController::class, 'index'])->name('admin.daftar_hadir.index');
     Route::get('/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])->name('admin.daftar_hadir.rekapitulasi');
-    
+
     // Tambahkan route untuk Zoom meeting
     Route::post('/create-zoom-meeting', [ScoreCardDailyController::class, 'createZoomMeeting'])
         ->name('admin.create-zoom-meeting');
@@ -183,7 +188,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendance/error', function() {
         return view('admin.daftar_hadir.error');
     })->name('attendance.error');
-    
+
     Route::get('/attendance/success', function() {
         return view('admin.daftar_hadir.success');
     })->name('attendance.success');
@@ -235,13 +240,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/laporan/create-wo', [LaporanController::class, 'createWO'])->name('laporan.create-wo');
         Route::post('/laporan/store-sr', [LaporanController::class, 'storeSR'])->name('laporan.store-sr');
         Route::post('/laporan/store-wo', [LaporanController::class, 'storeWO'])->name('laporan.store-wo');
-        
+
         // Route untuk update status
         Route::post('/laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
             ->name('laporan.update-sr-status');
         Route::post('/laporan/update-wo-status/{id}', [LaporanController::class, 'updateWOStatus'])
             ->name('laporan.update-wo-status');
-            
+
         // Route untuk WO Backlog
         Route::get('/laporan/create-wo-backlog', [LaporanController::class, 'createWOBacklog'])
             ->name('laporan.create-wo-backlog');
@@ -268,7 +273,7 @@ Route::prefix('attendance')->name('attendance.')->group(function () {
         ->name('scan-form')
         ->where('token', '.*')
         ->withoutMiddleware(['auth']);
-        
+
     Route::post('/submit', [AttendanceController::class, 'submitAttendance'])
         ->name('submit')
         ->withoutMiddleware(['auth']);
@@ -280,7 +285,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('/laporan/update-sr-status/{id}', [LaporanController::class, 'updateSRStatus'])
         ->name('admin.laporan.update-sr-status');
     Route::post('/laporan/wo/{id}/update-status', [LaporanController::class, 'updateWOStatus'])->name('laporan.update-wo-status');
-    
+
     // Route untuk daftar hadir
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
         Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
@@ -379,10 +384,10 @@ Route::post('/admin/peserta/update', [PesertaController::class, 'update'])->name
 Route::prefix('admin/laporan')->group(function () {
     // Route yang sudah ada
     Route::get('/sr-wo', [LaporanController::class, 'srWo'])->name('admin.laporan.sr_wo');
-    
+
     // Route baru untuk halaman manage
     Route::get('/manage', [LaporanController::class, 'manage'])->name('admin.laporan.manage');
-    
+
     // Route untuk delete
     Route::delete('/sr/{id}', [LaporanController::class, 'destroySR'])->name('admin.laporan.sr.destroy');
     Route::delete('/wo/{id}', [LaporanController::class, 'destroyWO'])->name('admin.laporan.wo.destroy');
@@ -401,7 +406,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
     // ... route lainnya ...
-    
+
     // Route khusus untuk delete
     Route::delete('/laporan/delete/{type}/{id}', [LaporanDeleteController::class, 'destroy'])
         ->name('laporan.delete')
@@ -422,7 +427,7 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
         Route::get('/report', [PembangkitController::class, 'report'])->name('report');
         Route::get('/report/download', [PembangkitController::class, 'downloadReport'])->name('report.download');
         Route::get('/report/print', [PembangkitController::class, 'printReport'])->name('report.print');
-        
+
         // Image routes
         Route::post('/upload-image', [PembangkitController::class, 'uploadImage'])->name('upload-image');
         Route::delete('/delete-image/{machineId}', [PembangkitController::class, 'deleteImage'])->name('delete-image');
@@ -440,14 +445,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/pembangkit/ready', [PembangkitController::class, 'ready'])->name('pembangkit.ready');
     Route::post('/pembangkit/save-status', [PembangkitController::class, 'saveStatus'])->name('pembangkit.save-status');
     Route::get('/pembangkit/get-status', [PembangkitController::class, 'getStatus'])->name('pembangkit.get-status');
-    
+
     // Tambahkan route baru untuk search
     Route::get('/pembangkit/search', [PembangkitController::class, 'searchMachines'])->name('pembangkit.search');
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {
     // ... other admin routes ...
-    
+
     // Backlog routes
     Route::get('/admin/laporan/create-backlog', [App\Http\Controllers\Admin\LaporanController::class, 'createBacklog'])
         ->name('admin.laporan.create-backlog');
@@ -457,7 +462,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     // ... route lainnya ...
-    
+
     Route::get('/admin/machine-status/view', [MachineStatusViewController::class, 'index'])
          ->name('admin.machine-status.view');
 });
@@ -479,15 +484,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'update' => 'other-discussions.update',
             'destroy' => 'other-discussions.destroy'
         ]);
-        
+
     // Tambahkan route untuk print dan export
     Route::get('other-discussions/print', [OtherDiscussionController::class, 'print'])
         ->name('other-discussions.print');
-    
+
     Route::get('other-discussions/export/{format}', [OtherDiscussionController::class, 'export'])
         ->name('other-discussions.export')
         ->where('format', 'xlsx|pdf');
-        
+
     Route::post('other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
         ->name('other-discussions.update-status');
 });
@@ -505,7 +510,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->name('overdue-discussions.destroy');
     Route::post('/overdue-discussions/{id}/update-status', [OverdueDiscussionController::class, 'updateStatus'])
         ->name('overdue-discussions.update-status');
-    
+
     // Tambahkan route baru untuk pengecekan overdue
     Route::post('/overdue-discussions/check', [OverdueDiscussionController::class, 'checkAndMoveOverdue'])
         ->name('overdue-discussions.check')
@@ -550,7 +555,7 @@ Route::post('/admin/other-discussions/generate-no-pembahasan', [App\Http\Control
 Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     // Other routes...
     Route::post('/other-discussions/generate-no-pembahasan', [
-        App\Http\Controllers\Admin\OtherDiscussionController::class, 
+        App\Http\Controllers\Admin\OtherDiscussionController::class,
         'generateNoPembahasan'
     ])->name('admin.other-discussions.generate-no-pembahasan');
 });
@@ -564,10 +569,10 @@ Route::middleware(['auth'])->group(function () {
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     // ... route lainnya ...
-    
+
     Route::get('other-discussions/show', [OtherDiscussionController::class, 'show'])
         ->name('other-discussions.show');
-    
+
     Route::get('other-discussions/{id}', [OtherDiscussionController::class, 'show_single'])
         ->name('other-discussions.show_single');
 });
@@ -582,7 +587,7 @@ Route::get('/admin/other-discussions/{id}/export/{format}', [OtherDiscussionCont
 
 Route::get('/get-plant-chart-data/{plantId}', [HomeController::class, 'getPlantChartData'])->name('plant.chart.data');
 
-Route::get('other-discussions/{id}/download-document', 
+Route::get('other-discussions/{id}/download-document',
     [OtherDiscussionController::class, 'downloadDocument'])
     ->name('admin.other-discussions.download-document');
 
@@ -593,11 +598,11 @@ Route::middleware(['auth', 'web'])->prefix('admin')->group(function () {
     // Verifikasi password
     Route::post('/verify-password', [PasswordVerificationController::class, 'verify'])
         ->name('verify-password');
-        
+
     // Route lainnya...
-    Route::delete('/other-discussions/{discussion}/remove-file/{index}', 
+    Route::delete('/other-discussions/{discussion}/remove-file/{index}',
         [OtherDiscussionController::class, 'removeFile']);
-    Route::delete('/other-discussions/{discussion}/commitments/{commitment}', 
+    Route::delete('/other-discussions/{discussion}/commitments/{commitment}',
         [OtherDiscussionController::class, 'removeCommitment']);
 });
 
@@ -610,7 +615,7 @@ Route::delete('/admin/other-discussions/{discussion}/remove-file/{index}', [App\
     ->name('admin.other-discussions.remove-file');
 
 // Route untuk hapus commitment
-Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}', 
+Route::delete('/admin/other-discussions/{discussion}/commitments/{commitment}',
     [App\Http\Controllers\Admin\OtherDiscussionController::class, 'removeCommitment'])
     ->name('admin.other-discussions.remove-commitment');
 
@@ -659,7 +664,7 @@ Route::post('/admin/laporan/update-wo/{id}', [LaporanController::class, 'updateW
 
     Route::get('/admin/laporan/download-document/{id}', [LaporanController::class, 'downloadDocument'])
         ->name('admin.laporan.download-document');
-    
+
 Route::prefix('admin/daftar-hadir')->group(function () {
     Route::get('/export-excel', [AttendanceController::class, 'exportExcel'])
         ->name('admin.daftar_hadir.export-excel');
@@ -671,14 +676,14 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Route yang sudah ada
     Route::get('/daftar-hadir/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])
         ->name('admin.daftar_hadir.rekapitulasi');
-    
+
     // Tambahkan route untuk export dan print
     Route::get('/daftar-hadir/export-excel', [AttendanceController::class, 'exportExcel'])
         ->name('admin.daftar_hadir.export-excel');
-    
+
     Route::get('/daftar-hadir/export-pdf', [AttendanceController::class, 'exportPDF'])
         ->name('admin.daftar_hadir.export-pdf');
-    
+
     // Route baru untuk print
     Route::get('/daftar-hadir/print', [AttendanceController::class, 'printView'])
         ->name('admin.daftar_hadir.print');
@@ -697,7 +702,7 @@ Route::get('/admin/laporan/download-backlog-document/{no_wo}', [LaporanControlle
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         // ... existing routes ...
-        
+
         // Daftar Hadir routes
         Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
             Route::get('/rekapitulasi', [AttendanceController::class, 'rekapitulasi'])->name('rekapitulasi');
