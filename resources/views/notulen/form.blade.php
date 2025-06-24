@@ -2,6 +2,14 @@
 
 @section('styles')
 <style>
+    .form-input {
+        background-image: url('{{ asset('background/bg.png') }}');
+        border: 1px solid #D1D5DB;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+        width: 100%;
+    }
+
     /* Navbar Styles */
     .nav-background {
         background-color: #1a1a1a;
@@ -237,165 +245,157 @@
     </div>
 </nav>
 
-<!-- Main Content -->
-<div class="pt-20"> <!-- Added padding top to account for fixed navbar -->
-    <div class="form-container">
+<div class="container mx-auto px-4 py-8 mt-16">
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('notulen.store') }}" method="POST" class="form-container" id="notulenForm">
+        @csrf
         <h2 class="form-title">Form Notulen</h2>
 
-        <form id="notulenForm">
-            <!-- Number Format Section -->
-            <div id="formatSection">
-                <div class="form-group">
-                    <label class="form-label" for="no_urut">No Urut</label>
-                    <input type="text" id="no_urut" class="form-input" placeholder="Masukkan nomor urut">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="unit">Unit</label>
-                    <select id="unit" class="form-select">
-                        <option value="">Pilih Unit</option>
-                        <option value="UPKD">UPKD</option>
-                        <option value="PLTD Bau Bau">PLTD Bau Bau</option>
-                        <option value="PLTD Wua Wua">PLTD Wua Wua</option>
-                        <option value="PLTD Poasia">PLTD Poasia</option>
-                        <option value="PLTD Kolaka">PLTD Kolaka</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="bidang">Bidang</label>
-                    <select id="bidang" class="form-select">
-                        <option value="">Pilih Bidang</option>
-                        <option value="Operasi">Operasi</option>
-                        <option value="Pemeliharaan">Pemeliharaan</option>
-                        <option value="K3">K3</option>
-                        <option value="Lingkungan">Lingkungan</option>
-                        <option value="Enjiniring">Enjiniring</option>
-                        <option value="Bussinest Support">Bussinest Support</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="sub_bidang">Sub Bidang</label>
-                    <select id="sub_bidang" class="form-select">
-                        <option value="">Pilih Sub Bidang</option>
-                        <option value="Rendal har">Rendal har</option>
-                        <option value="rendal outage">rendal outage</option>
-                        <option value="icc">icc</option>
-                        <option value="pengadaan">pengadaan</option>
-                        <option value="cbm">cbm</option>
-                        <option value="so">so</option>
-                        <option value="mmrk">mmrk</option>
-                        <option value="rendalop">rendalop</option>
-                        <option value="ep">ep</option>
-                        <option value="sdm">sdm</option>
-                        <option value="akt">akt</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="bulan">Bulan</label>
-                    <select id="bulan" class="form-select">
-                        <option value="">Pilih Bulan</option>
-                        @for($i = 1; $i <= 12; $i++)
-                            <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ $i }}</option>
-                        @endfor
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="tahun">Tahun</label>
-                    <select id="tahun" class="form-select">
-                        <option value="">Pilih Tahun</option>
-                        @for($year = 2025; $year <= 2030; $year++)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endfor
-                    </select>
-                </div>
-
-                <div class="preview-container">
-                    <div class="preview-title">Format Nomor:</div>
-                    <div class="preview-text" id="formatPreview">0000/UNIT/BIDANG/SUB-BIDANG/00/0000</div>
-                </div>
-
-                <button type="button" class="btn-next" id="btnNext">Lanjut ke Pembahasan</button>
+        <!-- Step 1: Format Number -->
+        <div id="step1">
+            <div class="form-group">
+                <label class="form-label" for="nomor_urut">No Urut</label>
+                <input type="text" id="nomor_urut" name="nomor_urut" class="form-input" required value="{{ $nextNomorUrut }}" readonly>
             </div>
 
-            <!-- Notes Section -->
-            <div id="notesSection" class="notes-section">
-                <div class="form-group">
-                    <label class="form-label" for="pembahasan">A. Pembahasan</label>
-                    <textarea id="pembahasan" class="form-textarea" placeholder="Masukkan poin-poin pembahasan..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="tindak_lanjut">B. Tindak Lanjut</label>
-                    <textarea id="tindak_lanjut" class="form-textarea" placeholder="Masukkan poin-poin tindak lanjut..."></textarea>
-                </div>
-
-                <button type="button" class="btn-next" id="btnBack" style="background-color: #4a5568;">Kembali</button>
-                <button type="button" class="btn-next" style="margin-top: 0.5rem;">Simpan Notulen</button>
+            <div class="form-group">
+                <label class="form-label" for="unit">Unit</label>
+                <select id="unit" name="unit" class="form-select" required>
+                    <option value="">Pilih Unit</option>
+                    <option value="UPKD" {{ old('unit') == 'UPKD' ? 'selected' : '' }}>UPKD</option>
+                    <option value="PLTD Bau Bau" {{ old('unit') == 'PLTD Bau Bau' ? 'selected' : '' }}>PLTD Bau Bau</option>
+                    <option value="PLTD Wua Wua" {{ old('unit') == 'PLTD Wua Wua' ? 'selected' : '' }}>PLTD Wua Wua</option>
+                    <option value="PLTD Poasia" {{ old('unit') == 'PLTD Poasia' ? 'selected' : '' }}>PLTD Poasia</option>
+                    <option value="PLTD Kolaka" {{ old('unit') == 'PLTD Kolaka' ? 'selected' : '' }}>PLTD Kolaka</option>
+                </select>
             </div>
-        </form>
-    </div>
+
+            <div class="form-group">
+                <label class="form-label" for="bidang">Bidang</label>
+                <select id="bidang" name="bidang" class="form-select" required>
+                    <option value="">Pilih Bidang</option>
+                    <option value="Operasi" {{ old('bidang') == 'Operasi' ? 'selected' : '' }}>Operasi</option>
+                    <option value="Pemeliharaan" {{ old('bidang') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
+                    <option value="K3" {{ old('bidang') == 'K3' ? 'selected' : '' }}>K3</option>
+                    <option value="Lingkungan" {{ old('bidang') == 'Lingkungan' ? 'selected' : '' }}>Lingkungan</option>
+                    <option value="Enjiniring" {{ old('bidang') == 'Enjiniring' ? 'selected' : '' }}>Enjiniring</option>
+                    <option value="Business Support" {{ old('bidang') == 'Business Support' ? 'selected' : '' }}>Business Support</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="sub_bidang">Sub Bidang</label>
+                <select id="sub_bidang" name="sub_bidang" class="form-select" required>
+                    <option value="">Pilih Sub Bidang</option>
+                    <option value="Rendal har" {{ old('sub_bidang') == 'Rendal har' ? 'selected' : '' }}>Rendal har</option>
+                    <option value="Rendal outage" {{ old('sub_bidang') == 'Rendal outage' ? 'selected' : '' }}>Rendal outage</option>
+                    <option value="ICC" {{ old('sub_bidang') == 'ICC' ? 'selected' : '' }}>ICC</option>
+                    <option value="Pengadaan" {{ old('sub_bidang') == 'Pengadaan' ? 'selected' : '' }}>Pengadaan</option>
+                    <option value="CBM" {{ old('sub_bidang') == 'CBM' ? 'selected' : '' }}>CBM</option>
+                    <option value="SO" {{ old('sub_bidang') == 'SO' ? 'selected' : '' }}>SO</option>
+                    <option value="MMRK" {{ old('sub_bidang') == 'MMRK' ? 'selected' : '' }}>MMRK</option>
+                    <option value="Rendalop" {{ old('sub_bidang') == 'Rendalop' ? 'selected' : '' }}>Rendalop</option>
+                    <option value="EP" {{ old('sub_bidang') == 'EP' ? 'selected' : '' }}>EP</option>
+                    <option value="SDM" {{ old('sub_bidang') == 'SDM' ? 'selected' : '' }}>SDM</option>
+                    <option value="AKT" {{ old('sub_bidang') == 'AKT' ? 'selected' : '' }}>AKT</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="bulan">Bulan</label>
+                <select id="bulan" name="bulan" class="form-select" required>
+                    <option value="">Pilih Bulan</option>
+                    @for($i = 1; $i <= 12; $i++)
+                        <option value="{{ $i }}" {{ old('bulan') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                    @endfor
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="tahun">Tahun</label>
+                <select id="tahun" name="tahun" class="form-select" required>
+                    <option value="">Pilih Tahun</option>
+                    @for($year = 2025; $year <= 2030; $year++)
+                        <option value="{{ $year }}" {{ old('tahun') == $year ? 'selected' : '' }}>{{ $year }}</option>
+                    @endfor
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Format Nomor Preview:</label>
+                <div id="formatPreview" class="p-2 bg-gray-100 rounded">-</div>
+            </div>
+        </div>
+
+        <!-- Step 2: Notulen Content -->
+        <div id="step2">
+            <div class="form-group">
+                <label class="form-label" for="pembahasan">A. Pembahasan</label>
+                <textarea id="pembahasan" name="pembahasan" class="form-input" rows="5" required>{{ old('pembahasan') }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="tindak_lanjut">B. Tindak Lanjut</label>
+                <textarea id="tindak_lanjut" name="tindak_lanjut" class="form-input" rows="5" required>{{ old('tindak_lanjut') }}</textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Simpan Notulen
+            </button>
+        </div>
+    </form>
 </div>
 
+@endsection
+
+@section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('notulenForm');
-    const preview = document.getElementById('formatPreview');
-    const formatSection = document.getElementById('formatSection');
-    const notesSection = document.getElementById('notesSection');
-    const btnNext = document.getElementById('btnNext');
-    const btnBack = document.getElementById('btnBack');
-    const inputs = ['no_urut', 'unit', 'bidang', 'sub_bidang', 'bulan', 'tahun'];
-
     // Mobile menu toggle
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
 
-    mobileMenuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
     });
 
-    inputs.forEach(id => {
-        document.getElementById(id).addEventListener('change', updatePreview);
-        document.getElementById(id).addEventListener('input', updatePreview);
-    });
+    function updateFormatPreview() {
+        const nomor = document.getElementById('nomor_urut').value || '-';
+        const unit = document.getElementById('unit').value || '-';
+        const bidang = document.getElementById('bidang').value || '-';
+        const subBidang = document.getElementById('sub_bidang').value || '-';
+        const bulan = document.getElementById('bulan').value || '-';
+        const tahun = document.getElementById('tahun').value || '-';
 
-    function updatePreview() {
-        const no_urut = document.getElementById('no_urut').value || '0000';
-        const unit = document.getElementById('unit').value || 'UNIT';
-        const bidang = document.getElementById('bidang').value || 'BIDANG';
-        const sub_bidang = document.getElementById('sub_bidang').value || 'SUB-BIDANG';
-        const bulan = document.getElementById('bulan').value || '00';
-        const tahun = document.getElementById('tahun').value || '0000';
-
-        preview.textContent = `${no_urut}/${unit}/${bidang}/${sub_bidang}/${bulan}/${tahun}`;
+        const formatNomor = `${nomor}/${unit}/${bidang}/${subBidang}/${bulan}/${tahun}`;
+        document.getElementById('formatPreview').textContent = formatNomor;
     }
 
-    btnNext.addEventListener('click', function() {
-        // Validate all fields are filled
-        let isValid = true;
-        inputs.forEach(id => {
-            if (!document.getElementById(id).value) {
-                isValid = false;
-            }
-        });
-
-        if (!isValid) {
-            alert('Mohon lengkapi semua field terlebih dahulu');
-            return;
-        }
-
-        formatSection.style.display = 'none';
-        notesSection.classList.add('active');
+    // Add event listeners to all form inputs
+    document.querySelectorAll('#step1 select').forEach(element => {
+        element.addEventListener('change', updateFormatPreview);
+        element.addEventListener('input', updateFormatPreview);
     });
 
-    btnBack.addEventListener('click', function() {
-        formatSection.style.display = 'block';
-        notesSection.classList.remove('active');
-    });
-});
+    // Initial preview update
+    updateFormatPreview();
 </script>
 @endsection

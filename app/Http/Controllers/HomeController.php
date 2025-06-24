@@ -6,6 +6,7 @@ use App\Models\Unit;
 use App\Models\News;
 use App\Models\Marker;
 use App\Models\Machine;
+use App\Models\Notulen;
 use App\Models\PowerPlant;
 use App\Models\MachineOperation;
 use App\Models\MachineStatusLog;
@@ -18,8 +19,11 @@ class HomeController extends Controller
     public function index()
     {
         try {
+            // Get notulen data
+            $notulens = Notulen::orderBy('created_at', 'desc')->get();
+
             // Get the latest status for each machine
-            $latestStatusSubquery = MachineStatusLog::select('machine_id', 
+            $latestStatusSubquery = MachineStatusLog::select('machine_id',
                 DB::raw('MAX(created_at) as max_created_at'))
                 ->groupBy('machine_id');
 
@@ -30,7 +34,7 @@ class HomeController extends Controller
                         ->on('machine_status_logs.created_at', '=', 'latest_status.max_created_at');
                 });
             }])->get();
-            
+
             // Ambil status logs untuk menampilkan riwayat gangguan
             $statusLogs = MachineStatusLog::with(['machine.powerPlant'])
                 ->joinSub($latestStatusSubquery, 'latest_status', function($join) {
@@ -49,12 +53,12 @@ class HomeController extends Controller
             $dmp_data = [];
             $load_value_data = [];
             $capacity_data = [];
-            
+
             // Generate tanggal untuk 7 hari terakhir
             $dates = [];
             for ($i = 6; $i >= 0; $i--) {
                 $dates[] = now()->subDays($i)->format('d M Y');
-                
+
                 // Hitung total capacity
                 $total_capacity_data[] = $powerPlants->sum(function($plant) {
                     return $plant->machines->sum('capacity');
@@ -68,7 +72,7 @@ class HomeController extends Controller
                 // Hitung active units berdasarkan status terbaru hari ini
                 $active_units_data[] = $powerPlants->sum(function($plant) {
                     return $plant->machines->filter(function($machine) {
-                        return $machine->statusLogs->first() && 
+                        return $machine->statusLogs->first() &&
                                $machine->statusLogs->first()->status === 'Operasi' &&
                                $machine->statusLogs->first()->tanggal->isToday();
                     })->count();
@@ -84,7 +88,7 @@ class HomeController extends Controller
             $datasets = [];
             foreach ($powerPlants as $plant) {
                 $unservedLoadData = [];
-                
+
                 foreach ($dates as $date) {
                     $dateFormatted = Carbon::createFromFormat('d M Y', $date)->format('Y-m-d');
                     $totalUnserved = 0;
@@ -108,10 +112,10 @@ class HomeController extends Controller
                             }
                         }
                     }
-                    
+
                     $unservedLoadData[] = round($totalUnserved, 2);
                 }
-                
+
                 // Hanya tambahkan ke dataset jika ada beban tak tersalur
                 if (array_sum($unservedLoadData) > 0) {
                     $datasets[] = [
@@ -137,7 +141,7 @@ class HomeController extends Controller
             foreach ($dates as $date) {
                 $dateFormatted = Carbon::createFromFormat('d M Y', $date)->format('Y-m-d');
                 $totalDMP = 0;
-                
+
                 foreach ($powerPlants as $plant) {
                     foreach ($plant->machines as $machine) {
                         // Ambil data operasi terakhir sebelum atau pada tanggal tersebut
@@ -145,7 +149,7 @@ class HomeController extends Controller
                             ->whereDate('recorded_at', '<=', $dateFormatted)
                             ->orderBy('recorded_at', 'desc')
                             ->first();
-                            
+
                         if ($lastOperation) {
                             $totalDMP += floatval($lastOperation->dmp);
                         }
@@ -154,9 +158,9 @@ class HomeController extends Controller
                 $totalPowerPlantCapacity[$dateFormatted] = $totalDMP;
             }
 
-            
+
             $chartData['totalCapacity'] = $totalPowerPlantCapacity;
-            
+
             // Hitung status mesin untuk hari ini
             $machineStatus = [
                 'Operasi' => 0,
@@ -176,11 +180,11 @@ class HomeController extends Controller
                 'Mothballed' => [],
                 'Overhaul' => []
             ];
-            
+
             foreach ($powerPlants as $plant) {
                 foreach ($plant->machines as $machine) {
                     $totalMachines++;
-                    
+
                     // Get the latest status log for this machine
                     $latestStatus = MachineStatusLog::where('machine_id', $machine->id)
                         ->orderBy('tanggal', 'desc')
@@ -194,11 +198,11 @@ class HomeController extends Controller
                             $machineStatus[$status] = 0;
                             $machinesByStatus[$status] = [];
                         }
-                        
+
                         $machineStatus[$status]++;
                         $machineName = $machine->name . ' (' . $plant->name . ')';
                         $machinesByStatus[$status][] = $machineName;
-                        
+
                         // Debug log
                         Log::info("Machine status recorded", [
                             'machine' => $machineName,
@@ -224,7 +228,7 @@ class HomeController extends Controller
 
             // Hitung persentase kesiapan (Operasi + Standby)
             $readyMachines = $machineStatus['Operasi'] + $machineStatus['Standby'];
-            $machineReadiness = $totalMachines > 0 ? 
+            $machineReadiness = $totalMachines > 0 ?
                 round(($readyMachines / $totalMachines) * 100, 1) : 0;
 
             // Detail status untuk ditampilkan
@@ -253,12 +257,12 @@ class HomeController extends Controller
 
             // Hitung detail beban tersalur
             $totalCapacity = 0;
-            
+
             $totalUnserved = 0;
-            
+
             // Ambil data hari ini
             $today = now()->format('Y-m-d');
-            
+
             foreach ($powerPlants as $plant) {
                 foreach ($plant->machines as $machine) {
                     // Ambil DMP terakhir dari MachineOperation
@@ -269,13 +273,13 @@ class HomeController extends Controller
 
                     if ($lastOperation) {
                         $totalCapacity += floatval($lastOperation->dmp);
-                        
+
                         // Cek apakah ada status gangguan
                         $statusLog = MachineStatusLog::where('machine_id', $machine->id)
                             ->whereDate('tanggal', $today)
                             ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
                             ->first();
-                            
+
                         if ($statusLog) {
                             $totalUnserved += floatval($lastOperation->dmp);
                         }
@@ -284,7 +288,7 @@ class HomeController extends Controller
             }
 
             $delivered = $totalCapacity - $totalUnserved;
-            $deliveryPercentage = $totalCapacity > 0 ? 
+            $deliveryPercentage = $totalCapacity > 0 ?
                 round(($delivered / $totalCapacity) * 100, 1) : 0;
 
             // Tambahkan ke chartData
@@ -294,7 +298,7 @@ class HomeController extends Controller
                 'undelivered' => $totalUnserved,
                 'percentage' => $deliveryPercentage
             ];
-            
+
             $chartData['powerDeliveryPercentage'] = $deliveryPercentage;
 
             return view('homepage', compact(
@@ -311,13 +315,14 @@ class HomeController extends Controller
                 'total_capacity',
                 'total_units',
                 'active_units',
-                'chartData'
+                'chartData',
+                'notulens'
             ));
-            
+
         } catch (\Exception $e) {
             Log::error('Error in HomeController@index: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
-            
+
             return view('homepage', [
                 'statusLogs' => collect([]),
                 'powerPlants' => collect([]),
@@ -351,7 +356,8 @@ class HomeController extends Controller
                         'percentage' => 0
                     ],
                     'powerDeliveryPercentage' => 0
-                ]
+                ],
+                'notulens' => collect([])
             ]);
         }
     }
@@ -361,7 +367,7 @@ class HomeController extends Controller
         try {
             // Gunakan model PowerPlant untuk mendapatkan data pembangkit
             $powerPlant = PowerPlant::find($markerId);
-            
+
             if (!$powerPlant) {
                 return response()->json([
                     'message' => 'Power Plant tidak ditemukan',
@@ -419,7 +425,7 @@ class HomeController extends Controller
     {
         try {
             Log::info('Starting getPlantChartData', ['plant_id' => $plantId]);
-            
+
             $endDate = Carbon::now();
             $startDate = Carbon::now()->subDays(6);
 
@@ -470,7 +476,7 @@ class HomeController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'error' => 'Failed to load chart data',
                 'message' => $e->getMessage()
@@ -487,9 +493,9 @@ class HomeController extends Controller
                 'method' => request()->method(),
                 'headers' => request()->headers->all()
             ]);
-            
+
             Log::info('Starting getMonitoringData', ['period' => $period]);
-            
+
             // Set tanggal berdasarkan periode
             $endDate = now();
             $startDate = match($period) {
@@ -516,7 +522,7 @@ class HomeController extends Controller
             // Siapkan data untuk response
             $dates = [];
             $datasets = [];
-            
+
             // Format tanggal sesuai periode
             $dateFormat = match($period) {
                 'daily' => 'd M',
@@ -542,12 +548,12 @@ class HomeController extends Controller
             // Hitung data untuk setiap pembangkit
             foreach ($powerPlants as $plant) {
                 $unservedLoadData = array_fill(0, count($dates), 0);
-                
+
                 foreach ($plant->machines as $machine) {
                     foreach ($machine->statusLogs as $log) {
                         $logDate = Carbon::parse($log->tanggal)->format($dateFormat);
                         $dateIndex = array_search($logDate, $dates);
-                        
+
                         if ($dateIndex !== false) {
                             $lastOperation = MachineOperation::where('machine_id', $machine->id)
                                 ->whereDate('recorded_at', '<=', $log->tanggal)
@@ -560,7 +566,7 @@ class HomeController extends Controller
                         }
                     }
                 }
-                
+
                 if (array_sum($unservedLoadData) > 0) {
                     $datasets[] = [
                         'name' => $plant->name,
@@ -616,7 +622,7 @@ class HomeController extends Controller
                 'period' => $period,
                 'url' => request()->fullUrl()
             ]);
-            
+
             $errorDetail = config('app.debug') ? [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -656,11 +662,11 @@ class HomeController extends Controller
                 'Mothballed' => [],
                 'Overhaul' => []
             ];
-            
+
             foreach ($powerPlants as $plant) {
                 foreach ($plant->machines as $machine) {
                     $totalMachines++;
-                    
+
                     // Get the latest status log for this machine
                     $latestStatus = MachineStatusLog::where('machine_id', $machine->id)
                         ->orderBy('tanggal', 'desc')
@@ -674,7 +680,7 @@ class HomeController extends Controller
                             $machineStatus[$status] = 0;
                             $machinesByStatus[$status] = [];
                         }
-                        
+
                         $machineStatus[$status]++;
                         $machineName = $machine->name . ' (' . $plant->name . ')';
                         $machinesByStatus[$status][] = $machineName;
@@ -684,14 +690,14 @@ class HomeController extends Controller
 
             // Hitung persentase kesiapan (Operasi + Standby)
             $readyMachines = $machineStatus['Operasi'] + $machineStatus['Standby'];
-            $machineReadiness = $totalMachines > 0 ? 
+            $machineReadiness = $totalMachines > 0 ?
                 round(($readyMachines / $totalMachines) * 100, 1) : 0;
 
             // Hitung total kapasitas dan beban tak tersalur
             $totalCapacity = 0;
             $totalUnserved = 0;
             $today = now()->format('Y-m-d');
-            
+
             foreach ($powerPlants as $plant) {
                 foreach ($plant->machines as $machine) {
                     // Ambil DMP terakhir dari MachineOperation
@@ -702,13 +708,13 @@ class HomeController extends Controller
 
                     if ($lastOperation) {
                         $totalCapacity += floatval($lastOperation->dmp);
-                        
+
                         // Cek apakah ada status gangguan
                         $statusLog = MachineStatusLog::where('machine_id', $machine->id)
                             ->whereDate('tanggal', $today)
                             ->whereIn('status', ['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'])
                             ->first();
-                            
+
                         if ($statusLog) {
                             $totalUnserved += floatval($lastOperation->dmp);
                         }
@@ -718,7 +724,7 @@ class HomeController extends Controller
 
             // Hitung persentase daya tersalur
             $delivered = $totalCapacity - $totalUnserved;
-            $powerDeliveryPercentage = $totalCapacity > 0 ? 
+            $powerDeliveryPercentage = $totalCapacity > 0 ?
                 round(($delivered / $totalCapacity) * 100, 1) : 0;
 
             return [
@@ -757,7 +763,7 @@ class HomeController extends Controller
         try {
             // Get the power plant
             $powerPlant = PowerPlant::find($markerId);
-            
+
             if (!$powerPlant) {
                 return response()->json([
                     'message' => 'Power Plant tidak ditemukan',

@@ -1299,6 +1299,85 @@
                 border-radius: 3px !important;
             }
         }
+
+        /* Notulen Table Styles */
+        .notulen-table {
+            font-size: 14px;
+            background-color: white;
+            margin-bottom: 0;
+        }
+
+        .notulen-table thead th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 1rem;
+        }
+
+        .notulen-table tbody tr {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .notulen-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notulen-table td, .notulen-table th {
+            vertical-align: middle;
+            border-left: 1px solid #dee2e6;
+            padding: 1rem;
+        }
+
+        .notulen-table td:last-child, .notulen-table th:last-child {
+            border-right: 1px solid #dee2e6;
+        }
+
+        .notulen-card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        .notulen-card:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .notulen-header {
+            background: linear-gradient(45deg, #0d6efd, #0a58ca);
+            border-radius: 8px 8px 0 0;
+            padding: 1.25rem;
+        }
+
+        .notulen-badge {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #0d6efd;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+
+        .notulen-text-wrap {
+            word-break: break-word;
+            line-height: 1.5;
+            max-width: 250px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .notulen-table {
+                font-size: 13px;
+            }
+
+            .notulen-table td, .notulen-table th {
+                padding: 0.75rem !important;
+            }
+
+            .notulen-text-wrap {
+                max-width: 150px;
+            }
+        }
     </style>
 
     <script>
@@ -1869,6 +1948,121 @@
             </div>
             {{-- </div> --}}
 
+              <!-- Notulen Table Section -->
+    <div class="container mt-5 mb-5">
+        <div class="notulen-card">
+            <div class="notulen-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="text-white mb-0 fw-bold">Daftar Notulen</h4>
+                    <span class="notulen-badge">Total: {{ $notulens->count() }}</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="notulen-table table">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 5%;">No.</th>
+                                <th class="text-center" style="width: 15%;">Nomor Format</th>
+                                <th class="text-center" style="width: 10%;">Unit</th>
+                                <th class="text-center" style="width: 10%;">Bidang</th>
+                                <th class="text-center" style="width: 10%;">Sub Bidang</th>
+                                <th class="text-center" style="width: 20%;">Pembahasan</th>
+                                <th class="text-center" style="width: 20%;">Tindak Lanjut</th>
+                                <th class="text-center" style="width: 10%;">Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($notulens as $index => $notulen)
+                                <tr>
+                                    <td class="text-center">{{ $index + 1 }}</td>
+                                    <td class="text-center fw-medium">{{ $notulen->format_nomor }}</td>
+                                    <td class="text-center">{{ $notulen->unit }}</td>
+                                    <td class="text-center">{{ $notulen->bidang }}</td>
+                                    <td class="text-center">{{ $notulen->sub_bidang }}</td>
+                                    <td>
+                                        <div class="notulen-text-wrap">
+                                            {{ Str::limit($notulen->pembahasan, 100) }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="notulen-text-wrap">
+                                            {{ Str::limit($notulen->tindak_lanjut, 100) }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ $notulen->created_at->format('d/m/Y') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        <i class="fas fa-folder-open me-2"></i>Tidak ada data notulen
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<style>
+    .table {
+        font-size: 14px;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        border-top: none;
+        background-color: #f8f9fa;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05) !important;
+    }
+
+    .table td, .table th {
+        vertical-align: middle;
+        border-left: 1px solid #dee2e6;
+    }
+
+    .table td:last-child, .table th:last-child {
+        border-right: 1px solid #dee2e6;
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        border-radius: 8px 8px 0 0 !important;
+    }
+
+    .text-wrap {
+        word-break: break-word;
+        line-height: 1.5;
+    }
+
+    .font-weight-medium {
+        font-weight: 500;
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .table {
+            font-size: 13px;
+        }
+
+        .table td, .table th {
+            padding: 0.5rem !important;
+        }
+    }
+</style>
             <!-- Setelah section peta pembangkit -->
 
 
