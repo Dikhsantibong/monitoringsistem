@@ -36,8 +36,10 @@ use App\Http\Controllers\NotulenController;
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
 // Update notulen routes to use controller
-Route::get('/notulen', [NotulenController::class, 'create'])->name('notulen.form');
+Route::get('/notulen', [NotulenController::class, 'form'])->name('notulen.form');
+Route::get('/notulen/create', [NotulenController::class, 'create'])->name('notulen.create');
 Route::post('/notulen', [NotulenController::class, 'store'])->name('notulen.store');
+Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notulen.show');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);

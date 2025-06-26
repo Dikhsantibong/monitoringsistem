@@ -13,6 +13,7 @@ use App\Models\MachineStatusLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -20,7 +21,10 @@ class HomeController extends Controller
     {
         try {
             // Get notulen data
-            $notulens = Notulen::orderBy('created_at', 'desc')->get();
+            $notulens = Notulen::orderBy('tanggal', 'desc')
+                              ->orderBy('waktu_mulai', 'desc')
+                              ->take(10)
+                              ->get();
 
             // Get the latest status for each machine
             $latestStatusSubquery = MachineStatusLog::select('machine_id',

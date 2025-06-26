@@ -1305,6 +1305,7 @@
             font-size: 14px;
             background-color: white;
             margin-bottom: 0;
+            color: #000000
         }
 
         .notulen-table thead th {
@@ -1312,11 +1313,13 @@
             background-color: #f8f9fa;
             border-bottom: 2px solid #dee2e6;
             padding: 1rem;
+            color: #000000;
         }
 
         .notulen-table tbody tr {
             transition: all 0.2s ease-in-out;
             border-bottom: 1px solid #dee2e6;
+            color: #000000;
         }
 
         .notulen-table tbody tr:hover {
@@ -1327,6 +1330,7 @@
             vertical-align: middle;
             border-left: 1px solid #dee2e6;
             padding: 1rem;
+            color: #000000;
         }
 
         .notulen-table td:last-child, .notulen-table th:last-child {
@@ -1376,6 +1380,78 @@
 
             .notulen-text-wrap {
                 max-width: 150px;
+            }
+        }
+
+        /* Notulen section styles */
+        .notulen-section {
+            padding: 2rem;
+            background-color: #f8fafc;
+            margin: 2rem 0;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .notulen-title {
+            color: #0095B7;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .notulen-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .notulen-table th,
+        .notulen-table td {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .notulen-table th {
+            background-color: #0095B7;
+            color: white;
+            font-weight: 500;
+        }
+
+        .notulen-table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .btn-view {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #0095B7;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view:hover {
+            background-color: #007a94;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-view i {
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .notulen-table {
+                display: block;
+                overflow-x: auto;
             }
         }
     </style>
@@ -1948,63 +2024,45 @@
             </div>
             {{-- </div> --}}
 
-              <!-- Notulen Table Section -->
-    <div class="container mt-5 mb-5">
-        <div class="notulen-card">
-            <div class="notulen-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="text-white mb-0 fw-bold">Daftar Notulen</h4>
-                    <span class="notulen-badge">Total: {{ $notulens->count() }}</span>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="notulen-table table">
-                        <thead>
-                            <tr>
-                                <th class="text-center" style="width: 5%;">No.</th>
-                                <th class="text-center" style="width: 15%;">Nomor Format</th>
-                                <th class="text-center" style="width: 10%;">Unit</th>
-                                <th class="text-center" style="width: 10%;">Bidang</th>
-                                <th class="text-center" style="width: 10%;">Sub Bidang</th>
-                                <th class="text-center" style="width: 20%;">Pembahasan</th>
-                                <th class="text-center" style="width: 20%;">Tindak Lanjut</th>
-                                <th class="text-center" style="width: 10%;">Tanggal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($notulens as $index => $notulen)
-                                <tr>
-                                    <td class="text-center">{{ $index + 1 }}</td>
-                                    <td class="text-center fw-medium">{{ $notulen->format_nomor }}</td>
-                                    <td class="text-center">{{ $notulen->unit }}</td>
-                                    <td class="text-center">{{ $notulen->bidang }}</td>
-                                    <td class="text-center">{{ $notulen->sub_bidang }}</td>
-                                    <td>
-                                        <div class="notulen-text-wrap">
-                                            {{ Str::limit($notulen->pembahasan, 100) }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="notulen-text-wrap">
-                                            {{ Str::limit($notulen->tindak_lanjut, 100) }}
-                                        </div>
-                                    </td>
-                                    <td class="text-center">{{ $notulen->created_at->format('d/m/Y') }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center py-4 text-muted">
-                                        <i class="fas fa-folder-open me-2"></i>Tidak ada data notulen
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+
+
+    <!-- Notulen Section -->
+<div class="container">
+    <div class="notulen-section">
+        <h2 class="notulen-title">Notulen Rapat Terbaru</h2>
+        <div class="table-responsive">
+            <table class="notulen-table">
+                <thead>
+                    <tr>
+                        <th style="color: #000000;">No</th>
+                        <th style="color: #000000;">Tanggal</th>
+                        <th style="color: #000000;">Unit</th>
+                        <th style="color: #000000;">Agenda</th>
+                        <th style="color: #000000;">Pimpinan Rapat</th>
+                        <th style="color: #000000;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($notulens as $notulen)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $notulen->tanggal ? $notulen->tanggal->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $notulen->unit ?? '-' }}</td>
+                        <td>{{ $notulen->agenda ? Str::limit($notulen->agenda, 50) : '-' }}</td>
+                        <td>{{ $notulen->pimpinan_rapat ?? '-' }}</td>
+                        <td>
+                            <a href="{{ route('notulen.show', $notulen->id) }}" class="btn-view">
+                                <i class="fas fa-eye"></i>
+                                Lihat
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
 <style>
     .table {
@@ -3878,3 +3936,5 @@ function handleCreateDiscussion(plantName, machineName) {
     });
 }
 </script>
+
+

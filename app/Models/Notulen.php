@@ -15,11 +15,25 @@ class Notulen extends Model
         'tahun',
         'pembahasan',
         'tindak_lanjut',
-        'format_nomor'
+        'format_nomor',
+        'pimpinan_rapat',
+        'tempat',
+        'agenda',
+        'peserta',
+        'tanggal',
+        'waktu_mulai',
+        'waktu_selesai',
+        'pimpinan_rapat_nama',
+        'notulis_nama',
+        'tanggal_tanda_tangan'
     ];
 
     protected $casts = [
         'tahun' => 'integer',
+        'tanggal' => 'date',
+        'tanggal_tanda_tangan' => 'date',
+        'waktu_mulai' => 'datetime',
+        'waktu_selesai' => 'datetime'
     ];
 
     // Generate the formatted number

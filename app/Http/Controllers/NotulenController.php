@@ -4,35 +4,53 @@ namespace App\Http\Controllers;
 
 use App\Models\Notulen;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class NotulenController extends Controller
 {
-    public function create()
+    public function form()
     {
-        // Get the last nomor urut and increment it
-        $lastNotulen = Notulen::orderBy('id', 'desc')->first();
-        $nextNomorUrut = $lastNotulen ? (int)$lastNotulen->nomor_urut + 1 : 1;
+        $nextNomorUrut = Notulen::max('nomor_urut') + 1;
+        return view('notulen.form', compact('nextNomorUrut'));
+    }
 
-        return view('notulen.form', [
-            'nextNomorUrut' => str_pad($nextNomorUrut, 4, '0', STR_PAD_LEFT)
+    public function create(Request $request)
+    {
+        return view('notulen.create', [
+            'nomor_urut' => $request->nomor_urut,
+            'unit' => $request->unit,
+            'bidang' => $request->bidang,
+            'sub_bidang' => $request->sub_bidang,
+            'bulan' => $request->bulan,
+            'tahun' => $request->tahun
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nomor_urut' => 'required|string',
-            'unit' => 'required|string',
-            'bidang' => 'required|string',
-            'sub_bidang' => 'required|string',
-            'bulan' => 'required|string',
-            'tahun' => 'required|integer',
-            'pembahasan' => 'required|string',
-            'tindak_lanjut' => 'required|string',
+            'nomor_urut' => 'required',
+            'unit' => 'required',
+            'bidang' => 'required',
+            'sub_bidang' => 'required',
+            'bulan' => 'required',
+            'tahun' => 'required',
+            'pimpinan_rapat' => 'required',
+            'tempat' => 'required',
+            'agenda' => 'required',
+            'peserta' => 'required',
+            'tanggal' => 'required|date',
+            'waktu_mulai' => 'required',
+            'waktu_selesai' => 'required',
+            'pembahasan' => 'required',
+            'tindak_lanjut' => 'required',
+            'pimpinan_rapat_nama' => 'required',
+            'notulis_nama' => 'required',
+            'tanggal_tanda_tangan' => 'required|date'
         ]);
 
-        // Generate the formatted number
-        $format_nomor = Notulen::generateFormatNomor(
+        // Generate format nomor
+        $formatNomor = Notulen::generateFormatNomor(
             $validated['nomor_urut'],
             $validated['unit'],
             $validated['bidang'],
@@ -41,20 +59,18 @@ class NotulenController extends Controller
             $validated['tahun']
         );
 
-        // Check if the format number already exists
-        if (Notulen::where('format_nomor', $format_nomor)->exists()) {
-            return back()
-                ->withInput()
-                ->withErrors(['format_nomor' => 'Nomor format ini sudah ada dalam sistem.']);
-        }
-
         // Create the notulen
         $notulen = Notulen::create([
             ...$validated,
-            'format_nomor' => $format_nomor
+            'format_nomor' => $formatNomor
         ]);
 
-        return redirect()->route('notulen.form')
-            ->with('success', 'Notulen berhasil disimpan dengan nomor: ' . $format_nomor);
+        // Redirect to show view
+        return redirect()->route('notulen.show', $notulen->id);
+    }
+
+    public function show(Notulen $notulen)
+    {
+        return view('notulen.show', compact('notulen'));
     }
 }

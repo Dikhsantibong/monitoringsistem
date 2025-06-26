@@ -89,7 +89,7 @@
         font-weight: 500;
     }
 
-    .form-select, .form-input, .form-textarea {
+    .form-select, .form-input {
         width: 100%;
         padding: 0.5rem;
         border: 1px solid #D1D5DB;
@@ -97,7 +97,7 @@
         background-color: #F9FAFB;
     }
 
-    .form-select:focus, .form-input:focus, .form-textarea:focus {
+    .form-select:focus, .form-input:focus {
         outline: none;
         border-color: #0095B7;
         ring: 2px solid #0095B7;
@@ -122,21 +122,7 @@
         font-size: 1.1rem;
     }
 
-    .notes-section {
-        display: none;
-        margin-top: 2rem;
-    }
-
-    .notes-section.active {
-        display: block;
-    }
-
-    .form-textarea {
-        min-height: 150px;
-        resize: vertical;
-    }
-
-    .btn-next {
+    .btn-create {
         background-color: #0095B7;
         color: white;
         padding: 0.75rem 1.5rem;
@@ -148,9 +134,11 @@
         display: block;
         width: 100%;
         margin-top: 1rem;
+        text-align: center;
+        text-decoration: none;
     }
 
-    .btn-next:hover {
+    .btn-create:hover {
         background-color: #007a94;
     }
 
@@ -262,104 +250,85 @@
         </div>
     @endif
 
-    <form action="{{ route('notulen.store') }}" method="POST" class="form-container" id="notulenForm">
-        @csrf
+    <form id="initialForm" class="form-container">
         <h2 class="form-title">Form Notulen</h2>
 
-        <!-- Step 1: Format Number -->
-        <div id="step1">
-            <div class="form-group">
-                <label class="form-label" for="nomor_urut">No Urut</label>
-                <input type="text" id="nomor_urut" name="nomor_urut" class="form-input" required value="{{ $nextNomorUrut }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="unit">Unit</label>
-                <select id="unit" name="unit" class="form-select" required>
-                    <option value="">Pilih Unit</option>
-                    <option value="UPKD" {{ old('unit') == 'UPKD' ? 'selected' : '' }}>UPKD</option>
-                    <option value="PLTD Bau Bau" {{ old('unit') == 'PLTD Bau Bau' ? 'selected' : '' }}>PLTD Bau Bau</option>
-                    <option value="PLTD Wua Wua" {{ old('unit') == 'PLTD Wua Wua' ? 'selected' : '' }}>PLTD Wua Wua</option>
-                    <option value="PLTD Poasia" {{ old('unit') == 'PLTD Poasia' ? 'selected' : '' }}>PLTD Poasia</option>
-                    <option value="PLTD Kolaka" {{ old('unit') == 'PLTD Kolaka' ? 'selected' : '' }}>PLTD Kolaka</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="bidang">Bidang</label>
-                <select id="bidang" name="bidang" class="form-select" required>
-                    <option value="">Pilih Bidang</option>
-                    <option value="Operasi" {{ old('bidang') == 'Operasi' ? 'selected' : '' }}>Operasi</option>
-                    <option value="Pemeliharaan" {{ old('bidang') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
-                    <option value="K3" {{ old('bidang') == 'K3' ? 'selected' : '' }}>K3</option>
-                    <option value="Lingkungan" {{ old('bidang') == 'Lingkungan' ? 'selected' : '' }}>Lingkungan</option>
-                    <option value="Enjiniring" {{ old('bidang') == 'Enjiniring' ? 'selected' : '' }}>Enjiniring</option>
-                    <option value="Business Support" {{ old('bidang') == 'Business Support' ? 'selected' : '' }}>Business Support</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="sub_bidang">Sub Bidang</label>
-                <select id="sub_bidang" name="sub_bidang" class="form-select" required>
-                    <option value="">Pilih Sub Bidang</option>
-                    <option value="Rendal har" {{ old('sub_bidang') == 'Rendal har' ? 'selected' : '' }}>Rendal har</option>
-                    <option value="Rendal outage" {{ old('sub_bidang') == 'Rendal outage' ? 'selected' : '' }}>Rendal outage</option>
-                    <option value="ICC" {{ old('sub_bidang') == 'ICC' ? 'selected' : '' }}>ICC</option>
-                    <option value="Pengadaan" {{ old('sub_bidang') == 'Pengadaan' ? 'selected' : '' }}>Pengadaan</option>
-                    <option value="CBM" {{ old('sub_bidang') == 'CBM' ? 'selected' : '' }}>CBM</option>
-                    <option value="SO" {{ old('sub_bidang') == 'SO' ? 'selected' : '' }}>SO</option>
-                    <option value="MMRK" {{ old('sub_bidang') == 'MMRK' ? 'selected' : '' }}>MMRK</option>
-                    <option value="Rendalop" {{ old('sub_bidang') == 'Rendalop' ? 'selected' : '' }}>Rendalop</option>
-                    <option value="EP" {{ old('sub_bidang') == 'EP' ? 'selected' : '' }}>EP</option>
-                    <option value="SDM" {{ old('sub_bidang') == 'SDM' ? 'selected' : '' }}>SDM</option>
-                    <option value="AKT" {{ old('sub_bidang') == 'AKT' ? 'selected' : '' }}>AKT</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="bulan">Bulan</label>
-                <select id="bulan" name="bulan" class="form-select" required>
-                    <option value="">Pilih Bulan</option>
-                    @for($i = 1; $i <= 12; $i++)
-                        <option value="{{ $i }}" {{ old('bulan') == $i ? 'selected' : '' }}>{{ $i }}</option>
-                    @endfor
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="tahun">Tahun</label>
-                <select id="tahun" name="tahun" class="form-select" required>
-                    <option value="">Pilih Tahun</option>
-                    @for($year = 2025; $year <= 2030; $year++)
-                        <option value="{{ $year }}" {{ old('tahun') == $year ? 'selected' : '' }}>{{ $year }}</option>
-                    @endfor
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Format Nomor Preview:</label>
-                <div id="formatPreview" class="p-2 bg-gray-100 rounded">-</div>
-            </div>
+        <div class="form-group">
+            <label class="form-label" for="nomor_urut">No Urut</label>
+            <input type="text" id="nomor_urut" name="nomor_urut" class="form-input" required value="{{ $nextNomorUrut }}" readonly>
         </div>
 
-        <!-- Step 2: Notulen Content -->
-        <div id="step2">
-            <div class="form-group">
-                <label class="form-label" for="pembahasan">A. Pembahasan</label>
-                <textarea id="pembahasan" name="pembahasan" class="form-input" rows="5" required>{{ old('pembahasan') }}</textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="tindak_lanjut">B. Tindak Lanjut</label>
-                <textarea id="tindak_lanjut" name="tindak_lanjut" class="form-input" rows="5" required>{{ old('tindak_lanjut') }}</textarea>
-            </div>
+        <div class="form-group">
+            <label class="form-label" for="unit">Unit</label>
+            <select id="unit" name="unit" class="form-select" required>
+                <option value="">Pilih Unit</option>
+                <option value="UPKD" {{ old('unit') == 'UPKD' ? 'selected' : '' }}>UPKD</option>
+                <option value="PLTD Bau Bau" {{ old('unit') == 'PLTD Bau Bau' ? 'selected' : '' }}>PLTD Bau Bau</option>
+                <option value="PLTD Wua Wua" {{ old('unit') == 'PLTD Wua Wua' ? 'selected' : '' }}>PLTD Wua Wua</option>
+                <option value="PLTD Poasia" {{ old('unit') == 'PLTD Poasia' ? 'selected' : '' }}>PLTD Poasia</option>
+                <option value="PLTD Kolaka" {{ old('unit') == 'PLTD Kolaka' ? 'selected' : '' }}>PLTD Kolaka</option>
+            </select>
         </div>
 
-        <div class="flex justify-end space-x-4">
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Simpan Notulen
-            </button>
+        <div class="form-group">
+            <label class="form-label" for="bidang">Bidang</label>
+            <select id="bidang" name="bidang" class="form-select" required>
+                <option value="">Pilih Bidang</option>
+                <option value="Operasi" {{ old('bidang') == 'Operasi' ? 'selected' : '' }}>Operasi</option>
+                <option value="Pemeliharaan" {{ old('bidang') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
+                <option value="K3" {{ old('bidang') == 'K3' ? 'selected' : '' }}>K3</option>
+                <option value="Lingkungan" {{ old('bidang') == 'Lingkungan' ? 'selected' : '' }}>Lingkungan</option>
+                <option value="Enjiniring" {{ old('bidang') == 'Enjiniring' ? 'selected' : '' }}>Enjiniring</option>
+                <option value="Business Support" {{ old('bidang') == 'Business Support' ? 'selected' : '' }}>Business Support</option>
+            </select>
         </div>
+
+        <div class="form-group">
+            <label class="form-label" for="sub_bidang">Sub Bidang</label>
+            <select id="sub_bidang" name="sub_bidang" class="form-select" required>
+                <option value="">Pilih Sub Bidang</option>
+                <option value="Rendal har" {{ old('sub_bidang') == 'Rendal har' ? 'selected' : '' }}>Rendal har</option>
+                <option value="Rendal outage" {{ old('sub_bidang') == 'Rendal outage' ? 'selected' : '' }}>Rendal outage</option>
+                <option value="ICC" {{ old('sub_bidang') == 'ICC' ? 'selected' : '' }}>ICC</option>
+                <option value="Pengadaan" {{ old('sub_bidang') == 'Pengadaan' ? 'selected' : '' }}>Pengadaan</option>
+                <option value="CBM" {{ old('sub_bidang') == 'CBM' ? 'selected' : '' }}>CBM</option>
+                <option value="SO" {{ old('sub_bidang') == 'SO' ? 'selected' : '' }}>SO</option>
+                <option value="MMRK" {{ old('sub_bidang') == 'MMRK' ? 'selected' : '' }}>MMRK</option>
+                <option value="Rendalop" {{ old('sub_bidang') == 'Rendalop' ? 'selected' : '' }}>Rendalop</option>
+                <option value="EP" {{ old('sub_bidang') == 'EP' ? 'selected' : '' }}>EP</option>
+                <option value="SDM" {{ old('sub_bidang') == 'SDM' ? 'selected' : '' }}>SDM</option>
+                <option value="AKT" {{ old('sub_bidang') == 'AKT' ? 'selected' : '' }}>AKT</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="bulan">Bulan</label>
+            <select id="bulan" name="bulan" class="form-select" required>
+                <option value="">Pilih Bulan</option>
+                @for($i = 1; $i <= 12; $i++)
+                    <option value="{{ $i }}" {{ old('bulan') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                @endfor
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="tahun">Tahun</label>
+            <select id="tahun" name="tahun" class="form-select" required>
+                <option value="">Pilih Tahun</option>
+                @for($year = 2025; $year <= 2030; $year++)
+                    <option value="{{ $year }}" {{ old('tahun') == $year ? 'selected' : '' }}>{{ $year }}</option>
+                @endfor
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Format Nomor Preview:</label>
+            <div id="formatPreview" class="p-2 bg-gray-100 rounded">-</div>
+        </div>
+
+        <button type="button" id="createNotulenBtn" class="btn-create">
+            Buat Notulen
+        </button>
     </form>
 </div>
 
@@ -374,6 +343,34 @@
 
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
+        });
+
+        // Handle create notulen button click
+        document.getElementById('createNotulenBtn').addEventListener('click', function() {
+            const nomor_urut = document.getElementById('nomor_urut').value;
+            const unit = document.getElementById('unit').value;
+            const bidang = document.getElementById('bidang').value;
+            const sub_bidang = document.getElementById('sub_bidang').value;
+            const bulan = document.getElementById('bulan').value;
+            const tahun = document.getElementById('tahun').value;
+
+            // Validate all fields are filled
+            if (!unit || !bidang || !sub_bidang || !bulan || !tahun) {
+                alert('Mohon lengkapi semua field terlebih dahulu');
+                return;
+            }
+
+            // Redirect to the notulen detail form with parameters
+            const params = new URLSearchParams({
+                nomor_urut,
+                unit,
+                bidang,
+                sub_bidang,
+                bulan,
+                tahun
+            });
+
+            window.location.href = `{{ route('notulen.create') }}?${params.toString()}`;
         });
     });
 
@@ -390,7 +387,7 @@
     }
 
     // Add event listeners to all form inputs
-    document.querySelectorAll('#step1 select').forEach(element => {
+    document.querySelectorAll('#initialForm select').forEach(element => {
         element.addEventListener('change', updateFormatPreview);
         element.addEventListener('input', updateFormatPreview);
     });
