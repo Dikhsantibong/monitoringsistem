@@ -40,6 +40,7 @@ Route::get('/notulen', [NotulenController::class, 'form'])->name('notulen.form')
 Route::get('/notulen/create', [NotulenController::class, 'create'])->name('notulen.create');
 Route::post('/notulen', [NotulenController::class, 'store'])->name('notulen.store');
 Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notulen.show');
+Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);

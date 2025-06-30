@@ -73,4 +73,9 @@ class NotulenController extends Controller
     {
         return view('notulen.show', compact('notulen'));
     }
+
+    public function printPdf(Notulen $notulen)
+    {
+        return view('notulen.print-pdf', compact('notulen'));
+    }
 }
