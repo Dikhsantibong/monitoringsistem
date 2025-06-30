@@ -2034,12 +2034,12 @@
             <table class="notulen-table">
                 <thead>
                     <tr>
-                        <th style="color: #000000;">No</th>
-                        <th style="color: #000000;">Tanggal</th>
-                        <th style="color: #000000;">Unit</th>
-                        <th style="color: #000000;">Agenda</th>
-                        <th style="color: #000000;">Pimpinan Rapat</th>
-                        <th style="color: #000000;">Aksi</th>
+                        <th class="text-center" style="color: #000000;">No</th>
+                        <th class="text-center" style="color: #000000;">Tanggal</th>
+                        <th class="text-center" style="color: #000000;">Unit</th>
+                        <th class="text-center" style="color: #000000;">Agenda</th>
+                        <th class="text-center" style="color: #000000;">Pimpinan Rapat</th>
+                        <th class="text-center" style="color: #000000;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2047,11 +2047,11 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $notulen->tanggal ? $notulen->tanggal->format('d/m/Y') : '-' }}</td>
-                        <td>{{ $notulen->unit ?? '-' }}</td>
-                        <td>{{ $notulen->agenda ? Str::limit($notulen->agenda, 50) : '-' }}</td>
-                        <td>{{ $notulen->pimpinan_rapat ?? '-' }}</td>
+                        <td class="text-center">{{ $notulen->unit ?? '-' }}</td>
+                        <td class="text-center">{{ $notulen->agenda ? Str::limit($notulen->agenda, 50) : '-' }}</td>
+                        <td class="text-center">{{ $notulen->pimpinan_rapat ?? '-' }}</td>
                         <td>
-                            <a href="{{ route('notulen.show', $notulen->id) }}" class="btn-view">
+                            <a href="{{ route('notulen.show', $notulen->id) }}" class="btn-view text-center">
                                 <i class="fas fa-eye"></i>
                                 Lihat
                             </a>

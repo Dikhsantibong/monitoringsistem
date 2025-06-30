@@ -12,14 +12,16 @@
 
     .notulen-header {
         border: 1px solid #000;
+        display: flex;
         margin-bottom: 2rem;
     }
 
     .header-logo {
         display: flex;
         align-items: center;
+        border-right: 1px solid #000;
         justify-content: space-between;
-        margin-bottom: 1rem;
+
     }
 
     .header-logo img {
@@ -28,13 +30,18 @@
 
     .header-text {
         text-align: center;
+        justify-content: center;
         font-size: 12px;
-        font-weight: bold;
+        border-right: 1px solid #000;
+        width: 50%;
+
     }
 
     .header-number {
         font-size: 12px;
-        text-align: right;
+        text-align: left;
+        width: 60%;
+
     }
 
     .header-info {
@@ -140,19 +147,17 @@
     <div class="notulen-header">
         <div class="header-logo">
             <img src="{{ asset('logo/navlogo.png') }}" alt="PLN Logo">
+        </div>
             <div class="header-text">
-                <div >PT PLN NUSANTARA POWER</div>
-                <div>INTEGRATED MANAGEMENT SYSTEM</div>
-                <div>FORMULIR NOTULEN RAPAT</div>
+                <div class="border-bottom border-black">PT PLN NUSANTARA POWER</div>
+                <div class="border-bottom border-black">INTEGRATED MANAGEMENT SYSTEM</div>
+                <div class="font-weight-bold">FORMULIR NOTULEN RAPAT</div>
             </div>
             <div class="header-number">
-                <div>
-                    <div>Nomor Dokumen : {{ $notulen->format_nomor }}</div>
-                    <div>Tanggal Terbit : {{ $notulen->tanggal ? $notulen->tanggal->format('d-m-Y') : '-' }}</div>
-                    <div>Halaman : 1 dari 1</div>
-                </div>
+                    <div class="border-bottom border-black">Nomor Dokumen : {{ $notulen->format_nomor }}</div>
+                    <div class="border-bottom border-black">Tanggal Terbit : {{ $notulen->tanggal ? $notulen->tanggal->format('d-m-Y') : '-' }}</div>
+                    <div >Halaman : 1 dari 1</div>
             </div>
-        </div>
     </div>
 
     <div class="header-info">
