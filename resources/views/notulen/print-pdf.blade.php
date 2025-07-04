@@ -1,19 +1,31 @@
-@extends('layouts.app')
-
-@section('styles')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notulen Rapat - {{ $notulen->agenda }}</title>
     <style>
-        .notulen-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
+        @page {
+            margin: 2.5cm;
+        }
+
+        body {
             font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .notulen-container {
+            width: 100%;
+            background: white;
         }
 
         .notulen-header {
             border: 1px solid #000;
             display: flex;
             margin-bottom: 2rem;
+            width: 100%;
         }
 
         .header-logo {
@@ -21,11 +33,13 @@
             align-items: center;
             border-right: 1px solid #000;
             justify-content: space-between;
-
+            padding: 10px;
+            width: 15%;
         }
 
         .header-logo img {
             height: 60px;
+            width: auto;
         }
 
         .header-text {
@@ -34,39 +48,33 @@
             font-size: 12px;
             border-right: 1px solid #000;
             width: 50%;
-
+            padding: 10px 0;
         }
 
         .header-number {
             padding-left: 0.5rem;
             font-size: 12px;
-            width: 60%;
+            width: 35%;
         }
 
         .header-number .border-bottom {
             margin-left: -0.5rem;
             padding-left: 0.5rem;
             border-bottom: 1px solid #000;
+            padding: 5px;
         }
 
         .header-info {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
+            margin: 2rem 0;
         }
 
         .header-info-item {
-            display: contents;
+            margin-bottom: 0.5rem;
         }
 
         .header-info-label {
-            font-weight: normal;
-        }
-
-        .header-info-value {
-            margin-left: 0.5rem;
+            display: inline-block;
+            width: 120px;
         }
 
         .content-section {
@@ -75,12 +83,11 @@
 
         .content-title {
             font-weight: bold;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .content-body {
             margin-left: 1rem;
-            white-space: pre-line;
         }
 
         .footer {
@@ -100,94 +107,26 @@
             display: inline-block;
         }
 
-        /* Print button styles */
-        .print-button {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background-color: #0095B7;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .print-button:hover {
-            background-color: #007a94;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .back-button {
-            position: fixed;
-            bottom: 2rem;
-            left: 2rem;
-            background-color: #6B7280;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .back-button:hover {
-            background-color: #4B5563;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .print-button i {
-            font-size: 1.2rem;
-        }
-
-        @media print {
-            body {
-                padding: 0;
-                margin: 0;
-            }
-
-            .notulen-container {
-                margin: 0;
-                padding: 1rem;
-                max-width: none;
-            }
-
-            .print-button, .back-button {
-                display: none;
-            }
+        /* Ensure page breaks don't occur within sections */
+        .content-section, .footer {
+            page-break-inside: avoid;
         }
     </style>
-@endsection
-
-@section('content')
+</head>
+<body>
     <div class="notulen-container">
         <div class="notulen-header">
             <div class="header-logo">
-                <img src="{{ asset('logo/navlogo.png') }}" alt="PLN Logo">
+                <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo">
             </div>
             <div class="header-text">
-                <div class="border-bottom border-black">PT PLN NUSANTARA POWER</div>
-                <div class="border-bottom border-black">INTEGRATED MANAGEMENT SYSTEM</div>
-                <div style="font-weight: bold ">FORMULIR NOTULEN RAPAT</div>
+                <div class="border-bottom">PT PLN NUSANTARA POWER</div>
+                <div class="border-bottom">INTEGRATED MANAGEMENT SYSTEM</div>
+                <div style="font-weight: bold">FORMULIR NOTULEN RAPAT</div>
             </div>
             <div class="header-number">
-                <div class="border-bottom border-black">Nomor Dokumen : FMKP - 145 - 13.3.4.a.a.i - 001</div>
-                <div class="border-bottom border-black">Tanggal Terbit :
-                    {{ $notulen->tanggal ? $notulen->tanggal->format('d-m-Y') : '-' }}</div>
+                <div class="border-bottom">Nomor Dokumen : FMKP - 145 - 13.3.4.a.a.i - 001</div>
+                <div class="border-bottom">Tanggal Terbit : {{ $notulen->tanggal ? $notulen->tanggal->format('d-m-Y') : '-' }}</div>
                 <div>Halaman : 1 dari 1</div>
             </div>
         </div>
@@ -197,7 +136,6 @@
                 <span class="header-info-label">Agenda</span>
                 <span class="header-info-value">: {{ $notulen->agenda ?? '-' }}</span>
             </div>
-
             <div class="header-info-item">
                 <span class="header-info-label">Tempat</span>
                 <span class="header-info-value">: {{ $notulen->tempat ?? '-' }}</span>
@@ -211,15 +149,13 @@
                 <span class="header-info-value">:
                     {{ $notulen->waktu_mulai ? \Carbon\Carbon::parse($notulen->waktu_mulai)->format('H:i') : '-' }} -
                     {{ $notulen->waktu_selesai ? \Carbon\Carbon::parse($notulen->waktu_selesai)->format('H:i') : '-' }}
-                    WIB</span>
+                    WIB
+                </span>
             </div>
             <div class="header-info-item">
                 <span class="header-info-label">Hari/Tanggal</span>
-                <span class="header-info-value">:
-                    {{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</span>
+                <span class="header-info-value">: {{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</span>
             </div>
-
-
         </div>
 
         <div class="content-section">
@@ -241,24 +177,12 @@
             </div>
 
             <div class="signature-section">
-                <div>Surabaya, {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}
-                </div>
+                <div>Kendari, {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}</div>
                 <div style="margin-top: 1rem;">Notulis</div>
                 <div class="signature-line"></div>
                 <div style="margin-top: 0.5rem;">{{ $notulen->notulis_nama ?? '-' }}</div>
             </div>
         </div>
     </div>
-
-    <!-- Print Button -->
-    <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button">
-        <i class="fas fa-print"></i>
-        Cetak Notulen
-    </button>
-
-    <!-- Back Button -->
-    <a href="{{ route('notulen.form') }}" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-        Kembali
-    </a>
-@endsection
+</body>
+</html>

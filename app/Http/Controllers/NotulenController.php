@@ -28,45 +28,58 @@ class NotulenController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nomor_urut' => 'required',
-            'unit' => 'required',
-            'bidang' => 'required',
-            'sub_bidang' => 'required',
-            'bulan' => 'required',
-            'tahun' => 'required',
-            'pimpinan_rapat' => 'required',
-            'tempat' => 'required',
-            'agenda' => 'required',
-            'peserta' => 'required',
-            'tanggal' => 'required|date',
-            'waktu_mulai' => 'required',
-            'waktu_selesai' => 'required',
-            'pembahasan' => 'required',
-            'tindak_lanjut' => 'required',
-            'pimpinan_rapat_nama' => 'required',
-            'notulis_nama' => 'required',
-            'tanggal_tanda_tangan' => 'required|date'
-        ]);
+        try {
+            $validated = $request->validate([
+                'nomor_urut' => 'required',
+                'unit' => 'required',
+                'bidang' => 'required',
+                'sub_bidang' => 'required',
+                'bulan' => 'required',
+                'tahun' => 'required',
+                'tempat' => 'required',
+                'agenda' => 'required',
+                'peserta' => 'required',
+                'tanggal' => 'required|date',
+                'waktu_mulai' => 'required',
+                'waktu_selesai' => 'required',
+                'pembahasan' => 'required',
+                'tindak_lanjut' => 'required',
+                'pimpinan_rapat_nama' => 'required',
+                'notulis_nama' => 'required',
+                'tanggal_tanda_tangan' => 'required|date'
+            ]);
 
-        // Generate format nomor
-        $formatNomor = Notulen::generateFormatNomor(
-            $validated['nomor_urut'],
-            $validated['unit'],
-            $validated['bidang'],
-            $validated['sub_bidang'],
-            $validated['bulan'],
-            $validated['tahun']
-        );
+            // Sanitize HTML content but preserve basic formatting
+            $validated['pembahasan'] = strip_tags($validated['pembahasan'], '<p><br><ul><ol><li><strong><em><u><s>');
+            $validated['tindak_lanjut'] = strip_tags($validated['tindak_lanjut'], '<p><br><ul><ol><li><strong><em><u><s>');
 
-        // Create the notulen
-        $notulen = Notulen::create([
-            ...$validated,
-            'format_nomor' => $formatNomor
-        ]);
+            // Generate format nomor
+            $formatNomor = Notulen::generateFormatNomor(
+                $validated['nomor_urut'],
+                $validated['unit'],
+                $validated['bidang'],
+                $validated['sub_bidang'],
+                $validated['bulan'],
+                $validated['tahun']
+            );
 
-        // Redirect to show view
-        return redirect()->route('notulen.show', $notulen->id);
+            // Create the notulen
+            $notulen = Notulen::create([
+                ...$validated,
+                'format_nomor' => $formatNomor,
+                'pimpinan_rapat' => $validated['pimpinan_rapat_nama']
+            ]);
+
+            // Redirect to show view with success message
+            return redirect()
+                ->route('notulen.show', $notulen->id)
+                ->with('success', 'Notulen berhasil disimpan');
+
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan notulen. ' . $e->getMessage()]);
+        }
     }
 
     public function show(Notulen $notulen)
@@ -76,6 +89,13 @@ class NotulenController extends Controller
 
     public function printPdf(Notulen $notulen)
     {
-        return view('notulen.print-pdf', compact('notulen'));
+        // Generate PDF using DomPDF
+        $pdf = \PDF::loadView('notulen.print-pdf', compact('notulen'));
+
+        // Set paper size to A4
+        $pdf->setPaper('A4');
+
+        // Return the PDF for download with a meaningful filename
+        return $pdf->stream("notulen-{$notulen->format_nomor}.pdf");
     }
 }
