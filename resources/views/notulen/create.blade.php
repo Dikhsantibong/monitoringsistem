@@ -431,9 +431,8 @@
         sessionStorage.setItem('notulen_temp_data', JSON.stringify(formData));
         sessionStorage.setItem('notulen_temp_token', tempToken);
 
-        // Generate QR Code dengan URL yang benar termasuk /public
-        const baseUrl = '{{ url("/") }}';
-        const qrUrl = `${baseUrl}/notulen/attendance/scan/${tempToken}`;
+        // Generate QR Code dengan URL yang benar
+        const qrUrl = 'https://mondayplnnpupkendari.com/public/notulen/attendance/scan/' + tempToken;
 
         container.innerHTML = '';
         new QRCode(container, {

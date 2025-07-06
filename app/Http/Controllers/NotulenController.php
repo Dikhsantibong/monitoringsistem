@@ -175,24 +175,17 @@ class NotulenController extends Controller
         try {
             // Validasi token
             if (!$token || !str_starts_with($token, 'TEMP-')) {
-                return redirect()->back()
+                return redirect('https://mondayplnnpupkendari.com/public/notulen/attendance/error')
                     ->with('error', 'QR Code tidak valid atau sudah kadaluarsa.');
-            }
-
-            // Cek session data
-            $tempData = session('notulen_temp_data');
-            if (!$tempData) {
-                return redirect()->back()
-                    ->with('error', 'Data QR Code tidak ditemukan atau sudah kadaluarsa.');
             }
 
             return view('notulen.scan-attendance', [
                 'token' => $token,
-                'tempData' => $tempData
+                'baseUrl' => 'https://mondayplnnpupkendari.com/public'
             ]);
         } catch (\Exception $e) {
             \Log::error('Error scanning attendance: ' . $e->getMessage());
-            return redirect()->back()
+            return redirect('https://mondayplnnpupkendari.com/public/notulen/attendance/error')
                 ->with('error', 'Terjadi kesalahan saat memproses QR Code.');
         }
     }
@@ -218,16 +211,12 @@ class NotulenController extends Controller
             $attendance->time = now();
             $attendance->save();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Kehadiran berhasil dicatat'
-            ]);
+            return redirect('https://mondayplnnpupkendari.com/public/notulen/attendance/success')
+                ->with('success', 'Kehadiran berhasil dicatat');
         } catch (\Exception $e) {
             \Log::error('Error submitting attendance: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan kehadiran'
-            ], 500);
+            return redirect('https://mondayplnnpupkendari.com/public/notulen/attendance/error')
+                ->with('error', 'Terjadi kesalahan saat menyimpan kehadiran');
         }
     }
 
