@@ -643,7 +643,7 @@
         }
 
         // Use absolute path for API endpoint
-        fetch('/api/notulen-documentation', {
+        fetch('public/api/notulen-documentation', {
             method: 'POST',
             body: formData,
             headers: {
