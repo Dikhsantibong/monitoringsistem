@@ -291,7 +291,7 @@
                     </button>
                 </span>
             </div>
-        </div>
+            </div>
 
         <div id="documentationList" class="documentation-list mt-4">
             <!-- Documentation items will be dynamically added here -->
@@ -634,26 +634,36 @@
         }
         errorContainer.style.display = 'none';
 
-        fetch('{{ url("/public/api/notulen-documentation") }}', {
+        // Get CSRF token
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+        if (!token) {
+            errorContainer.innerHTML = 'CSRF token tidak ditemukan';
+            errorContainer.style.display = 'block';
+            return;
+        }
+
+        fetch('{{ route("api.notulen.documentation.store") }}', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
             },
             credentials: 'same-origin'
         })
         .then(async response => {
             const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message || 'Terjadi kesalahan saat mengupload dokumentasi');
-                }
-                return data;
-            } else {
+            if (!contentType || !contentType.includes('application/json')) {
                 const text = await response.text();
-                throw new Error('Server mengembalikan response yang tidak valid: ' + text.substring(0, 100));
+                console.error('Invalid response:', text);
+                throw new Error(`Response tidak valid (${response.status}): ${text.substring(0, 100)}`);
             }
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || `Error ${response.status}: ${data.error || 'Unknown error'}`);
+            }
+            return data;
         })
         .then(data => {
             if (data.success) {
@@ -664,6 +674,8 @@
                 // Clear the form and error message
                 this.reset();
                 errorContainer.style.display = 'none';
+            } else {
+                throw new Error(data.message || 'Gagal menyimpan dokumentasi');
             }
         })
         .catch(error => {
@@ -671,7 +683,7 @@
             errorContainer.innerHTML = `
                 <strong class="font-bold">Error!</strong>
                 <span class="block sm:inline">${error.message}</span>
-                <pre class="mt-2 text-sm">${error.stack || ''}</pre>
+                ${error.stack ? `<pre class="mt-2 text-sm overflow-auto">${error.stack}</pre>` : ''}
             `;
             errorContainer.style.display = 'block';
         })

@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Documentation upload endpoint
-Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store']);
+Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store'])
+    ->name('api.notulen.documentation.store');
 
 // Existing routes
 Route::get('sections/{department}', [SectionController::class, 'getSections'])
