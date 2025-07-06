@@ -14,9 +14,7 @@ class Notulen extends Model
         'bulan',
         'tahun',
         'pembahasan',
-        'pembahasan_points',
         'tindak_lanjut',
-        'tindak_lanjut_points',
         'format_nomor',
         'pimpinan_rapat',
         'tempat',
@@ -27,12 +25,7 @@ class Notulen extends Model
         'waktu_selesai',
         'pimpinan_rapat_nama',
         'notulis_nama',
-        'tanggal_tanda_tangan',
-        'attendance_token',
-        'attendance_token_expires_at',
-        'documentation_images',
-        'created_at',
-        'updated_at'
+        'tanggal_tanda_tangan'
     ];
 
     protected $casts = [
@@ -40,11 +33,7 @@ class Notulen extends Model
         'tanggal' => 'date',
         'tanggal_tanda_tangan' => 'date',
         'waktu_mulai' => 'datetime',
-        'waktu_selesai' => 'datetime',
-        'attendance_token_expires_at' => 'datetime',
-        'pembahasan_points' => 'json',
-        'tindak_lanjut_points' => 'json',
-        'documentation_images' => 'json'
+        'waktu_selesai' => 'datetime'
     ];
 
     // Generate the formatted number

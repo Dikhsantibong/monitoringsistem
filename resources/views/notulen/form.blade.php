@@ -303,12 +303,22 @@
 
         <div class="form-group">
             <label class="form-label" for="bulan">Bulan</label>
-            <input type="text" id="bulan" name="bulan" class="form-input" value="{{ date('n') }}" readonly>
+            <select id="bulan" name="bulan" class="form-select" required>
+                <option value="">Pilih Bulan</option>
+                @for($i = 1; $i <= 12; $i++)
+                    <option value="{{ $i }}" {{ old('bulan') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                @endfor
+            </select>
         </div>
 
         <div class="form-group">
             <label class="form-label" for="tahun">Tahun</label>
-            <input type="text" id="tahun" name="tahun" class="form-input" value="{{ date('Y') }}" readonly>
+            <select id="tahun" name="tahun" class="form-select" required>
+                <option value="">Pilih Tahun</option>
+                @for($year = 2025; $year <= 2030; $year++)
+                    <option value="{{ $year }}" {{ old('tahun') == $year ? 'selected' : '' }}>{{ $year }}</option>
+                @endfor
+            </select>
         </div>
 
         <div class="form-group">

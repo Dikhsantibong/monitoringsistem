@@ -295,60 +295,7 @@
     </form>
 </div>
 
-<!-- QR Code Modal -->
-<div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-    <div class="bg-white p-8 rounded-lg shadow-lg">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold flex items-center">
-                <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
-            </h3>
-            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
-        <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk 24 jam</p>
-    </div>
-</div>
-
-<!-- Attendance Table -->
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow p-6 mb-3">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-800">Daftar Kehadiran</h2>
-            <button onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700">
-                <i class="fas fa-qrcode mr-2"></i>
-                Generate QR Code
-            </button>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
-                <thead class="bg-gray-100">
-                    <tr style="background-color: #0A749B; color: white;">
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">No</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Nama</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Divisi</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Jabatan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Waktu Absensi</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Tanda Tangan</th>
-                    </tr>
-                </thead>
-                <tbody id="attendance-body" class="divide-y divide-gray-300">
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-    // Initialize notulenId
-    const notulenId = {{ $notulenId ?? 'null' }};
-    if (!notulenId) {
-        console.error('notulenId tidak ditemukan');
-    }
-
     function execCmd(command, editorId, value = null) {
         try {
             const editor = document.getElementById(editorId + 'Editor');
@@ -404,68 +351,7 @@
             }
         });
     });
-
-    function generateQR() {
-        const container = document.getElementById('qrcode-container');
-        container.innerHTML = '<div class="text-center">Generating QR Code...</div>';
-
-        document.getElementById('qrModal').classList.remove('hidden');
-
-        fetch('{{ route("notulen.generate.qr", ["notulen" => ":notulenId"]) }}'.replace(':notulenId', notulenId))
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    container.innerHTML = '';
-                    new QRCode(container, {
-                        text: data.qr_url,
-                        width: 256,
-                        height: 256
-                    });
-                } else {
-                    throw new Error('Gagal membuat QR Code');
-                }
-            })
-            .catch(() => {
-                container.innerHTML = '<div class="text-red-500">Gagal membuat QR Code</div>';
-                setTimeout(closeModal, 3000);
-            });
-    }
-
-    function closeModal() {
-        document.getElementById('qrModal').classList.add('hidden');
-    }
-
-    function loadAttendances() {
-        fetch('{{ route("notulen.get.attendances", ["notulen" => ":notulenId"]) }}'.replace(':notulenId', notulenId))
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const tbody = document.getElementById('attendance-body');
-                    tbody.innerHTML = data.data.map((attendance, index) => `
-                        <tr class="hover:bg-gray-100">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${index + 1}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${attendance.name}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${attendance.division}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${attendance.position}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${new Date(attendance.time).toLocaleString('id-ID')}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                ${attendance.signature ?
-                                    `<img src="${attendance.signature}" alt="Tanda tangan" class="h-16 object-contain">` :
-                                    '<span class="text-gray-400">Tidak ada tanda tangan</span>'
-                                }
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            })
-            .catch(console.error);
-    }
-
-    // Load attendances every 30 seconds
-    setInterval(loadAttendances, 30000);
-    loadAttendances(); // Initial load
 </script>
-
 @push('scripts')
 @endpush
 @endsection
