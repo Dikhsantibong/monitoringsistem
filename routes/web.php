@@ -42,6 +42,17 @@ Route::post('/notulen', [NotulenController::class, 'store'])->name('notulen.stor
 Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notulen.show');
 Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
 
+// Notulen Attendance Routes
+Route::get('/notulen/generate-qr/{id}', [NotulenController::class, 'generateQRCode'])->name('notulen.generate-qr');
+Route::get('/notulen/attendance/scan/{token}', [NotulenController::class, 'scanAttendance'])->name('notulen.scan-attendance');
+Route::post('/notulen/attendance/store', [NotulenController::class, 'storeAttendance'])->name('notulen.store-attendance');
+Route::get('/notulen/attendance/success', function() {
+    return view('notulen.attendance-success');
+})->name('notulen.attendance.success');
+Route::get('/notulen/attendance/error', function() {
+    return view('notulen.attendance-error');
+})->name('notulen.error');
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

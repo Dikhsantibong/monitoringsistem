@@ -8,7 +8,7 @@
                 <div class="divide-y divide-gray-200">
                     <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
                         <h2 class="text-2xl font-bold mb-8 text-center text-gray-800">Form Absensi</h2>
-                        
+
                         <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                             <span class="block sm:inline"></span>
                         </div>
@@ -16,23 +16,23 @@
                         <form id="attendance-form" class="space-y-4">
                             @csrf
                             <input type="hidden" name="token" value="{{ $token }}">
-                            
+
                             <!-- Form fields -->
                             <div class="space-y-2">
                                 <label class="text-gray-600">Nama</label>
-                                <input type="text" name="name" required 
+                                <input type="text" name="name" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]">
                             </div>
 
                             <div class="space-y-2">
                                 <label class="text-gray-600">Jabatan</label>
-                                <input type="text" name="position" required 
+                                <input type="text" name="position" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]">
                             </div>
 
                             <div class="space-y-2">
                                 <label class="text-gray-600">Divisi</label>
-                                <input type="text" name="division" required 
+                                <input type="text" name="division" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009BB9]">
                             </div>
 
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission dengan fetch API
     document.getElementById('attendance-form').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+
         if (signaturePad.isEmpty()) {
             showError('Mohon isi tanda tangan terlebih dahulu!');
             return;
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const formData = new FormData(this);
-            
+
             const response = await fetch('{{ route("attendance.store") }}', {
                 method: 'POST',
                 headers: {
@@ -135,12 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Submit Error:', error);
-            
+
             let errorMessage = 'Terjadi kesalahan saat menyimpan.';
-            
+
             if (error.response) {
                 const data = await error.response.json();
-                
+
                 switch(data.error_type) {
                     case 'validation_error':
                         errorMessage = Object.values(data.errors).flat().join('\n');
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         errorMessage = data.message || 'Terjadi kesalahan yang tidak diketahui';
                 }
             }
-            
+
             showError(errorMessage);
         }
     });
@@ -170,11 +170,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const errorDiv = document.getElementById('error-message');
         errorDiv.querySelector('span').textContent = message;
         errorDiv.classList.remove('hidden');
-        
+
         setTimeout(() => {
             errorDiv.classList.add('hidden');
         }, 5000);
     }
 });
 </script>
-@endsection 
+@endsection

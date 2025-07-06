@@ -25,7 +25,10 @@ class Notulen extends Model
         'waktu_selesai',
         'pimpinan_rapat_nama',
         'notulis_nama',
-        'tanggal_tanda_tangan'
+        'tanggal_tanda_tangan',
+        'attendance_token',
+        'attendance_token_expires_at',
+        'documentation_images'
     ];
 
     protected $casts = [
@@ -33,7 +36,9 @@ class Notulen extends Model
         'tanggal' => 'date',
         'tanggal_tanda_tangan' => 'date',
         'waktu_mulai' => 'datetime',
-        'waktu_selesai' => 'datetime'
+        'waktu_selesai' => 'datetime',
+        'attendance_token_expires_at' => 'datetime',
+        'documentation_images' => 'json'
     ];
 
     // Generate the formatted number

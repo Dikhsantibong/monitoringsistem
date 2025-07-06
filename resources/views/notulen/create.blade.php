@@ -287,6 +287,52 @@
             </div>
 
             <div class="mt-8 text-center">
+                <!-- QR Code Button -->
+                <button type="button" id="generateQrBtn" onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700 mb-4 mx-auto">
+                    <i class="fas fa-qrcode mr-2"></i>
+                    Generate QR Code Absensi
+                </button>
+
+                <!-- Modal QR Code -->
+                <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+                    <div class="bg-white p-8 rounded-lg shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold flex items-center">
+                                <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
+                            </h3>
+                            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
+                        <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk 24 jam</p>
+                    </div>
+                </div>
+
+                <!-- Documentation Images Upload -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Dokumentasi Rapat
+                    </label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="documentation_images" class="relative cursor-pointer bg-white rounded-md font-medium text-[#0095B7] hover:text-[#007a94] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#0095B7]">
+                                    <span>Upload gambar</span>
+                                    <input id="documentation_images" name="documentation_images[]" type="file" class="sr-only" multiple accept="image/*" onchange="previewImages(event)">
+                                </label>
+                                <p class="pl-1">atau drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PNG, JPG, JPEG up to 2MB</p>
+                        </div>
+                    </div>
+                    <!-- Preview Container -->
+                    <div id="imagePreviewContainer" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4"></div>
+                </div>
+
                 <button type="submit" class="btn-submit">
                     Simpan Notulen
                 </button>
@@ -295,6 +341,7 @@
     </form>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     function execCmd(command, editorId, value = null) {
         try {
@@ -339,6 +386,16 @@
         document.getElementById('pembahasanInput').value = pembahasanContent;
         document.getElementById('tindakLanjutInput').value = tindakLanjutContent;
 
+        // Tambahkan data absensi yang tersimpan di session (jika ada)
+        const tempToken = sessionStorage.getItem('notulen_temp_token');
+        if (tempToken) {
+            const attendanceInput = document.createElement('input');
+            attendanceInput.type = 'hidden';
+            attendanceInput.name = 'temp_token';
+            attendanceInput.value = tempToken;
+            this.appendChild(attendanceInput);
+        }
+
         this.submit();
     });
 
@@ -351,6 +408,64 @@
             }
         });
     });
+
+    function generateQR() {
+        const container = document.getElementById('qrcode-container');
+        container.innerHTML = '<div class="text-center">Generating QR Code...</div>';
+        document.getElementById('qrModal').classList.remove('hidden');
+
+        // Ambil data form yang diperlukan
+        const formData = {
+            agenda: document.querySelector('input[name="agenda"]').value,
+            tempat: document.querySelector('input[name="tempat"]').value,
+            tanggal: document.querySelector('input[name="tanggal"]').value,
+            waktu_mulai: document.querySelector('input[name="waktu_mulai"]').value,
+            waktu_selesai: document.querySelector('input[name="waktu_selesai"]').value,
+            pimpinan_rapat_nama: document.querySelector('input[name="pimpinan_rapat_nama"]').value
+        };
+
+        // Generate temporary token untuk QR
+        const tempToken = 'TEMP-' + Math.random().toString(36).substr(2, 9);
+
+        // Simpan data form ke sessionStorage
+        sessionStorage.setItem('notulen_temp_data', JSON.stringify(formData));
+        sessionStorage.setItem('notulen_temp_token', tempToken);
+
+        // Generate QR Code dengan URL temporary
+        const qrUrl = window.location.origin + '/notulen/attendance/scan/' + tempToken;
+
+        container.innerHTML = '';
+        new QRCode(container, {
+            text: qrUrl,
+            width: 256,
+            height: 256
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('qrModal').classList.add('hidden');
+    }
+
+    function previewImages(event) {
+        const container = document.getElementById('imagePreviewContainer');
+        container.innerHTML = '';
+
+        Array.from(event.target.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.className = 'relative';
+                div.innerHTML = `
+                    <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                    <button type="button" onclick="this.parentElement.remove()" class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 m-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
 </script>
 @push('scripts')
 @endpush
