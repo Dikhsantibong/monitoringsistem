@@ -111,6 +111,36 @@
         .content-section, .footer {
             page-break-inside: avoid;
         }
+
+        /* Attendance table styles */
+        .attendance-section {
+            margin: 2rem 0;
+            page-break-inside: avoid;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        .attendance-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .attendance-signature {
+            max-width: 100px;
+            max-height: 50px;
+        }
     </style>
 </head>
 <body>
@@ -166,6 +196,39 @@
         <div class="content-section">
             <div class="content-title">B. Tindak Lanjut</div>
             <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
+        </div>
+
+        <!-- Add Attendance Table -->
+        <div class="attendance-section">
+            <div class="content-title">C. Daftar Hadir</div>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 25%;">Nama</th>
+                        <th style="width: 20%;">Jabatan</th>
+                        <th style="width: 20%;">Divisi</th>
+                        <th style="width: 30%;">Tanda Tangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($notulen->attendances as $index => $attendance)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $attendance->name }}</td>
+                            <td>{{ $attendance->position }}</td>
+                            <td>{{ $attendance->division }}</td>
+                            <td>
+                                <img src="{{ $attendance->signature }}" alt="Tanda Tangan" class="attendance-signature">
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Tidak ada data absensi</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         <div class="footer">

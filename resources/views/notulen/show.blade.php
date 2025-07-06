@@ -170,6 +170,34 @@
                 display: none;
             }
         }
+
+        /* Attendance table styles */
+        .attendance-section {
+            margin: 2rem 0;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .attendance-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .attendance-signature {
+            max-width: 150px;
+            max-height: 75px;
+        }
     </style>
 @endsection
 
@@ -230,6 +258,39 @@
         <div class="content-section">
             <div class="content-title">B. Tindak Lanjut</div>
             <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
+        </div>
+
+        <!-- Add Attendance Table -->
+        <div class="attendance-section">
+            <div class="content-title">C. Daftar Hadir</div>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Jabatan</th>
+                        <th>Divisi</th>
+                        <th>Tanda Tangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($notulen->attendances as $index => $attendance)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $attendance->name }}</td>
+                            <td>{{ $attendance->position }}</td>
+                            <td>{{ $attendance->division }}</td>
+                            <td>
+                                <img src="{{ $attendance->signature }}" alt="Tanda Tangan" class="attendance-signature">
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center">Tidak ada data absensi</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         <div class="footer">
