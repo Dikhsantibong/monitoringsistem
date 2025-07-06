@@ -172,31 +172,70 @@
         }
 
         /* Attendance table styles */
+        .page-break {
+            page-break-before: always;
+            margin-top: 3rem;
+        }
+
         .attendance-section {
             margin: 2rem 0;
+        }
+
+        .attendance-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .attendance-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .attendance-subtitle {
+            font-size: 1rem;
+            color: #666;
         }
 
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .attendance-table th,
         .attendance-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
             text-align: left;
         }
 
         .attendance-table th {
-            background-color: #f8f9fa;
+            background-color: #f8fafc;
             font-weight: bold;
+            color: #1a202c;
+        }
+
+        .attendance-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .attendance-table tr:hover {
+            background-color: #f3f4f6;
         }
 
         .attendance-signature {
             max-width: 150px;
             max-height: 75px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        @media print {
+            .page-break {
+                page-break-before: always;
+            }
         }
     </style>
 @endsection
@@ -260,39 +299,6 @@
             <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
         </div>
 
-        <!-- Add Attendance Table -->
-        <div class="attendance-section">
-            <div class="content-title">C. Daftar Hadir</div>
-            <table class="attendance-table">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>Jabatan</th>
-                        <th>Divisi</th>
-                        <th>Tanda Tangan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($notulen->attendances as $index => $attendance)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $attendance->name }}</td>
-                            <td>{{ $attendance->position }}</td>
-                            <td>{{ $attendance->division }}</td>
-                            <td>
-                                <img src="{{ $attendance->signature }}" alt="Tanda Tangan" class="attendance-signature">
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center">Tidak ada data absensi</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
         <div class="footer">
             <div class="signature-section">
                 <div>Mengetahui,</div>
@@ -307,6 +313,47 @@
                 <div style="margin-top: 1rem;">Notulis</div>
                 <div class="signature-line"></div>
                 <div style="margin-top: 0.5rem;">{{ $notulen->notulis_nama ?? '-' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance on new page -->
+    <div class="page-break">
+        <div class="notulen-container">
+            <div class="attendance-section">
+                <div class="attendance-header">
+                    <div class="attendance-title">DAFTAR HADIR RAPAT</div>
+                    <div class="attendance-subtitle">{{ $notulen->agenda }}</div>
+                    <div class="attendance-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                </div>
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%; text-align: center;">No</th>
+                            <th style="width: 25%;">Nama</th>
+                            <th style="width: 25%;">Jabatan</th>
+                            <th style="width: 20%;">Divisi</th>
+                            <th style="width: 25%; text-align: center;">Tanda Tangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($notulen->attendances as $index => $attendance)
+                            <tr>
+                                <td style="text-align: center;">{{ $index + 1 }}</td>
+                                <td>{{ $attendance->name }}</td>
+                                <td>{{ $attendance->position }}</td>
+                                <td>{{ $attendance->division }}</td>
+                                <td style="text-align: center;">
+                                    <img src="{{ $attendance->signature }}" alt="Tanda Tangan" class="attendance-signature">
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center">Tidak ada data absensi</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
