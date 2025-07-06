@@ -177,7 +177,7 @@
     <div class="notulen-container">
         <div class="notulen-header">
             <div class="header-logo">
-                <img src="{{ asset('/public/logo/navlogo.png') }}" alt="PLN Logo">
+                <img src="{{ asset('logo/navlogo.png') }}" alt="PLN Logo">
             </div>
             <div class="header-text">
                 <div class="border-bottom border-black">PT PLN NUSANTARA POWER</div>
@@ -232,55 +232,6 @@
             <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
         </div>
 
-        <!-- Daftar Hadir -->
-        <div class="content-section">
-            <div class="content-title">C. Daftar Hadir</div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-300">
-                    <thead>
-                        <tr class="bg-gray-100">
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">No</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Nama</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Jabatan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Divisi</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Waktu</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Tanda Tangan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-300">
-                        @foreach($attendances as $index => $attendance)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $attendance->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $attendance->position }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $attendance->division }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ \Carbon\Carbon::parse($attendance->time)->format('d/m/Y H:i') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <img src="{{ $attendance->signature }}" alt="Tanda tangan {{ $attendance->name }}" class="h-12">
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Dokumentasi -->
-        @if($notulen->documentation_images)
-        <div class="content-section">
-            <div class="content-title">D. Dokumentasi</div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                @foreach(json_decode($notulen->documentation_images) as $image)
-                <div class="relative">
-                    <img src="{{ Storage::url($image) }}" alt="Dokumentasi rapat" class="w-full h-48 object-cover rounded-lg">
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
         <div class="footer">
             <div class="signature-section">
                 <div>Mengetahui,</div>
@@ -300,13 +251,13 @@
     </div>
 
     <!-- Print Button -->
-    <button onclick="window.print('{{ url("/public/notulen/print-pdf/{$notulen->id}") }}')" class="print-button">
+    <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button">
         <i class="fas fa-print"></i>
         Cetak Notulen
     </button>
 
     <!-- Back Button -->
-    <a href="{{ url('/public/notulen/form') }}" class="back-button">
+    <a href="{{ route('notulen.form') }}" class="back-button">
         <i class="fas fa-arrow-left"></i>
         Kembali
     </a>

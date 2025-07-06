@@ -14,7 +14,9 @@ class Notulen extends Model
         'bulan',
         'tahun',
         'pembahasan',
+        'pembahasan_points',
         'tindak_lanjut',
+        'tindak_lanjut_points',
         'format_nomor',
         'pimpinan_rapat',
         'tempat',
@@ -28,7 +30,9 @@ class Notulen extends Model
         'tanggal_tanda_tangan',
         'attendance_token',
         'attendance_token_expires_at',
-        'documentation_images'
+        'documentation_images',
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [
@@ -38,6 +42,8 @@ class Notulen extends Model
         'waktu_mulai' => 'datetime',
         'waktu_selesai' => 'datetime',
         'attendance_token_expires_at' => 'datetime',
+        'pembahasan_points' => 'json',
+        'tindak_lanjut_points' => 'json',
         'documentation_images' => 'json'
     ];
 

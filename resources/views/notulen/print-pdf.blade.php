@@ -168,55 +168,6 @@
             <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
         </div>
 
-        <!-- Daftar Hadir -->
-        <div class="content-section">
-            <div class="content-title">C. Daftar Hadir</div>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f3f4f6;">No</th>
-                        <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f3f4f6;">Nama</th>
-                        <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f3f4f6;">Jabatan</th>
-                        <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f3f4f6;">Divisi</th>
-                        <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f3f4f6;">Waktu</th>
-                        <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f3f4f6;">Tanda Tangan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($attendances as $index => $attendance)
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 8px;">{{ $index + 1 }}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">{{ $attendance->name }}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">{{ $attendance->position }}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">{{ $attendance->division }}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">
-                            {{ \Carbon\Carbon::parse($attendance->time)->format('d/m/Y H:i') }}
-                        </td>
-                        <td style="border: 1px solid #000; padding: 8px;">
-                            <img src="{{ $attendance->signature }}" alt="Tanda tangan" style="height: 40px;">
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Dokumentasi -->
-        @if($notulen->documentation_images)
-        <div class="content-section" style="page-break-before: always;">
-            <div class="content-title">D. Dokumentasi</div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
-                @foreach(json_decode($notulen->documentation_images) as $image)
-                <div>
-                    <img src="{{ storage_path('app/public/' . $image) }}"
-                         alt="Dokumentasi rapat"
-                         style="width: 100%; height: auto; object-fit: cover; border-radius: 4px;">
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
         <div class="footer">
             <div class="signature-section">
                 <div>Mengetahui,</div>
