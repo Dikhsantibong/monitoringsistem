@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\MachineStatusController;
 use App\Http\Controllers\Admin\OtherDiscussionEditController;
 use App\Http\Controllers\Admin\PasswordVerificationController;
 use App\Http\Controllers\NotulenController;
+use App\Http\Controllers\Api\NotulenAttendanceController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -734,3 +735,7 @@ Route::prefix('admin/machine-status')->name('admin.machine-status.')->middleware
     Route::put('/{machineId}/update/{logId}', [MachineStatusController::class, 'update'])->name('update');
     Route::delete('/{machineId}/destroy/{logId}', [MachineStatusController::class, 'destroy'])->name('destroy');
 });
+
+// Notulen Attendance Routes
+Route::get('/notulen-attendance/{tempNotulenId}', [NotulenController::class, 'show'])->name('notulen.attendance.show');
+Route::post('/api/notulen-attendance', [NotulenAttendanceController::class, 'store'])->name('notulen.attendance.store');

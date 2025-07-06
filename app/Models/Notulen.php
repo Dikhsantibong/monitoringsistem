@@ -49,4 +49,9 @@ class Notulen extends Model
             $tahun
         );
     }
+
+    public function attendances()
+    {
+        return $this->hasMany(NotulenAttendance::class);
+    }
 }

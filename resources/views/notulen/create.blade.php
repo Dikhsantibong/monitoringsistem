@@ -142,6 +142,47 @@
     .btn-submit:hover {
         background-color: #007a94;
     }
+
+    .qr-code-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: none;
+    }
+
+    .attendance-list {
+        margin-top: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .attendance-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .signature-pad {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+    }
 </style>
 @endsection
 
@@ -208,8 +249,18 @@
                 <span class="header-info-label">Hari/Tanggal</span>
                 <span class="header-info-value">: <input type="date" name="tanggal" class="border p-1" value="{{ now()->format('Y-m-d') }}" required></span>
             </div>
+            <div class="header-info-item mt-4">
+                <span class="header-info-label">Absensi</span>
+                <span class="header-info-value">
+                    <button type="button" onclick="showQRCode()" class="bg-blue-500 text-white px-4 py-2 rounded">
+                        Buka QR Code Absensi
+                    </button>
+                </span>
+            </div>
+        </div>
 
-
+        <div id="attendanceList" class="attendance-list">
+            <!-- Attendance items will be dynamically added here -->
         </div>
 
         <div class="notulen-content">
@@ -295,6 +346,39 @@
     </form>
 </div>
 
+<!-- QR Code Modal -->
+<div class="overlay" id="overlay"></div>
+<div class="qr-code-container" id="qrCodeContainer">
+    <h2 class="text-xl font-bold mb-4">Scan QR Code untuk Absensi</h2>
+    <div id="qrcode"></div>
+    <button onclick="closeQRCode()" class="mt-4 bg-red-500 text-white px-4 py-2 rounded">
+        Tutup QR Code
+    </button>
+</div>
+
+<!-- Attendance Form Modal -->
+<div class="qr-code-container" id="attendanceFormContainer" style="display: none;">
+    <h2 class="text-xl font-bold mb-4">Form Absensi</h2>
+    <form id="attendanceForm">
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Nama</label>
+            <input type="text" name="name" class="border rounded w-full py-2 px-3" required>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Jabatan</label>
+            <input type="text" name="position" class="border rounded w-full py-2 px-3" required>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Tanda Tangan</label>
+            <canvas id="signaturePad" class="signature-pad" width="400" height="200"></canvas>
+            <button type="button" onclick="clearSignature()" class="mt-2 text-sm text-gray-600">Clear</button>
+        </div>
+        <div class="flex justify-end">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Submit</button>
+        </div>
+    </form>
+</div>
+
 <script>
     function execCmd(command, editorId, value = null) {
         try {
@@ -350,6 +434,88 @@
                 editor.innerHTML = '<p></p>';
             }
         });
+    });
+
+    let qrcode;
+    let signaturePad;
+    let tempNotulenId;
+
+    function showQRCode() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('qrCodeContainer');
+
+        overlay.style.display = 'block';
+        container.style.display = 'block';
+
+        // Generate temporary ID for this notulen session
+        tempNotulenId = Date.now().toString();
+
+        // Generate QR code
+        if (!qrcode) {
+            qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: `${window.location.origin}/notulen-attendance/${tempNotulenId}`,
+                width: 256,
+                height: 256
+            });
+        }
+    }
+
+    function closeQRCode() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('qrCodeContainer');
+
+        overlay.style.display = 'none';
+        container.style.display = 'none';
+    }
+
+    function initSignaturePad() {
+        const canvas = document.getElementById('signaturePad');
+        signaturePad = new SignaturePad(canvas);
+    }
+
+    function clearSignature() {
+        signaturePad.clear();
+    }
+
+    document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append('signature', signaturePad.toDataURL());
+        formData.append('temp_notulen_id', tempNotulenId);
+
+        fetch('{{ url("/public/api/notulen-attendance") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add attendance to the list
+                addAttendanceToList(data.attendance);
+                // Close the form
+                document.getElementById('attendanceFormContainer').style.display = 'none';
+                // Clear the form
+                this.reset();
+                signaturePad.clear();
+            }
+        });
+    });
+
+    function addAttendanceToList(attendance) {
+        const list = document.getElementById('attendanceList');
+        const item = document.createElement('div');
+        item.className = 'attendance-item';
+        item.innerHTML = `
+            <strong>${attendance.name}</strong> - ${attendance.position}
+            <input type="hidden" name="attendances[]" value='${JSON.stringify(attendance)}'>
+        `;
+        list.appendChild(item);
+    }
+
+    // Initialize signature pad when the form is shown
+    document.addEventListener('DOMContentLoaded', function() {
+        initSignaturePad();
     });
 </script>
 @push('scripts')

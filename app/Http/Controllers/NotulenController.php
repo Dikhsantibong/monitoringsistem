@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Notulen;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class NotulenController extends Controller
 {
@@ -46,7 +47,8 @@ class NotulenController extends Controller
                 'tindak_lanjut' => 'required',
                 'pimpinan_rapat_nama' => 'required',
                 'notulis_nama' => 'required',
-                'tanggal_tanda_tangan' => 'required|date'
+                'tanggal_tanda_tangan' => 'required|date',
+                'attendances' => 'nullable|array'
             ]);
 
             // Sanitize HTML content but preserve basic formatting
@@ -69,6 +71,25 @@ class NotulenController extends Controller
                 'format_nomor' => $formatNomor,
                 'pimpinan_rapat' => $validated['pimpinan_rapat_nama']
             ]);
+
+            // Store attendances if any
+            if (!empty($validated['attendances'])) {
+                foreach ($validated['attendances'] as $attendance) {
+                    if (is_string($attendance)) {
+                        $attendance = json_decode($attendance, true);
+                    }
+                    $notulen->attendances()->create([
+                        'name' => $attendance['name'],
+                        'position' => $attendance['position'],
+                        'signature' => $attendance['signature']
+                    ]);
+                }
+            }
+
+            // Clear the temporary attendance data from cache
+            if ($request->has('temp_notulen_id')) {
+                Cache::forget("notulen_attendances_{$request->temp_notulen_id}");
+            }
 
             // Redirect to show view with success message
             return redirect()
