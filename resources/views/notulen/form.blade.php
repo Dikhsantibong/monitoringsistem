@@ -345,6 +345,30 @@
             mobileMenu.classList.toggle('hidden');
         });
 
+        // Set default bulan dan tahun sesuai tanggal hari ini
+        const now = new Date();
+        const bulan = now.getMonth() + 1; // getMonth() 0-based
+        const tahun = now.getFullYear();
+        const bulanSelect = document.getElementById('bulan');
+        const tahunSelect = document.getElementById('tahun');
+        if (bulanSelect && !bulanSelect.value) {
+            bulanSelect.value = bulan;
+        }
+        if (tahunSelect && !tahunSelect.value) {
+            // Cek apakah tahun sekarang ada di opsi
+            let found = false;
+            for (let i = 0; i < tahunSelect.options.length; i++) {
+                if (tahunSelect.options[i].value == tahun) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) tahunSelect.value = tahun;
+        }
+
+        // Update preview setelah set default
+        updateFormatPreview();
+
         // Handle create notulen button click
         document.getElementById('createNotulenBtn').addEventListener('click', function() {
             const nomor_urut = document.getElementById('nomor_urut').value;
