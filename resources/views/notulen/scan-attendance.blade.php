@@ -125,7 +125,7 @@
             .catch(error => {
                 document.getElementById('errorSound').play();
                 alert(error.message);
-                window.location.href = '{{ route("notulen.error") }}';
+                window.location.href = '{{ route("notulen.attendance.error") }}';
             });
         });
     });

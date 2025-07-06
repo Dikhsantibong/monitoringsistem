@@ -180,7 +180,7 @@ class NotulenController extends Controller
                 ]);
             }
 
-            // Untuk token permanent, gunakan logika yang sudah ada
+            // Untuk token permanent, cari notulen terkait
             $notulen = Notulen::where('attendance_token', $token)
                 ->where('attendance_token_expires_at', '>=', now())
                 ->firstOrFail();
@@ -191,7 +191,7 @@ class NotulenController extends Controller
                 'isTemporary' => false
             ]);
         } catch (\Exception $e) {
-            return redirect()->route('notulen.error')
+            return redirect()->route('notulen.attendance.error')
                 ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
         }
     }
@@ -250,5 +250,15 @@ class NotulenController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function attendanceSuccess()
+    {
+        return view('notulen.attendance-success');
+    }
+
+    public function attendanceError()
+    {
+        return view('notulen.attendance-error');
     }
 }
