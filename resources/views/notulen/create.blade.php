@@ -423,6 +423,15 @@
         document.getElementById('pembahasanInput').value = pembahasanContent;
         document.getElementById('tindakLanjutInput').value = tindakLanjutContent;
 
+        // Add temp_notulen_id if exists
+        if (tempNotulenId) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'temp_notulen_id';
+            input.value = tempNotulenId;
+            this.appendChild(input);
+        }
+
         this.submit();
     });
 
@@ -455,7 +464,7 @@
         qrcodeDiv.innerHTML = '';
 
         // Generate QR code with the full URL
-        const qrUrl = `${window.location.origin}/notulen-attendance/${tempNotulenId}`;
+        const qrUrl = `${window.location.origin}/public/notulen-attendance/${tempNotulenId}`;
         new QRCode(qrcodeDiv, {
             text: qrUrl,
             width: 256,

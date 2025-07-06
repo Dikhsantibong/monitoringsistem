@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notulen;
+use App\Models\NotulenAttendance;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 class NotulenController extends Controller
 {
@@ -30,6 +33,8 @@ class NotulenController extends Controller
     public function store(Request $request)
     {
         try {
+            DB::beginTransaction();
+
             $validated = $request->validate([
                 'nomor_urut' => 'required',
                 'unit' => 'required',
@@ -48,7 +53,7 @@ class NotulenController extends Controller
                 'pimpinan_rapat_nama' => 'required',
                 'notulis_nama' => 'required',
                 'tanggal_tanda_tangan' => 'required|date',
-                'attendances' => 'nullable|array'
+                'temp_notulen_id' => 'nullable|string'
             ]);
 
             // Sanitize HTML content but preserve basic formatting
@@ -72,31 +77,32 @@ class NotulenController extends Controller
                 'pimpinan_rapat' => $validated['pimpinan_rapat_nama']
             ]);
 
-            // Store attendances if any
-            if (!empty($validated['attendances'])) {
-                foreach ($validated['attendances'] as $attendance) {
-                    if (is_string($attendance)) {
-                        $attendance = json_decode($attendance, true);
-                    }
-                    $notulen->attendances()->create([
+            // Get attendance data from session if exists
+            if (isset($validated['temp_notulen_id'])) {
+                $attendances = Session::get("temp_attendances_{$validated['temp_notulen_id']}", []);
+                foreach ($attendances as $attendance) {
+                    NotulenAttendance::create([
+                        'notulen_id' => $notulen->id,
                         'name' => $attendance['name'],
                         'position' => $attendance['position'],
                         'signature' => $attendance['signature']
                     ]);
                 }
+
+                // Clear temporary data
+                Session::forget("temp_attendances_{$validated['temp_notulen_id']}");
+                Cache::forget("notulen_attendances_{$validated['temp_notulen_id']}");
             }
 
-            // Clear the temporary attendance data from cache
-            if ($request->has('temp_notulen_id')) {
-                Cache::forget("notulen_attendances_{$request->temp_notulen_id}");
-            }
+            DB::commit();
 
             // Redirect to show view with success message
             return redirect()
-                ->route('notulen.show', $notulen->id)
+                ->route('homepage')
                 ->with('success', 'Notulen berhasil disimpan');
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan notulen. ' . $e->getMessage()]);

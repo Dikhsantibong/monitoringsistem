@@ -42,7 +42,7 @@
             e.preventDefault();
 
             if (signaturePad.isEmpty()) {
-                alert('Please provide signature');
+                alert('Mohon berikan tanda tangan');
                 return;
             }
 
@@ -60,13 +60,19 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Absensi berhasil disimpan');
-                    window.close();
+                    alert(data.message);
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        window.close();
+                    }
+                } else {
+                    throw new Error(data.message || 'Terjadi kesalahan');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat menyimpan absensi');
+                alert(error.message || 'Terjadi kesalahan saat menyimpan absensi');
             });
         });
     });
