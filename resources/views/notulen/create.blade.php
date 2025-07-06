@@ -634,7 +634,7 @@
         }
         errorContainer.style.display = 'none';
 
-        fetch('/api/notulen-documentation', {
+        fetch('{{ url("/public/api/notulen-documentation") }}', {
             method: 'POST',
             body: formData,
             headers: {
