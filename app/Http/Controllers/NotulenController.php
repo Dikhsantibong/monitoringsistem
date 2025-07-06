@@ -8,8 +8,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Attendance;
 use Illuminate\Support\Facades\Log;
+use App\Models\Attendance;
+use Illuminate\Support\Facades\Session;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class NotulenController extends Controller
 {
@@ -172,37 +174,41 @@ class NotulenController extends Controller
     {
         try {
             // Validasi token
-            if (!$token) {
-                return redirect()->route('notulen.attendance.error')->with('error', 'Token tidak valid');
+            if (!$token || !str_starts_with($token, 'TEMP-')) {
+                return redirect()->back()
+                    ->with('error', 'QR Code tidak valid atau sudah kadaluarsa.');
             }
 
-            // Ambil data dari session jika token sesuai
+            // Cek session data
             $tempData = session('notulen_temp_data');
-            $tempToken = session('notulen_temp_token');
-
-            if (!$tempData || !$tempToken || $tempToken !== $token) {
-                return redirect()->route('notulen.attendance.error')->with('error', 'Data tidak ditemukan atau token tidak valid');
+            if (!$tempData) {
+                return redirect()->back()
+                    ->with('error', 'Data QR Code tidak ditemukan atau sudah kadaluarsa.');
             }
 
-            return view('notulen.scan-attendance', compact('token', 'tempData'));
+            return view('notulen.scan-attendance', [
+                'token' => $token,
+                'tempData' => $tempData
+            ]);
         } catch (\Exception $e) {
-            \Log::error('Error in scanAttendance: ' . $e->getMessage());
-            return redirect()->route('notulen.attendance.error')->with('error', 'Terjadi kesalahan sistem');
+            \Log::error('Error scanning attendance: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat memproses QR Code.');
         }
     }
 
-    public function storeAttendance(Request $request)
+    public function submitAttendance(Request $request, $token)
     {
         try {
+            // Validasi input
             $validated = $request->validate([
-                'token' => 'required',
-                'name' => 'required|string',
-                'position' => 'required|string',
-                'division' => 'required|string',
+                'name' => 'required|string|max:255',
+                'position' => 'required|string|max:255',
+                'division' => 'required|string|max:255',
                 'signature' => 'required|string'
             ]);
 
-            // Simpan data kehadiran
+            // Proses data attendance
             $attendance = new Attendance();
             $attendance->notulen_id = session('current_notulen_id');
             $attendance->name = $validated['name'];
@@ -212,10 +218,16 @@ class NotulenController extends Controller
             $attendance->time = now();
             $attendance->save();
 
-            return redirect()->route('notulen.attendance.success');
+            return response()->json([
+                'success' => true,
+                'message' => 'Kehadiran berhasil dicatat'
+            ]);
         } catch (\Exception $e) {
-            \Log::error('Error in storeAttendance: ' . $e->getMessage());
-            return redirect()->route('notulen.attendance.error')->with('error', 'Terjadi kesalahan saat menyimpan data');
+            \Log::error('Error submitting attendance: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan kehadiran'
+            ], 500);
         }
     }
 

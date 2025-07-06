@@ -177,7 +177,7 @@
     <div class="notulen-container">
         <div class="notulen-header">
             <div class="header-logo">
-                <img src="{{ asset('logo/navlogo.png') }}" alt="PLN Logo">
+                <img src="{{ asset('/public/logo/navlogo.png') }}" alt="PLN Logo">
             </div>
             <div class="header-text">
                 <div class="border-bottom border-black">PT PLN NUSANTARA POWER</div>
@@ -300,13 +300,13 @@
     </div>
 
     <!-- Print Button -->
-    <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button">
+    <button onclick="window.print('{{ url("/public/notulen/print-pdf/{$notulen->id}") }}')" class="print-button">
         <i class="fas fa-print"></i>
         Cetak Notulen
     </button>
 
     <!-- Back Button -->
-    <a href="{{ route('notulen.form') }}" class="back-button">
+    <a href="{{ url('/public/notulen/form') }}" class="back-button">
         <i class="fas fa-arrow-left"></i>
         Kembali
     </a>

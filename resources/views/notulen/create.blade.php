@@ -432,7 +432,8 @@
         sessionStorage.setItem('notulen_temp_token', tempToken);
 
         // Generate QR Code dengan URL yang benar termasuk /public
-        const qrUrl = `${window.location.origin}/public/notulen/attendance/scan/${tempToken}`;
+        const baseUrl = '{{ url("/") }}';
+        const qrUrl = `${baseUrl}/notulen/attendance/scan/${tempToken}`;
 
         container.innerHTML = '';
         new QRCode(container, {
@@ -444,23 +445,29 @@
 
     function closeModal() {
         // Hapus event listener sebelum menutup modal
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-        document.getElementById('qrModal').classList.add('hidden');
+        const modal = document.getElementById('qrModal');
+        modal.classList.add('hidden');
     }
 
-    // Tambahkan event listener saat modal dibuka
-    document.getElementById('generateQrBtn').addEventListener('click', function() {
-        // Tambahkan event listener untuk mencegah unload yang tidak diinginkan
-        window.addEventListener('beforeunload', handleBeforeUnload);
+    // Tambahkan event listener untuk menutup modal saat klik di luar
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('qrModal');
+        const modalContent = modal.querySelector('.bg-white');
+        const generateBtn = document.getElementById('generateQrBtn');
+
+        if (!modal.classList.contains('hidden') &&
+            !modalContent.contains(event.target) &&
+            !generateBtn.contains(event.target)) {
+            closeModal();
+        }
     });
 
-    // Handler untuk beforeunload
-    function handleBeforeUnload(e) {
-        // Batalkan event unload
-        e.preventDefault();
-        // Chrome memerlukan returnValue diset
-        e.returnValue = '';
-    }
+    // Tambahkan event listener untuk tombol escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
 
     function previewImages(event) {
         const container = document.getElementById('imagePreviewContainer');
