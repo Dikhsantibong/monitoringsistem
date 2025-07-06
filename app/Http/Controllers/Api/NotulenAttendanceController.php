@@ -33,7 +33,7 @@ class NotulenAttendanceController extends Controller
         ]);
     }
 
-    public function show($tempNotulenId)
+    public function showAttendanceForm($tempNotulenId)
     {
         return view('notulen.attendance-form', [
             'temp_notulen_id' => $tempNotulenId

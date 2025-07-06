@@ -251,10 +251,10 @@
     </div>
 
     <!-- Print Button -->
-    <a href="{{ route('notulen.print-pdf', ['notulen' => $notulen->id]) }}" class="print-button" target="_blank">
+    <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button">
         <i class="fas fa-print"></i>
         Cetak Notulen
-    </a>
+    </button>
 
     <!-- Back Button -->
     <a href="{{ route('notulen.form') }}" class="back-button">
