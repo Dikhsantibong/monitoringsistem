@@ -50,7 +50,7 @@
             formData.append('signature', signaturePad.toDataURL());
             formData.append('temp_notulen_id', '{{ $temp_notulen_id }}');
 
-            fetch('/api/notulen-attendance', {
+            fetch('{{ url("/public/api/notulen-attendance") }}', {
                 method: 'POST',
                 body: formData,
                 headers: {

@@ -450,14 +450,20 @@
         // Generate temporary ID for this notulen session
         tempNotulenId = Date.now().toString();
 
-        // Generate QR code
-        if (!qrcode) {
-            qrcode = new QRCode(document.getElementById("qrcode"), {
-                text: `${window.location.origin}/notulen-attendance/${tempNotulenId}`,
-                width: 256,
-                height: 256
-            });
-        }
+        // Clear previous QR code if exists
+        const qrcodeDiv = document.getElementById("qrcode");
+        qrcodeDiv.innerHTML = '';
+
+        // Generate QR code with the full URL
+        const qrUrl = `${window.location.origin}/public/notulen-attendance/${tempNotulenId}`;
+        new QRCode(qrcodeDiv, {
+            text: qrUrl,
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
     }
 
     function closeQRCode() {
@@ -486,7 +492,10 @@
 
         fetch('{{ url("/public/api/notulen-attendance") }}', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
         })
         .then(response => response.json())
         .then(data => {
@@ -499,6 +508,10 @@
                 this.reset();
                 signaturePad.clear();
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyimpan absensi');
         });
     });
 
@@ -519,5 +532,7 @@
     });
 </script>
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 @endpush
 @endsection
