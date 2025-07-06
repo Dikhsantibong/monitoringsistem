@@ -431,8 +431,8 @@
         sessionStorage.setItem('notulen_temp_data', JSON.stringify(formData));
         sessionStorage.setItem('notulen_temp_token', tempToken);
 
-        // Generate QR Code dengan URL yang benar
-        const qrUrl = `${window.location.origin}/notulen/attendance/scan/${tempToken}`;
+        // Generate QR Code dengan URL yang benar termasuk /public
+        const qrUrl = `${window.location.origin}/public/notulen/attendance/scan/${tempToken}`;
 
         container.innerHTML = '';
         new QRCode(container, {
@@ -443,7 +443,23 @@
     }
 
     function closeModal() {
+        // Hapus event listener sebelum menutup modal
+        window.removeEventListener('beforeunload', handleBeforeUnload);
         document.getElementById('qrModal').classList.add('hidden');
+    }
+
+    // Tambahkan event listener saat modal dibuka
+    document.getElementById('generateQrBtn').addEventListener('click', function() {
+        // Tambahkan event listener untuk mencegah unload yang tidak diinginkan
+        window.addEventListener('beforeunload', handleBeforeUnload);
+    });
+
+    // Handler untuk beforeunload
+    function handleBeforeUnload(e) {
+        // Batalkan event unload
+        e.preventDefault();
+        // Chrome memerlukan returnValue diset
+        e.returnValue = '';
     }
 
     function previewImages(event) {

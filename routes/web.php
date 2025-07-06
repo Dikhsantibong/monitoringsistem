@@ -50,10 +50,18 @@ Route::prefix('notulen')->name('notulen.')->group(function () {
     Route::get('/print-pdf/{id}', [NotulenController::class, 'printPDF'])->name('print-pdf');
 
     // QR Code & Attendance Routes
-    Route::get('/attendance/scan/{token}', [NotulenController::class, 'scanAttendance'])->name('attendance.scan');
-    Route::post('/attendance/store', [NotulenController::class, 'storeAttendance'])->name('store-attendance');
-    Route::get('/attendance/success', [NotulenController::class, 'attendanceSuccess'])->name('attendance.success');
-    Route::get('/attendance/error', [NotulenController::class, 'attendanceError'])->name('attendance.error');
+    Route::get('/attendance/scan/{token}', [NotulenController::class, 'scanAttendance'])
+        ->name('attendance.scan')
+        ->middleware(['web']);
+    Route::post('/attendance/store', [NotulenController::class, 'storeAttendance'])
+        ->name('store-attendance')
+        ->middleware(['web']);
+    Route::get('/attendance/success', [NotulenController::class, 'attendanceSuccess'])
+        ->name('attendance.success')
+        ->middleware(['web']);
+    Route::get('/attendance/error', [NotulenController::class, 'attendanceError'])
+        ->name('attendance.error')
+        ->middleware(['web']);
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

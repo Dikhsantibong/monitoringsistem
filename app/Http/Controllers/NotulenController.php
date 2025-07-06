@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Attendance;
+use Illuminate\Support\Facades\Log;
 
 class NotulenController extends Controller
 {
@@ -169,30 +171,23 @@ class NotulenController extends Controller
     public function scanAttendance($token)
     {
         try {
-            // Cek apakah token temporary atau permanent
-            $isTemp = str_starts_with($token, 'TEMP-');
-
-            if ($isTemp) {
-                // Untuk token temporary, tampilkan form absensi dengan data sementara
-                return view('notulen.scan-attendance', [
-                    'token' => $token,
-                    'isTemporary' => true
-                ]);
+            // Validasi token
+            if (!$token) {
+                return redirect()->route('notulen.attendance.error')->with('error', 'Token tidak valid');
             }
 
-            // Untuk token permanent, cari notulen terkait
-            $notulen = Notulen::where('attendance_token', $token)
-                ->where('attendance_token_expires_at', '>=', now())
-                ->firstOrFail();
+            // Ambil data dari session jika token sesuai
+            $tempData = session('notulen_temp_data');
+            $tempToken = session('notulen_temp_token');
 
-            return view('notulen.scan-attendance', [
-                'token' => $token,
-                'notulen' => $notulen,
-                'isTemporary' => false
-            ]);
+            if (!$tempData || !$tempToken || $tempToken !== $token) {
+                return redirect()->route('notulen.attendance.error')->with('error', 'Data tidak ditemukan atau token tidak valid');
+            }
+
+            return view('notulen.scan-attendance', compact('token', 'tempData'));
         } catch (\Exception $e) {
-            return redirect()->route('notulen.attendance.error')
-                ->with('error', 'QR Code tidak valid atau sudah kadaluarsa');
+            \Log::error('Error in scanAttendance: ' . $e->getMessage());
+            return redirect()->route('notulen.attendance.error')->with('error', 'Terjadi kesalahan sistem');
         }
     }
 
@@ -200,55 +195,27 @@ class NotulenController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'position' => 'required|string|max:255',
-                'division' => 'required|string|max:255',
-                'token' => 'required|string',
+                'token' => 'required',
+                'name' => 'required|string',
+                'position' => 'required|string',
+                'division' => 'required|string',
                 'signature' => 'required|string'
             ]);
 
-            // Cek apakah token temporary atau permanent
-            $isTemp = str_starts_with($validated['token'], 'TEMP-');
+            // Simpan data kehadiran
+            $attendance = new Attendance();
+            $attendance->notulen_id = session('current_notulen_id');
+            $attendance->name = $validated['name'];
+            $attendance->position = $validated['position'];
+            $attendance->division = $validated['division'];
+            $attendance->signature = $validated['signature'];
+            $attendance->time = now();
+            $attendance->save();
 
-            if ($isTemp) {
-                // Simpan data absensi sementara ke session
-                $tempAttendances = session()->get('temp_attendances', []);
-                $tempAttendances[$validated['token']][] = [
-                    'name' => $validated['name'],
-                    'position' => $validated['position'],
-                    'division' => $validated['division'],
-                    'signature' => $validated['signature'],
-                    'time' => now()
-                ];
-                session()->put('temp_attendances', $tempAttendances);
-            } else {
-                // Gunakan logika yang sudah ada untuk token permanent
-                $notulen = Notulen::where('attendance_token', $validated['token'])
-                    ->where('attendance_token_expires_at', '>=', now())
-                    ->firstOrFail();
-
-                DB::table('notulen_attendances')->insert([
-                    'notulen_id' => $notulen->id,
-                    'name' => $validated['name'],
-                    'position' => $validated['position'],
-                    'division' => $validated['division'],
-                    'signature' => $validated['signature'],
-                    'time' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Absensi berhasil disimpan'
-            ]);
-
+            return redirect()->route('notulen.attendance.success');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
+            \Log::error('Error in storeAttendance: ' . $e->getMessage());
+            return redirect()->route('notulen.attendance.error')->with('error', 'Terjadi kesalahan saat menyimpan data');
         }
     }
 
