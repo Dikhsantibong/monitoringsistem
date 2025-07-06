@@ -237,6 +237,79 @@
                 page-break-before: always;
             }
         }
+
+        /* Documentation styles */
+        .documentation-section {
+            margin: 2rem 0;
+        }
+
+        .documentation-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .documentation-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .documentation-subtitle {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .documentation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        .documentation-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .documentation-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .documentation-caption {
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .no-documentation {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            background: #f8fafc;
+            border: 1px dashed #e2e8f0;
+            border-radius: 8px;
+        }
+
+        @media print {
+            .documentation-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .documentation-image {
+                height: 150px;
+            }
+        }
     </style>
 @endsection
 
@@ -354,6 +427,31 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentation on new page -->
+    <div class="page-break">
+        <div class="notulen-container">
+            <div class="documentation-section">
+                <div class="documentation-header">
+                    <div class="documentation-title">DOKUMENTASI RAPAT</div>
+                    <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
+                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                </div>
+                <div class="documentation-grid">
+                    @forelse($notulen->documentations as $documentation)
+                        <div class="documentation-item">
+                            <img src="{{ asset('storage/' . $documentation->image_path) }}" alt="Dokumentasi Rapat" class="documentation-image">
+                            @if($documentation->caption)
+                                <div class="documentation-caption">{{ $documentation->caption }}</div>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="no-documentation">Tidak ada dokumentasi rapat</div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>

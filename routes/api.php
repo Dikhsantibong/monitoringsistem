@@ -1,10 +1,20 @@
 <?php
 
+use App\Http\Controllers\Api\NotulenDocumentationController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\OtherDiscussionController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
 
+// Documentation upload endpoint
+Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store']);
+
+// Existing routes
 Route::get('sections/{department}', [SectionController::class, 'getSections'])
     ->name('api.sections.index');
 
@@ -25,5 +35,5 @@ Route::get('/generate-no-pembahasan', [App\Http\Controllers\Admin\OtherDiscussio
 Route::get('/generate-numbers', [OtherDiscussionController::class, 'generateNumbers']);
 Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
     ->name('api.generate-no-pembahasan');
-    Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
+Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
     ->name('api.generate-no-pembahasan');

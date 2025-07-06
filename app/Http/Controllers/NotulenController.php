@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notulen;
 use App\Models\NotulenAttendance;
+use App\Models\NotulenDocumentation;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -76,13 +77,27 @@ class NotulenController extends Controller
                 'pimpinan_rapat' => $validated['pimpinan_rapat_nama']
             ]);
 
-            // Update notulen_id for attendances if temp_notulen_id exists
+            // Update notulen_id for attendances and documentations if temp_notulen_id exists
             if (isset($validated['temp_notulen_id'])) {
-                NotulenAttendance::whereNull('notulen_id')
-                    ->update(['notulen_id' => $notulen->id]);
+                // Get cached attendance data
+                $cachedAttendances = Cache::get("notulen_attendances_{$validated['temp_notulen_id']}", []);
+                if (!empty($cachedAttendances)) {
+                    $attendanceSessionIds = collect($cachedAttendances)->pluck('session_id')->toArray();
+                    NotulenAttendance::whereIn('session_id', $attendanceSessionIds)
+                        ->update(['notulen_id' => $notulen->id]);
+                }
+
+                // Get cached documentation data
+                $cachedDocumentations = Cache::get("notulen_documentations_{$validated['temp_notulen_id']}", []);
+                if (!empty($cachedDocumentations)) {
+                    $documentationSessionIds = collect($cachedDocumentations)->pluck('session_id')->toArray();
+                    NotulenDocumentation::whereIn('session_id', $documentationSessionIds)
+                        ->update(['notulen_id' => $notulen->id]);
+                }
 
                 // Clear the temporary data from cache
                 Cache::forget("notulen_attendances_{$validated['temp_notulen_id']}");
+                Cache::forget("notulen_documentations_{$validated['temp_notulen_id']}");
             }
 
             DB::commit();
@@ -102,11 +117,16 @@ class NotulenController extends Controller
 
     public function show(Notulen $notulen)
     {
+        // Load the documentations relationship
+        $notulen->load(['documentations', 'attendances']);
         return view('notulen.show', compact('notulen'));
     }
 
     public function printPdf(Notulen $notulen)
     {
+        // Load the documentations relationship
+        $notulen->load(['documentations', 'attendances']);
+
         // Generate PDF using DomPDF
         $pdf = \PDF::loadView('notulen.print-pdf', compact('notulen'));
 

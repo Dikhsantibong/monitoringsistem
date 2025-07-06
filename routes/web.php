@@ -739,3 +739,6 @@ Route::prefix('admin/machine-status')->name('admin.machine-status.')->middleware
 // Notulen Attendance Routes
 Route::get('/notulen-attendance/{tempNotulenId}', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'showAttendanceForm'])->name('notulen.attendance.form');
 Route::post('/api/notulen-attendance', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'store'])->name('notulen.attendance.store');
+
+Route::get('/notulen-documentation/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'showDocumentationForm'])->name('notulen.documentation.form');
+Route::post('/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');

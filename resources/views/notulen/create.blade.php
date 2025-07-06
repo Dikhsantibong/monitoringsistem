@@ -183,6 +183,31 @@
         z-index: 999;
         display: none;
     }
+
+    .documentation-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .documentation-item {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .documentation-item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .documentation-item .caption {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+        color: #666;
+    }
 </style>
 @endsection
 
@@ -202,6 +227,7 @@
 
     <form action="{{ route('notulen.store') }}" method="POST" class="notulen-form" id="notulenForm" enctype="multipart/form-data">
         @csrf
+        <input type="hidden" name="temp_notulen_id" id="tempNotulenId">
         <input type="hidden" name="nomor_urut" value="{{ request('nomor_urut') }}">
         <input type="hidden" name="unit" value="{{ request('unit') }}">
         <input type="hidden" name="bidang" value="{{ request('bidang') }}">
@@ -257,6 +283,18 @@
                     </button>
                 </span>
             </div>
+            <div class="header-info-item mt-4">
+                <span class="header-info-label">Dokumentasi</span>
+                <span class="header-info-value">
+                    <button type="button" onclick="showDocumentationUpload()" class="bg-green-500 text-white px-4 py-2 rounded">
+                        Upload Dokumentasi
+                    </button>
+                </span>
+            </div>
+        </div>
+
+        <div id="documentationList" class="documentation-list mt-4">
+            <!-- Documentation items will be dynamically added here -->
         </div>
 
         <div id="attendanceList" class="attendance-list">
@@ -356,6 +394,25 @@
     </button>
 </div>
 
+<!-- Documentation Upload Modal -->
+<div class="qr-code-container" id="documentationFormContainer" style="display: none;">
+    <h2 class="text-xl font-bold mb-4">Upload Dokumentasi</h2>
+    <form id="documentationForm" enctype="multipart/form-data">
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Pilih Foto</label>
+            <input type="file" name="image" accept="image/*" class="border rounded w-full py-2 px-3" required>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Keterangan</label>
+            <textarea name="caption" class="border rounded w-full py-2 px-3" rows="3"></textarea>
+        </div>
+        <div class="flex justify-end gap-2">
+            <button type="button" onclick="closeDocumentationUpload()" class="bg-gray-500 text-white px-4 py-2 rounded">Tutup</button>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Upload</button>
+        </div>
+    </form>
+</div>
+
 <!-- Attendance Form Modal -->
 <div class="qr-code-container" id="attendanceFormContainer" style="display: none;">
     <h2 class="text-xl font-bold mb-4">Form Absensi</h2>
@@ -435,7 +492,16 @@
         this.submit();
     });
 
+    let qrcode;
+    let signaturePad;
+    let tempNotulenId;
+
+    // Generate tempNotulenId when page loads
     document.addEventListener('DOMContentLoaded', function() {
+        // Generate temporary ID for this notulen session
+        tempNotulenId = Date.now().toString();
+        document.getElementById('tempNotulenId').value = tempNotulenId;
+
         const editors = ['pembahasan', 'tindakLanjut'];
         editors.forEach(editorId => {
             const editor = document.getElementById(editorId + 'Editor');
@@ -443,11 +509,9 @@
                 editor.innerHTML = '<p></p>';
             }
         });
-    });
 
-    let qrcode;
-    let signaturePad;
-    let tempNotulenId;
+        initSignaturePad();
+    });
 
     function showQRCode() {
         const overlay = document.getElementById('overlay');
@@ -455,9 +519,6 @@
 
         overlay.style.display = 'block';
         container.style.display = 'block';
-
-        // Generate temporary ID for this notulen session
-        tempNotulenId = Date.now().toString();
 
         // Clear previous QR code if exists
         const qrcodeDiv = document.getElementById("qrcode");
@@ -535,10 +596,69 @@
         list.appendChild(item);
     }
 
-    // Initialize signature pad when the form is shown
-    document.addEventListener('DOMContentLoaded', function() {
-        initSignaturePad();
+    function showDocumentationUpload() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('documentationFormContainer');
+
+        overlay.style.display = 'block';
+        container.style.display = 'block';
+    }
+
+    function closeDocumentationUpload() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('documentationFormContainer');
+
+        overlay.style.display = 'none';
+        container.style.display = 'none';
+    }
+
+    document.getElementById('documentationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append('temp_notulen_id', tempNotulenId);
+
+        fetch('/api/notulen-documentation', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Add documentation to the list
+                addDocumentationToList(data.documentation);
+                // Close the form
+                closeDocumentationUpload();
+                // Clear the form
+                this.reset();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message || 'Terjadi kesalahan saat mengupload dokumentasi');
+        });
     });
+
+    function addDocumentationToList(documentation) {
+        const list = document.getElementById('documentationList');
+        const item = document.createElement('div');
+        item.className = 'documentation-item';
+        item.innerHTML = `
+            <img src="${documentation.image_url}" alt="Documentation">
+            <div class="caption">${documentation.caption || ''}</div>
+            <input type="hidden" name="documentations[]" value='${JSON.stringify(documentation)}'>
+        `;
+        list.appendChild(item);
+    }
 </script>
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

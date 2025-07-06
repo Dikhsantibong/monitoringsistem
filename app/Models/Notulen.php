@@ -54,4 +54,9 @@ class Notulen extends Model
     {
         return $this->hasMany(NotulenAttendance::class);
     }
+
+    public function documentations()
+    {
+        return $this->hasMany(NotulenDocumentation::class);
+    }
 }

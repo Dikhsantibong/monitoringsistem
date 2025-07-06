@@ -164,6 +164,66 @@
             display: block;
             margin: 0 auto;
         }
+
+        /* Documentation styles */
+        .documentation-section {
+            margin: 2rem 0;
+            page-break-inside: avoid;
+        }
+
+        .documentation-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .documentation-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 8pt;
+        }
+
+        .documentation-subtitle {
+            font-size: 11pt;
+            color: #666;
+            margin-bottom: 4pt;
+        }
+
+        .documentation-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .documentation-item {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+            break-inside: avoid;
+        }
+
+        .documentation-image {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .documentation-caption {
+            font-size: 10pt;
+            color: #333;
+            text-align: center;
+            padding-top: 4px;
+            border-top: 1px solid #eee;
+        }
+
+        .no-documentation {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            border: 1px dashed #000;
+            grid-column: 1 / -1;
+        }
     </style>
 </head>
 <body>
@@ -275,6 +335,31 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentation on new page -->
+    <div class="page-break">
+        <div class="notulen-container">
+            <div class="documentation-section">
+                <div class="documentation-header">
+                    <div class="documentation-title">DOKUMENTASI RAPAT</div>
+                    <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
+                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                </div>
+                <div class="documentation-grid">
+                    @forelse($notulen->documentations as $documentation)
+                        <div class="documentation-item">
+                            <img src="{{ $documentation->image_url }}" alt="Dokumentasi Rapat" class="documentation-image">
+                            @if($documentation->caption)
+                                <div class="documentation-caption">{{ $documentation->caption }}</div>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="no-documentation">Tidak ada dokumentasi rapat</div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
