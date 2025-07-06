@@ -618,7 +618,7 @@
         const formData = new FormData(this);
         formData.append('temp_notulen_id', tempNotulenId);
 
-        fetch('/api/notulen-documentation', {
+        fetch('{{ url("/public/api/notulen-documentation") }}', {
             method: 'POST',
             body: formData,
             headers: {
