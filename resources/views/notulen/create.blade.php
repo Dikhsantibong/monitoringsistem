@@ -642,7 +642,8 @@
             return;
         }
 
-        fetch('{{ route("api.notulen.documentation.store") }}', {
+        // Use absolute path for API endpoint
+        fetch('/api/notulen-documentation', {
             method: 'POST',
             body: formData,
             headers: {
