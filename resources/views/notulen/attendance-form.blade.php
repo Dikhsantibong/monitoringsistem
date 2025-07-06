@@ -17,6 +17,11 @@
             </div>
 
             <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Divisi</label>
+                <input type="text" name="division" class="border rounded w-full py-2 px-3" required>
+            </div>
+
+            <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Tanda Tangan</label>
                 <canvas id="signaturePad" class="border rounded" width="400" height="200"></canvas>
                 <button type="button" onclick="clearSignature()" class="mt-2 text-sm text-gray-600">Clear</button>
@@ -61,11 +66,7 @@
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        window.close();
-                    }
+                    window.close();
                 } else {
                     throw new Error(data.message || 'Terjadi kesalahan');
                 }

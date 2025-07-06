@@ -7,7 +7,6 @@ use App\Models\NotulenAttendance;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 
 class NotulenController extends Controller
@@ -77,20 +76,12 @@ class NotulenController extends Controller
                 'pimpinan_rapat' => $validated['pimpinan_rapat_nama']
             ]);
 
-            // Get attendance data from session if exists
+            // Update notulen_id for attendances if temp_notulen_id exists
             if (isset($validated['temp_notulen_id'])) {
-                $attendances = Session::get("temp_attendances_{$validated['temp_notulen_id']}", []);
-                foreach ($attendances as $attendance) {
-                    NotulenAttendance::create([
-                        'notulen_id' => $notulen->id,
-                        'name' => $attendance['name'],
-                        'position' => $attendance['position'],
-                        'signature' => $attendance['signature']
-                    ]);
-                }
+                NotulenAttendance::whereNull('notulen_id')
+                    ->update(['notulen_id' => $notulen->id]);
 
-                // Clear temporary data
-                Session::forget("temp_attendances_{$validated['temp_notulen_id']}");
+                // Clear the temporary data from cache
                 Cache::forget("notulen_attendances_{$validated['temp_notulen_id']}");
             }
 
@@ -98,7 +89,7 @@ class NotulenController extends Controller
 
             // Redirect to show view with success message
             return redirect()
-                ->route('homepage')
+                ->route('notulen.show', $notulen->id)
                 ->with('success', 'Notulen berhasil disimpan');
 
         } catch (\Exception $e) {

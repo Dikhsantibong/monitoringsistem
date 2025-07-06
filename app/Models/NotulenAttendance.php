@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class NotulenAttendance extends Model
 {
+    protected $table = 'notulen_attendances';
     protected $fillable = [
         'notulen_id',
+        'session_id',
         'name',
         'position',
+        'division',
         'signature'
     ];
 
