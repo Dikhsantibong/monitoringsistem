@@ -618,7 +618,23 @@
         const formData = new FormData(this);
         formData.append('temp_notulen_id', tempNotulenId);
 
-        fetch('{{ url("/public/api/notulen-documentation") }}', {
+        // Show loading state
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = 'Mengupload...';
+
+        // Create error message container if it doesn't exist
+        let errorContainer = document.getElementById('documentationErrorContainer');
+        if (!errorContainer) {
+            errorContainer = document.createElement('div');
+            errorContainer.id = 'documentationErrorContainer';
+            errorContainer.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4';
+            this.appendChild(errorContainer);
+        }
+        errorContainer.style.display = 'none';
+
+        fetch('/api/notulen-documentation', {
             method: 'POST',
             body: formData,
             headers: {
@@ -626,11 +642,18 @@
             },
             credentials: 'same-origin'
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => Promise.reject(err));
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Terjadi kesalahan saat mengupload dokumentasi');
+                }
+                return data;
+            } else {
+                const text = await response.text();
+                throw new Error('Server mengembalikan response yang tidak valid: ' + text.substring(0, 100));
             }
-            return response.json();
         })
         .then(data => {
             if (data.success) {
@@ -638,13 +661,24 @@
                 addDocumentationToList(data.documentation);
                 // Close the form
                 closeDocumentationUpload();
-                // Clear the form
+                // Clear the form and error message
                 this.reset();
+                errorContainer.style.display = 'none';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert(error.message || 'Terjadi kesalahan saat mengupload dokumentasi');
+            errorContainer.innerHTML = `
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline">${error.message}</span>
+                <pre class="mt-2 text-sm">${error.stack || ''}</pre>
+            `;
+            errorContainer.style.display = 'block';
+        })
+        .finally(() => {
+            // Reset button state
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
         });
     });
 
@@ -652,8 +686,14 @@
         const list = document.getElementById('documentationList');
         const item = document.createElement('div');
         item.className = 'documentation-item';
+
+        // Use storage URL for image display
+        const imageUrl = documentation.image_path.startsWith('public/')
+            ? '/storage/' + documentation.image_path.replace('public/', '')
+            : '/storage/' + documentation.image_path;
+
         item.innerHTML = `
-            <img src="${documentation.image_url}" alt="Documentation">
+            <img src="${imageUrl}" alt="Documentation" onerror="this.src='/images/error-image.jpg'">
             <div class="caption">${documentation.caption || ''}</div>
             <input type="hidden" name="documentations[]" value='${JSON.stringify(documentation)}'>
         `;
