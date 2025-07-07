@@ -700,10 +700,16 @@
         const item = document.createElement('div');
         item.className = 'documentation-item';
 
-        // Use storage URL for image display
-        const imageUrl = documentation.image_path.startsWith('public/')
-            ? '/storage/' + documentation.image_path.replace('public/', '')
-            : '/storage/' + documentation.image_path;
+        // Perbaikan URL gambar untuk mendukung environment production dan local
+        let imageUrl;
+        if (documentation.image_url) {
+            // Gunakan image_url jika tersedia dari response API
+            imageUrl = documentation.image_url;
+        } else {
+            // Fallback ke path relatif
+            const basePath = window.location.pathname.includes('/public') ? '/public/storage/' : '/storage/';
+            imageUrl = basePath + documentation.image_path.replace('public/', '');
+        }
 
         item.innerHTML = `
             <img src="${imageUrl}" alt="Documentation" onerror="this.src='/images/error-image.jpg'">
