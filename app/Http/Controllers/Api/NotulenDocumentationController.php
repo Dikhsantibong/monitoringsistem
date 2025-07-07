@@ -48,13 +48,21 @@ class NotulenDocumentationController extends Controller
 
             // Store in cache for the notulen form
             $documentations = Cache::get("notulen_documentations_{$validated['temp_notulen_id']}", []);
+
+            // Generate correct image URL for both environments
+            $baseUrl = $request->getSchemeAndHttpHost();
+            if (str_contains($request->getRequestUri(), '/public')) {
+                $baseUrl .= '/public';
+            }
+
             $documentationData = [
                 'id' => $documentation->id,
                 'session_id' => $sessionId,
                 'image_path' => $path,
-                'image_url' => asset('storage/' . $path),
+                'image_url' => $baseUrl . '/storage/' . str_replace('public/', '', $path),
                 'caption' => $validated['caption'] ?? null
             ];
+
             $documentations[] = $documentationData;
             Cache::put("notulen_documentations_{$validated['temp_notulen_id']}", $documentations, now()->addHours(2));
 

@@ -700,19 +700,22 @@
         const item = document.createElement('div');
         item.className = 'documentation-item';
 
-        // Perbaikan URL gambar untuk mendukung environment production dan local
+        // Get base URL dynamically
+        const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+
+        // Handle image path for both environments
         let imageUrl;
         if (documentation.image_url) {
-            // Gunakan image_url jika tersedia dari response API
+            // Use image_url if provided by the server
             imageUrl = documentation.image_url;
         } else {
-            // Fallback ke path relatif
-            const basePath = window.location.pathname.includes('/public') ? '/public/storage/' : '/storage/';
-            imageUrl = basePath + documentation.image_path.replace('public/', '');
+            // Construct URL based on image_path
+            const storagePath = documentation.image_path.replace('public/', '');
+            imageUrl = `${baseUrl}/storage/${storagePath}`;
         }
 
         item.innerHTML = `
-            <img src="${imageUrl}" alt="Documentation" onerror="this.src='/images/error-image.jpg'">
+            <img src="${imageUrl}" alt="Documentation" onerror="this.src='${baseUrl}/images/error-image.jpg'">
             <div class="caption">${documentation.caption || ''}</div>
             <input type="hidden" name="documentations[]" value='${JSON.stringify(documentation)}'>
         `;
