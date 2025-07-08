@@ -15,7 +15,55 @@ class NotulenController extends Controller
     public function form()
     {
         $nextNomorUrut = Notulen::max('nomor_urut') + 1;
-        return view('notulen.form', compact('nextNomorUrut'));
+
+        // Get initial notulen data for the search tab
+        $notulen = Notulen::latest()->paginate(10);
+
+        return view('notulen.form', compact('nextNomorUrut', 'notulen'));
+    }
+
+    public function search(Request $request)
+    {
+        $query = Notulen::query();
+
+        // Text search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('format_nomor', 'like', "%{$search}%")
+                  ->orWhere('agenda', 'like', "%{$search}%")
+                  ->orWhere('tempat', 'like', "%{$search}%")
+                  ->orWhere('unit', 'like', "%{$search}%")
+                  ->orWhere('bidang', 'like', "%{$search}%")
+                  ->orWhere('sub_bidang', 'like', "%{$search}%");
+            });
+        }
+
+        // Only apply filters if they have non-empty values
+        if ($request->filled('unit') && $request->unit !== '') {
+            $query->where('unit', $request->unit);
+        }
+
+        if ($request->filled('bidang') && $request->bidang !== '') {
+            $query->where('bidang', $request->bidang);
+        }
+
+        if ($request->filled('tahun') && $request->tahun !== '') {
+            $query->where('tahun', $request->tahun);
+        }
+
+        $notulen = $query->latest()->paginate(10);
+
+        if ($request->ajax()) {
+            $view = view('notulen._search_results', compact('notulen'))->render();
+            return response()->json([
+                'success' => true,
+                'html' => $view,
+                'hasMorePages' => $notulen->hasMorePages()
+            ]);
+        }
+
+        return view('notulen._search_results', compact('notulen'));
     }
 
     public function create(Request $request)
