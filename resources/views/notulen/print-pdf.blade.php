@@ -38,14 +38,15 @@
         }
 
         .header-logo img {
-            height: 60px;
+            height: 35px;
             width: auto;
+
         }
 
         .header-text {
             text-align: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 8pt;
             border-right: 1px solid #000;
             width: 50%;
             padding: 10px 0;
@@ -53,7 +54,7 @@
 
         .header-number {
             padding-left: 0.5rem;
-            font-size: 12px;
+            font-size: 8pt;
             width: 35%;
         }
 
@@ -66,6 +67,7 @@
 
         .header-info {
             margin: 2rem 0;
+            font-size: 10pt;
         }
 
         .header-info-item {
@@ -79,6 +81,7 @@
 
         .content-section {
             margin-bottom: 2rem;
+            font-size: 10pt;
         }
 
         .content-title {
@@ -125,6 +128,7 @@
         .attendance-header {
             margin-bottom: 2rem;
             text-align: center;
+            font-size: 10pt;
         }
 
         .attendance-title {

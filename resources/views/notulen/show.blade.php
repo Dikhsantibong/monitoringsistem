@@ -25,13 +25,13 @@
         }
 
         .header-logo img {
-            height: 60px;
+            height: 40px;
         }
 
         .header-text {
             text-align: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 8pt;
             border-right: 1px solid #000;
             width: 50%;
 
@@ -39,7 +39,7 @@
 
         .header-number {
             padding-left: 0.5rem;
-            font-size: 12px;
+            font-size: 8pt;
             width: 60%;
         }
 
@@ -52,6 +52,7 @@
         .header-info {
             display: grid;
             grid-template-columns: auto 1fr;
+            font-size: 8pt;
             gap: 0.5rem;
             margin-top: 1rem;
             margin-bottom: 1rem;
@@ -71,6 +72,7 @@
 
         .content-section {
             margin-bottom: 2rem;
+            font-size: 10pt;
         }
 
         .content-title {
@@ -87,6 +89,7 @@
             display: flex;
             justify-content: space-between;
             margin-top: 3rem;
+            font-size: 10pt;
         }
 
         .signature-section {
