@@ -149,11 +149,42 @@
         left: 50%;
         transform: translate(-50%, -50%);
         background: white;
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         z-index: 1000;
         display: none;
+        min-width: 400px;
+        text-align: center;
+    }
+
+    .qr-code-container h2 {
+        font-size: 1.5rem;
+        color: #1a1a1a;
+        margin-bottom: 2rem;
+    }
+
+    .qr-code-container #qrcode {
+        display: flex;
+        justify-content: center;
+        margin: 1rem 0;
+    }
+
+    .qr-code-container #qrcode img {
+        width: 350px !important;
+        height: 350px !important;
+    }
+
+    .qr-code-container button {
+        margin-top: 2rem;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .qr-code-container button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .attendance-list {

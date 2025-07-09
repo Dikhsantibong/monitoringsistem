@@ -249,6 +249,11 @@
         </div>
 
         <div class="header-info">
+
+            <div class="header-info-item">
+                <span class="header-info-label">Nomor Notulen</span>
+                <span class="header-info-value">: {{ $notulen->format_nomor ?? '-' }}</span>
+            </div>
             <div class="header-info-item">
                 <span class="header-info-label">Agenda</span>
                 <span class="header-info-value">: {{ $notulen->agenda ?? '-' }}</span>
