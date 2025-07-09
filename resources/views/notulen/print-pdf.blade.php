@@ -280,14 +280,16 @@
             </div>
         </div>
 
-        <div class="content-section">
-            <div class="content-title">A. Pembahasan</div>
-            <div class="content-body">{!! $notulen->pembahasan ?? '-' !!}</div>
-        </div>
+        <div class="content-wrapper" style="border: 1px solid #000; padding: 1rem; margin-bottom: 2rem;">
+            <div class="content-section">
+                <div class="content-title">A. Pembahasan</div>
+                <div class="content-body">{!! $notulen->pembahasan ?? '-' !!}</div>
+            </div>
 
-        <div class="content-section">
-            <div class="content-title">B. Tindak Lanjut</div>
-            <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
+            <div class="content-section">
+                <div class="content-title">B. Tindak Lanjut</div>
+                <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
+            </div>
         </div>
 
         <div class="footer">
