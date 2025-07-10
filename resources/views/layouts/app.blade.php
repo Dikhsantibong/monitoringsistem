@@ -5,12 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
-        @if (request()->routeIs('notulen.*'))
-        Notulen Rapat - {{ $notulen->format_nomor }}
+        @php
+            $routeName = request()->route()->getName();
+        @endphp
 
+        @if($routeName === 'notulen.show' || $routeName === 'notulen.edit')
+            @if(isset($notulen) && $notulen->format_nomor)
+                Notulen Rapat - {{ $notulen->format_nomor }}
+            @else
+                Notulen Rapat
+            @endif
+        @elseif($routeName === 'notulen.create')
+            Buat Notulen Baru
+        @elseif($routeName === 'notulen.form')
+            Form Notulen
         @else
-
-        {{ config('app.name', 'PLN NP UP KENDARI') }}
+            {{ config('app.name', 'PLN NP UP KENDARI') }}
         @endif
     </title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
