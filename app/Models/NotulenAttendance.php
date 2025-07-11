@@ -13,7 +13,14 @@ class NotulenAttendance extends Model
         'name',
         'position',
         'division',
-        'signature'
+        'signature',
+        'is_late',
+        'attended_at'
+    ];
+
+    protected $casts = [
+        'is_late' => 'boolean',
+        'attended_at' => 'datetime'
     ];
 
     public function notulen()

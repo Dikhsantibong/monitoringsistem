@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\NotulenDocumentationController;
+use App\Http\Controllers\Api\NotulenAttendanceController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\OtherDiscussionController;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'public/api'], function () {
     Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store'])
         ->name('api.notulen.documentation.store');
+
+    // Late attendance endpoint
+    Route::post('/notulen-late-attendance/{notulen}', [NotulenAttendanceController::class, 'storeLateAttendance'])
+        ->name('api.notulen.late-attendance.store');
 });
 
 // Existing routes
