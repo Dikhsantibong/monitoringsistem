@@ -313,6 +313,73 @@
                 height: 150px;
             }
         }
+
+        /* Timeline styles */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #17a2b8;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 3px #17a2b8;
+        }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 15px;
+            height: 100%;
+            width: 2px;
+            background-color: #17a2b8;
+        }
+
+        .timeline-item:last-child:before {
+            display: none;
+        }
+
+        .timeline-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .timeline-title {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .revision-details {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .old-value, .new-value {
+            margin-bottom: 5px;
+        }
+
+        .revision-reason {
+            padding-top: 10px;
+            border-top: 1px solid #dee2e6;
+        }
     </style>
 @endsection
 
@@ -462,6 +529,54 @@
             </div>
         </div>
     </div>
+
+    @if($notulen->revision_count > 0)
+    <div class="page-break">
+        <div class="notulen-container">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> Riwayat Revisi
+                        <span class="badge bg-info">{{ $notulen->revision_count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        @foreach($notulen->getRevisionHistory() as $revision)
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">
+                                    {{ $revision->user->name }} mengubah {{ $revision->getFormattedFieldName() }}
+                                    <small class="text-muted">{{ $revision->created_at->diffForHumans() }}</small>
+                                </h6>
+                                <div class="timeline-body">
+                                    <div class="revision-details">
+                                        <div class="old-value">
+                                            <strong>Sebelum:</strong>
+                                            <span>{{ $revision->old_value ?: '-' }}</span>
+                                        </div>
+                                        <div class="new-value">
+                                            <strong>Sesudah:</strong>
+                                            <span>{{ $revision->new_value ?: '-' }}</span>
+                                        </div>
+                                        @if($revision->revision_reason)
+                                        <div class="revision-reason mt-2">
+                                            <strong>Alasan:</strong>
+                                            <span>{{ $revision->revision_reason }}</span>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Print Button -->
     <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button">

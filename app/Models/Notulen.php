@@ -25,7 +25,8 @@ class Notulen extends Model
         'waktu_selesai',
         'pimpinan_rapat_nama',
         'notulis_nama',
-        'tanggal_tanda_tangan'
+        'tanggal_tanda_tangan',
+        'revision_count'
     ];
 
     protected $casts = [
@@ -58,5 +59,42 @@ class Notulen extends Model
     public function documentations()
     {
         return $this->hasMany(NotulenDocumentation::class);
+    }
+
+    /**
+     * Get the revisions for this notulen
+     */
+    public function revisions()
+    {
+        return $this->hasMany(NotulenRevision::class);
+    }
+
+    /**
+     * Track changes when notulen is updated
+     */
+    public function trackRevision($userId, $changes, $reason = null)
+    {
+        foreach ($changes as $field => $values) {
+            $this->revisions()->create([
+                'user_id' => $userId,
+                'field_name' => $field,
+                'old_value' => $values['old'],
+                'new_value' => $values['new'],
+                'revision_reason' => $reason
+            ]);
+        }
+
+        $this->increment('revision_count');
+    }
+
+    /**
+     * Get formatted revision history
+     */
+    public function getRevisionHistory()
+    {
+        return $this->revisions()
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 }

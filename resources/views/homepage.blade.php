@@ -1454,6 +1454,36 @@
                 overflow-x: auto;
             }
         }
+
+        .btn-edit {
+            padding: 5px 10px;
+            background-color: #ffc107;
+            color: #000;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-edit:hover {
+            background-color: #ffb300;
+            color: #000;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .badge {
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .bg-info {
+            background-color: #17a2b8;
+            color: white;
+        }
     </style>
 
     <script>
@@ -2051,10 +2081,21 @@
                         <td class="text-center">{{ $notulen->agenda ? Str::limit($notulen->agenda, 50) : '-' }}</td>
                         <td class="text-center">{{ $notulen->pimpinan_rapat ?? '-' }}</td>
                         <td>
-                            <a href="{{ route('notulen.show', $notulen->id) }}" class="btn-view text-center">
-                                <i class="fas fa-eye"></i>
-                                Lihat
-                            </a>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ route('notulen.show', $notulen->id) }}" class="btn-view text-center">
+                                    <i class="fas fa-eye"></i>
+                                    Lihat
+                                </a>
+                                <a href="{{ route('notulen.edit', $notulen->id) }}" class="btn-edit text-center">
+                                    <i class="fas fa-edit"></i>
+                                    Edit
+                                </a>
+                                @if($notulen->revision_count > 0)
+                                <span class="badge bg-info" title="Telah direvisi {{ $notulen->revision_count }} kali">
+                                    <i class="fas fa-history"></i> {{ $notulen->revision_count }}
+                                </span>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach

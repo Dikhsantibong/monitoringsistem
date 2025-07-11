@@ -9,9 +9,15 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class NotulenController extends Controller
 {
+    use AuthorizesRequests;
+
     public function form()
     {
         $nextNomorUrut = Notulen::max('nomor_urut') + 1;
@@ -122,7 +128,8 @@ class NotulenController extends Controller
             $notulen = Notulen::create([
                 ...$validated,
                 'format_nomor' => $formatNomor,
-                'pimpinan_rapat' => $validated['pimpinan_rapat_nama']
+                'pimpinan_rapat' => $validated['pimpinan_rapat_nama'],
+                'created_by' => Auth::id()
             ]);
 
             // Update notulen_id for attendances and documentations if temp_notulen_id exists
@@ -176,12 +183,113 @@ class NotulenController extends Controller
         $notulen->load(['documentations', 'attendances']);
 
         // Generate PDF using DomPDF
-        $pdf = \PDF::loadView('notulen.print-pdf', compact('notulen'));
+        $pdf = Pdf::loadView('notulen.print-pdf', compact('notulen'));
 
         // Set paper size to A4
         $pdf->setPaper('A4');
 
         // Return the PDF for download with a meaningful filename
         return $pdf->stream("notulen-{$notulen->format_nomor}.pdf");
+    }
+
+    /**
+     * Show the form for editing the specified notulen.
+     */
+    public function edit(Notulen $notulen)
+    {
+        return view('notulen.edit', compact('notulen'));
+    }
+
+    /**
+     * Update the specified notulen in storage.
+     */
+    public function update(Request $request, Notulen $notulen)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validate the request
+            $validated = $request->validate([
+                'tempat' => 'required|string',
+                'agenda' => 'required|string',
+                'peserta' => 'required|string',
+                'tanggal' => 'required|date',
+                'waktu_mulai' => 'required|date_format:H:i',
+                'waktu_selesai' => 'required|date_format:H:i|after:waktu_mulai',
+                'pembahasan' => 'required|string',
+                'tindak_lanjut' => 'required|string',
+                'pimpinan_rapat_nama' => 'required|string',
+                'notulis_nama' => 'required|string',
+                'tanggal_tanda_tangan' => 'required|date',
+                'revision_reason' => 'required|string|max:255'
+            ]);
+
+            // Get the old values before update
+            $oldValues = $notulen->toArray();
+
+            // Update the notulen
+            $notulen->tempat = $validated['tempat'];
+            $notulen->agenda = $validated['agenda'];
+            $notulen->peserta = $validated['peserta'];
+            $notulen->tanggal = $validated['tanggal'];
+            $notulen->waktu_mulai = $validated['waktu_mulai'] . ':00';
+            $notulen->waktu_selesai = $validated['waktu_selesai'] . ':00';
+            $notulen->pembahasan = strip_tags($validated['pembahasan'], '<p><br><ul><ol><li><strong><em><u><s>');
+            $notulen->tindak_lanjut = strip_tags($validated['tindak_lanjut'], '<p><br><ul><ol><li><strong><em><u><s>');
+            $notulen->pimpinan_rapat = $validated['pimpinan_rapat_nama'];
+            $notulen->pimpinan_rapat_nama = $validated['pimpinan_rapat_nama'];
+            $notulen->notulis_nama = $validated['notulis_nama'];
+            $notulen->tanggal_tanda_tangan = $validated['tanggal_tanda_tangan'];
+
+            // Save the changes
+            $notulen->save();
+
+            // Track changes for revision history
+            $changes = [];
+            foreach ($validated as $field => $newValue) {
+                if ($field !== 'revision_reason' && isset($oldValues[$field])) {
+                    // Format time fields for comparison
+                    if (in_array($field, ['waktu_mulai', 'waktu_selesai'])) {
+                        $oldValue = Carbon::parse($oldValues[$field])->format('H:i');
+                        $newValue = $newValue;
+                    } else {
+                        $oldValue = $oldValues[$field];
+                    }
+
+                    if ($oldValue !== $newValue) {
+                        $changes[$field] = [
+                            'old' => $oldValue,
+                            'new' => $newValue
+                        ];
+                    }
+                }
+            }
+
+            // Record the revision if there are changes
+            if (!empty($changes)) {
+                $notulen->trackRevision(
+                    Auth::id() ?? 1,
+                    $changes,
+                    $validated['revision_reason']
+                );
+
+                // Increment revision count
+                $notulen->increment('revision_count');
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('notulen.show', $notulen->id)
+                ->with('success', 'Notulen berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating notulen: ' . $e->getMessage());
+
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui notulen: ' . $e->getMessage());
+        }
     }
 }
