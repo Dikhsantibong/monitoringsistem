@@ -292,6 +292,14 @@
             </div>
         </div>
 
+        @if($notulen->revision_count > 0)
+        <div style="margin: 20px 0; padding: 10px 0; border-top: 1px solid #000; font-size: 9pt; font-style: italic; color: #666;">
+            Dokumen ini telah direvisi sebanyak {{ $notulen->revision_count }} kali.
+            Revisi terakhir pada {{ $notulen->revisions()->latest()->first()->created_at->format('d/m/Y H:i') }}
+            oleh {{ $notulen->revisions()->latest()->first()->user->name }}.
+        </div>
+        @endif
+
         <div class="footer">
             <div class="signature-section">
                 <div>Mengetahui,</div>
