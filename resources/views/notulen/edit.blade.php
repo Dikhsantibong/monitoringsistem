@@ -544,7 +544,7 @@
     // Generate QR Code
     document.addEventListener('DOMContentLoaded', function() {
         const qrData = {
-            endpoint: "{{ route('api.notulen.late-attendance.store', $notulen->id) }}",
+            endpoint: "{{ url('/api/notulen/late-attendance/' . $notulen->id) }}",
             notulen_id: {{ $notulen->id }},
             agenda: "{{ $notulen->agenda }}"
         };
