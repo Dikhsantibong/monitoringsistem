@@ -323,6 +323,85 @@
         font-family: monospace;
         font-size: 1.1rem;
     }
+
+    /* Draft list styles */
+    .draft-list {
+        margin-top: 1rem;
+    }
+
+    .draft-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .draft-item:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .draft-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .draft-title {
+        font-weight: 500;
+        color: #0095B7;
+    }
+
+    .draft-date {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .draft-content {
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .draft-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-resume {
+        background: #0095B7;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-resume:hover {
+        background: #007a94;
+    }
+
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background: #dc2626;
+    }
+
+    .no-drafts {
+        text-align: center;
+        padding: 2rem;
+        color: #6b7280;
+        font-style: italic;
+    }
 </style>
 @endsection
 
@@ -392,6 +471,7 @@
 <div class="page-container mt-20">
     <div class="tabs">
         <div class="tab active" data-tab="create">Buat Notulen</div>
+        <div class="tab" data-tab="drafts">Draft Notulen</div>
         <div class="tab" data-tab="search">Cari Notulen</div>
     </div>
 
@@ -477,6 +557,17 @@
             <button type="button" id="createNotulenBtn" class="btn-create">
                 <i class="fas fa-plus-circle mr-2"></i>Buat Notulen
             </button>
+        </div>
+    </div>
+
+    <div id="draftsTab" class="tab-content hidden">
+        <div class="search-container">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Draft Notulen</h2>
+            <div id="draftList" class="draft-list">
+                <div class="loading-spinner active">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -710,6 +801,113 @@
             });
 
             window.location.href = `{{ route('notulen.create') }}?${params.toString()}`;
+        });
+
+        // Function to load drafts
+        function loadDrafts() {
+            const draftList = document.getElementById('draftList');
+            const loadingSpinner = draftList.querySelector('.loading-spinner');
+
+            fetch('{{ url("/api/notulen-draft/list") }}')
+                .then(response => response.json())
+                .then(data => {
+                    loadingSpinner.classList.remove('active');
+
+                    if (data.success && data.drafts && data.drafts.length > 0) {
+                        const draftsHtml = data.drafts.map(draft => `
+                            <div class="draft-item">
+                                <div class="draft-header">
+                                    <div class="draft-title">${draft.agenda || 'Draft Notulen'}</div>
+                                    <div class="draft-date">${new Date(draft.updated_at).toLocaleString()}</div>
+                                </div>
+                                <div class="draft-content">
+                                    <div>Tempat: ${draft.tempat || '-'}</div>
+                                    <div>Peserta: ${draft.peserta || '-'}</div>
+                                </div>
+                                <div class="draft-actions">
+                                    <a href="{{ url('/notulen/create') }}?temp_notulen_id=${draft.temp_notulen_id}"
+                                       class="btn-resume">
+                                        <i class="fas fa-edit mr-1"></i> Lanjutkan
+                                    </a>
+                                    <button onclick="deleteDraft('${draft.temp_notulen_id}')"
+                                            class="btn-delete">
+                                        <i class="fas fa-trash mr-1"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        draftList.innerHTML = draftsHtml;
+                    } else {
+                        draftList.innerHTML = `
+                            <div class="no-drafts">
+                                Tidak ada draft notulen yang tersimpan
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingSpinner.classList.remove('active');
+                    draftList.innerHTML = `
+                        <div class="text-center text-red-600 py-4">
+                            Terjadi kesalahan saat memuat draft
+                        </div>
+                    `;
+                });
+        }
+
+        // Function to delete draft
+        function deleteDraft(tempNotulenId) {
+            Swal.fire({
+                title: 'Hapus Draft?',
+                text: "Draft yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`{{ url("/api/notulen-draft/delete") }}/${tempNotulenId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Terhapus!',
+                                'Draft notulen telah dihapus.',
+                                'success'
+                            );
+                            loadDrafts(); // Reload drafts list
+                        } else {
+                            throw new Error(data.message || 'Failed to delete draft');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire(
+                            'Error!',
+                            'Gagal menghapus draft notulen.',
+                            'error'
+                        );
+                    });
+                }
+            });
+        }
+
+        // Load drafts when switching to drafts tab
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.dataset.tab === 'drafts') {
+                    loadDrafts();
+                }
+            });
         });
     });
 

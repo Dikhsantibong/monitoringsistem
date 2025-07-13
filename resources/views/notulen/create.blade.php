@@ -239,6 +239,18 @@
         font-size: 0.875rem;
         color: #666;
     }
+
+    .draft-status {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+    }
 </style>
 @endsection
 
@@ -465,6 +477,10 @@
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Submit</button>
         </div>
     </form>
+</div>
+
+<div class="draft-status" id="draftStatus">
+    Draft tersimpan
 </div>
 
 <script>
@@ -752,6 +768,200 @@
         `;
         list.appendChild(item);
     }
+
+    let autoSaveTimeout;
+    let isAutoSaving = false;
+    const draftStatus = document.getElementById('draftStatus');
+
+    // Function to show draft status
+    function showDraftStatus(message) {
+        draftStatus.textContent = message;
+        draftStatus.style.display = 'block';
+        setTimeout(() => {
+            draftStatus.style.display = 'none';
+        }, 3000);
+    }
+
+    // Function to save draft
+    async function saveDraft() {
+        if (isAutoSaving) return; // Prevent multiple simultaneous saves
+        isAutoSaving = true;
+
+        try {
+            const formData = new FormData();
+
+            // Get all form inputs
+            const agenda = document.querySelector('input[name="agenda"]').value;
+            const tempat = document.querySelector('input[name="tempat"]').value;
+            const peserta = document.querySelector('input[name="peserta"]').value;
+            const waktuMulai = document.querySelector('input[name="waktu_mulai"]').value;
+            const waktuSelesai = document.querySelector('input[name="waktu_selesai"]').value;
+            const tanggal = document.querySelector('input[name="tanggal"]').value;
+            const pembahasan = document.getElementById('pembahasanEditor').innerHTML;
+            const tindakLanjut = document.getElementById('tindakLanjutEditor').innerHTML;
+            const pimpinanRapatNama = document.querySelector('input[name="pimpinan_rapat_nama"]').value;
+            const notulisNama = document.querySelector('input[name="notulis_nama"]').value;
+            const tanggalTandaTangan = document.querySelector('input[name="tanggal_tanda_tangan"]').value;
+
+            // Only save if there's actual content
+            if (!agenda && !tempat && !peserta && !pembahasan && !tindakLanjut) {
+                console.log('No content to save');
+                return;
+            }
+
+            // Append all form data
+            formData.append('temp_notulen_id', tempNotulenId);
+            formData.append('agenda', agenda);
+            formData.append('tempat', tempat);
+            formData.append('peserta', peserta);
+            formData.append('waktu_mulai', waktuMulai);
+            formData.append('waktu_selesai', waktuSelesai);
+            formData.append('tanggal', tanggal);
+            formData.append('pembahasan', pembahasan);
+            formData.append('tindak_lanjut', tindakLanjut);
+            formData.append('pimpinan_rapat_nama', pimpinanRapatNama);
+            formData.append('notulis_nama', notulisNama);
+            formData.append('tanggal_tanda_tangan', tanggalTandaTangan);
+
+            // Send draft to server
+            const response = await fetch('{{ url("/public/api/notulen-draft/save") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showDraftStatus('Draft tersimpan');
+                localStorage.setItem('lastDraftId', tempNotulenId);
+                console.log('Draft saved successfully:', tempNotulenId);
+            } else {
+                throw new Error(data.message || 'Failed to save draft');
+            }
+        } catch (error) {
+            console.error('Error saving draft:', error);
+            showDraftStatus('Gagal menyimpan draft');
+        } finally {
+            isAutoSaving = false;
+        }
+    }
+
+    // Auto-save setup
+    function setupAutoSave() {
+        const form = document.getElementById('notulenForm');
+        const inputs = form.querySelectorAll('input, textarea');
+        const editors = [document.getElementById('pembahasanEditor'), document.getElementById('tindakLanjutEditor')];
+
+        // Watch for changes in regular inputs
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                clearTimeout(autoSaveTimeout);
+                autoSaveTimeout = setTimeout(saveDraft, 5000); // Save 5 seconds after last change
+            });
+        });
+
+        // Watch for changes in editors
+        editors.forEach(editor => {
+            editor.addEventListener('input', () => {
+                clearTimeout(autoSaveTimeout);
+                autoSaveTimeout = setTimeout(saveDraft, 5000); // Save 5 seconds after last change
+            });
+        });
+
+        // Save periodically regardless of changes
+        setInterval(saveDraft, 30000); // Save every 30 seconds
+
+        // Save when leaving the page
+        window.addEventListener('beforeunload', async (e) => {
+            if (!isAutoSaving) { // Only save if not already saving
+                e.preventDefault(); // This may show a confirmation dialog in some browsers
+                await saveDraft(); // Wait for save to complete
+            }
+        });
+    }
+
+    // Load draft when page loads
+    async function loadDraft() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramTempNotulenId = urlParams.get('temp_notulen_id');
+        const storedTempNotulenId = localStorage.getItem('lastDraftId');
+
+        if (paramTempNotulenId || storedTempNotulenId) {
+            try {
+                const draftId = paramTempNotulenId || storedTempNotulenId;
+                const response = await fetch(`{{ url("/public/api/notulen-draft/load") }}/${draftId}`);
+                const data = await response.json();
+
+                if (data.success && data.draft) {
+                    const draft = data.draft;
+
+                    // Fill form inputs
+                    document.querySelector('input[name="agenda"]').value = draft.agenda || '';
+                    document.querySelector('input[name="tempat"]').value = draft.tempat || '';
+                    document.querySelector('input[name="peserta"]').value = draft.peserta || '';
+                    document.querySelector('input[name="waktu_mulai"]').value = draft.waktu_mulai || '';
+                    document.querySelector('input[name="waktu_selesai"]').value = draft.waktu_selesai || '';
+                    document.querySelector('input[name="tanggal"]').value = draft.tanggal || '';
+                    document.getElementById('pembahasanEditor').innerHTML = draft.pembahasan || '';
+                    document.getElementById('tindakLanjutEditor').innerHTML = draft.tindak_lanjut || '';
+                    document.querySelector('input[name="pimpinan_rapat_nama"]').value = draft.pimpinan_rapat_nama || '';
+                    document.querySelector('input[name="notulis_nama"]').value = draft.notulis_nama || '';
+                    document.querySelector('input[name="tanggal_tanda_tangan"]').value = draft.tanggal_tanda_tangan || '';
+
+                    // Update tempNotulenId
+                    tempNotulenId = draftId;
+                    document.getElementById('tempNotulenId').value = draftId;
+
+                    showDraftStatus('Draft dimuat');
+                    console.log('Draft loaded successfully:', draftId);
+                }
+            } catch (error) {
+                console.error('Error loading draft:', error);
+            }
+        }
+    }
+
+    // Initialize when document loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Generate temporary ID for this notulen session if not exists
+        const urlParams = new URLSearchParams(window.location.search);
+        tempNotulenId = urlParams.get('temp_notulen_id') || localStorage.getItem('lastDraftId') || Date.now().toString();
+        document.getElementById('tempNotulenId').value = tempNotulenId;
+        console.log('Initialized with tempNotulenId:', tempNotulenId);
+
+        setupAutoSave();
+        loadDraft();
+    });
+
+    // Handle form submission
+    document.getElementById('notulenForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const pembahasanContent = document.getElementById('pembahasanEditor').innerHTML;
+        const tindakLanjutContent = document.getElementById('tindakLanjutEditor').innerHTML;
+
+        document.getElementById('pembahasanInput').value = pembahasanContent;
+        document.getElementById('tindakLanjutInput').value = tindakLanjutContent;
+
+        try {
+            // Remove draft after successful submission
+            await fetch(`{{ url("/public/api/notulen-draft/delete") }}/${tempNotulenId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+            localStorage.removeItem('lastDraftId');
+            console.log('Draft deleted after submission:', tempNotulenId);
+        } catch (error) {
+            console.error('Error deleting draft:', error);
+        }
+
+        this.submit();
+    });
 </script>
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

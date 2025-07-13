@@ -1,9 +1,12 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\NotulenDocumentationController;
 use App\Http\Controllers\Api\NotulenAttendanceController;
 use App\Http\Controllers\Api\SectionController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\OtherDiscussionController;
+use App\Http\Controllers\Api\NotulenDraftController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +22,12 @@ Route::group(['prefix' => 'public/api'], function () {
     // Late attendance routes
     Route::post('/late-attendance/{notulen}', [NotulenAttendanceController::class, 'storeLateAttendance'])
         ->name('api.notulen.late-attendance.store');
+
+    // Notulen Draft Routes
+    Route::get('/notulen-draft/list', [NotulenDraftController::class, 'list']);
+    Route::post('/notulen-draft/save', [NotulenDraftController::class, 'save']);
+    Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load']);
+    Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete']);
 });
 
 // Existing routes

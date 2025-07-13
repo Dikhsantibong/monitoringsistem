@@ -47,6 +47,8 @@ Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notu
 Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
 Route::get('/notulen/{notulen}/edit', [NotulenController::class, 'edit'])->name('notulen.edit');
 Route::put('/notulen/{notulen}', [NotulenController::class, 'update'])->name('notulen.update');
+Route::get('/notulen/drafts', [NotulenDraftController::class, 'save'])->name('notulen.drafts');
+
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
