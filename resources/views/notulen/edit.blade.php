@@ -264,35 +264,52 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-    // Initialize CKEditor for rich text fields
+    // Initialize CKEditor for rich text fields with proper configuration
+    const editorConfig = {
+        removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
+        toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo', 'redo'],
+        heading: {
+            options: [
+                { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
+            ]
+        },
+        // Add custom styling configuration
+        styling: {
+            options: [
+                {
+                    name: 'Paragraph',
+                    element: 'p',
+                    classes: ['MsoNormal']
+                }
+            ]
+        },
+        // Remove default inline styles
+        removeFormatAttributes: ['style', 'class'],
+        // Configure content filtering
+        htmlSupport: {
+            allow: [
+                {
+                    name: /.*/,
+                    attributes: true,
+                    classes: true,
+                    styles: false
+                }
+            ]
+        }
+    };
+
+    // Initialize CKEditor for pembahasan
     ClassicEditor
-        .create(document.querySelector('#pembahasan'), {
-            removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
-            toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo', 'redo'],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
-                ]
-            }
-        })
+        .create(document.querySelector('#pembahasan'), editorConfig)
         .catch(error => {
             console.error(error);
         });
 
+    // Initialize CKEditor for tindak_lanjut
     ClassicEditor
-        .create(document.querySelector('#tindak_lanjut'), {
-            removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
-            toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo', 'redo'],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
-                ]
-            }
-        })
+        .create(document.querySelector('#tindak_lanjut'), editorConfig)
         .catch(error => {
             console.error(error);
         });
@@ -338,9 +355,38 @@
         container.style.display = 'none';
     }
 
-    // Form submission handling with SweetAlert
+    // Form submission handling with content cleaning
     document.getElementById('editNotulenForm').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Clean the content before submission
+        function cleanContent(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+
+            // Remove all style attributes
+            div.querySelectorAll('*').forEach(el => {
+                el.removeAttribute('style');
+                // Remove MsoNormal class if present
+                if (el.classList.contains('MsoNormal')) {
+                    el.classList.remove('MsoNormal');
+                }
+            });
+
+            return div.innerHTML;
+        }
+
+        // Get CKEditor instances
+        const pembahasan = document.querySelector('#pembahasan');
+        const tindakLanjut = document.querySelector('#tindak_lanjut');
+
+        // Clean the content if editors exist
+        if (pembahasan) {
+            pembahasan.value = cleanContent(pembahasan.value);
+        }
+        if (tindakLanjut) {
+            tindakLanjut.value = cleanContent(tindakLanjut.value);
+        }
 
         // Basic form validation
         const requiredFields = [
