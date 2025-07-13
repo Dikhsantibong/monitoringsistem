@@ -46,24 +46,46 @@ class Notulen extends Model
         $html = preg_replace('/\s+class\s*=\s*"[^"]*"/', '', $html);
         $html = preg_replace('/\s+id\s*=\s*"[^"]*"/', '', $html);
 
-        // Convert divs to paragraphs
-        $html = preg_replace('/<div([^>]*)>/', '<p>', $html);
-        $html = str_replace('</div>', '</p>', $html);
+        // Replace <p> tags with line breaks
+        $html = preg_replace('/<p[^>]*>/', '', $html);
+        $html = str_replace('</p>', "\n", $html);
 
-        // Remove empty paragraphs
-        $html = preg_replace('/<p>\s*<\/p>/', '', $html);
+        // Replace multiple line breaks with a single one
+        $html = preg_replace("/[\r\n]+/", "\n", $html);
+
+        // Convert divs to line breaks
+        $html = preg_replace('/<div[^>]*>/', '', $html);
+        $html = str_replace('</div>', "\n", $html);
+
+        // Handle lists properly
+        $html = str_replace('<ul>', "\n", $html);
+        $html = str_replace('</ul>', "\n", $html);
+        $html = str_replace('<ol>', "\n", $html);
+        $html = str_replace('</ol>', "\n", $html);
+        $html = str_replace('<li>', '• ', $html);
+        $html = str_replace('</li>', "\n", $html);
+
+        // Clean up any remaining HTML tags but preserve line breaks
+        $html = strip_tags($html, '<br>');
+
+        // Convert <br> to line breaks
+        $html = str_replace(['<br>', '<br/>', '<br />'], "\n", $html);
+
+        // Clean up extra spaces and line breaks
+        $html = preg_replace('/\s+/', ' ', $html);
+        $html = preg_replace("/[\n\r]+/", "\n", $html);
 
         return trim($html);
     }
 
     public function getPembahasanAttribute($value)
     {
-        return $this->cleanHtml($value);
+        return nl2br($this->cleanHtml($value));
     }
 
     public function getTindakLanjutAttribute($value)
     {
-        return $this->cleanHtml($value);
+        return nl2br($this->cleanHtml($value));
     }
 
     // Generate the formatted number
