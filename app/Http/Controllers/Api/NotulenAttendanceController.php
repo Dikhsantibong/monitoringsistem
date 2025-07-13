@@ -66,6 +66,13 @@ class NotulenAttendanceController extends Controller
         ]);
     }
 
+    public function showLateAttendanceForm($notulen)
+    {
+        return view('notulen.late-attendance-form', [
+            'notulen' => $notulen
+        ]);
+    }
+
     /**
      * Handle late attendance via QR code scan
      */
@@ -102,16 +109,5 @@ class NotulenAttendanceController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Show form for late attendance via QR code scan
-     */
-    public function showLateAttendanceForm(Notulen $notulen)
-    {
-        return view('notulen.attendance-form', [
-            'notulen' => $notulen,
-            'is_late' => true
-        ]);
     }
 }

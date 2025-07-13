@@ -47,8 +47,6 @@ Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notu
 Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
 Route::get('/notulen/{notulen}/edit', [NotulenController::class, 'edit'])->name('notulen.edit');
 Route::put('/notulen/{notulen}', [NotulenController::class, 'update'])->name('notulen.update');
-Route::get('/notulen/{notulen}/late-attendance', [NotulenController::class, 'lateAttendance'])->name('notulen.late-attendance');
-Route::post('/notulen/{notulen}/late-attendance', [NotulenController::class, 'storeLateAttendance'])->name('notulen.late-attendance.store');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -746,6 +744,8 @@ Route::prefix('admin/machine-status')->name('admin.machine-status.')->middleware
 // Notulen Attendance Routes
 Route::get('/notulen-attendance/{tempNotulenId}', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'showAttendanceForm'])->name('notulen.attendance.form');
 Route::post('/api/notulen-attendance', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'store'])->name('notulen.attendance.store');
-
+Route::get('/notulen/late-attendance/{notulen}', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'showLateAttendanceForm'])->name('notulen.late-attendance.form');
+Route::post('/api/notulen/{notulen}/late-attendance', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'storeLateAttendance'])->name('notulen.late-attendance.store');
 Route::get('/notulen-documentation/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'showDocumentationForm'])->name('notulen.documentation.form');
 Route::post('public/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
+

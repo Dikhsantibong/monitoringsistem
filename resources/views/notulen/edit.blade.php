@@ -311,14 +311,14 @@
 
         // Generate the URL for late attendance
         const baseUrl = window.location.origin;
-        const endpoint = `${baseUrl}/public/attendance/scan/notulen/{{ $notulen->id }}`;
+        const attendanceUrl = `${baseUrl}/public/notulen/late-attendance/{{ $notulen->id }}`;
 
         // Show the URL for verification
-        qrUrlSpan.textContent = endpoint;
+        qrUrlSpan.textContent = attendanceUrl;
 
         // Create QR code with larger size and better error correction
         new QRCode(qrcodeDiv, {
-            text: endpoint,
+            text: attendanceUrl,
             width: 300,
             height: 300,
             colorDark: "#000000",
@@ -327,7 +327,7 @@
         });
 
         // Log for debugging
-        console.log('QR Code generated with URL:', endpoint);
+        console.log('QR Code generated with URL:', attendanceUrl);
     }
 
     function closeQRCode() {
@@ -485,10 +485,17 @@
     #qrcodeModal img {
         display: block !important;
         margin: 0 auto !important;
+        max-width: 100% !important;
+        height: auto !important;
     }
 
     .text-break {
         word-break: break-all;
+    }
+
+    .qr-code-modal {
+        max-width: 90%;
+        width: 500px;
     }
 </style>
 @endpush
