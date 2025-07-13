@@ -892,7 +892,7 @@
         if (paramTempNotulenId || storedTempNotulenId) {
             try {
                 const draftId = paramTempNotulenId || storedTempNotulenId;
-                const response = await fetch(`{{ url("/public/api/notulen-draft/load") }}/${draftId}`);
+                const response = await fetch(`{{ url("/api/notulen-draft/load") }}/${draftId}`);
                 const data = await response.json();
 
                 if (data.success && data.draft) {
@@ -948,7 +948,7 @@
 
         try {
             // Remove draft after successful submission
-            await fetch(`{{ url("/public/api/notulen-draft/delete") }}/${tempNotulenId}`, {
+            await fetch(`{{ url("/api/notulen-draft/delete") }}/${tempNotulenId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
