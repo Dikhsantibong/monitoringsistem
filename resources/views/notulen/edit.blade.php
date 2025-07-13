@@ -118,7 +118,7 @@
                                 <div class="form-group">
                                     <label for="pembahasan" class="form-label font-weight-bold">Pembahasan</label>
                                     <textarea class="form-control @error('pembahasan') is-invalid @enderror"
-                                        id="pembahasan" name="pembahasan" rows="5" required>{{ old('pembahasan', $notulen->pembahasan) }}</textarea>
+                                        id="pembahasan" name="pembahasan" style="min-height: 300px;" required>{{ old('pembahasan', $notulen->pembahasan) }}</textarea>
                                     @error('pembahasan')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -131,7 +131,7 @@
                                 <div class="form-group">
                                     <label for="tindak_lanjut" class="form-label font-weight-bold">Tindak Lanjut</label>
                                     <textarea class="form-control @error('tindak_lanjut') is-invalid @enderror"
-                                        id="tindak_lanjut" name="tindak_lanjut" rows="5" required>{{ old('tindak_lanjut', $notulen->tindak_lanjut) }}</textarea>
+                                        id="tindak_lanjut" name="tindak_lanjut" style="min-height: 300px;" required>{{ old('tindak_lanjut', $notulen->tindak_lanjut) }}</textarea>
                                     @error('tindak_lanjut')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -545,6 +545,26 @@
     .qr-code-modal {
         max-width: 90%;
         width: 500px;
+    }
+
+    /* Override CKEditor styles */
+    .ck-editor__editable {
+        min-height: 300px !important;
+        max-height: none !important;
+    }
+
+    .ck-editor__editable_inline {
+        overflow: visible !important;
+    }
+
+    /* Ensure content is fully visible */
+    .ck.ck-editor__main>.ck-editor__editable {
+        height: auto !important;
+    }
+
+    /* Remove scrollbars */
+    .ck.ck-editor__editable:not(.ck-editor__nested-editable) {
+        overflow: visible !important;
     }
 </style>
 @endpush

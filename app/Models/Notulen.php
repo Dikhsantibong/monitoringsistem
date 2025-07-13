@@ -46,46 +46,58 @@ class Notulen extends Model
         $html = preg_replace('/\s+class\s*=\s*"[^"]*"/', '', $html);
         $html = preg_replace('/\s+id\s*=\s*"[^"]*"/', '', $html);
 
-        // Replace <p> tags with line breaks
-        $html = preg_replace('/<p[^>]*>/', '', $html);
-        $html = str_replace('</p>', "\n", $html);
+        // Preserve line breaks and spacing
+        $html = str_replace(['<br>', '<br/>', '<br />'], "\n", $html);
 
-        // Replace multiple line breaks with a single one
-        $html = preg_replace("/[\r\n]+/", "\n", $html);
-
-        // Convert divs to line breaks
-        $html = preg_replace('/<div[^>]*>/', '', $html);
-        $html = str_replace('</div>', "\n", $html);
-
-        // Handle lists properly
+        // Handle lists and numbering
         $html = str_replace('<ul>', "\n", $html);
         $html = str_replace('</ul>', "\n", $html);
         $html = str_replace('<ol>', "\n", $html);
         $html = str_replace('</ol>', "\n", $html);
-        $html = str_replace('<li>', '• ', $html);
-        $html = str_replace('</li>', "\n", $html);
 
-        // Clean up any remaining HTML tags but preserve line breaks
-        $html = strip_tags($html, '<br>');
+        // Special handling for list items to preserve indentation
+        $html = preg_replace('/<li[^>]*>(.*?)<\/li>/i', '    • $1' . "\n", $html);
 
-        // Convert <br> to line breaks
-        $html = str_replace(['<br>', '<br/>', '<br />'], "\n", $html);
+        // Handle paragraphs while preserving format
+        $html = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1' . "\n\n", $html);
 
-        // Clean up extra spaces and line breaks
-        $html = preg_replace('/\s+/', ' ', $html);
-        $html = preg_replace("/[\n\r]+/", "\n", $html);
+        // Remove any remaining HTML tags except formatting
+        $html = strip_tags($html);
+
+        // Preserve letter/number points (e.g., "a.", "1.", etc.)
+        $html = preg_replace('/^([a-z0-9]\.)\s*/m', '$1 ', $html);
+
+        // Preserve indentation for points
+        $lines = explode("\n", $html);
+        $formattedLines = [];
+        foreach ($lines as $line) {
+            // Check if line starts with a point (a., 1., etc.)
+            if (preg_match('/^[a-z0-9]\./', trim($line))) {
+                // Add proper indentation
+                $formattedLines[] = "    " . trim($line);
+            } else {
+                $formattedLines[] = trim($line);
+            }
+        }
+        $html = implode("\n", $formattedLines);
+
+        // Clean up extra spaces and normalize line breaks
+        $html = preg_replace('/[ \t]+/', ' ', $html);
+        $html = preg_replace('/\n{3,}/', "\n\n", $html);
 
         return trim($html);
     }
 
     public function getPembahasanAttribute($value)
     {
-        return nl2br($this->cleanHtml($value));
+        $cleaned = $this->cleanHtml($value);
+        return nl2br($cleaned);
     }
 
     public function getTindakLanjutAttribute($value)
     {
-        return nl2br($this->cleanHtml($value));
+        $cleaned = $this->cleanHtml($value);
+        return nl2br($cleaned);
     }
 
     // Generate the formatted number
