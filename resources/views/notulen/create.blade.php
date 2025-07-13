@@ -546,6 +546,9 @@
         if (tempNotulenId) {
             loadDraft();
         }
+
+        // Set up form change tracking and auto-save
+        setupFormChangeTracking();
     });
 
     function showQRCode() {
@@ -869,6 +872,13 @@
                 await saveDraft();
             }
         });
+
+        // Set up auto-save every 30 seconds
+        setInterval(async () => {
+            if (hasChanges) {
+                await saveDraft();
+            }
+        }, 30000); // 30 seconds
     }
 
     // Function to load draft data
