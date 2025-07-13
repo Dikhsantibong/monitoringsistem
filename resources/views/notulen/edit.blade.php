@@ -221,6 +221,9 @@
                                         <p class="mt-3 text-muted">
                                             <small>Scan QR code ini untuk melakukan absensi terlambat</small>
                                         </p>
+                                        <button type="button" onclick="showQRCode()" class="btn btn-primary mt-2">
+                                            <i class="fas fa-qrcode"></i> Tampilkan QR Code
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -243,7 +246,18 @@
     </div>
 </div>
 
+<!-- QR Code Modal -->
+<div class="overlay" id="overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
+<div class="qr-code-modal" id="qrCodeContainer" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 8px; z-index: 1000; min-width: 400px; text-align: center;">
+    <h2 class="text-xl font-weight-bold mb-4">Scan QR Code untuk Absensi</h2>
+    <div id="qrcodeModal"></div>
+    <button onclick="closeQRCode()" class="btn btn-danger mt-4">
+        <i class="fas fa-times"></i> Tutup QR Code
+    </button>
+</div>
+
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     // Initialize CKEditor for rich text fields
     ClassicEditor
@@ -277,6 +291,42 @@
         .catch(error => {
             console.error(error);
         });
+
+    function showQRCode() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('qrCodeContainer');
+        const qrcodeDiv = document.getElementById('qrcodeModal');
+
+        overlay.style.display = 'block';
+        container.style.display = 'block';
+
+        // Clear previous QR code if exists
+        qrcodeDiv.innerHTML = '';
+
+        // Generate QR code with the API endpoint
+        const qrData = {
+            endpoint: "{{ url('/public/api/notulen/late-attendance/' . $notulen->id) }}",
+            notulen_id: {{ $notulen->id }},
+            agenda: "{{ $notulen->agenda }}"
+        };
+
+        new QRCode(qrcodeDiv, {
+            text: JSON.stringify(qrData),
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    function closeQRCode() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('qrCodeContainer');
+
+        overlay.style.display = 'none';
+        container.style.display = 'none';
+    }
 
     // Form submission handling with SweetAlert
     document.getElementById('editNotulenForm').addEventListener('submit', function(e) {
@@ -414,7 +464,7 @@
         border-radius: 0.5rem;
     }
 
-    #qrcode {
+    #qrcode, #qrcodeModal {
         display: inline-block;
         padding: 1rem;
         background: #fff;
@@ -422,141 +472,4 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 </style>
-@endpush
-
-@push('scripts')
-<!-- QR Code Generator Library -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
-
-<script>
-    // Initialize CKEditor for rich text fields
-    ClassicEditor
-        .create(document.querySelector('#pembahasan'), {
-            removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
-            toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo', 'redo'],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
-                ]
-            }
-        })
-        .catch(error => {
-            console.error(error);
-        });
-
-    ClassicEditor
-        .create(document.querySelector('#tindak_lanjut'), {
-            removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
-            toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo', 'redo'],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
-                ]
-            }
-        })
-        .catch(error => {
-            console.error(error);
-        });
-
-    // Form submission handling with SweetAlert
-    document.getElementById('editNotulenForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        // Basic form validation
-        const requiredFields = [
-            'tempat', 'agenda', 'peserta', 'tanggal', 'waktu_mulai', 'waktu_selesai',
-            'pembahasan', 'tindak_lanjut', 'pimpinan_rapat_nama', 'notulis_nama',
-            'tanggal_tanda_tangan', 'revision_reason'
-        ];
-
-        let isValid = true;
-        requiredFields.forEach(field => {
-            const element = document.getElementById(field);
-            if (!element.value.trim()) {
-                element.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                element.classList.remove('is-invalid');
-            }
-        });
-
-        if (!isValid) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Mohon lengkapi semua field yang wajib diisi',
-                icon: 'error',
-                confirmButtonText: 'Ok'
-            });
-            return;
-        }
-
-        Swal.fire({
-            title: 'Menyimpan Perubahan',
-            text: 'Apakah Anda yakin ingin menyimpan perubahan?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Simpan!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading state
-                Swal.fire({
-                    title: 'Menyimpan...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Submit the form
-                this.submit();
-            }
-        });
-    });
-
-    // Show success message if exists in session
-    @if(session('success'))
-        Swal.fire({
-            title: 'Berhasil!',
-            text: "{{ session('success') }}",
-            icon: 'success',
-            timer: 3000,
-            showConfirmButton: false
-        });
-    @endif
-
-    // Show error message if exists in session
-    @if(session('error'))
-        Swal.fire({
-            title: 'Error!',
-            text: "{{ session('error') }}",
-            icon: 'error',
-            confirmButtonText: 'Ok'
-        });
-    @endif
-
-    // Generate QR Code
-    document.addEventListener('DOMContentLoaded', function() {
-        const qrData = {
-            endpoint: "{{ url('/api/notulen/late-attendance/' . $notulen->id) }}",
-            notulen_id: {{ $notulen->id }},
-            agenda: "{{ $notulen->agenda }}"
-        };
-
-        const qrcode = new QRCode(document.getElementById("qrcode"), {
-            text: JSON.stringify(qrData),
-            width: 200,
-            height: 200,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    });
-</script>
 @endpush
