@@ -250,14 +250,19 @@
 <div class="overlay" id="overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
 <div class="qr-code-modal" id="qrCodeContainer" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 8px; z-index: 1000; min-width: 400px; text-align: center;">
     <h2 class="text-xl font-weight-bold mb-4">Scan QR Code untuk Absensi</h2>
-    <div id="qrcodeModal"></div>
+    <div id="qrcodeModal" class="d-flex justify-content-center"></div>
+    <p class="mt-3 text-muted">
+        <small>URL: <span id="qrUrl" class="text-break"></span></small>
+    </p>
     <button onclick="closeQRCode()" class="btn btn-danger mt-4">
         <i class="fas fa-times"></i> Tutup QR Code
     </button>
 </div>
 
 @push('scripts')
+<!-- QR Code Generator Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script>
     // Initialize CKEditor for rich text fields
     ClassicEditor
@@ -296,6 +301,7 @@
         const overlay = document.getElementById('overlay');
         const container = document.getElementById('qrCodeContainer');
         const qrcodeDiv = document.getElementById('qrcodeModal');
+        const qrUrlSpan = document.getElementById('qrUrl');
 
         overlay.style.display = 'block';
         container.style.display = 'block';
@@ -303,21 +309,25 @@
         // Clear previous QR code if exists
         qrcodeDiv.innerHTML = '';
 
-        // Generate QR code with the API endpoint
-        const qrData = {
-            endpoint: "{{ url('/public/api/notulen/late-attendance/' . $notulen->id) }}",
-            notulen_id: {{ $notulen->id }},
-            agenda: "{{ $notulen->agenda }}"
-        };
+        // Generate the URL for late attendance
+        const baseUrl = window.location.origin;
+        const endpoint = `${baseUrl}/public/api/notulen/late-attendance/{{ $notulen->id }}`;
 
+        // Show the URL for verification
+        qrUrlSpan.textContent = endpoint;
+
+        // Create QR code with larger size and better error correction
         new QRCode(qrcodeDiv, {
-            text: JSON.stringify(qrData),
-            width: 256,
-            height: 256,
+            text: endpoint,
+            width: 300,
+            height: 300,
             colorDark: "#000000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
+            correctLevel: QRCode.CorrectLevel.H // Highest error correction level
         });
+
+        // Log for debugging
+        console.log('QR Code generated with URL:', endpoint);
     }
 
     function closeQRCode() {
@@ -470,6 +480,15 @@
         background: #fff;
         border-radius: 0.5rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #qrcodeModal img {
+        display: block !important;
+        margin: 0 auto !important;
+    }
+
+    .text-break {
+        word-break: break-all;
     }
 </style>
 @endpush
