@@ -24,10 +24,10 @@ Route::group(['prefix' => 'public/api'], function () {
         ->name('api.notulen.late-attendance.store');
 
     // Notulen Draft Routes
-    Route::get('/notulen-draft/list', [NotulenDraftController::class, 'list']);
-    Route::post('/notulen-draft/save', [NotulenDraftController::class, 'save']);
-    Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load']);
-    Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete']);
+    Route::get('/notulen-draft/list', [NotulenDraftController::class, 'list'])->name('api.notulen-draft.list');
+    Route::post('/notulen-draft/save', [NotulenDraftController::class, 'save'])->name('api.notulen-draft.save');
+    Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load'])->name('api.notulen-draft.load');
+    Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete'])->name('api.notulen-draft.delete');
 });
 
 // Existing routes
