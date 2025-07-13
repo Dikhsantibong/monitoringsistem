@@ -267,7 +267,22 @@
     // Initialize CKEditor for rich text fields with proper configuration
     const editorConfig = {
         removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
-        toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo', 'redo'],
+        toolbar: {
+            items: [
+                'heading',
+                '|',
+                'bold',
+                'italic',
+                'bulletedList',
+                'numberedList',
+                '|',
+                'outdent',
+                'indent',
+                '|',
+                'undo',
+                'redo'
+            ]
+        },
         heading: {
             options: [
                 { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
@@ -275,28 +290,21 @@
                 { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
             ]
         },
-        // Add custom styling configuration
-        styling: {
-            options: [
-                {
-                    name: 'Paragraph',
-                    element: 'p',
-                    classes: ['MsoNormal']
-                }
-            ]
-        },
-        // Remove default inline styles
-        removeFormatAttributes: ['style', 'class'],
-        // Configure content filtering
+        // Konfigurasi untuk membersihkan output HTML
         htmlSupport: {
             allow: [
                 {
                     name: /.*/,
                     attributes: true,
-                    classes: true,
+                    classes: false,
                     styles: false
                 }
             ]
+        },
+        // Konfigurasi untuk memastikan output bersih
+        outputFormat: {
+            removeAttributesEmptyString: true,
+            removeEmptyElements: true
         }
     };
 
@@ -355,38 +363,9 @@
         container.style.display = 'none';
     }
 
-    // Form submission handling with content cleaning
+    // Form submission handling with SweetAlert
     document.getElementById('editNotulenForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
-        // Clean the content before submission
-        function cleanContent(html) {
-            const div = document.createElement('div');
-            div.innerHTML = html;
-
-            // Remove all style attributes
-            div.querySelectorAll('*').forEach(el => {
-                el.removeAttribute('style');
-                // Remove MsoNormal class if present
-                if (el.classList.contains('MsoNormal')) {
-                    el.classList.remove('MsoNormal');
-                }
-            });
-
-            return div.innerHTML;
-        }
-
-        // Get CKEditor instances
-        const pembahasan = document.querySelector('#pembahasan');
-        const tindakLanjut = document.querySelector('#tindak_lanjut');
-
-        // Clean the content if editors exist
-        if (pembahasan) {
-            pembahasan.value = cleanContent(pembahasan.value);
-        }
-        if (tindakLanjut) {
-            tindakLanjut.value = cleanContent(tindakLanjut.value);
-        }
 
         // Basic form validation
         const requiredFields = [
