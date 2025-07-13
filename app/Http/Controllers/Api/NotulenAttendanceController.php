@@ -103,4 +103,15 @@ class NotulenAttendanceController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Show form for late attendance via QR code scan
+     */
+    public function showLateAttendanceForm(Notulen $notulen)
+    {
+        return view('notulen.attendance-form', [
+            'notulen' => $notulen,
+            'is_late' => true
+        ]);
+    }
 }

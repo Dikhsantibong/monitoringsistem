@@ -311,7 +311,7 @@
 
         // Generate the URL for late attendance
         const baseUrl = window.location.origin;
-        const endpoint = `${baseUrl}/public/api/notulen/late-attendance/{{ $notulen->id }}`;
+        const endpoint = `${baseUrl}/attendance/scan/notulen/{{ $notulen->id }}`;
 
         // Show the URL for verification
         qrUrlSpan.textContent = endpoint;
