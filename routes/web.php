@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\OtherDiscussionEditController;
 use App\Http\Controllers\Admin\PasswordVerificationController;
 use App\Http\Controllers\NotulenController;
 use App\Http\Controllers\Api\NotulenAttendanceController;
+use App\Http\Controllers\Api\NotulenDraftController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -751,3 +752,6 @@ Route::post('public/api/notulen/{notulen}/late-attendance', [App\Http\Controller
 Route::get('/notulen-documentation/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'showDocumentationForm'])->name('notulen.documentation.form');
 Route::post('public/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
 
+Route::post('public/api/notulen-draft/save', [App\Http\Controllers\Api\NotulenDraftController::class, 'save'])->name('notulen.draft.save');
+Route::get('public/api/notulen-draft/load/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'load'])->name('notulen.draft.load');
+Route::delete('public/api/notulen-draft/delete/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'delete'])->name('notulen.draft.delete');
