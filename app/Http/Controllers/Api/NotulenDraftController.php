@@ -13,7 +13,14 @@ class NotulenDraftController extends Controller
     public function list()
     {
         try {
+            // Get all drafts ordered by latest first
             $drafts = DraftNotulen::orderBy('updated_at', 'desc')->get();
+
+            // Transform the data to include formatted dates
+            $drafts = $drafts->map(function ($draft) {
+                $draft->updated_at_formatted = $draft->updated_at->format('d M Y H:i:s');
+                return $draft;
+            });
 
             return response()->json([
                 'success' => true,
@@ -23,7 +30,7 @@ class NotulenDraftController extends Controller
             Log::error('Failed to list drafts: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to load drafts',
+                'message' => 'Gagal memuat daftar draft',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -34,7 +41,12 @@ class NotulenDraftController extends Controller
         try {
             // Validate required field
             $validator = Validator::make($request->all(), [
-                'temp_notulen_id' => 'required|string'
+                'temp_notulen_id' => 'required|string',
+                'unit' => 'nullable|string',
+                'bidang' => 'nullable|string',
+                'sub_bidang' => 'nullable|string',
+                'bulan' => 'nullable|numeric',
+                'tahun' => 'nullable|numeric'
             ]);
 
             if ($validator->fails()) {
@@ -52,6 +64,15 @@ class NotulenDraftController extends Controller
 
             // Update draft data
             $draft->fill([
+                // Basic notulen data
+                'nomor_urut' => $request->nomor_urut,
+                'unit' => $request->unit,
+                'bidang' => $request->bidang,
+                'sub_bidang' => $request->sub_bidang,
+                'bulan' => $request->bulan,
+                'tahun' => $request->tahun,
+
+                // Form data
                 'agenda' => $request->agenda,
                 'tempat' => $request->tempat,
                 'peserta' => $request->peserta,

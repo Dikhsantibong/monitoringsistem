@@ -775,7 +775,6 @@
 
         // Create notulen button handler
         document.getElementById('createNotulenBtn').addEventListener('click', function() {
-            const nomor_urut = document.getElementById('nomor_urut').value;
             const unit = document.getElementById('unit').value;
             const bidang = document.getElementById('bidang').value;
             const sub_bidang = document.getElementById('sub_bidang').value;
@@ -791,74 +790,197 @@
                 return;
             }
 
-            const params = new URLSearchParams({
-                nomor_urut,
-                unit,
-                bidang,
-                sub_bidang,
-                bulan,
-                tahun
-            });
+            // Create initial draft before redirecting
+            const formData = new FormData();
+            const tempId = Date.now().toString();
+            formData.append('temp_notulen_id', tempId);
+            formData.append('unit', unit);
+            formData.append('bidang', bidang);
+            formData.append('sub_bidang', sub_bidang);
+            formData.append('bulan', bulan);
+            formData.append('tahun', tahun);
 
-            window.location.href = `{{ route('notulen.create') }}?${params.toString()}`;
+            // Save initial draft
+            fetch('{{ url("/api/notulen-draft/save") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store temp_notulen_id in localStorage before redirecting
+                    localStorage.setItem('lastDraftId', tempId);
+                    localStorage.setItem('draftData', JSON.stringify({
+                        unit,
+                        bidang,
+                        sub_bidang,
+                        bulan,
+                        tahun
+                    }));
+
+                    const params = new URLSearchParams({
+                        unit,
+                        bidang,
+                        sub_bidang,
+                        bulan,
+                        tahun,
+                        temp_notulen_id: tempId
+                    });
+                    window.location.href = `{{ route('notulen.create') }}?${params.toString()}`;
+                } else {
+                    throw new Error(data.message || 'Gagal membuat draft notulen');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan saat membuat draft notulen: ' + error.message
+                });
+            });
+        });
+
+        // Add beforeunload event handler to save draft before closing
+        window.addEventListener('beforeunload', function(e) {
+            const unit = document.getElementById('unit').value;
+            const bidang = document.getElementById('bidang').value;
+            const sub_bidang = document.getElementById('sub_bidang').value;
+            const bulan = document.getElementById('bulan').value;
+            const tahun = document.getElementById('tahun').value;
+
+            if (unit && bidang && sub_bidang && bulan && tahun) {
+                const draftData = {
+                    unit,
+                    bidang,
+                    sub_bidang,
+                    bulan,
+                    tahun
+                };
+
+                // Store draft data in localStorage
+                localStorage.setItem('draftData', JSON.stringify(draftData));
+
+                // If we have a temp_notulen_id, save to server
+                const tempId = localStorage.getItem('lastDraftId');
+                if (tempId) {
+                    const formData = new FormData();
+                    formData.append('temp_notulen_id', tempId);
+                    Object.entries(draftData).forEach(([key, value]) => {
+                        formData.append(key, value);
+                    });
+
+                    // Use sendBeacon for more reliable data sending when page is closing
+                    const blob = new Blob([formData], { type: 'application/x-www-form-urlencoded' });
+                    navigator.sendBeacon('{{ url("/api/notulen-draft/save") }}', blob);
+                }
+            }
+        });
+
+        // Check for saved draft data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedDraftData = localStorage.getItem('draftData');
+            if (savedDraftData) {
+                try {
+                    const draftData = JSON.parse(savedDraftData);
+
+                    // Fill in form fields if they're empty
+                    if (!document.getElementById('unit').value) {
+                        document.getElementById('unit').value = draftData.unit || '';
+                    }
+                    if (!document.getElementById('bidang').value) {
+                        document.getElementById('bidang').value = draftData.bidang || '';
+                    }
+                    if (!document.getElementById('sub_bidang').value) {
+                        document.getElementById('sub_bidang').value = draftData.sub_bidang || '';
+                    }
+                    if (!document.getElementById('bulan').value) {
+                        document.getElementById('bulan').value = draftData.bulan || '';
+                    }
+                    if (!document.getElementById('tahun').value) {
+                        document.getElementById('tahun').value = draftData.tahun || '';
+                    }
+
+                    // Update format preview
+                    updateFormatPreview();
+                } catch (error) {
+                    console.error('Error loading saved draft data:', error);
+                    localStorage.removeItem('draftData');
+                }
+            }
         });
 
         // Function to load drafts
         function loadDrafts() {
             const draftList = document.getElementById('draftList');
             const loadingSpinner = draftList.querySelector('.loading-spinner');
+            loadingSpinner.classList.add('active');
 
-            fetch('{{ url("/api/notulen-draft/list") }}')
-                .then(response => response.json())
-                .then(data => {
-                    loadingSpinner.classList.remove('active');
+            fetch('{{ url("/api/notulen-draft/list") }}', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadingSpinner.classList.remove('active');
 
-                    if (data.success && data.drafts && data.drafts.length > 0) {
-                        const draftsHtml = data.drafts.map(draft => `
-                            <div class="draft-item">
-                                <div class="draft-header">
-                                    <div class="draft-title">${draft.agenda || 'Draft Notulen'}</div>
-                                    <div class="draft-date">${new Date(draft.updated_at).toLocaleString()}</div>
-                                </div>
-                                <div class="draft-content">
-                                    <div>Tempat: ${draft.tempat || '-'}</div>
-                                    <div>Peserta: ${draft.peserta || '-'}</div>
-                                </div>
-                                <div class="draft-actions">
-                                    <a href="{{ url('/notulen/create') }}?temp_notulen_id=${draft.temp_notulen_id}"
-                                       class="btn-resume">
-                                        <i class="fas fa-edit mr-1"></i> Lanjutkan
-                                    </a>
-                                    <button onclick="deleteDraft('${draft.temp_notulen_id}')"
-                                            class="btn-delete">
-                                        <i class="fas fa-trash mr-1"></i> Hapus
-                                    </button>
-                                </div>
+                if (data.success && data.drafts && data.drafts.length > 0) {
+                    const draftsHtml = data.drafts.map(draft => `
+                        <div class="draft-item">
+                            <div class="draft-header">
+                                <div class="draft-title">${draft.agenda || 'Draft Notulen'}</div>
+                                <div class="draft-date">${draft.updated_at_formatted || new Date(draft.updated_at).toLocaleString()}</div>
                             </div>
-                        `).join('');
-
-                        draftList.innerHTML = draftsHtml;
-                    } else {
-                        draftList.innerHTML = `
-                            <div class="no-drafts">
-                                Tidak ada draft notulen yang tersimpan
+                            <div class="draft-content">
+                                <div>Tempat: ${draft.tempat || '-'}</div>
+                                <div>Peserta: ${draft.peserta || '-'}</div>
                             </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    loadingSpinner.classList.remove('active');
+                            <div class="draft-actions">
+                                <a href="{{ url('/notulen/create') }}?temp_notulen_id=${draft.temp_notulen_id}"
+                                   class="btn-resume">
+                                    <i class="fas fa-edit mr-1"></i> Lanjutkan
+                                </a>
+                                <button onclick="deleteDraft('${draft.temp_notulen_id}')"
+                                        class="btn-delete">
+                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    draftList.innerHTML = draftsHtml;
+                } else {
                     draftList.innerHTML = `
-                        <div class="text-center text-red-600 py-4">
-                            Terjadi kesalahan saat memuat draft
+                        <div class="no-drafts">
+                            Tidak ada draft notulen yang tersimpan
                         </div>
                     `;
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingSpinner.classList.remove('active');
+                draftList.innerHTML = `
+                    <div class="text-center text-red-600 py-4">
+                        Terjadi kesalahan saat memuat draft: ${error.message}
+                    </div>
+                `;
+            });
         }
 
         // Function to delete draft
-        function deleteDraft(tempNotulenId) {
+        window.deleteDraft = function(tempNotulenId) {
             Swal.fire({
                 title: 'Hapus Draft?',
                 text: "Draft yang dihapus tidak dapat dikembalikan!",
@@ -873,10 +995,17 @@
                     fetch(`{{ url("/api/notulen-draft/delete") }}/${tempNotulenId}`, {
                         method: 'DELETE',
                         headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             Swal.fire(
@@ -886,20 +1015,20 @@
                             );
                             loadDrafts(); // Reload drafts list
                         } else {
-                            throw new Error(data.message || 'Failed to delete draft');
+                            throw new Error(data.message || 'Gagal menghapus draft');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         Swal.fire(
                             'Error!',
-                            'Gagal menghapus draft notulen.',
+                            'Gagal menghapus draft notulen: ' + error.message,
                             'error'
                         );
                     });
                 }
             });
-        }
+        };
 
         // Load drafts when switching to drafts tab
         document.querySelectorAll('.tab').forEach(tab => {
@@ -909,18 +1038,25 @@
                 }
             });
         });
+
+        // Initial load if we're on the drafts tab
+        if (window.location.hash === '#drafts') {
+            document.querySelector('[data-tab="drafts"]').click();
+        }
     });
 
     // Format preview update function
     function updateFormatPreview() {
-        const nomor = document.getElementById('nomor_urut').value || '-';
+        const nomorUrut = document.getElementById('nomor_urut').value || '-';
         const unit = document.getElementById('unit').value || '-';
         const bidang = document.getElementById('bidang').value || '-';
         const subBidang = document.getElementById('sub_bidang').value || '-';
         const bulan = document.getElementById('bulan').value || '-';
         const tahun = document.getElementById('tahun').value || '-';
 
-        const formatNomor = `${nomor}/${unit}/${bidang}/${subBidang}/${bulan}/${tahun}`;
+        // Format nomor urut to 4 digits with leading zeros
+        const formattedNomorUrut = nomorUrut.toString().padStart(4, '0');
+        const formatNomor = `${formattedNomorUrut}/${unit}/${bidang}/${subBidang}/${bulan}/${tahun}`;
         document.getElementById('formatPreview').textContent = formatNomor;
     }
 

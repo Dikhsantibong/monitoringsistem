@@ -46,9 +46,18 @@ Route::get('/notulen/create', [NotulenController::class, 'create'])->name('notul
 Route::post('/notulen', [NotulenController::class, 'store'])->name('notulen.store');
 Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notulen.show');
 Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
-Route::get('/notulen/{notulen}/edit', [NotulenController::class, 'edit'])->name('notulen.edit');
-Route::put('/notulen/{notulen}', [NotulenController::class, 'update'])->name('notulen.update');
-Route::get('/notulen/drafts', [NotulenDraftController::class, 'save'])->name('notulen.drafts');
+
+// Remove incorrect draft routes
+// Route::get('/notulen/drafts', [NotulenDraftController::class, 'save'])->name('notulen.drafts');
+// Route::get('/notulen/drafts/list', [NotulenDraftController::class, 'list'])->name('notulen.drafts.list');
+
+// Add API routes for drafts
+Route::prefix('api')->group(function () {
+    Route::get('/notulen-draft/list', [NotulenDraftController::class, 'list']);
+    Route::post('/notulen-draft/save', [NotulenDraftController::class, 'save']);
+    Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load']);
+    Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete']);
+});
 
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

@@ -10,6 +10,12 @@ class DraftNotulen extends Model
 
     protected $fillable = [
         'temp_notulen_id',
+        'nomor_urut',
+        'unit',
+        'bidang',
+        'sub_bidang',
+        'bulan',
+        'tahun',
         'agenda',
         'tempat',
         'peserta',
@@ -24,6 +30,9 @@ class DraftNotulen extends Model
     ];
 
     protected $casts = [
+        'nomor_urut' => 'integer',
+        'bulan' => 'integer',
+        'tahun' => 'integer',
         'tanggal' => 'date',
         'tanggal_tanda_tangan' => 'date',
         'waktu_mulai' => 'datetime',

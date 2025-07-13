@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\DraftNotulen;
 
 class NotulenController extends Controller
 {
@@ -74,14 +75,24 @@ class NotulenController extends Controller
 
     public function create(Request $request)
     {
-        return view('notulen.create', [
+        $data = [
             'nomor_urut' => $request->nomor_urut,
             'unit' => $request->unit,
             'bidang' => $request->bidang,
             'sub_bidang' => $request->sub_bidang,
             'bulan' => $request->bulan,
             'tahun' => $request->tahun
-        ]);
+        ];
+
+        // If temp_notulen_id exists, load draft data
+        if ($request->has('temp_notulen_id')) {
+            $draft = DraftNotulen::where('temp_notulen_id', $request->temp_notulen_id)->first();
+            if ($draft) {
+                $data = array_merge($data, $draft->toArray());
+            }
+        }
+
+        return view('notulen.create', $data);
     }
 
     public function store(Request $request)
@@ -89,8 +100,35 @@ class NotulenController extends Controller
         try {
             DB::beginTransaction();
 
-            $validated = $request->validate([
-                'nomor_urut' => 'required',
+            // Get the next ID that will be used
+            $nextId = DB::table('notulens')->max('id') + 1;
+
+            // If temp_notulen_id exists, get the draft data
+            $draftData = [];
+            if ($request->filled('temp_notulen_id')) {
+                $draft = DraftNotulen::where('temp_notulen_id', $request->temp_notulen_id)->first();
+                if ($draft) {
+                    $draftData = $draft->toArray();
+                    // Remove any null values from draft data
+                    $draftData = array_filter($draftData, function($value) {
+                        return !is_null($value);
+                    });
+                }
+            }
+
+            // Create request data array
+            $requestData = $request->all();
+
+            // Remove empty strings from request data
+            $requestData = array_filter($requestData, function($value) {
+                return $value !== '';
+            });
+
+            // Merge request data with draft data, prioritizing request data
+            $mergedData = array_merge($draftData, $requestData);
+
+            // Validate the merged data
+            $validated = validator($mergedData, [
                 'unit' => 'required',
                 'bidang' => 'required',
                 'sub_bidang' => 'required',
@@ -108,15 +146,18 @@ class NotulenController extends Controller
                 'notulis_nama' => 'required',
                 'tanggal_tanda_tangan' => 'required|date',
                 'temp_notulen_id' => 'nullable|string'
-            ]);
+            ])->validate();
+
+            // Set nomor_urut to match the next ID
+            $validated['nomor_urut'] = $nextId;
 
             // Sanitize HTML content but preserve basic formatting
             $validated['pembahasan'] = strip_tags($validated['pembahasan'], '<p><br><ul><ol><li><strong><em><u><s>');
             $validated['tindak_lanjut'] = strip_tags($validated['tindak_lanjut'], '<p><br><ul><ol><li><strong><em><u><s>');
 
-            // Generate format nomor
+            // Generate format nomor using the next ID as nomor_urut
             $formatNomor = Notulen::generateFormatNomor(
-                $validated['nomor_urut'],
+                $nextId,
                 $validated['unit'],
                 $validated['bidang'],
                 $validated['sub_bidang'],
@@ -153,17 +194,40 @@ class NotulenController extends Controller
                 // Clear the temporary data from cache
                 Cache::forget("notulen_attendances_{$validated['temp_notulen_id']}");
                 Cache::forget("notulen_documentations_{$validated['temp_notulen_id']}");
+
+                // Delete the draft after successful creation
+                if ($draft = DraftNotulen::where('temp_notulen_id', $validated['temp_notulen_id'])->first()) {
+                    $draft->delete();
+                }
             }
 
             DB::commit();
 
-            // Redirect to show view with success message
+            // Check if request wants JSON response
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Notulen berhasil disimpan',
+                    'redirect_url' => route('notulen.show', $notulen->id)
+                ]);
+            }
+
+            // Regular response for non-AJAX requests
             return redirect()
                 ->route('notulen.show', $notulen->id)
                 ->with('success', 'Notulen berhasil disimpan');
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error creating notulen: ' . $e->getMessage());
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat menyimpan notulen: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan notulen. ' . $e->getMessage()]);
