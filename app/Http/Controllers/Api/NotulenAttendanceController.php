@@ -68,6 +68,9 @@ class NotulenAttendanceController extends Controller
 
     public function showLateAttendanceForm($notulen)
     {
+        // Find the Notulen model by ID
+        $notulen = \App\Models\Notulen::findOrFail($notulen);
+
         return view('notulen.late-attendance-form', [
             'notulen' => $notulen
         ]);
