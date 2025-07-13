@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DraftNotulen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class NotulenDraftController extends Controller
 {
@@ -32,8 +33,16 @@ class NotulenDraftController extends Controller
     {
         try {
             // Validate required field
-            if (!$request->temp_notulen_id) {
-                throw new \Exception('temp_notulen_id is required');
+            $validator = Validator::make($request->all(), [
+                'temp_notulen_id' => 'required|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
             }
 
             // Find or create draft

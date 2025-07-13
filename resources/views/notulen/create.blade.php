@@ -824,11 +824,13 @@
             formData.append('tanggal_tanda_tangan', tanggalTandaTangan);
 
             // Send draft to server
-            const response = await fetch('{{ url("/public/api/notulen-draft/save") }}', {
+            const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+            const response = await fetch(`${baseUrl}/api/notulen-draft/save`, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
                 }
             });
 
@@ -892,7 +894,12 @@
         if (paramTempNotulenId || storedTempNotulenId) {
             try {
                 const draftId = paramTempNotulenId || storedTempNotulenId;
-                const response = await fetch(`{{ url("/api/notulen-draft/load") }}/${draftId}`);
+                const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+                const response = await fetch(`${baseUrl}/api/notulen-draft/load/${draftId}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
                 const data = await response.json();
 
                 if (data.success && data.draft) {
@@ -948,10 +955,12 @@
 
         try {
             // Remove draft after successful submission
-            await fetch(`{{ url("/api/notulen-draft/delete") }}/${tempNotulenId}`, {
+            const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+            await fetch(`${baseUrl}/api/notulen-draft/delete/${tempNotulenId}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
                 }
             });
             localStorage.removeItem('lastDraftId');
