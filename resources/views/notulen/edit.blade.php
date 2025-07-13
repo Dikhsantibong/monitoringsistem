@@ -290,34 +290,50 @@
                 { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
             ]
         },
-        // Konfigurasi untuk membersihkan output HTML
-        htmlSupport: {
-            allow: [
-                {
-                    name: /.*/,
-                    attributes: true,
-                    classes: false,
-                    styles: false
-                }
-            ]
-        },
-        // Konfigurasi untuk memastikan output bersih
-        outputFormat: {
-            removeAttributesEmptyString: true,
-            removeEmptyElements: true
-        }
+        removeFormatAttributes: 'style,class,id', // Remove all formatting attributes
     };
 
-    // Initialize CKEditor for pembahasan
+    // Function to clean HTML content
+    function cleanHtml(html) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+
+        // Remove all style attributes
+        div.querySelectorAll('*').forEach(el => {
+            el.removeAttribute('style');
+            el.removeAttribute('class');
+            el.removeAttribute('id');
+        });
+
+        // Convert specific elements to paragraphs
+        ['div'].forEach(tag => {
+            div.querySelectorAll(tag).forEach(el => {
+                const p = document.createElement('p');
+                p.innerHTML = el.innerHTML;
+                el.parentNode.replaceChild(p, el);
+            });
+        });
+
+        return div.innerHTML;
+    }
+
+    // Initialize CKEditor instances
+    let pembahasan, tindakLanjut;
+
     ClassicEditor
         .create(document.querySelector('#pembahasan'), editorConfig)
+        .then(editor => {
+            pembahasan = editor;
+        })
         .catch(error => {
             console.error(error);
         });
 
-    // Initialize CKEditor for tindak_lanjut
     ClassicEditor
         .create(document.querySelector('#tindak_lanjut'), editorConfig)
+        .then(editor => {
+            tindakLanjut = editor;
+        })
         .catch(error => {
             console.error(error);
         });
@@ -363,9 +379,20 @@
         container.style.display = 'none';
     }
 
-    // Form submission handling with SweetAlert
+    // Form submission handling
     document.getElementById('editNotulenForm').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Clean HTML content before submission
+        if (pembahasan) {
+            const cleanedPembahasan = cleanHtml(pembahasan.getData());
+            document.querySelector('#pembahasan').value = cleanedPembahasan;
+        }
+
+        if (tindakLanjut) {
+            const cleanedTindakLanjut = cleanHtml(tindakLanjut.getData());
+            document.querySelector('#tindak_lanjut').value = cleanedTindakLanjut;
+        }
 
         // Basic form validation
         const requiredFields = [
@@ -406,7 +433,6 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Show loading state
                 Swal.fire({
                     title: 'Menyimpan...',
                     allowOutsideClick: false,
@@ -414,8 +440,6 @@
                         Swal.showLoading();
                     }
                 });
-
-                // Submit the form
                 this.submit();
             }
         });

@@ -37,6 +37,35 @@ class Notulen extends Model
         'waktu_selesai' => 'datetime'
     ];
 
+    protected function cleanHtml($html)
+    {
+        if (!$html) return $html;
+
+        // Remove style, class, and id attributes
+        $html = preg_replace('/\s+style\s*=\s*"[^"]*"/', '', $html);
+        $html = preg_replace('/\s+class\s*=\s*"[^"]*"/', '', $html);
+        $html = preg_replace('/\s+id\s*=\s*"[^"]*"/', '', $html);
+
+        // Convert divs to paragraphs
+        $html = preg_replace('/<div([^>]*)>/', '<p>', $html);
+        $html = str_replace('</div>', '</p>', $html);
+
+        // Remove empty paragraphs
+        $html = preg_replace('/<p>\s*<\/p>/', '', $html);
+
+        return trim($html);
+    }
+
+    public function getPembahasanAttribute($value)
+    {
+        return $this->cleanHtml($value);
+    }
+
+    public function getTindakLanjutAttribute($value)
+    {
+        return $this->cleanHtml($value);
+    }
+
     // Generate the formatted number
     public static function generateFormatNomor($nomor_urut, $unit, $bidang, $sub_bidang, $bulan, $tahun)
     {
