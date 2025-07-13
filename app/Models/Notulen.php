@@ -50,16 +50,13 @@ class Notulen extends Model
         $html = str_replace(['<br>', '<br/>', '<br />'], "\n", $html);
 
         // Handle lists and numbering
-        $html = str_replace('<ul>', "\n", $html);
-        $html = str_replace('</ul>', "\n", $html);
-        $html = str_replace('<ol>', "\n", $html);
-        $html = str_replace('</ol>', "\n", $html);
+        $html = str_replace(['<ul>', '</ul>', '<ol>', '</ol>'], "\n", $html);
 
         // Special handling for list items to preserve indentation
-        $html = preg_replace('/<li[^>]*>(.*?)<\/li>/i', '    • $1' . "\n", $html);
+        $html = preg_replace('/<li[^>]*>(.*?)<\/li>/i', '  • $1' . "\n", $html);
 
         // Handle paragraphs while preserving format
-        $html = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1' . "\n\n", $html);
+        $html = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1' . "\n", $html);
 
         // Remove any remaining HTML tags except formatting
         $html = strip_tags($html);
@@ -67,23 +64,49 @@ class Notulen extends Model
         // Preserve letter/number points (e.g., "a.", "1.", etc.)
         $html = preg_replace('/^([a-z0-9]\.)\s*/m', '$1 ', $html);
 
-        // Preserve indentation for points
+        // Preserve indentation for points with reduced spacing
         $lines = explode("\n", $html);
         $formattedLines = [];
+        $prevLineWasPoint = false;
+
         foreach ($lines as $line) {
+            $trimmedLine = trim($line);
+            if (empty($trimmedLine)) {
+                if (!$prevLineWasPoint) {
+                    $formattedLines[] = "";
+                }
+                continue;
+            }
+
             // Check if line starts with a point (a., 1., etc.)
-            if (preg_match('/^[a-z0-9]\./', trim($line))) {
-                // Add proper indentation
-                $formattedLines[] = "    " . trim($line);
+            if (preg_match('/^[a-z0-9]\./', $trimmedLine)) {
+                // Add smaller indentation for points
+                if ($prevLineWasPoint) {
+                    $formattedLines[] = "  " . $trimmedLine;
+                } else {
+                    $formattedLines[] = "\n  " . $trimmedLine;
+                }
+                $prevLineWasPoint = true;
             } else {
-                $formattedLines[] = trim($line);
+                if ($prevLineWasPoint) {
+                    $formattedLines[] = $trimmedLine;
+                } else {
+                    $formattedLines[] = $trimmedLine;
+                }
+                $prevLineWasPoint = false;
             }
         }
+
         $html = implode("\n", $formattedLines);
 
         // Clean up extra spaces and normalize line breaks
         $html = preg_replace('/[ \t]+/', ' ', $html);
         $html = preg_replace('/\n{3,}/', "\n\n", $html);
+        $html = preg_replace('/^\n+/', '', $html); // Remove leading newlines
+        $html = preg_replace('/\n+$/', '', $html); // Remove trailing newlines
+
+        // Add single line break between sections
+        $html = preg_replace('/\n\n+/', "\n\n", $html);
 
         return trim($html);
     }
@@ -91,13 +114,15 @@ class Notulen extends Model
     public function getPembahasanAttribute($value)
     {
         $cleaned = $this->cleanHtml($value);
-        return nl2br($cleaned);
+        // Only apply nl2br if we're not in the edit form
+        return request()->route()->getName() === 'notulen.edit' ? $cleaned : nl2br($cleaned);
     }
 
     public function getTindakLanjutAttribute($value)
     {
         $cleaned = $this->cleanHtml($value);
-        return nl2br($cleaned);
+        // Only apply nl2br if we're not in the edit form
+        return request()->route()->getName() === 'notulen.edit' ? $cleaned : nl2br($cleaned);
     }
 
     // Generate the formatted number
