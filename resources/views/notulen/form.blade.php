@@ -694,6 +694,7 @@
             const tahun = filterTahun.value.trim();
 
             loadingSpinner.classList.add('active');
+            searchResults.innerHTML = ''; // Clear previous results
 
             // Build query string, only include non-empty values
             const params = new URLSearchParams();
@@ -702,31 +703,64 @@
             if (bidang) params.append('bidang', bidang);
             if (tahun) params.append('tahun', tahun);
 
-            fetch(`/notulen/search?${params.toString()}`, {
+            // Get base URL dynamically
+            const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+
+            fetch(`${baseUrl}/notulen/search?${params.toString()}`, {
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                credentials: 'same-origin'
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    searchResults.innerHTML = data.html;
-                } else {
-                    searchResults.innerHTML = '<div class="text-center text-red-600 py-4">Terjadi kesalahan saat memuat data</div>';
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response format tidak valid');
                 }
-                loadingSpinner.classList.remove('active');
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || `Error ${response.status}: Gagal memuat data`);
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Format data tidak valid');
+                }
+
+                if (data.success) {
+                    if (data.html) {
+                        searchResults.innerHTML = data.html;
+                    } else {
+                        searchResults.innerHTML = '<div class="text-center py-4">Tidak ada hasil yang ditemukan</div>';
+                    }
+                } else {
+                    throw new Error(data.message || 'Gagal memuat hasil pencarian');
+                }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Search error:', error);
+                searchResults.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        <strong class="font-bold">Error!</strong>
+                        <span class="block sm:inline">${error.message || 'Terjadi kesalahan saat mencari data'}</span>
+                    </div>`;
+            })
+            .finally(() => {
                 loadingSpinner.classList.remove('active');
-                searchResults.innerHTML = '<div class="text-center text-red-600 py-4">Terjadi kesalahan saat mencari data</div>';
             });
         }
 
-        // Debounced search
+        // Debounced search with proper timing
         function debounceSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(performSearch, 300);
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            searchTimeout = setTimeout(performSearch, 500); // Increased to 500ms for better performance
         }
 
         // Add event listeners for search and filters
@@ -747,29 +781,58 @@
         // Function to handle pagination
         window.changePage = function(url) {
             loadingSpinner.classList.add('active');
+            searchResults.innerHTML = ''; // Clear current results
 
             fetch(url, {
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                credentials: 'same-origin'
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    searchResults.innerHTML = data.html;
-                    // Update URL without page reload
-                    window.history.pushState({}, '', url);
-                } else {
-                    searchResults.innerHTML = '<div class="text-center text-red-600 py-4">Terjadi kesalahan saat memuat data</div>';
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response format tidak valid');
                 }
-                loadingSpinner.classList.remove('active');
-                // Scroll to top of results
-                searchResults.scrollIntoView({ behavior: 'smooth' });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || `Error ${response.status}: Gagal memuat halaman`);
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Format data tidak valid');
+                }
+
+                if (data.success) {
+                    if (data.html) {
+                        searchResults.innerHTML = data.html;
+                        // Update URL without page reload
+                        window.history.pushState({}, '', url);
+                        // Scroll to top of results
+                        searchResults.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        searchResults.innerHTML = '<div class="text-center py-4">Tidak ada hasil yang ditemukan</div>';
+                    }
+                } else {
+                    throw new Error(data.message || 'Gagal memuat halaman');
+                }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Pagination error:', error);
+                searchResults.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        <strong class="font-bold">Error!</strong>
+                        <span class="block sm:inline">${error.message || 'Terjadi kesalahan saat memuat halaman'}</span>
+                    </div>`;
+            })
+            .finally(() => {
                 loadingSpinner.classList.remove('active');
-                searchResults.innerHTML = '<div class="text-center text-red-600 py-4">Terjadi kesalahan saat memuat halaman</div>';
             });
         };
 
