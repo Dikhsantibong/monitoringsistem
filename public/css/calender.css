@@ -209,6 +209,42 @@
         background: #007a94;
     }
 
+    /* Grid kalender bulanan 7 kolom */
+    .calendar-grid-month {
+        padding: 10px;
+    }
+    .calendar-grid-month .grid {
+        gap: 4px;
+    }
+    .date-card-mini {
+        background: #f8fafc;
+        border-radius: 6px;
+        min-height: 60px;
+        height: 80px;
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        font-size: 11px;
+        padding: 2px;
+    }
+    .event-item-mini {
+        padding: 1px 2px;
+        margin-bottom: 1px;
+        border-radius: 3px;
+        font-size: 10px;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+    .event-item-mini.bg-blue-100 {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+    .event-item-mini.bg-green-100 {
+        background: #dcfce7;
+        color: #166534;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .calendar-container {
@@ -229,6 +265,14 @@
             gap: 15px;
             text-align: center;
             padding: 0 10px;
+        }
+        .calendar-grid-month .grid {
+            gap: 2px;
+        }
+        .date-card-mini {
+            min-height: 40px;
+            height: 60px;
+            font-size: 10px;
         }
     }
 

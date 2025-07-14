@@ -120,41 +120,41 @@
             @php
                 use Carbon\Carbon;
                 \Carbon\Carbon::setLocale('id');
+                $daysOfWeek = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+                $firstDayOfMonth = Carbon::create($year, $month, 1);
+                $startDayOfWeek = $firstDayOfMonth->dayOfWeekIso; // 1=Senin, 7=Minggu
+                $totalDays = $lastDay->day;
             @endphp
-            @if($events->isEmpty())
-                <div class="no-events">
-                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
-                    <p class="text-lg">Tidak ada data</p>
+            <div class="calendar-grid-month w-full bg-white rounded-lg shadow p-4">
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    @foreach($daysOfWeek as $day)
+                        <div class="text-center font-semibold text-xs text-gray-600 py-1">{{ $day }}</div>
+                    @endforeach
                 </div>
-            @else
-                <div class="calendar-grid">
+                <div class="grid grid-cols-7 gap-1">
+                    {{-- Padding awal jika hari pertama bukan Senin --}}
+                    @for($i = 1; $i < $startDayOfWeek; $i++)
+                        <div></div>
+                    @endfor
+                    {{-- Render semua tanggal --}}
                     @foreach($events as $date => $dateEvents)
-                        <div class="date-card">
-                            <div class="date-header">
-                                {{ Carbon::parse($date)->translatedFormat('l, d F Y') }}
-                            </div>
-                            <div class="date-content">
-                                @foreach($dateEvents as $event)
-                                    <div class="event-item {{ Str::contains($event['type'], 'Work Order') ? 'work-order' : 'service-request' }}">
-                                        <div class="event-type">
-                                            {{ $event['type'] }}
-                                            <span class="event-status status-{{ strtolower($event['status']) }}">
-                                                {{ $event['status'] }}
-                                            </span>
-                                        </div>
-                                        <div class="event-description">
-                                            {{ $event['description'] }}
-                                        </div>
-                                        <div class="event-footer">
-                                            <span>ID: {{ $event['id'] }}</span>
-                                        </div>
+                        <div class="date-card-mini border rounded-md p-1 min-h-[70px] bg-gray-50 flex flex-col">
+                            <div class="text-xs font-bold text-blue-700 mb-1 text-right">{{ Carbon::parse($date)->day }}</div>
+                            <div class="flex-1 flex flex-col gap-1">
+                                @forelse($dateEvents as $event)
+                                    <div class="event-item-mini text-[10px] px-1 py-0.5 rounded {{ Str::contains($event['type'], 'Work Order') ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                        <span class="font-semibold">{{ $event['type'] }}</span>
+                                        <span class="block">{{ $event['description'] }}</span>
+                                        <span class="block text-[9px] text-gray-500">{{ $event['status'] }}</span>
                                     </div>
-                                @endforeach
+                                @empty
+                                    <span class="text-gray-300 text-[10px] italic">-</span>
+                                @endforelse
                             </div>
                         </div>
                     @endforeach
                 </div>
-            @endif
+            </div>
         </div>
     </div>
 </div>
