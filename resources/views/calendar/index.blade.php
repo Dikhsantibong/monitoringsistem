@@ -78,6 +78,27 @@
         <div class="h-[80px]"></div>
 
         <div class="calendar-container">
+            <!-- Navigasi Bulan & Tahun -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-4 gap-2">
+                <div class="flex gap-2">
+                    <a href="{{ route('calendar.index', ['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year]) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg">{{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}</span>
+                    <form method="GET" action="" class="inline-block">
+                        <select name="year" onchange="this.form.submit()" class="border rounded px-2 py-1 text-sm">
+                            @for($y = $year-5; $y <= $year+5; $y++)
+                                <option value="{{ $y }}" @if($y == $year) selected @endif>{{ $y }}</option>
+                            @endfor
+                        </select>
+                        <input type="hidden" name="month" value="{{ $month }}">
+                    </form>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ route('calendar.index', ['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year]) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
+                </div>
+            </div>
+
             <div class="calendar-header">
                 <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
                 <div class="calendar-nav">
@@ -93,30 +114,7 @@
                 </div>
             </div>
 
-            <!-- Date Filter Form -->
-            <form method="GET" action="" class="flex flex-col md:flex-row items-center gap-4 bg-white rounded-lg shadow p-4 mb-6 mt-4">
-                <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                    <div>
-                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                        <input type="date" id="start_date" name="start_date" value="{{ request('start_date', $startDate ?? '') }}" class="rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full md:w-48">
-                    </div>
-                    <div>
-                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
-                        <input type="date" id="end_date" name="end_date" value="{{ request('end_date', $endDate ?? '') }}" class="rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full md:w-48">
-                    </div>
-                </div>
-                <div class="flex gap-2 items-end">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
-                        <i class="fas fa-filter mr-2"></i> Filter
-                    </button>
-                    @if(request('start_date') || request('end_date'))
-                        <a href="{{ route('calendar.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md flex items-center">
-                            <i class="fas fa-times mr-2"></i> Reset
-                        </a>
-                    @endif
-                </div>
-            </form>
-
+            {{-- Hapus form filter tanggal dan ganti dengan navigasi di atas --}}
             @php
                 use Carbon\Carbon;
                 \Carbon\Carbon::setLocale('id');
