@@ -79,16 +79,16 @@
 
         <div class="calendar-container">
             <div class="calendar-header">
-                <h2 class="text-2xl font-bold text-gray-800">Calendar Events</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
                 <div class="calendar-nav">
                     <button class="calendar-nav-btn">
-                        <i class="fas fa-chevron-left"></i> Previous
+                        <i class="fas fa-chevron-left"></i> Sebelumnya
                     </button>
                     <button class="calendar-nav-btn">
-                        Today
+                        Hari Ini
                     </button>
                     <button class="calendar-nav-btn">
-                        Next <i class="fas fa-chevron-right"></i>
+                        Berikutnya <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
@@ -124,7 +124,7 @@
             @if($events->isEmpty())
                 <div class="no-events">
                     <i class="fas fa-calendar-times fa-3x mb-3"></i>
-                    <p class="text-lg">No events found</p>
+                    <p class="text-lg">Tidak ada data</p>
                 </div>
             @else
                 <div class="calendar-grid">
