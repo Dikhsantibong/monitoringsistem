@@ -56,7 +56,7 @@ class CalendarController extends Controller
             ->map(function ($items) {
                 return $items->sortBy('type');
             })
-            ->sortKeys();
+            ->sortKeysDesc();
 
         return view('calendar.index', compact('events', 'startDate', 'endDate'));
     }
