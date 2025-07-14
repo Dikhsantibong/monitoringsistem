@@ -764,3 +764,5 @@ Route::post('public/api/notulen-documentation', [App\Http\Controllers\Api\Notule
 Route::post('/api/notulen-draft/save', [App\Http\Controllers\Api\NotulenDraftController::class, 'save'])->name('notulen.draft.save');
 Route::get('/api/notulen-draft/load/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'load'])->name('notulen.draft.load');
 Route::delete('/api/notulen-draft/delete/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'delete'])->name('notulen.draft.delete');
+
+Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');

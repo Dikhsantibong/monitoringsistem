@@ -1597,6 +1597,9 @@
                                     <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
                                     <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link" target="_blank">Bid. Pemeliharaan</a></li>
                                     <li><a href="{{ route('notulen.form') }}" class="nav-link">Notulen</a></li>
+                                    <li><a href="{{ route('calendar.index') }}" class="nav-link">
+                                        <i class="fas fa-calendar-alt mr-1"></i> Calendar
+                                    </a></li>
 
                                     <!-- Login button -->
                                     <li>
@@ -1626,6 +1629,9 @@
                                 <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link-mobile">Dashboard Pemantauan</a></li>
                                 <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link-mobile" target="_blank">Bid. Pemeliharaan</a></li>
                                 <li><a href="{{ route('notulen.form') }}" class="nav-link-mobile">Notulen</a></li>
+                                <li><a href="{{ route('calendar.index') }}" class="nav-link-mobile">
+                                    <i class="fas fa-calendar-alt mr-1"></i> Calendar
+                                </a></li>
                                 <!-- Login button in mobile -->
                                 <li>
                                     <a href="{{ route('login') }}" class="nav-link-mobile login-mobile">
