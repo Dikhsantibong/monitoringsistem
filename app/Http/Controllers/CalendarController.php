@@ -15,31 +15,15 @@ class CalendarController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        // Get service requests and work orders
-        $serviceRequestsQuery = ServiceRequest::select('id', 'description', 'created_at', 'status');
+        // Get work orders only
         $workOrdersQuery = WorkOrder::select('id', 'description', 'created_at', 'type', 'status');
 
         if ($startDate) {
-            $serviceRequestsQuery->whereDate('created_at', '>=', $startDate);
             $workOrdersQuery->whereDate('created_at', '>=', $startDate);
         }
         if ($endDate) {
-            $serviceRequestsQuery->whereDate('created_at', '<=', $endDate);
             $workOrdersQuery->whereDate('created_at', '<=', $endDate);
         }
-
-        $serviceRequests = $serviceRequestsQuery->get()
-            ->map(function ($sr) {
-                return [
-                    'id' => $sr->id,
-                    'type' => 'Service Request',
-                    'description' => $sr->description,
-                    'date' => Carbon::parse($sr->created_at)->format('Y-m-d'),
-                    'status' => $sr->status,
-                    'created_at' => $sr->created_at, // Tambahkan ini
-                    'updated_at' => $sr->updated_at, // Tambahkan ini   
-                ];
-            });
 
         $workOrders = $workOrdersQuery->get()
             ->map(function ($wo) {
@@ -49,13 +33,13 @@ class CalendarController extends Controller
                     'description' => $wo->description,
                     'date' => Carbon::parse($wo->created_at)->format('Y-m-d'),
                     'status' => $wo->status ?? 'Pending',
-                    'created_at' => $wo->created_at, // Tambahkan ini
-                    'updated_at' => $wo->updated_at, // Tambahkan ini
+                    'created_at' => $wo->created_at,
+                    'updated_at' => $wo->updated_at,
                 ];
             });
 
-        // Combine and group by date
-        $events = $serviceRequests->concat($workOrders)
+        // Group by date
+        $events = $workOrders
             ->groupBy('date')
             ->map(function ($items) {
                 return $items->sortBy('type');
