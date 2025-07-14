@@ -93,6 +93,30 @@
                 </div>
             </div>
 
+            <!-- Date Filter Form -->
+            <form method="GET" action="" class="flex flex-col md:flex-row items-center gap-4 bg-white rounded-lg shadow p-4 mb-6 mt-4">
+                <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ request('start_date', $startDate ?? '') }}" class="rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full md:w-48">
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ request('end_date', $endDate ?? '') }}" class="rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full md:w-48">
+                    </div>
+                </div>
+                <div class="flex gap-2 items-end">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
+                        <i class="fas fa-filter mr-2"></i> Filter
+                    </button>
+                    @if(request('start_date') || request('end_date'))
+                        <a href="{{ route('calendar.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md flex items-center">
+                            <i class="fas fa-times mr-2"></i> Reset
+                        </a>
+                    @endif
+                </div>
+            </form>
+
             @php
                 use Carbon\Carbon;
                 \Carbon\Carbon::setLocale('id');

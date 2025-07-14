@@ -9,11 +9,26 @@ use Illuminate\Http\Request;
 
 class CalendarController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        // Date filter
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
         // Get service requests and work orders
-        $serviceRequests = ServiceRequest::select('id', 'description', 'created_at', 'status')
-            ->get()
+        $serviceRequestsQuery = ServiceRequest::select('id', 'description', 'created_at', 'status');
+        $workOrdersQuery = WorkOrder::select('id', 'description', 'created_at', 'type', 'status');
+
+        if ($startDate) {
+            $serviceRequestsQuery->whereDate('created_at', '>=', $startDate);
+            $workOrdersQuery->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $serviceRequestsQuery->whereDate('created_at', '<=', $endDate);
+            $workOrdersQuery->whereDate('created_at', '<=', $endDate);
+        }
+
+        $serviceRequests = $serviceRequestsQuery->get()
             ->map(function ($sr) {
                 return [
                     'id' => $sr->id,
@@ -24,8 +39,7 @@ class CalendarController extends Controller
                 ];
             });
 
-        $workOrders = WorkOrder::select('id', 'description', 'created_at', 'type')
-            ->get()
+        $workOrders = $workOrdersQuery->get()
             ->map(function ($wo) {
                 return [
                     'id' => $wo->id,
@@ -44,6 +58,6 @@ class CalendarController extends Controller
             })
             ->sortKeys();
 
-        return view('calendar.index', compact('events'));
+        return view('calendar.index', compact('events', 'startDate', 'endDate'));
     }
 }
