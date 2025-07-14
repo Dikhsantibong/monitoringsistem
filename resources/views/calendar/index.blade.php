@@ -129,10 +129,27 @@
                             <div class="text-xs font-bold text-blue-700 mb-1 text-right">{{ Carbon::parse($date)->day }}</div>
                             <div class="flex-1 flex flex-col gap-1">
                                 @forelse($dateEvents as $event)
-                                    <div class="event-item-mini text-[10px] px-1 py-0.5 rounded {{ Str::contains($event['type'], 'Work Order') ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                                        <span class="font-semibold">{{ $event['type'] }}</span>
-                                        <span class="block">{{ $event['description'] }}</span>
-                                        <span class="block text-[9px] text-gray-500">{{ $event['status'] }}</span>
+                                    @php
+                                        $status = strtolower($event['status']);
+                                        $border = $status === 'open' ? 'border-2 border-yellow-400' : ($status === 'closed' ? 'border-2 border-green-500' : 'border');
+                                        $bg = $status === 'open' ? 'bg-yellow-50' : ($status === 'closed' ? 'bg-green-50' : 'bg-gray-100');
+                                    @endphp
+                                    <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-xs">#{{ $event['id'] }}</span>
+                                            <span class="text-[10px] px-1 py-0.5 rounded {{ $status === 'open' ? 'bg-yellow-300 text-yellow-900' : ($status === 'closed' ? 'bg-green-300 text-green-900' : 'bg-gray-300 text-gray-800') }}">{{ ucfirst($event['status']) }}</span>
+                                        </div>
+                                        <div class="font-semibold text-[11px]">{{ $event['type'] }}</div>
+                                        <div class="text-[10px] text-gray-700 event-desc">{{ $event['description'] }}</div>
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            <span class="text-[9px] text-gray-500">Unit: <b>{{ $event['power_plant_name'] }} </b></span>
+                                            <span class="text-[9px] text-gray-500">Type: <b>{{ $event['type'] }}</b></span>
+                                            <span class="text-[9px] text-gray-500">Priority: <b>{{ $event['priority'] ?? '-' }}</b></span>
+                                        </div>
+                                        <div class="flex flex-col text-[9px] text-gray-500">
+                                            <span>Start: {{ isset($event['schedule_start']) ? \Carbon\Carbon::parse($event['schedule_start'])->format('d/m/Y') : '-' }}</span>
+                                            <span>Finish: {{ isset($event['schedule_finish']) ? \Carbon\Carbon::parse($event['schedule_finish'])->format('d/m/Y') : '-' }}</span>
+                                        </div>
                                     </div>
                                 @empty
                                     <span class="text-gray-300 text-[10px] italic">-</span>

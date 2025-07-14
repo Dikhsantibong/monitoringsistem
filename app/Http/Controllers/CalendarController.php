@@ -20,7 +20,8 @@ class CalendarController extends Controller
         $lastDay = (clone $firstDay)->endOfMonth();
 
         // Get work orders only untuk bulan & tahun yang dipilih
-        $workOrdersQuery = WorkOrder::select('id', 'description', 'created_at', 'type', 'status')
+        $workOrdersQuery = WorkOrder::with('powerPlant')
+            ->select('id', 'description', 'created_at', 'type', 'status', 'priority', 'schedule_start', 'schedule_finish', 'power_plant_id', 'unit_source')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month);
         $workOrders = $workOrdersQuery->get()
@@ -31,6 +32,11 @@ class CalendarController extends Controller
                     'description' => $wo->description,
                     'date' => Carbon::parse($wo->created_at)->format('Y-m-d'),
                     'status' => $wo->status ?? 'Pending',
+                    'priority' => $wo->priority ?? null,
+                    'schedule_start' => $wo->schedule_start ?? null,
+                    'schedule_finish' => $wo->schedule_finish ?? null,
+                    'unit_source' => $wo->unit_source ?? null,
+                    'power_plant_name' => $wo->powerPlant->name ?? '-',
                     'created_at' => $wo->created_at,
                     'updated_at' => $wo->updated_at,
                 ];

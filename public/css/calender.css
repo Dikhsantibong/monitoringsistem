@@ -220,7 +220,6 @@
         background: #f8fafc;
         border-radius: 6px;
         min-height: 60px;
-        height: 80px;
         box-shadow: none;
         border: 1px solid #e2e8f0;
         display: flex;
@@ -228,12 +227,28 @@
         font-size: 11px;
         padding: 2px;
     }
+    .date-card-mini .flex-1 {
+    }
     .event-item-mini {
         padding: 1px 2px;
-        margin-bottom: 1px;
+        margin-bottom: 2px;
         border-radius: 3px;
         font-size: 10px;
         line-height: 1.2;
+        word-break: break-word;
+        /* white-space: nowrap; */
+        /* overflow: hidden; */
+        /* text-overflow: ellipsis; */
+    }
+    .event-item-mini .truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .event-item-mini .event-desc {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
         word-break: break-word;
     }
     .event-item-mini.bg-blue-100 {
