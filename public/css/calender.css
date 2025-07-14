@@ -1,0 +1,234 @@
+    /* Navbar styles */
+    .nav-background {
+        background-color: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+    }
+
+    .nav-link {
+        color: white !important;
+    }
+
+    .nav-link:hover {
+        color: #A8D600 !important;
+    }
+
+    .nav-link-mobile {
+        display: block;
+        padding: 0.5rem;
+        color: white;
+        font-weight: 500;
+        transition: color 0.3s;
+        text-decoration: none;
+    }
+
+    .nav-link-mobile:hover {
+        color: #FFCC00;
+    }
+
+    .login-button {
+        background-color: #4299e1;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .login-button:hover {
+        background-color: #3182ce;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Style untuk login di mobile menu */
+    .login-mobile {
+        background-color: #4299e1;
+        color: white !important;
+        border-radius: 0.375rem;
+        margin: 0.5rem 1rem;
+    }
+
+    .login-mobile:hover {
+        background-color: #3182ce !important;
+        border-left-color: transparent !important;
+    }
+
+
+    /* Calendar styles */
+    .calendar-container {
+        padding: 20px;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 0 20px;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .date-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #e2e8f0;
+    }
+
+    .date-header {
+        background: #0095B7;
+        color: white;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .date-content {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        max-height: 400px;
+    }
+
+    .event-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        background: #f8fafc;
+        border-left: 4px solid;
+        transition: transform 0.2s;
+    }
+
+    .event-item:hover {
+        transform: translateX(5px);
+    }
+
+    .event-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .event-item.service-request {
+        border-left-color: #0095B7;
+    }
+
+    .event-item.work-order {
+        border-left-color: #A8D600;
+    }
+
+    .event-type {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .event-description {
+        color: #4a5568;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .event-status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-open {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .status-closed {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .event-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .no-events {
+        text-align: center;
+        padding: 30px;
+        color: #64748b;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin: 20px;
+    }
+
+    /* Calendar Navigation */
+    .calendar-nav {
+        display: flex;
+        gap: 10px;
+    }
+
+    .calendar-nav-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        background: #0095B7;
+        color: white;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .calendar-nav-btn:hover {
+        background: #007a94;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .calendar-container {
+            padding: 10px;
+        }
+
+        .calendar-grid {
+            grid-template-columns: 1fr;
+            padding: 10px;
+        }
+
+        .date-card {
+            margin-bottom: 15px;
+        }
+
+        .calendar-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            padding: 0 10px;
+        }
+    }
+
