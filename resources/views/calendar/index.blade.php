@@ -86,7 +86,7 @@
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-lg">{{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}</span>
                     <form method="GET" action="" class="inline-block">
-                        <select name="year" onchange="this.form.submit()" class="border rounded px-2 py-1 text-sm">
+                        <select name="year" onchange="this.form.submit()" class="border rounded px-2 py-1 text-sm w-20">
                             @for($y = $year-5; $y <= $year+5; $y++)
                                 <option value="{{ $y }}" @if($y == $year) selected @endif>{{ $y }}</option>
                             @endfor
@@ -101,17 +101,6 @@
 
             <div class="calendar-header">
                 <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
-                <div class="calendar-nav">
-                    <button class="calendar-nav-btn">
-                        <i class="fas fa-chevron-left"></i> Sebelumnya
-                    </button>
-                    <button class="calendar-nav-btn">
-                        Hari Ini
-                    </button>
-                    <button class="calendar-nav-btn">
-                        Berikutnya <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
             </div>
 
             {{-- Hapus form filter tanggal dan ganti dengan navigasi di atas --}}
