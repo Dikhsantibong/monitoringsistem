@@ -694,7 +694,6 @@
             const tahun = filterTahun.value.trim();
 
             loadingSpinner.classList.add('active');
-            searchResults.innerHTML = ''; // Clear previous results
 
             // Build query string, only include non-empty values
             const params = new URLSearchParams();
@@ -709,58 +708,44 @@
             fetch(`${baseUrl}/notulen/search?${params.toString()}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                credentials: 'same-origin'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
             })
             .then(async response => {
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Response format tidak valid');
+                    const text = await response.text();
+                    console.error('Invalid response:', text);
+                    throw new Error(`Response tidak valid (${response.status}): ${text.substring(0, 100)}`);
                 }
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.message || `Error ${response.status}: Gagal memuat data`);
-                }
-
                 return response.json();
             })
             .then(data => {
-                if (!data || typeof data !== 'object') {
-                    throw new Error('Format data tidak valid');
-                }
-
                 if (data.success) {
-                    if (data.html) {
-                        searchResults.innerHTML = data.html;
-                    } else {
-                        searchResults.innerHTML = '<div class="text-center py-4">Tidak ada hasil yang ditemukan</div>';
-                    }
+                    searchResults.innerHTML = data.html;
                 } else {
-                    throw new Error(data.message || 'Gagal memuat hasil pencarian');
+                    throw new Error(data.message || 'Gagal memuat data');
                 }
+                loadingSpinner.classList.remove('active');
             })
             .catch(error => {
-                console.error('Search error:', error);
-                searchResults.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                        <strong class="font-bold">Error!</strong>
-                        <span class="block sm:inline">${error.message || 'Terjadi kesalahan saat mencari data'}</span>
-                    </div>`;
-            })
-            .finally(() => {
+                console.error('Error:', error);
                 loadingSpinner.classList.remove('active');
+                searchResults.innerHTML = `
+                    <div class="text-center text-red-600 py-4">
+                        Terjadi kesalahan saat mencari data: ${error.message}
+                        <br>
+                        <small class="text-gray-500">Jika masalah berlanjut, silakan refresh halaman</small>
+                    </div>
+                `;
             });
         }
 
-        // Debounced search with proper timing
+        // Debounced search
         function debounceSearch() {
-            if (searchTimeout) {
-                clearTimeout(searchTimeout);
-            }
-            searchTimeout = setTimeout(performSearch, 500); // Increased to 500ms for better performance
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 300);
         }
 
         // Add event listeners for search and filters
@@ -781,58 +766,50 @@
         // Function to handle pagination
         window.changePage = function(url) {
             loadingSpinner.classList.add('active');
-            searchResults.innerHTML = ''; // Clear current results
 
-            fetch(url, {
+            // Add base URL if needed
+            const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+            // If URL is relative (starts with /), add baseUrl
+            const fullUrl = url.startsWith('/') ? `${baseUrl}${url}` : url;
+
+            fetch(fullUrl, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                credentials: 'same-origin'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
             })
             .then(async response => {
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Response format tidak valid');
+                    const text = await response.text();
+                    console.error('Invalid response:', text);
+                    throw new Error(`Response tidak valid (${response.status}): ${text.substring(0, 100)}`);
                 }
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.message || `Error ${response.status}: Gagal memuat halaman`);
-                }
-
                 return response.json();
             })
             .then(data => {
-                if (!data || typeof data !== 'object') {
-                    throw new Error('Format data tidak valid');
-                }
-
                 if (data.success) {
-                    if (data.html) {
-                        searchResults.innerHTML = data.html;
-                        // Update URL without page reload
-                        window.history.pushState({}, '', url);
-                        // Scroll to top of results
-                        searchResults.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        searchResults.innerHTML = '<div class="text-center py-4">Tidak ada hasil yang ditemukan</div>';
-                    }
+                    searchResults.innerHTML = data.html;
+                    // Update URL without page reload
+                    window.history.pushState({}, '', fullUrl);
                 } else {
-                    throw new Error(data.message || 'Gagal memuat halaman');
+                    throw new Error(data.message || 'Gagal memuat data');
                 }
+                loadingSpinner.classList.remove('active');
+                // Scroll to top of results
+                searchResults.scrollIntoView({ behavior: 'smooth' });
             })
             .catch(error => {
-                console.error('Pagination error:', error);
-                searchResults.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                        <strong class="font-bold">Error!</strong>
-                        <span class="block sm:inline">${error.message || 'Terjadi kesalahan saat memuat halaman'}</span>
-                    </div>`;
-            })
-            .finally(() => {
+                console.error('Error:', error);
                 loadingSpinner.classList.remove('active');
+                searchResults.innerHTML = `
+                    <div class="text-center text-red-600 py-4">
+                        Terjadi kesalahan saat memuat halaman: ${error.message}
+                        <br>
+                        <small class="text-gray-500">Jika masalah berlanjut, silakan refresh halaman</small>
+                    </div>
+                `;
             });
         };
 
@@ -1132,3 +1109,5 @@
     updateFormatPreview();
 </script>
 @endsection
+
+
