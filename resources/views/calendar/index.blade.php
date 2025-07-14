@@ -147,7 +147,6 @@
                                         </div>
                                         <div class="event-footer">
                                             <span>ID: {{ $event['id'] }}</span>
-                                            <span>{{ \Carbon\Carbon::parse($date)->format('H:i') }}</span>
                                         </div>
                                     </div>
                                 @endforeach

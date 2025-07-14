@@ -455,7 +455,7 @@
             </div>
 
             <div class="signature-section">
-                <div>Surabaya, {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}
+                <div>Kendari, {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}
                 </div>
                 <div style="margin-top: 1rem;">Notulis</div>
                 <div class="signature-line"></div>

@@ -36,6 +36,8 @@ class CalendarController extends Controller
                     'description' => $sr->description,
                     'date' => Carbon::parse($sr->created_at)->format('Y-m-d'),
                     'status' => $sr->status,
+                    'created_at' => $sr->created_at, // Tambahkan ini
+                    'updated_at' => $sr->updated_at, // Tambahkan ini   
                 ];
             });
 
@@ -47,6 +49,8 @@ class CalendarController extends Controller
                     'description' => $wo->description,
                     'date' => Carbon::parse($wo->created_at)->format('Y-m-d'),
                     'status' => $wo->status ?? 'Pending',
+                    'created_at' => $wo->created_at, // Tambahkan ini
+                    'updated_at' => $wo->updated_at, // Tambahkan ini
                 ];
             });
 
