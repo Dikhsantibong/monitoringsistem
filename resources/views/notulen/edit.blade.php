@@ -600,7 +600,7 @@
         `;
         document.getElementById('documentationList').appendChild(loadingDiv);
 
-        fetch('{{ url("/public/api/notulen-documentation") }}', {
+        fetch('{{ url("/api/notulen-documentation") }}', {
             method: 'POST',
             body: formData,
             headers: {
@@ -686,7 +686,7 @@
         `;
         document.getElementById('fileList').appendChild(loadingDiv);
 
-        fetch('{{ url("/public/api/notulen-file") }}', {
+        fetch('{{ url("/api/notulen-file") }}', {
             method: 'POST',
             body: formData,
             headers: {
