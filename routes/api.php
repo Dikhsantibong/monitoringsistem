@@ -17,11 +17,17 @@ use App\Http\Controllers\Api\NotulenFileController;
 
 // Documentation upload endpoint
 Route::group(['prefix' => 'public/api'], function () {
+    // Existing routes
     Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store'])
         ->name('api.notulen.documentation.store');
     Route::post('/notulen-documentation/{id}', [NotulenDocumentationController::class, 'store'])
         ->name('api.notulen.documentation.store');
 
+    // New routes for edit mode
+    Route::post('/notulen/{notulen}/documentation', [NotulenDocumentationController::class, 'storeForExisting'])
+        ->name('api.notulen.documentation.store-existing');
+    Route::post('/notulen/{notulen}/file', [NotulenFileController::class, 'storeForExisting'])
+        ->name('api.notulen.file.store-existing');
 
     // Late attendance routes
     Route::post('/late-attendance/{notulen}', [NotulenAttendanceController::class, 'storeLateAttendance'])

@@ -604,8 +604,8 @@
         `;
         document.getElementById('documentationList').appendChild(loadingDiv);
 
-        // Use dynamic base URL
-        fetch(`${baseUrl}/api/notulen-documentation`, {
+        // Use new endpoint for existing notulen
+        fetch(`${baseUrl}/api/notulen/{{ $notulen->id }}/documentation`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -696,8 +696,8 @@
         `;
         document.getElementById('fileList').appendChild(loadingDiv);
 
-        // Use dynamic base URL
-        fetch(`${baseUrl}/api/notulen-file`, {
+        // Use new endpoint for existing notulen
+        fetch(`${baseUrl}/api/notulen/{{ $notulen->id }}/file`, {
             method: 'POST',
             body: formData,
             headers: {
