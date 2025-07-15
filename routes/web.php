@@ -763,7 +763,7 @@ Route::get('/notulen/late-attendance/{notulen}', [App\Http\Controllers\Api\Notul
 Route::post('public/api/notulen/{notulen}/late-attendance', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'storeLateAttendance'])->name('notulen.late-attendance.store');
 Route::get('/notulen-documentation/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'showDocumentationForm'])->name('notulen.documentation.form');
 Route::post('public/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
-Route::post('/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
+Route::post('/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
 Route::post('public/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
 Route::delete('public/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
 Route::delete('/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'destroy']);
