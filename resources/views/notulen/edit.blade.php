@@ -563,7 +563,8 @@
     // Dokumentasi Foto - Hapus
     function deleteDocumentation(id, btn) {
         if (!confirm('Yakin ingin menghapus dokumentasi ini?')) return;
-        fetch('/public/api/notulen-documentation/' + id, {
+        const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+        fetch(`${baseUrl}/api/notulen-documentation/${id}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -588,6 +589,9 @@
         formData.append('caption', document.getElementById('documentationCaption').value);
         formData.append('notulen_id', '{{ $notulen->id }}');
 
+        // Get base URL dynamically
+        const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+
         // Show loading state
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'col-md-3 mb-3 documentation-item loading';
@@ -600,8 +604,8 @@
         `;
         document.getElementById('documentationList').appendChild(loadingDiv);
 
-        // Use absolute path for API endpoint
-        fetch('{{ url("/public/api/notulen-documentation") }}', {
+        // Use dynamic base URL
+        fetch(`${baseUrl}/api/notulen-documentation`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -651,7 +655,8 @@
     // Dokumentasi File - Hapus
     function deleteFile(id, btn) {
         if (!confirm('Yakin ingin menghapus file ini?')) return;
-        fetch('/public/api/notulen-file/' + id, {
+        const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+        fetch(`${baseUrl}/api/notulen-file/${id}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -676,6 +681,9 @@
         formData.append('caption', document.getElementById('fileCaption').value);
         formData.append('notulen_id', '{{ $notulen->id }}');
 
+        // Get base URL dynamically
+        const baseUrl = window.location.pathname.includes('/public') ? '/public' : '';
+
         // Show loading state
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'col-md-3 mb-3 file-item loading';
@@ -688,8 +696,8 @@
         `;
         document.getElementById('fileList').appendChild(loadingDiv);
 
-        // Use absolute path for API endpoint
-        fetch('{{ url("/public/api/notulen-file") }}', {
+        // Use dynamic base URL
+        fetch(`${baseUrl}/api/notulen-file`, {
             method: 'POST',
             body: formData,
             headers: {
