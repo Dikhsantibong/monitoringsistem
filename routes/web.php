@@ -60,10 +60,10 @@ Route::prefix('api')->group(function () {
     Route::post('/notulen-draft/save', [NotulenDraftController::class, 'save']);
     Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load']);
     Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete']);
-    Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store']);
-    Route::delete('/notulen-documentation/{id}', [NotulenDocumentationController::class, 'destroy']);
-    Route::post('/notulen-file', [NotulenFileController::class, 'store']);
-    Route::delete('/notulen-file/{id}', [NotulenFileController::class, 'destroy']);
+    Route::post('public/api/notulen-documentation', [NotulenDocumentationController::class, 'store']);
+    Route::delete('public/api/notulen-documentation/{id}', [NotulenDocumentationController::class, 'destroy']);
+    Route::post('public/api/notulen-file', [NotulenFileController::class, 'store']);
+    Route::delete('public/api/notulen-file/{id}', [NotulenFileController::class, 'destroy']);
 });
 
 
