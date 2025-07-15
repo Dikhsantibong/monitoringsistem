@@ -762,10 +762,10 @@ Route::post('/api/notulen-attendance', [App\Http\Controllers\Api\NotulenAttendan
 Route::get('/notulen/late-attendance/{notulen}', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'showLateAttendanceForm'])->name('notulen.late-attendance.form');
 Route::post('public/api/notulen/{notulen}/late-attendance', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'storeLateAttendance'])->name('notulen.late-attendance.store');
 Route::get('/notulen-documentation/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'showDocumentationForm'])->name('notulen.documentation.form');
-Route::post('public/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
+Route::post('/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
 Route::post('/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
-Route::post('public/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
-Route::delete('public/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
+Route::post('/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
+Route::delete('/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
 Route::delete('/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'destroy']);
 Route::delete('/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
 
