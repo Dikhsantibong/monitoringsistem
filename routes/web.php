@@ -48,23 +48,8 @@ Route::post('/notulen', [NotulenController::class, 'store'])->name('notulen.stor
 Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notulen.show');
 Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
 Route::get('/notulen/{notulen}/download-zip', [NotulenController::class, 'downloadZip'])->name('notulen.download-zip');
-
-// API routes for notulen documentation and files
-Route::middleware(['auth'])->group(function () {
-    // Documentation routes
-    Route::post('/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store']);
-    Route::delete('/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'destroy']);
-    
-    // File routes
-    Route::post('/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store']);
-    Route::delete('/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
-});
-
-// Public API routes for notulen documentation and files
-Route::prefix('public/api')->group(function () {
-    Route::post('/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store']);
-    Route::post('/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store']);
-});
+Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
+Route::post('/public/notulen-documentation/{id}/edit', [NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
 
 // Remove incorrect draft routes
 // Route::get('/notulen/drafts', [NotulenDraftController::class, 'save'])->name('notulen.drafts');
