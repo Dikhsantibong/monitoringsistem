@@ -176,6 +176,16 @@
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Jika ada redirectAfterLogin di sessionStorage, tampilkan pesan (opsional)
+        if (sessionStorage.getItem('redirectAfterLogin')) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Login Diperlukan',
+                text: 'Silakan login untuk melanjutkan ke halaman yang Anda tuju.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }
         @if(session('error'))
             Swal.fire({
                 icon: 'error',

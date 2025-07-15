@@ -526,29 +526,44 @@
                         <div class="no-documentation">Tidak ada dokumentasi rapat</div>
                     @endforelse
                 </div>
-                @if($notulen->files && count($notulen->files))
-                <div class="mt-8">
-                    <h3 class="documentation-title" style="margin-bottom:1rem;">Lampiran Dokumen (Word/PDF)</h3>
-                    <div class="documentation-grid">
-                        @foreach($notulen->files as $file)
-                            <div class="documentation-item" style="text-align:center;">
-                                <div style="font-size:2rem;">
-                                    @if(Str::contains($file->file_type, 'pdf')) 📰
-                                    @elseif(Str::contains($file->file_type, 'word')) 📝
-                                    @else 📄 @endif
-                                </div>
-                                <a href="{{ asset('storage/' . $file->file_path) }}" target="_blank" style="font-weight:bold;display:block;">{{ $file->file_name }}</a>
-                                @if($file->caption)
-                                    <div class="documentation-caption">{{ $file->caption }}</div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
             </div>
         </div>
     </div>
+
+    <!-- Lampiran Dokumen pada halaman terpisah -->
+    @if($notulen->files && count($notulen->files))
+    <div class="page-break">
+        <div class="notulen-container">
+            <div class="documentation-section">
+                <div class="documentation-header">
+                    <div class="documentation-title">LAMPIRAN DOKUMEN (Word/PDF)</div>
+                    <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
+                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                </div>
+                <ul style="list-style:none;padding:0;">
+                    @foreach($notulen->files as $file)
+                        <li style="margin-bottom: 1.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:1rem;">
+                            <span style="font-size:1.5rem;vertical-align:middle;">
+                                @if(Str::contains($file->file_type, 'pdf')) 📰
+                                @elseif(Str::contains($file->file_type, 'word')) 📝
+                                @else 📄 @endif
+                            </span>
+                            <span style="font-weight:bold; font-size:1.1rem; margin-left:8px;vertical-align:middle;">{{ $file->file_name }}</span>
+                            @if($file->caption)
+                                <div style="font-size:0.95rem; color:#666; margin-left:2.2rem; margin-top:2px;">{{ $file->caption }}</div>
+                            @endif
+                            <div style="margin-left:2.2rem; margin-top:6px;">
+                                <a href="{{ asset('storage/' . $file->file_path) }}" download style="color:#0095B7;text-decoration:underline;">
+                                    Download dokumen
+                                </a>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
 
     @if($notulen->revision_count > 0)
     <div class="page-break">
@@ -599,18 +614,18 @@
     @endif
 
     <!-- Print Button -->
-    <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button">
+    <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button" style="padding: 6px 16px; font-size: 0.95rem;">
         <i class="fas fa-print"></i>
         Cetak Notulen
     </button>
     <!-- Download ZIP Button -->
-    <a href="{{ route('notulen.download-zip', $notulen->id) }}" class="print-button" style="right: 220px; background-color: #38b6ff;">
+    <a href="{{ route('notulen.download-zip', $notulen->id) }}" class="print-button" style="right: 220px; background-color: #38b6ff; padding: 6px 16px; font-size: 0.95rem;">
         <i class="fas fa-file-archive"></i>
         Download ZIP (Notulen + Lampiran)
     </a>
 
     <!-- Back Button -->
-    <a href="{{ route('notulen.form') }}" class="back-button">
+    <a href="{{ route('notulen.form') }}" class="back-button" style="padding: 6px 16px; font-size: 0.95rem;">
         <i class="fas fa-arrow-left"></i>
         Kembali
     </a>

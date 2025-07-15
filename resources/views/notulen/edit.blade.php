@@ -333,6 +333,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cek login di awal halaman (server-side tetap harus pakai middleware, ini hanya pelengkap UX)
+        @if(!Auth::check())
+            // Simpan URL edit ke sessionStorage
+            sessionStorage.setItem('redirectAfterLogin', window.location.href);
+            // Redirect ke login
+            window.location.href = '{{ route('login') }}';
+        @endif
+    });
+
     // Initialize CKEditor for rich text fields with proper configuration
     const editorConfig = {
             removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
@@ -450,6 +460,27 @@
 
     // Form submission handling
     document.getElementById('editNotulenForm').addEventListener('submit', function(e) {
+        // Cek login sebelum submit (client-side UX, server tetap harus pakai middleware)
+        @if(!Auth::check())
+            e.preventDefault();
+            sessionStorage.setItem('redirectAfterLogin', window.location.href);
+            window.location.href = '{{ route('login') }}';
+            return;
+        @endif
+
+        // Validasi waktu selesai > waktu mulai
+        const waktuMulai = document.getElementById('waktu_mulai').value;
+        const waktuSelesai = document.getElementById('waktu_selesai').value;
+        if (waktuMulai && waktuSelesai && waktuSelesai <= waktuMulai) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Waktu',
+                text: 'Waktu selesai harus setelah waktu mulai!'
+            });
+            return;
+        }
+
         e.preventDefault();
 
         // Clean HTML content before submission

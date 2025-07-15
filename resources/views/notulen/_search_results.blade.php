@@ -17,10 +17,14 @@
                 <div class="text-sm text-gray-600 mb-2">
                     <i class="fas fa-calendar mr-2"></i>{{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}
                 </div>
-                <div class="mt-4">
+                <div class="mt-4 d-flex justify-content-between gap-2">
                     <a href="{{ route('notulen.show', $item->id) }}"
                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200 text-sm">
                         Lihat Detail
+                    </a>
+                    <a href="{{ route('notulen.edit', $item->id) }}"
+                       class="inline-block bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 transition-colors duration-200 text-sm ml-2">
+                        <i class="fas fa-edit"></i> Edit
                     </a>
                 </div>
             </div>

@@ -1653,10 +1653,6 @@
                                     <i class="fas fa-eye"></i>
                                     Lihat
                                 </a>
-                                <a href="{{ route('notulen.edit', $notulen->id) }}" class="btn-edit text-center">
-                                    <i class="fas fa-edit"></i>
-                                    Edit
-                                </a>
                                 @if($notulen->revision_count > 0)
                                 <span class="badge bg-info" title="Telah direvisi {{ $notulen->revision_count }} kali">
                                     <i class="fas fa-history"></i> {{ $notulen->revision_count }}

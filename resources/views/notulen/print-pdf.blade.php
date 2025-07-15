@@ -379,25 +379,43 @@
                         <div class="no-documentation">Tidak ada dokumentasi rapat</div>
                     @endforelse
                 </div>
-                @if($notulen->files && count($notulen->files))
-                <div style="margin-top:2rem;">
-                    <div class="documentation-title" style="margin-bottom:1rem;">Lampiran Dokumen (Word/PDF)</div>
-                    <ol style="font-size:11pt;">
-                    @foreach($notulen->files as $file)
-                        <li style="margin-bottom:8px;">
-                            <span style="font-weight:bold;">{{ $file->file_name }}</span>
-                            <span style="margin-left:10px;">
-                                <a href="{{ request()->getSchemeAndHttpHost() . '/storage/' . $file->file_path }}" target="_blank" style="color:#007bff;text-decoration:underline;">Download</a>
-                                <br>
-                                <span style="font-size:10pt;word-break:break-all;">{{ request()->getSchemeAndHttpHost() . '/storage/' . $file->file_path }}</span>
-                            </span>
-                        </li>
-                    @endforeach
-                    </ol>
-                </div>
-                @endif
             </div>
         </div>
     </div>
+
+    <!-- Lampiran Dokumen pada halaman terpisah -->
+    @if($notulen->files && count($notulen->files))
+    <div class="page-break">
+        <div class="notulen-container">
+            <div class="documentation-section">
+                <div class="documentation-header">
+                    <div class="documentation-title">LAMPIRAN DOKUMEN (Word/PDF)</div>
+                    <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
+                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                </div>
+                <ul style="list-style:none;padding:0;">
+                    @foreach($notulen->files as $file)
+                        <li style="margin-bottom: 1.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:1rem;">
+                            <span style="font-size:1.5rem;vertical-align:middle;">
+                                @if(Str::contains($file->file_type, 'pdf')) 📰
+                                @elseif(Str::contains($file->file_type, 'word')) 📝
+                                @else 📄 @endif
+                            </span>
+                            <span style="font-weight:bold; font-size:1.1rem; margin-left:8px;vertical-align:middle;">{{ $file->file_name }}</span>
+                            @if($file->caption)
+                                <div style="font-size:0.95rem; color:#666; margin-left:2.2rem; margin-top:2px;">{{ $file->caption }}</div>
+                            @endif
+                            <div style="margin-left:2.2rem; margin-top:6px;">
+                                <a href="{{ request()->getSchemeAndHttpHost() . '/storage/' . $file->file_path }}" style="color:#0095B7;text-decoration:underline;">
+                                    Download dokumen
+                                </a>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
 </body>
 </html>
