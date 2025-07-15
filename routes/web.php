@@ -60,10 +60,6 @@ Route::prefix('api')->group(function () {
     Route::post('/notulen-draft/save', [NotulenDraftController::class, 'save']);
     Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load']);
     Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete']);
-    Route::post('public/api/notulen-documentation', [NotulenDocumentationController::class, 'store']);
-    Route::delete('public/api/notulen-documentation/{id}', [NotulenDocumentationController::class, 'destroy']);
-    Route::post('public/api/notulen-file', [NotulenFileController::class, 'store']);
-    Route::delete('public/api/notulen-file/{id}', [NotulenFileController::class, 'destroy']);
 });
 
 
@@ -769,19 +765,19 @@ Route::get('/notulen-documentation/{tempNotulenId}', [App\Http\Controllers\Api\N
 Route::post('public/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
 Route::post('public/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
 Route::post('public/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
+
 Route::delete('public/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
 Route::delete('/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'destroy']);
 Route::delete('/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
 
 Route::post('/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
-Route::post('/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
+Route::post('/public/api/notulen-documentation/{id}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
 Route::post('/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
 Route::delete('/api/notulen-file/{id}', [App\Http\Controllers\Api\NotulenFileController::class, 'destroy']);
 
 Route::post('/api/notulen-draft/save', [App\Http\Controllers\Api\NotulenDraftController::class, 'save'])->name('notulen.draft.save');
 Route::get('/api/notulen-draft/load/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'load'])->name('notulen.draft.load');
 Route::delete('/api/notulen-draft/delete/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'delete'])->name('notulen.draft.delete');
-
 Route::post('/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
 
 

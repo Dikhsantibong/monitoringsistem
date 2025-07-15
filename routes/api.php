@@ -19,6 +19,9 @@ use App\Http\Controllers\Api\NotulenFileController;
 Route::group(['prefix' => 'public/api'], function () {
     Route::post('/notulen-documentation', [NotulenDocumentationController::class, 'store'])
         ->name('api.notulen.documentation.store');
+    Route::post('/notulen-documentation/{id}', [NotulenDocumentationController::class, 'store'])
+        ->name('api.notulen.documentation.store');
+
 
     // Late attendance routes
     Route::post('/late-attendance/{notulen}', [NotulenAttendanceController::class, 'storeLateAttendance'])
