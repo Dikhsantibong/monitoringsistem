@@ -600,13 +600,15 @@
         `;
         document.getElementById('documentationList').appendChild(loadingDiv);
 
-        fetch('{{ url("/api/notulen-documentation") }}', {
+        // Use absolute path for API endpoint
+        fetch('{{ url("/public/api/notulen-documentation") }}', {
             method: 'POST',
             body: formData,
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json'
-            }
+            },
+            credentials: 'same-origin'
         })
         .then(response => response.json())
         .then(data => {
@@ -686,13 +688,15 @@
         `;
         document.getElementById('fileList').appendChild(loadingDiv);
 
-        fetch('{{ url("/api/notulen-file") }}', {
+        // Use absolute path for API endpoint
+        fetch('{{ url("/public/api/notulen-file") }}', {
             method: 'POST',
             body: formData,
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json'
-            }
+            },
+            credentials: 'same-origin'
         })
         .then(response => response.json())
         .then(data => {
