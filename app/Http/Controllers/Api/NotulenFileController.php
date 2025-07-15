@@ -83,4 +83,12 @@ class NotulenFileController extends Controller
             ], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        $file = NotulenFile::findOrFail($id);
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($file->file_path);
+        $file->delete();
+        return response()->json(['success' => true, 'message' => 'File berhasil dihapus']);
+    }
 } 

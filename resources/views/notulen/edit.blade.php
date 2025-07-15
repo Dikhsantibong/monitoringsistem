@@ -206,6 +206,75 @@
                         </div>
                     </form>
 
+                    <!-- Dokumentasi Foto -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-white py-2"><strong>Dokumentasi Foto</strong></div>
+                        <div class="card-body">
+                            <div class="row" id="documentationList">
+                                @foreach($notulen->documentations as $doc)
+                                    <div class="col-md-3 mb-3 documentation-item" data-id="{{ $doc->id }}">
+                                        <div class="card h-100">
+                                            <img src="{{ asset('storage/' . $doc->image_path) }}" class="card-img-top" style="height:150px;object-fit:cover;">
+                                            <div class="card-body p-2">
+                                                <div class="small text-muted mb-1">{{ $doc->caption }}</div>
+                                                <button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteDocumentation({{ $doc->id }}, this)">Hapus</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <form id="documentationForm" enctype="multipart/form-data" class="mt-3">
+                                <div class="form-row align-items-end">
+                                    <div class="col">
+                                        <input type="file" name="image" accept="image/*" class="form-control" required>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" name="caption" class="form-control" placeholder="Keterangan">
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-success">Upload Foto</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Dokumentasi File -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-white py-2"><strong>Dokumentasi File (Word/PDF)</strong></div>
+                        <div class="card-body">
+                            <div class="row" id="fileList">
+                                @foreach($notulen->files as $file)
+                                    <div class="col-md-3 mb-3 file-item" data-id="{{ $file->id }}">
+                                        <div class="card h-100 text-center p-2">
+                                            <div style="font-size:2rem;">
+                                                @if(Str::contains($file->file_type, 'pdf')) 📰
+                                                @elseif(Str::contains($file->file_type, 'word')) 📝
+                                                @else 📄 @endif
+                                            </div>
+                                            <div class="font-weight-bold small">{{ $file->file_name }}</div>
+                                            <div class="small text-muted mb-1">{{ $file->caption }}</div>
+                                            <button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteFile({{ $file->id }}, this)">Hapus</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <form id="fileForm" enctype="multipart/form-data" class="mt-3">
+                                <div class="form-row align-items-end">
+                                    <div class="col">
+                                        <input type="file" name="file" accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" class="form-control" required>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" name="caption" class="form-control" placeholder="Keterangan">
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-primary">Upload File</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                     <!-- QR Code untuk Absensi Terlambat -->
                     <div class="card mt-4 shadow-sm">
                         <div class="card-header bg-white py-3">
@@ -465,6 +534,108 @@
             confirmButtonText: 'Ok'
         });
     @endif
+
+    // Dokumentasi Foto - Hapus
+    function deleteDocumentation(id, btn) {
+        if (!confirm('Yakin ingin menghapus dokumentasi ini?')) return;
+        fetch('/public/api/notulen-documentation/' + id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                btn.closest('.documentation-item').remove();
+            } else {
+                alert(data.message || 'Gagal menghapus dokumentasi');
+            }
+        });
+    }
+
+    // Dokumentasi Foto - Upload
+    document.getElementById('documentationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.append('temp_notulen_id', '{{ $notulen->id }}');
+        fetch('/public/api/notulen-documentation', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Tambahkan ke list
+                const list = document.getElementById('documentationList');
+                const item = document.createElement('div');
+                item.className = 'col-md-3 mb-3 documentation-item';
+                item.innerHTML = `<div class="card h-100"><img src="${data.documentation.image_url}" class="card-img-top" style="height:150px;object-fit:cover;"><div class="card-body p-2"><div class="small text-muted mb-1">${data.documentation.caption||''}</div><button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteDocumentation(${data.documentation.id}, this)">Hapus</button></div></div>`;
+                list.appendChild(item);
+                this.reset();
+            } else {
+                alert(data.message || 'Gagal upload dokumentasi');
+            }
+        });
+    });
+
+    // Dokumentasi File - Hapus
+    function deleteFile(id, btn) {
+        if (!confirm('Yakin ingin menghapus file ini?')) return;
+        fetch('/public/api/notulen-file/' + id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                btn.closest('.file-item').remove();
+            } else {
+                alert(data.message || 'Gagal menghapus file');
+            }
+        });
+    }
+
+    // Dokumentasi File - Upload
+    document.getElementById('fileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.append('temp_notulen_id', '{{ $notulen->id }}');
+        fetch('/public/api/notulen-file', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Tambahkan ke list
+                const list = document.getElementById('fileList');
+                const file = data.file;
+                let icon = '📄';
+                if (file.file_type && file.file_type.includes('pdf')) icon = '📰';
+                else if (file.file_type && file.file_type.includes('word')) icon = '📝';
+                const item = document.createElement('div');
+                item.className = 'col-md-3 mb-3 file-item';
+                item.innerHTML = `<div class="card h-100 text-center p-2"><div style="font-size:2rem;">${icon}</div><div class="font-weight-bold small">${file.file_name}</div><div class="small text-muted mb-1">${file.caption||''}</div><button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteFile(${file.id}, this)">Hapus</button></div>`;
+                list.appendChild(item);
+                this.reset();
+            } else {
+                alert(data.message || 'Gagal upload file');
+            }
+        });
+    });
 </script>
 
 @push('styles')

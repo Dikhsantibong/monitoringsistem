@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\DraftNotulen;
+use ZipArchive;
+use Illuminate\Support\Facades\Storage;
 
 class NotulenController extends Controller
 {
@@ -263,6 +265,49 @@ class NotulenController extends Controller
 
         // Return the PDF for download with a meaningful filename
         return $pdf->stream("notulen-{$notulen->format_nomor}.pdf");
+    }
+
+    public function downloadZip(Notulen $notulen)
+    {
+        // Generate PDF notulen
+        $notulen->load(['documentations', 'attendances', 'files']);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('notulen.print-pdf', compact('notulen'));
+        $pdfPath = storage_path('app/public/notulen-pdf/notulen-' . $notulen->id . '.pdf');
+        if (!file_exists(dirname($pdfPath))) {
+            mkdir(dirname($pdfPath), 0777, true);
+        }
+        $pdf->save($pdfPath);
+
+        // Siapkan file lampiran
+        $files = [];
+        foreach ($notulen->files as $file) {
+            $realPath = Storage::disk('public')->path($file->file_path);
+            if (file_exists($realPath)) {
+                $files[] = [
+                    'path' => $realPath,
+                    'name' => 'lampiran/' . $file->file_name
+                ];
+            }
+        }
+
+        // Buat ZIP
+        $zipName = 'notulen-' . $notulen->id . '-with-lampiran.zip';
+        $zipPath = storage_path('app/public/notulen-pdf/' . $zipName);
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            // Tambahkan PDF utama
+            $zip->addFile($pdfPath, 'notulen.pdf');
+            // Tambahkan file lampiran
+            foreach ($files as $f) {
+                $zip->addFile($f['path'], $f['name']);
+            }
+            $zip->close();
+        } else {
+            return back()->with('error', 'Gagal membuat ZIP');
+        }
+
+        // Kirim ZIP ke user
+        return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
     /**

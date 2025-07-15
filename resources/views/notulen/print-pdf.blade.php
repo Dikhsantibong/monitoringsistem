@@ -382,21 +382,18 @@
                 @if($notulen->files && count($notulen->files))
                 <div style="margin-top:2rem;">
                     <div class="documentation-title" style="margin-bottom:1rem;">Lampiran Dokumen (Word/PDF)</div>
-                    <div class="documentation-grid">
-                        @foreach($notulen->files as $file)
-                            <div class="documentation-item" style="text-align:center;">
-                                <div style="font-size:2rem;">
-                                    @if(Str::contains($file->file_type, 'pdf')) 📰
-                                    @elseif(Str::contains($file->file_type, 'word')) 📝
-                                    @else 📄 @endif
-                                </div>
-                                <div style="font-weight:bold;word-break:break-all;">{{ $file->file_name }}</div>
-                                @if($file->caption)
-                                    <div class="documentation-caption">{{ $file->caption }}</div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
+                    <ol style="font-size:11pt;">
+                    @foreach($notulen->files as $file)
+                        <li style="margin-bottom:8px;">
+                            <span style="font-weight:bold;">{{ $file->file_name }}</span>
+                            <span style="margin-left:10px;">
+                                <a href="{{ request()->getSchemeAndHttpHost() . '/storage/' . $file->file_path }}" target="_blank" style="color:#007bff;text-decoration:underline;">Download</a>
+                                <br>
+                                <span style="font-size:10pt;word-break:break-all;">{{ request()->getSchemeAndHttpHost() . '/storage/' . $file->file_path }}</span>
+                            </span>
+                        </li>
+                    @endforeach
+                    </ol>
                 </div>
                 @endif
             </div>

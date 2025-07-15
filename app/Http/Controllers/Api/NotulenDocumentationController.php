@@ -85,4 +85,12 @@ class NotulenDocumentationController extends Controller
             ], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        $doc = \App\Models\NotulenDocumentation::findOrFail($id);
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($doc->image_path);
+        $doc->delete();
+        return response()->json(['success' => true, 'message' => 'Dokumentasi berhasil dihapus']);
+    }
 }

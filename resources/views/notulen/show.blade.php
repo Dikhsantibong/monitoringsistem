@@ -603,6 +603,11 @@
         <i class="fas fa-print"></i>
         Cetak Notulen
     </button>
+    <!-- Download ZIP Button -->
+    <a href="{{ route('notulen.download-zip', $notulen->id) }}" class="print-button" style="right: 220px; background-color: #38b6ff;">
+        <i class="fas fa-file-archive"></i>
+        Download ZIP (Notulen + Lampiran)
+    </a>
 
     <!-- Back Button -->
     <a href="{{ route('notulen.form') }}" class="back-button">
