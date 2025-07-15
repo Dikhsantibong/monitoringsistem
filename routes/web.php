@@ -788,5 +788,5 @@ Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'
 
 // Add new routes for edit mode
 Route::post('/api/notulen/{notulen}/documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'storeForExisting'])->name('notulen.documentation.store-existing');
-Route::post('public/api/notulen/{notulen}/file', [App\Http\Controllers\Api\NotulenFileController::class, 'storeForExisting'])->name('notulen.file.store-existing');
+Route::post('/api/notulen/{notulen}/file', [App\Http\Controllers\Api\NotulenFileController::class, 'storeForExisting'])->name('notulen.file.store-existing');
 
