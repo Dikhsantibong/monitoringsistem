@@ -223,19 +223,16 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <form id="documentationForm" enctype="multipart/form-data" class="mt-3">
-                                <div class="form-row align-items-end">
+                            <div class="mt-3">
+                                <div class="form-row">
                                     <div class="col">
-                                        <input type="file" name="image" accept="image/*" class="form-control" required>
+                                        <input type="file" name="image" accept="image/*" class="form-control" onchange="uploadDocumentation(this)">
                                     </div>
                                     <div class="col">
-                                        <input type="text" name="caption" class="form-control" placeholder="Keterangan">
-                                    </div>
-                                    <div class="col-auto">
-                                        <button type="submit" class="btn btn-success">Upload Foto</button>
+                                        <input type="text" id="documentationCaption" class="form-control" placeholder="Keterangan foto">
                                     </div>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
@@ -259,19 +256,16 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <form id="fileForm" enctype="multipart/form-data" class="mt-3">
-                                <div class="form-row align-items-end">
+                            <div class="mt-3">
+                                <div class="form-row">
                                     <div class="col">
-                                        <input type="file" name="file" accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" class="form-control" required>
+                                        <input type="file" name="file" accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" class="form-control" onchange="uploadFile(this)">
                                     </div>
                                     <div class="col">
-                                        <input type="text" name="caption" class="form-control" placeholder="Keterangan">
-                                    </div>
-                                    <div class="col-auto">
-                                        <button type="submit" class="btn btn-primary">Upload File</button>
+                                        <input type="text" id="fileCaption" class="form-control" placeholder="Keterangan file">
                                     </div>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
@@ -586,12 +580,27 @@
         });
     }
 
-    // Dokumentasi Foto - Upload
-    document.getElementById('documentationForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        formData.append('temp_notulen_id', '{{ $notulen->id }}');
-        fetch('/public/api/notulen-documentation', {
+    function uploadDocumentation(input) {
+        if (!input.files || !input.files[0]) return;
+
+        const formData = new FormData();
+        formData.append('image', input.files[0]);
+        formData.append('caption', document.getElementById('documentationCaption').value);
+        formData.append('notulen_id', '{{ $notulen->id }}');
+
+        // Show loading state
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'col-md-3 mb-3 documentation-item loading';
+        loadingDiv.innerHTML = `
+            <div class="card h-100 text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        `;
+        document.getElementById('documentationList').appendChild(loadingDiv);
+
+        fetch('{{ url("/public/api/notulen-documentation") }}', {
             method: 'POST',
             body: formData,
             headers: {
@@ -599,21 +608,43 @@
                 'Accept': 'application/json'
             }
         })
-        .then(res => res.json())
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Tambahkan ke list
-                const list = document.getElementById('documentationList');
+                // Remove loading state
+                loadingDiv.remove();
+                
+                // Add documentation to the list
                 const item = document.createElement('div');
                 item.className = 'col-md-3 mb-3 documentation-item';
-                item.innerHTML = `<div class="card h-100"><img src="${data.documentation.image_url}" class="card-img-top" style="height:150px;object-fit:cover;"><div class="card-body p-2"><div class="small text-muted mb-1">${data.documentation.caption||''}</div><button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteDocumentation(${data.documentation.id}, this)">Hapus</button></div></div>`;
-                list.appendChild(item);
-                this.reset();
+                item.setAttribute('data-id', data.documentation.id);
+                item.innerHTML = `
+                    <div class="card h-100">
+                        <img src="${data.documentation.image_url}" class="card-img-top" style="height:150px;object-fit:cover;">
+                        <div class="card-body p-2">
+                            <div class="small text-muted mb-1">${data.documentation.caption || ''}</div>
+                            <button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteDocumentation(${data.documentation.id}, this)">Hapus</button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('documentationList').appendChild(item);
+                
+                // Clear inputs
+                input.value = '';
+                document.getElementById('documentationCaption').value = '';
             } else {
-                alert(data.message || 'Gagal upload dokumentasi');
+                throw new Error(data.message || 'Gagal upload dokumentasi');
             }
+        })
+        .catch(error => {
+            loadingDiv.remove();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message
+            });
         });
-    });
+    }
 
     // Dokumentasi File - Hapus
     function deleteFile(id, btn) {
@@ -635,12 +666,27 @@
         });
     }
 
-    // Dokumentasi File - Upload
-    document.getElementById('fileForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        formData.append('temp_notulen_id', '{{ $notulen->id }}');
-        fetch('/public/api/notulen-file', {
+    function uploadFile(input) {
+        if (!input.files || !input.files[0]) return;
+
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+        formData.append('caption', document.getElementById('fileCaption').value);
+        formData.append('notulen_id', '{{ $notulen->id }}');
+
+        // Show loading state
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'col-md-3 mb-3 file-item loading';
+        loadingDiv.innerHTML = `
+            <div class="card h-100 text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        `;
+        document.getElementById('fileList').appendChild(loadingDiv);
+
+        fetch('{{ url("/public/api/notulen-file") }}', {
             method: 'POST',
             body: formData,
             headers: {
@@ -648,25 +694,47 @@
                 'Accept': 'application/json'
             }
         })
-        .then(res => res.json())
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Tambahkan ke list
-                const list = document.getElementById('fileList');
-                const file = data.file;
-                let icon = '📄';
-                if (file.file_type && file.file_type.includes('pdf')) icon = '📰';
-                else if (file.file_type && file.file_type.includes('word')) icon = '📝';
+                // Remove loading state
+                loadingDiv.remove();
+                
+                // Add file to the list
                 const item = document.createElement('div');
                 item.className = 'col-md-3 mb-3 file-item';
-                item.innerHTML = `<div class="card h-100 text-center p-2"><div style="font-size:2rem;">${icon}</div><div class="font-weight-bold small">${file.file_name}</div><div class="small text-muted mb-1">${file.caption||''}</div><button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteFile(${file.id}, this)">Hapus</button></div>`;
-                list.appendChild(item);
-                this.reset();
+                item.setAttribute('data-id', data.file.id);
+                
+                let icon = '📄';
+                if (data.file.file_type && data.file.file_type.includes('pdf')) icon = '📰';
+                else if (data.file.file_type && data.file.file_type.includes('word')) icon = '📝';
+                
+                item.innerHTML = `
+                    <div class="card h-100 text-center p-2">
+                        <div style="font-size:2rem;">${icon}</div>
+                        <div class="font-weight-bold small">${data.file.file_name}</div>
+                        <div class="small text-muted mb-1">${data.file.caption || ''}</div>
+                        <button type="button" class="btn btn-danger btn-sm btn-block" onclick="deleteFile(${data.file.id}, this)">Hapus</button>
+                    </div>
+                `;
+                document.getElementById('fileList').appendChild(item);
+                
+                // Clear inputs
+                input.value = '';
+                document.getElementById('fileCaption').value = '';
             } else {
-                alert(data.message || 'Gagal upload file');
+                throw new Error(data.message || 'Gagal upload file');
             }
+        })
+        .catch(error => {
+            loadingDiv.remove();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message
+            });
         });
-    });
+    }
 </script>
 
 @push('styles')
