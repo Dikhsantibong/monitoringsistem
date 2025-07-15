@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\PasswordVerificationController;
 use App\Http\Controllers\NotulenController;
 use App\Http\Controllers\Api\NotulenAttendanceController;
 use App\Http\Controllers\Api\NotulenDraftController;
+use App\Http\Controllers\Api\NotulenFileController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -760,9 +761,13 @@ Route::get('/notulen/late-attendance/{notulen}', [App\Http\Controllers\Api\Notul
 Route::post('public/api/notulen/{notulen}/late-attendance', [App\Http\Controllers\Api\NotulenAttendanceController::class, 'storeLateAttendance'])->name('notulen.late-attendance.store');
 Route::get('/notulen-documentation/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'showDocumentationForm'])->name('notulen.documentation.form');
 Route::post('public/api/notulen-documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'store'])->name('notulen.documentation.store');
+Route::post('public/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
 
 Route::post('/api/notulen-draft/save', [App\Http\Controllers\Api\NotulenDraftController::class, 'save'])->name('notulen.draft.save');
 Route::get('/api/notulen-draft/load/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'load'])->name('notulen.draft.load');
 Route::delete('/api/notulen-draft/delete/{tempNotulenId}', [App\Http\Controllers\Api\NotulenDraftController::class, 'delete'])->name('notulen.draft.delete');
+
+Route::post('/api/notulen-file', [App\Http\Controllers\Api\NotulenFileController::class, 'store'])->name('notulen.file.store');
+
 
 Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');

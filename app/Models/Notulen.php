@@ -157,6 +157,11 @@ class Notulen extends Model
         return $this->hasMany(NotulenDocumentation::class);
     }
 
+    public function files()
+    {
+        return $this->hasMany(NotulenFile::class);
+    }
+
     /**
      * Get the revisions for this notulen
      */

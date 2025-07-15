@@ -330,12 +330,18 @@
                     <button type="button" onclick="showDocumentationUpload()" class="bg-green-500 text-white px-4 py-2 rounded">
                         Upload Dokumentasi
                     </button>
+                    <button type="button" onclick="showFileUpload()" class="bg-purple-600 text-white px-4 py-2 rounded ml-2">
+                        Upload Dokumen (Word/PDF)
+                    </button>
                 </span>
             </div>
             </div>
 
         <div id="documentationList" class="documentation-list mt-4">
             <!-- Documentation items will be dynamically added here -->
+        </div>
+        <div id="fileList" class="documentation-list mt-4">
+            <!-- File items will be dynamically added here -->
         </div>
 
         <div id="attendanceList" class="attendance-list">
@@ -452,6 +458,25 @@
         <div class="flex justify-end gap-2">
             <button type="button" onclick="closeDocumentationUpload()" class="bg-gray-500 text-white px-4 py-2 rounded">Tutup</button>
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Upload</button>
+        </div>
+    </form>
+</div>
+
+<!-- File Upload Modal -->
+<div class="qr-code-container" id="fileFormContainer" style="display: none;">
+    <h2 class="text-xl font-bold mb-4">Upload Dokumen (Word/PDF)</h2>
+    <form id="fileForm" enctype="multipart/form-data">
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Pilih File (Word/PDF)</label>
+            <input type="file" name="file" accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" class="border rounded w-full py-2 px-3" required>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Keterangan</label>
+            <textarea name="caption" class="border rounded w-full py-2 px-3" rows="3"></textarea>
+        </div>
+        <div class="flex justify-end gap-2">
+            <button type="button" onclick="closeFileUpload()" class="bg-gray-500 text-white px-4 py-2 rounded">Tutup</button>
+            <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Upload</button>
         </div>
     </form>
 </div>
@@ -756,6 +781,120 @@
             <img src="${imageUrl}" alt="Documentation" onerror="this.src='${baseUrl}/images/error-image.jpg'">
             <div class="caption">${documentation.caption || ''}</div>
             <input type="hidden" name="documentations[]" value='${JSON.stringify(documentation)}'>
+        `;
+        list.appendChild(item);
+    }
+
+    function showFileUpload() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('fileFormContainer');
+        overlay.style.display = 'block';
+        container.style.display = 'block';
+    }
+
+    function closeFileUpload() {
+        const overlay = document.getElementById('overlay');
+        const container = document.getElementById('fileFormContainer');
+        overlay.style.display = 'none';
+        container.style.display = 'none';
+    }
+
+    document.getElementById('fileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append('temp_notulen_id', tempNotulenId);
+
+        // Show loading state
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = 'Mengupload...';
+
+        // Create error message container if it doesn't exist
+        let errorContainer = document.getElementById('fileErrorContainer');
+        if (!errorContainer) {
+            errorContainer = document.createElement('div');
+            errorContainer.id = 'fileErrorContainer';
+            errorContainer.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4';
+            this.appendChild(errorContainer);
+        }
+        errorContainer.style.display = 'none';
+
+        // Get CSRF token
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+        if (!token) {
+            errorContainer.innerHTML = 'CSRF token tidak ditemukan';
+            errorContainer.style.display = 'block';
+            return;
+        }
+
+        // Use absolute path for API endpoint
+        fetch('{{ url("/public/api/notulen-file") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Invalid response:', text);
+                throw new Error(`Response tidak valid (${response.status}): ${text.substring(0, 100)}`);
+            }
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || `Error ${response.status}: ${data.error || 'Unknown error'}`);
+            }
+            return data;
+        })
+        .then(data => {
+            if (data.success) {
+                // Add file to the list
+                addFileToList(data.file);
+                // Close the form
+                closeFileUpload();
+                // Clear the form and error message
+                this.reset();
+                errorContainer.style.display = 'none';
+            } else {
+                throw new Error(data.message || 'Gagal menyimpan file');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorContainer.innerHTML = `
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline">${error.message}</span>
+                ${error.stack ? `<pre class="mt-2 text-sm overflow-auto">${error.stack}</pre>` : ''}
+            `;
+            errorContainer.style.display = 'block';
+        })
+        .finally(() => {
+            // Reset button state
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+        });
+    });
+
+    function addFileToList(file) {
+        const list = document.getElementById('fileList');
+        const item = document.createElement('div');
+        item.className = 'documentation-item';
+        // Icon based on file type
+        let icon = '📄';
+        if (file.file_type && file.file_type.includes('pdf')) icon = '📰';
+        else if (file.file_type && file.file_type.includes('word')) icon = '📝';
+        item.innerHTML = `
+            <div style="font-size:2rem;text-align:center;">${icon}</div>
+            <a href="${file.file_url}" target="_blank" style="font-weight:bold;display:block;">${file.file_name}</a>
+            <div class="caption">${file.caption || ''}</div>
+            <input type="hidden" name="files[]" value='${JSON.stringify(file)}'>
         `;
         list.appendChild(item);
     }

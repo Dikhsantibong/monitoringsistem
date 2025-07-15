@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('styles')
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
 <style>
     .form-input {
         background-image: url('{{ asset('background/bg.png') }}');
@@ -8,56 +9,6 @@
         border-radius: 0.375rem;
         padding: 0.5rem;
         width: 100%;
-    }
-
-    /* Navbar Styles */
-    .nav-background {
-        background-color: #1a1a1a;
-        background-image: linear-gradient(to right, #1a1a1a, #2d3748);
-    }
-
-    .nav-link {
-        color: white !important;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        transition: all 0.2s ease;
-        position: relative;
-    }
-
-    .nav-link:hover {
-        color: #A8D600 !important;
-    }
-
-    .nav-link::after {
-        content: '';
-        position: absolute;
-        width: 0;
-        height: 2px;
-        bottom: -2px;
-        left: 0;
-        background-color: #0095B7;
-        transition: width 0.3s ease;
-    }
-
-    .nav-link:hover::after {
-        width: 100%;
-    }
-
-    .login-button {
-        background-color: #4299e1;
-        color: white;
-        padding: 0.5rem 1.5rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .login-button:hover {
-        background-color: #3182ce;
-        transform: translateY(-1px);
     }
 
     /* Form Styles */
@@ -140,32 +91,6 @@
 
     .btn-create:hover {
         background-color: #007a94;
-    }
-
-    /* Mobile menu styles */
-    @media (max-width: 768px) {
-        .mobile-menu {
-            display: none;
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            background-color: #1a1a1a;
-            padding: 1rem;
-            z-index: 50;
-        }
-
-        .mobile-menu.show {
-            display: block;
-        }
-
-        .nav-link-mobile {
-            display: block;
-            color: white;
-            padding: 0.75rem 1rem;
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
     }
 
     /* New styles for improved UI */
@@ -407,66 +332,7 @@
 
 @section('content')
 <!-- Navbar -->
-<nav class="fixed w-full top-0 z-50">
-    <div class="nav-background shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <a href="#" class="flex items-center">
-                        <img src="{{ asset('logo/navlogo.png') }}" alt="Logo" class="h-8">
-                    </a>
-                </div>
-
-                <!-- Menu Desktop -->
-                <div class="hidden md:flex items-center">
-                    <ul class="flex space-x-8">
-                        <li><a href="/" class="nav-link">Home</a></li>
-                        <li><a href="/#map" class="nav-link">Peta Pembangkit</a></li>
-                        <li><a href="/#live-data" class="nav-link">Live Data Unit Operasional</a></li>
-                        <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
-                        <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link" target="_blank">Bid. Pemeliharaan</a></li>
-                        <li><a href="{{ route('notulen.form') }}" class="nav-link">Notulen</a></li>
-
-                        <!-- Login button -->
-                        <li>
-                            <a href="{{ route('login') }}" class="login-button">
-                                <i class="fas fa-user mr-2"></i> Login
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Menu Mobile -->
-                <div class="md:hidden">
-                    <button id="mobile-menu-button" class="text-white">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile Menu -->
-            <div id="mobile-menu" class="hidden md:hidden pb-4">
-                <ul class="space-y-4">
-                    <li><a href="/" class="nav-link-mobile">Home</a></li>
-                    <li><a href="/#map" class="nav-link-mobile">Peta Pembangkit</a></li>
-                    <li><a href="/#live-data" class="nav-link-mobile">Live Data Unit Operasional</a></li>
-                    <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link-mobile">Dashboard Pemantauan</a></li>
-                    <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link-mobile" target="_blank">Bid. Pemeliharaan</a></li>
-                    <li><a href="{{ route('notulen.form') }}" class="nav-link-mobile">Notulen</a></li>
-                    <!-- Login button in mobile -->
-                    <li>
-                        <a href="{{ route('login') }}" class="nav-link-mobile login-mobile">
-                            <i class="fas fa-user mr-2"></i> Login
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</nav>
+@include('components.navbar')
 
 <div class="page-container mt-20">
     <div class="tabs">

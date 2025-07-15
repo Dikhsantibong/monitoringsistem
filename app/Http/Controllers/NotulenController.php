@@ -191,9 +191,18 @@ class NotulenController extends Controller
                         ->update(['notulen_id' => $notulen->id]);
                 }
 
+                // Get cached file data
+                $cachedFiles = Cache::get("notulen_files_{$validated['temp_notulen_id']}", []);
+                if (!empty($cachedFiles)) {
+                    $fileSessionIds = collect($cachedFiles)->pluck('session_id')->toArray();
+                    \App\Models\NotulenFile::whereIn('session_id', $fileSessionIds)
+                        ->update(['notulen_id' => $notulen->id]);
+                }
+
                 // Clear the temporary data from cache
                 Cache::forget("notulen_attendances_{$validated['temp_notulen_id']}");
                 Cache::forget("notulen_documentations_{$validated['temp_notulen_id']}");
+                Cache::forget("notulen_files_{$validated['temp_notulen_id']}");
 
                 // Delete the draft after successful creation
                 if ($draft = DraftNotulen::where('temp_notulen_id', $validated['temp_notulen_id'])->first()) {
@@ -236,15 +245,15 @@ class NotulenController extends Controller
 
     public function show(Notulen $notulen)
     {
-        // Load the documentations relationship
-        $notulen->load(['documentations', 'attendances']);
+        // Load the documentations, files, and attendances relationship
+        $notulen->load(['documentations', 'attendances', 'files']);
         return view('notulen.show', compact('notulen'));
     }
 
     public function printPdf(Notulen $notulen)
     {
-        // Load the documentations relationship
-        $notulen->load(['documentations', 'attendances']);
+        // Load the documentations, files, and attendances relationship
+        $notulen->load(['documentations', 'attendances', 'files']);
 
         // Generate PDF using DomPDF
         $pdf = Pdf::loadView('notulen.print-pdf', compact('notulen'));

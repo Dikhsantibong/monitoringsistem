@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\NotulenAttendanceController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\OtherDiscussionController;
 use App\Http\Controllers\Api\NotulenDraftController;
+use App\Http\Controllers\Api\NotulenFileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,10 @@ Route::group(['prefix' => 'public/api'], function () {
     Route::post('/notulen-draft/save', [NotulenDraftController::class, 'save'])->name('api.notulen-draft.save');
     Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load'])->name('api.notulen-draft.load');
     Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete'])->name('api.notulen-draft.delete');
+
+    // Notulen File Routes
+    Route::post('/notulen-file', [NotulenFileController::class, 'store'])
+        ->name('api.notulen.file.store');
 });
 
 // Existing routes

@@ -379,6 +379,26 @@
                         <div class="no-documentation">Tidak ada dokumentasi rapat</div>
                     @endforelse
                 </div>
+                @if($notulen->files && count($notulen->files))
+                <div style="margin-top:2rem;">
+                    <div class="documentation-title" style="margin-bottom:1rem;">Lampiran Dokumen (Word/PDF)</div>
+                    <div class="documentation-grid">
+                        @foreach($notulen->files as $file)
+                            <div class="documentation-item" style="text-align:center;">
+                                <div style="font-size:2rem;">
+                                    @if(Str::contains($file->file_type, 'pdf')) 📰
+                                    @elseif(Str::contains($file->file_type, 'word')) 📝
+                                    @else 📄 @endif
+                                </div>
+                                <div style="font-weight:bold;word-break:break-all;">{{ $file->file_name }}</div>
+                                @if($file->caption)
+                                    <div class="documentation-caption">{{ $file->caption }}</div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>
