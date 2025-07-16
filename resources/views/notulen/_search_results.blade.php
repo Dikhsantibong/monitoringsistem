@@ -3,9 +3,10 @@
         Tidak ada notulen yang ditemukan
     </div>
 @else
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach($notulen as $item)
-            <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach($notulen as $item)
+        <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
+            <div class="flex-grow">
                 <div class="text-sm text-gray-500 mb-2">{{ $item->format_nomor }}</div>
                 <h3 class="font-semibold text-lg mb-2 text-gray-800">{{ $item->agenda }}</h3>
                 <div class="text-sm text-gray-600 mb-2">
@@ -17,19 +18,21 @@
                 <div class="text-sm text-gray-600 mb-2">
                     <i class="fas fa-calendar mr-2"></i>{{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}
                 </div>
-                <div class="mt-4 flex justify-between items-center">
-                    <a href="{{ route('notulen.show', $item->id) }}"
-                       class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200 text-sm">
-                        Lihat Detail
-                    </a>
-                    <a href="{{ route('notulen.edit', $item->id) }}"
-                       class="inline-block bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 transition-colors duration-200 text-sm ml-2">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                </div>
             </div>
-        @endforeach
-    </div>
+            <div class="mt-auto flex justify-between items-center pt-4">
+                <a href="{{ route('notulen.show', $item->id) }}"
+                   class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200 text-sm">
+                    Lihat Detail
+                </a>
+                <a href="{{ route('notulen.edit', $item->id) }}"
+                   class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 transition-colors duration-200 text-sm">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+            </div>
+        </div>
+    @endforeach
+</div>
+
 
     @if($notulen->hasPages())
         <div class="mt-8">
