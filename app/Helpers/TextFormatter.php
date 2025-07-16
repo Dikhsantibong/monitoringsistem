@@ -195,34 +195,69 @@ class TextFormatter
         }
 
         // Remove all HTML tags except line breaks
-        $text = strip_tags($html, '<br>');
+        $text = strip_tags($html, '<br><p><ul><ol><li>');
         
         // Convert <br> tags to newlines
         $text = str_replace(['<br>', '<br/>', '<br />'], "\n", $text);
         
-        // Split into lines
-        $lines = explode("\n", $text);
+        // Process the HTML content
+        $dom = new \DOMDocument();
+        @$dom->loadHTML(mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $xpath = new \DOMXPath($dom);
+
         $result = [];
-        
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (empty($line)) continue;
-            
-            // Check if line is a list item
-            if (preg_match('/^[0-9]+\.\s/', $line)) {
-                // Numbered list
-                $result[] = $line;
-            } elseif (preg_match('/^[a-z]\.\s/', $line)) {
-                // Alphabetical list
-                $result[] = $line;
-            } elseif (preg_match('/^[\-\•]\s/', $line)) {
-                // Bullet list
-                $result[] = $line;
-            } else {
-                $result[] = $line;
+        $currentMainPoint = '';
+
+        // Process each element
+        foreach ($xpath->query('//p|//ul|//ol') as $element) {
+            if ($element->nodeName === 'p') {
+                $content = trim($element->textContent);
+                if (empty($content)) continue;
+
+                // Check if it's a main point (number followed by dot)
+                if (preg_match('/^[0-9]+\.\s/', $content)) {
+                    if (!empty($currentMainPoint)) {
+                        $result[] = $currentMainPoint;
+                        $currentMainPoint = '';
+                    }
+                    $result[] = "\n" . $content;
+                } else {
+                    $result[] = $content;
+                }
+            } elseif ($element->nodeName === 'ul' || $element->nodeName === 'ol') {
+                $items = [];
+                $prefix = $element->nodeName === 'ol' ? 
+                    (strpos($element->getAttribute('style'), 'lower-alpha') !== false ? 'a.' : '1.') : 
+                    '-';
+                
+                foreach ($xpath->query('.//li', $element) as $i => $li) {
+                    $content = trim($li->textContent);
+                    if (empty($content)) continue;
+
+                    if ($prefix === 'a.') {
+                        $marker = chr(97 + $i) . '.';
+                    } elseif ($prefix === '1.') {
+                        $marker = ($i + 1) . '.';
+                    } else {
+                        $marker = '-';
+                    }
+                    
+                    $items[] = $marker . ' ' . $content;
+                }
+                
+                if (!empty($items)) {
+                    $result[] = "\n" . implode("\n", $items);
+                }
             }
         }
+
+        // Clean up the result
+        $text = implode("\n", $result);
         
-        return implode("\n", $result);
+        // Normalize line endings and remove extra whitespace
+        $text = preg_replace('/\n{3,}/', "\n\n", $text);
+        $text = trim($text);
+
+        return $text;
     }
 } 

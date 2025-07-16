@@ -117,8 +117,19 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="pembahasan" class="form-label font-weight-bold">Pembahasan</label>
+                                    <div class="alert alert-info mb-2">
+                                        <small>
+                                            <i class="fas fa-info-circle"></i> Panduan Format Penulisan:
+                                            <ul class="mb-0 pl-3">
+                                                <li>Untuk poin utama, gunakan angka diikuti titik (contoh: "1.", "2.", "3.")</li>
+                                                <li>Untuk sub-poin, gunakan huruf kecil diikuti titik (contoh: "a.", "b.", "c.")</li>
+                                                <li>Untuk daftar tanpa urutan, gunakan tanda strip (-)</li>
+                                                <li>Tekan Enter dua kali untuk membuat paragraf baru</li>
+                                            </ul>
+                                        </small>
+                                    </div>
                                     <textarea class="form-control @error('pembahasan') is-invalid @enderror"
-                                        id="pembahasan" name="pembahasan" style="min-height: 300px;" required>{!! old('pembahasan', $notulen->pembahasan) !!}</textarea>
+                                        id="pembahasan" name="pembahasan" style="min-height: 300px; font-family: monospace;" required>{!! old('pembahasan', $notulen->pembahasan) !!}</textarea>
                                     @error('pembahasan')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -131,7 +142,7 @@
                                 <div class="form-group">
                                     <label for="tindak_lanjut" class="form-label font-weight-bold">Tindak Lanjut</label>
                                     <textarea class="form-control @error('tindak_lanjut') is-invalid @enderror"
-                                        id="tindak_lanjut" name="tindak_lanjut" style="min-height: 300px;" required>{!! old('tindak_lanjut', $notulen->tindak_lanjut) !!}</textarea>
+                                        id="tindak_lanjut" name="tindak_lanjut" style="min-height: 300px; font-family: monospace;" required>{!! old('tindak_lanjut', $notulen->tindak_lanjut) !!}</textarea>
                                     @error('tindak_lanjut')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -527,41 +538,24 @@
         container.style.display = 'none';
     }
 
+    // Function to handle tab key in textareas
+    function handleTabKey(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+        }
+    }
+
+    // Add tab handling to textareas
+    document.getElementById('pembahasan').addEventListener('keydown', handleTabKey);
+    document.getElementById('tindak_lanjut').addEventListener('keydown', handleTabKey);
+
     // Form submission handling
     document.getElementById('editNotulenForm').addEventListener('submit', function(e) {
-        // Cek login sebelum submit (client-side UX, server tetap harus pakai middleware)
-        @if(!Auth::check())
-            e.preventDefault();
-            sessionStorage.setItem('redirectAfterLogin', window.location.href);
-            window.location.href = '{{ route('login') }}';
-            return;
-        @endif
-
-        // Validasi waktu selesai > waktu mulai
-        const waktuMulai = document.getElementById('waktu_mulai').value;
-        const waktuSelesai = document.getElementById('waktu_selesai').value;
-        if (waktuMulai && waktuSelesai && waktuSelesai <= waktuMulai) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'Validasi Waktu',
-                text: 'Waktu selesai harus setelah waktu mulai!'
-            });
-            return;
-        }
-
         e.preventDefault();
-
-        // Clean text content before submission
-        if (pembahasan) {
-            const cleanedPembahasan = cleanText(pembahasan.getData());
-            document.querySelector('#pembahasan').value = cleanedPembahasan;
-        }
-
-        if (tindakLanjut) {
-            const cleanedTindakLanjut = cleanText(tindakLanjut.getData());
-            document.querySelector('#tindak_lanjut').value = cleanedTindakLanjut;
-        }
 
         // Basic form validation
         const requiredFields = [
@@ -591,27 +585,8 @@
             return;
         }
 
-        Swal.fire({
-            title: 'Menyimpan Perubahan',
-            text: 'Apakah Anda yakin ingin menyimpan perubahan?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Simpan!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Menyimpan...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-                this.submit();
-            }
-        });
+        // Continue with form submission
+        this.submit();
     });
 
     // Show success message if exists in session
@@ -922,6 +897,23 @@
     /* Remove scrollbars */
     .ck.ck-editor__editable:not(.ck-editor__nested-editable) {
         overflow: visible !important;
+    }
+
+    /* Textarea formatting styles */
+    textarea#pembahasan,
+    textarea#tindak_lanjut {
+        white-space: pre-wrap;
+        tab-size: 4;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .alert ul {
+        margin-top: 0.5rem;
+    }
+
+    .alert ul li {
+        margin-bottom: 0.25rem;
     }
 </style>
 @endpush

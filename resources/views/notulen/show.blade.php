@@ -112,7 +112,7 @@
         .content-body ul, 
         .content-body ol {
             margin: 0.5rem 0;
-            padding-left: 2rem;
+            
         }
 
         .content-body li {
