@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Helpers\TextFormatter;
 
 class Notulen extends Model
 {
@@ -37,95 +38,26 @@ class Notulen extends Model
         'waktu_selesai' => 'datetime'
     ];
 
-    protected function cleanHtml($html)
-    {
-        if (!$html) return $html;
-
-        // Remove style, class, and id attributes
-        $html = preg_replace('/\s+style\s*=\s*"[^"]*"/', '', $html);
-        $html = preg_replace('/\s+class\s*=\s*"[^"]*"/', '', $html);
-        $html = preg_replace('/\s+id\s*=\s*"[^"]*"/', '', $html);
-
-        // Preserve line breaks and spacing
-        $html = str_replace(['<br>', '<br/>', '<br />'], "\n", $html);
-
-        // Handle lists and numbering
-        $html = str_replace(['<ul>', '</ul>', '<ol>', '</ol>'], "", $html);
-
-        // Special handling for list items
-        $html = preg_replace('/<li[^>]*>(.*?)<\/li>/i', '• $1' . "\n", $html);
-
-        // Handle paragraphs while preserving format
-        $html = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1' . "\n", $html);
-
-        // Remove any remaining HTML tags except formatting
-        $html = strip_tags($html);
-
-        // Split into lines for processing
-        $lines = explode("\n", $html);
-        $formattedLines = [];
-        $prevLineWasPoint = false;
-        $inPointGroup = false;
-
-        foreach ($lines as $line) {
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine)) {
-                if (!$prevLineWasPoint) {
-                    $formattedLines[] = "";
-                }
-                continue;
-            }
-
-            // Check if line starts with a point (a., 1., •, etc.)
-            $isPoint = preg_match('/^([a-z0-9]\.|\•|\-)/', $trimmedLine);
-
-            if ($isPoint) {
-                if (!empty($formattedLines) && !$prevLineWasPoint) {
-                    $formattedLines[] = "";
-                }
-                $formattedLines[] = $trimmedLine;
-                $prevLineWasPoint = true;
-                $inPointGroup = true;
-            } else {
-                if ($prevLineWasPoint) {
-                    // Indent point continuations with less space
-                    $formattedLines[] = "  " . $trimmedLine;
-                } else {
-                    if ($inPointGroup) {
-                        $formattedLines[] = "";
-                        $inPointGroup = false;
-                    }
-                    $formattedLines[] = $trimmedLine;
-                }
-                $prevLineWasPoint = false;
-            }
-        }
-
-        $html = implode("\n", $formattedLines);
-
-        // Clean up extra spaces and normalize line breaks
-        $html = preg_replace('/[ \t]+/', ' ', $html);
-        $html = preg_replace('/\n{3,}/', "\n\n", $html);
-        $html = preg_replace('/^\n+/', '', $html);
-        $html = preg_replace('/\n+$/', '', $html);
-        $html = preg_replace('/\n\n+/', "\n\n", $html);
-
-        return trim($html);
-    }
-
     public function getPembahasanAttribute($value)
     {
-        $cleaned = $this->cleanHtml($value);
-        // Only apply nl2br if we're not in the edit form
-        return request()->route()->getName() === 'notulen.edit' ? $cleaned : nl2br($cleaned);
+        // If we're in the edit form, return plain text format
+        if (request()->route()->getName() === 'notulen.edit') {
+            return TextFormatter::htmlToPlainText($value);
+        }
+        
+        // Otherwise, format the text with our helper, specifying 'pembahasan' section
+        return TextFormatter::parseListsToHtml($value, 'pembahasan');
     }
 
     public function getTindakLanjutAttribute($value)
     {
-        $cleaned = $this->cleanHtml($value);
-        // Only apply nl2br if we're not in the edit form
-        return request()->route()->getName() === 'notulen.edit' ? $cleaned : nl2br($cleaned);
+        // If we're in the edit form, return plain text format
+        if (request()->route()->getName() === 'notulen.edit') {
+            return TextFormatter::htmlToPlainText($value);
+        }
+        
+        // Otherwise, format the text with our helper
+        return TextFormatter::parseListsToHtml($value, 'tindak_lanjut');
     }
 
     // Generate the formatted number

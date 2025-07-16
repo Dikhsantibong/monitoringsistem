@@ -399,13 +399,13 @@
 
     // Initialize CKEditor for rich text fields with proper configuration
     const editorConfig = {
-            removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
+        removePlugins: [
+            'CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 
+            'ImageStyle', 'ImageToolbar', 'ImageUpload', 'Heading', 'Bold', 'Italic',
+            'BlockQuote', 'Table', 'MediaEmbed', 'Link'
+        ],
         toolbar: {
             items: [
-                'heading',
-                '|',
-                'bold',
-                'italic',
                 'bulletedList',
                 'numberedList',
                 '|',
@@ -416,38 +416,33 @@
                 'redo'
             ]
         },
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
-                ]
-        },
-        removeFormatAttributes: 'style,class,id', // Remove all formatting attributes
+        enterMode: CKEDITOR.ENTER_BR,
+        removeFormatAttributes: 'style,class,id',
+        format_tags: '',
+        removeButtons: 'Anchor,Strike,Subscript,Superscript',
+        format_tags: '',
+        height: '400px',
+        width: '100%',
+        removeFormatAttributes: 'style,class,id',
+        enterMode: CKEDITOR.ENTER_BR,
+        shiftEnterMode: CKEDITOR.ENTER_BR
     };
 
-    // Function to clean HTML content
-    function cleanHtml(html) {
-        const div = document.createElement('div');
-        div.innerHTML = html;
-
-        // Remove all style attributes
-        div.querySelectorAll('*').forEach(el => {
-            el.removeAttribute('style');
-            el.removeAttribute('class');
-            el.removeAttribute('id');
-        });
-
-        // Convert specific elements to paragraphs
-        ['div'].forEach(tag => {
-            div.querySelectorAll(tag).forEach(el => {
-                const p = document.createElement('p');
-                p.innerHTML = el.innerHTML;
-                el.parentNode.replaceChild(p, el);
-            });
-        });
-
-        return div.innerHTML;
+    // Function to clean text content
+    function cleanText(text) {
+        // Remove any HTML tags
+        text = text.replace(/<[^>]*>/g, '');
+        
+        // Normalize line endings
+        text = text.replace(/\r\n|\r|\n/g, '\n');
+        
+        // Remove multiple consecutive empty lines
+        text = text.replace(/\n\s*\n\s*\n/g, '\n\n');
+        
+        // Trim whitespace
+        text = text.trim();
+        
+        return text;
     }
 
     // Initialize CKEditor instances
@@ -457,6 +452,16 @@
         .create(document.querySelector('#pembahasan'), editorConfig)
         .then(editor => {
             pembahasan = editor;
+            
+            // Set initial data as plain text
+            const textArea = document.querySelector('#pembahasan');
+            editor.setData(textArea.value);
+            
+            // Listen for changes and update hidden field
+            editor.model.document.on('change:data', () => {
+                const data = editor.getData();
+                textArea.value = cleanText(data);
+            });
         })
         .catch(error => {
             console.error(error);
@@ -466,6 +471,16 @@
         .create(document.querySelector('#tindak_lanjut'), editorConfig)
         .then(editor => {
             tindakLanjut = editor;
+            
+            // Set initial data as plain text
+            const textArea = document.querySelector('#tindak_lanjut');
+            editor.setData(textArea.value);
+            
+            // Listen for changes and update hidden field
+            editor.model.document.on('change:data', () => {
+                const data = editor.getData();
+                textArea.value = cleanText(data);
+            });
         })
         .catch(error => {
             console.error(error);
@@ -537,14 +552,14 @@
 
         e.preventDefault();
 
-        // Clean HTML content before submission
+        // Clean text content before submission
         if (pembahasan) {
-            const cleanedPembahasan = cleanHtml(pembahasan.getData());
+            const cleanedPembahasan = cleanText(pembahasan.getData());
             document.querySelector('#pembahasan').value = cleanedPembahasan;
         }
 
         if (tindakLanjut) {
-            const cleanedTindakLanjut = cleanHtml(tindakLanjut.getData());
+            const cleanedTindakLanjut = cleanText(tindakLanjut.getData());
             document.querySelector('#tindak_lanjut').value = cleanedTindakLanjut;
         }
 

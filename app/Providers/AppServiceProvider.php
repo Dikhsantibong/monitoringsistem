@@ -8,6 +8,7 @@ use App\Http\Middleware\UserMiddleware;
 use Illuminate\Pagination\Paginator;
 use App\Models\WoBacklog;
 use App\Observers\WoBacklogObserver;
+use App\Helpers\TextFormatter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register the TextFormatter helper
+        $this->app->singleton('text.formatter', function ($app) {
+            return new TextFormatter();
+        });
     }
 
     /**

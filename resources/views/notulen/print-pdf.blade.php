@@ -102,16 +102,63 @@
 
         .content-body {
             margin-left: 1rem;
-            white-space: pre-wrap;
             line-height: 1.5;
         }
 
         .content-body p {
-            margin-bottom: 6pt;
+            margin-bottom: 0.8rem;
         }
 
-        .content-body p + p {
-            margin-top: 0.8em;
+        .content-body .pembahasan-point {
+            margin-bottom: 0.4rem;
+            font-size: 8pt;
+        }
+
+        .content-body .pembahasan-point strong {
+            font-weight: bold;
+        }
+
+        .content-body .pembahasan-detail {
+            margin-left: 1.2rem;
+            margin-bottom: 0.8rem;
+            font-size: 8pt;
+        }
+
+        .content-body .pembahasan-subpoints {
+            margin-left: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .content-body ul,
+        .content-body ol {
+            margin: 0.4rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .content-body li {
+            margin-bottom: 0.4rem;
+            font-size: 8pt;
+        }
+
+        .content-body ol[style*="lower-alpha"] {
+            list-style-type: lower-alpha;
+        }
+
+        @media print {
+            .content-body .pembahasan-detail,
+            .content-body .pembahasan-subpoints {
+                margin-left: 1rem;
+            }
+
+            .content-body ul,
+            .content-body ol {
+                padding-left: 1.2rem;
+                margin: 0.3rem 0;
+            }
+
+            .content-body li {
+                margin-bottom: 0.3rem;
+            }
         }
 
         /* Adjust point spacing */
@@ -321,12 +368,12 @@
         <div class="content-wrapper">
             <div class="content-section">
                 <div class="content-title">A. Pembahasan</div>
-                <div class="content-body">{!! $notulen->pembahasan ?? '-' !!}</div>
+                <div class="content-body">{!! $notulen->pembahasan !!}</div>
             </div>
 
             <div class="content-section">
                 <div class="content-title">B. Tindak Lanjut</div>
-                <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
+                <div class="content-body">{!! $notulen->tindak_lanjut !!}</div>
             </div>
         </div>
 

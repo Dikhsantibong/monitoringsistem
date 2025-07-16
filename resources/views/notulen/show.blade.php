@@ -82,16 +82,58 @@
 
         .content-body {
             margin-left: 1rem;
-            white-space: pre-wrap;
             line-height: 1.5;
         }
 
         .content-body p {
-            margin-bottom: 6pt;
+            margin-bottom: 1rem;
         }
 
-        .content-body p + p {
-            margin-top: 0.8em;
+        .content-body .pembahasan-point {
+            margin-bottom: 0.5rem;
+            font-size: 10pt;
+        }
+
+        .content-body .pembahasan-point strong {
+            font-weight: bold;
+        }
+
+        .content-body .pembahasan-detail {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 10pt;
+        }
+
+        .content-body .pembahasan-subpoints {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-body ul, 
+        .content-body ol {
+            margin: 0.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .content-body li {
+            margin-bottom: 0.5rem;
+            font-size: 10pt;
+        }
+
+        .content-body ol[style*="lower-alpha"] {
+            list-style-type: lower-alpha;
+        }
+
+        @media print {
+            .content-body .pembahasan-detail,
+            .content-body .pembahasan-subpoints {
+                margin-left: 1.2rem;
+            }
+
+            .content-body ul,
+            .content-body ol {
+                padding-left: 1.5rem;
+            }
         }
 
         /* Adjust point spacing */
@@ -100,8 +142,13 @@
         }
 
         .content-body br {
-            line-height: 1;
+            line-height: 0.3;
         }
+
+        .content-body p {
+            margin-bottom: 0.5rem;
+        }
+        
 
         .footer {
             display: flex;
@@ -455,12 +502,12 @@
         <div class="content-wrapper" style="border: 1px solid #000; padding: 1rem; margin-bottom: 2rem;">
             <div class="content-section">
                 <div class="content-title">A. Pembahasan</div>
-                <div class="content-body">{!! $notulen->pembahasan ?? '-' !!}</div>
+                <div class="content-body">{!! $notulen->pembahasan !!}</div>
             </div>
 
             <div class="content-section">
                 <div class="content-title">B. Tindak Lanjut</div>
-                <div class="content-body">{!! $notulen->tindak_lanjut ?? '-' !!}</div>
+                <div class="content-body">{!! $notulen->tindak_lanjut !!}</div>
             </div>
         </div>
 
