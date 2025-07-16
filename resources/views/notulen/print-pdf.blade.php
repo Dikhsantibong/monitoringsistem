@@ -396,7 +396,7 @@
                 <div class="documentation-grid">
                     @forelse($notulen->documentations as $documentation)
                         <div class="documentation-item">
-                            <img src="{{ $documentation->image_url }}" alt="Dokumentasi Rapat" class="documentation-image">
+                            <img src="{{asset('storage/' . $documentation->image_path) }}" alt="Dokumentasi Rapat" class="documentation-image">
                             @if($documentation->caption)
                                 <div class="documentation-caption">{{ $documentation->caption }}</div>
                             @endif
