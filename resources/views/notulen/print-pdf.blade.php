@@ -25,15 +25,16 @@
         }
 
         .notulen-container {
-            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
             background: white;
-            padding: 1.5cm;
+            font-family: Arial, sans-serif;
         }
 
         .notulen-header {
             border: 1px solid #000;
             display: flex;
-            margin-bottom: 2rem;
             width: 100%;
         }
 
@@ -42,13 +43,10 @@
             align-items: center;
             border-right: 1px solid #000;
             justify-content: space-between;
-            padding: 10px;
-            width: 15%;
         }
 
         .header-logo img {
             height: 40px;
-            width: auto;
         }
 
         .header-text {
@@ -57,25 +55,24 @@
             font-size: 8pt;
             border-right: 1px solid #000;
             width: 50%;
-            padding: 10px 0;
         }
 
         .header-number {
             padding-left: 0.5rem;
             font-size: 8pt;
-            width: 35%;
+            width: 60%;
         }
 
         .header-number .border-bottom {
             margin-left: -0.5rem;
             padding-left: 0.5rem;
             border-bottom: 1px solid #000;
-            padding: 5px;
         }
 
         .header-info {
             margin: 2rem 0;
-            font-size: 10pt;
+            font-size: 8pt;
+
         }
 
         .header-info-item {
@@ -88,8 +85,8 @@
         }
 
         .content-section {
-            margin-bottom: 2rem;
-            font-size: 10pt;
+            margin-bottom: 1rem;
+            font-size: 8pt;
         }
 
         .content-title {
@@ -129,8 +126,8 @@
         .footer {
             display: flex;
             justify-content: space-between;
-            margin-top: 3rem;
-            font-size: 10pt;
+            margin-top: 1rem;
+            font-size: 8pt;
         }
 
         .signature-section {
@@ -327,13 +324,7 @@
             </div>
         </div>
 
-        @if($notulen->revision_count > 0)
-        <div style="margin: 20px 0; padding: 10px 0; border-top: 1px solid #000; font-size: 9pt; font-style: italic; color: #666;">
-            Dokumen ini telah direvisi sebanyak {{ $notulen->revision_count }} kali.
-            Revisi terakhir pada {{ $notulen->revisions()->latest()->first()->created_at->format('d/m/Y H:i') }}
-            oleh {{ $notulen->revisions()->latest()->first()->user->name }}.
-        </div>
-        @endif
+        
 
         <div class="footer">
             <div class="signature-section">
@@ -417,6 +408,13 @@
             </div>
         </div>
     </div>
+    @if($notulen->revision_count > 0)
+        <div style="margin: 20px 0; padding: 10px 0; border-top: 1px solid #000; font-size: 9pt; font-style: italic; color: #666;">
+            Dokumen ini telah direvisi sebanyak {{ $notulen->revision_count }} kali.
+            Revisi terakhir pada {{ $notulen->revisions()->latest()->first()->created_at->format('d/m/Y H:i') }}
+            oleh {{ $notulen->revisions()->latest()->first()->user->name }}.
+        </div>
+        @endif
 
     <!-- Lampiran Dokumen pada halaman terpisah -->
     @if($notulen->files && count($notulen->files))
