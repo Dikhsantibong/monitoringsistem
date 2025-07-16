@@ -315,6 +315,11 @@ class NotulenController extends Controller
      */
     public function edit(Notulen $notulen)
     {
+        // Load the attendances relationship
+        $notulen->load(['attendances' => function($query) {
+            $query->orderBy('attended_at', 'asc');
+        }]);
+        
         return view('notulen.edit', compact('notulen'));
     }
 

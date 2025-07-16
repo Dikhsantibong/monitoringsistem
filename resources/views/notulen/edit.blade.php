@@ -306,6 +306,66 @@
                 </div>
             </div>
         </div>
+
+        <!-- Daftar Hadir (Attendance List) -->
+        <div class="card mt-4 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 font-weight-bold text-primary">
+                    <i class="fas fa-users"></i> Daftar Hadir Peserta
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Jabatan</th>
+                                <th>Divisi</th>
+                                <th>Waktu Hadir</th>
+                                <th>Status</th>
+                                <th>Tanda Tangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($notulen->attendances as $index => $attendance)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $attendance->name }}</td>
+                                <td>{{ $attendance->position }}</td>
+                                <td>{{ $attendance->division }}</td>
+                                <td>{{ $attendance->attended_at->format('H:i') }}</td>
+                                <td>
+                                    @if($attendance->is_late)
+                                        <span class="badge badge-warning">Terlambat</span>
+                                    @else
+                                        <span class="badge badge-success">Tepat Waktu</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($attendance->signature)
+                                        <img src="{{ $attendance->signature }}" alt="Tanda tangan" style="max-height: 40px;">
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">
+                                    <div class="py-3">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Belum ada peserta yang melakukan absensi
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

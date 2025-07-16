@@ -92,7 +92,15 @@
         .content-body {
             margin-left: 1rem;
             white-space: pre-wrap;
-            line-height: 1.8;
+            line-height: 1.5;
+        }
+
+        .content-body p {
+            margin-bottom: 10pt;
+        }
+
+        .content-body p + p {
+            margin-top: 1.5em;
         }
 
         .content-wrapper {
