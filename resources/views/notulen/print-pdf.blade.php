@@ -91,6 +91,14 @@
 
         .content-body {
             margin-left: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+
+        .content-wrapper {
+            border: 1px solid #000;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .footer {
@@ -280,7 +288,7 @@
             </div>
         </div>
 
-        <div class="content-wrapper" style="border: 1px solid #000; padding: 1rem; margin-bottom: 2rem;">
+        <div class="content-wrapper">
             <div class="content-section">
                 <div class="content-title">A. Pembahasan</div>
                 <div class="content-body">{!! $notulen->pembahasan ?? '-' !!}</div>

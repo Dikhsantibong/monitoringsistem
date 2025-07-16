@@ -77,12 +77,13 @@
 
         .content-title {
             font-weight: bold;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .content-body {
             margin-left: 1rem;
-            white-space: pre-line;
+            white-space: pre-wrap;
+            line-height: 1.8;
         }
 
         .footer {

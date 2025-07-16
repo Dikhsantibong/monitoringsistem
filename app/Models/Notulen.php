@@ -56,7 +56,7 @@ class Notulen extends Model
         $html = preg_replace('/<li[^>]*>(.*?)<\/li>/i', '• $1' . "\n", $html);
 
         // Handle paragraphs while preserving format
-        $html = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1' . "\n", $html);
+        $html = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1' . "\n\n", $html);
 
         // Remove any remaining HTML tags except formatting
         $html = strip_tags($html);
@@ -72,21 +72,21 @@ class Notulen extends Model
 
             if (empty($trimmedLine)) {
                 if (!$prevLineWasPoint && !empty($formattedLines)) {
-                    $formattedLines[] = "";
+                    $formattedLines[] = "\n";
                     $inPointGroup = false;
                 }
                 continue;
             }
 
-            // Check if line starts with a point (a., 1., etc.)
-            $isPoint = preg_match('/^[a-z0-9]\./', $trimmedLine);
+            // Check if line starts with a point (a., 1., •, etc.)
+            $isPoint = preg_match('/^([a-z0-9]\.|\•)/', $trimmedLine);
 
             if ($isPoint) {
                 if (!$inPointGroup && !empty($formattedLines)) {
-                    // Add minimal space before new point group
+                    // Add extra space before new point group
                     $lastLine = end($formattedLines);
                     if (!empty($lastLine)) {
-                        $formattedLines[] = "";
+                        $formattedLines[] = "\n";
                     }
                     $inPointGroup = true;
                 }
@@ -94,11 +94,11 @@ class Notulen extends Model
                 $prevLineWasPoint = true;
             } else {
                 if ($prevLineWasPoint) {
-                    // Reduce indentation for point continuations
-                    $formattedLines[] = "  " . $trimmedLine;
+                    // Indent point continuations
+                    $formattedLines[] = "    " . $trimmedLine;
                 } else {
                     if ($inPointGroup) {
-                        $formattedLines[] = "";
+                        $formattedLines[] = "\n";
                         $inPointGroup = false;
                     }
                     $formattedLines[] = $trimmedLine;
@@ -114,7 +114,7 @@ class Notulen extends Model
         $html = preg_replace('/\n{3,}/', "\n\n", $html);
         $html = preg_replace('/^\n+/', '', $html); // Remove leading newlines
         $html = preg_replace('/\n+$/', '', $html); // Remove trailing newlines
-        $html = preg_replace('/\n\n+/', "\n\n", $html); // Ensure single line break between sections
+        $html = preg_replace('/\n\n+/', "\n\n", $html); // Ensure double line break between sections
 
         return trim($html);
     }
