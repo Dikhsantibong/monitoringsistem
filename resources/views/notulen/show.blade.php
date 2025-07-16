@@ -87,27 +87,20 @@
         }
 
         .content-body p {
-            margin-bottom: 10pt;
+            margin-bottom: 6pt;
         }
 
         .content-body p + p {
-            margin-top: 1.5em;
+            margin-top: 0.8em;
         }
 
-        /* Adjust bullet point spacing */
-        .content-body ul, 
-        .content-body ol {
-            margin-top: 0;
-            margin-bottom: 10pt;
-            padding-left: 20px;
+        /* Adjust point spacing */
+        .content-body br + br {
+            display: none;
         }
 
-        .content-body li {
-            margin-bottom: 5pt;
-        }
-
-        .content-body li:last-child {
-            margin-bottom: 0;
+        .content-body br {
+            line-height: 1;
         }
 
         .footer {
@@ -639,7 +632,7 @@
     @endif
 
     <!-- Print Button -->
-    <button onclick="window.print('{{ route('notulen.print-pdf', $notulen->id) }}')" class="print-button" style="padding: 6px 16px; font-size: 0.95rem;">
+    <button onclick="window.open('{{ route('notulen.print-pdf', $notulen->id) }}', '_blank').onload = function(){ this.print(); }" class="print-button" style="padding: 6px 16px; font-size: 0.95rem;">
         <i class="fas fa-print"></i>
         Cetak Notulen
     </button>

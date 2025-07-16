@@ -3,10 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notulen Rapat - {{ $notulen->agenda }}</title>
+    <title>{{ $title ?? 'Notulen Rapat' }}</title>
     <style>
-        @page {
-            margin: 2.5cm;
+        @media print {
+            @page {
+                size: A4;
+                margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+            }
+            
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
 
         body {
@@ -19,6 +27,7 @@
         .notulen-container {
             width: 100%;
             background: white;
+            padding: 1.5cm;
         }
 
         .notulen-header {
@@ -38,9 +47,8 @@
         }
 
         .header-logo img {
-            height: 35px;
+            height: 40px;
             width: auto;
-
         }
 
         .header-text {
@@ -96,27 +104,20 @@
         }
 
         .content-body p {
-            margin-bottom: 10pt;
+            margin-bottom: 6pt;
         }
 
         .content-body p + p {
-            margin-top: 1.5em;
+            margin-top: 0.8em;
         }
 
-        /* Adjust bullet point spacing */
-        .content-body ul, 
-        .content-body ol {
-            margin-top: 0;
-            margin-bottom: 10pt;
-            padding-left: 20px;
+        /* Adjust point spacing */
+        .content-body br + br {
+            display: none;
         }
 
-        .content-body li {
-            margin-bottom: 5pt;
-        }
-
-        .content-body li:last-child {
-            margin-bottom: 0;
+        .content-body br {
+            line-height: 1;
         }
 
         .content-wrapper {
@@ -129,6 +130,7 @@
             display: flex;
             justify-content: space-between;
             margin-top: 3rem;
+            font-size: 10pt;
         }
 
         .signature-section {
@@ -140,11 +142,6 @@
             border-bottom: 1px solid #000;
             width: 200px;
             display: inline-block;
-        }
-
-        /* Ensure page breaks don't occur within sections */
-        .content-section, .footer {
-            page-break-inside: avoid;
         }
 
         /* Attendance table styles */
@@ -160,7 +157,6 @@
         .attendance-header {
             margin-bottom: 2rem;
             text-align: center;
-            font-size: 10pt;
         }
 
         .attendance-title {
@@ -192,6 +188,7 @@
         .attendance-table th {
             background-color: #f0f0f0;
             font-weight: bold;
+            text-align: center;
         }
 
         .attendance-signature {
@@ -261,12 +258,19 @@
             grid-column: 1 / -1;
         }
     </style>
+    <script>
+        window.onload = function() {
+            if ({{ $print_mode ?? 'false' }}) {
+                window.print();
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="notulen-container">
         <div class="notulen-header">
             <div class="header-logo">
-                <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo">
+                <img src="{{ asset('logo/navlogo.png') }}" alt="PLN Logo">
             </div>
             <div class="header-text">
                 <div class="border-bottom">PT PLN NUSANTARA POWER</div>
@@ -281,7 +285,6 @@
         </div>
 
         <div class="header-info">
-
             <div class="header-info-item">
                 <span class="header-info-label">Nomor Notulen</span>
                 <span class="header-info-value">: {{ $notulen->format_nomor ?? '-' }}</span>
@@ -361,21 +364,21 @@
                 <table class="attendance-table">
                     <thead>
                         <tr>
-                            <th class="text-center" style="width: 5%;">No</th>
-                            <th class="text-center" style="width: 25%;">Nama</th>
-                            <th class="text-center" style="width: 25%;">Jabatan</th>
-                            <th class="text-center" style="width: 20%;">Divisi</th>
-                            <th class="text-center" style="width: 25%;">Tanda Tangan</th>
+                            <th style="width: 5%;">No</th>
+                            <th style="width: 25%;">Nama</th>
+                            <th style="width: 25%;">Jabatan</th>
+                            <th style="width: 20%;">Divisi</th>
+                            <th style="width: 25%;">Tanda Tangan</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($notulen->attendances as $index => $attendance)
                             <tr>
-                                <td class="text-center" style="text-align: center;">{{ $index + 1 }}</td>
-                                <td class="text-center">{{ $attendance->name }}</td>
-                                <td class="text-center">{{ $attendance->position }}</td>
-                                <td class="text-center">{{ $attendance->division }}</td>
-                                <td class="text-center" style="text-align: center;">
+                                <td style="text-align: center;">{{ $index + 1 }}</td>
+                                <td>{{ $attendance->name }}</td>
+                                <td>{{ $attendance->position }}</td>
+                                <td>{{ $attendance->division }}</td>
+                                <td style="text-align: center;">
                                     <img src="{{ $attendance->signature }}" alt="Tanda Tangan" class="attendance-signature">
                                 </td>
                             </tr>

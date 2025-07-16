@@ -244,27 +244,24 @@ class NotulenController extends Controller
                 ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan notulen. ' . $e->getMessage()]);
         }
     }
-
     public function show(Notulen $notulen)
     {
         // Load the documentations, files, and attendances relationship
         $notulen->load(['documentations', 'attendances', 'files']);
         return view('notulen.show', compact('notulen'));
     }
-
+    /**
+     * Print the notulen as PDF
+     */
     public function printPdf(Notulen $notulen)
     {
-        // Load the documentations, files, and attendances relationship
-        $notulen->load(['documentations', 'attendances', 'files']);
-
-        // Generate PDF using DomPDF
-        $pdf = Pdf::loadView('notulen.print-pdf', compact('notulen'));
-
-        // Set paper size to A4
-        $pdf->setPaper('A4');
-
-        // Return the PDF for download with a meaningful filename
-        return $pdf->stream("notulen-{$notulen->format_nomor}.pdf");
+        $notulen->load(['attendances', 'documentations', 'files']);
+        
+        return view('notulen.print-pdf', compact('notulen'))
+            ->with([
+                'title' => 'Notulen Rapat - ' . $notulen->agenda,
+                'print_mode' => true
+            ]);
     }
 
     public function downloadZip(Notulen $notulen)
