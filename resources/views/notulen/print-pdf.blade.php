@@ -41,11 +41,13 @@
         .header-logo {
             display: flex;
             align-items: center;
+            justify-content: center;
             border-right: 1px solid #000;
-            justify-content: space-between;
+            width: 150px;
         }
 
-        .header-logo img {
+        .header-logo img {  
+            width: 90%;
             height: 40px;
         }
 
@@ -55,6 +57,10 @@
             font-size: 8pt;
             border-right: 1px solid #000;
             width: 50%;
+        }
+        .header-text .border-bottom {
+            border-bottom: 1px solid #000;
+            z-index: -1000;
         }
 
         .header-number {

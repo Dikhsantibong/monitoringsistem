@@ -259,7 +259,7 @@ class NotulenController extends Controller
         
         return view('notulen.print-pdf', compact('notulen'))
             ->with([
-                'title' => 'Notulen Rapat - ' . $notulen->agenda,
+                'title' => 'Notulen Rapat - ' . $notulen->format_nomor,
                 'print_mode' => true
             ]);
     }
@@ -413,4 +413,3 @@ class NotulenController extends Controller
         }
     }
 }
-
