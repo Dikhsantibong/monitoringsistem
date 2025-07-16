@@ -77,8 +77,8 @@ class NotulenController extends Controller
 
     public function create(Request $request)
     {
+        // Initialize data array with request parameters
         $data = [
-            'nomor_urut' => $request->nomor_urut,
             'unit' => $request->unit,
             'bidang' => $request->bidang,
             'sub_bidang' => $request->sub_bidang,
@@ -90,8 +90,24 @@ class NotulenController extends Controller
         if ($request->has('temp_notulen_id')) {
             $draft = DraftNotulen::where('temp_notulen_id', $request->temp_notulen_id)->first();
             if ($draft) {
-                $data = array_merge($data, $draft->toArray());
+                // Merge draft data, prioritizing non-null draft values over request values
+                foreach ($data as $key => $value) {
+                    if (!is_null($draft->$key)) {
+                        $data[$key] = $draft->$key;
+                    }
+                }
+                // Merge other draft data
+                $data = array_merge($data, array_filter($draft->toArray(), function($value) {
+                    return !is_null($value);
+                }));
             }
+        }
+
+        // Ensure all required fields are present
+        if (empty($data['unit']) || empty($data['bidang']) || empty($data['sub_bidang']) || 
+            empty($data['bulan']) || empty($data['tahun'])) {
+            return redirect()->route('notulen.form')
+                ->with('error', 'Data notulen tidak lengkap. Silakan isi form kembali.');
         }
 
         return view('notulen.create', $data);
@@ -110,24 +126,26 @@ class NotulenController extends Controller
             if ($request->filled('temp_notulen_id')) {
                 $draft = DraftNotulen::where('temp_notulen_id', $request->temp_notulen_id)->first();
                 if ($draft) {
-                    $draftData = $draft->toArray();
-                    // Remove any null values from draft data
-                    $draftData = array_filter($draftData, function($value) {
+                    $draftData = array_filter($draft->toArray(), function($value) {
                         return !is_null($value);
                     });
                 }
             }
 
-            // Create request data array
-            $requestData = $request->all();
-
-            // Remove empty strings from request data
-            $requestData = array_filter($requestData, function($value) {
-                return $value !== '';
+            // Create request data array, filtering out empty strings
+            $requestData = array_filter($request->all(), function($value) {
+                return $value !== '' && $value !== null;
             });
 
             // Merge request data with draft data, prioritizing request data
             $mergedData = array_merge($draftData, $requestData);
+
+            // Ensure required fields are present
+            if (empty($mergedData['unit']) || empty($mergedData['bidang']) || 
+                empty($mergedData['sub_bidang']) || empty($mergedData['bulan']) || 
+                empty($mergedData['tahun'])) {
+                throw new \Exception('Data notulen tidak lengkap. Pastikan unit, bidang, sub_bidang, bulan, dan tahun terisi.');
+            }
 
             // Validate the merged data
             $validated = validator($mergedData, [

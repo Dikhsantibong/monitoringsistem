@@ -64,13 +64,12 @@ class NotulenDraftController extends Controller
 
             // Update draft data
             $draft->fill([
-                // Basic notulen data
-                'nomor_urut' => $request->nomor_urut,
-                'unit' => $request->unit,
-                'bidang' => $request->bidang,
-                'sub_bidang' => $request->sub_bidang,
-                'bulan' => $request->bulan,
-                'tahun' => $request->tahun,
+                // Basic notulen data - ensure these fields are always saved
+                'unit' => $request->unit ?? $draft->unit,
+                'bidang' => $request->bidang ?? $draft->bidang,
+                'sub_bidang' => $request->sub_bidang ?? $draft->sub_bidang,
+                'bulan' => $request->bulan ?? $draft->bulan,
+                'tahun' => $request->tahun ?? $draft->tahun,
 
                 // Form data
                 'agenda' => $request->agenda,
