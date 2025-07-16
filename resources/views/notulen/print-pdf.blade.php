@@ -103,6 +103,22 @@
             margin-top: 1.5em;
         }
 
+        /* Adjust bullet point spacing */
+        .content-body ul, 
+        .content-body ol {
+            margin-top: 0;
+            margin-bottom: 10pt;
+            padding-left: 20px;
+        }
+
+        .content-body li {
+            margin-bottom: 5pt;
+        }
+
+        .content-body li:last-child {
+            margin-bottom: 0;
+        }
+
         .content-wrapper {
             border: 1px solid #000;
             padding: 1.5rem;
