@@ -239,7 +239,7 @@
                     <div>{{ $notulen->pimpinan_rapat_nama ?? '-' }}</div>
                 </td>
                 <td>
-                    <div>Kendari, {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}</div>
+                    <div>Bau-Bau , {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}</div>
                     <div style="margin-top: 10px;">Notulis</div>
                     <div class="signature-line"></div>
                     <div>{{ $notulen->notulis_nama ?? '-' }}</div>
