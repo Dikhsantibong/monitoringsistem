@@ -25,346 +25,198 @@
         }
 
         .notulen-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            font-family: Arial, sans-serif;
-        }
-
-        .notulen-header {
-            border: 1px solid #000;
-            display: flex;
             width: 100%;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
         }
 
-        .header-logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-right: 1px solid #000;
-            width: 150px;
+        /* Header table layout */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
 
-        .header-logo img {  
-            width: 90%;
-            height: 40px;
+        .header-table td {
+            border: 1px solid #000;
+            padding: 5px;
+            vertical-align: middle;
         }
 
-        .header-text {
+        .logo-cell {
+            width: 120px;
             text-align: center;
-            justify-content: center;
-            font-size: 8pt;
-            border-right: 1px solid #000;
-            width: 50%;
         }
-        .header-text .border-bottom {
+
+        .logo-cell img {
+            width: 100px;
+            height: auto;
+        }
+
+        .title-cell {
+            width: 40%;
+            text-align: center;
+            font-size: 8pt;
+        }
+
+        .number-cell {
+            font-size: 8pt;
+            padding-left: 10px;
+        }
+
+        .border-bottom {
             border-bottom: 1px solid #000;
-            z-index: -1000;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
         }
 
-        .header-number {
-            padding-left: 0.5rem;
+        /* Info table layout */
+        .info-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .info-table td {
             font-size: 8pt;
-            width: 60%;
+            padding: 3px 0;
+            vertical-align: top;
         }
 
-        .header-number .border-bottom {
-            margin-left: -0.5rem;
-            padding-left: 0.5rem;
-            border-bottom: 1px solid #000;
-        }
-
-        .header-info {
-            margin: 2rem 0;
-            font-size: 8pt;
-
-        }
-
-        .header-info-item {
-            margin-bottom: 0.5rem;
-        }
-
-        .header-info-label {
-            display: inline-block;
+        .info-label {
             width: 120px;
         }
 
+        /* Content layout */
+        .content-wrapper {
+            border: 1px solid #000;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
         .content-section {
-            margin-bottom: 1rem;
-            font-size: 8pt;
+            margin-bottom: 15px;
         }
 
         .content-title {
             font-weight: bold;
-            margin-bottom: 1rem;
+            margin-bottom: 10px;
+            font-size: 8pt;
         }
 
         .content-body {
-            margin-left: 1rem;
-            line-height: 1.5;
-        }
-
-        .content-body p {
-            margin-bottom: 0.8rem;
-        }
-
-        .content-body .pembahasan-point {
-            margin-bottom: 0.4rem;
             font-size: 8pt;
+            padding-left: 15px;
         }
 
-        .content-body .pembahasan-point strong {
-            font-weight: bold;
+        /* Signature table layout */
+        .signature-table {
+            width: 100%;
+            margin-top: 30px;
         }
 
-        .content-body .pembahasan-detail {
-            margin-left: 1.2rem;
-            margin-bottom: 0.8rem;
-            font-size: 8pt;
-        }
-
-        .content-body .pembahasan-subpoints {
-            margin-left: 1.2rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .content-body ul,
-        .content-body ol {
-            margin: 0.4rem 0;
-            padding-left: 1.5rem;
-        }
-
-        .content-body li {
-            margin-bottom: 0.4rem;
-            font-size: 8pt;
-        }
-
-        .content-body ol[style*="lower-alpha"] {
-            list-style-type: lower-alpha;
-        }
-
-        @media print {
-            .content-body .pembahasan-detail,
-            .content-body .pembahasan-subpoints {
-                margin-left: 1rem;
-            }
-
-            .content-body ul,
-            .content-body ol {
-                padding-left: 1.2rem;
-                margin: 0.3rem 0;
-            }
-
-            .content-body li {
-                margin-bottom: 0.3rem;
-            }
-        }
-
-        /* Adjust point spacing */
-        .content-body br + br {
-            display: none;
-        }
-
-        .content-body br {
-            line-height: 1;
-        }
-
-        .content-wrapper {
-            border: 1px solid #000;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .footer {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem;
-            font-size: 8pt;
-        }
-
-        .signature-section {
+        .signature-table td {
+            width: 50%;
             text-align: center;
+            font-size: 8pt;
+            vertical-align: top;
         }
 
         .signature-line {
-            margin-top: 5rem;
-            border-bottom: 1px solid #000;
             width: 200px;
-            display: inline-block;
+            border-bottom: 1px solid #000;
+            margin: 50px auto 5px;
         }
 
-        /* Attendance table styles */
+        /* Documentation table layout */
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .doc-table th,
+        .doc-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            font-size: 8pt;
+        }
+
+        .doc-table th {
+            background-color: #f5f5f5;
+        }
+
+        /* Utility classes */
         .page-break {
             page-break-before: always;
         }
 
-        .attendance-section {
-            margin: 2rem 0;
-            page-break-inside: avoid;
-        }
-
-        .attendance-header {
-            margin-bottom: 2rem;
+        .text-center {
             text-align: center;
         }
 
-        .attendance-title {
-            font-size: 14pt;
-            font-weight: bold;
-            margin-bottom: 8pt;
+        .mb-5 {
+            margin-bottom: 5px;
         }
 
-        .attendance-subtitle {
-            font-size: 11pt;
-            color: #666;
-            margin-bottom: 4pt;
-        }
-
-        .attendance-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .attendance-table th,
-        .attendance-table td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
-            font-size: 10pt;
-        }
-
-        .attendance-table th {
-            background-color: #f0f0f0;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .attendance-signature {
-            max-width: 100px;
-            max-height: 50px;
-            display: block;
-            margin: 0 auto;
-        }
-
-        /* Documentation styles */
-        .documentation-section {
-            margin: 2rem 0;
-            page-break-inside: avoid;
-        }
-
-        .documentation-header {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .documentation-title {
-            font-size: 14pt;
-            font-weight: bold;
-            margin-bottom: 8pt;
-        }
-
-        .documentation-subtitle {
-            font-size: 11pt;
-            color: #666;
-            margin-bottom: 4pt;
-        }
-
-        .documentation-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .documentation-item {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: center;
-            break-inside: avoid;
-        }
-
-        .documentation-image {
-            max-width: 100%;
-            height: auto;
-            max-height: 200px;
-            object-fit: contain;
-            margin-bottom: 8px;
-        }
-
-        .documentation-caption {
-            font-size: 10pt;
-            color: #333;
-            text-align: center;
-            padding-top: 4px;
-            border-top: 1px solid #eee;
-        }
-
-        .no-documentation {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-            border: 1px dashed #000;
-            grid-column: 1 / -1;
+        .mb-10 {
+            margin-bottom: 10px;
         }
     </style>
-    <script>
-        window.onload = function() {
-            if ({{ $print_mode ?? 'false' }}) {
-                window.print();
-            }
-        }
-    </script>
 </head>
 <body>
     <div class="notulen-container">
-        <div class="notulen-header">
-            <div class="header-logo">
-                <img src="{{ asset('logo/navlogo.png') }}" alt="PLN Logo">
-            </div>
-            <div class="header-text">
-                <div class="border-bottom">PT PLN NUSANTARA POWER</div>
-                <div class="border-bottom">INTEGRATED MANAGEMENT SYSTEM</div>
-                <div style="font-weight: bold">FORMULIR NOTULEN RAPAT</div>
-            </div>
-            <div class="header-number">
-                <div class="border-bottom">Nomor Dokumen : FMKP - 145 - 13.3.4.a.a.i - 001</div>
-                <div class="border-bottom">Tanggal Terbit : {{ $notulen->tanggal ? $notulen->tanggal->format('d-m-Y') : '-' }}</div>
-                <div>Halaman : 1 dari 1</div>
-            </div>
-        </div>
+        <!-- Header Section -->
+        <table class="header-table">
+            <tr>
+                <td class="logo-cell">
+                    <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo">
+                </td>
+                <td class="title-cell">
+                    <div class="border-bottom">PT PLN NUSANTARA POWER</div>
+                    <div class="border-bottom">INTEGRATED MANAGEMENT SYSTEM</div>
+                    <div style="font-weight: bold">FORMULIR NOTULEN RAPAT</div>
+                </td>
+                <td class="number-cell">
+                    <div class="border-bottom">Nomor Dokumen : FMKP - 145 - 13.3.4.a.a.i - 001</div>
+                    <div class="border-bottom">Tanggal Terbit : {{ $notulen->tanggal ? $notulen->tanggal->format('d-m-Y') : '-' }}</div>
+                    <div>Halaman : 1 dari 1</div>
+                </td>
+            </tr>
+        </table>
 
-        <div class="header-info">
-            <div class="header-info-item">
-                <span class="header-info-label">Nomor Notulen</span>
-                <span class="header-info-value">: {{ $notulen->format_nomor ?? '-' }}</span>
-            </div>
-            <div class="header-info-item">
-                <span class="header-info-label">Agenda</span>
-                <span class="header-info-value">: {{ $notulen->agenda ?? '-' }}</span>
-            </div>
-            <div class="header-info-item">
-                <span class="header-info-label">Tempat</span>
-                <span class="header-info-value">: {{ $notulen->tempat ?? '-' }}</span>
-            </div>
-            <div class="header-info-item">
-                <span class="header-info-label">Peserta</span>
-                <span class="header-info-value">: {{ $notulen->peserta ?? '-' }}</span>
-            </div>
-            <div class="header-info-item">
-                <span class="header-info-label">Waktu</span>
-                <span class="header-info-value">:
-                    {{ $notulen->waktu_mulai ? \Carbon\Carbon::parse($notulen->waktu_mulai)->format('H:i') : '-' }} -
-                    {{ $notulen->waktu_selesai ? \Carbon\Carbon::parse($notulen->waktu_selesai)->format('H:i') : '-' }}
-                    WIB
-                </span>
-            </div>
-            <div class="header-info-item">
-                <span class="header-info-label">Hari/Tanggal</span>
-                <span class="header-info-value">: {{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</span>
-            </div>
-        </div>
+        <!-- Info Section -->
+        <table class="info-table">
+            <tr>
+                <td class="info-label">Nomor Notulen</td>
+                <td>: {{ $notulen->format_nomor ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Agenda</td>
+                <td>: {{ $notulen->agenda ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Tempat</td>
+                <td>: {{ $notulen->tempat ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Peserta</td>
+                <td>: {{ $notulen->peserta ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Waktu</td>
+                <td>: {{ $notulen->waktu_mulai ? \Carbon\Carbon::parse($notulen->waktu_mulai)->format('H:i') : '-' }} - 
+                    {{ $notulen->waktu_selesai ? \Carbon\Carbon::parse($notulen->waktu_selesai)->format('H:i') : '-' }} WIB</td>
+            </tr>
+            <tr>
+                <td class="info-label">Hari/Tanggal</td>
+                <td>: {{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</td>
+            </tr>
+        </table>
 
+        <!-- Content Section -->
         <div class="content-wrapper">
             <div class="content-section">
                 <div class="content-title">A. Pembahasan</div>
@@ -377,130 +229,137 @@
             </div>
         </div>
 
-        
-
-        <div class="footer">
-            <div class="signature-section">
-                <div>Mengetahui,</div>
-                <div style="margin-top: 1rem;">Pimpinan Rapat</div>
-                <div class="signature-line"></div>
-                <div style="margin-top: 0.5rem;">{{ $notulen->pimpinan_rapat_nama ?? '-' }}</div>
-            </div>
-
-            <div class="signature-section">
-                <div>Kendari, {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}</div>
-                <div style="margin-top: 1rem;">Notulis</div>
-                <div class="signature-line"></div>
-                <div style="margin-top: 0.5rem;">{{ $notulen->notulis_nama ?? '-' }}</div>
-            </div>
-        </div>
+        <!-- Signature Section -->
+        <table class="signature-table">
+            <tr>
+                <td>
+                    <div>Mengetahui,</div>
+                    <div style="margin-top: 10px;">Pimpinan Rapat</div>
+                    <div class="signature-line"></div>
+                    <div>{{ $notulen->pimpinan_rapat_nama ?? '-' }}</div>
+                </td>
+                <td>
+                    <div>Kendari, {{ $notulen->tanggal_tanda_tangan ? $notulen->tanggal_tanda_tangan->format('d F Y') : '-' }}</div>
+                    <div style="margin-top: 10px;">Notulis</div>
+                    <div class="signature-line"></div>
+                    <div>{{ $notulen->notulis_nama ?? '-' }}</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <!-- Attendance on new page -->
+    <!-- Attendance Section -->
     <div class="page-break">
         <div class="notulen-container">
-            <div class="attendance-section">
-                <div class="attendance-header">
-                    <div class="attendance-title">DAFTAR HADIR RAPAT</div>
-                    <div class="attendance-subtitle">{{ $notulen->agenda }}</div>
-                    <div class="attendance-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
-                </div>
-                <table class="attendance-table">
-                    <thead>
+            <div class="text-center mb-10">
+                <div style="font-size: 14pt; font-weight: bold;" class="mb-5">DAFTAR HADIR RAPAT</div>
+                <div style="font-size: 11pt; color: #666;" class="mb-5">{{ $notulen->agenda }}</div>
+                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+            </div>
+
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 25%;">Nama</th>
+                        <th style="width: 25%;">Jabatan</th>
+                        <th style="width: 20%;">Divisi</th>
+                        <th style="width: 25%;">Tanda Tangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($notulen->attendances as $index => $attendance)
                         <tr>
-                            <th style="width: 5%;">No</th>
-                            <th style="width: 25%;">Nama</th>
-                            <th style="width: 25%;">Jabatan</th>
-                            <th style="width: 20%;">Divisi</th>
-                            <th style="width: 25%;">Tanda Tangan</th>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $attendance->name }}</td>
+                            <td>{{ $attendance->position }}</td>
+                            <td>{{ $attendance->division }}</td>
+                            <td class="text-center">
+                                <img src="{{ $attendance->signature }}" alt="Tanda Tangan" style="max-width: 100px; max-height: 50px;">
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($notulen->attendances as $index => $attendance)
-                            <tr>
-                                <td style="text-align: center;">{{ $index + 1 }}</td>
-                                <td>{{ $attendance->name }}</td>
-                                <td>{{ $attendance->position }}</td>
-                                <td>{{ $attendance->division }}</td>
-                                <td style="text-align: center;">
-                                    <img src="{{ $attendance->signature }}" alt="Tanda Tangan" class="attendance-signature">
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" style="text-align: center;">Tidak ada data absensi</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center">Tidak ada data absensi</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Documentation on new page -->
+    <!-- Documentation Section -->
     <div class="page-break">
         <div class="notulen-container">
-            <div class="documentation-section">
-                <div class="documentation-header">
-                    <div class="documentation-title">DOKUMENTASI RAPAT</div>
-                    <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
-                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
-                </div>
-                <div class="documentation-grid">
-                    @forelse($notulen->documentations as $documentation)
-                        <div class="documentation-item">
-                            <img src="{{asset('storage/' . $documentation->image_path) }}" alt="Dokumentasi Rapat" class="documentation-image">
-                            @if($documentation->caption)
-                                <div class="documentation-caption">{{ $documentation->caption }}</div>
-                            @endif
-                        </div>
-                    @empty
-                        <div class="no-documentation">Tidak ada dokumentasi rapat</div>
-                    @endforelse
-                </div>
+            <div class="text-center mb-10">
+                <div style="font-size: 14pt; font-weight: bold;" class="mb-5">DOKUMENTASI RAPAT</div>
+                <div style="font-size: 11pt; color: #666;" class="mb-5">{{ $notulen->agenda }}</div>
+                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
             </div>
+
+            <table class="doc-table">
+                <tr>
+                    @forelse($notulen->documentations as $index => $documentation)
+                        @if($index % 2 == 0)
+                            </tr><tr>
+                        @endif
+                        <td style="width: 50%; padding: 15px; text-align: center;">
+                            <img src="{{ public_path('storage/' . $documentation->image_path) }}" 
+                                 alt="Dokumentasi" 
+                                 style="max-width: 300px; max-height: 200px; margin-bottom: 10px;">
+                            @if($documentation->caption)
+                                <div style="font-size: 9pt;">{{ $documentation->caption }}</div>
+                            @endif
+                        </td>
+                    @empty
+                        <td class="text-center" style="padding: 30px;">Tidak ada dokumentasi rapat</td>
+                    @endforelse
+                </tr>
+            </table>
         </div>
     </div>
-    @if($notulen->revision_count > 0)
-        <div style="margin: 20px 0; padding: 10px 0; border-top: 1px solid #000; font-size: 9pt; font-style: italic; color: #666;">
-            Dokumen ini telah direvisi sebanyak {{ $notulen->revision_count }} kali.
-            Revisi terakhir pada {{ $notulen->revisions()->latest()->first()->created_at->format('d/m/Y H:i') }}
-            oleh {{ $notulen->revisions()->latest()->first()->user->name }}.
-        </div>
-        @endif
 
-    <!-- Lampiran Dokumen pada halaman terpisah -->
+    <!-- Attachment List -->
     @if($notulen->files && count($notulen->files))
     <div class="page-break">
         <div class="notulen-container">
-            <div class="documentation-section">
-                <div class="documentation-header">
-                    <div class="documentation-title">LAMPIRAN DOKUMEN (Word/PDF)</div>
-                    <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
-                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
-                </div>
-                <ul style="list-style:none;padding:0;">
-                    @foreach($notulen->files as $file)
-                        <li style="margin-bottom: 1.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:1rem;">
-                            <span style="font-size:1.5rem;vertical-align:middle;">
-                                @if(Str::contains($file->file_type, 'pdf')) 📰
-                                @elseif(Str::contains($file->file_type, 'word')) 📝
-                                @else 📄 @endif
-                            </span>
-                            <span style="font-weight:bold; font-size:1.1rem; margin-left:8px;vertical-align:middle;">{{ $file->file_name }}</span>
-                            @if($file->caption)
-                                <div style="font-size:0.95rem; color:#666; margin-left:2.2rem; margin-top:2px;">{{ $file->caption }}</div>
-                            @endif
-                            <div style="margin-left:2.2rem; margin-top:6px;">
-                                <a href="{{ request()->getSchemeAndHttpHost() . '/storage/' . $file->file_path }}" style="color:#0095B7;text-decoration:underline;">
-                                    Download dokumen
-                                </a>
-                            </div>
-                        </li>
+            <div class="text-center mb-10">
+                <div style="font-size: 14pt; font-weight: bold;" class="mb-5">DAFTAR LAMPIRAN DOKUMEN</div>
+                <div style="font-size: 11pt; color: #666;" class="mb-5">{{ $notulen->agenda }}</div>
+                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+            </div>
+
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th>Nama Dokumen</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($notulen->files as $index => $file)
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $file->file_name }}</td>
+                            <td>{{ $file->caption ?: '-' }}</td>
+                        </tr>
                     @endforeach
-                </ul>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 15px; font-style: italic; font-size: 9pt;">
+                * Dokumen lampiran terlampir pada halaman berikutnya
             </div>
         </div>
+    </div>
+    @endif
+
+    @if($notulen->revision_count > 0)
+    <div style="margin: 20px 0; padding: 10px 0; border-top: 1px solid #000; font-size: 9pt; font-style: italic; color: #666;">
+        Dokumen ini telah direvisi sebanyak {{ $notulen->revision_count }} kali.
+        Revisi terakhir pada {{ $notulen->revisions()->latest()->first()->created_at->format('d/m/Y H:i') }}
+        oleh {{ $notulen->revisions()->latest()->first()->user->name }}.
     </div>
     @endif
 </body>

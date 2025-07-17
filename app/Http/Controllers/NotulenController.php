@@ -273,13 +273,79 @@ class NotulenController extends Controller
      */
     public function printPdf(Notulen $notulen)
     {
-        $notulen->load(['attendances', 'documentations', 'files']);
-        
-        return view('notulen.print-pdf', compact('notulen'))
-            ->with([
+        try {
+            $notulen->load(['attendances', 'documentations', 'files']);
+
+            // Generate main notulen PDF
+            $mainPdf = PDF::loadView('notulen.print-pdf', [
+                'notulen' => $notulen,
                 'title' => 'Notulen Rapat - ' . $notulen->format_nomor,
                 'print_mode' => true
             ]);
+
+            // Save main PDF temporarily
+            $mainPdfPath = storage_path('app/temp/notulen-' . $notulen->id . '.pdf');
+            if (!file_exists(dirname($mainPdfPath))) {
+                mkdir(dirname($mainPdfPath), 0777, true);
+            }
+            $mainPdf->save($mainPdfPath);
+
+            // Initialize PDF merger
+            $merger = new \iio\libmergepdf\Merger();
+            $merger->addFile($mainPdfPath);
+
+            // Add uploaded PDF files
+            foreach ($notulen->files as $file) {
+                $filePath = storage_path('app/public/' . $file->file_path);
+                
+                // Skip if file doesn't exist
+                if (!file_exists($filePath)) {
+                    continue;
+                }
+
+                // Handle different file types
+                $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                
+                if ($extension === 'pdf') {
+                    // Add PDF directly
+                    $merger->addFile($filePath);
+                } else if (in_array($extension, ['doc', 'docx'])) {
+                    // Convert Word to PDF using LibreOffice if available
+                    $tempPdfPath = storage_path('app/temp/' . basename($filePath) . '.pdf');
+                    
+                    // Use soffice command to convert
+                    $cmd = "soffice --headless --convert-to pdf --outdir " . 
+                           escapeshellarg(dirname($tempPdfPath)) . " " . 
+                           escapeshellarg($filePath);
+                    
+                    exec($cmd, $output, $returnVar);
+                    
+                    if ($returnVar === 0 && file_exists($tempPdfPath)) {
+                        $merger->addFile($tempPdfPath);
+                    }
+                }
+            }
+
+            // Create merged PDF
+            $mergedPdfContent = $merger->merge();
+
+            // Clean up temporary files
+            @unlink($mainPdfPath);
+            $tempFiles = glob(storage_path('app/temp/*'));
+            foreach ($tempFiles as $tempFile) {
+                @unlink($tempFile);
+            }
+            @rmdir(storage_path('app/temp'));
+
+            // Return the merged PDF
+            return response($mergedPdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="notulen-' . $notulen->id . '.pdf"');
+
+        } catch (\Exception $e) {
+            \Log::error('Error generating PDF: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat membuat PDF: ' . $e->getMessage());
+        }
     }
 
     public function downloadZip(Notulen $notulen)
