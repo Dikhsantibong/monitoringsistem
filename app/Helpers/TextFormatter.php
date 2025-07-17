@@ -260,4 +260,19 @@ class TextFormatter
 
         return $text;
     }
+
+    public static function hariIndonesia($date)
+    {
+        $hari = [
+            'Sunday' => 'Minggu',
+            'Monday' => 'Senin',
+            'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu',
+            'Thursday' => 'Kamis',
+            'Friday' => 'Jumat',
+            'Saturday' => 'Sabtu'
+        ];
+
+        return $hari[$date->format('l')] ?? $date->format('l');
+    }
 } 

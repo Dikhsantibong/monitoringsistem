@@ -495,7 +495,7 @@
             <div class="header-info-item">
                 <span class="header-info-label">Hari/Tanggal</span>
                 <span class="header-info-value">:
-                    {{ $notulen->tanggal ? $notulen->tanggal->translatedFormat('l, d F Y') : '-' }}</span>
+                    {{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</span>
             </div>
         </div>
 
@@ -536,7 +536,7 @@
                 <div class="attendance-header">
                     <div class="attendance-title">DAFTAR HADIR RAPAT</div>
                     <div class="attendance-subtitle">{{ $notulen->agenda }}</div>
-                    <div class="attendance-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                    <div class="attendance-subtitle">{{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</div>
                 </div>
                 <table class="attendance-table">
                     <thead>
@@ -577,7 +577,7 @@
                 <div class="documentation-header">
                     <div class="documentation-title">DOKUMENTASI RAPAT</div>
                     <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
-                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                    <div class="documentation-subtitle">{{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</div>
                 </div>
                 <div class="documentation-grid">
                     @forelse($notulen->documentations as $documentation)
@@ -603,7 +603,7 @@
                 <div class="documentation-header">
                     <div class="documentation-title">LAMPIRAN DOKUMEN (Word/PDF)</div>
                     <div class="documentation-subtitle">{{ $notulen->agenda }}</div>
-                    <div class="documentation-subtitle">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                    <div class="documentation-subtitle">{{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</div>
                 </div>
                 <ul style="list-style:none;padding:0;">
                     @foreach($notulen->files as $file)

@@ -212,8 +212,7 @@
             </tr>
             <tr>
                 <td class="info-label">Hari/Tanggal</td>
-                <td>: {{ $notulen->tanggal ? \Carbon\Carbon::parse($notulen->tanggal)->translatedFormat('l, d F Y') : '-' }}</td>
-
+                <td>: {{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</td>
             </tr>
         </table>
 
@@ -255,7 +254,7 @@
             <div class="text-center mb-10">
                 <div style="font-size: 14pt; font-weight: bold;" class="mb-5">DAFTAR HADIR RAPAT</div>
                 <div style="font-size: 11pt; color: #666;" class="mb-5">{{ $notulen->agenda }}</div>
-                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</div>
             </div>
 
             <table class="doc-table">
@@ -295,7 +294,7 @@
             <div class="text-center mb-10">
                 <div style="font-size: 14pt; font-weight: bold;" class="mb-5">DOKUMENTASI RAPAT</div>
                 <div style="font-size: 11pt; color: #666;" class="mb-5">{{ $notulen->agenda }}</div>
-                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</div>
             </div>
 
             <table class="doc-table">
@@ -327,7 +326,7 @@
             <div class="text-center mb-10">
                 <div style="font-size: 14pt; font-weight: bold;" class="mb-5">DAFTAR LAMPIRAN DOKUMEN</div>
                 <div style="font-size: 11pt; color: #666;" class="mb-5">{{ $notulen->agenda }}</div>
-                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</div>
+                <div style="font-size: 11pt; color: #666;">{{ $notulen->tanggal ? \App\Helpers\TextFormatter::hariIndonesia($notulen->tanggal) . ', ' . $notulen->tanggal->format('d F Y') : '-' }}</div>
             </div>
 
             <table class="doc-table">
