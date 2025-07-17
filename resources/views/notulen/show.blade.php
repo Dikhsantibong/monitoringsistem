@@ -495,7 +495,7 @@
             <div class="header-info-item">
                 <span class="header-info-label">Hari/Tanggal</span>
                 <span class="header-info-value">:
-                    {{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</span>
+                    {{ $notulen->tanggal ? $notulen->tanggal->translatedFormat('l, d F Y') : '-' }}</span>
             </div>
         </div>
 
