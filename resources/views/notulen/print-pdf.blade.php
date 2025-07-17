@@ -212,7 +212,8 @@
             </tr>
             <tr>
                 <td class="info-label">Hari/Tanggal</td>
-                <td>: {{ $notulen->tanggal ? $notulen->tanggal->format('l, d F Y') : '-' }}</td>
+                <td>: {{ $notulen->tanggal ? \Carbon\Carbon::parse($notulen->tanggal)->translatedFormat('l, d F Y') : '-' }}</td>
+
             </tr>
         </table>
 
