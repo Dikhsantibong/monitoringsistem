@@ -441,7 +441,7 @@ Route::get('/get-mothballed-machines', [DashboardPemantauanController::class, 'g
 
 Route::get('/get-maintenance-machines', [DashboardPemantauanController::class, 'getMaintenanceMachines']);
 
-Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Pembangkit routes
     Route::prefix('pembangkit')->name('pembangkit.')->group(function () {
         Route::get('/ready', [PembangkitController::class, 'ready'])->name('ready');
@@ -789,3 +789,6 @@ Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'
 // Add new routes for edit mode
 Route::post('/api/notulen/{notulen}/documentation', [App\Http\Controllers\Api\NotulenDocumentationController::class, 'storeForExisting'])->name('notulen.documentation.store-existing');
 Route::post('/api/notulen/{notulen}/file', [App\Http\Controllers\Api\NotulenFileController::class, 'storeForExisting'])->name('notulen.file.store-existing');
+
+Route::post('/api/notulen-paste-image', [NotulenController::class, 'uploadPastedImage'])
+    ->name('notulen.paste-image');

@@ -111,6 +111,28 @@
             padding-left: 15px;
         }
 
+        /* Pasted image styles */
+        .content-body img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            page-break-inside: avoid;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .content-body .image-wrapper {
+            margin: 10px 0;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .content-body .image-wrapper img {
+            display: inline-block;
+            margin: 0;
+            max-height: 300px; /* Limit height for better PDF layout */
+        }
+
         /* Signature table layout */
         .signature-table {
             width: 100%;
@@ -220,12 +242,48 @@
         <div class="content-wrapper">
             <div class="content-section">
                 <div class="content-title">A. Pembahasan</div>
-                <div class="content-body">{!! $notulen->pembahasan !!}</div>
+                <div class="content-body">
+                    @php
+                        // Replace image paths to use public_path for PDF generation
+                        $pembahasan = preg_replace_callback(
+                            '/<img[^>]+src="([^"]+)"[^>]*>/',
+                            function($matches) {
+                                $src = $matches[1];
+                                // If it's a storage URL, convert it to public_path
+                                if (strpos($src, '/storage/') !== false) {
+                                    $storagePath = str_replace('/storage/', '', parse_url($src, PHP_URL_PATH));
+                                    return str_replace($src, public_path('storage/' . $storagePath), $matches[0]);
+                                }
+                                return $matches[0];
+                            },
+                            $notulen->pembahasan
+                        );
+                    @endphp
+                    {!! $pembahasan !!}
+                </div>
             </div>
 
             <div class="content-section">
                 <div class="content-title">B. Tindak Lanjut</div>
-                <div class="content-body">{!! $notulen->tindak_lanjut !!}</div>
+                <div class="content-body">
+                    @php
+                        // Replace image paths to use public_path for PDF generation
+                        $tindakLanjut = preg_replace_callback(
+                            '/<img[^>]+src="([^"]+)"[^>]*>/',
+                            function($matches) {
+                                $src = $matches[1];
+                                // If it's a storage URL, convert it to public_path
+                                if (strpos($src, '/storage/') !== false) {
+                                    $storagePath = str_replace('/storage/', '', parse_url($src, PHP_URL_PATH));
+                                    return str_replace($src, public_path('storage/' . $storagePath), $matches[0]);
+                                }
+                                return $matches[0];
+                            },
+                            $notulen->tindak_lanjut
+                        );
+                    @endphp
+                    {!! $tindakLanjut !!}
+                </div>
             </div>
         </div>
 

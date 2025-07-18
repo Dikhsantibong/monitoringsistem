@@ -113,6 +113,44 @@ class NotulenController extends Controller
         return view('notulen.create', $data);
     }
 
+    public function uploadPastedImage(Request $request)
+    {
+        try {
+            $request->validate([
+                'image' => 'required|string',
+                'temp_notulen_id' => 'required|string'
+            ]);
+
+            // Decode base64 image
+            $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->image));
+            
+            // Generate unique filename
+            $filename = 'pasted-' . uniqid() . '.png';
+            
+            // Create directory if it doesn't exist
+            $directory = 'notulen-images/' . $request->temp_notulen_id;
+            $fullPath = storage_path('app/public/' . $directory);
+            if (!file_exists($fullPath)) {
+                mkdir($fullPath, 0755, true);
+            }
+            
+            // Store the image in public directory
+            file_put_contents($fullPath . '/' . $filename, $imageData);
+
+            // Return the image URL using asset helper
+            return response()->json([
+                'success' => true,
+                'url' => asset('storage/' . $directory . '/' . $filename)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error uploading image: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -171,9 +209,10 @@ class NotulenController extends Controller
             // Set nomor_urut to match the next ID
             $validated['nomor_urut'] = $nextId;
 
-            // Sanitize HTML content but preserve basic formatting
-            $validated['pembahasan'] = strip_tags($validated['pembahasan'], '<p><br><ul><ol><li><strong><em><u><s>');
-            $validated['tindak_lanjut'] = strip_tags($validated['tindak_lanjut'], '<p><br><ul><ol><li><strong><em><u><s>');
+            // Sanitize HTML content but preserve basic formatting and images
+            $allowedTags = '<p><br><ul><ol><li><strong><em><u><s><img>';
+            $validated['pembahasan'] = strip_tags($validated['pembahasan'], $allowedTags);
+            $validated['tindak_lanjut'] = strip_tags($validated['tindak_lanjut'], $allowedTags);
 
             // Generate format nomor using the next ID as nomor_urut
             $formatNomor = Notulen::generateFormatNomor(
@@ -192,6 +231,41 @@ class NotulenController extends Controller
                 'pimpinan_rapat' => $validated['pimpinan_rapat_nama'],
                 'created_by' => Auth::id()
             ]);
+
+            // Move pasted images from temp folder to permanent folder
+            if (isset($validated['temp_notulen_id'])) {
+                $tempPath = storage_path('app/public/notulen-images/' . $validated['temp_notulen_id']);
+                $permanentPath = storage_path('app/public/notulen-images/' . $notulen->id);
+                
+                if (file_exists($tempPath)) {
+                    // Create permanent directory if it doesn't exist
+                    if (!file_exists($permanentPath)) {
+                        mkdir($permanentPath, 0755, true);
+                    }
+
+                    // Move all files from temp to permanent directory
+                    $files = glob($tempPath . '/*');
+                    foreach ($files as $file) {
+                        $newPath = str_replace($tempPath, $permanentPath, $file);
+                        rename($file, $newPath);
+                        
+                        // Update image URLs in content
+                        $oldUrl = asset('storage/notulen-images/' . $validated['temp_notulen_id'] . '/' . basename($file));
+                        $newUrl = asset('storage/notulen-images/' . $notulen->id . '/' . basename($file));
+                        $validated['pembahasan'] = str_replace($oldUrl, $newUrl, $validated['pembahasan']);
+                        $validated['tindak_lanjut'] = str_replace($oldUrl, $newUrl, $validated['tindak_lanjut']);
+                    }
+
+                    // Remove temp directory
+                    rmdir($tempPath);
+                }
+                
+                // Update notulen with new image URLs
+                $notulen->update([
+                    'pembahasan' => $validated['pembahasan'],
+                    'tindak_lanjut' => $validated['tindak_lanjut']
+                ]);
+            }
 
             // Update notulen_id for attendances and documentations if temp_notulen_id exists
             if (isset($validated['temp_notulen_id'])) {

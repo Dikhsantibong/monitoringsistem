@@ -250,6 +250,115 @@
         border-radius: 5px;
         z-index: 1000;
     }
+
+    /* Add loading spinner animation */
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Add image style for editor */
+    .editor-content {
+        min-height: 150px;
+        padding: 1rem;
+        outline: none;
+    }
+
+    .editor-content img {
+        max-width: 100%;
+        height: auto;
+        margin: 10px 0;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+    .editor-content .image-wrapper {
+        position: relative;
+        display: inline-block;
+        margin: 10px 0;
+        max-width: 100%;
+    }
+
+    .editor-content .image-wrapper img {
+        margin: 0;
+    }
+
+    .editor-content .image-wrapper .image-actions {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        display: none;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        padding: 5px;
+    }
+
+    .editor-content .image-wrapper:hover .image-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .editor-content .image-wrapper .image-actions button {
+        background: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .editor-content .image-wrapper .image-actions button:hover {
+        background: #f0f0f0;
+    }
+
+    /* Image preview modal */
+    .image-preview-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1100;
+        padding: 2rem;
+    }
+
+    .image-preview-modal img {
+        max-width: 90%;
+        max-height: 90vh;
+        margin: auto;
+        display: block;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .image-preview-modal .close-button {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0.5rem;
+    }
+
+    .image-preview-modal .close-button:hover {
+        color: #ddd;
+    }
 </style>
 @endsection
 
@@ -508,6 +617,12 @@
     Draft tersimpan
 </div>
 
+<!-- Add modal for image preview -->
+<div class="image-preview-modal" id="imagePreviewModal">
+    <button class="close-button" onclick="closeImagePreview()">&times;</button>
+    <img id="previewModalImage" src="" alt="Preview">
+</div>
+
 <script>
     function execCmd(command, editorId, value = null) {
         try {
@@ -543,7 +658,113 @@
         }
     }
 
+    // Add this function to handle pasted images
+    function handlePastedImage(e, editorId) {
+        const items = e.clipboardData.items;
+        const editor = document.getElementById(editorId);
 
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                // Prevent default paste
+                e.preventDefault();
+
+                // Get the pasted image as a blob
+                const blob = items[i].getAsFile();
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    // Show loading indicator
+                    const loadingId = 'loading-' + Date.now();
+                    const loadingHtml = `<div id="${loadingId}" style="padding: 10px; background: #f0f0f0; border-radius: 4px; margin: 5px 0;">
+                        Mengupload gambar... <span class="spinner"></span>
+                    </div>`;
+                    editor.insertAdjacentHTML('beforeend', loadingHtml);
+
+                    // Upload the image
+                    fetch('{{ route("notulen.paste-image") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            image: event.target.result,
+                            temp_notulen_id: document.getElementById('tempNotulenId').value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove loading indicator
+                            document.getElementById(loadingId).remove();
+                            
+                            // Create image wrapper
+                            const wrapper = document.createElement('div');
+                            wrapper.className = 'image-wrapper';
+                            
+                            // Create image element
+                            const img = document.createElement('img');
+                            img.src = data.url;
+                            img.style.maxWidth = '100%';
+                            img.style.height = 'auto';
+                            img.onclick = () => showImagePreview(data.url);
+                            
+                            // Create actions div
+                            const actions = document.createElement('div');
+                            actions.className = 'image-actions';
+                            actions.innerHTML = `
+                                <button onclick="showImagePreview('${data.url}')">
+                                    <i class="fas fa-search-plus"></i> Lihat
+                                </button>
+                                <button onclick="removeImage(this.parentElement.parentElement)">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            `;
+                            
+                            // Assemble the elements
+                            wrapper.appendChild(img);
+                            wrapper.appendChild(actions);
+                            editor.appendChild(wrapper);
+                            editor.appendChild(document.createElement('br'));
+                            
+                            // Trigger change for auto-save
+                            editor.dispatchEvent(new Event('input'));
+                        } else {
+                            throw new Error(data.message || 'Failed to upload image');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Remove loading indicator and show error
+                        document.getElementById(loadingId).innerHTML = `
+                            <div style="color: red;">
+                                Gagal mengupload gambar: ${error.message}
+                                <button onclick="this.parentElement.remove()" style="float: right;">&times;</button>
+                            </div>
+                        `;
+                    });
+                };
+
+                reader.readAsDataURL(blob);
+                return;
+            }
+        }
+    }
+
+    // Add paste event listeners to editors
+    document.addEventListener('DOMContentLoaded', function() {
+        const pembahasanEditor = document.getElementById('pembahasanEditor');
+        const tindakLanjutEditor = document.getElementById('tindakLanjutEditor');
+
+        pembahasanEditor.addEventListener('paste', function(e) {
+            handlePastedImage(e, 'pembahasanEditor');
+        });
+
+        tindakLanjutEditor.addEventListener('paste', function(e) {
+            handlePastedImage(e, 'tindakLanjutEditor');
+        });
+    });
 
     let qrcode;
     let signaturePad;
@@ -1135,6 +1356,42 @@
             alert('Terjadi kesalahan saat menyimpan notulen: ' + error.message);
             // Re-enable the submit button on error
             submitButton.disabled = false;
+        }
+    });
+
+    function showImagePreview(src) {
+        const modal = document.getElementById('imagePreviewModal');
+        const modalImg = document.getElementById('previewModalImage');
+        modal.style.display = 'block';
+        modalImg.src = src;
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImagePreview() {
+        const modal = document.getElementById('imagePreviewModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    function removeImage(wrapper) {
+        if (confirm('Apakah Anda yakin ingin menghapus gambar ini?')) {
+            wrapper.remove();
+            // Trigger change for auto-save
+            wrapper.closest('.editor-content').dispatchEvent(new Event('input'));
+        }
+    }
+
+    // Close preview modal when clicking outside the image
+    document.getElementById('imagePreviewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeImagePreview();
+        }
+    });
+
+    // Close preview modal with escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImagePreview();
         }
     });
 </script>

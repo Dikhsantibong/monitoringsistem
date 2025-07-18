@@ -445,6 +445,72 @@
             padding-top: 10px;
             border-top: 1px solid #dee2e6;
         }
+
+        /* Styles for content images */
+        .content-body img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Image container for better layout */
+        .content-body .image-container {
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .content-body .image-container img {
+            display: inline-block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Zoom effect on hover */
+        .content-body img:hover {
+            cursor: pointer;
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        /* Modal for image preview */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 2rem;
+            overflow: auto;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90vh;
+            margin: auto;
+            display: block;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-modal .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .image-modal .close-button:hover {
+            color: #ddd;
+        }
     </style>
 @endsection
 
@@ -694,4 +760,63 @@
         <i class="fas fa-arrow-left"></i>
         Kembali
     </a>
+
+    <!-- Add modal for image preview -->
+    <div class="image-modal" id="imageModal">
+        <button class="close-button" onclick="closeImageModal()">&times;</button>
+        <img id="modalImage" src="" alt="Preview">
+    </div>
+
+    <script>
+        // Add click handlers to all content images
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentImages = document.querySelectorAll('.content-body img');
+            contentImages.forEach(img => {
+                // Wrap image in container if not already wrapped
+                if (!img.parentElement.classList.contains('image-container')) {
+                    const container = document.createElement('div');
+                    container.className = 'image-container';
+                    img.parentNode.insertBefore(container, img);
+                    container.appendChild(img);
+                }
+                
+                // Add click handler
+                img.addEventListener('click', function() {
+                    showImageModal(this.src);
+                });
+            });
+        });
+
+        function showImageModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = src;
+            
+            // Prevent body scrolling when modal is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
+
+        // Close modal with escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    </script>
 @endsection
