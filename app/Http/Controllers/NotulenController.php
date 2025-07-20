@@ -502,8 +502,34 @@ class NotulenController extends Controller
                 'revision_reason' => 'required|string|max:255'
             ]);
 
-            // Get the old values before update
             $oldValues = $notulen->toArray();
+
+            // Allow <img> tags in HTML
+            $allowedTags = '<p><br><ul><ol><li><strong><em><u><s><img>';
+            $validated['pembahasan'] = strip_tags($validated['pembahasan'], $allowedTags);
+            $validated['tindak_lanjut'] = strip_tags($validated['tindak_lanjut'], $allowedTags);
+
+            // Move pasted images from temp folder to permanent folder (if any)
+            $tempEditId = 'edit-' . $notulen->id;
+            $tempPath = storage_path('app/public/notulen-images/' . $tempEditId);
+            $permanentPath = storage_path('app/public/notulen-images/' . $notulen->id);
+            $updatedPembahasan = $validated['pembahasan'];
+            $updatedTindakLanjut = $validated['tindak_lanjut'];
+            if (file_exists($tempPath)) {
+                if (!file_exists($permanentPath)) {
+                    mkdir($permanentPath, 0755, true);
+                }
+                $files = glob($tempPath . '/*');
+                foreach ($files as $file) {
+                    $newPath = str_replace($tempPath, $permanentPath, $file);
+                    rename($file, $newPath);
+                    $oldUrl = asset('storage/notulen-images/' . $tempEditId . '/' . basename($file));
+                    $newUrl = asset('storage/notulen-images/' . $notulen->id . '/' . basename($file));
+                    $updatedPembahasan = str_replace($oldUrl, $newUrl, $updatedPembahasan);
+                    $updatedTindakLanjut = str_replace($oldUrl, $newUrl, $updatedTindakLanjut);
+                }
+                rmdir($tempPath);
+            }
 
             // Update the notulen
             $notulen->tempat = $validated['tempat'];
@@ -512,28 +538,24 @@ class NotulenController extends Controller
             $notulen->tanggal = $validated['tanggal'];
             $notulen->waktu_mulai = $validated['waktu_mulai'] . ':00';
             $notulen->waktu_selesai = $validated['waktu_selesai'] . ':00';
-            $notulen->pembahasan = strip_tags($validated['pembahasan'], '<p><br><ul><ol><li><strong><em><u><s>');
-            $notulen->tindak_lanjut = strip_tags($validated['tindak_lanjut'], '<p><br><ul><ol><li><strong><em><u><s>');
+            $notulen->pembahasan = $updatedPembahasan;
+            $notulen->tindak_lanjut = $updatedTindakLanjut;
             $notulen->pimpinan_rapat = $validated['pimpinan_rapat_nama'];
             $notulen->pimpinan_rapat_nama = $validated['pimpinan_rapat_nama'];
             $notulen->notulis_nama = $validated['notulis_nama'];
             $notulen->tanggal_tanda_tangan = $validated['tanggal_tanda_tangan'];
-
-            // Save the changes
             $notulen->save();
 
             // Track changes for revision history
             $changes = [];
             foreach ($validated as $field => $newValue) {
                 if ($field !== 'revision_reason' && isset($oldValues[$field])) {
-                    // Format time fields for comparison
                     if (in_array($field, ['waktu_mulai', 'waktu_selesai'])) {
                         $oldValue = Carbon::parse($oldValues[$field])->format('H:i');
                         $newValue = $newValue;
                     } else {
                         $oldValue = $oldValues[$field];
                     }
-
                     if ($oldValue !== $newValue) {
                         $changes[$field] = [
                             'old' => $oldValue,
@@ -542,16 +564,12 @@ class NotulenController extends Controller
                     }
                 }
             }
-
-            // Record the revision if there are changes
             if (!empty($changes)) {
                 $notulen->trackRevision(
                     Auth::id() ?? 1,
                     $changes,
                     $validated['revision_reason']
                 );
-
-                // Increment revision count
                 $notulen->increment('revision_count');
             }
 

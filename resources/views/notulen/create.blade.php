@@ -1313,6 +1313,8 @@
         submitButton.disabled = true;
 
         try {
+            cleanEditorHtml(document.getElementById('pembahasanEditor'));
+            cleanEditorHtml(document.getElementById('tindakLanjutEditor'));
             const pembahasanContent = document.getElementById('pembahasanEditor').innerHTML;
             const tindakLanjutContent = document.getElementById('tindakLanjutEditor').innerHTML;
 
@@ -1394,6 +1396,10 @@
             closeImagePreview();
         }
     });
+
+    function cleanEditorHtml(editor) {
+        editor.querySelectorAll('.image-actions').forEach(el => el.remove());
+    }
 </script>
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

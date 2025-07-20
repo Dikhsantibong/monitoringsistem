@@ -1,5 +1,17 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    .editor-content {
+        min-height: 500px;
+        font-family: Arial, sans-serif;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
@@ -116,7 +128,7 @@
                         <div class="row mb-4">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="pembahasan" class="form-label font-weight-bold">Pembahasan</label>
+                                    <label class="form-label font-weight-bold">Pembahasan</label>
                                     <div class="alert alert-info mb-2">
                                         <small>
                                             <i class="fas fa-info-circle"></i> Panduan Format Penulisan:
@@ -125,13 +137,14 @@
                                                 <li>Untuk sub-poin, gunakan huruf kecil diikuti titik (contoh: "a.", "b.", "c.")</li>
                                                 <li>Untuk daftar tanpa urutan, gunakan tanda strip (-)</li>
                                                 <li>Tekan Enter dua kali untuk membuat paragraf baru</li>
+                                                <li>Bisa paste gambar langsung ke editor</li>
                                             </ul>
                                         </small>
                                     </div>
-                                    <textarea class="form-control @error('pembahasan') is-invalid @enderror"
-                                        id="pembahasan" name="pembahasan" style="min-height: 300px; font-family: monospace;" required>{!! old('pembahasan', $notulen->pembahasan) !!}</textarea>
+                                    <div id="pembahasanEditor" class="editor-content" contenteditable="true"></div>
+                                    <input type="hidden" name="pembahasan" id="pembahasanInput">
                                     @error('pembahasan')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -140,11 +153,11 @@
                         <div class="row mb-4">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="tindak_lanjut" class="form-label font-weight-bold">Tindak Lanjut</label>
-                                    <textarea class="form-control @error('tindak_lanjut') is-invalid @enderror"
-                                        id="tindak_lanjut" name="tindak_lanjut" style="min-height: 300px; font-family: monospace;" required>{!! old('tindak_lanjut', $notulen->tindak_lanjut) !!}</textarea>
+                                    <label class="form-label font-weight-bold">Tindak Lanjut</label>
+                                    <div id="tindakLanjutEditor" class="editor-content" contenteditable="true"></div>
+                                    <input type="hidden" name="tindak_lanjut" id="tindakLanjutInput">
                                     @error('tindak_lanjut')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -380,18 +393,227 @@
     </div>
 </div>
 
-<!-- QR Code Modal -->
-<div class="overlay" id="overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
-<div class="qr-code-modal" id="qrCodeContainer" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 8px; z-index: 1000; min-width: 400px; text-align: center;">
-    <h2 class="text-xl font-weight-bold mb-4">Scan QR Code untuk Absensi</h2>
-    <div id="qrcodeModal" class="d-flex justify-content-center"></div>
-    <p class="mt-3 text-muted">
-        <small>URL: <span id="qrUrl" class="text-break"></span></small>
-    </p>
-    <button onclick="closeQRCode()" class="btn btn-danger mt-4">
-        <i class="fas fa-times"></i> Tutup QR Code
-    </button>
+<!-- Modal Preview Gambar -->
+<div class="image-preview-modal" id="imagePreviewModal">
+    <button class="close-button" onclick="closeImagePreview()">&times;</button>
+    <img id="previewModalImage" src="" alt="Preview">
 </div>
+
+@section('styles')
+<style>
+    .form-label {
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    .card-header {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .form-control {
+        border-radius: 0.375rem;
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem;
+    }
+
+    .form-control:focus {
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+    }
+
+    .alert {
+        border-radius: 0.375rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .border-left-danger {
+        border-left: 4px solid #e53e3e;
+    }
+
+    .border-left-info {
+        border-left: 4px solid #4299e1;
+    }
+
+    .invalid-feedback {
+        font-size: 0.875rem;
+    }
+
+    .qr-code-container {
+        padding: 1rem;
+        background: #fff;
+        border-radius: 0.5rem;
+    }
+
+    #qrcode, #qrcodeModal {
+        display: inline-block;
+        padding: 1rem;
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #qrcodeModal img {
+        display: block !important;
+        margin: 0 auto !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    .text-break {
+        word-break: break-all;
+    }
+
+    .qr-code-modal {
+        max-width: 90%;
+        width: 500px;
+    }
+
+    /* Override CKEditor styles */
+    .ck-editor__editable {
+        min-height: 300px !important;
+        max-height: none !important;
+    }
+
+    .ck-editor__editable_inline {
+        overflow: visible !important;
+    }
+
+    /* Ensure content is fully visible */
+    .ck.ck-editor__main>.ck-editor__editable {
+        height: auto !important;
+    }
+
+    /* Remove scrollbars */
+    .ck.ck-editor__editable:not(.ck-editor__nested-editable) {
+        overflow: visible !important;
+    }
+
+    /* Textarea formatting styles */
+    textarea#pembahasan,
+    textarea#tindak_lanjut {
+        white-space: pre-wrap;
+        tab-size: 4;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .alert ul {
+        margin-top: 0.5rem;
+    }
+
+    .alert ul li {
+        margin-bottom: 0.25rem;
+    }
+
+    .editor-content {
+        min-height: 150px;
+        padding: 1rem;
+        outline: none;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+    .editor-content img {
+        max-width: 100%;
+        height: auto;
+        margin: 10px 0;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+    .editor-content .image-wrapper {
+        position: relative;
+        display: inline-block;
+        margin: 10px 0;
+        max-width: 100%;
+    }
+    .editor-content .image-wrapper img {
+        margin: 0;
+    }
+    .editor-content .image-wrapper .image-actions {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        display: none;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        padding: 5px;
+    }
+    .editor-content .image-wrapper:hover .image-actions {
+        display: flex;
+        gap: 5px;
+    }
+    .editor-content .image-wrapper .image-actions button {
+        background: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        color: #333;
+    }
+    .editor-content .image-wrapper .image-actions button:hover {
+        background: #f0f0f0;
+    }
+    .image-preview-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1100;
+        padding: 2rem;
+    }
+    .image-preview-modal img {
+        max-width: 90%;
+        max-height: 90vh;
+        margin: auto;
+        display: block;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .image-preview-modal .close-button {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0.5rem;
+    }
+    .image-preview-modal .close-button:hover {
+        color: #ddd;
+    }
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+@endsection
 
 @push('scripts')
 <!-- QR Code Generator Library -->
@@ -799,121 +1021,129 @@
     }
 </script>
 
-@push('styles')
-<style>
-    .form-label {
-        color: #4a5568;
-        margin-bottom: 0.5rem;
-    }
+@push('scripts')
+<script>
+// Load initial data to editor
+window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('pembahasanEditor').innerHTML = `{!! old('pembahasan', $notulen->getRawOriginal('pembahasan')) !!}`;
+    document.getElementById('tindakLanjutEditor').innerHTML = `{!! old('tindak_lanjut', $notulen->getRawOriginal('tindak_lanjut')) !!}`;
+    document.getElementById('pembahasanInput').value = document.getElementById('pembahasanEditor').innerHTML;
+    document.getElementById('tindakLanjutInput').value = document.getElementById('tindakLanjutEditor').innerHTML;
+});
 
-    .card {
-        border: none;
-        border-radius: 0.5rem;
-    }
+// Sync editor content to hidden input before submit
+function cleanEditorHtml(editor) {
+    editor.querySelectorAll('.image-actions').forEach(el => el.remove());
+}
 
-    .card-header {
-        border-bottom: 1px solid #e2e8f0;
-    }
+// Form submission handling
+const form = document.getElementById('editNotulenForm');
+form.addEventListener('submit', function(e) {
+    cleanEditorHtml(document.getElementById('pembahasanEditor'));
+    cleanEditorHtml(document.getElementById('tindakLanjutEditor'));
+    document.getElementById('pembahasanInput').value = document.getElementById('pembahasanEditor').innerHTML;
+    document.getElementById('tindakLanjutInput').value = document.getElementById('tindakLanjutEditor').innerHTML;
+});
 
-    .form-control {
-        border-radius: 0.375rem;
-        border: 1px solid #e2e8f0;
-        padding: 0.75rem;
+// Paste image handler (copy dari create.blade.php)
+function handlePastedImage(e, editorId) {
+    const items = e.clipboardData.items;
+    const editor = document.getElementById(editorId);
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const blob = items[i].getAsFile();
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const loadingId = 'loading-' + Date.now();
+                const loadingHtml = `<div id="${loadingId}" style="padding: 10px; background: #f0f0f0; border-radius: 4px; margin: 5px 0;">
+                    Mengupload gambar... <span class="spinner"></span>
+                </div>`;
+                editor.insertAdjacentHTML('beforeend', loadingHtml);
+                fetch(`{{ route('notulen.paste-image') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image: event.target.result,
+                        temp_notulen_id: 'edit-' + {{ $notulen->id }}
+                    })
+                })
+                .then(async response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        throw new Error('Server error: ' + text.substring(0, 200));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(loadingId).remove();
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'image-wrapper';
+                        const img = document.createElement('img');
+                        img.src = data.url;
+                        img.style.maxWidth = '100%';
+                        img.style.height = 'auto';
+                        img.onclick = () => showImagePreview(data.url);
+                        const actions = document.createElement('div');
+                        actions.className = 'image-actions';
+                        actions.innerHTML = `
+                            <button onclick="showImagePreview('${data.url}')">
+                                <i class='fas fa-search-plus'></i> Lihat
+                            </button>
+                            <button onclick="removeImage(this.parentElement.parentElement)">
+                                <i class='fas fa-trash'></i> Hapus
+                            </button>
+                        `;
+                        wrapper.appendChild(img);
+                        wrapper.appendChild(actions);
+                        editor.appendChild(wrapper);
+                        editor.appendChild(document.createElement('br'));
+                        editor.dispatchEvent(new Event('input'));
+                    } else {
+                        throw new Error(data.message || 'Failed to upload image');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById(loadingId).innerHTML = `<div style='color: red;'>Gagal mengupload gambar: ${error.message}<button onclick='this.parentElement.remove()' style='float: right;'>&times;</button></div>`;
+                });
+            };
+            reader.readAsDataURL(blob);
+            return;
+        }
     }
+}
+document.getElementById('pembahasanEditor').addEventListener('paste', function(e) { handlePastedImage(e, 'pembahasanEditor'); });
+document.getElementById('tindakLanjutEditor').addEventListener('paste', function(e) { handlePastedImage(e, 'tindakLanjutEditor'); });
 
-    .form-control:focus {
-        border-color: #4299e1;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+function showImagePreview(src) {
+    const modal = document.getElementById('imagePreviewModal');
+    const modalImg = document.getElementById('previewModalImage');
+    modal.style.display = 'block';
+    modalImg.src = src;
+    document.body.style.overflow = 'hidden';
+}
+function closeImagePreview() {
+    const modal = document.getElementById('imagePreviewModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+function removeImage(wrapper) {
+    if (confirm('Apakah Anda yakin ingin menghapus gambar ini?')) {
+        wrapper.remove();
+        wrapper.closest('.editor-content').dispatchEvent(new Event('input'));
     }
-
-    .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
-    }
-
-    .alert {
-        border-radius: 0.375rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .border-left-danger {
-        border-left: 4px solid #e53e3e;
-    }
-
-    .border-left-info {
-        border-left: 4px solid #4299e1;
-    }
-
-    .invalid-feedback {
-        font-size: 0.875rem;
-    }
-
-    .qr-code-container {
-        padding: 1rem;
-        background: #fff;
-        border-radius: 0.5rem;
-    }
-
-    #qrcode, #qrcodeModal {
-        display: inline-block;
-        padding: 1rem;
-        background: #fff;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    #qrcodeModal img {
-        display: block !important;
-        margin: 0 auto !important;
-        max-width: 100% !important;
-        height: auto !important;
-    }
-
-    .text-break {
-        word-break: break-all;
-    }
-
-    .qr-code-modal {
-        max-width: 90%;
-        width: 500px;
-    }
-
-    /* Override CKEditor styles */
-    .ck-editor__editable {
-        min-height: 300px !important;
-        max-height: none !important;
-    }
-
-    .ck-editor__editable_inline {
-        overflow: visible !important;
-    }
-
-    /* Ensure content is fully visible */
-    .ck.ck-editor__main>.ck-editor__editable {
-        height: auto !important;
-    }
-
-    /* Remove scrollbars */
-    .ck.ck-editor__editable:not(.ck-editor__nested-editable) {
-        overflow: visible !important;
-    }
-
-    /* Textarea formatting styles */
-    textarea#pembahasan,
-    textarea#tindak_lanjut {
-        white-space: pre-wrap;
-        tab-size: 4;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .alert ul {
-        margin-top: 0.5rem;
-    }
-
-    .alert ul li {
-        margin-bottom: 0.25rem;
-    }
-</style>
+}
+document.getElementById('imagePreviewModal').addEventListener('click', function(e) {
+    if (e.target === this) closeImagePreview();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeImagePreview();
+});
+</script>
 @endpush
