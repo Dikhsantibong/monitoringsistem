@@ -24,10 +24,10 @@
                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200 text-sm">
                     Lihat Detail
                 </a>
-                <a href="{{ route('notulen.edit', $item->id) }}"
+                {{-- <a href="{{ route('notulen.edit', $item->id) }}"
                    class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 transition-colors duration-200 text-sm">
                     <i class="fas fa-edit"></i> Edit
-                </a>
+                </a> --}}
             </div>
         </div>
     @endforeach

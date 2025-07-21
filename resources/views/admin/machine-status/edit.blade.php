@@ -124,23 +124,23 @@
 
                         <!-- Equipment -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Equipment</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Catatan issue</label>
                             <input type="text" name="equipment" value="{{ $log->equipment }}"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                                   class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         </div>
 
                         <!-- Tanggal Mulai -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
                             <input type="date" name="tanggal_mulai" value="{{ $log->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('Y-m-d') : '' }}"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                                   class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         </div>
 
                         <!-- Target Selesai -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Target Selesai</label>
                             <input type="date" name="target_selesai" value="{{ $log->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('Y-m-d') : '' }}"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                                   class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         </div>
                     </div>
 
@@ -148,28 +148,28 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
                         <textarea name="deskripsi" rows="3" 
-                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->deskripsi }}</textarea>
+                                  class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->deskripsi }}</textarea>
                     </div>
 
                     <!-- Kronologi -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kronologi</label>
                         <textarea name="kronologi" rows="3"
-                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->kronologi }}</textarea>
+                                  class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->kronologi }}</textarea>
                     </div>
 
                     <!-- Action Plan -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Action Plan</label>
                         <textarea name="action_plan" rows="3"
-                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->action_plan }}</textarea>
+                                  class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->action_plan }}</textarea>
                     </div>
 
                     <!-- Progress -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Progress</label>
                         <textarea name="progres" rows="3"
-                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->progres }}</textarea>
+                                  class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->progres }}</textarea>
                     </div>
 
                     <div class="flex justify-end space-x-3">
