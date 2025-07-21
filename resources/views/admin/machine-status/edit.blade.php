@@ -109,20 +109,14 @@
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         </div>
 
-                        <!-- Component -->
+                        <!-- issue engine -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Component</label>
-                            <select name="component" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 h-10 text-left pl-2">
-                                <option value="">Pilih System</option>
-                                <option value="MESIN" {{ $log->component === 'MESIN' ? 'selected' : '' }}>MESIN</option>
-                                <option value="GENERATOR" {{ $log->component === 'GENERATOR' ? 'selected' : '' }}>GENERATOR</option>
-                                <option value="PANEL_SINKRON" {{ $log->component === 'PANEL_SINKRON' ? 'selected' : '' }}>PANEL SINKRON</option>
-                                <option value="KUBIKAL" {{ $log->component === 'KUBIKAL' ? 'selected' : '' }}>KUBIKAL</option>
-                                <option value="AUXILIARY" {{ $log->component === 'AUXILIARY' ? 'selected' : '' }}>AUXILIARY</option>
-                            </select>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Issue Engine</label>
+                            <input type="text" name="component" value="{{ $log?->component ?? '-' }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 h-10 text-left pl-2" readonly>
                         </div>
 
-                        <!-- Equipment -->
+                        <!-- catatan issue -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Catatan issue</label>
                             <input type="text" name="equipment" value="{{ $log->equipment }}"
