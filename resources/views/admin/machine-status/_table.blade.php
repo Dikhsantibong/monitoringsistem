@@ -265,7 +265,6 @@
                                     <td class="px-3 py-2 text-center border-r border-gray-200">
                                         {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                     </td>
-                                    @if(auth()->user()->role === 'super_admin')
                                     <td class="px-3 py-2 text-center">
                                         <div class="flex items-center justify-center space-x-2">
                                             <button onclick="editMachineStatus({{ $machine->id }}, '{{ $log?->id ?? 0 }}')" 
@@ -278,7 +277,6 @@
                                             </button>
                                         </div>
                                     </td>
-                                    @endif
                                 </tr>
                             @empty
                                 <tr>
