@@ -112,8 +112,12 @@
                         <!-- issue engine -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Issue Engine</label>
-                            <input type="text" name="component" value="{{ $log?->component ?? '-' }}"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 h-10 text-left pl-2" readonly>
+                            <select name="component" 
+                                    class="system-select w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400">
+                                <option value="">Pilih issue</option>
+                                <option value="Ada" {{ $log?->component === 'Ada' ? 'selected' : '' }}>Ada</option>
+                                <option value="Tidak Ada" {{ $log?->component === 'Tidak Ada' ? 'selected' : '' }}>Tidak Ada</option>
+                            </select>
                         </div>
 
                         <!-- catatan issue -->
