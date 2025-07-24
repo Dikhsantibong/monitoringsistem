@@ -188,6 +188,16 @@
 
 <script src="{{ asset('js/toggle.js') }}"></script>
 <script>
+    function getBaseUrl() {
+        // Use window.location.origin and add '/public' if not localhost
+        const origin = window.location.origin;
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return origin;
+        } else {
+            return origin + '/public';
+        }
+    }
+
     function toggleDropdown() {
         const dropdown = document.getElementById('dropdown');
         dropdown.classList.toggle('hidden');
@@ -226,8 +236,13 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
     
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
+
+    // Get base URL
+    const baseUrl = getBaseUrl();
+    // Build the correct endpoint
+    const url = `${baseUrl}/admin/machine-status/{{ $machine->id }}/update/{{ $log->id }}`;
     
-    fetch(`/admin/machine-status/{{ $machine->id }}/update/{{ $log->id }}`, {
+    fetch(url, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
