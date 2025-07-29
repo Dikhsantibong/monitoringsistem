@@ -264,7 +264,7 @@ class MachineStatusController extends Controller
             $log = MachineStatusLog::where('id', $logId)
                 ->where('machine_id', $machineId)
                 ->first();
-                
+            
             if (!$log) {
                 return response()->json([
                     'success' => false,
@@ -284,8 +284,22 @@ class MachineStatusController extends Controller
                 'action_plan' => 'nullable|string',
                 'progres' => 'nullable|string',
                 'tanggal_mulai' => 'nullable|date',
-                'target_selesai' => 'nullable|date'
+                'target_selesai' => 'nullable|date',
+                'image_description' => 'nullable|string',
+                'image' => 'nullable|string', // base64 image
             ]);
+
+            // Handle image upload if present
+            if (!empty($validatedData['image'])) {
+                $image = $validatedData['image'];
+                if (strpos($image, 'data:image') === 0) {
+                    $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $image));
+                    $fileName = 'machine_status_' . time() . '_' . $log->machine_id . '.jpg';
+                    \Storage::disk('public')->put('machine-status/' . $fileName, $imageData);
+                    $validatedData['image_path'] = 'machine-status/' . $fileName;
+                }
+                unset($validatedData['image']);
+            }
 
             $log->update($validatedData);
 

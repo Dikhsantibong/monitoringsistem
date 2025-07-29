@@ -236,6 +236,12 @@
                                                     Progres
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                    Dokumentasi
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
+                                                    Keterangan Gambar
+                                                </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
                                                     Tanggal Mulai
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">
@@ -336,7 +342,34 @@
                                                             style="height: 100px; width: 300px;" 
                                                             name="progres[{{ $machine->id }}]" 
                                                             oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->progres ?? '' }}</textarea>
-                                                    </td>   
+                                                    </td>
+                                                    <td class="px-3 py-2">
+                                                        <div class="flex flex-col items-center gap-2">
+                                                            <input type="file" 
+                                                                class="hidden image-upload"
+                                                                accept="image/*"
+                                                                onchange="handleImagePreview(this, {{ $machine->id }})">
+                                                            <button type="button" 
+                                                                onclick="this.previousElementSibling.click()"
+                                                                class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
+                                                                Upload Gambar
+                                                            </button>
+                                                            <div class="image-preview w-32 h-32 border rounded-lg overflow-hidden hidden">
+                                                                <img src="{{ $operations->where('machine_id', $machine->id)->first()->image_path ? asset('storage/' . $operations->where('machine_id', $machine->id)->first()->image_path) : '' }}" 
+                                                                     alt="Preview" 
+                                                                     class="w-full h-full object-cover">
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-3 py-2">
+                                                        <textarea 
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400"
+                                                            rows="2"
+                                                            placeholder="Masukkan keterangan gambar..."
+                                                            name="image_description[{{ $machine->id }}]"
+                                                            style="height: 100px; width: 200px;"
+                                                            oninput="autoResize(this)">{{ $operations->where('machine_id', $machine->id)->first()->image_description ?? '' }}</textarea>
+                                                    </td>
                                                     <td class="px-3 py-2">
                                                         <input type="date" 
                                                             name="tanggal_mulai[{{ $machine->id }}]"
@@ -493,6 +526,21 @@
         }
     });
 
+    function handleImagePreview(input, machineId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            const preview = input.closest('td').querySelector('.image-preview');
+            const previewImg = preview.querySelector('img');
+            
+            reader.onload = function(e) {
+                preview.classList.remove('hidden');
+                previewImg.src = e.target.result;
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
     function saveData() {
         // Tampilkan loading indicator saat mulai menyimpan
         Swal.fire({
@@ -558,7 +606,7 @@
                     console.log('Load value for machine', machineId, ':', loadValue);
 
                     if (statusSelect && statusSelect.value) {
-                        data.logs.push({
+                        const logData = {
                             machine_id: machineId,
                             tanggal: tanggal,
                             hop: hopValue,
@@ -567,14 +615,29 @@
                             equipment: equipmentValue,
                             dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
                             dmp: dmpInput ? dmpInput.value.trim() : null,
-                            load_value: loadValue, // Pastikan nilai load_value selalu terisi
+                            load_value: loadValue,
                             deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
                             action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
                             progres: inputProgres ? inputProgres.value.trim() : null,
                             kronologi: inputKronologi ? inputKronologi.value.trim() : null,
                             tanggal_mulai: inputTanggalMulai ? inputTanggalMulai.value : null,
-                            target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null
-                        });
+                            target_selesai: inputTargetSelesai ? inputTargetSelesai.value : null,
+                            image_description: row.querySelector(`textarea[name="image_description[${machineId}]"]`)?.value.trim() || null
+                        };
+
+                        // Add image data if exists
+                        const imagePreview = row.querySelector('.image-preview img');
+                        if (imagePreview && imagePreview.src && !imagePreview.src.endsWith('Preview')) {
+                            if (imagePreview.src.startsWith('data:')) {
+                                // New image uploaded
+                                logData.image = imagePreview.src;
+                            } else {
+                                // Existing image path
+                                logData.image_path = imagePreview.src.split('/storage/')[1];
+                            }
+                        }
+
+                        data.logs.push(logData);
                     }
                 });
             }
@@ -993,6 +1056,26 @@
                             }
                         }
                     }
+
+                    // Update image preview if exists
+                    const preview = row.querySelector('.image-preview');
+                    const previewImg = preview ? preview.querySelector('img') : null;
+                    if (preview && previewImg) {
+                        if (log.image_path) {
+                            preview.classList.remove('hidden');
+                            previewImg.src = '/storage/' + log.image_path;
+                        } else {
+                            preview.classList.add('hidden');
+                            previewImg.src = '';
+                        }
+                    }
+
+                    // Update image description
+                    const imageDescription = row.querySelector(`textarea[name="image_description[${log.machine_id}]"]`);
+                    if (imageDescription) {
+                        imageDescription.value = log.image_description || '';
+                        autoResize(imageDescription);
+                    }
                 }
             });
         }
@@ -1144,6 +1227,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
+    });
+
+    // Add event listeners for file inputs
+    document.querySelectorAll('.image-upload').forEach(input => {
+        input.addEventListener('change', function() {
+            const machineId = this.closest('tr').getAttribute('data-machine-id');
+            handleImagePreview(this, machineId);
+        });
     });
 });
 </script>

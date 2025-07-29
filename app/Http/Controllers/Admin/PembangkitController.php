@@ -15,6 +15,7 @@ use App\Models\UnitOperationHour;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Events\MachineStatusUpdated;
+use Illuminate\Support\Facades\Storage;
 
 class PembangkitController extends Controller
 {
@@ -146,6 +147,19 @@ class PembangkitController extends Controller
                     ->latest('recorded_at')
                     ->first();
 
+                // Handle image upload if present
+                $imagePath = null;
+                if (isset($log['image']) && $log['image']) {
+                    $image = $log['image'];
+                    if (strpos($image, 'data:image') === 0) {
+                        // Handle base64 image
+                        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $image));
+                        $fileName = 'machine_status_' . time() . '_' . $log['machine_id'] . '.jpg';
+                        Storage::disk('public')->put('machine-status/' . $fileName, $imageData);
+                        $imagePath = 'machine-status/' . $fileName;
+                    }
+                }
+
                 // Cek status untuk menentukan nilai DMP
                 $dmp = $operation ? $operation->dmp : 0;
                 
@@ -190,7 +204,10 @@ class PembangkitController extends Controller
                             'progres' => null,
                             'tanggal_mulai' => null,
                             'target_selesai' => null,
-                            'unit_source' => $currentSession
+                            'unit_source' => $currentSession,
+                            'image_path' => $imagePath,
+                            'image_description' => $log['image_description'] ?? null,
+                            'issue_engine' => $log['issue_engine'] ?? null
                         ];
                     } else {
                         $updateData = [
@@ -206,7 +223,10 @@ class PembangkitController extends Controller
                             'progres' => $log['progres'] ?? null,
                             'tanggal_mulai' => $log['tanggal_mulai'] ?? null,
                             'target_selesai' => $log['target_selesai'] ?? null,
-                            'unit_source' => $currentSession
+                            'unit_source' => $currentSession,
+                            'image_path' => $imagePath,
+                            'image_description' => $log['image_description'] ?? null,
+                            'issue_engine' => $log['issue_engine'] ?? null
                         ];
                     }
 
@@ -382,7 +402,9 @@ class PembangkitController extends Controller
                             'progres' => $log->progres,
                             'tanggal_mulai' => $log->tanggal_mulai ? $log->tanggal_mulai->format('Y-m-d') : null,
                             'target_selesai' => $log->target_selesai ? $log->target_selesai->format('Y-m-d') : null,
-                            'updated_at' => $log->updated_at
+                            'updated_at' => $log->updated_at,
+                            'image_path' => $log->image_path,
+                            'image_description' => $log->image_description,
                         ];
                     }),
                     'hops' => $hops->map(function($hop) {

@@ -170,6 +170,24 @@
                                   class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->progres }}</textarea>
                     </div>
 
+                    <!-- Image Upload & Preview -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dokumentasi (Gambar)</label>
+                        <div class="flex flex-col md:flex-row items-start gap-4">
+                            <div class="flex flex-col items-center gap-2">
+                                <input type="file" id="image-upload" name="image" class="hidden" accept="image/*">
+                                <button type="button" onclick="document.getElementById('image-upload').click()" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Upload Gambar</button>
+                                <div id="image-preview" class="image-preview w-32 h-32 border rounded-lg overflow-hidden {{ $log->image_path ? '' : 'hidden' }}">
+                                    <img id="preview-img" src="{{ $log->image_path ? asset('storage/' . $log->image_path) : '' }}" alt="Preview" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan Gambar</label>
+                                <textarea name="image_description" rows="2" class="p-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ $log->image_description }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex justify-end space-x-3">
                         <a href="{{ route('admin.machine-status.view') }}" 
                            class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
@@ -227,21 +245,43 @@
         sidebar.classList.toggle('hidden');
         mainContent.classList.toggle('md:ml-0');
     });
+
+    // Image preview logic
+    document.getElementById('image-upload').addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('image-preview').classList.remove('hidden');
+                document.getElementById('preview-img').src = e.target.result;
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
 </script>
 
 @push('scripts')
 <script>
-document.getElementById('editForm').addEventListener('submit', function(e) {
+document.getElementById('editForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData.entries());
-
+    const form = this;
+    const formData = new FormData(form);
+    // Handle image as base64 if changed
+    const imageInput = document.getElementById('image-upload');
+    let imageBase64 = null;
+    if (imageInput.files && imageInput.files[0]) {
+        imageBase64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function(e) { resolve(e.target.result); };
+            reader.readAsDataURL(imageInput.files[0]);
+        });
+        formData.set('image', imageBase64);
+    }
+    // Convert FormData to object
+    const data = {};
+    formData.forEach((value, key) => { data[key] = value; });
     // Get base URL
     const baseUrl = getBaseUrl();
-    // Build the correct endpoint
     const url = `${baseUrl}/admin/machine-status/{{ $machine->id }}/update/{{ $log->id }}`;
-    
     fetch(url, {
         method: 'PUT',
         headers: {

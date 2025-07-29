@@ -188,6 +188,8 @@
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Kronologi</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Action Plan</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Progress</th>
+                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Dokumentasi</th>
+                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Keterangan Gambar</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Tanggal Mulai</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Target Selesai</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center">Aksi</th>
@@ -259,6 +261,28 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td class="px-3 py-2 border-r border-gray-200">
+                                        @if($log?->image_path)
+                                            <div class="flex justify-center">
+                                                <div class="w-32 h-32 border rounded-lg overflow-hidden">
+                                                    <img src="{{ asset('storage/' . $log->image_path) }}" 
+                                                         alt="Dokumentasi" 
+                                                         class="w-full h-full object-cover"
+                                                         onclick="showFullImage(this.src)"
+                                                         style="cursor: pointer;">
+                                                </div>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 border-r border-gray-200 !text-left" data-content-type="image-description" style="text-align: left !important;">
+                                        <div class="min-w-[300px] max-w-full overflow-hidden !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                            <div class="max-h-[150px] overflow-y-auto whitespace-pre-wrap break-words !text-left" style="text-align: left !important; justify-content: flex-start !important;">
+                                                <span style="text-align: left !important; display: block;">{{ $log?->image_description ?? '-' }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">
                                         {{ $log?->tanggal_mulai ? \Carbon\Carbon::parse($log->tanggal_mulai)->format('d/m/Y') : '-' }}
                                     </td>
@@ -266,14 +290,16 @@
                                         {{ $log?->target_selesai ? \Carbon\Carbon::parse($log->target_selesai)->format('d/m/Y') : '-' }}
                                     </td>
                                     <td class="px-3 py-2 text-center">
-                                        <div class="flex items-center justify-center space-x-2">
+                                        <div class="items-center justify-center space-y-2">
                                             <button onclick="editMachineStatus({{ $machine->id }}, '{{ $log?->id ?? 0 }}')" 
-                                                    class="flex items-center px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                                                <i class="fas fa-edit mr-1"></i> Edit
+                                                    class="flex items-center justify-center w-8 h-8 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                                                    title="Edit">
+                                                <i class="fas fa-edit"></i>
                                             </button>
                                             <button onclick="deleteMachineStatus({{ $machine->id }}, '{{ $log?->id ?? 0 }}')" 
-                                                    class="flex items-center px-3 py-1 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
-                                                <i class="fas fa-trash mr-1"></i> Hapus
+                                                    class="flex items-center justify-center w-8 h-8 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700"
+                                                    title="Hapus">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -392,5 +418,20 @@ function deleteMachineStatus(machineId, logId) {
             alert('Terjadi kesalahan saat menghapus data');
         });
     }
+}
+</script> 
+
+<script>
+function showFullImage(src) {
+    Swal.fire({
+        imageUrl: src,
+        imageAlt: 'Dokumentasi',
+        width: '80%',
+        imageWidth: '100%',
+        imageHeight: 'auto',
+        showConfirmButton: false,
+        showCloseButton: true,
+        padding: '1rem'
+    });
 }
 </script> 

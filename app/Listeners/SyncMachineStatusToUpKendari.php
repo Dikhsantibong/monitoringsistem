@@ -48,6 +48,9 @@ class SyncMachineStatusToUpKendari
                     'dmp' => $event->machineStatus->dmp,
                     'load_value' => $event->machineStatus->load_value,
                     'unit_source' => $powerPlant->unit_source,
+                    'image_path' => $event->machineStatus->image_path,
+                    'image_description' => $event->machineStatus->image_description,
+                    'issue_engine' => $event->machineStatus->issue_engine,
                     'updated_at' => now()
                 ];
 
@@ -137,6 +140,9 @@ class SyncMachineStatusToUpKendari
                     'dmp' => $event->machineStatus->dmp,
                     'load_value' => $event->machineStatus->load_value,
                     'unit_source' => $event->sourceUnit,
+                    'image_path' => $event->machineStatus->image_path,
+                    'image_description' => $event->machineStatus->image_description,
+                    'issue_engine' => $event->machineStatus->issue_engine,
                     'updated_at' => now()
                 ];
 

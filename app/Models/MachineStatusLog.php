@@ -58,7 +58,10 @@ class MachineStatusLog extends Model
         'progres',
         'tanggal_mulai',
         'target_selesai',
-        'unit_source'
+        'unit_source',
+        'image_path',
+        'image_description',
+        'issue_engine'
     ];
 
     protected $casts = [
