@@ -85,34 +85,53 @@
             line-height: 1.5;
         }
 
-        .content-body p {
-            margin-bottom: 1rem;
+        /* Remove bullet points from lists */
+        .content-body ul,
+        .content-body ol {
+            list-style: none;
+            padding-left: 0;
+            margin-left: 0;
         }
 
-        .content-body .pembahasan-point {
+        .content-body li {
+            margin-bottom: 5px;
+            font-size: 10pt;
+        }
+
+        .content-body p {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Consistent point styling for both sections */
+        .content-body .pembahasan-point,
+        .content-body .tindak-lanjut-point {
             margin-bottom: 0.5rem;
             font-size: 10pt;
         }
 
-        .content-body .pembahasan-point strong {
+        .content-body .pembahasan-point strong,
+        .content-body .tindak-lanjut-point strong {
             font-weight: bold;
         }
 
-        .content-body .pembahasan-detail {
+        .content-body .pembahasan-detail,
+        .content-body .tindak-lanjut-detail {
             margin-left: 1.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             font-size: 10pt;
         }
 
-        .content-body .pembahasan-subpoints {
+        .content-body .pembahasan-subpoints,
+        .content-body .tindak-lanjut-subpoints {
             margin-left: 1.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
+        /* Consistent list styling */
         .content-body ul, 
         .content-body ol {
             margin: 0.5rem 0;
-            
+            padding-left: 1.5rem;
         }
 
         .content-body li {
@@ -121,7 +140,7 @@
         }
 
         .content-body ol[style*="lower-alpha"] {
-            list-style-type: lower-alpha;
+            list-style-type: none;
         }
 
         @media print {

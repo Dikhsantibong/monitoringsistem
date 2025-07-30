@@ -123,6 +123,26 @@
             margin-bottom: 5px;
         }
 
+        /* Consistent point styling for both sections */
+        .content-body .pembahasan-point,
+        .content-body .tindak-lanjut-point {
+            margin-bottom: 5px;
+            font-weight: normal;
+        }
+
+        .content-body .pembahasan-point strong,
+        .content-body .tindak-lanjut-point strong {
+            font-weight: bold;
+        }
+
+        .content-body .pembahasan-detail,
+        .content-body .tindak-lanjut-detail,
+        .content-body .pembahasan-subpoints,
+        .content-body .tindak-lanjut-subpoints {
+            margin-left: 15px;
+            margin-bottom: 5px;
+        }
+
         /* Pasted image styles */
         .content-body img {
             max-width: 100%;

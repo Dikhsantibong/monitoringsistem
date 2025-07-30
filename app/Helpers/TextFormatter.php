@@ -27,11 +27,11 @@ class TextFormatter
             // Check if this paragraph contains list items
             $firstLine = trim($lines[0]);
             
-            // For pembahasan section, check for special formatting
-            if ($section === 'pembahasan') {
+            // For both pembahasan and tindak_lanjut sections, check for special formatting
+            if ($section === 'pembahasan' || $section === 'tindak_lanjut') {
                 // Check if the paragraph starts with a number followed by dot and space
                 if (preg_match('/^[0-9]+\.\s/', $firstLine)) {
-                    // This is a main point in pembahasan
+                    // This is a main point
                     $mainPoint = preg_replace('/^([0-9]+\.\s)/', '<strong>$1</strong>', $firstLine);
                     $result[] = "<p class=\"pembahasan-point\">{$mainPoint}</p>";
                     
