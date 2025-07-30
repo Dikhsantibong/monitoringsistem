@@ -111,6 +111,18 @@
             padding-left: 15px;
         }
 
+        /* Remove bullet points from lists */
+        .content-body ul,
+        .content-body ol {
+            list-style: none;
+            padding-left: 0;
+            margin-left: 0;
+        }
+
+        .content-body li {
+            margin-bottom: 5px;
+        }
+
         /* Pasted image styles */
         .content-body img {
             max-width: 100%;
