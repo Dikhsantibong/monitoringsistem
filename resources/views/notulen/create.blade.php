@@ -484,6 +484,9 @@
                     </div>
                     <div id="pembahasanEditor" class="editor-content" contenteditable="true"></div>
                 </div>
+                <div style="color: #b91c1c; font-size: 0.95rem; margin-top: 0.5rem;">
+                    <i class="fas fa-info-circle"></i> Tekan <b>Enter dua kali</b> untuk membuat baris/point baru.
+                </div>
             </div>
 
             <div class="form-group">
@@ -510,6 +513,9 @@
                         </select>
                     </div>
                     <div id="tindakLanjutEditor" class="editor-content" contenteditable="true"></div>
+                </div>
+                <div style="color: #b91c1c; font-size: 0.95rem; margin-top: 0.5rem;">
+                    <i class="fas fa-info-circle"></i> Tekan <b>Enter dua kali</b> untuk membuat baris/point baru.
                 </div>
             </div>
 
@@ -1313,10 +1319,16 @@
         submitButton.disabled = true;
 
         try {
-            cleanEditorHtml(document.getElementById('pembahasanEditor'));
-            cleanEditorHtml(document.getElementById('tindakLanjutEditor'));
-            const pembahasanContent = document.getElementById('pembahasanEditor').innerHTML;
-            const tindakLanjutContent = document.getElementById('tindakLanjutEditor').innerHTML;
+            // Clean editor content
+            const pembahasanEditor = document.getElementById('pembahasanEditor');
+            const tindakLanjutEditor = document.getElementById('tindakLanjutEditor');
+
+            // Remove unnecessary elements and clean content
+            cleanEditorContent(pembahasanEditor);
+            cleanEditorContent(tindakLanjutEditor);
+
+            const pembahasanContent = pembahasanEditor.innerHTML;
+            const tindakLanjutContent = tindakLanjutEditor.innerHTML;
 
             document.getElementById('pembahasanInput').value = pembahasanContent;
             document.getElementById('tindakLanjutInput').value = tindakLanjutContent;
@@ -1397,8 +1409,30 @@
         }
     });
 
-    function cleanEditorHtml(editor) {
+    function cleanEditorContent(editor) {
+        // Remove image action buttons
         editor.querySelectorAll('.image-actions').forEach(el => el.remove());
+        
+        // Remove empty paragraphs
+        editor.querySelectorAll('p').forEach(p => {
+            if (!p.textContent.trim()) {
+                p.remove();
+            }
+        });
+
+        // Remove inline styles
+        editor.querySelectorAll('*').forEach(el => {
+            el.removeAttribute('style');
+        });
+
+        // Clean nbsp
+        editor.innerHTML = editor.innerHTML.replace(/&nbsp;/g, ' ');
+        
+        // Clean multiple spaces
+        editor.innerHTML = editor.innerHTML.replace(/\s+/g, ' ');
+        
+        // Clean multiple newlines
+        editor.innerHTML = editor.innerHTML.replace(/\n\s*\n/g, '\n');
     }
 </script>
 @push('scripts')

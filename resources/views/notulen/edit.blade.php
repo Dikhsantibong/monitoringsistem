@@ -136,7 +136,7 @@
                                                 <li>Untuk poin utama, gunakan angka diikuti titik (contoh: "1.", "2.", "3.")</li>
                                                 <li>Untuk sub-poin, gunakan huruf kecil diikuti titik (contoh: "a.", "b.", "c.")</li>
                                                 <li>Untuk daftar tanpa urutan, gunakan tanda strip (-)</li>
-                                                <li>Tekan Enter dua kali untuk membuat paragraf baru</li>
+                                                <li>Tekan <b>Enter dua kali</b> untuk membuat baris/point baru</li>
                                                 <li>Bisa paste gambar langsung ke editor</li>
                                             </ul>
                                         </small>
@@ -146,6 +146,9 @@
                                     @error('pembahasan')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
+                                    <div style="color: #b91c1c; font-size: 0.95rem; margin-top: 0.5rem;">
+                                        <i class="fas fa-info-circle"></i> Tekan <b>Enter dua kali</b> untuk membuat baris/point baru.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -159,6 +162,9 @@
                                     @error('tindak_lanjut')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
+                                    <div style="color: #b91c1c; font-size: 0.95rem; margin-top: 0.5rem;">
+                                        <i class="fas fa-info-circle"></i> Tekan <b>Enter dua kali</b> untuk membuat baris/point baru.
+                                    </div>
                                 </div>
                             </div>
                         </div>

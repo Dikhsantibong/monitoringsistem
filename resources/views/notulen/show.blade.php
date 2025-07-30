@@ -467,7 +467,7 @@
 
         /* Styles for content images */
         .content-body img {
-            max-width: 100%;
+            width: 400px;
             height: auto;
             margin: 1rem 0;
             border-radius: 4px;
@@ -477,7 +477,7 @@
         /* Image container for better layout */
         .content-body .image-container {
             margin: 1rem 0;
-            text-align: center;
+            text-align: left;
         }
 
         .content-body .image-container img {

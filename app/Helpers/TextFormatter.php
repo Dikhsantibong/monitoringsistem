@@ -17,52 +17,52 @@ class TextFormatter
             return '';
         }
 
-        // Split text into paragraphs
-        $paragraphs = preg_split('/\n\s*\n/', $text);
+        // Clean the text first
+        $text = self::cleanHtml($text);
+
+        // Normalize <br> to \n
+        $text = preg_replace('/<br\s*\/?\s*>/i', "\n", $text);
+
+        // Split text into lines (not paragraphs)
+        $lines = preg_split('/\n+/', $text);
         $result = [];
+        $i = 0;
+        $count = count($lines);
+        while ($i < $count) {
+            $line = trim($lines[$i]);
+            if ($line === '') { $i++; continue; }
 
-        foreach ($paragraphs as $paragraph) {
-            $lines = explode("\n", trim($paragraph));
-            
-            // Check if this paragraph contains list items
-            $firstLine = trim($lines[0]);
-            
-            // For both pembahasan and tindak_lanjut sections, check for special formatting
-            if ($section === 'pembahasan' || $section === 'tindak_lanjut') {
-                // Check if the paragraph starts with a number followed by dot and space
-                if (preg_match('/^[0-9]+\.\s/', $firstLine)) {
-                    // This is a main point
-                    $mainPoint = preg_replace('/^([0-9]+\.\s)/', '<strong>$1</strong>', $firstLine);
-                    $result[] = "<p class=\"pembahasan-point\">{$mainPoint}</p>";
-                    
-                    // Process remaining lines for sub-points
-                    $subPoints = array_slice($lines, 1);
-                    if (!empty($subPoints)) {
-                        $subList = self::processSubPoints($subPoints);
-                        if (!empty($subList)) {
-                            $result[] = $subList;
-                        }
-                    }
-                    continue;
+            // Group consecutive a., b., c. as one list
+            if (preg_match('/^[a-z]\.\s/', $line)) {
+                $subpoints = [];
+                while ($i < $count && preg_match('/^[a-z]\.\s/', trim($lines[$i]))) {
+                    $subpoints[] = trim($lines[$i]);
+                    $i++;
                 }
+                $result[] = self::createList($subpoints, 'ol', 'a');
+                continue;
             }
-            
-            // Regular list detection
-            if (preg_match('/^[a-z]\./', $firstLine)) {
-                // Alphabetical list
-                $result[] = self::createList($lines, 'ol', 'a');
-            } elseif (preg_match('/^[0-9]+\./', $firstLine)) {
-                // Numerical list
-                $result[] = self::createList($lines, 'ol', '1');
-            } elseif (preg_match('/^[\-\•]/', $firstLine)) {
-                // Bullet list
-                $result[] = self::createList($lines, 'ul');
-            } else {
-                // Regular paragraph
-                $result[] = "<p>" . implode("<br>", array_map('trim', $lines)) . "</p>";
+            // Group consecutive 1., 2., 3. as one list
+            if (preg_match('/^[0-9]+\.\s/', $line)) {
+                $mainPoint = preg_replace('/^([0-9]+\.\s)/', '<strong>$1</strong>', $line);
+                $result[] = "<p class=\"pembahasan-point\">{$mainPoint}</p>";
+                $i++;
+                continue;
             }
+            // Group consecutive bullet points as one list
+            if (preg_match('/^[\-\•]\s/', $line)) {
+                $bullets = [];
+                while ($i < $count && preg_match('/^[\-\•]\s/', trim($lines[$i]))) {
+                    $bullets[] = trim($lines[$i]);
+                    $i++;
+                }
+                $result[] = self::createList($bullets, 'ul');
+                continue;
+            }
+            // Regular paragraph
+            $result[] = "<p>" . $line . "</p>";
+            $i++;
         }
-
         return implode("\n", $result);
     }
 
@@ -259,6 +259,42 @@ class TextFormatter
         $text = trim($text);
 
         return $text;
+    }
+
+    /**
+     * Clean HTML content from unnecessary tags and styles
+     * 
+     * @param string|null $html The HTML content to clean
+     * @return string The cleaned HTML
+     */
+    private static function cleanHtml(?string $html): string
+    {
+        if (empty($html)) {
+            return '';
+        }
+
+        // Remove empty paragraphs
+        $html = preg_replace('/<p[^>]*>\s*<\/p>/', '', $html);
+        
+        // Remove &nbsp;
+        $html = str_replace('&nbsp;', ' ', $html);
+        
+        // Remove inline styles
+        $html = preg_replace('/\s*style="[^"]*"/', '', $html);
+        
+        // Remove empty style attributes
+        $html = preg_replace('/\s*style=\'\'/', '', $html);
+        
+        // Remove CSS variables
+        $html = preg_replace('/--[^:;}\s]+:\s*[^;}\s]+;?/', '', $html);
+        
+        // Clean up multiple spaces
+        $html = preg_replace('/\s+/', ' ', $html);
+        
+        // Clean up multiple newlines
+        $html = preg_replace('/\n\s*\n/', "\n", $html);
+        
+        return trim($html);
     }
 
     public static function hariIndonesia($date)

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
                 size: A4;
                 margin: 1.5cm 1.5cm 1.5cm 1.5cm;
             }
-            
+
             body {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -145,12 +146,12 @@
 
         /* Pasted image styles */
         .content-body img {
-            max-width: 100%;
+            max-width: 400px;
             height: auto;
             margin: 10px 0;
             page-break-inside: avoid;
             border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .content-body .image-wrapper {
@@ -162,7 +163,8 @@
         .content-body .image-wrapper img {
             display: inline-block;
             margin: 0;
-            max-height: 300px; /* Limit height for better PDF layout */
+            max-height: 300px;
+            /* Limit height for better PDF layout */
         }
 
         /* Signature table layout */
@@ -220,6 +222,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="notulen-container">
         <!-- Header Section -->
@@ -261,8 +264,9 @@
             </tr>
             <tr>
                 <td class="info-label">Waktu</td>
-                <td>: {{ $notulen->waktu_mulai ? \Carbon\Carbon::parse($notulen->waktu_mulai)->format('H:i') : '-' }} - 
-                    {{ $notulen->waktu_selesai ? \Carbon\Carbon::parse($notulen->waktu_selesai)->format('H:i') : '-' }} WIB</td>
+                <td>: {{ $notulen->waktu_mulai ? \Carbon\Carbon::parse($notulen->waktu_mulai)->format('H:i') : '-' }} -
+                    {{ $notulen->waktu_selesai ? \Carbon\Carbon::parse($notulen->waktu_selesai)->format('H:i') : '-' }} WIB
+                </td>
             </tr>
             <tr>
                 <td class="info-label">Hari/Tanggal</td>
@@ -276,22 +280,22 @@
                 <div class="content-title">A. Pembahasan</div>
                 <div class="content-body">
                     @php
-                        // Replace image paths to use public_path for PDF generation
-                        $pembahasan = preg_replace_callback(
-                            '/<img[^>]+src="([^"]+)"[^>]*>/',
-                            function($matches) {
-                                $src = $matches[1];
-                                // If it's a storage URL, convert it to public_path
-                                if (strpos($src, '/storage/') !== false) {
-                                    $storagePath = str_replace('/storage/', '', parse_url($src, PHP_URL_PATH));
-                                    return str_replace($src, public_path('storage/' . $storagePath), $matches[0]);
-                                }
-                                return $matches[0];
-                            },
-                            $notulen->pembahasan
+                    function convertImageSrcToFile($html) {
+                    return preg_replace_callback(
+                    '/<img[^>]+src="([^"]+)"[^>]*>/i',
+                        function($matches) {
+                        $src = $matches[1];
+                        if (strpos($src, '/storage/') !== false) {
+                        $relativePath = public_path(parse_url($src, PHP_URL_PATH));
+                        return str_replace($src, 'file://' . $relativePath, $matches[0]);
+                        }
+                        return $matches[0];
+                        },
+                        $html
                         );
-                    @endphp
-                    {!! $pembahasan !!}
+                        }
+                        @endphp
+                        {!! convertImageSrcToFile($notulen->pembahasan) !!}
                 </div>
             </div>
 
@@ -299,22 +303,22 @@
                 <div class="content-title">B. Tindak Lanjut</div>
                 <div class="content-body">
                     @php
-                        // Replace image paths to use public_path for PDF generation
-                        $tindakLanjut = preg_replace_callback(
-                            '/<img[^>]+src="([^"]+)"[^>]*>/',
-                            function($matches) {
-                                $src = $matches[1];
-                                // If it's a storage URL, convert it to public_path
-                                if (strpos($src, '/storage/') !== false) {
-                                    $storagePath = str_replace('/storage/', '', parse_url($src, PHP_URL_PATH));
-                                    return str_replace($src, public_path('storage/' . $storagePath), $matches[0]);
-                                }
-                                return $matches[0];
-                            },
-                            $notulen->tindak_lanjut
+                    // Replace image paths to use public_path for PDF generation
+                    $tindakLanjut = preg_replace_callback(
+                    '/<img[^>]+src="([^"]+)"[^>]*>/',
+                        function($matches) {
+                        $src = $matches[1];
+                        // If it's a storage URL, convert it to public_path
+                        if (strpos($src, '/storage/') !== false) {
+                        $storagePath = str_replace('/storage/', '', parse_url($src, PHP_URL_PATH));
+                        return str_replace($src, asset('storage/' . $storagePath), $matches[0]);
+                        }
+                        return $matches[0];
+                        },
+                        $notulen->tindak_lanjut
                         );
-                    @endphp
-                    {!! $tindakLanjut !!}
+                        @endphp
+                        {!! convertImageSrcToFile($notulen->tindak_lanjut) !!}
                 </div>
             </div>
         </div>
@@ -359,19 +363,19 @@
                 </thead>
                 <tbody>
                     @forelse($notulen->attendances as $index => $attendance)
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $attendance->name }}</td>
-                            <td>{{ $attendance->position }}</td>
-                            <td>{{ $attendance->division }}</td>
-                            <td class="text-center">
-                                <img src="{{ $attendance->signature }}" alt="Tanda Tangan" style="max-width: 100px; max-height: 50px;">
-                            </td>
-                        </tr>
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>{{ $attendance->name }}</td>
+                        <td>{{ $attendance->position }}</td>
+                        <td>{{ $attendance->division }}</td>
+                        <td class="text-center">
+                            <img src="{{ $attendance->signature }}" alt="Tanda Tangan" style="max-width: 100px; max-height: 50px;">
+                        </td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td colspan="5" class="text-center">Tidak ada data absensi</td>
-                        </tr>
+                    <tr>
+                        <td colspan="5" class="text-center">Tidak ada data absensi</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -390,19 +394,20 @@
             <table class="doc-table">
                 <tr>
                     @forelse($notulen->documentations as $index => $documentation)
-                        @if($index % 2 == 0)
-                            </tr><tr>
+                    @if($index % 2 == 0)
+                </tr>
+                <tr>
+                    @endif
+                    <td style="width: 50%; padding: 15px; text-align: center;">
+                        <img src="{{ public_path('storage/' . $documentation->image_path) }}"
+                            alt="Dokumentasi"
+                            style="max-width: 300px; max-height: 200px; margin-bottom: 10px;">
+                        @if($documentation->caption)
+                        <div style="font-size: 9pt;">{{ $documentation->caption }}</div>
                         @endif
-                        <td style="width: 50%; padding: 15px; text-align: center;">
-                            <img src="{{ public_path('storage/' . $documentation->image_path) }}" 
-                                 alt="Dokumentasi" 
-                                 style="max-width: 300px; max-height: 200px; margin-bottom: 10px;">
-                            @if($documentation->caption)
-                                <div style="font-size: 9pt;">{{ $documentation->caption }}</div>
-                            @endif
-                        </td>
+                    </td>
                     @empty
-                        <td class="text-center" style="padding: 30px;">Tidak ada dokumentasi rapat</td>
+                    <td class="text-center" style="padding: 30px;">Tidak ada dokumentasi rapat</td>
                     @endforelse
                 </tr>
             </table>
@@ -429,15 +434,15 @@
                 </thead>
                 <tbody>
                     @foreach($notulen->files as $index => $file)
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $file->file_name }}</td>
-                            <td>{{ $file->caption ?: '-' }}</td>
-                        </tr>
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>{{ $file->file_name }}</td>
+                        <td>{{ $file->caption ?: '-' }}</td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
-            
+
             <div style="margin-top: 15px; font-style: italic; font-size: 9pt;">
                 * Dokumen lampiran terlampir pada halaman berikutnya
             </div>
@@ -453,4 +458,5 @@
     </div>
     @endif
 </body>
+
 </html>
