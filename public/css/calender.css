@@ -1,10 +1,19 @@
 .nav-background {
-    background-color: #4a5568;
+    background-color: #1a1a1a; /* Dark background */
+    background-image: linear-gradient(to right, #1a1a1a, #2d3748);
+}
+
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    font-weight: 500;
 }
 
 .nav-link:hover {
-    color: #A8D600;
-
+    color: #a8d600;
 }
 
 .calendar-container {
@@ -27,7 +36,7 @@
 .calendar-nav-btn {
     padding: 8px 16px;
     border-radius: 6px;
-    background: #0095B7;
+    background: #0095b7;
     color: white;
     font-weight: 500;
     border: none;
@@ -72,7 +81,7 @@
 }
 
 .date-header {
-    background: #0095B7;
+    background: #0095b7;
     color: white;
     padding: 15px;
     font-size: 1.1rem;
@@ -105,11 +114,11 @@
 }
 
 .event-item.service-request {
-    border-left-color: #0095B7;
+    border-left-color: #0095b7;
 }
 
 .event-item.work-order {
-    border-left-color: #A8D600;
+    border-left-color: #a8d600;
 }
 
 .event-type {
@@ -170,8 +179,6 @@
     margin: 20px;
 }
 
-
-
 /* Grid kalender bulanan 7 kolom */
 .calendar-grid-month {
     padding: 10px;
@@ -193,7 +200,8 @@
     padding: 2px;
 }
 
-.date-card-mini .flex-1 {}
+.date-card-mini .flex-1 {
+}
 
 .event-item-mini {
     padding: 1px 2px;
@@ -261,4 +269,67 @@
         height: 60px;
         font-size: 10px;
     }
+
+    .nav-link-mobile {
+        display: block;
+        padding: 0.75rem 1rem;
+        color: #1a202c;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .nav-link-mobile:hover {
+        background-color: #f7fafc;
+        color: #4299e1;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .nav-link {
+            color: #fff;
+        }
+    
+        .nav-link-mobile {
+            color: #fff;
+        }
+    
+        .nav-link-mobile:hover {
+            background-color: #2d3748;
+        }
+    }
+
+    /* Tambahan style untuk tombol login */
+    /*
+    .login-button {
+        background-color: #4299e1;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .login-button:hover {
+        background-color: #3182ce;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Style untuk login di mobile menu */
+    /*
+    .login-mobile {
+        background-color: #4299e1;
+        color: white !important;
+        border-radius: 0.375rem;
+        margin: 0.5rem 1rem;
+    }
+
+    .login-mobile:hover {
+        background-color: #3182ce !important;
+        border-left-color: transparent !important;
+    }
+    */
 }
