@@ -132,13 +132,13 @@
                                 @forelse($dateEvents as $event)
                                     @php
                                         $status = strtolower($event['status']);
-                                        $border = $status === 'open' ? 'border-2 border-yellow-400' : ($status === 'closed' ? 'border-2 border-green-500' : 'border');
-                                        $bg = $status === 'open' ? 'bg-yellow-50' : ($status === 'closed' ? 'bg-green-50' : 'bg-gray-100');
+                                        $border = $status === 'closed' ? 'border-2 border-green-500' : 'border-2 border-red-500';
+                                        $bg = $status === 'closed' ? 'bg-green-50' : 'bg-red-50';
                                     @endphp
                                     <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
                                         <div class="flex justify-between items-center">
                                             <span class="font-bold text-xs">#{{ $event['id'] }}</span>
-                                            <span class="text-[10px] px-1 py-0.5 rounded {{ $status === 'open' ? 'bg-yellow-300 text-yellow-900' : ($status === 'closed' ? 'bg-green-300 text-green-900' : 'bg-gray-300 text-gray-800') }}">{{ ucfirst($event['status']) }}</span>
+                                            <span class="text-[10px] px-1 py-0.5 rounded {{ $status === 'closed' ? 'bg-green-300 text-green-900' : 'bg-red-300 text-red-900' }}">{{ ucfirst($event['status']) }}</span>
                                         </div>
                                         <div class="font-semibold text-[11px]">{{ $event['type'] }}</div>
                                         <div class="text-[10px] text-gray-700 event-desc">{{ $event['description'] }}</div>

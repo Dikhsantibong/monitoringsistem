@@ -238,6 +238,18 @@
     color: #166534;
 }
 
+.event-item-mini.bg-red-50 {
+    background: #fee2e2;
+    color: #991b1b;
+}
+.event-item-mini.border-red-500 {
+    border-color: #ef4444;
+}
+.event-item-mini .bg-red-300 {
+    background: #fca5a5 !important;
+    color: #991b1b !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .calendar-container {
