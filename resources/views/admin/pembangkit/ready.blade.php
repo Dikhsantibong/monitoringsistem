@@ -1290,4 +1290,76 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @push('scripts')
+<script>
+// Kunci semua input, select, textarea, dan tombol (kecuali refresh)
+function lockAllInputs() {
+    document.querySelectorAll('input, select, textarea, button:not(#refreshButton)').forEach(el => {
+        if (el.type !== 'hidden' && el.id !== 'refreshButton') {
+            el.disabled = true;
+        }
+    });
+    const refreshBtn = document.getElementById('refreshButton');
+    if (refreshBtn) refreshBtn.disabled = false;
+}
+
+// Buka kunci semua input, select, textarea, dan tombol
+function unlockAllInputs() {
+    document.querySelectorAll('input, select, textarea, button').forEach(el => {
+        if (el.type !== 'hidden') {
+            el.disabled = false;
+        }
+    });
+    const refreshBtn = document.getElementById('refreshButton');
+    if (refreshBtn) refreshBtn.disabled = false;
+}
+
+// Saat halaman dimuat, kunci input dan tampilkan peringatan
+// Pastikan hanya dijalankan sekali
+let sudahRefresh = false;
+document.addEventListener('DOMContentLoaded', function() {
+    lockAllInputs();
+    Swal.fire({
+        icon: 'info',
+        title: 'Tekan "Refresh Data" terlebih dahulu',
+        text: 'Untuk mulai mengisi data, silakan tekan tombol "Refresh Data" di pojok kanan atas.',
+        confirmButtonText: 'OK'
+    });
+});
+
+// Patch loadData agar unlockAllInputs() dipanggil setelah data berhasil dimuat
+const originalLoadData = window.loadData;
+window.loadData = function() {
+    sudahRefresh = true;
+    if (typeof originalLoadData === 'function') {
+        const result = originalLoadData.apply(this, arguments);
+        // unlockAllInputs akan dipanggil di then() pada loadData asli
+        // Jika loadData tidak mengembalikan promise, fallback timeout
+        if (result && typeof result.then === 'function') {
+            result.then(() => {
+                unlockAllInputs();
+            });
+        } else {
+            setTimeout(unlockAllInputs, 2000); // fallback
+        }
+        return result;
+    }
+};
+
+// Jika user mencoba simpan sebelum refresh, cegah dan beri peringatan
+document.addEventListener('DOMContentLoaded', function() {
+    const simpanBtn = document.querySelector('button[onclick*="saveData"]');
+    if (simpanBtn) {
+        simpanBtn.addEventListener('click', function(e) {
+            if (!sudahRefresh) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Silakan refresh data terlebih dahulu!',
+                    text: 'Anda harus menekan tombol "Refresh Data" sebelum dapat menyimpan data.'
+                });
+            }
+        });
+    }
+});
+</script>
 @endpush
