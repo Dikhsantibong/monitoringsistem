@@ -246,7 +246,7 @@ main {
 
 /* Navbar Background */
 .nav-background {
-    background-color: #1a1a1a; /* Dark background */
+    background-color: #1a1a1a !important; /* Dark background */
     background-image: linear-gradient(to right, #1a1a1a, #2d3748);
 }
 

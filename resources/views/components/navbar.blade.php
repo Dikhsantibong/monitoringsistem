@@ -1,6 +1,6 @@
  <!-- Navbar -->
  <nav class="fixed w-full top-0 z-50">
-    <div class="nav-background shadow-lg">
+    <div class="nav-background ">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
@@ -22,7 +22,11 @@
                         <li><a href="{{ route('calendar.index') }}" class="nav-link">
                             <i class="fas fa-calendar-alt mr-1"></i> Calendar
                         </a></li>
-
+                        <li>
+                            <a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link">
+                                <i class="fas fa-chart-line mr-1"></i> Kinerja Pemeliharaan
+                            </a>
+                        </li>
                         <!-- Login button -->
                         <li>
                             <a href="{{ route('login') }}" class="login-button">
@@ -54,6 +58,11 @@
                     <li><a href="{{ route('calendar.index') }}" class="nav-link-mobile">
                         <i class="fas fa-calendar-alt mr-1"></i> Calendar
                     </a></li>
+                    <li>
+                        <a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link-mobile">
+                            <i class="fas fa-chart-line mr-1"></i> Kinerja Pemeliharaan
+                        </a>
+                    </li>
                     <!-- Login button in mobile -->
                     <li>
                         <a href="{{ route('login') }}" class="nav-link-mobile login-mobile">

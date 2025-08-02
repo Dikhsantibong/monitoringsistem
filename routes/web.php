@@ -35,6 +35,7 @@ use App\Http\Controllers\NotulenController;
 use App\Http\Controllers\Api\NotulenAttendanceController;
 use App\Http\Controllers\Api\NotulenDraftController;
 use App\Http\Controllers\Api\NotulenFileController;
+use App\Http\Controllers\KinerjaPemeliharaanController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -792,3 +793,5 @@ Route::post('/api/notulen/{notulen}/file', [App\Http\Controllers\Api\NotulenFile
 
 Route::post('/api/notulen-paste-image', [NotulenController::class, 'uploadPastedImage'])
     ->name('notulen.paste-image');
+
+Route::get('/kinerja-pemeliharaan', [KinerjaPemeliharaanController::class, 'index'])->name('kinerja.pemeliharaan');

@@ -2,6 +2,134 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/calender.css') }}">
+
+<style>
+    .nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: #4299e1;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 50%;
+    background-color: #4299e1;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-link.active {
+    color: #A8D600;
+}
+
+.nav-link.active::after {
+    width: 100%;
+}
+
+/* Mobile Menu Styles */
+.nav-link-mobile {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-link-mobile:hover {
+    background-color: #2d3748;
+    color: #A8D600;
+    border-left-color: #A8D600;
+}
+
+/* Dark mode is now default */
+.nav-link, .nav-link-mobile {
+    color: #ffffff;
+}
+
+.nav-link-mobile:hover {
+    background-color: #2d3748;
+}
+
+.nav-link {
+    color: #ffffff !important;
+    text-align: center;
+}
+
+.nav-link-mobile {
+    color: #ffffff !important;
+}
+.nav-background {
+    background-color: #1a1a1a !important;
+}
+
+/* Tambahan style untuk tombol login */
+.login-button {
+    background-color: #4299e1;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.login-button:hover {
+    background-color: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Style untuk login di mobile menu */
+.login-mobile {
+    background-color: #4299e1;
+    color: white !important;
+    border-radius: 0.375rem;
+    margin: 0.5rem 1rem;
+}
+
+.login-mobile:hover {
+    background-color: #3182ce !important;
+    border-left-color: transparent !important;
+}
+
+/* Memastikan icon font-awesome sejajar dengan teks */
+.fas {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Adjust body and main content positioning */
+body {
+    margin: 0;
+    padding-top: 100px;
+    min-height: calc(100vh - 100px);
+    overflow-x: hidden;
+}
+
+main {
+    margin-top: 80px; /* Sesuaikan dengan tinggi navbar */
+}
+
+</style>
 @endsection
 
 @section('content')
@@ -10,7 +138,7 @@
     <div class="w-full">
          <!-- Navbar -->
  <nav class="fixed w-full top-0 z-50">
-    <div class="nav-background shadow-lg">
+    <div class="nav-background ">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
