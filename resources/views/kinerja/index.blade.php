@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('styles')
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
+
     <style>
         .chart-card {
             background: linear-gradient(to bottom, #f9fafb, #fff);
