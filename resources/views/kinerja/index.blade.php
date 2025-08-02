@@ -6,23 +6,34 @@
     <style>
         .dashboard-flex-row {
             display: flex;
-            gap: 2rem;
+            gap: 2.5rem;
             justify-content: center;
             align-items: flex-start;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 98vw;
         }
-        .chart-detail-card {
+        .chart-detail-card,
+        .detail-card {
             background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 0.75rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             padding: 1.2rem 1.2rem 1rem 1.2rem;
-            min-width: 320px;
-            max-width: 420px;
-            width: 100%;
+            min-width: 0;
+            width: 48%;
+            max-width: 900px;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
+        }
+        .chart-detail-card {
             align-items: center;
+        }
+        .detail-card {
+            align-items: stretch;
         }
         .chart-title {
             font-size: 1.05rem;
@@ -62,16 +73,6 @@
             font-size: 0.85rem;
             color: #6b7280;
         }
-        .detail-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            padding: 1.2rem 1.2rem 1rem 1.2rem;
-            min-width: 320px;
-            max-width: 600px;
-            width: 100%;
-        }
         .detail-title {
             font-size: 1.05rem;
             font-weight: 600;
@@ -84,22 +85,30 @@
             grid-template-columns: 1fr 1fr;
             gap: 1.2rem;
         }
+        .container {
+            max-width: 100vw !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
         @media (max-width: 1400px) {
-            .container {
-                max-width: 98vw !important;
+            .dashboard-flex-row {
+                gap: 1.2rem;
             }
             .chart-detail-card, .detail-card {
-                max-width: 100%;
+                width: 49%;
+                max-width: none;
             }
         }
         @media (max-width: 1024px) {
             .dashboard-flex-row {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 1.5rem;
             }
             .chart-detail-card, .detail-card {
-                max-width: 100%;
+                width: 100%;
                 min-width: 0;
+                max-width: 100%;
             }
             .mini-charts-row {
                 flex-direction: column;
@@ -121,7 +130,7 @@
 @section('content')
 @include('components.navbar')
 
-<div class="container mx-auto px-2 py-10 mt-24" style="max-width: 1800px;">
+<div class="container mx-auto py-10 mt-24" style="max-width:100vw;">
     <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">Dashboard Kinerja Pemeliharaan</h1>
 
     <div class="dashboard-flex-row">
@@ -157,7 +166,7 @@
                         @if(count($data))
                             <ul class="list-disc ml-5 text-xs text-gray-700">
                                 @foreach($data as $wo)
-                                    <li>ID: {{ $wo->id }} - {{ $wo->description }}</li>
+                                    <li>NO WO: {{ $wo->id }} - {{ $wo->description }}</li>
                                 @endforeach
                             </ul>
                         @else
@@ -174,7 +183,7 @@
                         @if(count($data))
                             <ul class="list-disc ml-5 text-xs text-gray-700">
                                 @foreach($data as $wo)
-                                    <li>ID: {{ $wo->id }} - {{ $wo->description }}</li>
+                                    <li>NO WO: {{ $wo->id }} - {{ $wo->description }}</li>
                                 @endforeach
                             </ul>
                         @else
@@ -191,9 +200,9 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Data dari backend
-        var unitLabels = @json($unitNames);
-        var pmData = @json($pmPerUnit);
-        var cmData = @json($cmPerUnit);
+        var unitLabels = {!! json_encode($unitNames) !!};
+        var pmData = {!! json_encode($pmPerUnit) !!};
+        var cmData = {!! json_encode($cmPerUnit) !!};
 
         var pmColors = [
             'rgba(59, 130, 246, 0.7)',
