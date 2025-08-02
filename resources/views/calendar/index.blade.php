@@ -348,7 +348,19 @@
 <!-- Include the toggle.js script for mobile menu functionality -->
 
 @push('scripts')
+<script src="{{ asset('js/toggle.js') }}"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (menuButton && mobileMenu) {
+            menuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    });
+
 
     function handlePopupClick(button) {
         const events = JSON.parse(button.getAttribute('data-events'));
