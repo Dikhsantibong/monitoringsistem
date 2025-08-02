@@ -2,125 +2,109 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
-
     <style>
+        body {
+            background: #f4f6fa;
+        }
+        .dashboard-bg {
+            background: #f4f6fa;
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
         .dashboard-flex-row {
-            display: flex;
-            gap: 2.5rem;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: nowrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.2rem;
             width: 100%;
             margin-left: auto;
             margin-right: auto;
             max-width: 98vw;
+            align-items: stretch;
         }
-        .chart-detail-card,
-        .detail-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        .chart-card {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+            border: 1px solid #dbeafe;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.07);
             padding: 1.2rem 1.2rem 1rem 1.2rem;
             min-width: 0;
-            width: 48%;
-            max-width: 900px;
+            width: 100%;
+            max-width: 100%;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-        }
-        .chart-detail-card {
             align-items: center;
+            margin-bottom: 0;
         }
-        .detail-card {
-            align-items: stretch;
-        }
-        .chart-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: #1a202c;
-            margin-bottom: 0.7rem;
-            text-align: center;
-        }
-        .mini-charts-row {
-            display: flex;
-            gap: 1.2rem;
-            justify-content: center;
-            margin-bottom: 1.2rem;
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
             width: 100%;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
         }
-        .mini-chart-card {
-            background: linear-gradient(to bottom, #f9fafb, #fff);
-            border: 1px solid #e5e7eb;
+        .stat-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #f9fafb 100%);
+            border: 1px solid #bbf7d0;
             border-radius: 0.75rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            padding: 0.7rem 0.7rem 0.5rem 0.7rem;
-            width: 160px;
+            box-shadow: 0 1px 4px rgba(16,185,129,0.07);
             min-width: 0;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            padding: 0.7rem 0.5rem 0.5rem 0.5rem;
+            min-height: 90px;
         }
-        .mini-chart-title {
-            font-size: 0.98rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .stat-title {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 0.2rem;
             text-align: center;
         }
-        .chart-summary {
-            margin-top: 0.5rem;
+        .stat-value {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #2563eb;
             text-align: center;
-            font-size: 0.85rem;
-            color: #6b7280;
         }
-        .detail-title {
-            font-size: 1.05rem;
+        .stat-card:nth-child(2n) .stat-value { color: #f59e42; }
+        .stat-card:nth-child(3n) .stat-value { color: #10b981; }
+        .stat-card:nth-child(4n) .stat-value { color: #ef4444; }
+        .stat-card:nth-child(5n) .stat-value { color: #eab308; }
+        .stat-card:nth-child(6n) .stat-value { color: #6366f1; }
+        .stat-card:nth-child(7n) .stat-value { color: #0ea5e9; }
+        .stat-card:nth-child(8n) .stat-value { color: #f472b6; }
+        .chart-title {
+            font-size: 1.08rem;
             font-weight: 600;
-            color: #374151;
+            color: #1e293b;
             margin-bottom: 0.7rem;
             text-align: center;
         }
-        .detail-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.2rem;
-        }
-        .container {
-            max-width: 100vw !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-        @media (max-width: 1400px) {
+        @media (max-width: 1200px) {
             .dashboard-flex-row {
-                gap: 1.2rem;
+                gap: 0.7rem;
             }
-            .chart-detail-card, .detail-card {
-                width: 49%;
-                max-width: none;
-            }
-        }
-        @media (max-width: 1024px) {
-            .dashboard-flex-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1.5rem;
-            }
-            .chart-detail-card, .detail-card {
-                width: 100%;
+            .chart-card {
+                width: 98vw;
                 min-width: 0;
-                max-width: 100%;
             }
-            .mini-charts-row {
+        }
+        @media (max-width: 900px) {
+            .dashboard-flex-row {
                 flex-direction: column;
                 gap: 0.7rem;
             }
+            .chart-card {
+                width: 100%;
+                min-width: 0;
+            }
         }
         @media (max-width: 600px) {
-            .mini-chart-card {
-                width: 100%;
-                max-width: 100%;
-            }
-            .detail-grid {
+            .stat-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -129,95 +113,171 @@
 
 @section('content')
 @include('components.navbar')
-
-<div class="container mx-auto py-10 mt-24" style="max-width:100vw;">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">Dashboard Kinerja Pemeliharaan</h1>
-
-    <div class="dashboard-flex-row">
-        <!-- Card Grafik Gabungan -->
-        <div class="chart-detail-card">
-            <div class="chart-title">Distribusi WO Closed per Unit (PM &amp; CM)</div>
-            <div class="mini-charts-row">
-                <!-- PM Chart -->
-                <div class="mini-chart-card">
-                    <div class="mini-chart-title text-blue-700">Preventive Maintenance (PM)</div>
-                    <canvas id="pmUnitChart" width="120" height="120" style="max-width:120px;max-height:120px;"></canvas>
-                </div>
-                <!-- CM Chart -->
-                <div class="mini-chart-card">
-                    <div class="mini-chart-title text-pink-700">Corrective Maintenance (CM)</div>
-                    <canvas id="cmUnitChart" width="120" height="120" style="max-width:120px;max-height:120px;"></canvas>
-                </div>
+<div class="dashboard-bg">
+    <div class="container mx-auto py-10 mt-10" style="max-width:100vw;">
+        <div class="dashboard-flex-row">
+            <!-- Grafik Donut Distribusi PM vs CM -->
+            <div class="chart-card">
+                <div class="chart-title font-semibold mb-2">Distribusi Total WO Closed (PM vs CM)</div>
+                <canvas id="pmcmDonutChart" width="220" height="220" style="max-width:220px;max-height:220px;"></canvas>
             </div>
-            <div class="chart-summary">
-                Data ditampilkan berdasarkan unit kerja dengan status Work Order: <strong>Closed</strong>
+            <!-- Grafik Line Trend WO Closed (dummy data) -->
+            <div class="chart-card">
+                <div class="chart-title font-semibold mb-2">Trend WO Closed (Bulan Ini)</div>
+                <canvas id="woTrendChart" width="320" height="220" style="max-width:320px;max-height:220px;"></canvas>
+            </div>
+            <!-- Grafik Donut PM per Unit -->
+            <div class="chart-card">
+                <div class="chart-title font-semibold mb-2">Distribusi WO Closed per Unit (PM)</div>
+                <canvas id="pmUnitChart" width="220" height="220" style="max-width:220px;max-height:220px;"></canvas>
+            </div>
+            <!-- Grafik Donut CM per Unit -->
+            <div class="chart-card">
+                <div class="chart-title font-semibold mb-2">Distribusi WO Closed per Unit (CM)</div>
+                <canvas id="cmUnitChart" width="220" height="220" style="max-width:220px;max-height:220px;"></canvas>
             </div>
         </div>
-
-        <!-- Card Detail -->
-        <div class="detail-card">
-            <div class="detail-title">Detail Work Order Closed</div>
-            <div class="detail-grid">
-                <!-- Tabel PM -->
-                <div>
-                    <h3 class="text-base font-semibold text-blue-700 mb-1">PM Closed</h3>
-                    @foreach($pmByUnit as $unit => $data)
-                        <h4 class="font-medium text-gray-600 mt-1 text-sm">{{ $unit }}</h4>
-                        @if(count($data))
-                            <ul class="list-disc ml-5 text-xs text-gray-700">
-                                @foreach($data as $wo)
-                                    <li>NO WO: {{ $wo->id }} - {{ $wo->description }}</li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <p class="text-xs text-gray-400 ml-5">Tidak ada data</p>
-                        @endif
-                    @endforeach
-                </div>
-
-                <!-- Tabel CM -->
-                <div>
-                    <h3 class="text-base font-semibold text-pink-700 mb-1">CM Closed</h3>
-                    @foreach($cmByUnit as $unit => $data)
-                        <h4 class="font-medium text-gray-600 mt-1 text-sm">{{ $unit }}</h4>
-                        @if(count($data))
-                            <ul class="list-disc ml-5 text-xs text-gray-700">
-                                @foreach($data as $wo)
-                                    <li>NO WO: {{ $wo->id }} - {{ $wo->description }}</li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <p class="text-xs text-gray-400 ml-5">Tidak ada data</p>
-                        @endif
-                    @endforeach
+        <div class="stat-grid mt-8">
+            <div class="stat-card">
+                <div class="stat-title">Total WO Closed</div>
+                <div class="stat-value">{{ $pmCount + $cmCount }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total WO PM Closed</div>
+                <div class="stat-value">{{ $pmCount }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total WO CM Closed</div>
+                <div class="stat-value">{{ $cmCount }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Unit</div>
+                <div class="stat-value">{{ count($unitNames) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Rasio PM/CM</div>
+                <div class="stat-value">
+                    @if($cmCount > 0)
+                        {{ number_format($pmCount / $cmCount, 2) }}
+                    @else
+                        -
+                    @endif
                 </div>
             </div>
+            <div class="stat-card">
+                <div class="stat-title">% PM dari Total</div>
+                <div class="stat-value">
+                    @if(($pmCount + $cmCount) > 0)
+                        {{ number_format(100 * $pmCount / ($pmCount + $cmCount), 1) }}%
+                    @else
+                        0%
+                    @endif
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">% CM dari Total</div>
+                <div class="stat-value">
+                    @if(($pmCount + $cmCount) > 0)
+                        {{ number_format(100 * $cmCount / ($pmCount + $cmCount), 1) }}%
+                    @else
+                        0%
+                    @endif
+                </div>
+            </div>
+            @foreach($unitNames as $i => $unit)
+                <div class="stat-card">
+                    <div class="stat-title">PM Closed - {{ $unit }}</div>
+                    <div class="stat-value">{{ $pmPerUnit[$i] }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">CM Closed - {{ $unit }}</div>
+                    <div class="stat-value">{{ $cmPerUnit[$i] }}</div>
+                </div>
+            @endforeach
+            @php
+                $statCardCount = 7 + (count($unitNames) * 2);
+                $remainder = $statCardCount % 4;
+            @endphp
+            @if($remainder > 0)
+                @for($i = 0; $i < 4 - $remainder; $i++)
+                    <div class="stat-card" style="background:transparent;border:none;box-shadow:none;"></div>
+                @endfor
+            @endif
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Data dari backend
-        var unitLabels = {!! json_encode($unitNames) !!};
-        var pmData = {!! json_encode($pmPerUnit) !!};
-        var cmData = {!! json_encode($cmPerUnit) !!};
-
+        var unitLabels = @json($unitNames);
+        var pmData = @json($pmPerUnit);
+        var cmData = @json($cmPerUnit);
+        var pmCount = {{ $pmCount }};
+        var cmCount = {{ $cmCount }};
+        // Donut PM vs CM
+        var pmcmDonutCtx = document.getElementById('pmcmDonutChart').getContext('2d');
+        new Chart(pmcmDonutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['PM', 'CM'],
+                datasets: [{
+                    data: [pmCount, cmCount],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(249, 115, 115, 0.7)'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                cutout: '65%',
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + ' WO';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        // Dummy trend data (bisa diganti dengan data asli jika ada)
+        var trendLabels = ['1', '5', '10', '15', '20', '25', '30'];
+        var trendData = [2, 5, 7, 4, 8, 6, 9];
+        var woTrendCtx = document.getElementById('woTrendChart').getContext('2d');
+        new Chart(woTrendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'WO Closed',
+                    data: trendData,
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Tanggal' } },
+                    y: { title: { display: true, text: 'WO Closed' }, beginAtZero: true }
+                }
+            }
+        });
+        // PM per Unit
         var pmColors = [
             'rgba(59, 130, 246, 0.7)',
             'rgba(96, 165, 250, 0.7)',
             'rgba(147, 197, 253, 0.7)',
             'rgba(191, 219, 254, 0.7)'
         ];
-        var cmColors = [
-            'rgba(249, 115, 115, 0.7)',
-            'rgba(252, 165, 165, 0.7)',
-            'rgba(254, 202, 202, 0.7)',
-            'rgba(254, 226, 226, 0.7)'
-        ];
-
-        // PM Chart
         var pmCtx = document.getElementById('pmUnitChart').getContext('2d');
         new Chart(pmCtx, {
             type: 'doughnut',
@@ -234,9 +294,7 @@
             options: {
                 cutout: '65%',
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: true },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
@@ -247,8 +305,13 @@
                 }
             }
         });
-
-        // CM Chart
+        // CM per Unit
+        var cmColors = [
+            'rgba(249, 115, 115, 0.7)',
+            'rgba(252, 165, 165, 0.7)',
+            'rgba(254, 202, 202, 0.7)',
+            'rgba(254, 226, 226, 0.7)'
+        ];
         var cmCtx = document.getElementById('cmUnitChart').getContext('2d');
         new Chart(cmCtx, {
             type: 'doughnut',
@@ -265,9 +328,7 @@
             options: {
                 cutout: '65%',
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: true },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
