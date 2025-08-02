@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/calender.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <style>
         /* Custom chart card style */
         .chart-card {
@@ -24,6 +24,8 @@
             color: #4a5568;
             font-size: 1rem;
         }
+
+        
     </style>
 @endsection
 
