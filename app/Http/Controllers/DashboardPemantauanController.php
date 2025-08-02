@@ -86,12 +86,15 @@ class DashboardPemantauanController extends Controller
                 ->where('target_selesai', '>=', now())
                 ->get()
                 ->map(function ($log) {
-                    $remainingDays = now()->diffInDays($log->target_selesai, false);
+                    $remainingDays = $log->target_date ? now()->diffInDays($log->target_date) : null;
                     return [
                         'machine_name' => $log->machine->name ?? 'Mesin ' . $log->machine_id,
-                        'progress' => (float) $log->progres,
-                        'remaining_days' => $remainingDays,
-                        'target_days' => $log->tanggal_mulai->diffInDays($log->target_selesai)
+                        'target_days' => ($log->tanggal_mulai && $log->target_date) 
+                            ? $log->tanggal_mulai->diffInDays($log->target_date)
+                            : null,
+                        'actual_days' => $log->tanggal_mulai ? $log->tanggal_mulai->diffInDays(now()) : null,
+                        'progress' => $log->progres,
+                        'status' => $this->getProgressStatus($log->progres, $remainingDays)
                     ];
                 });
 
