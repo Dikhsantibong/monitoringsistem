@@ -361,7 +361,6 @@
         }
     });
 
-
     function handlePopupClick(button) {
         const events = JSON.parse(button.getAttribute('data-events'));
         const date = button.getAttribute('data-date');
@@ -380,16 +379,33 @@
             html = '<div class="text-gray-400 text-sm">Tidak ada event</div>';
         } else {
             events.forEach(function(event, idx) {
-                html += `<div class="mb-3 border-b pb-2">
-                <div class="font-bold text-blue-700 text-xs mb-1">#${event.id} - ${event.type}</div>
-                <div class="text-xs text-gray-700 mb-1">${event.description}</div>
-                <div class="text-[11px] text-gray-500 mb-1">Status: <b>${event.status}</b></div>
-                <div class="text-[11px] text-gray-500 mb-1">Unit: <b>${event.power_plant_name}</b></div>
-                <div class="text-[11px] text-gray-500 mb-1">Priority: <b>${event.priority ?? '-'}</b></div>
-                <div class="text-[11px] text-gray-500 mb-1">Start: <b>${event.schedule_start?.substring(0,10) ?? '-'}</b></div>
-                <div class="text-[11px] text-gray-500 mb-1">Finish: <b>${event.schedule_finish?.substring(0,10) ?? '-'}</b></div>
-                <div class="text-[11px] text-gray-500 mb-1">Labor: <b>${event.labor ?? '-'}</b></div>
-            </div>`;
+                // Highlight open (red) and closed (green)
+                let status = (event.status || '').toLowerCase();
+                let highlightClass = '';
+                let highlightBg = '';
+                if (status === 'open') {
+                    highlightClass = 'border border-red-400 bg-red-50';
+                    highlightBg = 'bg-red-300 text-red-900';
+                } else if (status === 'closed') {
+                    highlightClass = 'border border-green-400 bg-green-50';
+                    highlightBg = 'bg-green-300 text-green-900';
+                } else {
+                    highlightClass = 'border border-gray-300 bg-gray-50';
+                    highlightBg = 'bg-gray-300 text-gray-900';
+                }
+
+                html += `<div class="mb-3 border-b pb-2 ${highlightClass} rounded px-2 py-1">
+                    <div class="font-bold text-blue-700 text-xs mb-1">#${event.id} - ${event.type}</div>
+                    <div class="text-xs text-gray-700 mb-1">${event.description}</div>
+                    <div class="text-[11px] text-gray-500 mb-1">
+                        Status: <b class="px-1 py-0.5 rounded ${highlightBg}">${event.status}</b>
+                    </div>
+                    <div class="text-[11px] text-gray-500 mb-1">Unit: <b>${event.power_plant_name}</b></div>
+                    <div class="text-[11px] text-gray-500 mb-1">Priority: <b>${event.priority ?? '-'}</b></div>
+                    <div class="text-[11px] text-gray-500 mb-1">Start: <b>${event.schedule_start?.substring(0,10) ?? '-'}</b></div>
+                    <div class="text-[11px] text-gray-500 mb-1">Finish: <b>${event.schedule_finish?.substring(0,10) ?? '-'}</b></div>
+                    <div class="text-[11px] text-gray-500 mb-1">Labor: <b>${event.labor ?? '-'}</b></div>
+                </div>`;
             });
         }
 
