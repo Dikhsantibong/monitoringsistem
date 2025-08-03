@@ -27,9 +27,15 @@ class LoginController extends Controller
 
         // Attempt login
         if (Auth::attempt($request->only('email', 'password'))) {
+            // Cek role user
+            $user = Auth::user();
+            $redirect = route('admin.dashboard');
+            if ($user->role === 'user') {
+                $redirect = route('user.dashboard');
+            }
             // Return response dengan script untuk mengecek session storage
             return response()->view('auth.check-redirect', [
-                'defaultRedirect' => route('admin.dashboard')
+                'defaultRedirect' => $redirect
             ]);
         }
 
