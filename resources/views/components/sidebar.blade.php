@@ -38,11 +38,11 @@
                 <span class="ml-3 text-base">Pembahasan Lain-lain</span>
             </a>
 
-            <a href="{{ route('admin.machine-monitor') }}"
+            <!-- <a href="{{ route('admin.machine-monitor') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-monitor') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-desktop w-6 h-6"></i>
                 <span class="ml-3 text-base">Monitor Mesin</span>
-            </a>
+            </a> -->
 
             <a href="{{ route('admin.daftar_hadir.index') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.daftar_hadir.index') || request()->routeIs('admin.daftar_hadir.rekapitulasi') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
@@ -56,11 +56,11 @@
                 <span class="ml-3 text-base">Score Card Daily</span>
             </a>
 
-            <a href="{{ route('admin.users') }}"
+            <!-- <a href="{{ route('admin.users') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-users w-6 h-6"></i>
                 <span class="ml-3 text-base">Manajemen Pengguna</span>
-            </a>
+            </a> -->
 
             <a href="{{ route('admin.meetings') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.meetings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
@@ -68,11 +68,11 @@
                 <span class="ml-3 text-base">Laporan Rapat</span>
             </a>
 
-            <a href="{{ route('admin.settings') }}"
+            <!-- <a href="{{ route('admin.settings') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.settings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-cog w-6 h-6"></i>
                 <span class="ml-3 text-base">Pengaturan</span>
-            </a>
+            </a> -->
         </nav>
 
         <!-- Bottom Section: Logout -->
