@@ -182,7 +182,7 @@
             <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
         </div>
         <div class="flex-1 w-full h-full overflow-auto flex items-center justify-center">
-            <iframe id="pdfjs-viewer" src="/pdf.js/web/viewer.html?file={{ url('storage/' . $workOrder->document_path) }}" style="width:100%;height:100%;border:none;"></iframe>
+            <iframe id="pdfjs-viewer" src="{{ asset('pdf.js/web/viewer.html') }}?file={{ asset('storage/' . $workOrder->document_path) }}" style="width:100%;height:100%;border:none;"></iframe>
         </div>
     </div>
 </div>
@@ -203,7 +203,7 @@
 function openPdfEditor(pdfUrl) {
     document.getElementById('pdfEditorModal').classList.remove('hidden');
     // Ganti src iframe jika file berubah
-    document.getElementById('pdfjs-viewer').src = '/pdf.js/web/viewer.html?file=' + encodeURIComponent(pdfUrl);
+    document.getElementById('pdfjs-viewer').src = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
 }
 function closePdfEditor() {
     document.getElementById('pdfEditorModal').classList.add('hidden');
