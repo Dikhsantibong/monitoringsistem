@@ -161,7 +161,7 @@
                         </div>
                     </div>
                     <!-- Tombol Submit dan Kembali -->
-                    <div class="flex justify-end space-x-4 mt-6">
+                    <div class="flex justify-between space-x-4 mt-6">
                         <a href="{{ route('pemeliharaan.labor-saya') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center">
                             <i class="fas fa-arrow-left mr-2"></i> Kembali
                         </a>
