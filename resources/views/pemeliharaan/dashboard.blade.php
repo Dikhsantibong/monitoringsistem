@@ -3,15 +3,13 @@
 @section('content')
     <div class="flex h-screen bg-gray-50">
         <!-- Sidebar -->
-        @include('components.user-sidebar')
-        
+        @include('components.pemeliharaan-sidebar')
         <!-- Main Content -->
         <div id="main-content" class="flex-1 overflow-auto">
             <!-- Header -->
             <header class="bg-white shadow-sm sticky top-0">
                 <div class="flex justify-between items-center px-6 py-3">
                     <div class="flex items-center gap-x-3">
-                        <!-- Mobile Menu Toggle -->
                         <button id="mobile-menu-toggle"
                             class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
                             aria-controls="mobile-menu" aria-expanded="false">
@@ -22,7 +20,6 @@
                                     d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                             </svg>
                         </button>
-                        <!--  Menu Toggle Sidebar-->
                         <button id="desktop-menu-toggle"
                             class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
                             aria-controls="mobile-menu" aria-expanded="false">
@@ -33,31 +30,9 @@
                                     d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                             </svg>
                         </button>
-                        <h1 class="text-xl font-semibold text-gray-800">Dashboard</h1>
+                        <h1 class="text-xl font-semibold text-gray-800">Dashboard Pemeliharaan</h1>
                     </div>
                     <div class="flex items-center gap-x-4 relative">
-                        <!-- Notification Icon -->
-                        <div class="relative">
-                            <button id="notificationToggle" class="relative focus:outline-none" onclick="toggleNotificationDropdown()">
-                                <i class="fas fa-bell text-gray-500 hover:text-[#009BB9] text-xl"></i>
-                                <!-- Example: Red dot for unread notifications -->
-                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
-                            </button>
-                            <!-- Notification Dropdown (hidden by default) -->
-                            <div id="notificationDropdown" class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg hidden z-20">
-                                <div class="p-4 border-b font-semibold text-gray-700">Notifikasi</div>
-                                <div class="max-h-60 overflow-y-auto">
-                                    <!-- Example notification item -->
-                                    <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                                            <span>Tidak ada notifikasi baru</span>
-                                        </div>
-                                    </a>
-                                    <!-- Tambahkan notifikasi dinamis di sini -->
-                                </div>
-                            </div>
-                        </div>
                         <!-- User Dropdown -->
                         <div class="relative">
                             <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
@@ -80,36 +55,20 @@
                 </div>
             </header>
             <script>
-                // Toggle user dropdown
                 function toggleDropdown() {
                     var dropdown = document.getElementById('dropdown');
                     dropdown.classList.toggle('hidden');
                 }
-                // Toggle notification dropdown
-                function toggleNotificationDropdown() {
-                    var dropdown = document.getElementById('notificationDropdown');
-                    dropdown.classList.toggle('hidden');
-                }
-                // Optional: close dropdowns when clicking outside
                 document.addEventListener('click', function(event) {
                     var userDropdown = document.getElementById('dropdown');
                     var userBtn = document.getElementById('dropdownToggle');
-                    var notifDropdown = document.getElementById('notificationDropdown');
-                    var notifBtn = document.getElementById('notificationToggle');
                     if (userDropdown && !userDropdown.classList.contains('hidden') && !userBtn.contains(event.target) && !userDropdown.contains(event.target)) {
                         userDropdown.classList.add('hidden');
                     }
-                    if (notifDropdown && !notifDropdown.classList.contains('hidden') && !notifBtn.contains(event.target) && !notifDropdown.contains(event.target)) {
-                        notifDropdown.classList.add('hidden');
-                    }
                 });
             </script>
-
             <!-- Dashboard Content -->
-            <main class="px-6">
-                @include('layouts.breadcrumbs', ['breadcrumbs' => [['title' => 'Dashboard']]])
-                
-                <!-- Overview Cards -->
+            <main class="px-6 pt-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                     <div class="bg-blue-500 rounded-lg shadow p-6 flex items-center">
                         <i class="fas fa-bolt mr-4 text-white" style="font-size: 24px;"></i>
@@ -140,8 +99,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Power Plants Performance -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Kinerja Unit Pembangkit</h3>
@@ -159,23 +116,19 @@
                             @endforeach
                         </div>
                     </div>
-
-                    <!-- Recent Maintenance Activities -->
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Pemeliharaan Terbaru</h3>
                         <div class="space-y-4">
                             @foreach($recentMaintenances as $maintenance)
                             <div class="border-l-4 border-blue-500 pl-4">
-                                <p class="text-sm text-gray-600">{{ $maintenance->machine->name }}</p>
+                                <p class="text-sm text-gray-600">{{ $maintenance->machine->name ?? '-' }}</p>
                                 <p class="text-gray-800">{{ $maintenance->description }}</p>
-                                <p class="text-xs text-gray-500">{{ $maintenance->created_at->diffForHumans() }}</p>
+                                <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($maintenance->created_at)->diffForHumans() }}</p>
                             </div>
                             @endforeach
                         </div>
                     </div>
                 </div>
-
-                <!-- Upcoming Meetings & Notifications -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Jadwal Meeting Hari Ini</h3>
@@ -196,20 +149,24 @@
                             @endforelse
                         </div>
                     </div>
-
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Notifikasi Penting</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Work Order Saya</h3>
                         <div class="space-y-4">
-                            @forelse($notifications as $notification)
-                            <div class="flex items-start space-x-3 p-3 {{ $notification->read ? 'bg-white' : 'bg-blue-50' }} rounded-lg">
-                                <i class="fas {{ $notification->icon }} text-blue-500 mt-1"></i>
+                            @forelse($myWorkOrders as $wo)
+                            <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                                <i class="fas fa-tools text-blue-500 mt-1"></i>
                                 <div>
-                                    <p class="text-gray-800">{{ $notification->message }}</p>
-                                    <p class="text-xs text-gray-500">{{ $notification->created_at->diffForHumans() }}</p>
+                                    <p class="text-gray-800 font-semibold">{{ $wo->description }}</p>
+                                    <p class="text-xs text-gray-500 mb-1">Status: <span class="font-bold">{{ $wo->status }}</span></p>
+                                    <p class="text-xs text-gray-500 mb-1">Jadwal Selesai: {{ $wo->schedule_finish }}</p>
+                                    @if($wo->document_path)
+                                        <a href="{{ url('storage/' . $wo->document_path) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
+                                    @endif
+                                    <p class="text-xs text-gray-400 mt-1">Update: {{ \Carbon\Carbon::parse($wo->updated_at)->diffForHumans() }}</p>
                                 </div>
                             </div>
                             @empty
-                            <p class="text-gray-500 text-center">Tidak ada notifikasi baru</p>
+                            <p class="text-gray-500 text-center">Tidak ada work order aktif</p>
                             @endforelse
                         </div>
                     </div>
@@ -217,23 +174,4 @@
             </main>
         </div>
     </div>
-    <script src="{{ asset('js/toggle.js') }}"></script>
 @endsection
-
-@push('scripts')
-    <script>
-        function toggleDropdown() {
-            const dropdown = document.getElementById('dropdown');
-            dropdown.classList.toggle('hidden');
-        }
-
-        window.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('dropdown');
-            const toggleButton = document.getElementById('dropdownToggle');
-
-            if (!toggleButton.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-    </script>
-@endpush

@@ -49,6 +49,7 @@ class MachineStatusLog extends Model
         'status',
         'dmn',
         'dmp',
+        'jsmo',
         'load_value',
         'component',
         'equipment',
@@ -67,7 +68,8 @@ class MachineStatusLog extends Model
     protected $casts = [
         'tanggal' => 'date',
         'tanggal_mulai' => 'date',
-        'target_selesai' => 'date'
+        'target_selesai' => 'date',
+        'jsmo' => 'float'
     ];
 
     protected $dates = [
@@ -577,6 +579,7 @@ class MachineStatusLog extends Model
             'status' => $machineStatus->status,
             'dmn' => $machineStatus->dmn,
             'dmp' => $machineStatus->dmp,
+            'jsmo' => $machineStatus->jsmo,
             'load_value' => $machineStatus->load_value,
             'component' => $machineStatus->component,
             'equipment' => $machineStatus->equipment,

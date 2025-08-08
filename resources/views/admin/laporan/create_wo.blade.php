@@ -113,6 +113,20 @@
                                             <option value="urgent">Urgent</option>
                                         </select>
                                     </div>
+                                    <div class="mb-4">
+                                        <label for="labor" class="block text-gray-700 font-medium mb-2">Labor (Nama & Jabatan)</label>
+                                        <select name="labor" id="labor" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                            <option value="">Pilih Labor...</option>
+                                            @foreach($users as $user)
+                                                @if(strtolower($user->role) === 'pemeliharaan')
+                                                    @php
+                                                        $laborName = explode(' ', trim($user->name))[0] . ' - Pemeliharaan';
+                                                    @endphp
+                                                    <option value="{{ $laborName }}">{{ $laborName }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <!-- Kolom Kanan -->
@@ -169,8 +183,15 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    $('#labor').select2({
+        placeholder: 'Pilih Labor...',
+        allowClear: true,
+        width: '100%'
+    });
     const form = document.getElementById('woForm');
     const submitButton = form.querySelector('button[type="submit"]');
     

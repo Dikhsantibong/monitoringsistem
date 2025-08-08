@@ -90,6 +90,7 @@
                                 required>
                             <option value="user">User</option>
                             <option value="admin">Admin</option>
+                            <option value="pemeliharaan">Pemeliharaan</option>
                         </select>
                     </div>
 

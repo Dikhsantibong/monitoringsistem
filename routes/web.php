@@ -36,6 +36,8 @@ use App\Http\Controllers\Api\NotulenAttendanceController;
 use App\Http\Controllers\Api\NotulenDraftController;
 use App\Http\Controllers\Api\NotulenFileController;
 use App\Http\Controllers\KinerjaPemeliharaanController;
+use App\Http\Controllers\UserLaporanController;
+use App\Http\Controllers\LaborSayaController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -75,6 +77,7 @@ Route::post('/profile', [UserController::class, 'updateProfile'])->name('user.pr
 
 Route::middleware(['auth', 'user'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
+    Route::get('/laporan/sr-wo', [UserLaporanController::class, 'index'])->name('user.laporan.sr_wo');
     Route::get('/daily-meeting', [UserController::class, 'dailyMeeting'])->name('daily.meeting');
     Route::get('/monitoring', [UserController::class, 'monitoring'])->name('monitoring');
     Route::get('/documentation', [UserController::class, 'documentation'])->name('documentation');
@@ -661,7 +664,7 @@ Route::fallback(function () {
 Route::middleware(['auth', 'web'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/verify-password', [PasswordVerificationController::class, 'verify'])
-            ->name('verify-password');
+            ->name('verify-password');       
         Route::resource('other-discussions', OtherDiscussionController::class);
     });
 });
@@ -795,3 +798,10 @@ Route::post('/api/notulen-paste-image', [NotulenController::class, 'uploadPasted
     ->name('notulen.paste-image');
 
 Route::get('/kinerja-pemeliharaan', [KinerjaPemeliharaanController::class, 'index'])->name('kinerja.pemeliharaan');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/pemeliharaan/dashboard', [\App\Http\Controllers\PemeliharaanDashboardController::class, 'index'])->name('pemeliharaan.dashboard');
+    Route::get('/pemeliharaan/labor-saya', [LaborSayaController::class, 'index'])->name('pemeliharaan.labor-saya');
+    Route::get('/pemeliharaan/labor-saya/{id}/edit', [LaborSayaController::class, 'edit'])->name('pemeliharaan.labor-saya.edit');
+    Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
+});

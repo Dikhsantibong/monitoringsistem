@@ -63,10 +63,10 @@
                 <p class="text-gray-700 mb-3">Jika Anda memerlukan bantuan, silakan hubungi tim dukungan kami:</p>
 
                 <div class="bg-white rounded-lg shadow p-6 mb-6">
-                    <h2 class="text-lg font-semibold text-gray-800">Kontak Tim Dukungan</h2>
+                    <h2 class="text-lg font-semibold text-gray-800">Kontak Tim IT </h2>
                     <p>Email: <a href="mailto:support@example.com"
-                            class="text-blue-600 hover:underline">support@example.com</a></p>
-                    <p>Telepon: <span class="text-gray-800">+62 123 456 789</span></p>
+                            class="text-blue-600 hover:underline">tibongdikhsan@gmail.com</a></p>
+                    <p>Telepon: <span class="text-gray-800">+62 822-9311-8410</span></p>
                 </div>
 
                 <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -84,9 +84,10 @@
 
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-800">Hubungi Admin</h2>
-                    <a href="{{ route('admin.dashboard') }}"
-                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 inline-block mt-2">
-                        <i class="fas fa-user-cog mr-2"></i>Hubungi Admin
+                    <a href="https://wa.me/6282293118410"
+                        target="_blank"
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 inline-block mt-2">
+                        <i class="fab fa-whatsapp mr-2"></i>Hubungi Admin via WhatsApp
                     </a>
                 </div>
             </div>

@@ -35,21 +35,46 @@
                         </button>
                         <h1 class="text-xl font-semibold text-gray-800">Machine Monitor</h1>
                     </div>
-                    <div class="relative">
-                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
-                                class="w-8 h-8 rounded-full mr-2">
-                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-caret-down ml-2"></i>
-                        </button>
-                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
-                            <a href="{{ route('user.profile') }}"
-                                class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
-                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                                @csrf
-                            </form>
+                    <div class="flex items-center gap-x-4 relative">
+                        <!-- Notification Icon -->
+                        <div class="relative">
+                            <button id="notificationToggle" class="relative focus:outline-none" onclick="toggleNotificationDropdown()">
+                                <i class="fas fa-bell text-gray-500 hover:text-[#009BB9] text-xl"></i>
+                                <!-- Example: Red dot for unread notifications -->
+                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
+                            </button>
+                            <!-- Notification Dropdown (hidden by default) -->
+                            <div id="notificationDropdown" class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg hidden z-20">
+                                <div class="p-4 border-b font-semibold text-gray-700">Notifikasi</div>
+                                <div class="max-h-60 overflow-y-auto">
+                                    <!-- Example notification item -->
+                                    <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                            <span>Tidak ada notifikasi baru</span>
+                                        </div>
+                                    </a>
+                                    <!-- Tambahkan notifikasi dinamis di sini -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- User Dropdown -->
+                        <div class="relative">
+                            <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                                <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                    class="w-8 h-8 rounded-full mr-2">
+                                <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                                <i class="fas fa-caret-down ml-2"></i>
+                            </button>
+                            <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                                <a href="{{ route('user.profile') }}"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
+                                <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -184,6 +209,7 @@
                                     <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">DMN (MW)</th>
                                     <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">DMP (MW)</th>
                                     <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Beban (MW)</th>
+                                    <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">JSMO (Jam)</th>
                                     <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Status</th>
                                     <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Kronologi</th>
                                     <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Deskripsi</th>
@@ -212,6 +238,7 @@
                                         <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? '-' }}</td>
                                         <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmp ?? '-' }}</td>
                                         <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->load_value ?? '-' }}</td>
+                                        <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->jsmo ?? '-' }}</td>
                                         <td class="px-3 py-2 border-r border-gray-200 text-center">
                                             <span class="px-2 py-1 rounded-full text-xs font-medium {{ $statusClass }}">
                                                 {{ $status }}
@@ -293,6 +320,11 @@
 
         function toggleDropdown() {
             const dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function toggleNotificationDropdown() {
+            var dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('hidden');
         }
 

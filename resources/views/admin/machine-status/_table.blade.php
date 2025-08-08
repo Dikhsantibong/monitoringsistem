@@ -74,6 +74,11 @@
                                     $hopClass = $hopStatus === 'aman' ? 'text-green-600' : 'text-red-600';
                                 @endphp
                                 
+                                @php
+                                    $totalJSMO = $latestLogs->sum(function($log) {
+                                        return is_numeric($log->jsmo) ? (float) $log->jsmo : 0;
+                                    });
+                                @endphp
                                 
                                 <div class="bg-blue-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">DMN:</p>
@@ -98,6 +103,10 @@
                                 <div class="bg-purple-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">Total Beban:</p>
                                     <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 2) }} MW</p>
+                                </div>
+                                <div class="bg-yellow-50 p-3 rounded-lg md:col-span-1 col-span-5">
+                                    <p class="text-sm text-yellow-600">JSMO:</p>
+                                    <p class="text-xl font-bold text-yellow-700">{{ number_format($totalJSMO, 2) }} Jam</p>
                                 </div>
                                 <div class="bg-orange-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">
@@ -180,7 +189,7 @@
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Mampu Slim (MW)</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Mampu Pasok (MW)</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Beban (MW)</th>
-                                
+                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Jam Jalan (JSMO)</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Status</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Issue Engine</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Catatan Issue</th>
@@ -215,7 +224,7 @@
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmp ?? '-' }}</td> 
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->load_value ?? '-' }}</td>
-                                  
+                                    <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->jsmo ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">
                                         <span class="px-2 py-1 rounded-full text-xs font-medium {{ $statusClass }}">
                                             {{ $status }}

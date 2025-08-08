@@ -57,6 +57,23 @@
                                 </div>
 
                                 <div class="mb-4">
+                                    <label for="labor" class="block text-gray-700 font-medium mb-2">Labor (Nama & Jabatan)</label>
+                                    <select name="labor" id="labor" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                        <option value="">Pilih Labor...</option>
+                                        @foreach($users as $user)
+                                            @if(strtolower($user->role) === 'pemeliharaan')
+                                                @php
+                                                    $laborName = explode(' ', trim($user->name))[0] . ' - Pemeliharaan';
+                                                @endphp
+                                                <option value="{{ $laborName }}" {{ old('labor', $workOrder->labor) == $laborName ? 'selected' : '' }}>
+                                                    {{ $laborName }}
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="mb-4">
                                     <label for="unit" class="block text-gray-700 font-medium mb-2">Unit</label>
                                     <select name="unit" id="unit" 
                                         class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>

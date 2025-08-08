@@ -83,6 +83,7 @@ class LaporanController extends Controller
                     'created_at', 
                     'priority', 
                     'type',
+                    'labor',
                     'schedule_start', 
                     'schedule_finish', 
                     'power_plant_id',
@@ -317,7 +318,8 @@ class LaporanController extends Controller
                 'is_active' => true,
                 'is_backlogged' => false,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
+                'labor' => $request->labor // Tambahan labor
             ];
 
             // 5. Insert ke database unit
@@ -554,8 +556,8 @@ class LaporanController extends Controller
     {
         // Ambil data power plants
         $powerPlants = PowerPlant::all();
-        
-        return view('admin.laporan.create_wo', compact('powerPlants'));
+        $users = \App\Models\User::select('id', 'name', 'role')->orderBy('name')->get();
+        return view('admin.laporan.create_wo', compact('powerPlants', 'users'));
     }
 
     public function storeWOBacklog(Request $request)
@@ -1067,8 +1069,8 @@ class LaporanController extends Controller
     {
         $workOrder = WorkOrder::findOrFail($id);
         $powerPlants = PowerPlant::all();
-        
-        return view('admin.laporan.edit_wo', compact('workOrder', 'powerPlants'));
+        $users = \App\Models\User::select('id', 'name', 'role')->orderBy('name')->get();
+        return view('admin.laporan.edit_wo', compact('workOrder', 'powerPlants', 'users'));
     }
 
     public function updateWO(Request $request, $id)
@@ -1088,7 +1090,8 @@ class LaporanController extends Controller
                 'schedule_start' => 'required|date',
                 'schedule_finish' => 'required|date|after_or_equal:schedule_start',
                 'unit' => 'required|exists:power_plants,id',
-                'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120'
+                'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+                'labor' => 'nullable|string' // Tambahan validasi labor
             ]);
 
             // Data yang akan diupdate
@@ -1100,7 +1103,8 @@ class LaporanController extends Controller
                 'priority' => $request->priority,
                 'schedule_start' => $request->schedule_start,
                 'schedule_finish' => $request->schedule_finish,
-                'power_plant_id' => $request->unit
+                'power_plant_id' => $request->unit,
+                'labor' => $request->labor // Tambahan labor
             ];
 
             // Handle dokumen jika ada

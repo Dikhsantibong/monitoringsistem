@@ -73,6 +73,7 @@
                                     <option value="">Semua Peran</option>
                                     <option value="admin">Admin</option>
                                     <option value="user">Pengguna</option>
+                                    <option value="pemeliharaan">Pemeliharaan</option>
                                 </select>
                             </div>
                             <div class="flex flex-col md:flex-row gap-3 items-center">
@@ -147,7 +148,7 @@
                                                 <td class="text-center py-2 whitespace-nowrap border border-gray-300">
                                                     <span
                                                         class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            {{ $user->role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                            {{ $user->role === 'admin' ? 'bg-blue-100 text-blue-800' : ($user->role === 'pemeliharaan' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
                                                         {{ ucfirst($user->role) }}
                                                     </span>
                                                 </td>

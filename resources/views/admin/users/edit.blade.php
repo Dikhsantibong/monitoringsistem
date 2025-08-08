@@ -114,6 +114,7 @@
                             name="role">
                             <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
                             <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="pemeliharaan" {{ $user->role === 'pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
                         </select>
                     </div>
 

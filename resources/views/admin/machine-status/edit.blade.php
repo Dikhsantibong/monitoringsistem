@@ -102,6 +102,13 @@
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         </div>
 
+                        <!-- JSMO -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Jam Jalan (JSMO)</label>
+                            <input type="number" step="0.01" name="jsmo" value="{{ $log->jsmo }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                        </div>
+
                         <!-- Beban -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Beban (MW)</label>

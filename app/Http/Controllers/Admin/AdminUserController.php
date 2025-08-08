@@ -49,7 +49,7 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:admin,user'],
+            'role' => ['required', 'in:admin,user,pemeliharaan'],
         ]);
 
         try {
@@ -88,7 +88,7 @@ class AdminUserController extends Controller
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
-            'role' => ['required', 'in:admin,user'],
+            'role' => ['required', 'in:admin,user,pemeliharaan'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 

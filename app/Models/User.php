@@ -56,6 +56,11 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isPemeliharaan()
+    {
+        return $this->role === 'pemeliharaan';
+    }
+
     public function getConnectionName()
     {
         return session('unit', 'u478221055_up_kendari');

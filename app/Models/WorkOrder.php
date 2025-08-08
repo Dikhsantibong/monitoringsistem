@@ -28,7 +28,8 @@ class WorkOrder extends Model
         'power_plant_id',
         'unit_source',
         'is_active',
-        'is_backlogged'
+        'is_backlogged',
+        'labor' // Tambahan kolom labor
     ];
 
     public $incrementing = false;
@@ -145,6 +146,7 @@ class WorkOrder extends Model
                 'unit_source' => $powerPlant->unit_source,
                 'is_active' => $workOrder->is_active,
                 'is_backlogged' => $workOrder->is_backlogged,
+                'labor' => $workOrder->labor, // Tambahan labor agar ikut sinkronisasi
                 'created_at' => $workOrder->created_at,
                 'updated_at' => $workOrder->updated_at
             ];

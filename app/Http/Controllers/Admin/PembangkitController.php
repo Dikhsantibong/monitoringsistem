@@ -207,7 +207,8 @@ class PembangkitController extends Controller
                             'unit_source' => $currentSession,
                             'image_path' => $imagePath,
                             'image_description' => $log['image_description'] ?? null,
-                            'issue_engine' => $log['issue_engine'] ?? null
+                            'issue_engine' => $log['issue_engine'] ?? null,
+                            'jsmo' => isset($log['jsmo']) ? $log['jsmo'] : 0
                         ];
                     } else {
                         $updateData = [
@@ -226,7 +227,8 @@ class PembangkitController extends Controller
                             'unit_source' => $currentSession,
                             'image_path' => $imagePath,
                             'image_description' => $log['image_description'] ?? null,
-                            'issue_engine' => $log['issue_engine'] ?? null
+                            'issue_engine' => $log['issue_engine'] ?? null,
+                            'jsmo' => isset($log['jsmo']) ? $log['jsmo'] : 0
                         ];
                     }
 
@@ -405,6 +407,7 @@ class PembangkitController extends Controller
                             'updated_at' => $log->updated_at,
                             'image_path' => $log->image_path,
                             'image_description' => $log->image_description,
+                            'jsmo' => $log->jsmo
                         ];
                     }),
                     'hops' => $hops->map(function($hop) {

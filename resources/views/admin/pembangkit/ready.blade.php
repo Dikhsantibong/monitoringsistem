@@ -211,6 +211,9 @@
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Daya Mampu Pasok (MW)
                                                 </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Jam Jalan (JSMO)
+                                                </th>
                                                 <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Beban (MW)
                                                 </th>
@@ -267,6 +270,16 @@
                                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
                                                                style="width: 100px;"     value="{{ $operations->where('machine_id', $machine->id)->first()->dmn ?? '0' }}"
                                                             placeholder="Masukkan DMP...">
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12">
+                                                        <input type="number"
+                                                            class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-400 text-gray-800"
+                                                            style="width: 100px;"
+                                                            min="0"
+                                                            step="0.01"
+                                                            name="jsmo[{{ $machine->id }}]"
+                                                            value="{{ $operations->where('machine_id', $machine->id)->first()->jsmo ?? '0' }}"
+                                                            placeholder="Jam Jalan">
                                                     </td>
                                                     <td class="px-2 py-2 border-r border-gray-200">
                                                         <input type="number" 
@@ -348,7 +361,7 @@
                                                             <input type="file" 
                                                                 class="hidden image-upload"
                                                                 accept="image/*"
-                                                                onchange="handleImagePreview(this, {{ $machine->id }})">
+                                                                onchange="handleImagePreview(this, '{{ $machine->id }}')">
                                                             <button type="button" 
                                                                 onclick="this.previousElementSibling.click()"
                                                                 class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
@@ -597,6 +610,7 @@
                     const inputKronologi = row.querySelector(`textarea[name="kronologi[${machineId}]"]`);
                     const inputTanggalMulai = row.querySelector(`input[name="tanggal_mulai[${machineId}]"]`);
                     const inputTargetSelesai = row.querySelector(`input[name="target_selesai[${machineId}]"]`);
+                    const inputJsmo = row.querySelector(`input[name="jsmo[${machineId}]"]`);
 
                     // Perbaiki selector untuk input beban
                     const loadInput = row.querySelector('td:nth-child(5) input[type="number"]'); // Sesuaikan dengan posisi kolom beban
@@ -616,6 +630,7 @@
                             dmn: row.querySelector('td:nth-child(2)').textContent.trim(),
                             dmp: dmpInput ? dmpInput.value.trim() : null,
                             load_value: loadValue,
+                            jsmo: inputJsmo ? parseFloat(inputJsmo.value) || 0 : 0,
                             deskripsi: inputDeskripsi ? inputDeskripsi.value.trim() : null,
                             action_plan: inputActionPlan ? inputActionPlan.value.trim() : null,
                             progres: inputProgres ? inputProgres.value.trim() : null,
@@ -646,7 +661,7 @@
         // Debug log untuk melihat data yang akan dikirim
         console.log('Data yang akan dikirim:', data);
 
-        fetch('{{ route('admin.pembangkit.save-status') }}', {
+        fetch("{{ route('admin.pembangkit.save-status') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1021,6 +1036,18 @@
                         } else {
                             loadInput.value = log.load_value || '0';
                             loadInput.readOnly = false;
+                        }
+                    }
+
+                    // Update JSMO dengan mempertimbangkan status
+                    const jsmoInput = row.querySelector(`input[name="jsmo[${log.machine_id}]"]`);
+                    if (jsmoInput) {
+                        if (['Gangguan', 'Pemeliharaan', 'Mothballed', 'Overhaul'].includes(log.status)) {
+                            jsmoInput.value = '0';
+                            jsmoInput.readOnly = true;
+                        } else {
+                            jsmoInput.value = log.jsmo || '0';
+                            jsmoInput.readOnly = false;
                         }
                     }
 

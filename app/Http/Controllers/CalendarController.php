@@ -21,7 +21,7 @@ class CalendarController extends Controller
 
         // Get work orders only untuk bulan & tahun yang dipilih
         $workOrdersQuery = WorkOrder::with('powerPlant')
-            ->select('id', 'description', 'created_at', 'type', 'status', 'priority', 'schedule_start', 'schedule_finish', 'power_plant_id', 'unit_source')
+            ->select('id', 'description', 'created_at', 'type', 'status', 'priority', 'schedule_start', 'schedule_finish', 'power_plant_id', 'unit_source', 'labor')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month);
         $workOrders = $workOrdersQuery->get()
@@ -39,6 +39,7 @@ class CalendarController extends Controller
                     'power_plant_name' => $wo->powerPlant->name ?? '-',
                     'created_at' => $wo->created_at,
                     'updated_at' => $wo->updated_at,
+                    'labor' => $wo->labor ?? null // Tambahan labor
                 ];
             });
 

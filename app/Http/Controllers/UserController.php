@@ -19,16 +19,21 @@ class UserController extends Controller
     public function dashboard()
     {
         // Mengambil data untuk overview cards
-        $totalMachines = Machine::count();
+        $totalMachines = MachineStatusLog::whereDate('created_at', today())
+            ->distinct('machine_id')
+            ->count('machine_id');
         $operatingMachines = MachineStatusLog::where('status', 'Operasi')
             ->whereDate('created_at', today())
-            ->count();
+            ->distinct('machine_id')
+            ->count('machine_id');
         $troubleMachines = MachineStatusLog::where('status', 'Gangguan')
             ->whereDate('created_at', today())
-            ->count();
+            ->distinct('machine_id')
+            ->count('machine_id');
         $maintenanceMachines = MachineStatusLog::where('status', 'Pemeliharaan')
             ->whereDate('created_at', today())
-            ->count();
+            ->distinct('machine_id')
+            ->count('machine_id');
 
         // Mengambil data kinerja pembangkit dengan pengecekan pembagi nol
         $powerPlantPerformance = PowerPlant::select('name')

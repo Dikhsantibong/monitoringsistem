@@ -57,13 +57,13 @@
                 <i class="fas fa-clipboard-list w-6 h-6"></i>
                 <span class="ml-3 text-base">Score Card Daily</span>
             </a>
-            @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
+           
             <a href="{{ route('admin.users') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-users w-6 h-6"></i>
                 <span class="ml-3 text-base">Manajemen Pengguna</span>
             </a>
-            @endif
+           
 
             <a href="{{ route('admin.meetings') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.meetings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
