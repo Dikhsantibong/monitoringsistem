@@ -773,23 +773,24 @@ See https://github.com/adobe-type-tools/cmap-resources
 
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const saveBtn = document.getElementById('saveToServerBtn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', async function() {
-      if (window.PDFViewerApplication && PDFViewerApplication.pdfDocument) {
-        const pdfData = await PDFViewerApplication.pdfDocument.saveDocument();
-        window.parent.postMessage({
-          type: 'save-pdf',
-          data: pdfData
-        }, '*');
-      } else {
-        alert('PDF belum siap untuk disimpan.');
+ 
+  </body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const saveBtn = document.getElementById('saveToServerBtn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', async function() {
+          if (window.PDFViewerApplication && PDFViewerApplication.pdfDocument) {
+            const pdfData = await PDFViewerApplication.pdfDocument.saveDocument();
+            window.parent.postMessage({
+              type: 'save-pdf',
+              data: pdfData
+            }, '*');
+          } else {
+            alert('PDF belum siap untuk disimpan.');
+          }
+        });
       }
     });
-  }
-});
-</script>
-  </body>
+    </script>
 </html>
