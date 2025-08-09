@@ -63,11 +63,9 @@
                                         @foreach($users as $user)
                                             @if(strtolower($user->role) === 'pemeliharaan')
                                                 @php
-                                                    $laborName = explode(' ', trim($user->name))[0] . ' - Pemeliharaan';
+                                                    $laborName = strtoupper(explode(' ', trim($user->name))[0]) . ' PEMELIHARAAN';
                                                 @endphp
-                                                <option value="{{ $laborName }}" {{ old('labor', $workOrder->labor) == $laborName ? 'selected' : '' }}>
-                                                    {{ $laborName }}
-                                                </option>
+                                                <option value="{{ $laborName }}" {{ old('labor', $workOrder->labor) == $laborName ? 'selected' : '' }}>{{ explode(' ', trim($user->name))[0] }} - Pemeliharaan</option>
                                             @endif
                                         @endforeach
                                     </select>
@@ -350,6 +348,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const event = new Event('change');
         documentInput.dispatchEvent(event);
     }
+
+    const unitSelect = document.getElementById('unit');
+    const laborSelect = document.getElementById('labor');
+    // Mapping id unit ke laborName
+    const unitLaborMap = {
+        11: 'MIKUASI PEMELIHARAAN',
+        10: 'SABILAMBO PEMELIHARAAN',
+        15: 'WINNING PEMELIHARAAN',
+        32: 'RONGI PEMELIHARAAN',
+        20: 'EREKE PEMELIHARAAN',
+        13: 'PASARWAJO PEMELIHARAAN',
+        12: 'BAU-BAU PEMELIHARAAN',
+        17: 'RAHA PEMELIHARAAN',
+        4: 'POASIA PEMELIHARAAN',
+        3: 'WUA-WUA PEMELIHARAAN',
+        19: 'LANGARA PEMELIHARAAN',
+        7: 'KOLAKA PEMELIHARAAN'
+    };
+    unitSelect.addEventListener('change', function() {
+        const laborName = unitLaborMap[this.value];
+        if (laborName) {
+            for (let i = 0; i < laborSelect.options.length; i++) {
+                if (laborSelect.options[i].value.toUpperCase() === laborName.toUpperCase()) {
+                    laborSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    });
 });
 </script>
 @endpush

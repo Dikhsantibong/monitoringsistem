@@ -120,9 +120,9 @@
                                             @foreach($users as $user)
                                                 @if(strtolower($user->role) === 'pemeliharaan')
                                                     @php
-                                                        $laborName = explode(' ', trim($user->name))[0] . ' - Pemeliharaan';
+                                                        $laborName = strtoupper(explode(' ', trim($user->name))[0]) . ' PEMELIHARAAN';
                                                     @endphp
-                                                    <option value="{{ $laborName }}">{{ $laborName }}</option>
+                                                    <option value="{{ $laborName }}">{{ explode(' ', trim($user->name))[0] }} - Pemeliharaan</option>
                                                 @endif
                                             @endforeach
                                         </select>
@@ -191,6 +191,34 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: 'Pilih Labor...',
         allowClear: true,
         width: '100%'
+    });
+    const unitSelect = document.getElementById('unit');
+    const laborSelect = document.getElementById('labor');
+    // Mapping id unit ke laborName
+    const unitLaborMap = {
+        11: 'MIKUASI PEMELIHARAAN',
+        10: 'SABILAMBO PEMELIHARAAN',
+        15: 'WINNING PEMELIHARAAN',
+        32: 'RONGI PEMELIHARAAN',
+        20: 'EREKE PEMELIHARAAN',
+        13: 'PASARWAJO PEMELIHARAAN',
+        12: 'BAU-BAU PEMELIHARAAN',
+        17: 'RAHA PEMELIHARAAN',
+        4: 'POASIA PEMELIHARAAN',
+        3: 'WUA-WUA PEMELIHARAAN',
+        19: 'LANGARA PEMELIHARAAN',
+        7: 'KOLAKA PEMELIHARAAN'
+    };
+    unitSelect.addEventListener('change', function() {
+        const laborName = unitLaborMap[this.value];
+        if (laborName) {
+            for (let i = 0; i < laborSelect.options.length; i++) {
+                if (laborSelect.options[i].value.toUpperCase() === laborName.toUpperCase()) {
+                    $(laborSelect).val(laborSelect.options[i].value).trigger('change');
+                    break;
+                }
+            }
+        }
     });
     const form = document.getElementById('woForm');
     const submitButton = form.querySelector('button[type="submit"]');
