@@ -200,14 +200,36 @@
 </div>
 @push('scripts')
 <script>
+let pdfSaved = false;
 function openPdfEditor(pdfUrl) {
+    pdfSaved = false;
     document.getElementById('pdfEditorModal').classList.remove('hidden');
-    // Ganti src iframe jika file berubah
     document.getElementById('pdfjs-viewer').src = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
+    // Prevent closing with ESC
+    document.body.style.overflow = 'hidden';
 }
-function closePdfEditor() {
+function closePdfEditor(force = false) {
+    if (!pdfSaved && !force) {
+        if (!confirm('Anda belum menyimpan perubahan PDF ke server. Yakin ingin keluar tanpa menyimpan?')) {
+            return;
+        }
+    }
     document.getElementById('pdfEditorModal').classList.add('hidden');
+    document.body.style.overflow = '';
 }
+// Cegah klik di luar modal menutup modal tanpa konfirmasi
+const pdfEditorModal = document.getElementById('pdfEditorModal');
+pdfEditorModal.addEventListener('mousedown', function(e) {
+    if (e.target === pdfEditorModal) {
+        closePdfEditor();
+    }
+});
+// Cegah ESC menutup modal tanpa konfirmasi
+window.addEventListener('keydown', function(e) {
+    if (!pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
+        closePdfEditor();
+    }
+});
 function saveEditedPdf(blob) {
     // Upload ke server
     console.log('saveEditedPdf called, uploading...');
@@ -222,21 +244,15 @@ function saveEditedPdf(blob) {
     .then(data => {
         console.log('Server response:', data);
         if (data.success) {
+            pdfSaved = true;
             alert('PDF berhasil diupdate di server!');
-            closePdfEditor();
+            closePdfEditor(true);
             window.location.reload();
         } else {
             alert('Gagal upload PDF ke server.');
         }
     })
     .catch((err) => { console.error('Upload error:', err); alert('Gagal upload PDF ke server. Silakan cek koneksi atau ulangi.'); });
-    // (Opsional) Download ke device user
-    // const link = document.createElement('a');
-    // link.href = URL.createObjectURL(blob);
-    // link.download = '{{ basename($workOrder->document_path) }}';
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
 }
 window.addEventListener('message', function(event) {
     console.log('Received postMessage:', event);
