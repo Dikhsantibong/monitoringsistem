@@ -188,9 +188,9 @@
                                 class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b min-w-[120px]">No</th>
+                                        <th class="py-2 px-4 border-b min-w-[10px]">No</th>
                                         <th class="py-2 px-4 border-b min-w-[120px]">ID SR</th>
-                                        <th class="py-2 px-4 border-b">
+                                        <th class="py-2 px-4 border-b min-w-[120px]">
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
                                                 <div class="relative">
@@ -211,7 +211,7 @@
                                                                     <option value="{{ $plant->name }}" class="text-gray-700">{{ $plant->name }}</option>
                                                                 @endforeach
                                                             </optgroup>
-                                                            
+                                                                
                                                             <!-- PLTD Poasia -->
                                                             <optgroup label="PLTD POASIA" class="text-gray-700">
                                                                 @foreach($powerPlants->where('unit_source', 'mysql_poasia')->sortBy('name') as $plant)
@@ -309,7 +309,7 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td data-column="unit" class="px-4 py-2 border border-gray-200">
+                                            <td data-column="unit" class="px-2 py-2 border border-gray-200 w-32">
                                                 {{ $sr->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="px-6 py-4 border border-gray-200">
@@ -427,7 +427,7 @@
                             <table id="woTable" class="min-w-full bg-white border border-gray-300">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b min-w-[120px]">No</th>
+                                        <th class="py-2 px-4 border-b min-w-[10px]">No</th>
                                         <th class="py-2 px-4 border-b min-w-[120px]">ID WO</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">
@@ -695,7 +695,7 @@
                             <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
-                                        <th class="py-2 px-4 border-b min-w-[120px]">No</th>
+                                        <th class="py-2 px-4 border-b min-w-[10px]">No</th>
                                         <th class="py-2 px-4 border-b min-w-[120px]">No WO</th>
                                         <th class="py-2 px-4 border-b">
                                             <div class="flex items-center justify-between">

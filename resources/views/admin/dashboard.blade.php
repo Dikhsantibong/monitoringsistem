@@ -328,16 +328,16 @@
                 });
             });
 
-            // Data untuk Ketepatan Waktu (Activity Chart)
+            // Data untuk Ketepatan Waktu (Activity Chart) - SEKARANG JUMLAH PESERTA HADIR
             const activityData = {
-                labels: formattedDates,
+                labels: chartData.scoreCardData.dates,
                 datasets: [{
-                    label: 'Persentase Kehadiran',
-                    data: chartData.scoreCardData.scores,
+                    label: 'Jumlah Peserta Hadir',
+                    data: chartData.scoreCardData.counts,
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
                     borderColor: 'rgb(59, 130, 246)',
-                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                    tension: 0.1,
-                    fill: true
+                    borderWidth: 1,
+                    maxBarThickness: 40
                 }]
             };
 
@@ -372,7 +372,7 @@
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return value + (this.chart.config.type === 'activityChart' ? '%' :
+                                return value + (this.chart.config.type === 'activityChart' ? ' peserta' :
                                     ' orang');
                             }
                         }
@@ -389,9 +389,9 @@
                 }
             };
 
-            // Inisialisasi Chart Aktivitas
+            // Inisialisasi Chart Aktivitas sebagai BAR CHART
             activityChart = new Chart(document.getElementById('activityChart'), {
-                type: 'line',
+                type: 'bar',
                 data: activityData,
                 options: {
                     ...commonOptions,
@@ -399,10 +399,9 @@
                         ...commonOptions.scales,
                         y: {
                             beginAtZero: true,
-                            max: 100,
                             ticks: {
                                 callback: function(value) {
-                                    return value + '%';
+                                    return value + ' peserta';
                                 }
                             }
                         }
@@ -411,8 +410,16 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return `Kehadiran: ${context.parsed.y}%`;
+                                    return `Jumlah Hadir: ${context.parsed.y}`;
                                 }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Jumlah Peserta Hadir per Hari',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
                             }
                         }
                     }

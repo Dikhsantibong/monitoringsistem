@@ -113,32 +113,22 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Ambil data kehadiran untuk satu bulan
-        $attendanceData = collect();
+        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari)
+        $attendanceCounts = collect();
         for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
             $dateStr = $date->format('Y-m-d');
-            
-            // Hitung total kehadiran per hari
-            $totalAttendance = Attendance::whereDate('time', $dateStr)->count();
-            
-            // Hitung total karyawan yang diharapkan hadir (misalnya 50 orang)
-            $expectedAttendance = 50; // Sesuaikan dengan jumlah karyawan yang diharapkan
-            
-            // Hitung persentase kehadiran
-            $percentage = $totalAttendance > 0 ? 
-                round(($totalAttendance / $expectedAttendance) * 100, 2) : 0;
-            
-            $attendanceData->push([
+            $count = Attendance::whereDate('time', $dateStr)->count();
+            $attendanceCounts->push([
                 'date' => $dateStr,
-                'percentage' => $percentage
+                'count' => $count
             ]);
         }
 
         // Format data untuk chart
         $chartData = [
             'scoreCardData' => [
-                'dates' => $attendanceData->pluck('date')->toArray(),
-                'scores' => $attendanceData->pluck('percentage')->toArray(),
+                'dates' => $attendanceCounts->pluck('date')->toArray(),
+                'counts' => $attendanceCounts->pluck('count')->toArray(),
             ],
             'attendanceData' => [
                 'dates' => $formattedAttendance->keys()->toArray(),
