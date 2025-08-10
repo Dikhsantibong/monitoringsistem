@@ -4,53 +4,53 @@
 <div class="flex h-screen bg-gray-50 overflow-auto">
     @include('components.pemeliharaan-sidebar')
     <div id="main-content" class="flex-1 main-content">
-    <header class="bg-white shadow-sm sticky top-0">
-                <div class="flex justify-between items-center px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                        <button id="mobile-menu-toggle"
-                            class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                            aria-controls="mobile-menu" aria-expanded="false">
-                            <span class="sr-only">Open main menu</span>
-                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" aria-hidden="true" data-slot="icon">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                            </svg>
+        <header class="bg-white shadow-sm sticky top-0">
+            <div class="flex justify-between items-center px-6 py-3">
+                <div class="flex items-center gap-x-3">
+                    <button id="mobile-menu-toggle"
+                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <button id="desktop-menu-toggle"
+                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800">Edit Work Order</h1>
+                </div>
+                <div class="flex items-center gap-x-4 relative">
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2"></i>
                         </button>
-                        <button id="desktop-menu-toggle"
-                            class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                            aria-controls="mobile-menu" aria-expanded="false">
-                            <span class="sr-only">Open main menu</span>
-                            <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" aria-hidden="true" data-slot="icon">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                            </svg>
-                        </button>
-                        <h1 class="text-xl font-semibold text-gray-800">Edit Work Order</h1>
-                    </div>
-                    <div class="flex items-center gap-x-4 relative">
-                        <!-- User Dropdown -->
-                        <div class="relative">
-                            <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
-                                <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
-                                    class="w-8 h-8 rounded-full mr-2">
-                                <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                                <i class="fas fa-caret-down ml-2"></i>
-                            </button>
-                            <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
-                                <a href="{{ route('user.profile') }}"
-                                    class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
-                                <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                                    @csrf
-                                </form>
-                            </div>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                            <a href="{{ route('user.profile') }}"
+                                class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
         <main class="px-6 pt-6">
             <div class="bg-white rounded-lg shadow p-6 sm:p-3 w-full">
                 <form id="editLaborWoForm" action="{{ route('pemeliharaan.labor-saya.update', $workOrder->id) }}" method="POST" enctype="multipart/form-data" class="w-full">
@@ -66,7 +66,7 @@
                                 <label for="type" class="block text-gray-700 font-medium mb-2">Type WO</label>
                                 <select name="type" id="type" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                                     @foreach(['CM', 'PM', 'PDM', 'PAM', 'OH', 'EJ', 'EM'] as $type)
-                                        <option value="{{ $type }}" {{ $workOrder->type == $type ? 'selected' : '' }}>{{ $type }}</option>
+                                    <option value="{{ $type }}" {{ $workOrder->type == $type ? 'selected' : '' }}>{{ $type }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -74,7 +74,7 @@
                                 <label for="priority" class="block text-gray-700 font-medium mb-2">Priority</label>
                                 <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                                     @foreach(['emergency', 'normal', 'outage', 'urgent'] as $priority)
-                                        <option value="{{ $priority }}" {{ $workOrder->priority == $priority ? 'selected' : '' }}>{{ ucfirst($priority) }}</option>
+                                    <option value="{{ $priority }}" {{ $workOrder->priority == $priority ? 'selected' : '' }}>{{ ucfirst($priority) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -82,7 +82,7 @@
                                 <label for="unit" class="block text-gray-700 font-medium mb-2">Unit</label>
                                 <select name="unit" id="unit" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                                     @foreach($powerPlants as $powerPlant)
-                                        <option value="{{ $powerPlant->id }}" {{ $workOrder->power_plant_id == $powerPlant->id ? 'selected' : '' }}>{{ $powerPlant->name }}</option>
+                                    <option value="{{ $powerPlant->id }}" {{ $workOrder->power_plant_id == $powerPlant->id ? 'selected' : '' }}>{{ $powerPlant->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -154,10 +154,30 @@
                                 <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
                                 <select name="status" id="status" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                                     @foreach(['Open', 'Closed', 'Comp', 'APPR', 'WAPPR', 'WMATL'] as $status)
-                                        <option value="{{ $status }}" {{ $workOrder->status == $status ? 'selected' : '' }}>{{ $status }}</option>
+                                    <option value="{{ $status }}" {{ $workOrder->status == $status ? 'selected' : '' }}>{{ $status }}</option>
                                     @endforeach
                                 </select>
                             </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="labor">Labor</label>
+                        <input type="text" name="labor" id="labor"
+                            class="form-control"
+                            value="{{ old('labor', $workOrder->labor) }}"
+                            readonly>
+                    </div>
+
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-2">Pilih Nama Labor</label>
+                        <div class="flex flex-wrap gap-4 bg-gray-50 p-4 rounded border border-gray-200">
+                            @foreach($masterLabors as $labor)
+                                <label class="flex items-center space-x-2 min-w-[200px]">
+                                    <input type="checkbox" name="labors[]" value="{{ $labor->nama }} - {{ $labor->bidang }}" {{ (is_array(old('labors', $workOrder->labors ?? [])) && in_array($labor->nama . ' - ' . $labor->bidang, old('labors', $workOrder->labors ?? []))) ? 'checked' : '' }}>
+                                    <span>{{ $labor->nama }} - {{ ucfirst($labor->bidang) }}</span>
+                                </label>
+                            @endforeach
                         </div>
                     </div>
                     <!-- Tombol Submit dan Kembali -->

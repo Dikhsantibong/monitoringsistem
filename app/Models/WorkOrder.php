@@ -29,7 +29,12 @@ class WorkOrder extends Model
         'unit_source',
         'is_active',
         'is_backlogged',
-        'labor' // Tambahan kolom labor
+        'labor', // Tambahan kolom labor
+        'labors'
+    ];
+
+    protected $casts = [
+        'labors' => 'array',
     ];
 
     public $incrementing = false;
@@ -147,6 +152,7 @@ class WorkOrder extends Model
                 'is_active' => $workOrder->is_active,
                 'is_backlogged' => $workOrder->is_backlogged,
                 'labor' => $workOrder->labor, // Tambahan labor agar ikut sinkronisasi
+                'labors' => $workOrder->labors, // Tambahan labor agar ikut sinkronisasi
                 'created_at' => $workOrder->created_at,
                 'updated_at' => $workOrder->updated_at
             ];
