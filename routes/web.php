@@ -38,6 +38,8 @@ use App\Http\Controllers\Api\NotulenFileController;
 use App\Http\Controllers\KinerjaPemeliharaanController;
 use App\Http\Controllers\UserLaporanController;
 use App\Http\Controllers\LaborSayaController;
+use App\Http\Controllers\Pemeliharaan\MasterLaborController;
+use App\Http\Controllers\MasterMaterialController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -806,5 +808,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
 });
 
-Route::get('/pemeliharaan/master-labor', [\App\Http\Controllers\Pemeliharaan\MasterLaborController::class, 'index'])->name('pemeliharaan.master-labor');
-Route::post('/pemeliharaan/master-labor', [\App\Http\Controllers\Pemeliharaan\MasterLaborController::class, 'store'])->name('pemeliharaan.master-labor.store');
+Route::get('/pemeliharaan/master-labor', [MasterLaborController::class, 'index'])->name('pemeliharaan.master-labor');
+Route::post('/pemeliharaan/master-labor', [MasterLaborController::class, 'store'])->name('pemeliharaan.master-labor.store');
+Route::get('/pemeliharaan/master-labor/{id}/edit', [MasterLaborController::class, 'edit'])->name('pemeliharaan.master-labor.edit');
+Route::put('/pemeliharaan/master-labor/{id}/update', [MasterLaborController::class, 'update'])->name('pemeliharaan.master-labor.update');
+Route::delete('/pemeliharaan/master-labor/{id}/destroy', [MasterLaborController::class, 'destroy'])->name('pemeliharaan.master-labor.destroy');
+
+Route::get('/admin/material-master', [MasterMaterialController::class, 'index'])->name('admin.material-master.index');

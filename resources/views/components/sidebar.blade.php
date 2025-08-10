@@ -37,7 +37,44 @@
                 <i class="fas fa-comments w-6 h-6"></i>
                 <span class="ml-3 text-base">Pembahasan Lain-lain</span>
             </a>
-            
+
+            <!-- Data Master Dropdown Menu -->
+            @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
+            <div class="relative group">
+                <button type="button" id="data-master-dropdown"
+                    class="flex items-center w-full px-3 py-2.5 rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.power-plants.index') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                    <i class="fas fa-database w-6 h-6"></i>
+                    <span class="ml-3 text-base flex-1 text-left">Data Master</span>
+                    <i class="fas fa-chevron-down ml-auto transition-transform duration-200" id="data-master-chevron"></i>
+                </button>
+                <div id="data-master-submenu"
+                    class="max-h-0 overflow-hidden transition-all duration-300 bg-[#0A749B] rounded-lg mt-1 ml-2"
+                    style="box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <a href="{{ route('admin.power-plants.index') }}"
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        <i class="fas fa-bolt w-5 h-5"></i>
+                        <span class="ml-3 text-base">Unit Pembangkit</span>
+                    </a>
+                    <a href="{{ route('admin.machine-monitor.show', 1) }}"
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.machine-monitor.show') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        <i class="fas fa-cogs w-5 h-5"></i>
+                        <span class="ml-3 text-base">Detail Mesin</span>
+                    </a>
+                    <a href="{{ route('admin.users') }}"
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        <i class="fas fa-users w-5 h-5"></i>
+                        <span class="ml-3 text-base">Manajemen Pengguna</span>
+                    </a>
+                    <a href="{{ route('admin.material-master.index') }}"
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.material-master.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        <i class="fas fa-cogs w-5 h-5"></i>
+                        <span class="ml-3 text-base">Material Master</span>
+                    </a>
+                </div>
+            </div>
+            @endif
+            <!-- End Data Master Dropdown -->
+
             @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
             <a href="{{ route('admin.machine-monitor') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-monitor') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
@@ -58,11 +95,7 @@
                 <span class="ml-3 text-base">Score Card Daily</span>
             </a>
            
-            <a href="{{ route('admin.users') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
-                <i class="fas fa-users w-6 h-6"></i>
-                <span class="ml-3 text-base">Manajemen Pengguna</span>
-            </a>
+            {{-- Manajemen Pengguna sudah ada di Data Master --}}
            
 
             <a href="{{ route('admin.meetings') }}"
@@ -71,7 +104,7 @@
                 <span class="ml-3 text-base">Laporan Rapat</span>
             </a>
 
-            @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
+            @if (Auth::check() && Auth::user()->role === 'super_admin')
             <a href="{{ route('admin.settings') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.settings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-cog w-6 h-6"></i>
@@ -94,30 +127,36 @@
         </div>
     </div>
 </aside>
-{{-- 
+
 <script>
-// Fungsi untuk toggle dropdown
 document.addEventListener('DOMContentLoaded', function() {
-    const dropdownButton = document.querySelector('#machine-monitor-dropdown');
-    const submenu = document.querySelector('#machine-monitor-submenu');
+    const dropdownButton = document.getElementById('data-master-dropdown');
+    const submenu = document.getElementById('data-master-submenu');
+    const chevron = document.getElementById('data-master-chevron');
     let isOpen = false;
 
-    dropdownButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        isOpen = !isOpen;
-        
-        if (isOpen) {
-            submenu.style.maxHeight = submenu.scrollHeight + 'px';
-            dropdownButton.classList.add('rotate-180');
-        } else {
-            submenu.style.maxHeight = '0';
-            dropdownButton.classList.remove('rotate-180');
-        }
-    });
-});
-</script> --}}
+    if (dropdownButton && submenu) {
+        dropdownButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            isOpen = !isOpen;
+            if (isOpen) {
+                submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                chevron.classList.add('rotate-180');
+            } else {
+                submenu.style.maxHeight = '0';
+                chevron.classList.remove('rotate-180');
+            }
+        });
 
-<script>
+        // Auto open if one of the submenu is active
+        @if(request()->routeIs('admin.power-plants.index') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.users'))
+            submenu.style.maxHeight = submenu.scrollHeight + 'px';
+            chevron.classList.add('rotate-180');
+            isOpen = true;
+        @endif
+    }
+});
+
 function confirmLogout() {
     Swal.fire({
         title: 'Konfirmasi Logout',
