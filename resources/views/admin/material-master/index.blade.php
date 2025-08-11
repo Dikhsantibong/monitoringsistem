@@ -84,17 +84,17 @@
                         <table class="min-w-full bg-white border border-gray-200">
                             <thead>
                                 <tr>
-                                    <th class="px-4 py-2 border-b">Code</th>
-                                    <th class="px-4 py-2 border-b">Deskripsi</th>
-                                    <th class="px-4 py-2 border-b">Kategori</th>
+                                    <th class="px-4 py-2 border-b text-center">Code</th>
+                                    <th class="px-4 py-2 border-b text-center">Deskripsi</th>
+                                    <th class="px-4 py-2 border-b text-center">Kategori</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($materials as $material)
                                     <tr>
-                                        <td class="px-4 py-2 border-b">{{ $material->code }}</td>
-                                        <td class="px-4 py-2 border-b">{{ $material->deskripsi }}</td>
-                                        <td class="px-4 py-2 border-b">{{ $material->kategori }}</td>
+                                        <td class="px-4 py-2 border-b border-gray-200">{{ $material->code }}</td>
+                                        <td class="px-4 py-2 border-b border-gray-200">{{ $material->deskripsi }}</td>
+                                        <td class="px-4 py-2 border-b border-gray-200">{{ $material->kategori }}</td>
                                     </tr>
                                 @empty
                                     <tr>
