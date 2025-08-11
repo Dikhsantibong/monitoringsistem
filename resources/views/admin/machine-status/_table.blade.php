@@ -19,6 +19,7 @@
                                 @php
                                     // Ambil update terakhir untuk unit ini
                                     $lastUpdate = $logs->whereIn('machine_id', $powerPlant->machines->pluck('id'))
+                                        ->where('tanggal', $date)
                                         ->max('updated_at');
                                     
                                     // Format waktu update terakhir
@@ -37,7 +38,8 @@
                                 @php
                                     // Filter logs berdasarkan tanggal yang dipilih
                                     $filteredLogs = $logs->filter(function($log) use ($date) {
-                                        return $log->created_at->format('Y-m-d') === $date;
+                                        $logDate = $log->tanggal instanceof \Carbon\Carbon ? $log->tanggal->format('Y-m-d') : (\Carbon\Carbon::parse($log->tanggal)->format('Y-m-d'));
+                                        return $logDate === $date;
                                     });
 
                                     // Mengambil log terakhir untuk setiap mesin
@@ -45,7 +47,7 @@
                                         ->whereIn('machine_id', $powerPlant->machines->pluck('id'))
                                         ->groupBy('machine_id')
                                         ->map(function ($machineLogs) {
-                                            return $machineLogs->sortByDesc('created_at')->first();
+                                            return $machineLogs->sortByDesc('updated_at')->first();
                                         });
 
                                     // Menghitung total DMP dan DMN dari log terakhir setiap mesin
@@ -300,12 +302,12 @@
                                     </td>
                                     <td class="px-3 py-2 text-center">
                                         <div class="items-center justify-center space-y-2">
-                                            <button onclick="editMachineStatus({{ $machine->id }}, '{{ $log?->id ?? 0 }}')" 
+                                            <button onclick="editMachineStatus({{ $machine->id }}, {{ $log?->id ?? 0 }})" 
                                                     class="flex items-center justify-center w-8 h-8 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
                                                     title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button onclick="deleteMachineStatus({{ $machine->id }}, '{{ $log?->id ?? 0 }}')" 
+                                            <button onclick="deleteMachineStatus({{ $machine->id }}, {{ $log?->id ?? 0 }})" 
                                                     class="flex items-center justify-center w-8 h-8 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700"
                                                     title="Hapus">
                                                 <i class="fas fa-trash"></i>
