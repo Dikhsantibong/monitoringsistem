@@ -613,7 +613,7 @@
                     const inputJsmo = row.querySelector(`input[name="jsmo[${machineId}]"]`);
 
                     // Perbaiki selector untuk input beban
-                    const loadInput = row.querySelector('td:nth-child(5) input[type="number"]'); // Sesuaikan dengan posisi kolom beban
+                    const loadInput = row.querySelector(`input[name="load_value[${machineId}]"]`); // Lebih aman dan tepat
                     const loadValue = loadInput ? parseFloat(loadInput.value) || 0 : 0;
 
                     // Debug log untuk memastikan nilai beban terambil

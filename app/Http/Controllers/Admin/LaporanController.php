@@ -84,6 +84,7 @@ class LaporanController extends Controller
                     'priority', 
                     'type',
                     'labor',
+                    'labors',
                     'schedule_start', 
                     'schedule_finish', 
                     'power_plant_id',

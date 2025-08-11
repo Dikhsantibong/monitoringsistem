@@ -517,6 +517,7 @@
                                         <th class="py-2 px-4 border-b">Schedule Finish</th>
                                         <th class="py-2 px-4 border-b">Dokumen</th>
                                         <th class="py-2 px-4 border-b">Labor</th>
+                                        <th class="py-2 px-4 border-b">Nama Labor</th>
                                         <th class="py-2 px-4 border-b">Aksi</th>
                                     </tr>
                                 </thead>
@@ -576,6 +577,15 @@
                                                 @endif
                                             </td>
                                             <td class="py-2 px-4 border border-gray-200">{{ $wo->labor ?? '-' }}</td>
+                                            <td class="px-4 py-2 border border-gray-200">
+                                                @if(is_array($wo->labors))
+                                                    {{ implode(', ', $wo->labors) }}
+                                                @elseif(is_string($wo->labors))
+                                                    {{ $wo->labors }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                             <td data-column="action" class="py-2 px-4 border border-gray-200">
                                                 <div class="flex space-x-2">
                                                     @if ($wo->status != 'Closed')
