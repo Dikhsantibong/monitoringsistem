@@ -68,16 +68,28 @@
                     @endif -->
 
                     <!-- Upload Excel Form -->
-                    <form action="{{ route('admin.material-master.upload') }}" method="POST" enctype="multipart/form-data" class="mb-6">
-                        @csrf
-                        <div class="flex items-center gap-4">
-                            <input type="file" name="excel_file" accept=".xlsx,.xls" required class="border rounded px-3 py-2" />
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload Excel</button>
+                    <div class="flex flex-col md:flex-row gap-2 mb-6">
+                        <!-- Upload Excel Form -->
+                        <form action="{{ route('admin.material-master.upload') }}" method="POST" enctype="multipart/form-data" class="flex flex-1 gap-2">
+                            @csrf
+                            <input type="file" name="excel_file" accept=".xlsx,.xls" required class="border rounded px-2 py-1 text-sm flex-1" />
+                            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm w-24 md:w-24">Upload Excel</button>
+                        </form>
+                        <!-- Search Form -->
+                        <form method="GET" action="{{ route('admin.material-master.index') }}" class="flex flex-1 gap-2">
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari code, deskripsi, kategori..." class="border rounded px-2 py-1 text-sm flex-1" />
+                            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm w-24 md:w-24">Cari</button>
+                        </form>
+                    </div>
+                    @error('excel_file')
+                        <div class="text-red-600 mt-2 text-sm">{{ $message }}</div>
+                    @enderror
+
+                    @if($lastUpdate)
+                        <div class="mb-4 text-sm text-gray-600">
+                            <span class="font-semibold">Terakhir diupdate:</span> {{ \Carbon\Carbon::parse($lastUpdate)->translatedFormat('d F Y H:i') }}
                         </div>
-                        @error('excel_file')
-                            <div class="text-red-600 mt-2 text-sm">{{ $message }}</div>
-                        @enderror
-                    </form>
+                    @endif
 
                     <!-- Tabel Data Material Master -->
                     <div class="overflow-x-auto">
