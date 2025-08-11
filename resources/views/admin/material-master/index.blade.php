@@ -60,16 +60,54 @@
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="p-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Material Master</h2>
-                    <!-- Flash Messages -->
+                    <!-- Flash Messages
                     @if(session('success'))
                         <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                             <span class="block sm:inline">{{ session('success') }}</span>
                         </div>
-                    @endif
+                    @endif -->
+
+                    <!-- Upload Excel Form -->
+                    <form action="{{ route('admin.material-master.upload') }}" method="POST" enctype="multipart/form-data" class="mb-6">
+                        @csrf
+                        <div class="flex items-center gap-4">
+                            <input type="file" name="excel_file" accept=".xlsx,.xls" required class="border rounded px-3 py-2" />
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload Excel</button>
+                        </div>
+                        @error('excel_file')
+                            <div class="text-red-600 mt-2 text-sm">{{ $message }}</div>
+                        @enderror
+                    </form>
+
+                    <!-- Tabel Data Material Master -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 border-b">Code</th>
+                                    <th class="px-4 py-2 border-b">Deskripsi</th>
+                                    <th class="px-4 py-2 border-b">Kategori</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($materials as $material)
+                                    <tr>
+                                        <td class="px-4 py-2 border-b">{{ $material->code }}</td>
+                                        <td class="px-4 py-2 border-b">{{ $material->deskripsi }}</td>
+                                        <td class="px-4 py-2 border-b">{{ $material->kategori }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-center text-gray-500">Belum ada data material master.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-         <!-- #region -->
+        <!-- #region -->
 </div>
 
 @push('scripts')

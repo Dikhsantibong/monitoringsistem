@@ -815,3 +815,4 @@ Route::put('/pemeliharaan/master-labor/{id}/update', [MasterLaborController::cla
 Route::delete('/pemeliharaan/master-labor/{id}/destroy', [MasterLaborController::class, 'destroy'])->name('pemeliharaan.master-labor.destroy');
 
 Route::get('/admin/material-master', [MasterMaterialController::class, 'index'])->name('admin.material-master.index');
+Route::post('/admin/material-master/upload', [MasterMaterialController::class, 'upload'])->name('admin.material-master.upload');
