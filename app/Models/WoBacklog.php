@@ -32,7 +32,13 @@ class WoBacklog extends Model
         'power_plant_id',
         'unit_source',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'labor',
+        'labors',
+    ];
+
+    protected $casts = [
+        'labors' => 'array',
     ];
 
     // Mutator untuk memastikan type_wo selalu dalam huruf kapital
@@ -150,6 +156,8 @@ class WoBacklog extends Model
                     'document_path' => $woBacklog->document_path,
                     'type_wo' => $woBacklog->type_wo,
                     'priority' => $woBacklog->priority,
+                    'labor' => $woBacklog->labor,
+                    'labors' => $woBacklog->labors,
                     'schedule_start' => $woBacklog->schedule_start,
                     'schedule_finish' => $woBacklog->schedule_finish,
                     'tanggal_backlog' => $woBacklog->tanggal_backlog,
@@ -200,6 +208,8 @@ class WoBacklog extends Model
                     'document_path' => $woBacklog->document_path,
                     'type_wo' => $woBacklog->type_wo,
                     'priority' => $woBacklog->priority,
+                    'labor' => $woBacklog->labor,
+                    'labors' => $woBacklog->labors,
                     'schedule_start' => $woBacklog->schedule_start,
                     'schedule_finish' => $woBacklog->schedule_finish,
                     'tanggal_backlog' => $woBacklog->tanggal_backlog,
@@ -285,6 +295,8 @@ class WoBacklog extends Model
                     'document_path' => $this->document_path,
                     'type' => strtoupper($this->type_wo),
                     'priority' => $this->priority,
+                    'labor' => $this->labor,
+                    'labors' => is_array($this->labors) ? json_encode($this->labors) : $this->labors,
                     'schedule_start' => $this->schedule_start,
                     'schedule_finish' => $this->schedule_finish,
                     'status' => 'Closed',

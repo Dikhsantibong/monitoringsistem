@@ -120,6 +120,8 @@ class LaporanController extends Controller
                     'tindak_lanjut',
                     'keterangan', 
                     'status', 
+                    'labor',
+                    'labors',
                     'created_at', 
                     'power_plant_id',
                     'unit_source'
@@ -590,6 +592,8 @@ class LaporanController extends Controller
             $woBacklog->keterangan = $validatedData['keterangan'];
             $woBacklog->status = $validatedData['status'];
             $woBacklog->power_plant_id = $powerPlant->id;
+            $woBacklog->labor = $request->labor ?? null;
+            $woBacklog->labors = $request->labors ?? null;
             $woBacklog->save();
 
             DB::commit();
@@ -870,7 +874,9 @@ class LaporanController extends Controller
                         'keterangan' => "Otomatis masuk backlog karena melewati jadwal (Status: {$wo->status})",
                         'status' => 'Open',
                         'power_plant_id' => $wo->power_plant_id,
-                        'unit_source' => $wo->unit_source
+                        'unit_source' => $wo->unit_source,
+                        'labor' => $wo->labor,
+                        'labors' => $wo->labors,
                     ]);
 
                     // Set koneksi yang benar sebelum menyimpan

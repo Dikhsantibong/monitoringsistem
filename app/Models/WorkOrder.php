@@ -64,9 +64,10 @@ class WorkOrder extends Model
                 'deskripsi' => $this->description,
                 'tanggal_backlog' => $this->schedule_finish,
                 'keterangan' => 'Otomatis masuk backlog karena melewati jadwal',
-                'status' => 'Open'
+                'status' => 'Open',
+                'labor' => $this->labor,
+                'labors' => $this->labors,
             ]);
-
             return true;
         }
         return false;
@@ -222,6 +223,8 @@ class WorkOrder extends Model
                     'tindak_lanjut' => $this->tindak_lanjut,
                     'document_path' => $this->document_path,
                     'type_wo' => $this->type,
+                    'labor' => $this->labor,
+                    'labors' => $this->labors,
                     'priority' => $this->priority,
                     'schedule_start' => $this->schedule_start,
                     'schedule_finish' => $this->schedule_finish,

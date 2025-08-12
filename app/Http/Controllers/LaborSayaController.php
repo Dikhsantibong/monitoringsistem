@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\WoBacklog;
 
 class LaborSayaController extends Controller
 {
@@ -24,7 +25,12 @@ class LaborSayaController extends Controller
             ['%' . $normalizedName . '%']
         )->get();
 
-        return view('pemeliharaan.labor-saya', compact('workOrders'));
+        $laborBacklogs = WoBacklog::whereRaw(
+            "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ?",
+            ['%' . $normalizedName . '%']
+        )->get();
+
+        return view('pemeliharaan.labor-saya', compact('workOrders', 'laborBacklogs'));
     }
 
     public function edit($id)
@@ -141,5 +147,72 @@ class LaborSayaController extends Controller
                 ->route('pemeliharaan.labor-saya')
                 ->with('error', 'Gagal mengupdate Work Order: ' . $e->getMessage());
         }
+    }
+
+    public function editBacklog($id)
+    {
+        $backlog = WoBacklog::findOrFail($id);
+        // Pastikan hanya labor yang sesuai yang bisa edit
+        $normalizedName = Str::of(Auth::user()->name)->lower()->replace(['-', ' '], '');
+        $backlogLabor = Str::of($backlog->labor)->lower()->replace(['-', ' '], '');
+        if (strpos($backlogLabor, $normalizedName) === false) {
+            abort(403, 'Anda tidak berhak mengedit backlog ini.');
+        }
+        // Ambil master labor jika perlu (untuk checkbox labors)
+        $masterLabors = DB::table('master_labors')->orderBy('nama')->get();
+        return view('pemeliharaan.labor-edit-backlog', compact('backlog', 'masterLabors'));
+    }
+
+    public function updateBacklog(Request $request, $id)
+    {
+        $backlog = WoBacklog::findOrFail($id);
+        $normalizedName = Str::of(Auth::user()->name)->lower()->replace(['-', ' '], '');
+        $backlogLabor = Str::of($backlog->labor)->lower()->replace(['-', ' '], '');
+        if (strpos($backlogLabor, $normalizedName) === false) {
+            abort(403, 'Anda tidak berhak mengedit backlog ini.');
+        }
+        // Jika hanya upload dokumen (AJAX PDF), tidak perlu validasi field lain
+        if ($request->hasFile('document') && $request->file('document')->isValid()) {
+            if ($backlog->document_path && Storage::disk('public')->exists($backlog->document_path)) {
+                Storage::disk('public')->delete($backlog->document_path);
+            }
+            $file = $request->file('document');
+            $fileName = basename($backlog->document_path) ?: (time() . '_' . str_replace(' ', '_', $file->getClientOriginalName()));
+            $path = $file->storeAs('wo-backlog', $fileName, 'public');
+            $backlog->document_path = $path;
+            $backlog->save();
+            return response()->json(['success' => true]);
+        }
+        $request->validate([
+            'deskripsi' => 'required|string',
+            'kendala' => 'nullable|string',
+            'tindak_lanjut' => 'nullable|string',
+            'status' => 'required|in:Open,Closed',
+            'keterangan' => 'nullable|string',
+            'labors' => 'nullable|array',
+            'labor' => 'nullable|string',
+            'labors.*' => 'string|max:100',
+            'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+        ]);
+        $data = [
+            'deskripsi' => $request->deskripsi,
+            'kendala' => $request->kendala,
+            'tindak_lanjut' => $request->tindak_lanjut,
+            'status' => $request->status,
+            'keterangan' => $request->keterangan,
+            'labors' => $request->labors ?? [],
+            'labor' => $backlog->labor,
+        ];
+        if ($request->hasFile('document') && $request->file('document')->isValid()) {
+            if ($backlog->document_path && Storage::disk('public')->exists($backlog->document_path)) {
+                Storage::disk('public')->delete($backlog->document_path);
+            }
+            $file = $request->file('document');
+            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('wo-backlog', $fileName, 'public');
+            $data['document_path'] = $path;
+        }
+        $backlog->update($data);
+        return redirect()->route('pemeliharaan.labor-saya')->with('success', 'WO Backlog berhasil diupdate');
     }
 }

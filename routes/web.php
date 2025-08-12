@@ -808,6 +808,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
 });
 
+Route::get('pemeliharaan/labor-saya/backlog/{id}/edit', [App\Http\Controllers\LaborSayaController::class, 'editBacklog'])->name('pemeliharaan.labor-saya.edit-backlog');
+Route::match(['put', 'post'], 'pemeliharaan/labor-saya/backlog/{id}', [App\Http\Controllers\LaborSayaController::class, 'updateBacklog'])->name('pemeliharaan.labor-saya.update-backlog');
+
 Route::get('/pemeliharaan/master-labor', [MasterLaborController::class, 'index'])->name('pemeliharaan.master-labor');
 Route::post('/pemeliharaan/master-labor', [MasterLaborController::class, 'store'])->name('pemeliharaan.master-labor.store');
 Route::get('/pemeliharaan/master-labor/{id}/edit', [MasterLaborController::class, 'edit'])->name('pemeliharaan.master-labor.edit');
