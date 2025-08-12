@@ -67,19 +67,39 @@
                         </div>
                     @endif -->
 
-                    <!-- Upload Excel Form -->
-                    <div class="flex flex-col md:flex-row gap-2 mb-6">
-                        <!-- Upload Excel Form -->
-                        <form action="{{ route('admin.material-master.upload') }}" method="POST" enctype="multipart/form-data" class="flex flex-1 gap-2">
-                            @csrf
-                            <input type="file" name="excel_file" accept=".xlsx,.xls" required class="border rounded px-2 py-1 text-sm flex-1" />
-                            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm w-24 md:w-24">Upload Excel</button>
-                        </form>
-                        <!-- Search Form -->
-                        <form method="GET" action="{{ route('admin.material-master.index') }}" class="flex flex-1 gap-2">
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari code, deskripsi, kategori..." class="border rounded px-2 py-1 text-sm flex-1" />
-                            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm w-24 md:w-24">Cari</button>
-                        </form>
+                    <!-- Toolbar: Upload & Search -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <!-- Upload Card -->
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-800 mb-2">Upload Material (Excel)</h3>
+                            <p class="text-gray-500 text-sm mb-3">Format yang didukung: .xlsx, .xls</p>
+                            <form action="{{ route('admin.material-master.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
+                                @csrf
+                                <input id="excel_file" type="file" name="excel_file" accept=".xlsx,.xls" class="hidden" />
+                                <label for="excel_file" class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-md hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition">
+                                    <div class="text-center">
+                                        <i class="fas fa-file-excel text-2xl text-gray-400 mb-1"></i>
+                                        <div class="text-gray-600 text-sm">Klik untuk memilih file atau seret ke sini</div>
+                                    </div>
+                                </label>
+                                <div id="file_info" class="hidden text-sm text-gray-700">File dipilih: <span id="file_name" class="font-medium"></span></div>
+                                <div class="flex justify-end">
+                                    <button id="upload_btn" type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50" disabled>Upload</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Search Card -->
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-800 mb-2">Pencarian</h3>
+                            <form method="GET" action="{{ route('admin.material-master.index') }}" class="flex gap-2">
+                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari code, deskripsi, kategori..." class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Cari</button>
+                                @if(request('search'))
+                                    <a href="{{ route('admin.material-master.index') }}" class="px-4 py-2 rounded border">Reset</a>
+                                @endif
+                            </form>
+                        </div>
                     </div>
                     @error('excel_file')
                         <div class="text-red-600 mt-2 text-sm">{{ $message }}</div>
@@ -124,6 +144,26 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// Upload UI enhancement
+const input = document.getElementById('excel_file');
+const uploadBtn = document.getElementById('upload_btn');
+const fileInfo = document.getElementById('file_info');
+const fileName = document.getElementById('file_name');
+if (input) {
+  input.addEventListener('change', function() {
+    if (this.files && this.files.length > 0) {
+      fileName.textContent = this.files[0].name;
+      fileInfo.classList.remove('hidden');
+      uploadBtn.removeAttribute('disabled');
+    } else {
+      fileName.textContent = '';
+      fileInfo.classList.add('hidden');
+      uploadBtn.setAttribute('disabled', 'disabled');
+    }
+  });
+}
+</script>
 @endpush
 
 
