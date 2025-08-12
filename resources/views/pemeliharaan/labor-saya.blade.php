@@ -120,7 +120,7 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-2 text-center border border-gray-200">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo->id }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo->description }}</td>
+                                <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo->description }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo->kendala }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo->tindak_lanjut }}</td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
@@ -196,7 +196,7 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-2 text-center border border-gray-200">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $backlog->no_wo }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->deskripsi }}</td>
+                                <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $backlog->deskripsi }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $backlog->kendala }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $backlog->tindak_lanjut }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $backlog->type_wo }}</td>

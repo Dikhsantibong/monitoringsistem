@@ -190,7 +190,7 @@
                                     <tr style="background-color: #0A749B; color: white;">
                                         <th class="py-2 px-4 border-b min-w-[10px]">No</th>
                                         <th class="py-2 px-4 border-b min-w-[120px]">ID SR</th>
-                                        <th class="py-2 px-4 border-b min-w-[120px]">
+                                        <th class="py-2 px-4 border-b max-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
                                                 <div class="relative">
@@ -309,7 +309,7 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td data-column="unit" class="px-2 py-2 border border-gray-200 w-32">
+                                            <td data-column="unit" class="px-2 py-2 border border-gray-200 max-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">
                                                 {{ $sr->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="px-6 py-4 border border-gray-200">
@@ -429,7 +429,7 @@
                                     <tr style="background-color: #0A749B; color: white;">
                                         <th class="py-2 px-4 border-b min-w-[10px]">No</th>
                                         <th class="py-2 px-4 border-b min-w-[120px]">ID WO</th>
-                                        <th class="py-2 px-4 border-b">
+                                        <th class="py-2 px-4 border-b max-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
                                                 <div class="relative">
@@ -541,7 +541,7 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td data-column="unit" class="px-4 py-2 border border-gray-200">
+                                            <td data-column="unit" class="px-4 py-2 border border-gray-200 max-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">
                                                 {{ $wo->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="px-6 py-4 border border-gray-200">
@@ -707,7 +707,7 @@
                                     <tr style="background-color: #0A749B; color: white;">
                                         <th class="py-2 px-4 border-b min-w-[10px]">No</th>
                                         <th class="py-2 px-4 border-b min-w-[120px]">No WO</th>
-                                        <th class="py-2 px-4 border-b">
+                                        <th class="py-2 px-4 border-b max-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">
                                             <div class="flex items-center justify-between">
                                                 <span>Unit</span>
                                                 <div class="relative">
@@ -814,7 +814,7 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td data-column="unit" class="px-4 py-2 border border-gray-200">
+                                            <td data-column="unit" class="px-4 py-2 border border-gray-200 max-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">
                                                 {{ $backlog->powerPlant->name ?? '-' }}
                                             </td>
                                             <td class="px-6 py-4 border border-gray-200">
