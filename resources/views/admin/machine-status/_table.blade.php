@@ -191,7 +191,8 @@
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Mampu Slim (MW)</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Daya Mampu Pasok (MW)</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Beban (MW)</th>
-                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Jam Jalan Harian</th>
+                                    <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Jam Jalan Harian</th>
+                                    <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Akumulasi Jam Jalan</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Status</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Issue Engine</th>
                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">Catatan Issue</th>
@@ -227,6 +228,7 @@
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->dmn ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->load_value ?? '-' }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">{{ $log?->jsmo ?? '-' }}</td>
+                                    <td class="px-3 py-2 border-r border-gray-200 text-center">{{ number_format(($jsmoTotals[$machine->id] ?? 0), 2) }}</td>
                                     <td class="px-3 py-2 border-r border-gray-200 text-center">
                                         <span class="px-2 py-1 rounded-full text-xs font-medium {{ $statusClass }}">
                                             {{ $status }}

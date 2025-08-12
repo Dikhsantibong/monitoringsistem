@@ -34,6 +34,16 @@ class MachineStatusController extends Controller
             }
             
             $powerPlants = $query->get();
+
+            // Akumulasi seluruh jam jalan (JSMO) per mesin untuk ditampilkan di tabel
+            $jsmoTotals = MachineStatusLog::select('machine_id', \DB::raw('COALESCE(SUM(jsmo),0) as total_jsmo'))
+                ->when(session('unit') !== 'mysql', function($q) {
+                    return $q->whereHas('machine.powerPlant', function($qq){
+                        $qq->where('unit_source', session('unit'));
+                    });
+                })
+                ->groupBy('machine_id')
+                ->pluck('total_jsmo', 'machine_id');
             
             // Ambil semua log untuk tanggal yang dipilih
             $logs = MachineStatusLog::whereDate('tanggal', $date)
@@ -63,11 +73,11 @@ class MachineStatusController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'html' => view('admin.machine-status._table', compact('powerPlants', 'logs', 'hops', 'date'))->render()
+                    'html' => view('admin.machine-status._table', compact('powerPlants', 'logs', 'hops', 'date', 'jsmoTotals'))->render()
                 ]);
             }
 
-            return view('admin.machine-status.view', compact('powerPlants', 'logs', 'hops', 'date'));
+            return view('admin.machine-status.view', compact('powerPlants', 'logs', 'hops', 'date', 'jsmoTotals'));
             
         } catch (\Exception $e) {
             \Log::error('Error in machine status view: ' . $e->getMessage());

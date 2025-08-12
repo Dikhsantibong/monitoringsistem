@@ -75,7 +75,18 @@ class PembangkitController extends Controller
             ->whereDate('tanggal', Carbon::today())
             ->get();
 
-        return view('admin.pembangkit.ready', compact('units', 'machines', 'operations', 'todayLogs', 'todayHops'));
+        // Akumulasi seluruh jam jalan (JSMO) per mesin
+        $jsmoTotals = MachineStatusLog::select('machine_status_logs.machine_id', DB::raw('COALESCE(SUM(jsmo),0) as total_jsmo'))
+            ->join('machines', 'machines.id', '=', 'machine_status_logs.machine_id')
+            ->when(session('unit') !== 'mysql', function ($query) {
+                return $query->whereHas('machine.powerPlant', function($q) {
+                    $q->where('unit_source', session('unit'));
+                });
+            })
+            ->groupBy('machine_status_logs.machine_id')
+            ->pluck('total_jsmo', 'machine_status_logs.machine_id');
+
+        return view('admin.pembangkit.ready', compact('units', 'machines', 'operations', 'todayLogs', 'todayHops', 'jsmoTotals'));
     }
 
     public function saveStatus(Request $request)

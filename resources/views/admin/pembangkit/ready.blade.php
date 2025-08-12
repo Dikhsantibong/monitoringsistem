@@ -214,6 +214,9 @@
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Jam Jalan Harian
                                                 </th>
+                                                <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
+                                                    Akumulasi Jam Jalan
+                                                </th>
                                                 <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Beban (MW)
                                                 </th>
@@ -280,6 +283,9 @@
                                                             name="jsmo[{{ $machine->id }}]"
                                                             value="{{ $operations->where('machine_id', $machine->id)->first()->jsmo ?? '0' }}"
                                                             placeholder="Jam Jalan">
+                                                    </td>
+                                                    <td class="px-3 py-2 border-r border-gray-200 text-center text-gray-800 w-12" readonly>
+                                                        {{ number_format(($jsmoTotals[$machine->id] ?? 0), 2) }}
                                                     </td>
                                                     <td class="px-2 py-2 border-r border-gray-200">
                                                         <input type="number" 
