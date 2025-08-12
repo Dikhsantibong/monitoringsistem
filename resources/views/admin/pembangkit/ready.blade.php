@@ -212,7 +212,7 @@
                                                     Daya Mampu Pasok (MW)
                                                 </th>
                                                 <th class="px-3 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
-                                                    Jam Jalan (JSMO)
+                                                    Jam Jalan Harian
                                                 </th>
                                                 <th class="px-2 py-2.5 bg-[#0A749B] text-white text-sm font-medium tracking-wider text-center border-r border-[#0A749B]">
                                                     Beban (MW)
