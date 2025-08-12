@@ -99,56 +99,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Kinerja Unit Pembangkit</h3>
-                        <div class="space-y-4">
-                            @foreach($powerPlantPerformance as $plant)
-                            <div class="flex flex-col">
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-gray-700">{{ $plant->name }}</span>
-                                    <span class="text-gray-900 font-medium">{{ $plant->efficiency }}%</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $plant->efficiency }}%"></div>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Pemeliharaan Terbaru</h3>
-                        <div class="space-y-4">
-                            @foreach($recentMaintenances as $maintenance)
-                            <div class="border-l-4 border-blue-500 pl-4">
-                                <p class="text-sm text-gray-600">{{ $maintenance->machine->name ?? '-' }}</p>
-                                <p class="text-gray-800">{{ $maintenance->description }}</p>
-                                <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($maintenance->created_at)->diffForHumans() }}</p>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Jadwal Meeting Hari Ini</h3>
-                        <div class="space-y-4">
-                            @forelse($todayMeetings as $meeting)
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <p class="font-medium text-gray-800">{{ $meeting->title }}</p>
-                                    <p class="text-sm text-gray-600">{{ $meeting->scheduled_at->format('H:i') }}</p>
-                                </div>
-                                <span class="px-3 py-1 text-xs font-medium rounded-full 
-                                    {{ $meeting->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
-                                    {{ $meeting->status }}
-                                </span>
-                            </div>
-                            @empty
-                            <p class="text-gray-500 text-center">Tidak ada meeting hari ini</p>
-                            @endforelse
-                        </div>
-                    </div>
+                
+                <div class="mb-6">
+                  
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Work Order Saya</h3>
                         <div class="space-y-4">
