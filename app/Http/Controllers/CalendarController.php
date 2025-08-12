@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
+use App\Models\MachineStatusLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -43,6 +44,53 @@ class CalendarController extends Controller
                 ];
             });
 
+        // Generate maintenance notifications when cumulative JSMO crosses thresholds
+        $thresholds = [
+            125 => 'P2',
+            250 => 'P3',
+            500 => 'P4',
+            3000 => 'P5',
+        ];
+        // Ambil log hingga akhir bulan untuk menghitung kumulatif
+        $logs = MachineStatusLog::with(['machine.powerPlant'])
+            ->select('machine_id', 'tanggal', 'jsmo')
+            ->whereDate('tanggal', '<=', $lastDay)
+            ->orderBy('machine_id')
+            ->orderBy('tanggal')
+            ->get();
+        $maintenanceEvents = collect();
+        $logsByMachine = $logs->groupBy('machine_id');
+        foreach ($logsByMachine as $machineId => $machineLogs) {
+            $cumulative = 0.0;
+            $triggered = [];
+            foreach (array_keys($thresholds) as $t) { $triggered[$t] = false; }
+            foreach ($machineLogs as $log) {
+                $cumulative += (float) ($log->jsmo ?? 0);
+                foreach ($thresholds as $limit => $label) {
+                    if (!$triggered[$limit] && $cumulative >= $limit) {
+                        $machine = optional($log->machine);
+                        $powerPlant = optional($machine->powerPlant);
+                        $maintenanceEvents->push([
+                            'id' => 'M' . $machineId . '-' . $label,
+                            'type' => 'Maintenance ' . $label,
+                            'description' => sprintf('Mesin %s mencapai %d jam (%s)', (string) $machine->name, $limit, $label),
+                            'date' => \Carbon\Carbon::parse($log->tanggal)->format('Y-m-d'),
+                            'status' => 'Open',
+                            'priority' => null,
+                            'schedule_start' => null,
+                            'schedule_finish' => null,
+                            'unit_source' => null,
+                            'power_plant_name' => (string) $powerPlant->name,
+                            'created_at' => $log->tanggal,
+                            'updated_at' => $log->tanggal,
+                            'labor' => null,
+                        ]);
+                        $triggered[$limit] = true;
+                    }
+                }
+            }
+        }
+
         // Buat array tanggal satu bulan penuh
         $dates = [];
         $current = $firstDay->copy();
@@ -51,12 +99,16 @@ class CalendarController extends Controller
             $current->addDay();
         }
 
-        // Group events by date
-        $eventsByDate = $workOrders->groupBy('date');
+        // Group terpisah: WO dan Maintenance
+        $workOrdersByDate = $workOrders->groupBy('date');
+        $maintenanceByDate = $maintenanceEvents->groupBy('date');
 
-        // Gabungkan semua tanggal dengan event (atau array kosong)
-        $events = collect($dates)->mapWithKeys(function ($date) use ($eventsByDate) {
-            return [$date => $eventsByDate->get($date, collect())];
+        // Buat peta tanggal -> events masing-masing
+        $events = collect($dates)->mapWithKeys(function ($date) use ($workOrdersByDate) {
+            return [$date => $workOrdersByDate->get($date, collect())];
+        });
+        $maintenanceEventsMap = collect($dates)->mapWithKeys(function ($date) use ($maintenanceByDate) {
+            return [$date => $maintenanceByDate->get($date, collect())];
         });
 
         // Untuk grid kalender, butuh info bulan & tahun
@@ -66,6 +118,7 @@ class CalendarController extends Controller
             'year' => $year,
             'firstDay' => $firstDay,
             'lastDay' => $lastDay,
+            'maintenanceEvents' => $maintenanceEventsMap,
         ]);
     }
 }

@@ -307,6 +307,25 @@
                         @empty
                         <span class="text-gray-300 text-[10px] italic">-</span>
                         @endforelse
+
+                        @php $dateMaint = ($maintenanceEvents[$date] ?? collect()); @endphp
+                        @if($dateMaint->count() > 0)
+                            <div class="mt-1 pt-1 border-t border-dashed">
+                                <div class="text-[10px] font-semibold text-orange-600 mb-1">Maintenance</div>
+                                @foreach($dateMaint as $m)
+                                    <div class="bg-yellow-50 border-2 border-yellow-400 px-1 py-1 mb-1 rounded">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-xs">{{ $m['type'] }}</span>
+                                            <span class="text-[10px] px-1 py-0.5 rounded bg-yellow-300 text-yellow-900">Alert</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-700">{{ $m['description'] }}</div>
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            <span class="text-[9px] text-gray-500">Unit: <b>{{ $m['power_plant_name'] ?: '-' }}</b></span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                     <!-- Mobile: tampilkan simbol saja, detail di popup -->
                     <div class="flex-1 flex flex-col gap-1 md:hidden">
@@ -316,6 +335,7 @@
                             class="w-6 h-6 mx-auto my-2 rounded-full flex items-center justify-center text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
                             style="background: #0A749B;"
                             data-events='@json($dateEvents)'
+                            data-maintenance='@json(($maintenanceEvents[$date] ?? collect())->values())'
                             data-date="{{ Carbon::parse($date)->format('d/m/Y') }}"
                             onclick="handlePopupClick(this)">
                             <i class="fas fa-calendar-alt"></i>
@@ -363,11 +383,12 @@
 
     function handlePopupClick(button) {
         const events = JSON.parse(button.getAttribute('data-events'));
+        const maint = JSON.parse(button.getAttribute('data-maintenance') || '[]');
         const date = button.getAttribute('data-date');
-        showEventPopup(events, date);
+        showEventPopup(events, date, maint);
     }
 
-    function showEventPopup(events, date) {
+    function showEventPopup(events, date, maintenance) {
         const popup = document.getElementById('eventPopup');
         const content = document.getElementById('popupContent');
         const dateTitle = document.getElementById('popupDate');
@@ -407,6 +428,23 @@
                     <div class="text-[11px] text-gray-500 mb-1">Labor: <b>${event.labor ?? '-'}</b></div>
                 </div>`;
             });
+        }
+
+        if (maintenance && maintenance.length > 0) {
+            html += '<div class="mt-3 pt-2 border-t"><div class="text-sm font-semibold text-orange-600 mb-2">Maintenance</div>';
+            maintenance.forEach(function(m) {
+                html += `
+                    <div class="mb-2 border border-yellow-300 bg-yellow-50 rounded px-2 py-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs">${m.type}</span>
+                            <span class="text-[10px] px-1 py-0.5 rounded bg-yellow-300 text-yellow-900">Alert</span>
+                        </div>
+                        <div class="text-[11px] text-gray-700">${m.description}</div>
+                        <div class="text-[10px] text-gray-500">Unit: <b>${m.power_plant_name || '-'}</b></div>
+                    </div>
+                `;
+            });
+            html += '</div>';
         }
 
         content.innerHTML = html;
