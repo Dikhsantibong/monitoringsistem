@@ -257,7 +257,7 @@
             @php
             use Carbon\Carbon;
             \Carbon\Carbon::setLocale('id');
-            $daysOfWeek = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+            $daysOfWeek = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
             $firstDayOfMonth = Carbon::create($year, $month, 1);
             $startDayOfWeek = $firstDayOfMonth->dayOfWeekIso; // 1=Senin, 7=Minggu
             $totalDays = $lastDay->day;
