@@ -106,10 +106,10 @@
                                     <p class="text-sm text-gray-600">Total Beban:</p>
                                     <p class="text-xl font-bold text-purple-700">{{ number_format($totalBeban, 2) }} MW</p>
                                 </div>
-                                <div class="bg-yellow-50 p-3 rounded-lg md:col-span-1 col-span-5">
+                                {{-- <div class="bg-yellow-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-yellow-600">JSMO:</p>
                                     <p class="text-xl font-bold text-yellow-700">{{ number_format($totalJSMO, 2) }} Jam</p>
-                                </div>
+                                </div> --}}
                                 <div class="bg-orange-50 p-3 rounded-lg md:col-span-1 col-span-5">
                                     <p class="text-sm text-gray-600">
                                         @if(str_starts_with(trim(strtoupper($powerPlant->name)), 'PLTM '))
