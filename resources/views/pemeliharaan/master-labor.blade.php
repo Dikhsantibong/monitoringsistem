@@ -70,6 +70,13 @@
         <!-- Main Content -->
         <main class="px-6 pt-6">
             <div class="container mx-auto">
+                <form method="GET" action="{{ route('pemeliharaan.master-labor') }}" class="mb-4 flex items-center gap-2">
+                    <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari nama atau bidang" class="flex-1 border rounded px-3 py-2" />
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Cari</button>
+                    @if(!empty($q))
+                        <a href="{{ route('pemeliharaan.master-labor') }}" class="px-3 py-2 rounded border">Reset</a>
+                    @endif
+                </form>
                 @if(session('success'))
                     <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-4">{{ session('success') }}</div>
                 @endif

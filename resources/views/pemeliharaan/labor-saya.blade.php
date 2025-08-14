@@ -69,6 +69,13 @@
         </script>
         <!-- Tab Navigation -->
         <main class="px-6 pt-6">
+            <form method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-4 flex items-center gap-2">
+                <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO/Backlog (id, deskripsi, status, type, priority, kendala, tindak lanjut)" class="flex-1 border rounded px-3 py-2" />
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Cari</button>
+                @if(!empty($q))
+                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-3 py-2 rounded border">Reset</a>
+                @endif
+            </form>
             <div class="mb-4 border-b border-gray-200">
                 <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
                     <li class="mr-2">
