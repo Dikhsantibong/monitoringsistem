@@ -283,13 +283,25 @@
                         @forelse($dateEvents as $event)
                         @php
                         $status = strtolower($event['status']);
-                        $border = $status === 'closed' ? 'border-2 border-green-500' : 'border-2 border-red-500';
-                        $bg = $status === 'closed' ? 'bg-green-50' : 'bg-red-50';
+                        // Warna khusus per status WO
+                        if ($status === 'closed') {
+                            $border = 'border-2 border-green-500';
+                            $bg = 'bg-green-50';
+                            $badge = 'bg-green-300 text-green-900';
+                        } elseif ($status === 'wmatl') {
+                            $border = 'border-2 border-blue-500';
+                            $bg = 'bg-blue-50';
+                            $badge = 'bg-blue-300 text-blue-900';
+                        } else { // open dan lainnya
+                            $border = 'border-2 border-red-500';
+                            $bg = 'bg-red-50';
+                            $badge = 'bg-red-300 text-red-900';
+                        }
                         @endphp
                         <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-xs">#{{ $event['id'] }}</span>
-                                <span class="text-[10px] px-1 py-0.5 rounded {{ $status === 'closed' ? 'bg-green-300 text-green-900' : 'bg-red-300 text-red-900' }}">{{ ucfirst($event['status']) }}</span>
+                                <span class="text-[10px] px-1 py-0.5 rounded {{ $badge }}">{{ ucfirst($event['status']) }}</span>
                             </div>
                             <div class="font-semibold text-[11px]">{{ $event['type'] }}</div>
                             <div class="text-[10px] text-gray-700 event-desc">{{ $event['description'] }}</div>
@@ -326,16 +338,40 @@
                                 @endforeach
                             </div>
                         @endif
+
+                        @php $dateBacklogs = ($backlogEvents[$date] ?? collect()); @endphp
+                        @if($dateBacklogs->count() > 0)
+                            <div class="mt-1 pt-1 border-t border-dashed">
+                                <div class="text-[10px] font-semibold text-purple-600 mb-1">Backlog</div>
+                                @foreach($dateBacklogs as $b)
+                                    <div class="bg-purple-50 border-2 border-purple-400 px-1 py-1 mb-1 rounded">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-xs">{{ $b['id'] }}</span>
+                                            <span class="text-[10px] px-1 py-0.5 rounded bg-purple-300 text-purple-900">Backlog</span>
+                                        </div>
+                                        <div class="font-semibold text-[11px]">{{ $b['type'] }}</div>
+                                        <div class="text-[10px] text-gray-700">{{ $b['description'] }}</div>
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            <span class="text-[9px] text-gray-500">Unit: <b>{{ $b['power_plant_name'] ?? '-' }}</b></span>
+                                            <span class="text-[9px] text-gray-500">Status: <b>{{ $b['status'] ?? '-' }}</b></span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                     <!-- Mobile: tampilkan simbol saja, detail di popup -->
                     <div class="flex-1 flex flex-col gap-1 md:hidden">
-                        @if(count($dateEvents) > 0)
+                        @php $hasMaint = ($maintenanceEvents[$date] ?? collect())->count() > 0; @endphp
+                        @php $hasBacklog = ($backlogEvents[$date] ?? collect())->count() > 0; @endphp
+                        @if(count($dateEvents) > 0 || $hasMaint || $hasBacklog)
                         <button
                             type="button"
                             class="w-6 h-6 mx-auto my-2 rounded-full flex items-center justify-center text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
                             style="background: #0A749B;"
                             data-events='@json($dateEvents)'
                             data-maintenance='@json(($maintenanceEvents[$date] ?? collect())->values())'
+                            data-backlogs='@json(($backlogEvents[$date] ?? collect())->values())'
                             data-date="{{ Carbon::parse($date)->format('d/m/Y') }}"
                             onclick="handlePopupClick(this)">
                             <i class="fas fa-calendar-alt"></i>
@@ -384,11 +420,12 @@
     function handlePopupClick(button) {
         const events = JSON.parse(button.getAttribute('data-events'));
         const maint = JSON.parse(button.getAttribute('data-maintenance') || '[]');
+        const backs = JSON.parse(button.getAttribute('data-backlogs') || '[]');
         const date = button.getAttribute('data-date');
-        showEventPopup(events, date, maint);
+        showEventPopup(events, date, maint, backs);
     }
 
-    function showEventPopup(events, date, maintenance) {
+    function showEventPopup(events, date, maintenance, backlogs) {
         const popup = document.getElementById('eventPopup');
         const content = document.getElementById('popupContent');
         const dateTitle = document.getElementById('popupDate');
@@ -441,6 +478,24 @@
                         </div>
                         <div class="text-[11px] text-gray-700">${m.description}</div>
                         <div class="text-[10px] text-gray-500">Unit: <b>${m.power_plant_name || '-'}</b></div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
+
+        if (backlogs && backlogs.length > 0) {
+            html += '<div class="mt-3 pt-2 border-t"><div class="text-sm font-semibold text-purple-600 mb-2">Backlog</div>';
+            backlogs.forEach(function(b) {
+                html += `
+                    <div class="mb-2 border border-purple-300 bg-purple-50 rounded px-2 py-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs">${b.id}</span>
+                            <span class="text-[10px] px-1 py-0.5 rounded bg-purple-300 text-purple-900">Backlog</span>
+                        </div>
+                        <div class="text-[11px] text-gray-700">${b.type}</div>
+                        <div class="text-[11px] text-gray-700">${b.description || ''}</div>
+                        <div class="text-[10px] text-gray-500">Unit: <b>${b.power_plant_name || '-'}</b> | Status: <b>${b.status || '-'}</b></div>
                     </div>
                 `;
             });

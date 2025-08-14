@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ServiceRequest;
 use App\Models\WorkOrder;
 use App\Models\MachineStatusLog;
+use App\Models\WoBacklog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -41,6 +42,36 @@ class CalendarController extends Controller
                     'created_at' => $wo->created_at,
                     'updated_at' => $wo->updated_at,
                     'labor' => $wo->labor ?? null // Tambahan labor
+                ];
+            });
+
+        // Get backlog for selected month & year (gunakan tanggal_backlog jika ada, fallback ke created_at)
+        $backlogsQuery = WoBacklog::with('powerPlant')
+            ->select(
+                'id', 'no_wo', 'deskripsi', 'type_wo', 'status', 'priority', 'tanggal_backlog',
+                'schedule_start', 'schedule_finish', 'power_plant_id', 'unit_source', 'labor', 'created_at', 'updated_at'
+            )
+            ->whereYear('tanggal_backlog', $year)
+            ->whereMonth('tanggal_backlog', $month);
+
+        $backlogs = $backlogsQuery->get()
+            ->map(function ($bl) {
+                $date = $bl->tanggal_backlog ?: $bl->created_at;
+                return [
+                    'id' => 'BL-' . ($bl->no_wo ?? $bl->id),
+                    'type' => 'Backlog - ' . strtoupper((string) $bl->type_wo),
+                    'description' => $bl->deskripsi,
+                    'date' => \Carbon\Carbon::parse($date)->format('Y-m-d'),
+                    'status' => $bl->status ?? 'Open',
+                    'priority' => $bl->priority ?? null,
+                    'schedule_start' => $bl->schedule_start ?? null,
+                    'schedule_finish' => $bl->schedule_finish ?? null,
+                    'unit_source' => $bl->unit_source ?? null,
+                    'power_plant_name' => optional($bl->powerPlant)->name ?? '-',
+                    'created_at' => $bl->created_at,
+                    'updated_at' => $bl->updated_at,
+                    'labor' => $bl->labor ?? null,
+                    'is_backlog' => true,
                 ];
             });
 
@@ -99,8 +130,9 @@ class CalendarController extends Controller
             $current->addDay();
         }
 
-        // Group terpisah: WO dan Maintenance
+        // Group terpisah: WO, Backlog, dan Maintenance
         $workOrdersByDate = $workOrders->groupBy('date');
+        $backlogsByDate = $backlogs->groupBy('date');
         $maintenanceByDate = $maintenanceEvents->groupBy('date');
 
         // Buat peta tanggal -> events masing-masing
@@ -111,6 +143,10 @@ class CalendarController extends Controller
             return [$date => $maintenanceByDate->get($date, collect())];
         });
 
+        $backlogEventsMap = collect($dates)->mapWithKeys(function ($date) use ($backlogsByDate) {
+            return [$date => $backlogsByDate->get($date, collect())];
+        });
+
         // Untuk grid kalender, butuh info bulan & tahun
         return view('calendar.index', [
             'events' => $events,
@@ -119,6 +155,7 @@ class CalendarController extends Controller
             'firstDay' => $firstDay,
             'lastDay' => $lastDay,
             'maintenanceEvents' => $maintenanceEventsMap,
+            'backlogEvents' => $backlogEventsMap,
         ]);
     }
 }
