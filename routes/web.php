@@ -39,6 +39,7 @@ use App\Http\Controllers\KinerjaPemeliharaanController;
 use App\Http\Controllers\UserLaporanController;
 use App\Http\Controllers\LaborSayaController;
 use App\Http\Controllers\Pemeliharaan\MasterLaborController;
+use App\Http\Controllers\Pemeliharaan\JobcardController;
 use App\Http\Controllers\MasterMaterialController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
@@ -806,6 +807,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/labor-saya', [LaborSayaController::class, 'index'])->name('pemeliharaan.labor-saya');
     Route::get('/pemeliharaan/labor-saya/{id}/edit', [LaborSayaController::class, 'edit'])->name('pemeliharaan.labor-saya.edit');
     Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
+    Route::get('/pemeliharaan/jobcard', [JobcardController::class, 'index'])->name('pemeliharaan.jobcard');
 });
 
 Route::get('pemeliharaan/labor-saya/backlog/{id}/edit', [App\Http\Controllers\LaborSayaController::class, 'editBacklog'])->name('pemeliharaan.labor-saya.edit-backlog');
