@@ -1111,6 +1111,9 @@
             background-color: #17a2b8;
             color: white;
         }
+        /* Popup animation for Leaflet */
+        @keyframes fadeUpPopup { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .popup-anim { animation: fadeUpPopup .3s ease; }
     </style>
 
     <script>
@@ -1976,6 +1979,10 @@
                 // Buat array untuk menyimpan semua koordinat marker
                 var markers = [];
                 var bounds = L.latLngBounds();
+                var _autoCycleTimer = null;
+                var _autoIndex = 0;
+                var _userLastInteractAt = 0;
+                var _initialPopupShown = false;
 
                 @php
                     use App\Models\MachineStatusLog;
@@ -2210,7 +2217,104 @@
                             createLineChart({{ $plant->id }});
                         }, 100);
                     });
+                    // Simpan marker untuk rotasi otomatis
+                    markers.push(marker);
+                    bounds.extend(markerLatLng);
                 @endforeach
+
+                // Animasi popup saat terbuka (tanpa ganggu fungsi lain)
+                map.on('popupopen', function() {
+                    setTimeout(function(){
+                        var popups = document.querySelectorAll('.leaflet-popup');
+                        popups.forEach(function(p){
+                            p.classList.remove('popup-anim');
+                            // reflow untuk restart animasi
+                            void p.offsetWidth;
+                            p.classList.add('popup-anim');
+                        });
+                    }, 0);
+                });
+
+                // Deteksi interaksi pengguna untuk jeda rotasi
+                ['click','mousedown','touchstart','movestart','zoomstart','dragstart'].forEach(function(evt){
+                    map.on(evt, function(){ _userLastInteractAt = Date.now(); });
+                });
+
+                function startAutoCyclePopups() {
+                    if (!markers.length) return;
+                    if (_autoCycleTimer) { clearInterval(_autoCycleTimer); }
+                    _autoCycleTimer = setInterval(function(){
+                        // Jeda 10 detik setelah interaksi user
+                        if (Date.now() - _userLastInteractAt < 10000) return;
+                        try {
+                            if (_autoIndex >= markers.length) _autoIndex = 0;
+                            markers[_autoIndex].openPopup();
+                            _autoIndex = (_autoIndex + 1) % markers.length;
+                        } catch(e) { /* ignore */ }
+                    }, 4000);
+                }
+
+                function openNextPopupNow() {
+                    if (!markers.length) return;
+                    try {
+                        if (_autoIndex >= markers.length) _autoIndex = 0;
+                        markers[_autoIndex].openPopup();
+                        _autoIndex = (_autoIndex + 1) % markers.length;
+                    } catch(e) { /* ignore */ }
+                }
+
+                function isElementInViewport(el) {
+                    if (!el) return false;
+                    const rect = el.getBoundingClientRect();
+                    const vw = window.innerWidth || document.documentElement.clientWidth;
+                    const vh = window.innerHeight || document.documentElement.clientHeight;
+                    return (
+                        rect.bottom > 0 &&
+                        rect.right > 0 &&
+                        rect.left < vw &&
+                        rect.top < vh
+                    );
+                }
+
+                function maybeShowInitialPopup() {
+                    if (_initialPopupShown) return;
+                    _initialPopupShown = true;
+                    openNextPopupNow();
+                }
+
+                // Mulai rotasi popup otomatis dan sesuaikan tampilan
+                try { if (markers.length) { map.fitBounds(bounds, { padding: [30,30] }); } } catch(e) {}
+                startAutoCyclePopups();
+                // Tampilkan popup segera saat halaman dimuat (tanpa menunggu interval)
+                maybeShowInitialPopup();
+
+                // Jika pengguna scroll dan peta terlihat, pastikan popup muncul saat itu juga (sekali saja)
+                (function setupMapVisibilityTrigger(){
+                    var mapEl = document.getElementById('map');
+                    if (!mapEl) return;
+                    if (isElementInViewport(mapEl)) {
+                        maybeShowInitialPopup();
+                        return;
+                    }
+                    try {
+                        var io = new IntersectionObserver(function(entries){
+                            if (entries && entries[0] && entries[0].isIntersecting) {
+                                maybeShowInitialPopup();
+                                io.disconnect();
+                            }
+                        }, { threshold: 0.15 });
+                        io.observe(mapEl);
+                    } catch(e) {
+                        // Fallback: cek saat scroll
+                        var onScroll = function(){
+                            if (isElementInViewport(mapEl)) {
+                                maybeShowInitialPopup();
+                                window.removeEventListener('scroll', onScroll, true);
+                            }
+                        };
+                        window.addEventListener('scroll', onScroll, true);
+                    }
+                })();
 
                 function createLineChart(plantId) {
                     const chartContainer = document.querySelector("#chart-" + plantId);
