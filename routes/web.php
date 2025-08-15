@@ -40,6 +40,7 @@ use App\Http\Controllers\UserLaporanController;
 use App\Http\Controllers\LaborSayaController;
 use App\Http\Controllers\Pemeliharaan\MasterLaborController;
 use App\Http\Controllers\Pemeliharaan\JobcardController;
+use App\Http\Controllers\Pemeliharaan\SupportController;
 use App\Http\Controllers\MasterMaterialController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
@@ -808,6 +809,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/labor-saya/{id}/edit', [LaborSayaController::class, 'edit'])->name('pemeliharaan.labor-saya.edit');
     Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
     Route::get('/pemeliharaan/jobcard', [JobcardController::class, 'index'])->name('pemeliharaan.jobcard');
+    Route::get('/pemeliharaan/support', [SupportController::class, 'index'])->name('pemeliharaan.support');
 });
 
 Route::get('pemeliharaan/labor-saya/backlog/{id}/edit', [App\Http\Controllers\LaborSayaController::class, 'editBacklog'])->name('pemeliharaan.labor-saya.edit-backlog');
@@ -821,3 +823,7 @@ Route::delete('/pemeliharaan/master-labor/{id}/destroy', [MasterLaborController:
 
 Route::get('/admin/material-master', [MasterMaterialController::class, 'index'])->name('admin.material-master.index');
 Route::post('/admin/material-master/upload', [MasterMaterialController::class, 'upload'])->name('admin.material-master.upload');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/pemeliharaan/calendar', [\App\Http\Controllers\Pemeliharaan\PemeliharaanCalendarController::class, 'index'])->name('pemeliharaan.calendar');
+});
