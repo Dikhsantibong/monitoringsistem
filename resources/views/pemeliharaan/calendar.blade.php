@@ -180,6 +180,7 @@
                                                     <div class="flex flex-wrap gap-1 mt-1">
                                                         <span class="text-[9px] text-gray-500">Unit: <b>{{ $b['power_plant_name'] ?? '-' }}</b></span>
                                                         <span class="text-[9px] text-gray-500">Status: <b>{{ $b['status'] ?? '-' }}</b></span>
+                                                        <span class="text-[9px] text-gray-500">Labor: <b>{{ $b['labor'] ?? '-' }}</b></span>
                                                     </div>
                                                 </div>
                                             @endforeach
