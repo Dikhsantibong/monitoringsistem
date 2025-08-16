@@ -1626,51 +1626,7 @@
 
 
 
-    <!-- Notulen Section -->
-<div class="container">
-    <div class="notulen-section">
-        <h2 class="notulen-title">Notulen Rapat Terbaru</h2>
-        <div class="table-responsive">
-            <table class="notulen-table">
-                <thead>
-                    <tr>
-                        <th class="text-center" style="color: #000000;">No</th>
-                        <th class="text-center" style="color: #000000;">Tanggal</th>
-                        <th class="text-center" style="color: #000000;">Unit</th>
-                        <th class="text-center" style="color: #000000;">Agenda</th>
-                        <th class="text-center" style="color: #000000;">Pimpinan Rapat</th>
-                        <th class="text-center" style="color: #000000;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($notulens as $notulen)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $notulen->tanggal ? $notulen->tanggal->format('d/m/Y') : '-' }}</td>
-                        <td class="text-center">{{ $notulen->unit ?? '-' }}</td>
-                        <td class="text-center">{{ $notulen->agenda ? Str::limit($notulen->agenda, 50) : '-' }}</td>
-                        <td class="text-center">{{ $notulen->pimpinan_rapat ?? '-' }}</td>
-                        <td>
-                            <div class="d-flex justify-content-center gap-2">
-                                <a href="{{ route('notulen.show', $notulen->id) }}" class="btn-view text-center">
-                                    <i class="fas fa-eye"></i>
-                                    Lihat
-                                </a>
-                                @if($notulen->revision_count > 0)
-                                <span class="badge bg-info" title="Telah direvisi {{ $notulen->revision_count }} kali">
-                                    <i class="fas fa-history"></i> {{ $notulen->revision_count }}
-                                </span>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
+    
 <style>
     .table {
         font-size: 14px;
