@@ -25,6 +25,11 @@
                 <i class="fas fa-check w-6 h-6"></i>
                 <span class="ml-3 text-base">Kesiapan Pembangkit</span>
             </a>
+            <a href="{{ route('kalender.pemeliharaan') }}"
+            class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('kalender.pemeliharaan') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+            <i class="fas fa-calendar-alt w-6 h-6"></i>
+            <span class="ml-3 text-base">Kalender Pemeliharaan</span>
+        </a>
 
             <a href="{{ route('admin.laporan.sr_wo') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.laporan.sr_wo') || request()->routeIs('admin.laporan.manage') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
@@ -88,6 +93,7 @@
                 <i class="fas fa-list w-6 h-6"></i>
                 <span class="ml-3 text-base">Daftar Hadir</span>
             </a>
+
 
             <a href="{{ route('admin.score-card.index') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.score-card.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">

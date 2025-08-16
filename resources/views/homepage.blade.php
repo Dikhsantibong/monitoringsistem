@@ -1263,7 +1263,7 @@
             {{-- Map --}}
             <h1 class="text-2xl font-semibold text-center mt-10  text-[#0A749B]">Peta Pembangkit</h1>
             <div id="map"
-                style="height: 500px; border-radius: 20px; position: relative; margin: 30px 30px 0; padding: 0; "
+                style="height: 650px; border-radius: 20px; position: relative; margin: 30px 30px 0; padding: 0; "
                 class="z-0">
             </div>
 

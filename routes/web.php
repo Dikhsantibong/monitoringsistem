@@ -827,3 +827,7 @@ Route::post('/admin/material-master/upload', [MasterMaterialController::class, '
 Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/calendar', [\App\Http\Controllers\Pemeliharaan\PemeliharaanCalendarController::class, 'index'])->name('pemeliharaan.calendar');
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/kalender-pemeliharaan', [\App\Http\Controllers\KalenderPemeliharaanController::class, 'index'])->name('kalender.pemeliharaan');
+});
