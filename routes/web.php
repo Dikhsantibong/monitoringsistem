@@ -46,6 +46,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\InventoryMaterialController;
 use App\Http\Controllers\PemeliharaanKatalogController;
 use App\Http\Controllers\InventoryKatalogController;
+use App\Http\Controllers\PemeliharaanPengajuanMaterialController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -847,4 +848,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/dashboard', [InventoryController::class, 'index'])->name('inventory.dashboard');
     Route::get('/inventory/material', [InventoryMaterialController::class, 'index'])->name('inventory.material.index');
     Route::get('/inventory/katalog', [InventoryKatalogController::class, 'index'])->name('inventory.katalog.index');
+});
+
+Route::middleware(['auth'])->prefix('pemeliharaan')->name('pemeliharaan.')->group(function () {
+    // ... katalog ...
+    Route::prefix('pengajuan-material')->name('pengajuan-material.')->group(function () {
+        Route::get('/', [PemeliharaanPengajuanMaterialController::class, 'index'])->name('index');
+        Route::get('/create', [PemeliharaanPengajuanMaterialController::class, 'create'])->name('create');
+        Route::post('/store', [PemeliharaanPengajuanMaterialController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PemeliharaanPengajuanMaterialController::class, 'edit'])->name('edit');
+        Route::post('/{id}/update', [PemeliharaanPengajuanMaterialController::class, 'update'])->name('update');
+    });
 });
