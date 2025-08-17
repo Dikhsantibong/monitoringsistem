@@ -89,11 +89,7 @@
 									<th class="px-4 py-2 border">No</th>
                                     <th class="px-4 py-2 border">WO ID</th>
                                     <th class="px-4 py-2 border">Deskripsi</th>
-                                    <th class="px-4 py-2 border">PLTU / Power Plant</th>
-                                    <th class="px-4 py-2 border">Type</th>
-                                    <th class="px-4 py-2 border">Priority</th>
-                                    <th class="px-4 py-2 border">Finish</th>
-                                    <th class="px-4 py-2 border">Updated</th>
+                                    <th class="px-4 py-2 border">Power Plant</th>
                                     <th class="px-4 py-2 border">Status</th>
                                     <th class="px-4 py-2 border">Dokumen</th>
                                 </tr>
@@ -105,14 +101,6 @@
                                         <td class="px-4 py-2 border">WO-{{ $wo->id }}</td>
                                         <td class="px-4 py-2 border">{{ $wo->description }}</td>
                                         <td class="px-4 py-2 border">{{ $wo->powerPlant->name ?? '-' }}</td>
-                                        <td class="px-4 py-2 border">{{ $wo->type ?? '-' }}</td>
-                                        <td class="px-4 py-2 border">{{ $wo->priority ?? '-' }}</td>
-                                        <td class="px-4 py-2 border">
-                                            {{ $wo->schedule_finish ? \Carbon\Carbon::parse($wo->schedule_finish)->format('d/m/Y') : '-' }}
-                                        </td>
-                                        <td class="px-4 py-2 border">
-                                            {{ $wo->updated_at ? $wo->updated_at->format('d/m/Y H:i') : '-' }}
-                                        </td>
                                         <td class="px-4 py-2 border">
                                             <span
                                                 class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">Closed</span>
