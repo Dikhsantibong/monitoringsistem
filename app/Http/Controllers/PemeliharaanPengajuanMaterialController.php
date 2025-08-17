@@ -25,10 +25,10 @@ class PemeliharaanPengajuanMaterialController extends Controller
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:5120',
         ]);
-        $userId = Auth::id();
+        $userId = session('unit', 'unknown_unit');
         $filename = 'pengajuan_material_' . $userId . '_' . time() . '.pdf';
         $path = $request->file('pdf')->storeAs('pengajuan_material', $filename, 'public');
-        PengajuanMaterialFile::create([
+        \App\Models\PengajuanMaterialFile::create([
             'user_id' => $userId,
             'filename' => $filename,
             'path' => $path,

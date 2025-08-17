@@ -47,6 +47,7 @@ use App\Http\Controllers\InventoryMaterialController;
 use App\Http\Controllers\PemeliharaanKatalogController;
 use App\Http\Controllers\InventoryKatalogController;
 use App\Http\Controllers\PemeliharaanPengajuanMaterialController;
+use App\Http\Controllers\InventoryPengajuanController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -848,6 +849,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/dashboard', [InventoryController::class, 'index'])->name('inventory.dashboard');
     Route::get('/inventory/material', [InventoryMaterialController::class, 'index'])->name('inventory.material.index');
     Route::get('/inventory/katalog', [InventoryKatalogController::class, 'index'])->name('inventory.katalog.index');
+    Route::get('/inventory/pengajuan-material', [InventoryPengajuanController::class, 'index'])->name('inventory.pengajuan-material.index');
 });
 
 Route::middleware(['auth'])->prefix('pemeliharaan')->name('pemeliharaan.')->group(function () {

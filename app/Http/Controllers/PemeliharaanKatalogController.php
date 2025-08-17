@@ -26,10 +26,10 @@ class PemeliharaanKatalogController extends Controller
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:5120',
         ]);
-        $userId = Auth::id();
+        $userId = session('unit', 'unknown_unit');
         $filename = 'katalog_' . $userId . '_' . time() . '.pdf';
         $path = $request->file('pdf')->storeAs('katalog', $filename, 'public');
-        KatalogFile::create([
+        \App\Models\KatalogFile::create([
             'user_id' => $userId,
             'filename' => $filename,
             'path' => $path,

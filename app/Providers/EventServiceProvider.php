@@ -13,6 +13,10 @@ use App\Events\ScoreCardDailyUpdated;
 use App\Listeners\SyncScoreCardDailyToUpKendari;
 use App\Events\PesertaUpdated;
 use App\Listeners\SyncPesertaToUpKendari;
+use App\Events\KatalogFileUpdated;
+use App\Listeners\SyncKatalogFileToUpKendari;
+use App\Events\PengajuanMaterialFileUpdated;
+use App\Listeners\SyncPengajuanMaterialFileToUpKendari;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -34,6 +38,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         PesertaUpdated::class => [
             SyncPesertaToUpKendari::class,
+        ],
+        \App\Events\KatalogFileUpdated::class => [
+            \App\Listeners\SyncKatalogFileToUpKendari::class,
+        ],
+        \App\Events\PengajuanMaterialFileUpdated::class => [
+            \App\Listeners\SyncPengajuanMaterialFileToUpKendari::class,
         ],
     ];
 } 
