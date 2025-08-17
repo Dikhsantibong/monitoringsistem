@@ -63,7 +63,7 @@
                             <tr>
                                 <th class="px-4 py-2 border-b text-center">No</th>
                                 <th class="px-4 py-2 border-b text-center">Nama File</th>
-                                <th class="px-4 py-2 border-b text-center">Diupload Oleh</th>
+                                <th class="px-4 py-2 border-b text-center">Di Ajukan Oleh</th>
                                 <th class="px-4 py-2 border-b text-center">Tanggal Upload</th>
                                 <th class="px-4 py-2 border-b text-center">Aksi</th>
                             </tr>

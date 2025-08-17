@@ -63,7 +63,7 @@
                             <tr>
                                 <th class="px-4 py-2 border-b text-center">No</th>
                                 <th class="px-4 py-2 border-b text-center">Nama File</th>
-                                <th class="px-4 py-2 border-b text-center">Diupload Oleh</th>
+                                <th class="px-4 py-2 border-b text-center">Di Ajukan Oleh</th>
                                 <th class="px-4 py-2 border-b text-center">Tanggal Upload</th>
                                 <th class="px-4 py-2 border-b text-center">Aksi</th>
                             </tr>
@@ -72,9 +72,9 @@
                             @forelse($files as $index => $file)
                                 <tr>
                                     <td class="px-4 py-2 border-b text-center border-r">{{ $index + 1 }}</td>
-                                    <td class="px-4 py-2 border-b text-center border-r">{{ $file->filename }}</td>
+                                    <td class="px-4 py-2 border-b text-center border-r max-w-80 overflow-hidden text-ellipsis whitespace-nowrap">{{ $file->filename }}</td>
                                     <td class="px-4 py-2 border-b text-center border-r">
-                                        {{ $file->user ? $file->user->name : '-' }}
+                                        {{ $file->user_id ?? '-' }}
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
                                         {{ \Carbon\Carbon::parse($file->created_at)->format('d-m-Y H:i') }}
