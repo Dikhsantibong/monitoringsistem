@@ -70,6 +70,7 @@ class Kernel extends HttpKernel
        'user' => \App\Http\Middleware\UserMiddleware::class,
         'role' => \App\Http\Middleware\CheckRole::class,
         'json.response' => \App\Http\Middleware\ForceJsonResponse::class,
+        'inventory' => \App\Http\Middleware\InventoryMiddleware::class,
     ];
 
     protected $middlewareAliases = [
@@ -85,5 +86,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'user' => \App\Http\Middleware\UserMiddleware::class,
+        'inventory' => \App\Http\Middleware\InventoryMiddleware::class,
     ];
 }
