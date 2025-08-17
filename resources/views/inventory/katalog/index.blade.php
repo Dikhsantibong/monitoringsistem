@@ -53,7 +53,13 @@
         </header>
         <main class="px-6 pt-6">
             <div class="mb-4 flex justify-end">
-                <!-- Tidak ada tombol ajukan katalog baru di inventory, jadi dikosongkan -->
+                <form method="GET" action="" class="flex gap-2">
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari nama file..." class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Cari</button>
+                    @if(!empty($search))
+                        <a href="{{ route('inventory.katalog.index') }}" class="px-4 py-2 rounded border">Reset</a>
+                    @endif
+                </form>
             </div>
             <div class="bg-white rounded-lg shadow p-6 w-full">
                 <h2 class="text-lg font-semibold mb-4">Daftar Pengajuan Katalog</h2>
@@ -91,6 +97,33 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+                <!-- Custom Pagination -->
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="text-sm text-gray-700">
+                        Menampilkan 
+                        {{ ($files->currentPage() - 1) * $files->perPage() + 1 }} 
+                        hingga 
+                        {{ min($files->currentPage() * $files->perPage(), $files->total()) }} 
+                        dari 
+                        {{ $files->total() }} 
+                        entri
+                    </div>
+                    <div class="flex items-center gap-1">
+                        @if (!$files->onFirstPage())
+                            <a href="{{ $files->previousPageUrl() }}" class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                        @endif
+                        @foreach ($files->getUrlRange(1, $files->lastPage()) as $page => $url)
+                            @if ($page == $files->currentPage())
+                                <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}" class="px-3 py-1 rounded {{ $page == $files->currentPage() ? 'bg-[#0A749B] text-white' : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+                        @if ($files->hasMorePages())
+                            <a href="{{ $files->nextPageUrl() }}" class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                        @endif
+                    </div>
                 </div>
             </div>
         </main>
