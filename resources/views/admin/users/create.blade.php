@@ -91,6 +91,7 @@
                             <option value="user">User</option>
                             <option value="admin">Admin</option>
                             <option value="pemeliharaan">Pemeliharaan</option>
+                            <option value="inventory">Inventory</option>
                         </select>
                     </div>
 

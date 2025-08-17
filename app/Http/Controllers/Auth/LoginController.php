@@ -34,6 +34,8 @@ class LoginController extends Controller
                 $redirect = route('user.dashboard');
             } else if ($user->role === 'pemeliharaan') {
                 $redirect = route('pemeliharaan.dashboard'); // Pastikan route ini ada
+            } else if ($user->role === 'inventory') {
+                $redirect = route('inventory.dashboard');
             }
             // Return response dengan script untuk mengecek session storage
             return response()->view('auth.check-redirect', [

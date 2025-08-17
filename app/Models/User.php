@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $this->role === 'pemeliharaan';
     }
 
+    public function isInventory()
+    {
+        return $this->role === 'inventory';
+    }
+
     public function getConnectionName()
     {
         return session('unit', 'u478221055_up_kendari');

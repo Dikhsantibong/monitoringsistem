@@ -42,6 +42,10 @@ use App\Http\Controllers\Pemeliharaan\MasterLaborController;
 use App\Http\Controllers\Pemeliharaan\JobcardController;
 use App\Http\Controllers\Pemeliharaan\SupportController;
 use App\Http\Controllers\MasterMaterialController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\InventoryMaterialController;
+use App\Http\Controllers\PemeliharaanKatalogController;
+use App\Http\Controllers\InventoryKatalogController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -449,7 +453,7 @@ Route::get('/get-mothballed-machines', [DashboardPemantauanController::class, 'g
 
 Route::get('/get-maintenance-machines', [DashboardPemantauanController::class, 'getMaintenanceMachines']);
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Pembangkit routes
     Route::prefix('pembangkit')->name('pembangkit.')->group(function () {
         Route::get('/ready', [PembangkitController::class, 'ready'])->name('ready');
@@ -830,4 +834,17 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/kalender-pemeliharaan', [\App\Http\Controllers\KalenderPemeliharaanController::class, 'index'])->name('kalender.pemeliharaan');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/pemeliharaan/katalog', [PemeliharaanKatalogController::class, 'index'])->name('pemeliharaan.katalog.index');
+    Route::get('/pemeliharaan/katalog/create', [PemeliharaanKatalogController::class, 'create'])->name('pemeliharaan.katalog.create');
+    Route::post('/pemeliharaan/katalog', [PemeliharaanKatalogController::class, 'store'])->name('pemeliharaan.katalog.store');
+    Route::get('/pemeliharaan/katalog/{id}/edit', [PemeliharaanKatalogController::class, 'edit'])->name('pemeliharaan.katalog.edit');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/inventory/dashboard', [InventoryController::class, 'index'])->name('inventory.dashboard');
+    Route::get('/inventory/material', [InventoryMaterialController::class, 'index'])->name('inventory.material.index');
+    Route::get('/inventory/katalog', [InventoryKatalogController::class, 'index'])->name('inventory.katalog.index');
 });

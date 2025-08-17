@@ -777,6 +777,13 @@ See https://github.com/adobe-type-tools/cmap-resources
   </body>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Hide saveToServerBtn if hideSaveBtn=1 in query string
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('hideSaveBtn') === '1') {
+        const saveBtn = document.getElementById('saveToServerBtn');
+        if (saveBtn) saveBtn.style.display = 'none';
+      }
+      // Existing save to server logic
       const saveBtn = document.getElementById('saveToServerBtn');
       if (saveBtn) {
         saveBtn.addEventListener('click', async function() {
@@ -791,6 +798,18 @@ See https://github.com/adobe-type-tools/cmap-resources
           }
         });
       }
+      // Listen for postMessage from parent to trigger save
+      window.addEventListener('message', async function(event) {
+        if (event.data && event.data.type === 'request-save-pdf') {
+          if (window.PDFViewerApplication && PDFViewerApplication.pdfDocument) {
+            const pdfData = await window.PDFViewerApplication.pdfDocument.saveDocument();
+            window.parent.postMessage({
+              type: 'save-pdf',
+              data: pdfData
+            }, '*');
+          }
+        }
+      });
     });
-    </script>
+  </script>
 </html>
