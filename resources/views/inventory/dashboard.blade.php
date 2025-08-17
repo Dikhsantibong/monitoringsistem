@@ -52,10 +52,68 @@
             </div>
         </header>
         <main class="px-6 pt-6">
-            <div class="bg-white rounded-lg shadow p-6 w-full">
-                <h2 class="text-2xl font-bold mb-4">Selamat datang di Dashboard Inventory</h2>
-                <p class="text-gray-700">Halaman ini khusus untuk akun inventory gudang.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-blue-100 rounded-lg p-5 flex flex-col items-center">
+                    <div class="text-3xl font-bold text-blue-700">{{ $totalMaterial ?? 0 }}</div>
+                    <div class="text-gray-700 mt-2">Total Material</div>
+                </div>
+                <div class="bg-green-100 rounded-lg p-5 flex flex-col items-center">
+                    <div class="text-3xl font-bold text-green-700">{{ $totalKategori ?? 0 }}</div>
+                    <div class="text-gray-700 mt-2">Kategori Material</div>
+                </div>
+                <div class="bg-yellow-100 rounded-lg p-5 flex flex-col items-center">
+                    <div class="text-3xl font-bold text-yellow-700">{{ $totalKatalog ?? 0 }}</div>
+                    <div class="text-gray-700 mt-2">Total Pengajuan Katalog</div>
+                </div>
             </div>
+            <div class="bg-white rounded-lg shadow p-6 w-full mb-6">
+                <h2 class="text-lg font-semibold mb-4">Grafik Pengajuan Katalog 12 Bulan Terakhir</h2>
+                <canvas id="katalogChart" height="100"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 w-full">
+                <h2 class="text-lg font-semibold mb-4">Informasi Inventory</h2>
+                <ul class="list-disc ml-6 text-gray-700">
+                    <li>Data material dan katalog diupdate secara real-time.</li>
+                    <li>Gunakan menu Data Material untuk melihat detail stok dan kategori.</li>
+                    <li>Menu Data Pengajuan Katalog menampilkan seluruh pengajuan katalog yang telah dilakukan.</li>
+                    <li>Grafik di atas membantu memantau tren pengajuan katalog setiap bulan.</li>
+                </ul>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const katalogData = @json($katalogPerBulan);
+                const labels = katalogData.map(item => item.bulan);
+                const data = katalogData.map(item => item.total);
+                const ctx = document.getElementById('katalogChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Pengajuan Katalog',
+                            data: data,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+            </script>
         </main>
     </div>
 </div>
