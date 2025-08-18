@@ -15,6 +15,16 @@
                 <div class="w-full h-[80vh] flex justify-center items-center">
                     <iframe id="pdfjs-viewer" src="{{ asset('pdf.js/web/viewer.html') }}?file={{ $pdfUrl }}" style="width:100%;height:100%;border:none;"></iframe>
                 </div>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nama_material" class="block text-sm font-medium text-gray-700">Nama Item Material</label>
+                        <input type="text" id="nama_material" name="nama_material" value="{{ $file->nama_material }}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                    </div>
+                    <div>
+                        <label for="no_part" class="block text-sm font-medium text-gray-700">No Part Number</label>
+                        <input type="text" id="no_part" name="no_part" value="{{ $file->no_part }}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                    </div>
+                </div>
                 <div class="mt-4 flex justify-end">
                     <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
                 </div>
@@ -39,6 +49,8 @@ window.addEventListener('message', function(event) {
         if (blob) {
             const formData = new FormData();
             formData.append('pdf', blob, 'katalog.pdf');
+            formData.append('nama_material', document.getElementById('nama_material').value);
+            formData.append('no_part', document.getElementById('no_part').value);
             fetch("{{ route('pemeliharaan.katalog.update', $file->id) }}", {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
