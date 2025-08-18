@@ -11,35 +11,71 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\WoBacklog;
+use App\Models\MaterialMaster;
 
 class LaborSayaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->input('q'));
         $normalizedName = Str::of(Auth::user()->name)
             ->lower()
             ->replace(['-', ' '], '');
 
         $workOrders = WorkOrder::whereRaw(
-            "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ?",
-            ['%' . $normalizedName . '%']
-        )->get();
+                "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ?",
+                ['%' . $normalizedName . '%']
+            )
+            ->when($search !== '', function ($query) use ($search) {
+                $like = "%{$search}%";
+                $query->where(function ($q) use ($like) {
+                    $q->where('id', 'LIKE', $like)
+                      ->orWhere('description', 'LIKE', $like)
+                      ->orWhere('kendala', 'LIKE', $like)
+                      ->orWhere('tindak_lanjut', 'LIKE', $like)
+                      ->orWhere('status', 'LIKE', $like)
+                      ->orWhere('type', 'LIKE', $like)
+                      ->orWhere('priority', 'LIKE', $like);
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $laborBacklogs = WoBacklog::whereRaw(
-            "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ?",
-            ['%' . $normalizedName . '%']
-        )->get();
+                "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ?",
+                ['%' . $normalizedName . '%']
+            )
+            ->when($search !== '', function ($query) use ($search) {
+                $like = "%{$search}%";
+                $query->where(function ($q) use ($like) {
+                    $q->where('no_wo', 'LIKE', $like)
+                      ->orWhere('deskripsi', 'LIKE', $like)
+                      ->orWhere('kendala', 'LIKE', $like)
+                      ->orWhere('tindak_lanjut', 'LIKE', $like)
+                      ->orWhere('status', 'LIKE', $like)
+                      ->orWhere('type_wo', 'LIKE', $like)
+                      ->orWhere('priority', 'LIKE', $like);
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('pemeliharaan.labor-saya', compact('workOrders', 'laborBacklogs'));
+        return view('pemeliharaan.labor-saya', [
+            'workOrders' => $workOrders,
+            'laborBacklogs' => $laborBacklogs,
+            'q' => $search,
+        ]);
     }
 
     public function edit($id)
     {
         $workOrder = WorkOrder::findOrFail($id);
         $powerPlants = PowerPlant::all();
-        $masterLabors = DB::table('master_labors')->orderBy('nama')->get();
+        $userName = Auth::user()->name;
+        $masterLabors = DB::table('master_labors')->where('unit', $userName)->orderBy('nama')->get();
+        $materials = MaterialMaster::orderBy('deskripsi')->limit(200)->get();
 
-        return view('pemeliharaan.labor-edit', compact('workOrder', 'powerPlants', 'masterLabors'));
+        return view('pemeliharaan.labor-edit', compact('workOrder', 'powerPlants', 'masterLabors', 'materials'));
     }
 
     public function update(Request $request, $id)
@@ -78,6 +114,9 @@ class LaborSayaController extends Controller
                 'document'       => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
                 'labors'         => 'nullable|array',
                 'labors.*'       => 'string|max:100',
+                'materials'      => 'nullable|array',
+                'materials.*.code' => 'required_with:materials|string|max:100',
+                'materials.*.qty'  => 'nullable|numeric|min:0',
             ]);
 
             // Data yang akan diupdate
@@ -93,6 +132,7 @@ class LaborSayaController extends Controller
                 'labor'            => $request->labor,
                 'status'           => $request->status,
                 'labors'           => $request->labors ?? [],
+                'materials'        => $request->materials ?? [],
             ];
 
             // Cek jika ada file document baru
@@ -116,6 +156,9 @@ class LaborSayaController extends Controller
                     $syncData = $data;
                     if (isset($syncData['labors']) && is_array($syncData['labors'])) {
                         $syncData['labors'] = json_encode($syncData['labors']);
+                    }
+                    if (isset($syncData['materials']) && is_array($syncData['materials'])) {
+                        $syncData['materials'] = json_encode($syncData['materials']);
                     }
                     DB::connection('mysql')
                         ->table('work_orders')
@@ -158,8 +201,8 @@ class LaborSayaController extends Controller
         if (strpos($backlogLabor, $normalizedName) === false) {
             abort(403, 'Anda tidak berhak mengedit backlog ini.');
         }
-        // Ambil master labor jika perlu (untuk checkbox labors)
-        $masterLabors = DB::table('master_labors')->orderBy('nama')->get();
+        $userName = Auth::user()->name;
+        $masterLabors = DB::table('master_labors')->where('unit', $userName)->orderBy('nama')->get();
         return view('pemeliharaan.labor-edit-backlog', compact('backlog', 'masterLabors'));
     }
 
@@ -193,6 +236,9 @@ class LaborSayaController extends Controller
             'labor' => 'nullable|string',
             'labors.*' => 'string|max:100',
             'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+            'materials' => 'nullable|array',
+            'materials.*.code' => 'required_with:materials|string|max:100',
+            'materials.*.qty' => 'nullable|numeric|min:0',
         ]);
         $data = [
             'deskripsi' => $request->deskripsi,
@@ -202,6 +248,7 @@ class LaborSayaController extends Controller
             'keterangan' => $request->keterangan,
             'labors' => $request->labors ?? [],
             'labor' => $backlog->labor,
+            'materials' => $request->materials ?? [],
         ];
         if ($request->hasFile('document') && $request->file('document')->isValid()) {
             if ($backlog->document_path && Storage::disk('public')->exists($backlog->document_path)) {
