@@ -115,6 +115,9 @@
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
                                         {{ \Carbon\Carbon::parse($file->created_at)->format('d-m-Y H:i') }}
+                                        @if(\Carbon\Carbon::parse($file->created_at)->gt(now()->subDay()))
+                                            <span class="ml-2 inline-block bg-green-500 text-white text-xs px-2 py-1 rounded">Baru</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
                                         <a href="{{ Storage::url($file->path) }}" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 mr-2">Lihat</a>
