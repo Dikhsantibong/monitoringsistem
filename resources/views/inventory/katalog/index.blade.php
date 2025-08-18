@@ -86,7 +86,32 @@
                                         {{ $file->nama_material ?? '-' }}
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
-                                        {{ $file->user_id ?? '-' }}
+                                        @php
+                                            // Normalize user_id: remove extra spaces and non-breaking spaces
+                                            $userNameRaw = $file->user_id ?? '-';
+                                            $userName = preg_replace('/\s+/u', ' ', trim(str_replace("\xc2\xa0", ' ', $userNameRaw)));
+                                            $userNameUpper = strtoupper($userName);
+
+                                            $bgMap = [
+                                                'MIKUASI PEMELIHARAAN'      => 'bg-green-200 text-green-900',
+                                                'SABILAMBO PEMELIHARAAN'    => 'bg-green-200 text-green-900',
+                                                'WINNING PEMELIHARAAN'      => 'bg-yellow-200 text-yellow-900',
+                                                'RONGI PEMELIHARAAN'        => 'bg-red-200 text-red-900',
+                                                'EREKE PEMELIHARAAN'        => 'bg-pink-200 text-pink-900',
+                                                'PASARWAJO PEMELIHARAAN'    => 'bg-purple-200 text-purple-900',
+                                                'BAU-BAU PEMELIHARAAN'      => 'bg-indigo-200 text-indigo-900',
+                                                'RAHA PEMELIHARAAN'         => 'bg-orange-200 text-orange-900',
+                                                'POASIA PEMELIHARAAN'       => 'bg-teal-200 text-teal-900',
+                                                'WUA-WUA PEMELIHARAAN'      => 'bg-cyan-200 text-cyan-900',
+                                                'LANGARA PEMELIHARAAN'      => 'bg-lime-200 text-lime-900',
+                                                'KOLAKA PEMELIHARAAN'       => 'bg-fuchsia-200 text-fuchsia-900',
+                                                'INVENTORY UP KENDARI'      => 'bg-gray-300 text-gray-900',
+                                            ];
+                                            $bgClass = $bgMap[$userNameUpper] ?? 'bg-gray-200 text-gray-500';
+                                        @endphp
+                                        <span class="text-sm rounded-full px-2 py-1 {{ $bgClass }}">
+                                            {{ $userName }}
+                                        </span>
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
                                         {{ \Carbon\Carbon::parse($file->created_at)->format('d-m-Y H:i') }}

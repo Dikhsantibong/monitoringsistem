@@ -11,7 +11,7 @@ class KatalogFile extends Model
 {
     protected $table = 'katalog_files';
     protected $fillable = [
-        'user_id', 'filename', 'path', 'created_at', 'updated_at'
+        'user_id', 'filename', 'path', 'no_part', 'nama_material', 'created_at', 'updated_at'
     ];
     public $timestamps = true;
 
