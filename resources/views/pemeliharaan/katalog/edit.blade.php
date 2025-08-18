@@ -39,7 +39,7 @@ window.addEventListener('message', function(event) {
         if (blob) {
             const formData = new FormData();
             formData.append('pdf', blob, 'katalog.pdf');
-            fetch("{{ route('pemeliharaan.katalog.store') }}", {
+            fetch("{{ route('pemeliharaan.katalog.update', $file->id) }}", {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: formData
@@ -48,7 +48,7 @@ window.addEventListener('message', function(event) {
             .then(data => {
                 if (data.success) {
                     alert('Katalog berhasil diperbarui!');
-                    window.location.reload();
+                    window.location.href = "{{ route('pemeliharaan.katalog.index') }}";
                 } else {
                     alert('Gagal menyimpan perubahan katalog.');
                 }

@@ -48,7 +48,7 @@ window.addEventListener('message', function(event) {
             .then(data => {
                 if (data.success) {
                     alert('Perubahan berhasil disimpan!');
-                    window.location.reload();
+                    window.location.href = "{{ route('pemeliharaan.pengajuan-material.index') }}";
                 } else {
                     alert('Gagal menyimpan perubahan.');
                 }

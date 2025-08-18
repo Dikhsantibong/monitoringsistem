@@ -77,9 +77,10 @@
                                     <td class="px-4 py-2 border-b text-center border-r">{{ $i+1 }}</td>
                                     <td class="px-4 py-2 border-b text-center border-r">{{ $file->filename }}</td>
                                     <td class="px-4 py-2 border-b text-center border-r">{{ $file->created_at }}</td>
-                                    <td class="px-4 py-2 border-b text-center border-r">
+                                    <td class="px-4 py-2 border-b text-center border-r flex justify-center gap-2">
                                         <a href="{{ route('pemeliharaan.pengajuan-material.edit', $file->id) }}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</a>
                                         <a href="{{ asset('storage/' . $file->path) }}" target="_blank" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">Download</a>
+                                        <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 delete-btn" data-id="{{ $file->id }}">Hapus</button>
                                     </td>
                                 </tr>
                             @empty
@@ -95,3 +96,28 @@
     </div>
 </div>
 @endsection
+
+<script>
+document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (!confirm('Yakin ingin menghapus data dan file ini?')) return;
+        const id = this.dataset.id;
+        fetch(`/pemeliharaan/pengajuan-material/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                this.closest('tr').remove();
+            } else {
+                alert('Gagal menghapus data.');
+            }
+        })
+        .catch(() => alert('Gagal menghapus data.'));
+    });
+});
+</script>

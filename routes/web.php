@@ -843,6 +843,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/katalog/create', [PemeliharaanKatalogController::class, 'create'])->name('pemeliharaan.katalog.create');
     Route::post('/pemeliharaan/katalog', [PemeliharaanKatalogController::class, 'store'])->name('pemeliharaan.katalog.store');
     Route::get('/pemeliharaan/katalog/{id}/edit', [PemeliharaanKatalogController::class, 'edit'])->name('pemeliharaan.katalog.edit');
+    Route::post('/pemeliharaan/katalog/{id}/update', [PemeliharaanKatalogController::class, 'update'])->name('pemeliharaan.katalog.update');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -862,3 +863,8 @@ Route::middleware(['auth'])->prefix('pemeliharaan')->name('pemeliharaan.')->grou
         Route::post('/{id}/update', [PemeliharaanPengajuanMaterialController::class, 'update'])->name('update');
     });
 });
+
+// Route hapus katalog
+Route::delete('/pemeliharaan/katalog/{id}', [PemeliharaanKatalogController::class, 'destroy'])->name('pemeliharaan.katalog.destroy');
+// Route hapus pengajuan material
+Route::delete('/pemeliharaan/pengajuan-material/{id}', [PemeliharaanPengajuanMaterialController::class, 'destroy'])->name('pemeliharaan.pengajuan-material.destroy');

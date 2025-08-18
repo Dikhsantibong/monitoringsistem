@@ -19,7 +19,7 @@ class SyncPengajuanMaterialFileToUpKendari
         $targetDB = DB::connection('mysql');
         $data = [
             'id' => $file->id,
-            'user_id' => session('unit', 'unknown_unit'),
+            'user_id' => $file->user_id, // Sudah nama user
             'filename' => $file->filename,
             'path' => $file->path,
             'created_at' => $file->created_at,

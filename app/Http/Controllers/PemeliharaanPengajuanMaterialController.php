@@ -10,8 +10,8 @@ class PemeliharaanPengajuanMaterialController extends Controller
 {
     public function index()
     {
-        $userId = Auth::id();
-        $files = PengajuanMaterialFile::where('user_id', $userId)->orderByDesc('id')->get();
+        $userName = Auth::user()->name;
+        $files = PengajuanMaterialFile::where('user_id', $userName)->orderByDesc('id')->get();
         return view('pemeliharaan.pengajuan-material-index', compact('files'));
     }
 
@@ -25,11 +25,11 @@ class PemeliharaanPengajuanMaterialController extends Controller
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:5120',
         ]);
-        $userId = session('unit', 'unknown_unit');
-        $filename = 'pengajuan_material_' . $userId . '_' . time() . '.pdf';
+        $userName = Auth::user()->name;
+        $filename = 'Pengajuan-Material(' . $userName . ')_' . time() . '.pdf';
         $path = $request->file('pdf')->storeAs('pengajuan_material', $filename, 'public');
         \App\Models\PengajuanMaterialFile::create([
-            'user_id' => $userId,
+            'user_id' => $userName,
             'filename' => $filename,
             'path' => $path,
         ]);
@@ -38,8 +38,8 @@ class PemeliharaanPengajuanMaterialController extends Controller
 
     public function edit($id)
     {
-        $userId = Auth::id();
-        $file = \App\Models\PengajuanMaterialFile::where('id', $id)->where('user_id', $userId)->firstOrFail();
+        $userName = Auth::user()->name;
+        $file = \App\Models\PengajuanMaterialFile::where('id', $id)->where('user_id', $userName)->firstOrFail();
         $pdfUrl = asset('storage/' . $file->path);
         return view('pemeliharaan.pengajuan-material-edit', compact('pdfUrl', 'file'));
     }
@@ -49,13 +49,24 @@ class PemeliharaanPengajuanMaterialController extends Controller
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:5120',
         ]);
-        $userId = Auth::id();
-        $file = \App\Models\PengajuanMaterialFile::where('id', $id)->where('user_id', $userId)->firstOrFail();
-        $filename = 'pengajuan_material_' . $userId . '_' . time() . '.pdf';
+        $userName = Auth::user()->name;
+        $file = \App\Models\PengajuanMaterialFile::where('id', $id)->where('user_id', $userName)->firstOrFail();
+        $filename = 'Pengajuan-Material(' . $userName . ')_' . time() . '.pdf';
         $path = $request->file('pdf')->storeAs('pengajuan_material', $filename, 'public');
         $file->filename = $filename;
         $file->path = $path;
         $file->save();
+        return response()->json(['success' => true]);
+    }
+
+    public function destroy($id)
+    {
+        $userName = Auth::user()->name;
+        $file = \App\Models\PengajuanMaterialFile::where('id', $id)->where('user_id', $userName)->firstOrFail();
+        if ($file->path && \Storage::disk('public')->exists($file->path)) {
+            \Storage::disk('public')->delete($file->path);
+        }
+        $file->delete();
         return response()->json(['success' => true]);
     }
 }

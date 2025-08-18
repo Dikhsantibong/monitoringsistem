@@ -27,7 +27,7 @@ class PengajuanMaterialFile extends Model
 
     public function setUserIdAttribute($value)
     {
-        $this->attributes['user_id'] = session('unit', 'unknown_unit');
+        $this->attributes['user_id'] = $value;
     }
 
     protected static function boot()

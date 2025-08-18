@@ -10,8 +10,8 @@ class PemeliharaanKatalogController extends Controller
 {
     public function index()
     {
-        $userId = Auth::id();
-        $files = KatalogFile::where('user_id', $userId)->orderByDesc('id')->get();
+        $userName = Auth::user()->name;
+        $files = KatalogFile::where('user_id', $userName)->orderByDesc('id')->get();
         return view('pemeliharaan.katalog.index', compact('files'));
     }
 
@@ -26,11 +26,11 @@ class PemeliharaanKatalogController extends Controller
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:5120',
         ]);
-        $userId = session('unit', 'unknown_unit');
-        $filename = 'katalog_' . $userId . '_' . time() . '.pdf';
+        $userName = Auth::user()->name;
+        $filename = 'Pendaftaran-Katalog(' . $userName . ')_' . time() . '.pdf';
         $path = $request->file('pdf')->storeAs('katalog', $filename, 'public');
         \App\Models\KatalogFile::create([
-            'user_id' => $userId,
+            'user_id' => $userName,
             'filename' => $filename,
             'path' => $path,
         ]);
@@ -39,9 +39,35 @@ class PemeliharaanKatalogController extends Controller
 
     public function edit($id)
     {
-        $userId = Auth::id();
-        $file = KatalogFile::where('id', $id)->where('user_id', $userId)->firstOrFail();
+        $userName = Auth::user()->name;
+        $file = KatalogFile::where('id', $id)->where('user_id', $userName)->firstOrFail();
         $pdfUrl = asset('storage/' . $file->path);
         return view('pemeliharaan.katalog.edit', compact('pdfUrl', 'file'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'pdf' => 'required|file|mimes:pdf|max:5120',
+        ]);
+        $userName = Auth::user()->name;
+        $file = KatalogFile::where('id', $id)->where('user_id', $userName)->firstOrFail();
+        $filename = 'Pendaftaran-Katalog(' . $userName . ')_' . time() . '.pdf';
+        $path = $request->file('pdf')->storeAs('katalog', $filename, 'public');
+        $file->filename = $filename;
+        $file->path = $path;
+        $file->save();
+        return response()->json(['success' => true]);
+    }
+
+    public function destroy($id)
+    {
+        $userName = Auth::user()->name;
+        $file = KatalogFile::where('id', $id)->where('user_id', $userName)->firstOrFail();
+        if ($file->path && \Storage::disk('public')->exists($file->path)) {
+            \Storage::disk('public')->delete($file->path);
+        }
+        $file->delete();
+        return response()->json(['success' => true]);
     }
 }
