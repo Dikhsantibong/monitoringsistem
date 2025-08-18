@@ -22,6 +22,8 @@ class SyncKatalogFileToUpKendari
             'user_id' => $file->user_id, // Sudah nama user
             'filename' => $file->filename,
             'path' => $file->path,
+            'no_part' => $file->no_part,
+            'nama_material' => $file->nama_material,
             'created_at' => $file->created_at,
             'updated_at' => $file->updated_at,
         ];

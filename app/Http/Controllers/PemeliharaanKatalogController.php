@@ -11,7 +11,7 @@ class PemeliharaanKatalogController extends Controller
     public function index()
     {
         $userName = Auth::user()->name;
-        $files = KatalogFile::where('user_id', $userName)->orderByDesc('id')->get();
+        $files = KatalogFile::where('user_id', $userName)->orderByDesc('id')->paginate(10);
         return view('pemeliharaan.katalog.index', compact('files'));
     }
 
@@ -25,6 +25,8 @@ class PemeliharaanKatalogController extends Controller
     {
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:5120',
+            'nama_material' => 'required|string|max:255',
+            'no_part' => 'required|string|max:255',
         ]);
         $userName = Auth::user()->name;
         $filename = 'Pendaftaran-Katalog(' . $userName . ')_' . time() . '.pdf';
@@ -33,6 +35,8 @@ class PemeliharaanKatalogController extends Controller
             'user_id' => $userName,
             'filename' => $filename,
             'path' => $path,
+            'nama_material' => $request->nama_material,
+            'no_part' => $request->no_part,
         ]);
         return response()->json(['success' => true]);
     }
@@ -49,6 +53,8 @@ class PemeliharaanKatalogController extends Controller
     {
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:5120',
+            'nama_material' => 'required|string|max:255',
+            'no_part' => 'required|string|max:255',
         ]);
         $userName = Auth::user()->name;
         $file = KatalogFile::where('id', $id)->where('user_id', $userName)->firstOrFail();
@@ -56,6 +62,8 @@ class PemeliharaanKatalogController extends Controller
         $path = $request->file('pdf')->storeAs('katalog', $filename, 'public');
         $file->filename = $filename;
         $file->path = $path;
+        $file->nama_material = $request->nama_material;
+        $file->no_part = $request->no_part;
         $file->save();
         return response()->json(['success' => true]);
     }

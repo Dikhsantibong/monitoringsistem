@@ -11,7 +11,7 @@ class PemeliharaanPengajuanMaterialController extends Controller
     public function index()
     {
         $userName = Auth::user()->name;
-        $files = PengajuanMaterialFile::where('user_id', $userName)->orderByDesc('id')->get();
+        $files = PengajuanMaterialFile::where('user_id', $userName)->orderByDesc('id')->paginate(10);
         return view('pemeliharaan.pengajuan-material-index', compact('files'));
     }
 

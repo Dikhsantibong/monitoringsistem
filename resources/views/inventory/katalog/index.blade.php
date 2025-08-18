@@ -68,7 +68,8 @@
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 border-b text-center">No</th>
-                                <th class="px-4 py-2 border-b text-center">Nama File</th>
+                                <th class="px-4 py-2 border-b text-center">No Part</th>
+                                <th class="px-4 py-2 border-b text-center">Nama Material</th>
                                 <th class="px-4 py-2 border-b text-center">Di Ajukan Oleh</th>
                                 <th class="px-4 py-2 border-b text-center">Tanggal Upload</th>
                                 <th class="px-4 py-2 border-b text-center">Aksi</th>
@@ -78,16 +79,21 @@
                             @forelse($files as $index => $file)
                                 <tr>
                                     <td class="px-4 py-2 border-b text-center border-r">{{ $index + 1 }}</td>
-                                    <td class="px-4 py-2 border-b text-center border-r">{{ $file->filename }}</td>
                                     <td class="px-4 py-2 border-b text-center border-r">
-                                        {{ $file->user ? $file->user->name : '-' }}
+                                        {{ $file->no_part ?? '-' }}
+                                    </td>
+                                    <td class="px-4 py-2 border-b text-center border-r">
+                                        {{ $file->nama_material ?? '-' }}
+                                    </td>
+                                    <td class="px-4 py-2 border-b text-center border-r">
+                                        {{ $file->user_id ?? '-' }}
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
                                         {{ \Carbon\Carbon::parse($file->created_at)->format('d-m-Y H:i') }}
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
-                                        <a href="{{ asset($file->path) }}" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 mr-2">Lihat</a>
-                                        <a href="{{ asset($file->path) }}" download class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Download</a>
+                                        <a href="{{ Storage::url($file->path) }}" target="_blank" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 mr-2">Lihat</a>
+                                        <a href="{{ asset('storage/' . $file->path) }}" download class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Download</a>
                                     </td>
                                 </tr>
                             @empty

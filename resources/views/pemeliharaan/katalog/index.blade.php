@@ -67,7 +67,8 @@
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 border-b text-center">No</th>
-                                <th class="px-4 py-2 border-b text-center">Nama File</th>
+                                <th class="px-4 py-2 border-b text-center">No Part</th>
+                                <th class="px-4 py-2 border-b text-center">Nama Material</th>
                                 <th class="px-4 py-2 border-b text-center">Tanggal</th>
                                 <th class="px-4 py-2 border-b text-center">Aksi</th>
                             </tr>
@@ -76,12 +77,15 @@
                             @forelse($files as $i => $file)
                                 <tr>
                                     <td class="px-4 py-2 border-b text-center border-r">{{ $i+1 }}</td>
-                                    <td class="px-4 py-2 border-b text-center border-r">{{ $file->filename }}</td>
+                                    <td class="px-4 py-2 border-b text-center border-r">{{ $file->no_part ?? '-' }}</td>
+                                    <td class="px-4 py-2 border-b text-center border-r">{{ $file->nama_material ?? '-' }}</td>
                                     <td class="px-4 py-2 border-b text-center border-r">{{ $file->created_at }}</td>
                                     <td class="px-4 py-2 border-b text-center border-r">
-                                        <a href="{{ route('pemeliharaan.katalog.edit', $file->id) }}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</a>
-                                        <a href="{{ asset('storage/' . $file->path) }}" target="_blank" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">Download</a>
-                                        <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 delete-btn" data-id="{{ $file->id }}">Hapus</button>
+                                        <div class="flex justify-center gap-2">
+                                            <a href="{{ route('pemeliharaan.katalog.edit', $file->id) }}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</a>
+                                            <a href="{{ asset('storage/' . $file->path) }}" target="_blank" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">Download</a>
+                                            <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 delete-btn" data-id="{{ $file->id }}">Hapus</button>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -92,17 +96,48 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="text-sm text-gray-700">
+                        Menampilkan 
+                        {{ ($files->currentPage() - 1) * $files->perPage() + 1 }} 
+                        hingga 
+                        {{ min($files->currentPage() * $files->perPage(), $files->total()) }} 
+                        dari 
+                        {{ $files->total() }} 
+                        entri
+                    </div>
+                    <div class="flex items-center gap-1">
+                        @if (!$files->onFirstPage())
+                            <a href="{{ $files->previousPageUrl() }}" class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                        @endif
+                        @foreach ($files->getUrlRange(1, $files->lastPage()) as $page => $url)
+                            @if ($page == $files->currentPage())
+                                <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}" class="px-3 py-1 rounded {{ $page == $files->currentPage() ? 'bg-[#0A749B] text-white' : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+                        @if ($files->hasMorePages())
+                            <a href="{{ $files->nextPageUrl() }}" class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                        @endif
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 </div>
 @endsection
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
+// Event delegation untuk tombol hapus
+function handleDeleteClick(e) {
+    if (e.target.classList.contains('delete-btn')) {
+        const btn = e.target;
+        const id = btn.dataset.id;
+        const row = btn.closest('tr');
         if (!confirm('Yakin ingin menghapus data dan file ini?')) return;
-        const id = this.dataset.id;
         fetch(`/pemeliharaan/katalog/${id}`, {
             method: 'DELETE',
             headers: {
@@ -113,12 +148,19 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                this.closest('tr').remove();
+                row.remove();
+                alert('Data berhasil dihapus.');
             } else {
                 alert('Gagal menghapus data.');
             }
         })
         .catch(() => alert('Gagal menghapus data.'));
-    });
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.querySelector('table tbody');
+    if (tbody) {
+        tbody.addEventListener('click', handleDeleteClick);
+    }
 });
 </script>
