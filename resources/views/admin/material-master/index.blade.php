@@ -73,7 +73,7 @@
                         <div class="border rounded-lg p-4">
                             <h3 class="font-semibold text-gray-800 mb-2">Upload Material (Excel)</h3>
                             <p class="text-gray-500 text-sm mb-3">Format yang didukung: .xlsx, .xls</p>
-                            <form action="{{ route('admin.material-master.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
+                            <form action="{{ route('admin.material-master.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-3" id="uploadForm">
                                 @csrf
                                 <input id="excel_file" type="file" name="excel_file" accept=".xlsx,.xls" class="hidden" />
                                 <label for="excel_file" class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-md hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition">
@@ -83,6 +83,7 @@
                                     </div>
                                 </label>
                                 <div id="file_info" class="hidden text-sm text-gray-700">File dipilih: <span id="file_name" class="font-medium"></span></div>
+                                <div id="loader" class="hidden flex justify-center items-center"><svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span class="ml-2 text-blue-600">Mengupload...</span></div>
                                 <div class="flex justify-end">
                                     <button id="upload_btn" type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50" disabled>Upload</button>
                                 </div>
@@ -93,7 +94,7 @@
                         <div class="border rounded-lg p-4">
                             <h3 class="font-semibold text-gray-800 mb-2">Pencarian</h3>
                             <form method="GET" action="{{ route('admin.material-master.index') }}" class="flex gap-2">
-                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari code, deskripsi, kategori..." class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode, deskripsi, kategori, quantity, price, value..." class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Cari</button>
                                 @if(request('search'))
                                     <a href="{{ route('admin.material-master.index') }}" class="px-4 py-2 rounded border">Reset</a>
@@ -116,6 +117,7 @@
                         <table class="min-w-full bg-white border border-gray-200">
                             <thead>
                                 <tr>
+                                    <th class="px-4 py-2 border-b text-center">No</th>
                                     <th class="px-4 py-2 border-b text-center">Inventory Statistic Code</th>
                                     <th class="px-4 py-2 border-b text-center">Inventory Statistic Desc</th>
                                     <th class="px-4 py-2 border-b text-center">Stock Code</th>
@@ -128,6 +130,7 @@
                             <tbody>
                                 @forelse($materials as $material)
                                     <tr>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $loop->iteration }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->inventory_statistic_code }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200 " style="width: 200px;">{{ $material->inventory_statistic_desc }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_code }}</td>
@@ -159,6 +162,8 @@ const input = document.getElementById('excel_file');
 const uploadBtn = document.getElementById('upload_btn');
 const fileInfo = document.getElementById('file_info');
 const fileName = document.getElementById('file_name');
+const loader = document.getElementById('loader');
+const uploadForm = document.getElementById('uploadForm');
 if (input) {
   input.addEventListener('change', function() {
     if (this.files && this.files.length > 0) {
@@ -170,6 +175,12 @@ if (input) {
       fileInfo.classList.add('hidden');
       uploadBtn.setAttribute('disabled', 'disabled');
     }
+  });
+}
+if (uploadForm) {
+  uploadForm.addEventListener('submit', function(e) {
+    loader.classList.remove('hidden');
+    uploadBtn.setAttribute('disabled', 'disabled');
   });
 }
 </script>

@@ -5,13 +5,25 @@ namespace App\Http\Controllers\Pemeliharaan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\MasterLabor;
 
 class MasterLaborController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $labors = DB::table('master_labors')->orderBy('id')->get();
-        return view('pemeliharaan.master-labor', compact('labors'));
+        $q = trim((string) $request->input('q'));
+        $userName = auth()->user()->name;
+        $labors = MasterLabor::when($q !== '', function ($query) use ($q) {
+                $like = "%{$q}%";
+                $query->where(function ($sub) use ($like) {
+                    $sub->where('nama', 'LIKE', $like)
+                        ->orWhere('bidang', 'LIKE', $like);
+                });
+            })
+            ->where('unit', $userName)
+            ->orderBy('id')
+            ->get();
+        return view('pemeliharaan.master-labor', compact('labors', 'q'));
     }
 
     public function store(Request $request)
@@ -20,11 +32,10 @@ class MasterLaborController extends Controller
             'nama' => 'required|string|max:100',
             'bidang' => 'required|in:listrik,mesin,kontrol,alat bantu',
         ]);
-        DB::table('master_labors')->insert([
+        MasterLabor::create([
             'nama' => $request->nama,
             'bidang' => $request->bidang,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'unit' => auth()->user()->name,
         ]);
         return redirect()->route('pemeliharaan.master-labor')->with('success', 'Labor berhasil ditambahkan');
     }
@@ -35,17 +46,18 @@ class MasterLaborController extends Controller
             'nama' => 'required|string|max:100',
             'bidang' => 'required|in:listrik,mesin,kontrol,alat bantu',
         ]);
-        DB::table('master_labors')->where('id', $id)->update([
+        $labor = MasterLabor::findOrFail($id);
+        $labor->update([
             'nama' => $request->nama,
             'bidang' => $request->bidang,
-            'updated_at' => now(),
         ]);
         return redirect()->route('pemeliharaan.master-labor')->with('success', 'Labor berhasil diupdate');
     }
 
     public function destroy($id)
     {
-        DB::table('master_labors')->where('id', $id)->delete();
+        $labor = MasterLabor::findOrFail($id);
+        $labor->delete();
         return redirect()->route('pemeliharaan.master-labor')->with('success', 'Labor berhasil dihapus');
     }
 }

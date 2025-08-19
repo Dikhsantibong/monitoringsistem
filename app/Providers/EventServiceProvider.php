@@ -17,6 +17,8 @@ use App\Events\KatalogFileUpdated;
 use App\Listeners\SyncKatalogFileToUpKendari;
 use App\Events\PengajuanMaterialFileUpdated;
 use App\Listeners\SyncPengajuanMaterialFileToUpKendari;
+use App\Events\MaterialMasterUpdated;
+use App\Listeners\SyncMaterialMasterToUpKendari;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -44,6 +46,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Events\PengajuanMaterialFileUpdated::class => [
             \App\Listeners\SyncPengajuanMaterialFileToUpKendari::class,
+        ],
+        \App\Events\MaterialMasterUpdated::class => [
+            \App\Listeners\SyncMaterialMasterToUpKendari::class,
         ],
     ];
 } 

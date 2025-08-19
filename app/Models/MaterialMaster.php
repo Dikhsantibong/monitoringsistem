@@ -18,4 +18,23 @@ class MaterialMaster extends Model
         'inventory_value',
         'updated_at',
     ];
+
+    public function getConnectionName()
+    {
+        return session('unit', 'mysql');
+    }
+    protected static function boot()
+    {
+        parent::boot();
+        static::created(function ($model) {
+            event(new \App\Events\MaterialMasterUpdated($model, 'create'));
+        });
+        static::updated(function ($model) {
+            event(new \App\Events\MaterialMasterUpdated($model, 'update'));
+        });
+        static::deleted(function ($model) {
+            event(new \App\Events\MaterialMasterUpdated($model, 'delete'));
+        });
+    }
+    
 }

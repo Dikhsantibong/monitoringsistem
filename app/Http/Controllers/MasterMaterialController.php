@@ -82,7 +82,17 @@ class MasterMaterialController extends Controller
             }
         }
 
-        // Hapus data lama (opsional, jika ingin replace)
+        // Truncate data lama di seluruh unit
+        $unitConnections = [
+            'mysql_bau_bau',
+            'mysql_kolaka',
+            'mysql_poasia',
+            'mysql_wua_wua',
+        ];
+        foreach ($unitConnections as $unit) {
+            \DB::connection($unit)->table('material_master')->truncate();
+        }
+        // Hapus data lama di database utama
         MaterialMaster::truncate();
 
         // Asumsi baris ke-13 (index 12) adalah awal data
