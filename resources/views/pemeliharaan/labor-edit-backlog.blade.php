@@ -21,18 +21,21 @@
                         <div class="w-full">
                             <div class="mb-4">
                                 <label class="block text-gray-700 font-medium mb-2">No WO</label>
-                                <input type="text" value="{{ $backlog->no_wo }}" class="w-full px-3 py-2 border rounded-md bg-gray-100" disabled>
+                                <input type="text" value="{{ $backlog->no_wo }}" class="w-full px-3 py-2 border rounded-md bg-gray-100" disabled readonly>
+                                <input type="hidden" name="no_wo" value="{{ $backlog->no_wo }}">
                             </div>
                             <div class="mb-4">
                                 <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
-                                <select name="status" id="status" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                <select name="status" id="status" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required disabled>
                                     <option value="Open" {{ $backlog->status == 'Open' ? 'selected' : '' }}>Open</option>
                                     <option value="Closed" {{ $backlog->status == 'Closed' ? 'selected' : '' }}>Closed</option>
                                 </select>
+                                <input type="hidden" name="status" value="{{ $backlog->status }}">
                             </div>
                             <div class="mb-4">
                                 <label for="deskripsi" class="block text-gray-700 font-medium mb-2">Deskripsi</label>
-                                <textarea name="deskripsi" id="deskripsi" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24" required>{{ old('deskripsi', $backlog->deskripsi) }}</textarea>
+                                <textarea name="deskripsi" id="deskripsi" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24" required readonly>{{ old('deskripsi', $backlog->deskripsi) }}</textarea>
+                                <input type="hidden" name="deskripsi" value="{{ old('deskripsi', $backlog->deskripsi) }}">
                             </div>
                             <div class="mb-4">
                                 <label for="keterangan" class="block text-gray-700 font-medium mb-2">Keterangan</label>
@@ -48,6 +51,40 @@
                                 <label for="tindak_lanjut" class="block text-gray-700 font-medium mb-2">Tindak Lanjut</label>
                                 <textarea name="tindak_lanjut" id="tindak_lanjut" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24">{{ old('tindak_lanjut', $backlog->tindak_lanjut) }}</textarea>
                             </div>
+                            @if($backlog->status == 'WMATL')
+                            <div id="materialsSection" class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-2">Material (dari Material Master)</label>
+                                <div class="mb-2">
+                                    <input type="text" id="materialSearch" placeholder="Cari material..." class="w-full px-3 py-2 border rounded-md" />
+                                </div>
+                                <div id="materialList" class="max-h-60 overflow-auto border rounded p-2 bg-white">
+                                    @foreach($materials as $m)
+                                        <div class="flex items-center justify-between py-1 border-b last:border-b-0">
+                                            <div>
+                                                <span class="font-mono text-sm">{{ $m->stock_code }}</span>
+                                                <span class="ml-2">{{ $m->description }}</span>
+                                            </div>
+                                            <button type="button" class="text-blue-600 text-sm add-material" data-code="{{ $m->stock_code }}" data-desc="{{ $m->description }}">Tambah</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="mt-3">
+                                    <h4 class="font-semibold mb-2">Material dipilih</h4>
+                                    <div id="selectedMaterials" class="space-y-2">
+                                        @if(is_array($existingMaterials))
+                                            @foreach($existingMaterials as $idx => $item)
+                                                <div class="flex items-center gap-2">
+                                                    <input type="hidden" name="materials[{{ $idx }}][code]" value="{{ $item['code'] ?? '' }}" />
+                                                    <span class="px-2 py-1 bg-gray-100 rounded text-sm">{{ $item['code'] ?? '' }}</span>
+                                                    <input type="number" step="0.01" name="materials[{{ $idx }}][qty]" value="{{ $item['qty'] ?? 1 }}" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
+                                                    <button type="button" class="text-red-600 remove-material">Hapus</button>
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                             <div class="mb-4">
                                 <label for="document" class="block text-gray-700 font-medium mb-2">Upload Dokumen</label>
                                 <div class="flex flex-col space-y-4">
@@ -170,6 +207,48 @@ window.addEventListener('message', function(event) {
             alert('Gagal membaca data PDF hasil edit.');
         }
     }
+});
+// Toggle materials section when status == WMATL
+function toggleMaterials() {
+  const status = document.getElementById('status').value;
+  const section = document.getElementById('materialsSection');
+  section.style.display = status === 'WMATL' ? 'block' : 'none';
+}
+document.getElementById('status').addEventListener('change', toggleMaterials);
+toggleMaterials();
+
+// Simple client-side filter for material list
+const materialSearch = document.getElementById('materialSearch');
+if (materialSearch) {
+  materialSearch.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#materialList > div').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+}
+
+// Add/remove selected materials
+let materialsIndex = document.querySelectorAll('#selectedMaterials > div').length;
+document.querySelectorAll('.add-material').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const code = this.dataset.code;
+    const desc = this.dataset.desc;
+    const wrap = document.createElement('div');
+    wrap.className = 'flex items-center gap-2';
+    wrap.innerHTML = `
+      <input type="hidden" name="materials[${materialsIndex}][code]" value="${code}" />
+      <span class="px-2 py-1 bg-gray-100 rounded text-sm">${code} - ${desc}</span>
+      <input type="number" step="0.01" name="materials[${materialsIndex}][qty]" value="1" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
+      <button type=\"button\" class=\"text-red-600 remove-material\">Hapus</button>
+    `;
+    document.getElementById('selectedMaterials').appendChild(wrap);
+    materialsIndex++;
+    wrap.querySelector('.remove-material').addEventListener('click', () => wrap.remove());
+  });
+});
+document.querySelectorAll('#selectedMaterials .remove-material').forEach(btn => {
+  btn.addEventListener('click', function() { this.closest('div').remove(); });
 });
 </script>
 @endsection

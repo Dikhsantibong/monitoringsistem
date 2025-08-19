@@ -30,11 +30,13 @@ class WorkOrder extends Model
         'is_active',
         'is_backlogged',
         'labor', // Tambahan kolom labor
-        'labors'
+        'labors',
+        'materials'
     ];
 
     protected $casts = [
         'labors' => 'array',
+        'materials' => 'array',
     ];
 
     public $incrementing = false;
@@ -154,6 +156,7 @@ class WorkOrder extends Model
                 'is_backlogged' => $workOrder->is_backlogged,
                 'labor' => $workOrder->labor, // Tambahan labor agar ikut sinkronisasi
                 'labors' => $workOrder->labors, // Tambahan labor agar ikut sinkronisasi
+                'materials' => $workOrder->materials,
                 'created_at' => $workOrder->created_at,
                 'updated_at' => $workOrder->updated_at
             ];

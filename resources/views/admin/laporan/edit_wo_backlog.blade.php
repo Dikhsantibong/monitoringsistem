@@ -126,6 +126,26 @@
                                         class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24">{{ $backlog->tindak_lanjut }}</textarea>
                                 </div>
 
+                                @if($backlog->status == 'WMATL')
+                                <div id="materialsSection" class="mb-4">
+                                    <label class="block text-gray-700 font-medium mb-2">Material (dari Material Master)</label>
+                                    <div class="mb-2">
+                                        <input type="text" id="materialSearch" placeholder="Cari material..." class="w-full px-3 py-2 border rounded-md" />
+                                    </div>
+                                    <div id="materialList" class="max-h-60 overflow-auto border rounded p-2 bg-white">
+                                        @foreach($materials as $m)
+                                            <div class="flex items-center justify-between py-1 border-b last:border-b-0">
+                                                <div>
+                                                    <span class="font-mono text-sm">{{ $m->stock_code }}</span>
+                                                    <span class="ml-2">{{ $m->description }}</span>
+                                                </div>
+                                                <button type="button" class="text-blue-600 text-sm add-material" data-code="{{ $m->stock_code }}" data-desc="{{ $m->description }}">Tambah</button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
+
                                 <div class="mb-4">
                                     <label for="document" class="block text-gray-700 font-medium mb-2">Upload Dokumen</label>
                                     <div class="flex flex-col space-y-4">

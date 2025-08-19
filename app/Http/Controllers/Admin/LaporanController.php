@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\MaterialMaster;
 
 class LaporanController extends Controller
 {
@@ -704,7 +705,8 @@ class LaporanController extends Controller
     public function editWoBacklog($id)
     {
         $backlog = WoBacklog::findOrFail($id);
-        return view('admin.laporan.edit_wo_backlog', compact('backlog'));
+        $materials = \App\Models\MaterialMaster::orderBy('description')->get();
+        return view('admin.laporan.edit_wo_backlog', compact('backlog', 'materials'));
     }
 
     // Method untuk update WO Backlog
@@ -729,7 +731,10 @@ class LaporanController extends Controller
                 'tindak_lanjut' => 'nullable',
                 'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
                 'status' => 'required|in:Open,Closed',
-                'keterangan' => 'nullable'
+                'keterangan' => 'nullable',
+                'materials' => 'nullable|array',
+                'materials.*.code' => 'required_with:materials|string|max:100',
+                'materials.*.qty' => 'nullable|numeric|min:0'
             ]);
 
             // Handle file upload jika ada
@@ -757,7 +762,8 @@ class LaporanController extends Controller
                 'kendala' => $validatedData['kendala'],
                 'tindak_lanjut' => $validatedData['tindak_lanjut'],
                 'status' => $validatedData['status'],
-                'keterangan' => $validatedData['keterangan']
+                'keterangan' => $validatedData['keterangan'],
+                'materials' => $request->materials ?? []
             ]);
 
             // Jika status diubah menjadi Closed
@@ -1077,7 +1083,8 @@ class LaporanController extends Controller
         $workOrder = WorkOrder::findOrFail($id);
         $powerPlants = PowerPlant::all();
         $users = \App\Models\User::select('id', 'name', 'role')->orderBy('name')->get();
-        return view('admin.laporan.edit_wo', compact('workOrder', 'powerPlants', 'users'));
+        $materials = \App\Models\MaterialMaster::orderBy('description')->get();
+        return view('admin.laporan.edit_wo', compact('workOrder', 'powerPlants', 'users', 'materials'));
     }
 
     public function updateWO(Request $request, $id)
@@ -1098,7 +1105,10 @@ class LaporanController extends Controller
                 'schedule_finish' => 'required|date|after_or_equal:schedule_start',
                 'unit' => 'required|exists:power_plants,id',
                 'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
-                'labor' => 'nullable|string' // Tambahan validasi labor
+                'labor' => 'nullable|string',
+                'materials' => 'nullable|array',
+                'materials.*.code' => 'required_with:materials|string|max:100',
+                'materials.*.qty' => 'nullable|numeric|min:0'
             ]);
 
             // Data yang akan diupdate
@@ -1111,7 +1121,8 @@ class LaporanController extends Controller
                 'schedule_start' => $request->schedule_start,
                 'schedule_finish' => $request->schedule_finish,
                 'power_plant_id' => $request->unit,
-                'labor' => $request->labor // Tambahan labor
+                'labor' => $request->labor,
+                'materials' => $request->materials ?? []
             ];
 
             // Handle dokumen jika ada

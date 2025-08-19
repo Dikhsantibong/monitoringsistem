@@ -6,7 +6,53 @@
 
     <div id="main-content" class="flex-1 main-content">
         <header class="bg-white shadow-sm sticky top-0 z-20">
-            <!-- ... header content ... -->
+            <div class="flex justify-between items-center px-6 py-3">
+                <div class="flex items-center gap-x-3">
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-toggle"
+                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <!-- Desktop Menu Toggle -->
+                    <button id="desktop-menu-toggle"
+                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800">Edit Work Order (WO)</h1>
+                </div>
+                <div class="flex items-center gap-x-4 relative">
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2"></i>
+                        </button>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                            <a href="{{ route('user.profile') }}"
+                                class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <div class="pt-2">
@@ -121,6 +167,42 @@
                                         class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24">{{ $workOrder->tindak_lanjut }}</textarea>
                                 </div>
 
+                                @if($workOrder->status == 'WMATL')
+                                <div id="materialsSection" class="mb-4">
+                                    <label class="block text-gray-700 font-medium mb-2">Material (dari Material Master)</label>
+                                    <div class="mb-2">
+                                        <input type="text" id="materialSearch" placeholder="Cari material..." class="w-full px-3 py-2 border rounded-md" />
+                                    </div>
+                                    <div id="materialList" class="max-h-60 overflow-auto border rounded p-2 bg-white">
+                                        @foreach($materials as $m)
+                                            <div class="flex items-center justify-between py-1 border-b last:border-b-0">
+                                                <div>
+                                                    <span class="font-mono text-sm">{{ $m->stock_code }}</span>
+                                                    <span class="ml-2">{{ $m->description }}</span>
+                                                </div>
+                                                <button type="button" class="text-blue-600 text-sm add-material" data-code="{{ $m->stock_code }}" data-desc="{{ $m->description }}">Tambah</button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="mt-3">
+                                        <h4 class="font-semibold mb-2">Material dipilih</h4>
+                                        <div id="selectedMaterials" class="space-y-2">
+                                            @php $existingMaterials = old('materials', $workOrder->materials ?? []); @endphp
+                                            @if(is_array($existingMaterials))
+                                                @foreach($existingMaterials as $idx => $item)
+                                                    <div class="flex items-center gap-2">
+                                                        <input type="hidden" name="materials[{{ $idx }}][code]" value="{{ $item['code'] ?? '' }}" />
+                                                        <span class="px-2 py-1 bg-gray-100 rounded text-sm">{{ $item['code'] ?? '' }}</span>
+                                                        <input type="number" step="0.01" name="materials[{{ $idx }}][qty]" value="{{ $item['qty'] ?? 1 }}" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
+                                                        <button type="button" class="text-red-600 remove-material">Hapus</button>
+                                                    </div>
+                                                @endforeach
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+
                                 <div class="mb-4">
                                     <label for="document" class="block text-gray-700 font-medium mb-2">Upload Job Card</label>
                                     <div class="flex flex-col space-y-4">
@@ -168,6 +250,19 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Tambah Status -->
+                        <div class="mb-4">
+                            <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
+                            <select name="status" id="status" 
+                                class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                @foreach(['Open', 'Closed', 'Comp', 'APPR', 'WAPPR', 'WMATL'] as $status)
+                                    <option value="{{ $status }}" {{ $workOrder->status == $status ? 'selected' : '' }}>
+                                        {{ $status }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <!-- Tombol Submit dan Kembali -->
@@ -376,6 +471,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+    });
+
+    // Show materials section only when current status is WMATL
+    const materialsSection = document.getElementById('materialsSection');
+    if (materialsSection) {
+        const initialStatus = '{{ $workOrder->status }}';
+        materialsSection.style.display = initialStatus === 'WMATL' ? 'block' : 'none';
+    }
+
+    // Simple client-side filter for material list
+    const materialSearch = document.getElementById('materialSearch');
+    if (materialSearch) {
+        materialSearch.addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('#materialList > div').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+    }
+
+    // Add/remove selected materials
+    let materialsIndex = document.querySelectorAll('#selectedMaterials > div').length;
+    document.querySelectorAll('.add-material').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const code = this.dataset.code;
+            const desc = this.dataset.desc;
+            const wrap = document.createElement('div');
+            wrap.className = 'flex items-center gap-2';
+            wrap.innerHTML = `
+                <input type="hidden" name="materials[${materialsIndex}][code]" value="${code}" />
+                <span class="px-2 py-1 bg-gray-100 rounded text-sm">${code} - ${desc}</span>
+                <input type="number" step="0.01" name="materials[${materialsIndex}][qty]" value="1" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
+                <button type=\"button\" class=\"text-red-600 remove-material\">Hapus</button>
+            `;
+            const container = document.getElementById('selectedMaterials');
+            if (container) {
+                container.appendChild(wrap);
+                materialsIndex++;
+                wrap.querySelector('.remove-material').addEventListener('click', () => wrap.remove());
+            }
+        });
+    });
+    document.querySelectorAll('#selectedMaterials .remove-material').forEach(btn => {
+        btn.addEventListener('click', function() { this.closest('div').remove(); });
     });
 });
 </script>

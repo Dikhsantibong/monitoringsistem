@@ -35,10 +35,12 @@ class WoBacklog extends Model
         'updated_at',
         'labor',
         'labors',
+        'materials',
     ];
 
     protected $casts = [
         'labors' => 'array',
+        'materials' => 'array',
     ];
 
     // Mutator untuk memastikan type_wo selalu dalam huruf kapital
@@ -158,6 +160,7 @@ class WoBacklog extends Model
                     'priority' => $woBacklog->priority,
                     'labor' => $woBacklog->labor,
                     'labors' => $woBacklog->labors,
+                    'materials' => $woBacklog->materials,
                     'schedule_start' => $woBacklog->schedule_start,
                     'schedule_finish' => $woBacklog->schedule_finish,
                     'tanggal_backlog' => $woBacklog->tanggal_backlog,
@@ -210,6 +213,7 @@ class WoBacklog extends Model
                     'priority' => $woBacklog->priority,
                     'labor' => $woBacklog->labor,
                     'labors' => $woBacklog->labors,
+                    'materials' => $woBacklog->materials,
                     'schedule_start' => $woBacklog->schedule_start,
                     'schedule_finish' => $woBacklog->schedule_finish,
                     'tanggal_backlog' => $woBacklog->tanggal_backlog,
@@ -297,6 +301,7 @@ class WoBacklog extends Model
                     'priority' => $this->priority,
                     'labor' => $this->labor,
                     'labors' => is_array($this->labors) ? json_encode($this->labors) : $this->labors,
+                    'materials' => is_array($this->materials) ? json_encode($this->materials) : $this->materials,
                     'schedule_start' => $this->schedule_start,
                     'schedule_finish' => $this->schedule_finish,
                     'status' => 'Closed',

@@ -64,36 +64,41 @@
                             </div>
                             <div class="mb-4">
                                 <label for="type" class="block text-gray-700 font-medium mb-2">Type WO</label>
-                                <select name="type" id="type" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                <select name="type" id="type" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required disabled>
                                     @foreach(['CM', 'PM', 'PDM', 'PAM', 'OH', 'EJ', 'EM'] as $type)
                                     <option value="{{ $type }}" {{ $workOrder->type == $type ? 'selected' : '' }}>{{ $type }}</option>
                                     @endforeach
                                 </select>
+                                <input type="hidden" name="type" value="{{ $workOrder->type }}">
                             </div>
                             <div class="mb-4">
                                 <label for="priority" class="block text-gray-700 font-medium mb-2">Priority</label>
-                                <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                <select name="priority" id="priority" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required disabled>
                                     @foreach(['emergency', 'normal', 'outage', 'urgent'] as $priority)
                                     <option value="{{ $priority }}" {{ $workOrder->priority == $priority ? 'selected' : '' }}>{{ ucfirst($priority) }}</option>
                                     @endforeach
                                 </select>
+                                <input type="hidden" name="priority" value="{{ $workOrder->priority }}">
                             </div>
                             <div class="mb-4">
                                 <label for="unit" class="block text-gray-700 font-medium mb-2">Unit</label>
-                                <select name="unit" id="unit" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                <select name="unit" id="unit" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required disabled>
                                     @foreach($powerPlants as $powerPlant)
                                     <option value="{{ $powerPlant->id }}" {{ $workOrder->power_plant_id == $powerPlant->id ? 'selected' : '' }}>{{ $powerPlant->name }}</option>
                                     @endforeach
                                 </select>
+                                <input type="hidden" name="unit" value="{{ $workOrder->power_plant_id }}">
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="mb-4">
                                     <label for="schedule_start" class="block text-gray-700 font-medium mb-2">Schedule Start</label>
-                                    <input type="date" name="schedule_start" id="schedule_start" value="{{ date('Y-m-d', strtotime($workOrder->schedule_start)) }}" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                    <input type="date" name="schedule_start" id="schedule_start" value="{{ date('Y-m-d', strtotime($workOrder->schedule_start)) }}" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required readonly>
+                                    <input type="hidden" name="schedule_start" value="{{ date('Y-m-d', strtotime($workOrder->schedule_start)) }}">
                                 </div>
                                 <div class="mb-4">
                                     <label for="schedule_finish" class="block text-gray-700 font-medium mb-2">Schedule Finish</label>
-                                    <input type="date" name="schedule_finish" id="schedule_finish" value="{{ date('Y-m-d', strtotime($workOrder->schedule_finish)) }}" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                    <input type="date" name="schedule_finish" id="schedule_finish" value="{{ date('Y-m-d', strtotime($workOrder->schedule_finish)) }}" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required readonly>
+                                    <input type="hidden" name="schedule_finish" value="{{ date('Y-m-d', strtotime($workOrder->schedule_finish)) }}">
                                 </div>
                             </div>
                         </div>
@@ -101,7 +106,8 @@
                         <div class="w-full">
                             <div class="mb-4">
                                 <label for="description" class="block text-gray-700 font-medium mb-2">Deskripsi</label>
-                                <textarea name="description" id="description" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24" required>{{ old('description', $workOrder->description) }}</textarea>
+                                <textarea name="description" id="description" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24" required readonly>{{ old('description', $workOrder->description) }}</textarea>
+                                <input type="hidden" name="description" value="{{ old('description', $workOrder->description) }}">
                             </div>
                             <div class="mb-4">
                                 <label for="kendala" class="block text-gray-700 font-medium mb-2">Kendala</label>
@@ -158,6 +164,26 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @if($workOrder->status == 'WMATL')
+                            <div id="materialsSection" class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-2">Material (dari Material Master)</label>
+                                <div class="mb-2">
+                                    <input type="text" id="materialSearch" placeholder="Cari material..." class="w-full px-3 py-2 border rounded-md" />
+                                </div>
+                                <div id="materialList" class="max-h-60 overflow-auto border rounded p-2 bg-white">
+                                    @foreach($materials as $m)
+                                        <div class="flex items-center justify-between py-1 border-b last:border-b-0">
+                                            <div>
+                                                <span class="font-mono text-sm">{{ $m->stock_code }}</span>
+                                                <span class="ml-2">{{ $m->description }}</span>
+                                            </div>
+                                            <button type="button" class="text-blue-600 text-sm add-material" data-code="{{ $m->stock_code }}" data-desc="{{ $m->description }}">Tambah</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <!-- Bagian material terpilih tetap seperti sebelumnya -->
+                            </div>
+                            @endif
                         </div>
                     </div>
                     <div class="form-group">
@@ -291,6 +317,48 @@ window.addEventListener('message', function(event) {
             alert('Gagal membaca data PDF hasil edit.');
         }
     }
+});
+// Toggle materials section when status == WMATL
+function toggleMaterials() {
+  const status = document.getElementById('status').value;
+  const section = document.getElementById('materialsSection');
+  section.style.display = status === 'WMATL' ? 'block' : 'none';
+}
+document.getElementById('status').addEventListener('change', toggleMaterials);
+toggleMaterials();
+
+// Simple client-side filter for material list
+const materialSearch = document.getElementById('materialSearch');
+if (materialSearch) {
+  materialSearch.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#materialList > div').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+}
+
+// Add/remove selected materials
+let materialsIndex = document.querySelectorAll('#selectedMaterials > div').length;
+document.querySelectorAll('.add-material').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const code = this.dataset.code;
+    const desc = this.dataset.desc; // Get description from data-desc
+    const wrap = document.createElement('div');
+    wrap.className = 'flex items-center gap-2';
+    wrap.innerHTML = `
+      <input type="hidden" name="materials[${materialsIndex}][code]" value="${code}" />
+      <span class="px-2 py-1 bg-gray-100 rounded text-sm">${code} - ${desc}</span>
+      <input type="number" step="0.01" name="materials[${materialsIndex}][qty]" value="1" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
+      <button type="button" class="text-red-600 remove-material">Hapus</button>
+    `;
+    document.getElementById('selectedMaterials').appendChild(wrap);
+    materialsIndex++;
+    wrap.querySelector('.remove-material').addEventListener('click', () => wrap.remove());
+  });
+});
+document.querySelectorAll('#selectedMaterials .remove-material').forEach(btn => {
+  btn.addEventListener('click', function() { this.closest('div').remove(); });
 });
 </script>
 @endpush
