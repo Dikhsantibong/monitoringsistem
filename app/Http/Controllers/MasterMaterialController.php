@@ -16,9 +16,14 @@ class MasterMaterialController extends Controller
         $query = MaterialMaster::query();
         if ($search) {
             $query->where(function($q) use ($search) {
-                $q->where('code', 'like', "%$search%")
-                  ->orWhere('deskripsi', 'like', "%$search%")
-                  ->orWhere('kategori', 'like', "%$search%");
+                $q->where('inventory_statistic_code', 'like', "%$search%")
+                  ->orWhere('inventory_statistic_desc', 'like', "%$search%")
+                  ->orWhere('stock_code', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ->orWhere('quantity', 'like', "%$search%")
+                  ->orWhere('inventory_price', 'like', "%$search%")
+                  ->orWhere('inventory_value', 'like', "%$search%")
+                ;
             });
         }
         $materials = $query->get();
@@ -33,35 +38,66 @@ class MasterMaterialController extends Controller
         ]);
 
         $file = $request->file('excel_file');
-        $spreadsheet = IOFactory::load($file->getPathname());
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray();
 
         // Pastikan tabel material_master sudah ada dan ada kolom updated_at
-        DB::statement("CREATE TABLE IF NOT EXISTS material_master (
+        \DB::statement("CREATE TABLE IF NOT EXISTS material_master (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            code VARCHAR(255),
-            deskripsi VARCHAR(255),
-            kategori VARCHAR(255),
+            inventory_statistic_code VARCHAR(255),
+            inventory_statistic_desc VARCHAR(255),
+            stock_code VARCHAR(255),
+            description VARCHAR(255),
+            quantity VARCHAR(255),
+            inventory_price VARCHAR(255),
+            inventory_value VARCHAR(255),
             updated_at TIMESTAMP NULL DEFAULT NULL
         )");
-        // Tambahkan kolom updated_at jika belum ada
-        $columns = collect(DB::select("SHOW COLUMNS FROM material_master"))->pluck('Field');
-        if (!$columns->contains('updated_at')) {
-            DB::statement("ALTER TABLE material_master ADD COLUMN updated_at TIMESTAMP NULL DEFAULT NULL");
+        // Tambahkan kolom jika belum ada
+        $columns = collect(\DB::select("SHOW COLUMNS FROM material_master"))->pluck('Field');
+        $fields = [
+            'inventory_statistic_code',
+            'inventory_statistic_desc',
+            'stock_code',
+            'description',
+            'quantity',
+            'inventory_price',
+            'inventory_value',
+            'updated_at',
+        ];
+        $fieldTypes = [
+            'inventory_statistic_code' => 'VARCHAR(255)',
+            'inventory_statistic_desc' => 'VARCHAR(255)',
+            'stock_code' => 'VARCHAR(255)',
+            'description' => 'VARCHAR(255)',
+            'quantity' => 'VARCHAR(255)',
+            'inventory_price' => 'VARCHAR(255)',
+            'inventory_value' => 'VARCHAR(255)',
+            'updated_at' => 'TIMESTAMP NULL DEFAULT NULL',
+        ];
+        foreach ($fields as $field) {
+            if (!$columns->contains($field)) {
+                \DB::statement("ALTER TABLE material_master ADD COLUMN $field {$fieldTypes[$field]}");
+            }
         }
 
-        for ($i = 1; $i < count($rows); $i++) {
+        // Hapus data lama (opsional, jika ingin replace)
+        MaterialMaster::truncate();
+
+        // Asumsi baris ke-13 (index 12) adalah awal data
+        for ($i = 12; $i < count($rows); $i++) {
             $row = $rows[$i];
-            if (count($row) < 3) continue;
-            $code = $row[0];
-            $deskripsi = $row[1];
-            $kategori = $row[2];
+            if (count($row) < 7) continue;
             MaterialMaster::create([
-                'code' => $code,
-                'deskripsi' => $deskripsi,
-                'kategori' => $kategori,
-                'updated_at' => Carbon::now(),
+                'inventory_statistic_code' => $row[0],
+                'inventory_statistic_desc' => $row[1],
+                'stock_code' => $row[2],
+                'description' => $row[3],
+                'quantity' => $row[4],
+                'inventory_price' => $row[5],
+                'inventory_value' => $row[6],
+                'updated_at' => now(),
             ]);
         }
 
