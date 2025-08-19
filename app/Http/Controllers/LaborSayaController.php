@@ -117,6 +117,9 @@ class LaborSayaController extends Controller
                 'materials'      => 'nullable|array',
                 'materials.*.code' => 'required_with:materials|string|max:100',
                 'materials.*.qty'  => 'nullable|numeric|min:0',
+                'materials.*.description' => 'required_with:materials|string|max:255',
+                'materials.*.inventory_statistic_desc' => 'required_with:materials|string|max:255',
+                'materials.*.inventory_statistic_code' => 'required_with:materials|string|max:255',
             ]);
 
             // Data yang akan diupdate
