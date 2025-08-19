@@ -290,8 +290,8 @@
                             $badge = 'bg-green-300 text-green-900';
                         } elseif ($status === 'wmatl') {
                             $border = 'border-2 border-blue-500';
-                            $bg = 'bg-blue-50';
-                            $badge = 'bg-blue-300 text-blue-900';
+                            $bg = 'bg-yellow-50';
+                            $badge = 'bg-yellow-300 text-yellow-900';
                         } else { // open dan lainnya
                             $border = 'border-2 border-red-500';
                             $bg = 'bg-red-50';
