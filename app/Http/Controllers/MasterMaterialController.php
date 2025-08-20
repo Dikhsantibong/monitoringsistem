@@ -39,7 +39,7 @@ class MasterMaterialController extends Controller
 
         $file = $request->file('excel_file');
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
-        $sheet = $spreadsheet->getActiveSheet();
+        $sheet = $spreadsheet->getSheet(1); // Sheet kedua
         $rows = $sheet->toArray();
 
         // Pastikan tabel material_master sudah ada dan ada kolom updated_at
