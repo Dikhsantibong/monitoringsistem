@@ -204,9 +204,17 @@ class LaborSayaController extends Controller
         if (strpos($backlogLabor, $normalizedName) === false) {
             abort(403, 'Anda tidak berhak mengedit backlog ini.');
         }
+        $materials = MaterialMaster::orderBy('description')->get();
         $userName = Auth::user()->name;
         $masterLabors = DB::table('master_labors')->where('unit', $userName)->orderBy('nama')->get();
-        return view('pemeliharaan.labor-edit-backlog', compact('backlog', 'masterLabors'));
+        // Ambil existing materials dari backlog (pastikan kolom materials di-cast ke array)
+        $existingMaterials = [];
+        if (!empty($backlog->materials)) {
+            $existingMaterials = is_array($backlog->materials)
+                ? $backlog->materials
+                : (is_string($backlog->materials) ? json_decode($backlog->materials, true) : []);
+        }
+        return view('pemeliharaan.labor-edit-backlog', compact('backlog', 'masterLabors', 'materials', 'existingMaterials'));
     }
 
     public function updateBacklog(Request $request, $id)
@@ -233,7 +241,7 @@ class LaborSayaController extends Controller
             'deskripsi' => 'required|string',
             'kendala' => 'nullable|string',
             'tindak_lanjut' => 'nullable|string',
-            'status' => 'required|in:Open,Closed',
+            'status' => 'required|in:Open,Closed,WMATL',
             'keterangan' => 'nullable|string',
             'labors' => 'nullable|array',
             'labor' => 'nullable|string',

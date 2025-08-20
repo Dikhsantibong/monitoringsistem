@@ -7,7 +7,47 @@
         <header class="bg-white shadow-sm sticky top-0">
             <div class="flex justify-between items-center px-6 py-3">
                 <div class="flex items-center gap-x-3">
-                    <h1 class="text-xl font-semibold text-gray-800">Edit WO Backlog</h1>
+                    <button id="mobile-menu-toggle"
+                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <button id="desktop-menu-toggle"
+                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800">Dashboard Pemeliharaan</h1>
+                </div>
+                <div class="flex items-center gap-x-4 relative">
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2"></i>
+                        </button>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                            <a href="{{ route('user.profile') }}"
+                                class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -26,11 +66,11 @@
                             </div>
                             <div class="mb-4">
                                 <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
-                                <select name="status" id="status" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required disabled>
+                                <select name="status" id="status" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                                     <option value="Open" {{ $backlog->status == 'Open' ? 'selected' : '' }}>Open</option>
                                     <option value="Closed" {{ $backlog->status == 'Closed' ? 'selected' : '' }}>Closed</option>
+                                    <option value="WMATL" {{ $backlog->status == 'WMATL' ? 'selected' : '' }}>WMATL</option>
                                 </select>
-                                <input type="hidden" name="status" value="{{ $backlog->status }}">
                             </div>
                             <div class="mb-4">
                                 <label for="deskripsi" class="block text-gray-700 font-medium mb-2">Deskripsi</label>
@@ -51,8 +91,7 @@
                                 <label for="tindak_lanjut" class="block text-gray-700 font-medium mb-2">Tindak Lanjut</label>
                                 <textarea name="tindak_lanjut" id="tindak_lanjut" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24">{{ old('tindak_lanjut', $backlog->tindak_lanjut) }}</textarea>
                             </div>
-                            @if($backlog->status == 'WMATL')
-                            <div id="materialsSection" class="mb-4">
+                            <div id="materialsSection" class="mb-4" style="display:none;">
                                 <label class="block text-gray-700 font-medium mb-2">Material (dari Material Master)</label>
                                 <div class="mb-2">
                                     <input type="text" id="materialSearch" placeholder="Cari material..." class="w-full px-3 py-2 border rounded-md" />
@@ -90,7 +129,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
                             <div class="mb-4">
                                 <label for="document" class="block text-gray-700 font-medium mb-2">Upload Dokumen</label>
                                 <div class="flex flex-col space-y-4">
@@ -220,7 +258,6 @@ function toggleMaterials() {
   const section = document.getElementById('materialsSection');
   section.style.display = status === 'WMATL' ? 'block' : 'none';
 }
-document.getElementById('status').addEventListener('change', toggleMaterials);
 toggleMaterials();
 
 // Simple client-side filter for material list
@@ -263,6 +300,8 @@ document.querySelectorAll('#selectedMaterials .remove-material').forEach(btn => 
 });
 </script>
 @endsection
+
+@section('modal')
 <div id="pdfEditorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg shadow-lg w-[90vw] h-[90vh] flex flex-col">
         <div class="flex justify-between items-center p-2 border-b">
@@ -274,3 +313,4 @@ document.querySelectorAll('#selectedMaterials .remove-material').forEach(btn => 
         </div>
     </div>
 </div>
+@endsection
