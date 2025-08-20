@@ -86,6 +86,7 @@ class LaporanController extends Controller
                     'type',
                     'labor',
                     'labors',
+                    'materials',
                     'schedule_start', 
                     'schedule_finish', 
                     'power_plant_id',
@@ -123,6 +124,7 @@ class LaporanController extends Controller
                     'status', 
                     'labor',
                     'labors',
+                    'materials',
                     'created_at', 
                     'power_plant_id',
                     'unit_source'
@@ -553,7 +555,7 @@ class LaporanController extends Controller
 
     public function createWOBacklog()
     {
-        return view('admin.laporan.create_wo_backlog'); // Ganti dengan nama view yang sesuai
+        return view('admin.laporan.create_wo_backlog'); 
     }
 
     public function createWO()
@@ -595,6 +597,7 @@ class LaporanController extends Controller
             $woBacklog->power_plant_id = $powerPlant->id;
             $woBacklog->labor = $request->labor ?? null;
             $woBacklog->labors = $request->labors ?? null;
+            $woBacklog->materials = $request->materials ?? null;
             $woBacklog->save();
 
             DB::commit();
@@ -705,7 +708,7 @@ class LaporanController extends Controller
     public function editWoBacklog($id)
     {
         $backlog = WoBacklog::findOrFail($id);
-        $materials = \App\Models\MaterialMaster::orderBy('description')->get();
+        $materials = \App\Models\MaterialMaster::orderBy('description')->limit(10)->get();
         return view('admin.laporan.edit_wo_backlog', compact('backlog', 'materials'));
     }
 
@@ -886,6 +889,7 @@ class LaporanController extends Controller
                         'unit_source' => $wo->unit_source,
                         'labor' => $wo->labor,
                         'labors' => $wo->labors,
+                        'materials' => $wo->materials,
                     ]);
 
                     // Set koneksi yang benar sebelum menyimpan

@@ -125,7 +125,6 @@
                                     <th class="px-4 py-2 border-b text-center">Quantity</th>
                                     <th class="px-4 py-2 border-b text-center">Inventory Price</th>
                                     <th class="px-4 py-2 border-b text-center">Inventory Value</th>
-                                    <th class="px-4 py-2 border-b text-center">Waktu Update</th>
                                 </tr>
                             </thead>
                             <tbody>

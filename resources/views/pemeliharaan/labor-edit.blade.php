@@ -187,7 +187,24 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <!-- Bagian material terpilih tetap seperti sebelumnya -->
+                                <div class="mt-3">
+                                    <h4 class="font-semibold mb-2">Material dipilih</h4>
+                                    <div id="selectedMaterials" class="space-y-2">
+                                        @if(is_array($workOrder->materials))
+                                            @foreach($workOrder->materials as $idx => $item)
+                                                <div class="flex items-center gap-2">
+                                                    <input type="hidden" name="materials[{{ $idx }}][code]" value="{{ $item['code'] ?? '' }}" />
+                                                    <input type="hidden" name="materials[{{ $idx }}][description]" value="{{ $item['description'] ?? '' }}" />
+                                                    <input type="hidden" name="materials[{{ $idx }}][inventory_statistic_desc]" value="{{ $item['inventory_statistic_desc'] ?? '' }}" />
+                                                    <input type="hidden" name="materials[{{ $idx }}][inventory_statistic_code]" value="{{ $item['inventory_statistic_code'] ?? '' }}" />
+                                                    <span class="px-2 py-1 bg-gray-100 rounded text-sm">{{ $item['code'] ?? '' }} - {{ $item['description'] ?? '' }}</span>
+                                                    <input type="number" step="0.01" name="materials[{{ $idx }}][qty]" value="{{ $item['qty'] ?? 1 }}" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
+                                                    <button type="button" class="text-red-600 remove-material">Hapus</button>
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                             @endif
                         </div>

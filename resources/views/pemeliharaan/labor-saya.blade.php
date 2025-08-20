@@ -165,7 +165,13 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    <a href="{{ route('pemeliharaan.labor-saya.edit', $wo->id) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
+                                    @if($wo->status == 'Closed')
+                                        <span class="inline-block px-3 py-1 bg-gray-400 text-white rounded text-xs cursor-not-allowed">
+                                            <i class="fas fa-lock mr-1"></i> Closed
+                                        </span>
+                                    @else
+                                        <a href="{{ route('pemeliharaan.labor-saya.edit', $wo->id) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
+                                    @endif
                                 </td>
                             </tr>
                             @empty
@@ -237,7 +243,11 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    <a href="{{ route('pemeliharaan.labor-saya.edit-backlog', $backlog->id) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
+                                    @if($backlog->status == 'Closed')
+                                        <span class="inline-block px-3 py-1 bg-gray-400 text-white rounded text-xs cursor-not-allowed">Closed</span>
+                                    @else
+                                        <a href="{{ route('pemeliharaan.labor-saya.edit-backlog', $backlog->id) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
+                                    @endif
                                 </td>
                             </tr>
                             @empty
