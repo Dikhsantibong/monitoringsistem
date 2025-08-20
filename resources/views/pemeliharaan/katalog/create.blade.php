@@ -63,7 +63,7 @@
                         <input type="text" id="nama_material" name="nama_material" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
                     </div>
                     <div>
-                        <label for="no_part" class="block text-sm font-medium text-gray-700">No Part Number</label>
+                        <label for="no_part" class="block text-sm font-medium text-gray-700">No Wo</label>
                         <input type="text" id="no_part" name="no_part" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
                     </div>
                 </div>
