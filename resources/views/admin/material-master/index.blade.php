@@ -117,15 +117,15 @@
                         <table class="min-w-full bg-white border border-gray-200">
                             <thead>
                                 <tr>
-                                    <th class="px-4 py-2 border-b text-center">No</th>
-                                    <th class="px-4 py-2 border-b text-center">Inventory Statistic Code</th>
-                                    <th class="px-4 py-2 border-b text-center">Inventory Statistic Desc</th>
-                                    <th class="px-4 py-2 border-b text-center">Stock Code</th>
-                                    <th class="px-4 py-2 border-b text-center">Description</th>
-                                    <th class="px-4 py-2 border-b text-center">Quantity</th>
-                                    <th class="px-4 py-2 border-b text-center">Inventory Price</th>
-                                    <th class="px-4 py-2 border-b text-center">Inventory Value</th>
-                                    <th class="px-4 py-2 border-b text-center">Waktu Update</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">No</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Code</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Desc</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Stock Code</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Description</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Quantity</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Price</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Value</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Waktu Update</th>
                                 </tr>
                             </thead>
                             <tbody>
