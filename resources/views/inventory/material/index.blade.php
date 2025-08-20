@@ -90,8 +90,7 @@
                             <tbody>
                                 @forelse($materials as $material)
                                     <tr>
-                                        
-                                        <td class="px-4 py-2 border-b border-gray-200">{{ $material->$index + 1 }}</td>
+                                        <td class="px-4 py-2 border-b border-gray-200">{{ $loop->iteration }}</td>
                                         <td class="px-4 py-2 border-b border-gray-200">{{ $material->code }}</td>
                                         <td class="px-4 py-2 border-b border-gray-200">{{ $material->deskripsi }}</td>
                                         <td class="px-4 py-2 border-b border-gray-200">{{ $material->kategori }}</td>
