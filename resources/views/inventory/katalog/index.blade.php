@@ -120,16 +120,21 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
-                                        <a href="{{ asset('public/storage/'.$file->path) }}" 
-                                            target="_blank" 
-                                            class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 mr-2">
-                                            Lihat
-                                         </a>
-                                         
-                                         
-                                         
-                                        <a href="{{ asset('public/storage/' . $file->path) }}" download class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Download</a>
+                                        <div class="flex justify-center gap-2">
+                                            <a href="{{ asset('storage/'.$file->path) }}" 
+                                               target="_blank" 
+                                               class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                                               Lihat
+                                            </a>
+                                    
+                                            <a href="{{ asset('storage/'.$file->path) }}" 
+                                               download 
+                                               class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+                                               Download
+                                            </a>
+                                        </div>
                                     </td>
+                                    
                                 </tr>
                             @empty
                                 <tr>
