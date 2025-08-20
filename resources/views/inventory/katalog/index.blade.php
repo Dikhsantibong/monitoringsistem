@@ -120,11 +120,12 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-2 border-b text-center border-r">
-                                        <a href="{{ url('public' . parse_url(Storage::url($file->path), PHP_URL_PATH)) }}"
-                                            target="_blank"
+                                        <a href="{{ asset('public/storage/'.$file->path) }}" 
+                                            target="_blank" 
                                             class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 mr-2">
                                             Lihat
                                          </a>
+                                         
                                          
                                          
                                         <a href="{{ asset('public/storage/' . $file->path) }}" download class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Download</a>
