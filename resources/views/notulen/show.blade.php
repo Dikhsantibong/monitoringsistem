@@ -764,10 +764,11 @@
     @endif
 
     <!-- Print Button -->
-    <button onclick="window.open('{{ route('notulen.print-pdf', $notulen->id) }}', '_blank').onload = function(){ this.print(); }" class="print-button" style="padding: 6px 16px; font-size: 0.95rem;">
-        <i class="fas fa-print"></i>
-        Cetak Notulen
-    </button>
+    <!-- Print Button -->
+        <button onclick="window.open('{{ route('notulen.print-pdf', $notulen->id) }}', '_blank')" class="print-button" style="padding: 6px 16px; font-size: 0.95rem;">
+            <i class="fas fa-print"></i>
+            Cetak Notulen
+        </button>
     <!-- Download ZIP Button -->
     <a href="{{ route('notulen.download-zip', $notulen->id) }}" class="print-button" style="right: 220px; background-color: #38b6ff; padding: 6px 16px; font-size: 0.95rem;">
         <i class="fas fa-file-archive"></i>
