@@ -11,9 +11,41 @@ class InventoryMaterialController extends Controller
     {
         $search = $request->input('search');
         $query = MaterialMaster::query();
+        $warehouseKeywords = [
+            'UPDK' => '2020',
+            'PLTD WUA WUA' => '3011',
+            'PLTD BAU BAU' => '3012',
+            'PLTD KOLAKA' => '3013',
+            'PLTD POASIA' => '3014',
+            'PLTU TANASA' => '3015',
+            'PLTD RAHA' => '3016',
+            'PLTD WANGI' => '3017',
+            'PLTD LAMBUYA' => '3018',
+            'PLTMG TANASA' => '3022',
+            'PLTM MIKUASI' => '3023',
+            'PLTD PASARWAJO' => '3035',
+            'PLTD LADUMPI' => '3047',
+            'PLTD LANIPA' => '4048',
+            'PLTD EREKE' => '3049',
+            'PLTD LANGARA' => '3050',
+            'PLTM RONGI' => '3054',
+            'PLTMG BAU BAU' => '3053',
+        ];
+        $warehouseCode = null;
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('discritc_code', 'like', "%$search%")
+            foreach ($warehouseKeywords as $keyword => $code) {
+                if (stripos($search, $keyword) !== false || stripos($keyword, $search) !== false) {
+                    $warehouseCode = $code;
+                    break;
+                }
+            }
+        }
+        if ($search) {
+            $query->where(function($q) use ($search, $warehouseCode) {
+                if ($warehouseCode) {
+                    $q->orWhere('warehouse', $warehouseCode);
+                }
+                $q->orWhere('discritc_code', 'like', "%$search%")
                   ->orWhere('warehouse', 'like', "%$search%")
                   ->orWhere('bin_code', 'like', "%$search%")
                   ->orWhere('inventory_statistic_code', 'like', "%$search%")
