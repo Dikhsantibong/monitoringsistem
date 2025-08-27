@@ -23,6 +23,11 @@
                 <i class="fas fa-user w-6 h-6"></i>
                 <span class="ml-3 text-base">Work Order</span>
             </a>
+            <a href="{{ route('pemeliharaan.wo-wmatl.index') }}"
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('pemeliharaan.wo-wmatl.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                <i class="fas fa-boxes w-6 h-6"></i>
+                <span class="ml-3 text-base">WO Material (WMATL)</span>
+            </a>
             <a href="{{ route('pemeliharaan.jobcard') }}"
             class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('pemeliharaan.jobcard') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
             <i class="fas fa-file-alt w-6 h-6"></i>

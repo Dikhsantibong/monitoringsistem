@@ -65,7 +65,7 @@ class InventoryMaterialController extends Controller
                 ;
             });
         }
-        $materials = $query->get();
+        $materials = $query->paginate(25);
         $lastUpdate = MaterialMaster::max('updated_at');
         return view('inventory.material.index', compact('materials', 'search', 'lastUpdate'));
     }

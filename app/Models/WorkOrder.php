@@ -29,7 +29,7 @@ class WorkOrder extends Model
         'unit_source',
         'is_active',
         'is_backlogged',
-        'labor', // Tambahan kolom labor
+        'labor', 
         'labors',
         'materials'
     ];
@@ -228,6 +228,7 @@ class WorkOrder extends Model
                     'type_wo' => $this->type,
                     'labor' => $this->labor,
                     'labors' => $this->labors,
+                    'materials' => $this->materials,
                     'priority' => $this->priority,
                     'schedule_start' => $this->schedule_start,
                     'schedule_finish' => $this->schedule_finish,

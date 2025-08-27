@@ -48,6 +48,7 @@ use App\Http\Controllers\PemeliharaanKatalogController;
 use App\Http\Controllers\InventoryKatalogController;
 use App\Http\Controllers\PemeliharaanPengajuanMaterialController;
 use App\Http\Controllers\InventoryPengajuanController;
+use App\Http\Controllers\PemeliharaanWoWmatlController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -868,3 +869,9 @@ Route::middleware(['auth'])->prefix('pemeliharaan')->name('pemeliharaan.')->grou
 Route::delete('/pemeliharaan/katalog/{id}', [PemeliharaanKatalogController::class, 'destroy'])->name('pemeliharaan.katalog.destroy');
 // Route hapus pengajuan material
 Route::delete('/pemeliharaan/pengajuan-material/{id}', [PemeliharaanPengajuanMaterialController::class, 'destroy'])->name('pemeliharaan.pengajuan-material.destroy');
+
+Route::prefix('pemeliharaan/wo-wmatl')->name('pemeliharaan.wo-wmatl.')->middleware(['auth'])->group(function () {
+    Route::get('/', [PemeliharaanWoWmatlController::class, 'index'])->name('index');
+    Route::get('/{id}/edit', [PemeliharaanWoWmatlController::class, 'edit'])->name('edit');
+    Route::post('/{id}/update', [PemeliharaanWoWmatlController::class, 'update'])->name('update');
+});

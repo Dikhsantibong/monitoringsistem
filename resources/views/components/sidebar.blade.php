@@ -1,5 +1,5 @@
 <aside id="mobile-menu"
-    class="fixed z-20 transform overflow-hidden transition-transform duration-300 md:relative md:translate-x-0 h-screen w-[280px] bg-transparent shadow-md text-white hidden md:block p-3">
+    class="fixed z-20 transform overflow-hidden transition-transform duration-300 md:relative md:translate-x-0 h-screen w-[280px] bg-transparent shadow-md text-white hidden md:block p-3 text-sm">
     <!-- Container untuk background dengan padding -->
     <div class="bg-[#0A749B] rounded-2xl h-full px-4 py-6 flex flex-col">
         <!-- Logo section -->
@@ -15,65 +15,65 @@
         <!-- Navigation dengan style yang lebih modern -->
         <nav class="space-y-2 flex-grow">
             <a href="{{ route('admin.dashboard') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-home w-6 h-6"></i>
-                <span class="ml-3 text-base">Dashboard</span>
+                <span class="ml-3 text-sm">Dashboard</span>
             </a>
 
             <a href="{{ route('admin.machine-status.view') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-status.view') || request()->routeIs('admin.machine-status.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-status.view') || request()->routeIs('admin.machine-status.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-check w-6 h-6"></i>
-                <span class="ml-3 text-base">Kesiapan Pembangkit</span>
+                <span class="ml-3 text-sm">Kesiapan Pembangkit</span>
             </a>
             <a href="{{ route('kalender.pemeliharaan') }}"
-            class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('kalender.pemeliharaan') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+            class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('kalender.pemeliharaan') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
             <i class="fas fa-calendar-alt w-6 h-6"></i>
-            <span class="ml-3 text-base">Kalender Pemeliharaan</span>
+            <span class="ml-3 text-sm">Kalender Pemeliharaan</span>
         </a>
 
             <a href="{{ route('admin.laporan.sr_wo') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.laporan.sr_wo') || request()->routeIs('admin.laporan.manage') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.laporan.sr_wo') || request()->routeIs('admin.laporan.manage') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-file-alt w-6 h-6"></i>
-                <span class="ml-3 text-base">Laporan SR/WO</span>
+                <span class="ml-3 text-sm">Laporan SR/WO</span>
             </a>
 
             <a href="{{ route('admin.other-discussions.index') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.other-discussions.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.other-discussions.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-comments w-6 h-6"></i>
-                <span class="ml-3 text-base">Pembahasan Lain-lain</span>
+                <span class="ml-3 text-sm">Pembahasan Lain-lain</span>
             </a>
 
             <!-- Data Master Dropdown Menu -->
             @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
             <div class="relative group">
                 <button type="button" id="data-master-dropdown"
-                    class="flex items-center w-full px-3 py-2.5 rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.power-plants.index') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                    class="flex items-center w-full px-3 py-2.5 rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.power-plants.index') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                     <i class="fas fa-database w-6 h-6"></i>
-                    <span class="ml-3 text-base flex-1 text-left">Data Master</span>
+                    <span class="ml-3 text-sm flex-1 text-left">Data Master</span>
                     <i class="fas fa-chevron-down ml-auto transition-transform duration-200" id="data-master-chevron"></i>
                 </button>
                 <div id="data-master-submenu"
                     class="max-h-0 overflow-hidden transition-all duration-300 bg-[#0A749B] rounded-lg mt-1 ml-2"
                     style="box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
                     <a href="{{ route('admin.power-plants.index') }}"
-                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }} text-sm">
                         <i class="fas fa-bolt w-5 h-5"></i>
-                        <span class="ml-3 text-base">Unit Pembangkit</span>
+                        <span class="ml-3 text-sm">Unit Pembangkit</span>
                     </a>
                     <a href="{{ route('admin.machine-monitor.show', 1) }}"
-                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.machine-monitor.show') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.machine-monitor.show') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }} text-sm">
                         <i class="fas fa-cogs w-5 h-5"></i>
-                        <span class="ml-3 text-base">Detail Mesin</span>
+                        <span class="ml-3 text-sm">Detail Mesin</span>
                     </a>
                     <a href="{{ route('admin.users') }}"
-                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.users') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }} text-sm">
                         <i class="fas fa-users w-5 h-5"></i>
-                        <span class="ml-3 text-base">Manajemen Pengguna</span>
+                        <span class="ml-3 text-sm">Manajemen Pengguna</span>
                     </a>
                     <a href="{{ route('admin.material-master.index') }}"
-                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.material-master.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }}">
+                        class="flex items-center px-5 py-2 rounded-lg {{ request()->routeIs('admin.material-master.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/20' }} text-sm">
                         <i class="fas fa-cogs w-5 h-5"></i>
-                        <span class="ml-3 text-base">Material Master</span>
+                        <span class="ml-3 text-sm">Material Master</span>
                     </a>
                 </div>
             </div>
@@ -82,39 +82,39 @@
 
             @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
             <a href="{{ route('admin.machine-monitor') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-monitor') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-monitor') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-desktop w-6 h-6"></i>
-                <span class="ml-3 text-base">Monitor Mesin</span>
+                <span class="ml-3 text-sm">Monitor Mesin</span>
             </a>
             @endif
 
             <a href="{{ route('admin.daftar_hadir.index') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.daftar_hadir.index') || request()->routeIs('admin.daftar_hadir.rekapitulasi') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.daftar_hadir.index') || request()->routeIs('admin.daftar_hadir.rekapitulasi') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-list w-6 h-6"></i>
-                <span class="ml-3 text-base">Daftar Hadir</span>
+                <span class="ml-3 text-sm">Daftar Hadir</span>
             </a>
 
 
             <a href="{{ route('admin.score-card.index') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.score-card.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.score-card.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-clipboard-list w-6 h-6"></i>
-                <span class="ml-3 text-base">Score Card Daily</span>
+                <span class="ml-3 text-sm">Score Card Daily</span>
             </a>
            
             {{-- Manajemen Pengguna sudah ada di Data Master --}}
            
 
             <a href="{{ route('admin.meetings') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.meetings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.meetings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-chart-bar w-6 h-6"></i>
-                <span class="ml-3 text-base">Laporan Rapat</span>
+                <span class="ml-3 text-sm">Laporan Rapat</span>
             </a>
 
             @if (Auth::check() && Auth::user()->role === 'super_admin')
             <a href="{{ route('admin.settings') }}"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.settings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.settings') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-cog w-6 h-6"></i>
-                <span class="ml-3 text-base">Pengaturan</span>
+                <span class="ml-3 text-sm">Pengaturan</span>
             </a>
             @endif
         </nav>
@@ -125,9 +125,9 @@
                 @csrf
                 <button type="button" 
                     onclick="confirmLogout()"
-                    class="flex items-center w-full px-3 py-2.5 rounded-lg text-white bg-red-400 hover:bg-red-700 transition-colors duration-200">
+                    class="flex items-center w-full px-3 py-2.5 rounded-lg text-white bg-red-400 hover:bg-red-700 transition-colors duration-200 text-sm">
                     <i class="fas fa-sign-out-alt w-6 h-6"></i>
-                    <span class="ml-3 text-base">Logout</span>
+                    <span class="ml-3 text-sm">Logout</span>
                 </button>
             </form>
         </div>
