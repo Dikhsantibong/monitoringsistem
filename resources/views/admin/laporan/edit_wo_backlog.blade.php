@@ -137,12 +137,14 @@
                                             <div class="flex items-center justify-between py-1 border-b last:border-b-0">
                                                 <div>
                                                     <span class="font-mono text-sm">{{ $m->stock_code }}</span>
-                                                    <span class="ml-2">{{ $m->description }}</span>
+                                                    <span class="ml-2">{{ $m->inventory_statistic_desc }}</span>
+                                                    <span class="ml-2">{{ $m->warehouse }}</span>
                                                 </div>
                                                 <button type="button" class="text-blue-600 text-sm add-material"
                                                     data-code="{{ $m->stock_code }}"
-                                                    data-desc="{{ $m->description }}"
                                                     data-statdesc="{{ $m->inventory_statistic_desc }}"
+                                                    data-warehouse="{{ $m->warehouse }}"
+                                                    data-description="{{ $m->description }}"
                                                     data-statcode="{{ $m->inventory_statistic_code }}">
                                                     Tambah
                                                 </button>
@@ -414,17 +416,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.add-material').forEach(btn => {
         btn.addEventListener('click', function() {
             const code = this.dataset.code;
-            const desc = this.dataset.desc;
-            const statDesc = this.dataset.statdesc;
-            const statCode = this.dataset.statcode;
+            const statdesc = this.dataset.statdesc;
+            const warehouse = this.dataset.warehouse;
+            const description = this.dataset.description;
+            const statcode = this.dataset.statcode;
+
             const wrap = document.createElement('div');
             wrap.className = 'flex items-center gap-2';
             wrap.innerHTML = `
                 <input type="hidden" name="materials[${materialsIndex}][code]" value="${code}" />
-                <input type="hidden" name="materials[${materialsIndex}][description]" value="${desc}" />
-                <input type="hidden" name="materials[${materialsIndex}][inventory_statistic_desc]" value="${statDesc}" />
-                <input type="hidden" name="materials[${materialsIndex}][inventory_statistic_code]" value="${statCode}" />
-                <span class="px-2 py-1 bg-gray-100 rounded text-sm">${code} - ${desc}</span>
+                <input type="hidden" name="materials[${materialsIndex}][inventory_statistic_desc]" value="${statdesc}" />
+                <input type="hidden" name="materials[${materialsIndex}][warehouse]" value="${warehouse}" />
+                <input type="hidden" name="materials[${materialsIndex}][description]" value="${description}" />
+                <input type="hidden" name="materials[${materialsIndex}][inventory_statistic_code]" value="${statcode}" />
+                <span class="px-2 py-1 bg-gray-100 rounded text-sm">${code} - ${statdesc} - ${warehouse}</span>
                 <input type="number" step="0.01" name="materials[${materialsIndex}][qty]" value="1" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
                 <button type="button" class="text-red-600 remove-material">Hapus</button>
             `;

@@ -175,12 +175,14 @@
                                         <div class="flex items-center justify-between py-1 border-b last:border-b-0">
                                             <div>
                                                 <span class="font-mono text-sm">{{ $m->stock_code }}</span>
-                                                <span class="ml-2">{{ $m->description }}</span>
+                                                <span class="ml-2">{{ $m->inventory_statistic_desc }}</span>
+                                                <span class="ml-2">{{ $m->warehouse }}</span>
                                             </div>
                                             <button type="button" class="text-blue-600 text-sm add-material"
                                                 data-code="{{ $m->stock_code }}"
-                                                data-desc="{{ $m->description }}"
                                                 data-statdesc="{{ $m->inventory_statistic_desc }}"
+                                                data-warehouse="{{ $m->warehouse }}"
+                                                data-description="{{ $m->description }}"
                                                 data-statcode="{{ $m->inventory_statistic_code }}">
                                                 Tambah
                                             </button>
@@ -190,19 +192,28 @@
                                 <div class="mt-3">
                                     <h4 class="font-semibold mb-2">Material dipilih</h4>
                                     <div id="selectedMaterials" class="space-y-2">
-                                        @if(is_array($workOrder->materials))
-                                            @foreach($workOrder->materials as $idx => $item)
-                                                <div class="flex items-center gap-2">
-                                                    <input type="hidden" name="materials[{{ $idx }}][code]" value="{{ $item['code'] ?? '' }}" />
-                                                    <input type="hidden" name="materials[{{ $idx }}][description]" value="{{ $item['description'] ?? '' }}" />
-                                                    <input type="hidden" name="materials[{{ $idx }}][inventory_statistic_desc]" value="{{ $item['inventory_statistic_desc'] ?? '' }}" />
-                                                    <input type="hidden" name="materials[{{ $idx }}][inventory_statistic_code]" value="{{ $item['inventory_statistic_code'] ?? '' }}" />
-                                                    <span class="px-2 py-1 bg-gray-100 rounded text-sm">{{ $item['code'] ?? '' }} - {{ $item['description'] ?? '' }}</span>
-                                                    <input type="number" step="0.01" name="materials[{{ $idx }}][qty]" value="{{ $item['qty'] ?? 1 }}" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
-                                                    <button type="button" class="text-red-600 remove-material">Hapus</button>
-                                                </div>
-                                            @endforeach
-                                        @endif
+                                        @php
+                                            // Helper untuk melengkapi data lama
+                                            function completeMaterial($item, $materials) {
+                                                $found = $materials->firstWhere('stock_code', $item['code'] ?? null);
+                                                $item['description'] = $item['description'] ?? ($found->description ?? '-');
+                                                $item['inventory_statistic_code'] = $item['inventory_statistic_code'] ?? ($found->inventory_statistic_code ?? '-');
+                                                return $item;
+                                            }
+                                        @endphp
+                                        @foreach($workOrder->materials as $idx => $item)
+                                            @php $item = completeMaterial($item, $materials); @endphp
+                                            <div class="flex items-center gap-2">
+                                                <input type="hidden" name="materials[{{ $idx }}][code]" value="{{ $item['code'] ?? '' }}" />
+                                                <input type="hidden" name="materials[{{ $idx }}][inventory_statistic_desc]" value="{{ $item['inventory_statistic_desc'] ?? '' }}" />
+                                                <input type="hidden" name="materials[{{ $idx }}][warehouse]" value="{{ $item['warehouse'] ?? '' }}" />
+                                                <input type="hidden" name="materials[{{ $idx }}][description]" value="{{ $item['description'] ?? '' }}" />
+                                                <input type="hidden" name="materials[{{ $idx }}][inventory_statistic_code]" value="{{ $item['inventory_statistic_code'] ?? '' }}" />
+                                                <span class="px-2 py-1 bg-gray-100 rounded text-sm">{{ $item['code'] ?? '' }} - {{ $item['inventory_statistic_desc'] ?? '' }} - {{ $item['warehouse'] ?? '' }}</span>
+                                                <input type="number" step="0.01" name="materials[{{ $idx }}][qty]" value="{{ $item['qty'] ?? 1 }}" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
+                                                <button type="button" class="text-red-600 remove-material">Hapus</button>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
@@ -251,7 +262,10 @@
             <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
         </div>
         <div class="flex-1 w-full h-full overflow-auto flex items-center justify-center">
-            <iframe id="pdfjs-viewer" src="{{ asset('pdf.js/web/viewer.html') }}?file={{ asset('storage/' . $workOrder->document_path) }}" style="width:100%;height:100%;border:none;"></iframe>
+            <iframe id="pdfjs-viewer" src="{{ asset('pdf.js/web/viewer.html') }}?file={{ asset('storage/' . $workOrder->document_path) }}&hideSaveBtn=1" style="width:100%;height:100%;border:none;"></iframe>
+        </div>
+        <div class="flex justify-end p-4 border-t">
+            <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
         </div>
     </div>
 </div>
@@ -366,17 +380,20 @@ let materialsIndex = document.querySelectorAll('#selectedMaterials > div').lengt
 document.querySelectorAll('.add-material').forEach(btn => {
   btn.addEventListener('click', function() {
     const code = this.dataset.code;
-    const desc = this.dataset.desc;
     const statDesc = this.dataset.statdesc;
+    const warehouse = this.dataset.warehouse;
+    const description = this.dataset.description;
     const statCode = this.dataset.statcode;
+
     const wrap = document.createElement('div');
     wrap.className = 'flex items-center gap-2';
     wrap.innerHTML = `
       <input type="hidden" name="materials[${materialsIndex}][code]" value="${code}" />
-      <input type="hidden" name="materials[${materialsIndex}][description]" value="${desc}" />
       <input type="hidden" name="materials[${materialsIndex}][inventory_statistic_desc]" value="${statDesc}" />
+      <input type="hidden" name="materials[${materialsIndex}][warehouse]" value="${warehouse}" />
+      <input type="hidden" name="materials[${materialsIndex}][description]" value="${description}" />
       <input type="hidden" name="materials[${materialsIndex}][inventory_statistic_code]" value="${statCode}" />
-      <span class="px-2 py-1 bg-gray-100 rounded text-sm">${code} - ${desc}</span>
+      <span class="px-2 py-1 bg-gray-100 rounded text-sm">${code} - ${statDesc} - ${warehouse}</span>
       <input type="number" step="0.01" name="materials[${materialsIndex}][qty]" value="1" class="w-24 px-2 py-1 border rounded" placeholder="Qty" />
       <button type="button" class="text-red-600 remove-material">Hapus</button>
     `;
@@ -387,6 +404,10 @@ document.querySelectorAll('.add-material').forEach(btn => {
 });
 document.querySelectorAll('#selectedMaterials .remove-material').forEach(btn => {
   btn.addEventListener('click', function() { this.closest('div').remove(); });
+});
+document.getElementById('savePdfBtn').addEventListener('click', function() {
+    const iframe = document.getElementById('pdfjs-viewer').contentWindow;
+    iframe.postMessage({ type: 'request-save-pdf' }, '*');
 });
 </script>
 @endpush

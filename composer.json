@@ -24,7 +24,8 @@
         "psr/simple-cache": "^3.0",
         "realrashid/sweet-alert": "^7.2",
         "setasign/fpdf": "^1.8",
-        "setasign/fpdi": "^2.6"
+        "setasign/fpdi": "*",
+        "tecnickcom/tcpdf": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

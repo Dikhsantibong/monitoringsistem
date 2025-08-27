@@ -73,7 +73,7 @@ class LaborSayaController extends Controller
         $powerPlants = PowerPlant::all();
         $userName = Auth::user()->name;
         $masterLabors = DB::table('master_labors')->where('unit', $userName)->orderBy('nama')->get();
-        $materials = MaterialMaster::orderBy('deskripsi')->limit(200)->get();
+        $materials = MaterialMaster::orderBy('description')->limit(200)->get();
 
         return view('pemeliharaan.labor-edit', compact('workOrder', 'powerPlants', 'masterLabors', 'materials'));
     }

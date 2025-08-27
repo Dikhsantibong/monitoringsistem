@@ -232,7 +232,7 @@
                     <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo">
                 </td>
                 <td class="title-cell">
-                    <div class="border-bottom">PT PLN NUSANTARA POWER</div>
+                    <div class="border-bottom">PT PLN NUSANTARA POWE</div>
                     <div class="border-bottom">INTEGRATED MANAGEMENT SYSTEM</div>
                     <div style="font-weight: bold">FORMULIR NOTULEN RAPAT</div>
                 </td>

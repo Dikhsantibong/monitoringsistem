@@ -79,40 +79,59 @@
                     <!-- Tabel Data Material Inventory -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border border-gray-200">
-                            <table class="min-w-full bg-white border border-gray-200">
-                                <thead>
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">No</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Discritc Code</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Warehouse</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Bin Code</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Code</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Desc</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Material Num</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Stock Code</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Description</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Stock Class</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Stock Type</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Category</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Unit of Issue</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Minimum SOH</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Maximum SOH</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Quantity</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Price</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Value</th>
+                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Waktu Update</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($materials as $material)
                                     <tr>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">No</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Code</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Desc</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Stock Code</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Description</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Quantity</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Price</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Value</th>
-                                        <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Waktu Update</th>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $loop->iteration }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->discritc_code }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->warehouse }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->bin_code }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->inventory_statistic_code }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->inventory_statistic_desc }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->material_num }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_code }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->description }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_class }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_type }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->inventory_category }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->unit_of_issue }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->minimum_soh }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->maximum_soh }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->quantity }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->inventory_price }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->inventory_value }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->updated_at }}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($materials as $material)
-                                        <tr>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200">{{ $loop->iteration }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->inventory_statistic_code }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200 " style="width: 200px;">{{ $material->inventory_statistic_desc }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_code }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->description }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->quantity }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->inventory_price }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->inventory_value }}</td>
-                                            <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->updated_at }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="7" class="px-4 py-2 text-center text-gray-500">Belum ada data material master.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                                @empty
+                                    <tr>
+                                        <td colspan="19" class="px-4 py-2 text-center text-gray-500">Belum ada data material master.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

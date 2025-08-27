@@ -115,27 +115,47 @@
                     <!-- Tabel Data Material Master -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border border-gray-200">
-                            <thead>
+                            <thead class="sticky top-0 z-10" style="background-color: #0A749B; color: white">
                                 <tr>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">No</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Code</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Statistic Desc</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Stock Code</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Description</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Quantity</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Price</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Inventory Value</th>
-                                    <th class="px-4 py-2 border-b text-center bg-gray-100 border-r">Waktu Update</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">No</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Discritc Code</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Warehouse</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Bin Code</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Inventory Statistic Code</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Inventory Statistic Desc</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Material Num</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Stock Code</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Description</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Stock Class</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Stock Type</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Inventory Category</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Unit Of Issue</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Minimum SOH</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Maximum SOH</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Quantity</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Inventory Price</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Inventory Value</th>
+                                    <th class="px-4 py-2 border-b text-center border-r">Waktu Update</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($materials as $material)
-                                    <tr>
-                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $loop->iteration }}</td>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 py-2 border-b border-r border-gray-200 text-center">{{ ($materials->currentPage() - 1) * $materials->perPage() + $loop->iteration }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->discritc_code }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->warehouse }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->bin_code }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->inventory_statistic_code }}</td>
-                                        <td class="px-4 py-2 border-b border-r border-gray-200 " style="width: 200px;">{{ $material->inventory_statistic_desc }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200" style="min-width:220px;max-width:400px;">{{ $material->inventory_statistic_desc }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->material_num }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_code }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->description }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_class }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->stock_type }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->inventory_category }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200">{{ $material->unit_of_issue }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->minimum_soh }}</td>
+                                        <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->maximum_soh }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->quantity }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->inventory_price }}</td>
                                         <td class="px-4 py-2 border-b border-r border-gray-200 text-right">{{ $material->inventory_value }}</td>
@@ -143,11 +163,25 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-4 py-2 text-center text-gray-500">Belum ada data material master.</td>
+                                        <td colspan="19" class="px-4 py-2 text-center text-gray-500">Belum ada data material master.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-sm text-gray-700">
+                            Menampilkan
+                            {{ ($materials->currentPage() - 1) * $materials->perPage() + 1 }}
+                            hingga
+                            {{ min($materials->currentPage() * $materials->perPage(), $materials->total()) }}
+                            dari
+                            {{ $materials->total() }}
+                            entri
+                        </div>
+                        <div class="flex items-center gap-1">
+                            {{ $materials->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
