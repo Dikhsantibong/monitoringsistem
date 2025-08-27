@@ -134,7 +134,35 @@
                                     </div>
                                     <div id="materialList" class="max-h-60 overflow-auto border rounded p-2 bg-white">
                                         @foreach($materials as $m)
-                                            <div class="flex items-center justify-between py-1 border-b last:border-b-0">
+                                            @php
+                                                $keywords = strtolower($m->warehouse);
+                                                $warehouseKeywords = [
+                                                    '2020' => 'updk',
+                                                    '3011' => 'pltd wua wua',
+                                                    '3012' => 'pltd bau bau',
+                                                    '3013' => 'pltd kolaka',
+                                                    '3014' => 'pltd poasia',
+                                                    '3015' => 'pltu tanasa',
+                                                    '3016' => 'pltd raha',
+                                                    '3017' => 'pltd wangi',
+                                                    '3018' => 'pltd lambuya',
+                                                    '3022' => 'pltmg tanasa',
+                                                    '3023' => 'pltm mikuasi',
+                                                    '3035' => 'pltd pasarwajo',
+                                                    '3047' => 'pltd ladumpi',
+                                                    '4048' => 'pltd lanipa',
+                                                    '3049' => 'pltd ereke',
+                                                    '3050' => 'pltd langara',
+                                                    '3054' => 'pltm rongi',
+                                                    '3053' => 'pltmg bau bau',
+                                                ];
+                                                foreach ($warehouseKeywords as $code => $kw) {
+                                                    if ($m->warehouse == $code) {
+                                                        $keywords .= ' ' . $kw;
+                                                    }
+                                                }
+                                            @endphp
+                                            <div class="flex items-center justify-between py-1 border-b last:border-b-0" data-keywords="{{ $keywords }}">
                                                 <div>
                                                     <span class="font-mono text-sm">{{ $m->stock_code }}</span>
                                                     <span class="ml-2">{{ $m->inventory_statistic_desc }}</span>
@@ -438,6 +466,18 @@ document.addEventListener('DOMContentLoaded', function() {
             wrap.querySelector('.remove-material').addEventListener('click', () => wrap.remove());
         });
     });
+
+    // Simple client-side filter for material list
+    const materialSearch = document.getElementById('materialSearch');
+    if (materialSearch) {
+      materialSearch.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#materialList > div').forEach(row => {
+          const keywords = row.getAttribute('data-keywords') || '';
+          row.style.display = row.textContent.toLowerCase().includes(q) || keywords.includes(q) ? '' : 'none';
+        });
+      });
+    }
 });
 </script>
 @endpush 
