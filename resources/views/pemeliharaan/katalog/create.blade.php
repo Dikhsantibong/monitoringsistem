@@ -74,6 +74,7 @@
         </main>
     </div>
 </div>
+<script src="{{ asset('js/toggle.js') }}"></script>
 <script>
 let pdfSaved = false;
 document.getElementById('savePdfBtn').addEventListener('click', function() {

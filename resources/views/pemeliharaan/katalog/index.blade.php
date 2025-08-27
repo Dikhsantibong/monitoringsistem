@@ -59,7 +59,6 @@
                     Ajukan Katalog Baru
                 </a>
             </div>
-            
             <div class="bg-white rounded-lg shadow p-6 w-full">
                 <h2 class="text-lg font-semibold mb-4">Daftar Katalog Anda</h2>
                 <div class="overflow-x-auto">
@@ -67,7 +66,7 @@
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 border-b text-center">No</th>
-                                <th class="px-4 py-2 border-b text-center">No Part</th>
+                                <th class="px-4 py-2 border-b text-center">No WO</th>
                                 <th class="px-4 py-2 border-b text-center">Nama Material</th>
                                 <th class="px-4 py-2 border-b text-center">Tanggal</th>
                                 <th class="px-4 py-2 border-b text-center">Aksi</th>
