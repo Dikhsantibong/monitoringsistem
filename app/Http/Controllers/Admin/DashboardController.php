@@ -113,14 +113,29 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari)
+        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) dari seluruh unit
+        $unitConnections = [
+            'mysql',
+            'mysql_bau_bau',
+            'mysql_kolaka',
+            'mysql_poasia',
+            'mysql_wua_wua',
+            // tambahkan koneksi lain jika ada
+        ];
         $attendanceCounts = collect();
         for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
             $dateStr = $date->format('Y-m-d');
-            $count = Attendance::whereDate('time', $dateStr)->count();
+            $totalCount = 0;
+            foreach ($unitConnections as $conn) {
+                try {
+                    $totalCount += \App\Models\Attendance::on($conn)->whereDate('time', $dateStr)->count();
+                } catch (\Exception $e) {
+                    \Log::warning("Gagal mengambil data attendance dari $conn: " . $e->getMessage());
+                }
+            }
             $attendanceCounts->push([
                 'date' => $dateStr,
-                'count' => $count
+                'count' => $totalCount
             ]);
         }
 
