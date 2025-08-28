@@ -87,6 +87,7 @@
                         </div>
                     </div>
                     <canvas id="activityChart" height="180"></canvas>
+                    <pre class="text-xs text-gray-400 bg-gray-50 p-2 rounded mt-2 overflow-x-auto">{{ json_encode($attendancePerUnit) }}</pre>
                 </div>
                 <!-- Score Daily Meeting (Line Chart) -->
                 <div class="bg-white rounded-lg shadow p-6">
@@ -240,14 +241,18 @@
         function renderAttendanceChart(unitSource) {
             const ctx = document.getElementById('activityChart').getContext('2d');
             if (activityChartInstance) activityChartInstance.destroy();
-            let labels, data, label;
+            let labels = [], data = [], label = '';
             if (unitSource === 'all') {
-                labels = chartData.scoreCardData.dates;
-                data = chartData.scoreCardData.counts;
+                labels = chartData.scoreCardData.dates || [];
+                data = chartData.scoreCardData.counts || [];
                 label = 'Jumlah Peserta Hadir (Total)';
+            } else if (attendancePerUnit[unitSource]) {
+                labels = Object.keys(attendancePerUnit[unitSource]);
+                data = Object.values(attendancePerUnit[unitSource]);
+                label = 'Jumlah Peserta Hadir (' + (attendanceUnitLabels[unitSource] || unitSource) + ')';
             } else {
-                labels = Object.keys(attendancePerUnit[unitSource] || {});
-                data = Object.values(attendancePerUnit[unitSource] || {});
+                labels = chartData.scoreCardData.dates || [];
+                data = Array(labels.length).fill(0);
                 label = 'Jumlah Peserta Hadir (' + (attendanceUnitLabels[unitSource] || unitSource) + ')';
             }
             activityChartInstance = new Chart(ctx, {
