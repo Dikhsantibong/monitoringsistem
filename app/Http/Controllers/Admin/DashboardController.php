@@ -129,7 +129,6 @@ class DashboardController extends Controller
             foreach ($unitConnections as $conn) {
                 try {
                     $totalCount += \App\Models\Attendance::on($conn)
-                        ->where('unit_source', $conn)
                         ->whereDate('time', $dateStr)
                         ->count();
                 } catch (\Exception $e) {
