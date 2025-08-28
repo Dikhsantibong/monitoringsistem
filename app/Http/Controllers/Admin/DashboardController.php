@@ -200,11 +200,205 @@ class DashboardController extends Controller
             'data' => $attendanceData->toArray()
         ]);
 
+        // Summary info untuk grafik
+        $activityTotal = $attendanceCounts->sum('count');
+        $activityAvg = $attendanceCounts->count() > 0 ? round($attendanceCounts->avg('count'), 2) : 0;
+        $meetingAvg = $formattedAttendance->count() > 0 ? round($formattedAttendance->avg(), 2) : 0;
+        $srOpen = $chartData['srData']['counts'][0] ?? 0;
+        $srClosed = $chartData['srData']['counts'][1] ?? 0;
+        $srTotal = $srOpen + $srClosed;
+        $srClosedPct = $srTotal > 0 ? round($srClosed / $srTotal * 100, 1) : 0;
+        $woOpen = $chartData['woData']['counts'][0] ?? 0;
+        $woClosed = $chartData['woData']['counts'][1] ?? 0;
+        $woTotal = $woOpen + $woClosed;
+        $woClosedPct = $woTotal > 0 ? round($woClosed / $woTotal * 100, 1) : 0;
+        $backlogOpen = $chartData['woBacklogData']['counts'][0] ?? 0;
+        $commitOpen = $chartData['commitmentData']['counts'][0] ?? 0;
+        $commitClosed = $chartData['commitmentData']['counts'][1] ?? 0;
+        $commitTotal = $commitOpen + $commitClosed;
+        $commitClosedPct = $commitTotal > 0 ? round($commitClosed / $commitTotal * 100, 1) : 0;
+        $otherOpen = $chartData['otherDiscussionData']['counts'][0] ?? 0;
+        $otherClosed = $chartData['otherDiscussionData']['counts'][1] ?? 0;
+        $otherTotal = $otherOpen + $otherClosed;
+        $otherClosedPct = $otherTotal > 0 ? round($otherClosed / $otherTotal * 100, 1) : 0;
+        $chartSummary = [
+            'activity' => [
+                'total' => $activityTotal,
+                'avg' => $activityAvg,
+            ],
+            'meeting' => [
+                'avg' => $meetingAvg,
+            ],
+            'sr' => [
+                'open' => $srOpen,
+                'closed' => $srClosed,
+                'total' => $srTotal,
+                'closed_pct' => $srClosedPct,
+            ],
+            'wo' => [
+                'open' => $woOpen,
+                'closed' => $woClosed,
+                'total' => $woTotal,
+                'closed_pct' => $woClosedPct,
+            ],
+            'backlog' => [
+                'open' => $backlogOpen,
+            ],
+            'commitment' => [
+                'open' => $commitOpen,
+                'closed' => $commitClosed,
+                'total' => $commitTotal,
+                'closed_pct' => $commitClosedPct,
+            ],
+            'other_discussion' => [
+                'open' => $otherOpen,
+                'closed' => $otherClosed,
+                'total' => $otherTotal,
+                'closed_pct' => $otherClosedPct,
+            ],
+        ];
+
+        // Tambahan: List koneksi unit dan label
+        $unitConnections = [
+            'mysql' => 'UP Kendari',
+            'mysql_bau_bau' => 'Bau-Bau',
+            'mysql_kolaka' => 'Kolaka',
+            'mysql_poasia' => 'Poasia',
+            'mysql_wua_wua' => 'Wua-Wua',
+        ];
+        // 1. Tren Kehadiran per Unit (multi-line)
+        $unitAttendanceTrends = [];
+        foreach ($unitConnections as $conn => $unitLabel) {
+            $counts = [];
+            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+                $dateStr = $date->format('Y-m-d');
+                try {
+                    $counts[$dateStr] = \App\Models\Attendance::on($conn)->whereDate('time', $dateStr)->count();
+                } catch (\Exception $e) {
+                    $counts[$dateStr] = 0;
+                }
+            }
+            $unitAttendanceTrends[$unitLabel] = $counts;
+        }
+        // 2. Distribusi Status Mesin (pie/bar)
+        $machineStatusDist = [];
+        $statusLabels = [];
+        foreach ($unitConnections as $conn => $unitLabel) {
+            try {
+                $statusCounts = \App\Models\MachineStatusLog::on($conn)
+                    ->select('status', \DB::raw('COUNT(*) as total'))
+                    ->groupBy('status')->pluck('total','status')->toArray();
+                foreach ($statusCounts as $status => $total) {
+                    $machineStatusDist[$status] = ($machineStatusDist[$status] ?? 0) + $total;
+                    if (!in_array($status, $statusLabels)) $statusLabels[] = $status;
+                }
+            } catch (\Exception $e) {}
+        }
+        // 3. Jumlah WO/SR/Pengajuan Material per Bulan (6 bulan terakhir)
+        $monthlyCounts = [];
+        $months = collect(range(5,0))->map(function($i) { return now()->subMonths($i)->format('Y-m'); });
+        foreach ($months as $month) {
+            $wo = $sr = $mat = 0;
+            foreach ($unitConnections as $conn => $unitLabel) {
+                try {
+                    $wo += \App\Models\WorkOrder::on($conn)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])->count();
+                } catch (\Exception $e) {}
+                try {
+                    $sr += \App\Models\ServiceRequest::on($conn)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])->count();
+                } catch (\Exception $e) {}
+                try {
+                    $mat += \App\Models\PengajuanMaterialFile::on($conn)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])->count();
+                } catch (\Exception $e) {}
+            }
+            $monthlyCounts[] = [ 'month' => $month, 'wo' => $wo, 'sr' => $sr, 'material' => $mat ];
+        }
+        // 4. Penyelesaian WO/SR per Unit (stacked bar)
+        $woSrCompletion = [];
+        foreach ($unitConnections as $conn => $unitLabel) {
+            $woOpen = $woClosed = $srOpen = $srClosed = 0;
+            try {
+                $woOpen = \App\Models\WorkOrder::on($conn)->where('status','Open')->count();
+                $woClosed = \App\Models\WorkOrder::on($conn)->where('status','Closed')->count();
+            } catch (\Exception $e) {}
+            try {
+                $srOpen = \App\Models\ServiceRequest::on($conn)->where('status','Open')->count();
+                $srClosed = \App\Models\ServiceRequest::on($conn)->where('status','Closed')->count();
+            } catch (\Exception $e) {}
+            $woSrCompletion[$unitLabel] = [ 'wo_open' => $woOpen, 'wo_closed' => $woClosed, 'sr_open' => $srOpen, 'sr_closed' => $srClosed ];
+        }
+        // 5. Top 5 Material Paling Sering Diajukan
+        $materialCounts = [];
+        foreach ($unitConnections as $conn => $unitLabel) {
+            try {
+                $rows = \App\Models\PengajuanMaterialFile::on($conn)
+                    ->select('nama_material', \DB::raw('COUNT(*) as total'))
+                    ->groupBy('nama_material')->pluck('total','nama_material')->toArray();
+                foreach ($rows as $mat => $total) {
+                    if (!$mat) continue;
+                    $materialCounts[$mat] = ($materialCounts[$mat] ?? 0) + $total;
+                }
+            } catch (\Exception $e) {}
+        }
+        arsort($materialCounts);
+        $topMaterials = array_slice($materialCounts, 0, 5, true);
+        // 6. Komitmen & Pembahasan lain-lain per status
+        $commitmentStatus = ['Open' => 0, 'Closed' => 0];
+        $discussionStatus = ['Open' => 0, 'Closed' => 0];
+        foreach ($unitConnections as $conn => $unitLabel) {
+            try {
+                $commitmentStatus['Open'] += \App\Models\Commitment::on($conn)->where('status','Open')->count();
+                $commitmentStatus['Closed'] += \App\Models\Commitment::on($conn)->where('status','Closed')->count();
+            } catch (\Exception $e) {}
+            try {
+                $discussionStatus['Open'] += \App\Models\OtherDiscussion::on($conn)->where('status','Open')->count();
+                $discussionStatus['Closed'] += \App\Models\OtherDiscussion::on($conn)->where('status','Closed')->count();
+            } catch (\Exception $e) {}
+        }
+        $commitmentDiscussionStatus = [
+            'commitment' => $commitmentStatus,
+            'discussion' => $discussionStatus
+        ];
+
+        // Mapping unit_source ke nama unit
+        $unitSourceMap = [
+            'mysql' => 'UP KENDARI',
+            'mysql_bau_bau' => 'ULPLTD BAU-BAU',
+            'mysql_kolaka' => 'ULPLTD KOLAKA',
+            'mysql_poasia' => 'ULPLTD POASIA',
+            'mysql_wua_wua' => 'ULPLTD WUA-WUA',
+        ];
+        // Data kehadiran harian per unit_source
+        $attendancePerUnit = [];
+        $attendanceUnitLabels = [];
+        foreach ($unitSourceMap as $conn => $unitLabel) {
+            $counts = [];
+            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+                $dateStr = $date->format('Y-m-d');
+                try {
+                    $counts[$dateStr] = \App\Models\Attendance::on($conn)->whereDate('time', $dateStr)->count();
+                } catch (\Exception $e) {
+                    $counts[$dateStr] = 0;
+                }
+            }
+            $attendancePerUnit[$conn] = $counts;
+            $attendanceUnitLabels[$conn] = $unitLabel;
+        }
+
         return view('admin.dashboard', compact(
             'chartData',
+            'chartSummary',
             'totalUsers',
             'totalClosedSRWO',
-            'recentActivities'
+            'recentActivities',
+            'unitAttendanceTrends',
+            'machineStatusDist',
+            'monthlyCounts',
+            'woSrCompletion',
+            'topMaterials',
+            'commitmentDiscussionStatus',
+            'attendancePerUnit',
+            'attendanceUnitLabels',
+            'unitSourceMap'
         ));
     }
 
