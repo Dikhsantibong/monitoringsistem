@@ -39,6 +39,15 @@ class WeeklyMeetingController extends Controller
         $machineIssuesNextWeek = MachineStatusLog::whereBetween('tanggal_mulai', [$startOfNextWeek, $endOfNextWeek])
             ->orWhereBetween('target_selesai', [$startOfNextWeek, $endOfNextWeek])->get();
 
+        // Mapping koneksi database ke nama unit friendly
+        $unitMap = [
+            'mysql' => 'UP KENDARI',
+            'mysql_bau_bau' => 'ULPLTD BAU BAU',
+            'mysql_kolaka' => 'ULPLTD KOLAKA',
+            'mysql_poasia' => 'ULPLTD POASIA',
+            'mysql_wua_wua' => 'ULPLTD WUA WUA',
+        ];
+
         return view('weekly-meeting.index', [
             'startOfWeek' => $startOfWeek,
             'endOfWeek' => $endOfWeek,
@@ -52,6 +61,7 @@ class WeeklyMeetingController extends Controller
             'workOrdersNextWeek' => $workOrdersNextWeek,
             'serviceRequestsNextWeek' => $serviceRequestsNextWeek,
             'machineIssuesNextWeek' => $machineIssuesNextWeek,
+            'unitMap' => $unitMap,
         ]);
     }
 }

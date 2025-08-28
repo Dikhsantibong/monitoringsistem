@@ -216,7 +216,10 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-blue-700 font-semibold border border-gray-200">Backlog</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
+
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -248,7 +251,9 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-green-700 font-semibold border border-gray-200">WO</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -280,7 +285,9 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-yellow-700 font-semibold border border-gray-200">SR</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->created_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->updated_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -312,7 +319,9 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-red-700 font-semibold border border-gray-200">Issue Mesin</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? $item->status }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->tanggal_mulai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->target_selesai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -353,7 +362,9 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-blue-700 font-semibold border border-gray-200">Backlog</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -384,7 +395,9 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-green-700 font-semibold border border-gray-200">WO</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -415,7 +428,9 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-yellow-700 font-semibold border border-gray-200">SR</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->created_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->updated_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -446,7 +461,9 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-red-700 font-semibold border border-gray-200">Issue Mesin</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? $item->status }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">
+                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
+                                </td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->tanggal_mulai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->target_selesai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
