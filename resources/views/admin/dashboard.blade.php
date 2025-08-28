@@ -81,7 +81,7 @@
                             <select id="attendance-unit-filter" class="border rounded px-2 py-1 text-sm">
                                 <option value="all">Semua Unit</option>
                                 @foreach($attendanceUnitLabels as $unitSource => $unitLabel)
-                                    <option value="{{ $unitLabel }}">{{ $unitLabel }}</option>
+                                    <option value="{{ $unitSource }}">{{ $unitLabel }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -237,22 +237,19 @@
         const attendanceUnitLabels = @json($attendanceUnitLabels);
         const chartData = @json($chartData);
         let activityChartInstance;
-        function renderAttendanceChart(unitLabel) {
+        function renderAttendanceChart(unitSource) {
             const ctx = document.getElementById('activityChart').getContext('2d');
             if (activityChartInstance) activityChartInstance.destroy();
             let labels = [], data = [], label = '';
-            if (unitLabel === 'all') {
+            if (unitSource === 'all') {
                 labels = chartData.scoreCardData.dates || [];
                 data = chartData.scoreCardData.counts || [];
                 label = 'Jumlah Peserta Hadir (Total)';
-            } else if (attendancePerUnit && attendancePerUnit[unitLabel]) {
-                labels = Object.keys(attendancePerUnit[unitLabel]);
-                data = Object.values(attendancePerUnit[unitLabel]);
-                label = 'Jumlah Peserta Hadir (' + unitLabel + ')';
             } else {
-                labels = chartData.scoreCardData.dates || [];
-                data = Array(labels.length).fill(0);
-                label = 'Jumlah Peserta Hadir (' + unitLabel + ')';
+                // Mirip filter WO/SR per Unit: gunakan attendancePerUnit dan attendanceUnitLabels
+                labels = Object.keys(attendancePerUnit[unitSource] || {});
+                data = Object.values(attendancePerUnit[unitSource] || {});
+                label = 'Jumlah Peserta Hadir (' + (attendanceUnitLabels[unitSource] || unitSource) + ')';
             }
             activityChartInstance = new Chart(ctx, {
                 type: 'bar',
