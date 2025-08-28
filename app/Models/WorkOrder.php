@@ -37,6 +37,8 @@ class WorkOrder extends Model
     protected $casts = [
         'labors' => 'array',
         'materials' => 'array',
+        'schedule_start' => 'datetime',
+        'schedule_finish' => 'datetime',
     ];
 
     public $incrementing = false;

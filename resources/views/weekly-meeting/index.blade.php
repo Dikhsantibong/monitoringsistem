@@ -216,7 +216,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-blue-700 font-semibold border border-gray-200">Backlog</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -248,7 +248,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-green-700 font-semibold border border-gray-200">WO</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -280,7 +280,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-yellow-700 font-semibold border border-gray-200">SR</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->created_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->updated_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -312,7 +312,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-red-700 font-semibold border border-gray-200">Issue Mesin</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? $item->status }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->tanggal_mulai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->target_selesai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -353,7 +353,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-blue-700 font-semibold border border-gray-200">Backlog</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -384,7 +384,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-green-700 font-semibold border border-gray-200">WO</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_start)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->schedule_finish)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -415,7 +415,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-yellow-700 font-semibold border border-gray-200">SR</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->description }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->created_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->updated_at)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -446,7 +446,7 @@
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
                                 <td class="px-6 py-4 text-red-700 font-semibold border border-gray-200">Issue Mesin</td>
                                 <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? $item->status }}</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->tanggal_mulai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->target_selesai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -461,7 +461,28 @@
 <hr class="my-6 border-blue-200">
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Tab Minggu Ini
+        // Tab Minggu Ini/Minggu Depan
+        const tabThisWeek = document.getElementById('tab-this-week');
+        const tabNextWeek = document.getElementById('tab-next-week');
+        const rekapThisWeek = document.getElementById('rekap-this-week');
+        const rekapNextWeek = document.getElementById('rekap-next-week');
+        tabThisWeek.addEventListener('click', function() {
+            tabThisWeek.classList.add('bg-blue-600', 'text-white');
+            tabThisWeek.classList.remove('bg-blue-100', 'text-blue-700');
+            tabNextWeek.classList.remove('bg-blue-600', 'text-white');
+            tabNextWeek.classList.add('bg-blue-100', 'text-blue-700');
+            rekapThisWeek.classList.remove('hidden');
+            rekapNextWeek.classList.add('hidden');
+        });
+        tabNextWeek.addEventListener('click', function() {
+            tabNextWeek.classList.add('bg-blue-600', 'text-white');
+            tabNextWeek.classList.remove('bg-blue-100', 'text-blue-700');
+            tabThisWeek.classList.remove('bg-blue-600', 'text-white');
+            tabThisWeek.classList.add('bg-blue-100', 'text-blue-700');
+            rekapThisWeek.classList.add('hidden');
+            rekapNextWeek.classList.remove('hidden');
+        });
+        // Tab Minggu Ini per tipe
         const tipeTabs = document.querySelectorAll('.tab-tipe');
         const tipePanes = document.querySelectorAll('.tab-pane-tipe');
         tipeTabs.forEach(tab => {
@@ -474,7 +495,7 @@
                 document.getElementById(this.dataset.tipe).classList.remove('hidden');
             });
         });
-        // Tab Minggu Depan
+        // Tab Minggu Depan per tipe
         const tipeTabsNext = document.querySelectorAll('.tab-tipe-next');
         const tipePanesNext = document.querySelectorAll('.tab-pane-tipe-next');
         tipeTabsNext.forEach(tab => {
