@@ -128,7 +128,10 @@ class DashboardController extends Controller
             $totalCount = 0;
             foreach ($unitConnections as $conn) {
                 try {
-                    $totalCount += \App\Models\Attendance::on($conn)->whereDate('time', $dateStr)->count();
+                    $totalCount += \App\Models\Attendance::on($conn)
+                        ->where('unit_source', $conn)
+                        ->whereDate('time', $dateStr)
+                        ->count();
                 } catch (\Exception $e) {
                     \Log::warning("Gagal mengambil data attendance dari $conn: " . $e->getMessage());
                 }
@@ -260,11 +263,11 @@ class DashboardController extends Controller
 
         // Tambahan: List koneksi unit dan label
         $unitConnections = [
-            'mysql' => 'UP Kendari',
-            'mysql_bau_bau' => 'Bau-Bau',
-            'mysql_kolaka' => 'Kolaka',
-            'mysql_poasia' => 'Poasia',
-            'mysql_wua_wua' => 'Wua-Wua',
+            'mysql' => 'UP KENDARI',
+            'mysql_bau_bau' => 'ULPLTD BAU-BAU',
+            'mysql_kolaka' => 'ULPLTD KOLAKA',
+            'mysql_poasia' => 'ULPLTD POASIA',
+            'mysql_wua_wua' => 'ULPLTD WUA-WUA',
         ];
         // 1. Tren Kehadiran per Unit (multi-line)
         $unitAttendanceTrends = [];
@@ -273,7 +276,10 @@ class DashboardController extends Controller
             for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
                 $dateStr = $date->format('Y-m-d');
                 try {
-                    $counts[$dateStr] = \App\Models\Attendance::on($conn)->whereDate('time', $dateStr)->count();
+                    $counts[$dateStr] = \App\Models\Attendance::on($conn)
+                        ->where('unit_source', $conn)
+                        ->whereDate('time', $dateStr)
+                        ->count();
                 } catch (\Exception $e) {
                     $counts[$dateStr] = 0;
                 }
@@ -317,12 +323,12 @@ class DashboardController extends Controller
         foreach ($unitConnections as $conn => $unitLabel) {
             $woOpen = $woClosed = $srOpen = $srClosed = 0;
             try {
-                $woOpen = \App\Models\WorkOrder::on($conn)->where('status','Open')->count();
-                $woClosed = \App\Models\WorkOrder::on($conn)->where('status','Closed')->count();
+                $woOpen = \App\Models\WorkOrder::on($conn)->where('unit_source', $conn)->where('status','Open')->count();
+                $woClosed = \App\Models\WorkOrder::on($conn)->where('unit_source', $conn)->where('status','Closed')->count();
             } catch (\Exception $e) {}
             try {
-                $srOpen = \App\Models\ServiceRequest::on($conn)->where('status','Open')->count();
-                $srClosed = \App\Models\ServiceRequest::on($conn)->where('status','Closed')->count();
+                $srOpen = \App\Models\ServiceRequest::on($conn)->where('unit_source', $conn)->where('status','Open')->count();
+                $srClosed = \App\Models\ServiceRequest::on($conn)->where('unit_source', $conn)->where('status','Closed')->count();
             } catch (\Exception $e) {}
             $woSrCompletion[$unitLabel] = [ 'wo_open' => $woOpen, 'wo_closed' => $woClosed, 'sr_open' => $srOpen, 'sr_closed' => $srClosed ];
         }
@@ -375,7 +381,10 @@ class DashboardController extends Controller
             for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
                 $dateStr = $date->format('Y-m-d');
                 try {
-                    $counts[$dateStr] = \App\Models\Attendance::on($conn)->whereDate('time', $dateStr)->count();
+                    $counts[$dateStr] = \App\Models\Attendance::on($conn)
+                        ->where('unit_source', $conn)
+                        ->whereDate('time', $dateStr)
+                        ->count();
                 } catch (\Exception $e) {
                     $counts[$dateStr] = 0;
                 }
