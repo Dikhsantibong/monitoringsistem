@@ -320,6 +320,7 @@ class DashboardController extends Controller
         // 4. Penyelesaian WO/SR per Unit (stacked bar)
         $woSrCompletion = [];
         foreach ($unitConnections as $conn => $unitLabel) {
+            if ($conn === 'mysql') continue; // HILANGKAN UP KENDARI dari grafik per unit
             $woOpen = $woClosed = $srOpen = $srClosed = 0;
             try {
                 $woOpen = \App\Models\WorkOrder::on($conn)->where('unit_source', $conn)->where('status','Open')->count();
