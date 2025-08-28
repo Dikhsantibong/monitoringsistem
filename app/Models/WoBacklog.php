@@ -41,6 +41,8 @@ class WoBacklog extends Model
     protected $casts = [
         'labors' => 'array',
         'materials' => 'array',
+        'schedule_start' => 'datetime',
+        'schedule_finish' => 'datetime',
     ];
 
     // Mutator untuk memastikan type_wo selalu dalam huruf kapital
