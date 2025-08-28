@@ -875,3 +875,5 @@ Route::prefix('pemeliharaan/wo-wmatl')->name('pemeliharaan.wo-wmatl.')->middlewa
     Route::get('/{id}/edit', [PemeliharaanWoWmatlController::class, 'edit'])->name('edit');
     Route::post('/{id}/update', [PemeliharaanWoWmatlController::class, 'update'])->name('update');
 });
+
+Route::get('/weekly-meeting', [App\Http\Controllers\WeeklyMeetingController::class, 'index'])->name('weekly-meeting.index');
