@@ -67,23 +67,12 @@
         <main class="px-6 py-4">
             <!-- Baris 1: Kehadiran & Scorecard (2 kolom) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Kehadiran (Bar Chart) dengan Filter Unit -->
+                <!-- Kehadiran (Bar Chart) TANPA FILTER -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800">Persentasi Kehadiran</h3>
-                            <div class="text-xs text-gray-500">
-                                Total: {{ $chartSummary['activity']['total'] ?? '-' }} | Rata-rata: {{ $chartSummary['activity']['avg'] ?? '-' }} peserta/hari
-                            </div>
-                        </div>
-                        <div>
-                            <label for="attendance-unit-filter" class="text-xs text-gray-600 mr-2">Filter Unit:</label>
-                            <select id="attendance-unit-filter" class="border rounded px-2 py-1 text-sm">
-                                <option value="all">Semua Unit</option>
-                                @foreach($attendanceUnitLabels as $unitSource => $unitLabel)
-                                    <option value="{{ $unitSource }}">{{ $unitLabel }}</option>
-                                @endforeach
-                            </select>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Persentasi Kehadiran</h3>
+                        <div class="text-xs text-gray-500">
+                            Total: {{ $chartSummary['activity']['total'] ?? '-' }} | Rata-rata: {{ $chartSummary['activity']['avg'] ?? '-' }} peserta/hari
                         </div>
                     </div>
                     <canvas id="activityChart" height="180"></canvas>
@@ -237,51 +226,32 @@
         const attendanceUnitLabels = @json($attendanceUnitLabels);
         const chartData = @json($chartData);
         let activityChartInstance;
-        function renderAttendanceChart(unitSource) {
-            const ctx = document.getElementById('activityChart').getContext('2d');
-            if (activityChartInstance) activityChartInstance.destroy();
-            let labels = [], data = [], label = '';
-            if (unitSource === 'all') {
-                labels = chartData.scoreCardData.dates || [];
-                data = chartData.scoreCardData.counts || [];
-                label = 'Jumlah Peserta Hadir (Total)';
-            } else {
-                // Mirip filter WO/SR per Unit: gunakan attendancePerUnit dan attendanceUnitLabels
-                labels = Object.keys(attendancePerUnit[unitSource] || {});
-                data = Object.values(attendancePerUnit[unitSource] || {});
-                label = 'Jumlah Peserta Hadir (' + (attendanceUnitLabels[unitSource] || unitSource) + ')';
-            }
-            activityChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: label,
-                        data: data,
-                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                        borderColor: 'rgb(59, 130, 246)',
-                        borderWidth: 1,
-                        maxBarThickness: 40
-                    }]
+        // Kehadiran (Bar) - hanya total, tanpa filter
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.scoreCardData.dates || [],
+                datasets: [{
+                    label: 'Jumlah Peserta Hadir (Total)',
+                    data: chartData.scoreCardData.counts || [],
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    borderWidth: 1,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Jumlah Peserta Hadir (Total)' }
                 },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: label }
-                    },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true }
-                    }
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true }
                 }
-            });
-        }
-        // Inisialisasi chart pertama kali (total)
-        renderAttendanceChart('all');
-        // Event listener untuk filter
-        document.getElementById('attendance-unit-filter').addEventListener('change', function(e) {
-            renderAttendanceChart(e.target.value);
+            }
         });
         // Meeting (Line)
         new Chart(document.getElementById('meetingChart'), {
