@@ -58,6 +58,12 @@
                 </div>
             </div>
         </header>
+        <!-- Overlay Scroll Down Info (modern, glassmorphism, animasi masuk & keluar) -->
+        <div id="scroll-down-overlay" class="fixed left-1/2 bottom-8 transform -translate-x-1/2 bg-white bg-opacity-70 border border-blue-200 rounded-xl px-6 py-4 flex flex-col items-center z-50 cursor-pointer shadow-xl max-w-xs w-full backdrop-blur-md transition-all duration-500 opacity-0 translate-y-8" style="backdrop-filter: blur(8px);">
+            <span class="text-base md:text-lg text-blue-700 font-semibold drop-shadow mb-1">Scroll ke bawah untuk melihat grafik lainnya</span>
+            <span class="animate-bounce text-3xl text-blue-400 drop-shadow">&#8595;</span>
+            <span class="text-xs text-blue-600 mt-1">Klik untuk menutup</span>
+        </div>
         <main class="px-6 py-4">
             <!-- Baris 1: Kehadiran & Scorecard (2 kolom) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -126,29 +132,6 @@
                     <canvas id="woBacklogChart" height="180"></canvas>
                 </div>
             </div>
-            <!-- Baris Pie Chart: Status Pembahasan Lain-lain & Status Komitmen (2 kolom) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Status Pembahasan Lain-lain (Pie) -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Status Pembahasan Lain-lain</h3>
-                        <div class="text-xs text-gray-500">
-                            Open: {{ $chartSummary['other_discussion']['open'] ?? '-' }} | Closed: {{ $chartSummary['other_discussion']['closed'] ?? '-' }} | Closed %: {{ $chartSummary['other_discussion']['closed_pct'] ?? '-' }}%
-                        </div>
-                    </div>
-                    <canvas id="otherDiscussionChart" height="180"></canvas>
-                </div>
-                <!-- Status Komitmen (Pie) -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Status Komitmen</h3>
-                        <div class="text-xs text-gray-500">
-                            Open: {{ $chartSummary['commitment']['open'] ?? '-' }} | Closed: {{ $chartSummary['commitment']['closed'] ?? '-' }} | Closed %: {{ $chartSummary['commitment']['closed_pct'] ?? '-' }}%
-                        </div>
-                    </div>
-                    <canvas id="commitmentChart" height="180"></canvas>
-                </div>
-            </div>
             <!-- Baris 3: Grafik tambahan (3 kolom) -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
                 <!-- Tren Kehadiran per Unit (Multi-Line) -->
@@ -204,6 +187,29 @@
                     </div>
                 </div>
             </div>
+            <!-- Baris 5: Status Pembahasan Lain-lain & Status Komitmen (2 kolom, PALING BAWAH) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Status Pembahasan Lain-lain (Pie) -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Status Pembahasan Lain-lain</h3>
+                        <div class="text-xs text-gray-500">
+                            Open: {{ $chartSummary['other_discussion']['open'] ?? '-' }} | Closed: {{ $chartSummary['other_discussion']['closed'] ?? '-' }} | Closed %: {{ $chartSummary['other_discussion']['closed_pct'] ?? '-' }}%
+                        </div>
+                    </div>
+                    <canvas id="otherDiscussionChart" height="180"></canvas>
+                </div>
+                <!-- Status Komitmen (Pie) -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Status Komitmen</h3>
+                        <div class="text-xs text-gray-500">
+                            Open: {{ $chartSummary['commitment']['open'] ?? '-' }} | Closed: {{ $chartSummary['commitment']['closed'] ?? '-' }} | Closed %: {{ $chartSummary['commitment']['closed_pct'] ?? '-' }}%
+                        </div>
+                    </div>
+                    <canvas id="commitmentChart" height="180"></canvas>
+                </div>
+            </div>
         </main>
     </div>
 </div>
@@ -212,6 +218,21 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Overlay scroll down info animasi masuk & keluar
+        const overlay = document.getElementById('scroll-down-overlay');
+        if (overlay) {
+            // Animasi masuk (fade-in + slide-up)
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0', 'translate-y-8');
+                overlay.classList.add('opacity-100', 'translate-y-0');
+            }, 100);
+            // Animasi keluar saat klik
+            overlay.addEventListener('click', function() {
+                overlay.classList.remove('opacity-100', 'translate-y-0');
+                overlay.classList.add('opacity-0', 'translate-y-8');
+                setTimeout(() => { overlay.style.display = 'none'; }, 500);
+            });
+        }
         const attendancePerUnit = @json($attendancePerUnit);
         const attendanceUnitLabels = @json($attendanceUnitLabels);
         const chartData = @json($chartData);
