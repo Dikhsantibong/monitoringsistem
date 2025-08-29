@@ -182,6 +182,16 @@
                     <canvas id="commitmentDiscussionStatusChart" height="90"></canvas>
                 </div>
             </div>
+             <!-- Baris: Top 5 Material Paling Sering Diajukan (full width) -->
+             <div class="w-full mb-6">
+                <div class="bg-white rounded-lg shadow p-6 w-full max-w-none flex flex-col h-full min-h-[350px]">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Top 5 Material Paling Sering Diajukan</h3>
+                        <div class="text-xs text-gray-500">Material dengan pengajuan terbanyak</div>
+                    </div>
+                    <canvas id="topMaterialsChart" height="90"></canvas>
+                </div>
+            </div>
             <!-- Baris 5: Status Pembahasan Lain-lain & Status Komitmen (2 kolom, PALING BAWAH) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Status Pembahasan Lain-lain (Pie) -->
@@ -205,16 +215,7 @@
                     <canvas id="commitmentChart" height="180"></canvas>
                 </div>
             </div>
-            <!-- Baris: Top 5 Material Paling Sering Diajukan (full width) -->
-            <div class="w-full mb-6">
-                <div class="bg-white rounded-lg shadow p-6 w-full max-w-none flex flex-col h-full min-h-[350px]">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Top 5 Material Paling Sering Diajukan</h3>
-                        <div class="text-xs text-gray-500">Material dengan pengajuan terbanyak</div>
-                    </div>
-                    <canvas id="topMaterialsChart" height="90"></canvas>
-                </div>
-            </div>
+           
         </main>
     </div>
 </div>
