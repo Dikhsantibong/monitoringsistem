@@ -43,6 +43,7 @@ class WoBacklog extends Model
         'materials' => 'array',
         'schedule_start' => 'datetime',
         'schedule_finish' => 'datetime',
+        'tanggal_backlog' => 'datetime',
     ];
 
     // Mutator untuk memastikan type_wo selalu dalam huruf kapital

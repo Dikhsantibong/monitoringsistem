@@ -393,6 +393,9 @@ class DashboardController extends Controller
             $attendanceUnitLabels[$conn] = $unitLabel;
         }
 
+        // Ambil data WO Backlog (status Open) untuk tabel di dashboard
+        $woBacklogList = \App\Models\WoBacklog::where('status', 'Open')->orderByDesc('tanggal_backlog')->get();
+
         return view('admin.dashboard', compact(
             'chartData',
             'chartSummary',
@@ -407,7 +410,8 @@ class DashboardController extends Controller
             'commitmentDiscussionStatus',
             'attendancePerUnit',
             'attendanceUnitLabels',
-            'unitSourceMap'
+            'unitSourceMap',
+            'woBacklogList' // <-- tambahkan ini
         ));
     }
 
