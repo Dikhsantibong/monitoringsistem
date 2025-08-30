@@ -113,29 +113,30 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Daftar koneksi unit
-        $unitConnections = [
-            'mysql',
-            'mysql_bau_bau',
-            'mysql_kolaka',
-            'mysql_poasia',
-            'mysql_wua_wua',
-            // tambahkan koneksi lain jika ada
-        ];
-
         // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari)
         $attendanceCounts = collect();
-        $currentSessionUnit = session('unit', 'mysql');
-        if ($currentSessionUnit === 'mysql') {
+        $currentUnit = session('unit') ?? 'mysql';
+        if ($currentUnit === 'mysql') {
             // Admin: akumulasi seluruh unit
-            foreach ($dates as $dateStr) {
+            $unitConnections = [
+                'mysql',
+                'mysql_bau_bau',
+                'mysql_kolaka',
+                'mysql_poasia',
+                'mysql_wua_wua',
+                // tambahkan koneksi lain jika ada
+            ];
+            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+                $dateStr = $date->format('Y-m-d');
                 $totalCount = 0;
                 foreach ($unitConnections as $conn) {
                     try {
                         $totalCount += \App\Models\Attendance::on($conn)
                             ->whereDate('time', $dateStr)
                             ->count();
-                    } catch (\Exception $e) {}
+                    } catch (\Exception $e) {
+                        \Log::warning("Gagal mengambil data attendance dari $conn: " . $e->getMessage());
+                    }
                 }
                 $attendanceCounts->push([
                     'date' => $dateStr,
@@ -143,17 +144,20 @@ class DashboardController extends Controller
                 ]);
             }
         } else {
-            // User unit: hanya ambil dari unit login saja
-            foreach ($dates as $dateStr) {
-                $totalCount = 0;
+            // User unit: hanya data unit sendiri
+            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+                $dateStr = $date->format('Y-m-d');
+                $count = 0;
                 try {
-                    $totalCount = \App\Models\Attendance::on($currentSessionUnit)
+                    $count = \App\Models\Attendance::on($currentUnit)
                         ->whereDate('time', $dateStr)
                         ->count();
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                    \Log::warning("Gagal mengambil data attendance dari $currentUnit: " . $e->getMessage());
+                }
                 $attendanceCounts->push([
                     'date' => $dateStr,
-                    'count' => $totalCount
+                    'count' => $count
                 ]);
             }
         }
