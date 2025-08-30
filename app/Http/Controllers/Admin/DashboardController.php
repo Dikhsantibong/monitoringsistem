@@ -113,7 +113,7 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) dari seluruh unit
+        // Daftar koneksi unit
         $unitConnections = [
             'mysql',
             'mysql_bau_bau',
@@ -122,23 +122,40 @@ class DashboardController extends Controller
             'mysql_wua_wua',
             // tambahkan koneksi lain jika ada
         ];
+
+        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari)
         $attendanceCounts = collect();
-        for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
-            $dateStr = $date->format('Y-m-d');
-            $totalCount = 0;
-            foreach ($unitConnections as $conn) {
+        $currentSessionUnit = session('unit', 'mysql');
+        if ($currentSessionUnit === 'mysql') {
+            // Admin: akumulasi seluruh unit
+            foreach ($dates as $dateStr) {
+                $totalCount = 0;
+                foreach ($unitConnections as $conn) {
+                    try {
+                        $totalCount += \App\Models\Attendance::on($conn)
+                            ->whereDate('time', $dateStr)
+                            ->count();
+                    } catch (\Exception $e) {}
+                }
+                $attendanceCounts->push([
+                    'date' => $dateStr,
+                    'count' => $totalCount
+                ]);
+            }
+        } else {
+            // User unit: hanya ambil dari unit login saja
+            foreach ($dates as $dateStr) {
+                $totalCount = 0;
                 try {
-                    $totalCount += \App\Models\Attendance::on($conn)
+                    $totalCount = \App\Models\Attendance::on($currentSessionUnit)
                         ->whereDate('time', $dateStr)
                         ->count();
-                } catch (\Exception $e) {
-                    \Log::warning("Gagal mengambil data attendance dari $conn: " . $e->getMessage());
-                }
+                } catch (\Exception $e) {}
+                $attendanceCounts->push([
+                    'date' => $dateStr,
+                    'count' => $totalCount
+                ]);
             }
-            $attendanceCounts->push([
-                'date' => $dateStr,
-                'count' => $totalCount
-            ]);
         }
 
         // Format data untuk chart
@@ -396,6 +413,12 @@ class DashboardController extends Controller
         // Ambil data WO Backlog (status Open) untuk tabel di dashboard
         $woBacklogList = \App\Models\WoBacklog::where('status', 'Open')->orderByDesc('tanggal_backlog')->get();
 
+        // Data untuk grafik WO Backlog Status (jumlah per status)
+        $woBacklogStatus = WoBacklog::select('status', \DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
         return view('admin.dashboard', compact(
             'chartData',
             'chartSummary',
@@ -411,7 +434,8 @@ class DashboardController extends Controller
             'attendancePerUnit',
             'attendanceUnitLabels',
             'unitSourceMap',
-            'woBacklogList' // <-- tambahkan ini
+            'woBacklogList',
+            'woBacklogStatus' // <-- tambahkan ini
         ));
     }
 

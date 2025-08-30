@@ -88,19 +88,29 @@
                     <canvas id="meetingChart" height="180"></canvas>
                 </div>
             </div>
-            <!-- Baris: Presentasi Status SR & WO dan WO Backlog Status (2 kolom) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Card Presentasi Status SR & WO -->
+            <!-- Baris: Presentasi Status SR & WO (2 grafik donat terpisah) dan WO Backlog Status (grafik bar) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Card Presentasi Status SR (Donut) -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Presentasi Status SR & WO</h3>
+                        <h3 class="text-lg font-semibold text-gray-800">Presentasi Status SR</h3>
                         <div class="text-xs text-red-600 font-bold">
-                            SR Open: {{ $chartSummary['sr']['open'] ?? '-' }} | SR Closed: {{ $chartSummary['sr']['closed'] ?? '-' }} | WO Open: {{ $chartSummary['wo']['open'] ?? '-' }} | WO Closed: {{ $chartSummary['wo']['closed'] ?? '-' }}
+                            Open: {{ $chartSummary['sr']['open'] ?? '-' }} | Closed: {{ $chartSummary['sr']['closed'] ?? '-' }}
                         </div>
                     </div>
-                    <canvas id="srWoChart" height="180"></canvas>
+                    <canvas id="srStatusChart" height="180"></canvas>
                 </div>
-                <!-- Card WO Backlog Status (tabel) -->
+                <!-- Card Presentasi Status WO (Donut) -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Presentasi Status WO</h3>
+                        <div class="text-xs text-red-600 font-bold">
+                            Open: {{ $chartSummary['wo']['open'] ?? '-' }} | Closed: {{ $chartSummary['wo']['closed'] ?? '-' }}
+                        </div>
+                    </div>
+                    <canvas id="woStatusChart" height="180"></canvas>
+                </div>
+                <!-- Card WO Backlog Status (grafik bar) -->
                 <div class="bg-white rounded-lg shadow p-6 flex flex-col h-full min-h-[420px]">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">WO Backlog Status</h3>
@@ -108,32 +118,7 @@
                             Total: {{ $woBacklogList->count() }}
                         </div>
                     </div>
-                    <div class="overflow-x-auto flex-1">
-                        <table class="min-w-full divide-y divide-gray-200 border border-gray-200 text-xs">
-                            <thead class="bg-gray-50" style="display: table; width: 100%; table-layout: fixed;">
-                                <tr>
-                                    <th class="px-4 py-2 text-center font-semibold">No</th>
-                                    <th class="px-4 py-2 text-center font-semibold">WO</th>
-                                    <th class="px-4 py-2 font-semibold">Deskripsi</th>
-                                    <th class="px-4 py-2 text-center font-semibold">Unit</th>
-                                    <th class="px-4 py-2 text-center font-semibold">Tanggal Backlog</th>
-                                    <th class="px-4 py-2 text-center font-semibold">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" style="display: block; max-height: 260px; overflow-y: auto; width: 100%;">
-                                @foreach($woBacklogList as $i => $item)
-                                <tr style="display: table; width: 100%; table-layout: fixed;">
-                                    <td class="px-4 py-2 text-center">{{ $i+1 }}</td>
-                                    <td class="px-4 py-2 text-center">{{ $item->no_wo }}</td>
-                                    <td class="px-4 py-2">{{ $item->deskripsi }}</td>
-                                    <td class="px-4 py-2 text-center">{{ $unitSourceMap[$item->unit_source] ?? $item->unit_source }}</td>
-                                    <td class="px-4 py-2 text-center">{{ optional($item->tanggal_backlog)->format('d/m/Y') }}</td>
-                                    <td class="px-4 py-2 text-center">{{ $item->status }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    <canvas id="woBacklogStatusChart" height="180"></canvas>
                 </div>
             </div>
             <!-- Baris 3: Grafik tambahan (3 kolom) -->
@@ -296,20 +281,15 @@
                 }
             }
         });
-        // SR & WO Gabungan (Pie)
-        new Chart(document.getElementById('srWoChart'), {
-            type: 'pie',
+        // SR Status (Doughnut)
+        new Chart(document.getElementById('srStatusChart'), {
+            type: 'doughnut',
             data: {
-                labels: ['SR Open', 'SR Closed', 'WO Open', 'WO Closed'],
+                labels: ['Open', 'Closed'],
                 datasets: [{
-                    data: [
-                        chartData.srData.counts[0],
-                        chartData.srData.counts[1],
-                        chartData.woData.counts[0],
-                        chartData.woData.counts[1],
-                    ],
-                    backgroundColor: ['#f59e42', '#10b981', '#f43f5e', '#6366f1'],
-                    borderColor: ['#f59e42', '#10b981', '#f43f5e', '#6366f1'],
+                    data: [chartData.srData.counts[0], chartData.srData.counts[1]],
+                    backgroundColor: ['#f59e42', '#10b981'],
+                    borderColor: ['#f59e42', '#10b981'],
                     borderWidth: 1
                 }]
             },
@@ -317,8 +297,49 @@
                 responsive: true,
                 plugins: {
                     legend: { position: 'bottom' },
-                    title: { display: true, text: 'Status Service Request & Work Order' }
+                    title: { display: true, text: 'Status Service Request' }
                 }
+            }
+        });
+        // WO Status (Doughnut)
+        new Chart(document.getElementById('woStatusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Open', 'Closed'],
+                datasets: [{
+                    data: [chartData.woData.counts[0], chartData.woData.counts[1]],
+                    backgroundColor: ['#f43f5e', '#6366f1'],
+                    borderColor: ['#f43f5e', '#6366f1'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: { display: true, text: 'Status Work Order' }
+                }
+            }
+        });
+        // WO Backlog Status (Bar)
+        const woBacklogStatus = @json($woBacklogStatus);
+        new Chart(document.getElementById('woBacklogStatusChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(woBacklogStatus),
+                datasets: [{
+                    label: 'Jumlah Backlog',
+                    data: Object.values(woBacklogStatus),
+                    backgroundColor: ['#f59e42','#16a34a','#f43f5e','#6366f1','#818cf8'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'WO Backlog Status' }
+                },
+                scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
             }
         });
         // Other Discussion (Pie)
