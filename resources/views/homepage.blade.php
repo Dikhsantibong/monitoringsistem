@@ -11,7 +11,7 @@
         .hexagon-background {
             position: relative;
             margin-top: -80px;
-            background-image: url('{{ asset('background/backgorund.jpg') }}');
+            background-image: url('{{ asset('background/background.png') }}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
