@@ -1258,6 +1258,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
 
             {{-- Map --}}
@@ -1392,6 +1393,24 @@
                         <div id="unservedLoadChart-wrapper">
                             <div id="unservedLoadChart"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tambahkan grafik kehadiran & scorecard -->
+            <div class="container mx-auto px-4 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Persentase Kehadiran Harian</h3>
+                        </div>
+                        <canvas id="attendanceChart" height="180"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Score Daily Meeting</h3>
+                        </div>
+                        <canvas id="scoreChart" height="180"></canvas>
                     </div>
                 </div>
             </div>
@@ -1769,7 +1788,8 @@
                         dashArray: [0, 0, 0, 0, 0, 0, 0]
                     },
                     xaxis: {
-                        categories: ["{{ implode('","', $dates) }}"]
+                        categories: ["{{ implode('","', is_array(
+                            $dates) ? $dates : (method_exists($dates, 'toArray') ? $dates->toArray() : []) ) }}"]
                     },
                     yaxis: [{
                         title: {
@@ -3600,5 +3620,67 @@ function handleCreateDiscussion(plantName, machineName) {
     });
 }
 </script>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const attendanceChartData = @json($attendanceChartData);
+    const scoreChartData = @json($scoreChartData);
+    // Attendance Chart
+    new Chart(document.getElementById('attendanceChart'), {
+        type: 'bar',
+        data: {
+            labels: attendanceChartData.labels,
+            datasets: [{
+                label: 'Jumlah Peserta Hadir',
+                data: attendanceChartData.data,
+                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                borderColor: 'rgb(59, 130, 246)',
+                borderWidth: 1,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Jumlah Peserta Hadir per Hari' }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    // Score Chart
+    new Chart(document.getElementById('scoreChart'), {
+        type: 'line',
+        data: {
+            labels: scoreChartData.labels,
+            datasets: [{
+                label: 'Score Rata-rata',
+                data: scoreChartData.data,
+                fill: false,
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Score Rata-rata Daily Meeting' }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, max: 100 }
+            }
+        }
+    });
+});
+</script>
+@endpush
 
 
