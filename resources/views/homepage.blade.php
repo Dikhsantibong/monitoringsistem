@@ -21,6 +21,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
         }
 
         /* Tambahkan overlay gelap untuk meningkatkan kontras */

@@ -13,7 +13,7 @@
                 <!-- Menu Desktop -->
                 <div class="hidden md:flex items-center ">
                     <ul class="flex space-x-8">
-                        <li><a href="#" class="nav-link">Home</a></li>
+                        <li><a href="{{ route('homepage') }}" class="nav-link">Home</a></li>
                         <li><a href="#map" class="nav-link">Peta Pembangkit</a></li>
                         <li><a href="#live-data" class="nav-link">Live Data</a></li>
                         <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
