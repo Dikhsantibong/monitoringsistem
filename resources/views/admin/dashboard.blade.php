@@ -321,25 +321,32 @@
                 }
             }
         });
-        // WO Backlog Status (Bar)
+        // WO Backlog Status (Bar, stacked 1 bar saja)
         const woBacklogStatus = @json($woBacklogStatus);
+        const woBacklogLabels = Object.keys(woBacklogStatus);
+        const woBacklogValues = Object.values(woBacklogStatus);
+        const woBacklogColors = ['#f59e42','#16a34a','#f43f5e','#6366f1','#818cf8'];
         new Chart(document.getElementById('woBacklogStatusChart'), {
             type: 'bar',
             data: {
-                labels: Object.keys(woBacklogStatus),
-                datasets: [{
-                    label: 'Jumlah Backlog',
-                    data: Object.values(woBacklogStatus),
-                    backgroundColor: ['#f59e42','#16a34a','#f43f5e','#6366f1','#818cf8'],
-                }]
+                labels: ['Total Backlog'],
+                datasets: woBacklogLabels.map((label, idx) => ({
+                    label: label,
+                    data: [woBacklogValues[idx]],
+                    backgroundColor: woBacklogColors[idx % woBacklogColors.length],
+                    stack: 'backlog',
+                }))
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: false },
+                    legend: { position: 'bottom' },
                     title: { display: true, text: 'WO Backlog Status' }
                 },
-                scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
+                scales: {
+                    x: { stacked: true, grid: { display: false } },
+                    y: { beginAtZero: true, stacked: true }
+                }
             }
         });
         // Other Discussion (Pie)
