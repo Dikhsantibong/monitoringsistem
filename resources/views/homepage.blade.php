@@ -1413,6 +1413,27 @@
                         <canvas id="scoreChart" height="180"></canvas>
                     </div>
                 </div>
+                <!-- Tambahkan grafik status SR, WO, WO Backlog -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status SR</h3>
+                        </div>
+                        <canvas id="srStatusChart" height="180"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status WO</h3>
+                        </div>
+                        <canvas id="woStatusChart" height="180"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">WO Backlog Status</h3>
+                        </div>
+                        <canvas id="woBacklogStatusChart" height="180"></canvas>
+                    </div>
+                </div>
             </div>
             <!-- Live Data Unit Operasional -->
             <div class="flex justify-center items-center mt-10 mb-4 gap-4">
@@ -3627,6 +3648,9 @@ function handleCreateDiscussion(plantName, machineName) {
 document.addEventListener('DOMContentLoaded', function() {
     const attendanceChartData = @json($attendanceChartData);
     const scoreChartData = @json($scoreChartData);
+    const srStatusData = @json($srStatusData);
+    const woStatusData = @json($woStatusData);
+    const woBacklogStatusData = @json($woBacklogStatusData);
     // Attendance Chart
     new Chart(document.getElementById('attendanceChart'), {
         type: 'bar',
@@ -3677,6 +3701,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 x: { grid: { display: false } },
                 y: { beginAtZero: true, max: 100 }
             }
+        }
+    });
+    // SR Status Chart
+    new Chart(document.getElementById('srStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Open', 'Closed'],
+            datasets: [{
+                data: srStatusData.counts,
+                backgroundColor: ['#f59e42', '#10b981'],
+                borderColor: ['#f59e42', '#10b981'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Status Service Request' }
+            }
+        }
+    });
+    // WO Status Chart
+    new Chart(document.getElementById('woStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Open', 'Closed'],
+            datasets: [{
+                data: woStatusData.counts,
+                backgroundColor: ['#f43f5e', '#6366f1'],
+                borderColor: ['#f43f5e', '#6366f1'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Status Work Order' }
+            }
+        }
+    });
+    // WO Backlog Status Chart
+    new Chart(document.getElementById('woBacklogStatusChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(woBacklogStatusData),
+            datasets: [{
+                label: 'Jumlah Backlog',
+                data: Object.values(woBacklogStatusData),
+                backgroundColor: ['#f59e42','#16a34a','#f43f5e','#6366f1','#818cf8'],
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'WO Backlog Status' }
+            },
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
         }
     });
 });

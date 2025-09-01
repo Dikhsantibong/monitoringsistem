@@ -373,6 +373,26 @@ class HomeController extends Controller
                 'data' => $dates->map(fn($d) => $scoreByDate[$d] ?? 0)->toArray(),
             ];
 
+            // --- Grafik Presentasi Status SR ---
+            $srStatusData = [
+                'counts' => [
+                    \App\Models\ServiceRequest::where('status', 'Open')->count(),
+                    \App\Models\ServiceRequest::where('status', 'Closed')->count(),
+                ]
+            ];
+            // --- Grafik Presentasi Status WO ---
+            $woStatusData = [
+                'counts' => [
+                    \App\Models\WorkOrder::where('status', 'Open')->count(),
+                    \App\Models\WorkOrder::where('status', 'Closed')->count(),
+                ]
+            ];
+            // --- Grafik WO Backlog Status ---
+            $woBacklogStatusData = \App\Models\WoBacklog::select('status', \DB::raw('COUNT(*) as total'))
+                ->groupBy('status')
+                ->pluck('total', 'status')
+                ->toArray();
+
             return view('homepage', compact(
                 'statusLogs',
                 'powerPlants',
@@ -390,7 +410,10 @@ class HomeController extends Controller
                 'chartData',
                 'notulens',
                 'attendanceChartData',
-                'scoreChartData'
+                'scoreChartData',
+                'srStatusData',
+                'woStatusData',
+                'woBacklogStatusData'
             ));
 
         } catch (\Exception $e) {
@@ -439,7 +462,14 @@ class HomeController extends Controller
                 'scoreChartData' => [
                     'labels' => [],
                     'data' => []
-                ]
+                ],
+                'srStatusData' => [
+                    'counts' => [0, 0]
+                ],
+                'woStatusData' => [
+                    'counts' => [0, 0]
+                ],
+                'woBacklogStatusData' => []
             ]);
         }
     }
