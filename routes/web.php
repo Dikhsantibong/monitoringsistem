@@ -49,6 +49,10 @@ use App\Http\Controllers\InventoryKatalogController;
 use App\Http\Controllers\PemeliharaanPengajuanMaterialController;
 use App\Http\Controllers\InventoryPengajuanController;
 use App\Http\Controllers\PemeliharaanWoWmatlController;
+use App\Http\Controllers\Admin\ScoreCardController;
+use App\Http\Controllers\Admin\ScoreCardMonthlyController;
+use App\Http\Controllers\Admin\ScoreCardQuarterlyController;
+use App\Http\Controllers\Admin\ScoreCardWeeklyController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -877,3 +881,16 @@ Route::prefix('pemeliharaan/wo-wmatl')->name('pemeliharaan.wo-wmatl.')->middlewa
 });
 
 Route::get('/weekly-meeting', [App\Http\Controllers\WeeklyMeetingController::class, 'index'])->name('weekly-meeting.index');
+
+Route::resource('admin/score-card-weekly', ScoreCardWeeklyController::class)->only(['create', 'store'])->names([
+    'create' => 'admin.score-card-weekly.create',
+    'store' => 'admin.score-card-weekly.store',
+]);
+Route::resource('admin/score-card-monthly', ScoreCardMonthlyController::class)->only(['create', 'store'])->names([
+    'create' => 'admin.score-card-monthly.create',
+    'store' => 'admin.score-card-monthly.store',
+]);
+Route::resource('admin/score-card-quarterly', ScoreCardQuarterlyController::class)->only(['create', 'store'])->names([
+    'create' => 'admin.score-card-quarterly.create',
+    'store' => 'admin.score-card-quarterly.store',
+]);

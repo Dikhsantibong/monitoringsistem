@@ -89,27 +89,27 @@
                     <h2 class="text-xl font-bold mb-6">SCORE CARD DAILY</h2>
 
                     <div class="mb-4">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p>Daily Meeting Hari / Tanggal: {{ $scoreCard->tanggal ?? now()->format('d F Y') }}</p>
-                                <p>Lokasi: {{ $scoreCard->lokasi ?? 'Ruang Rapat Rongi' }}</p>
-                                <a href="https://us02web.zoom.us/j/82649015876?pwd=mweLJcKxUWEhifFUNc7XsCpKK6Yuhg.1" style="color:  blue "   >link zoom</a>
-                            
-                            </div>
-                                <div class="flex justify-center">
-                                <a href="{{ route('admin.score-card.create') }}"
-                                    class="bg-blue-500 text-white px-4 py-2 rounded flex items-center ml-2">
-                                    <i class="fas fa-book mr-2"></i> Buat Score Card    
-                                </a>
-                                <button id="startMeetingBtn" onclick="startMeeting()"
-                                    class="bg-green-500 text-white px-4 py-2 rounded flex items-center ml-2">
-                                    <i class="fas fa-play mr-2"></i> Mulai Rapat
-                                </button>
-                                {{-- <a href="#" onclick="ZoomMeeting()"
-                                    class="bg-purple-500 text-white px-4 py-2 rounded flex items-center ml-2">
-                                    <i class="fas fa-video mr-2"></i> Buat Rapat Zoom
-                                </a> --}}
-                            </div>
+                        <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                            <a href="{{ route('admin.score-card.create') }}"
+                                class="bg-blue-500 text-white px-3 py-1.5 rounded flex items-center text-sm shadow hover:bg-blue-600 transition">
+                                <i class="fas fa-book mr-2"></i> Buat Score Card Daily  
+                            </a>
+                            <a href="{{ route('admin.score-card-weekly.create') }}"
+                                class="bg-indigo-500 text-white px-3 py-1.5 rounded flex items-center text-sm shadow hover:bg-indigo-600 transition">
+                                <i class="fas fa-calendar-week mr-2"></i> Buat Score Card Weekly
+                            </a>
+                            <a href="{{ route('admin.score-card-monthly.create') }}"
+                                class="bg-purple-500 text-white px-3 py-1.5 rounded flex items-center text-sm shadow hover:bg-purple-600 transition">
+                                <i class="fas fa-calendar-alt mr-2"></i> Buat Score Card Monthly
+                            </a>
+                            <a href="{{ route('admin.score-card-quarterly.create') }}"
+                                class="bg-pink-500 text-white px-3 py-1.5 rounded flex items-center text-sm shadow hover:bg-pink-600 transition">
+                                <i class="fas fa-calendar mr-2"></i> Buat Score Card Quarterly
+                            </a>
+                            <button id="startMeetingBtn" onclick="startMeeting()"
+                                class="bg-green-500 text-white px-3 py-1.5 rounded flex items-center text-sm shadow hover:bg-green-600 transition">
+                                <i class="fas fa-play mr-2"></i> Mulai Rapat
+                            </button>
                         </div>
                     </div>
 
