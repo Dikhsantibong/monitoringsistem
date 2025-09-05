@@ -180,8 +180,8 @@
             <div class="text-3xl font-bold text-yellow-900">{{ $serviceRequestsThisWeek->count() }}</div>
         </div>
         <div class="bg-red-50 rounded shadow p-4 text-center">
-            <div class="text-xs text-red-700 font-semibold uppercase tracking-wide">Issue Mesin</div>
-            <div class="text-3xl font-bold text-red-900">{{ $machineIssuesThisWeek->count() }}</div>
+            <div class="text-xs text-red-700 font-semibold uppercase tracking-wide">Kesiapan Pembangkit</div>
+            <div class="text-3xl font-bold text-red-900">{{ $powerPlantMaintenancesThisWeek->count() }}</div>
         </div>
     </div>
     <hr class="my-6 border-blue-200">
@@ -192,7 +192,7 @@
             <button class="tab-tipe px-4 py-2 rounded bg-blue-600 text-white font-semibold" data-tipe="wo-backlog-this">WO Backlog ({{ $woBacklogsThisWeek->count() }})</button>
             <button class="tab-tipe px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold" data-tipe="wo-this">Work Order ({{ $workOrdersThisWeek->count() }})</button>
             <button class="tab-tipe px-4 py-2 rounded bg-yellow-100 text-yellow-700 font-semibold" data-tipe="sr-this">Service Request ({{ $serviceRequestsThisWeek->count() }})</button>
-            <button class="tab-tipe px-4 py-2 rounded bg-red-100 text-red-700 font-semibold" data-tipe="issue-this">Issue Mesin ({{ $machineIssuesThisWeek->count() }})</button>
+            <button class="tab-tipe px-4 py-2 rounded bg-red-100 text-red-700 font-semibold" data-tipe="readiness-this">Kesiapan Pembangkit ({{ $powerPlantMaintenancesThisWeek->count() }})</button>
         </div>
         <!-- Tabel WO Backlog -->
         <div class="tab-pane-tipe" id="wo-backlog-this">
@@ -297,31 +297,27 @@
                 </table>
             </div>
         </div>
-        <!-- Tabel Issue Mesin -->
-        <div class="tab-pane-tipe hidden" id="issue-this">
+        <!-- Tabel Kesiapan Pembangkit -->
+        <div class="tab-pane-tipe hidden" id="readiness-this">
             <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mulai</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Selesai</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Mulai</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Target Selesai</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @php $no = 1; @endphp
-                        @foreach($machineIssuesThisWeek as $item)
+                        @foreach($powerPlantMaintenancesThisWeek as $item)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
-                                <td class="px-6 py-4 text-red-700 font-semibold border border-gray-200">Issue Mesin</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? $item->status }}</td>
-                                <td class="px-6 py-4 border border-gray-200">
-                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
-                                </td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? '-' }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->tanggal_mulai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->target_selesai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>
@@ -339,7 +335,7 @@
             <button class="tab-tipe-next px-4 py-2 rounded bg-blue-600 text-white font-semibold" data-tipe="wo-backlog-next">WO Backlog ({{ $woBacklogsNextWeek->count() }})</button>
             <button class="tab-tipe-next px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold" data-tipe="wo-next">Work Order ({{ $workOrdersNextWeek->count() }})</button>
             <button class="tab-tipe-next px-4 py-2 rounded bg-yellow-100 text-yellow-700 font-semibold" data-tipe="sr-next">Service Request ({{ $serviceRequestsNextWeek->count() }})</button>
-            <button class="tab-tipe-next px-4 py-2 rounded bg-red-100 text-red-700 font-semibold" data-tipe="issue-next">Issue Mesin ({{ $machineIssuesNextWeek->count() }})</button>
+            <button class="tab-tipe-next px-4 py-2 rounded bg-red-100 text-red-700 font-semibold" data-tipe="readiness-next">Kesiapan Pembangkit ({{ $powerPlantMaintenancesNextWeek->count() }})</button>
         </div>
         <div class="tab-pane-tipe-next" id="wo-backlog-next">
             <div class="overflow-x-auto max-h-96 overflow-y-auto">
@@ -440,30 +436,27 @@
                 </table>
             </div>
         </div>
-        <div class="tab-pane-tipe-next hidden" id="issue-next">
+        <!-- Tabel Kesiapan Pembangkit Minggu Depan -->
+        <div class="tab-pane-tipe-next hidden" id="readiness-next">
             <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mulai</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Selesai</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Mulai</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Target Selesai</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @php $no = 1; @endphp
-                        @foreach($machineIssuesNextWeek as $item)
+                        @foreach($powerPlantMaintenancesNextWeek as $item)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ $no++ }}</td>
-                                <td class="px-6 py-4 text-red-700 font-semibold border border-gray-200">Issue Mesin</td>
-                                <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? $item->status }}</td>
-                                <td class="px-6 py-4 border border-gray-200">
-                                    {{ $unitMap[$item->unit_source] ?? $item->unit_source }}
-                                </td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $unitMap[$item->unit_source] ?? $item->unit_source }}</td>
+                                <td class="px-6 py-4 border border-gray-200">{{ $item->deskripsi ?? '-' }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->tanggal_mulai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 text-center border border-gray-200">{{ optional($item->target_selesai)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 border border-gray-200">@include('weekly-meeting.status-badge', ['status'=>$item->status])</td>

@@ -26,8 +26,11 @@ class WeeklyMeetingController extends Controller
             ->orWhereBetween('schedule_finish', [$startOfWeek, $endOfWeek])->get();
         $serviceRequestsThisWeek = ServiceRequest::whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->orWhereBetween('updated_at', [$startOfWeek, $endOfWeek])->get();
-        $machineIssuesThisWeek = MachineStatusLog::whereBetween('tanggal_mulai', [$startOfWeek, $endOfWeek])
-            ->orWhereBetween('target_selesai', [$startOfWeek, $endOfWeek])->get();
+        $powerPlantMaintenancesThisWeek = MachineStatusLog::where('status', 'pemeliharaan')
+            ->where(function($q) use ($startOfWeek, $endOfWeek) {
+                $q->whereBetween('tanggal_mulai', [$startOfWeek, $endOfWeek])
+                  ->orWhereBetween('target_selesai', [$startOfWeek, $endOfWeek]);
+            })->get();
 
         // Minggu depan
         $woBacklogsNextWeek = WoBacklog::whereBetween('schedule_start', [$startOfNextWeek, $endOfNextWeek])
@@ -36,8 +39,11 @@ class WeeklyMeetingController extends Controller
             ->orWhereBetween('schedule_finish', [$startOfNextWeek, $endOfNextWeek])->get();
         $serviceRequestsNextWeek = ServiceRequest::whereBetween('created_at', [$startOfNextWeek, $endOfNextWeek])
             ->orWhereBetween('updated_at', [$startOfNextWeek, $endOfNextWeek])->get();
-        $machineIssuesNextWeek = MachineStatusLog::whereBetween('tanggal_mulai', [$startOfNextWeek, $endOfNextWeek])
-            ->orWhereBetween('target_selesai', [$startOfNextWeek, $endOfNextWeek])->get();
+        $powerPlantMaintenancesNextWeek = MachineStatusLog::where('status', 'pemeliharaan')
+            ->where(function($q) use ($startOfNextWeek, $endOfNextWeek) {
+                $q->whereBetween('tanggal_mulai', [$startOfNextWeek, $endOfNextWeek])
+                  ->orWhereBetween('target_selesai', [$startOfNextWeek, $endOfNextWeek]);
+            })->get();
 
         // Mapping koneksi database ke nama unit friendly
         $unitMap = [
@@ -56,11 +62,11 @@ class WeeklyMeetingController extends Controller
             'woBacklogsThisWeek' => $woBacklogsThisWeek,
             'workOrdersThisWeek' => $workOrdersThisWeek,
             'serviceRequestsThisWeek' => $serviceRequestsThisWeek,
-            'machineIssuesThisWeek' => $machineIssuesThisWeek,
+            'powerPlantMaintenancesThisWeek' => $powerPlantMaintenancesThisWeek,
             'woBacklogsNextWeek' => $woBacklogsNextWeek,
             'workOrdersNextWeek' => $workOrdersNextWeek,
             'serviceRequestsNextWeek' => $serviceRequestsNextWeek,
-            'machineIssuesNextWeek' => $machineIssuesNextWeek,
+            'powerPlantMaintenancesNextWeek' => $powerPlantMaintenancesNextWeek,
             'unitMap' => $unitMap,
         ]);
     }
