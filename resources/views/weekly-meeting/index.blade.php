@@ -196,7 +196,7 @@
         </div>
         <!-- Tabel WO Backlog -->
         <div class="tab-pane-tipe" id="wo-backlog-this">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -231,7 +231,7 @@
         </div>
         <!-- Tabel Work Order -->
         <div class="tab-pane-tipe hidden" id="wo-this">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -265,7 +265,7 @@
         </div>
         <!-- Tabel Service Request -->
         <div class="tab-pane-tipe hidden" id="sr-this">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -299,7 +299,7 @@
         </div>
         <!-- Tabel Issue Mesin -->
         <div class="tab-pane-tipe hidden" id="issue-this">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -342,7 +342,7 @@
             <button class="tab-tipe-next px-4 py-2 rounded bg-red-100 text-red-700 font-semibold" data-tipe="issue-next">Issue Mesin ({{ $machineIssuesNextWeek->count() }})</button>
         </div>
         <div class="tab-pane-tipe-next" id="wo-backlog-next">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -375,7 +375,7 @@
             </div>
         </div>
         <div class="tab-pane-tipe-next hidden" id="wo-next">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -408,7 +408,7 @@
             </div>
         </div>
         <div class="tab-pane-tipe-next hidden" id="sr-next">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -441,7 +441,7 @@
             </div>
         </div>
         <div class="tab-pane-tipe-next hidden" id="issue-next">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
                 <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
