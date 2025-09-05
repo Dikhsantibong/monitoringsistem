@@ -7,6 +7,9 @@ use App\Models\Peserta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\ScoreCardWeekly;
+use App\Models\ScoreCardMonthly;
+use App\Models\ScoreCardQuarterly;
 
 class ScoreCardDailyController extends Controller
 {
@@ -27,11 +30,21 @@ class ScoreCardDailyController extends Controller
         $scoreCards = ScoreCardDaily::latest()->get();
         $scorePercentage = 0; // Default value
 
+        // Ambil data terakhir dari masing-masing tipe
+        $latestDaily = ScoreCardDaily::latest()->first();
+        $latestWeekly = ScoreCardWeekly::latest()->first();
+        $latestMonthly = ScoreCardMonthly::latest()->first();
+        $latestQuarterly = ScoreCardQuarterly::latest()->first();
+
         // Cek apakah ada data
         if ($scoreCards->isEmpty()) {
             return view('admin.score-card.index', [
                 'scoreCards' => collect([]),
-                'scorePercentage' => $scorePercentage
+                'scorePercentage' => $scorePercentage,
+                'latestDaily' => $latestDaily,
+                'latestWeekly' => $latestWeekly,
+                'latestMonthly' => $latestMonthly,
+                'latestQuarterly' => $latestQuarterly,
             ]);
         }
 
@@ -81,7 +94,11 @@ class ScoreCardDailyController extends Controller
 
         return view('admin.score-card.index', [
             'scoreCards' => $scoreCards,
-            'scorePercentage' => $scorePercentage
+            'scorePercentage' => $scorePercentage,
+            'latestDaily' => $latestDaily,
+            'latestWeekly' => $latestWeekly,
+            'latestMonthly' => $latestMonthly,
+            'latestQuarterly' => $latestQuarterly,
         ]);
     }
 

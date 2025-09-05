@@ -113,6 +113,49 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-blue-50 border border-blue-200 rounded p-3">
+                            <div class="font-bold text-blue-700 mb-1">Terakhir Daily</div>
+                            @if($latestDaily)
+                                <div class="text-xs text-gray-700">Tanggal: {{ $latestDaily->tanggal }}</div>
+                                <div class="text-xs text-gray-700">Lokasi: {{ $latestDaily->lokasi }}</div>
+                                <div class="text-xs text-gray-700">Peserta: {{ $latestDaily->peserta ? count(json_decode($latestDaily->peserta, true)) : 0 }}</div>
+                            @else
+                                <div class="text-xs text-gray-400">Belum ada data</div>
+                            @endif
+                        </div>
+                        <div class="bg-indigo-50 border border-indigo-200 rounded p-3">
+                            <div class="font-bold text-indigo-700 mb-1">Terakhir Weekly</div>
+                            @if($latestWeekly)
+                                <div class="text-xs text-gray-700">Tanggal: {{ $latestWeekly->tanggal }}</div>
+                                <div class="text-xs text-gray-700">Lokasi: {{ $latestWeekly->lokasi }}</div>
+                                <div class="text-xs text-gray-700">Peserta: {{ $latestWeekly->peserta ? count(json_decode($latestWeekly->peserta, true)) : 0 }}</div>
+                            @else
+                                <div class="text-xs text-gray-400">Belum ada data</div>
+                            @endif
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded p-3">
+                            <div class="font-bold text-purple-700 mb-1">Terakhir Monthly</div>
+                            @if($latestMonthly)
+                                <div class="text-xs text-gray-700">Tanggal: {{ $latestMonthly->tanggal }}</div>
+                                <div class="text-xs text-gray-700">Lokasi: {{ $latestMonthly->lokasi }}</div>
+                                <div class="text-xs text-gray-700">Peserta: {{ $latestMonthly->peserta ? count(json_decode($latestMonthly->peserta, true)) : 0 }}</div>
+                            @else
+                                <div class="text-xs text-gray-400">Belum ada data</div>
+                            @endif
+                        </div>
+                        <div class="bg-pink-50 border border-pink-200 rounded p-3">
+                            <div class="font-bold text-pink-700 mb-1">Terakhir Quarterly</div>
+                            @if($latestQuarterly)
+                                <div class="text-xs text-gray-700">Tanggal: {{ $latestQuarterly->tanggal }}</div>
+                                <div class="text-xs text-gray-700">Lokasi: {{ $latestQuarterly->lokasi }}</div>
+                                <div class="text-xs text-gray-700">Peserta: {{ $latestQuarterly->peserta ? count(json_decode($latestQuarterly->peserta, true)) : 0 }}</div>
+                            @else
+                                <div class="text-xs text-gray-400">Belum ada data</div>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Timer Display -->
                     <div id="timer" class="text-center"></div>
 
