@@ -351,6 +351,7 @@ class AdminMeetingController extends Controller
                     } elseif ($connection === 'mysql') {
                         $scoreCard = DB::table('score_card_daily')
                             ->whereDate('tanggal', $date)
+                            ->where('unit_source', 'mysql')
                             ->orderBy('created_at', 'desc')
                             ->first();
                     } else {
