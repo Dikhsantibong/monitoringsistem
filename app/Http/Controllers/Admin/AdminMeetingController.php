@@ -342,7 +342,13 @@ class AdminMeetingController extends Controller
             foreach ($activeConnections as $connection => $unitName) {
                 try {
                     // Special handling for UP Kendari (mysql connection)
-                    if ($connection === 'mysql') {
+                    if ($connection === 'mysql' && $unitSource === 'mysql') {
+                        $scoreCard = DB::table('score_card_daily')
+                            ->whereDate('tanggal', $date)
+                            ->where('unit_source', 'mysql')
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+                    } elseif ($connection === 'mysql') {
                         $scoreCard = DB::table('score_card_daily')
                             ->whereDate('tanggal', $date)
                             ->orderBy('created_at', 'desc')
