@@ -446,7 +446,7 @@ class AdminMeetingController extends Controller
             }])->orderBy('created_at', 'desc')->get();
 
             // Gunakan fungsi helper untuk mendapatkan semua attendance
-            $attendances = $this->getAllAttendances($date);
+            $attendances = $this->getAllAttendances($date, $unitSource);
 
             // Ganti cara mengambil other discussions
             $otherDiscussions = $this->getAllOtherDiscussions($date);
@@ -685,7 +685,7 @@ class AdminMeetingController extends Controller
         }
     }
 
-    private function getAllAttendances($date)
+    private function getAllAttendances($date, $unitSource = null)
     {
         $allAttendances = collect();
         
@@ -698,33 +698,39 @@ class AdminMeetingController extends Controller
             'mysql_wua_wua' => 'Wua-Wua'
         ];
 
-        // Jika user adalah admin (mysql), ambil data dari semua database
-        if (session('unit') === 'mysql') {
+        // Jika memilih unit tertentu (misal UP Kendari)
+        if ($unitSource === 'mysql') {
+            $attendances = \DB::connection('mysql')
+                ->table('attendance')
+                ->whereDate('created_at', $date)
+                ->where('unit_source', 'mysql')
+                ->get()
+                ->map(function ($attendance) {
+                    $attendance->unit_name = 'UP Kendari';
+                    return $attendance;
+                });
+            $allAttendances = $allAttendances->concat($attendances);
+        } else if (session('unit') === 'mysql') {
             foreach ($connections as $connection => $unitName) {
                 try {
-                    $attendances = DB::connection($connection)
+                    $attendances = \DB::connection($connection)
                         ->table('attendance')
                         ->whereDate('created_at', $date)
                         ->get()
                         ->map(function ($attendance) use ($unitName) {
-                            // Tambahkan informasi unit pada setiap record
                             $attendance->unit_name = $unitName;
                             return $attendance;
                         });
-                    
                     $allAttendances = $allAttendances->concat($attendances);
-                    
                 } catch (\Exception $e) {
-                    Log::error("Error accessing {$connection} for attendance data: " . $e->getMessage());
+                    \Log::error("Error accessing {$connection} for attendance data: " . $e->getMessage());
                     continue;
                 }
             }
         } else {
-            // Jika bukan admin, hanya ambil data dari database saat ini
             $currentConnection = session('unit');
             $unitName = $connections[$currentConnection] ?? 'Unknown Unit';
-            
-            $attendances = DB::connection($currentConnection)
+            $attendances = \DB::connection($currentConnection)
                 ->table('attendance')
                 ->whereDate('created_at', $date)
                 ->get()
@@ -732,7 +738,6 @@ class AdminMeetingController extends Controller
                     $attendance->unit_name = $unitName;
                     return $attendance;
                 });
-                
             $allAttendances = $allAttendances->concat($attendances);
         }
 
