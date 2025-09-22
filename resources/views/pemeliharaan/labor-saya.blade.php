@@ -107,6 +107,7 @@
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-2 text-center">No</th>
+                                <th class="px-4 py-2 text-center">Aksi</th>
                                 <th class="px-4 py-2 text-center">ID</th>
                                 <th class="px-4 py-2 text-center">Deskripsi</th>
                                 <th class="px-4 py-2 text-center">Kendala</th>
@@ -119,7 +120,6 @@
                                 <th class="px-4 py-2 text-center">Jadwal Selesai</th>
                                 <th class="px-4 py-2 text-center">Labor</th>
                                 <th class="px-4 py-2 text-center">nama labor</th>
-                                <th class="px-4 py-2 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
