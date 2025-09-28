@@ -207,6 +207,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/toggle.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Overlay scroll down info animasi masuk & keluar
