@@ -281,43 +281,20 @@
                 <div class="content-body">
                     @php
                     function convertImageSrcToFile($html) {
-                        return preg_replace_callback(
-                            '/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i',
-                            function($matches) {
-                                $src = $matches[1];
-                                // Jika src sudah file://, biarkan
-                                if (strpos($src, 'file://') === 0) return $matches[0];
-                                // Jika src mengandung /storage/ atau asset url
-                                if (strpos($src, '/storage/') !== false) {
-                                    $relative = $src;
-                                    // Jika src berupa url penuh (http/https), ambil pathnya saja
-                                    if (preg_match('#https?://[^/]+(/storage/.*)#', $src, $m)) {
-                                        $relative = $m[1];
-                                    }
-                                    $localPath = public_path(parse_url($relative, PHP_URL_PATH));
-                                    if (file_exists($localPath)) {
-                                        return str_replace($src, 'file://' . $localPath, $matches[0]);
-                                    }
-                                }
-                                // Jika src asset('storage/...')
-                                if (preg_match('#/storage/.*#', $src, $m)) {
-                                    $localPath = public_path($m[0]);
-                                    if (file_exists($localPath)) {
-                                        return str_replace($src, 'file://' . $localPath, $matches[0]);
-                                    }
-                                }
-                                // Jika src relatif ke public
-                                $localPath = public_path($src);
-                                if (file_exists($localPath)) {
-                                    return str_replace($src, 'file://' . $localPath, $matches[0]);
-                                }
-                                // Jika tidak ditemukan, biarkan src asli
-                                return $matches[0];
-                            },
-                            $html
+                    return preg_replace_callback(
+                    '/<img[^>]+src="([^"]+)"[^>]*>/i',
+                        function($matches) {
+                        $src = $matches[1];
+                        if (strpos($src, '/storage/') !== false) {
+                        $relativePath = public_path(parse_url($src, PHP_URL_PATH));
+                        return str_replace($src, 'file://' . $relativePath, $matches[0]);
+                        }
+                        return $matches[0];
+                        },
+                        $html
                         );
-                    }
-                    @endphp
+                        }
+                        @endphp
                         {!! convertImageSrcToFile($notulen->pembahasan) !!}
                 </div>
             </div>
