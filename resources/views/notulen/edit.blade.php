@@ -366,13 +366,6 @@
                                 <td>{{ $attendance->position }}</td>
                                 <td>{{ $attendance->division }}</td>
                                 <td>{{ $attendance->attended_at->format('H:i') }}</td>
-                                <td>
-                                    @if($attendance->is_late)
-                                        <span class="badge badge-warning">Terlambat</span>
-                                    @else
-                                        <span class="badge badge-success">Tepat Waktu</span>
-                                    @endif
-                                </td>
                                 <td class="text-center">
                                     @if($attendance->signature)
                                         <img src="{{ $attendance->signature }}" alt="Tanda tangan" style="max-height: 40px;">
