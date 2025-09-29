@@ -146,9 +146,10 @@
 
         /* Pasted image styles */
         .content-body img {
-            max-width: 400px;
+            display: block;
+            max-width: 100%;
             height: auto;
-            margin: 10px 0;
+            margin: 12px auto 18px auto;
             page-break-inside: avoid;
             border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
