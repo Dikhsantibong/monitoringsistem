@@ -354,7 +354,6 @@
                                 <th>Jabatan</th>
                                 <th>Divisi</th>
                                 <th>Waktu Hadir</th>
-                                <th>Status</th>
                                 <th>Tanda Tangan</th>
                             </tr>
                         </thead>
