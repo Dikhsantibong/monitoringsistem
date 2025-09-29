@@ -726,34 +726,20 @@
         });
 
     function showQRCode() {
-        const overlay = document.getElementById('overlay');
-        const container = document.getElementById('qrCodeContainer');
-        const qrcodeDiv = document.getElementById('qrcodeModal');
-        const qrUrlSpan = document.getElementById('qrUrl');
-
-        overlay.style.display = 'block';
-        container.style.display = 'block';
-
-        // Clear previous QR code if exists
+        const qrcodeDiv = document.getElementById('qrcode');
         qrcodeDiv.innerHTML = '';
-
         // Generate the URL for late attendance
         const baseUrl = window.location.origin;
         const attendanceUrl = `${baseUrl}/public/notulen/late-attendance/{{ $notulen->id }}`;
-
-        // Show the URL for verification
-        qrUrlSpan.textContent = attendanceUrl;
-
-        // Create QR code with larger size and better error correction
+        // Create QR code
         new QRCode(qrcodeDiv, {
             text: attendanceUrl,
             width: 300,
             height: 300,
             colorDark: "#000000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H // Highest error correction level
+            correctLevel: QRCode.CorrectLevel.H
         });
-
         // Log for debugging
         console.log('QR Code generated with URL:', attendanceUrl);
     }
