@@ -458,7 +458,10 @@ class NotulenController extends Controller
             $zip->addFile($pdfPath, 'notulen.pdf');
             // Tambahkan file lampiran
             foreach ($files as $f) {
-                $zip->addFile($f['path'], $f['name']);
+                if (file_exists($f['path']) && filesize($f['path']) >= 1024) {
+                    $zip->addFile($f['path'], $f['name']);
+                }
+                // Jika file tidak valid, skip (tidak dimasukkan ke ZIP)
             }
             $zip->close();
         } else {
