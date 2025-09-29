@@ -432,6 +432,10 @@ class NotulenController extends Controller
             mkdir(dirname($pdfPath), 0777, true);
         }
         $pdf->save($pdfPath);
+        // Cek apakah PDF berhasil dibuat dan valid
+        if (!file_exists($pdfPath) || filesize($pdfPath) < 1024) {
+            return back()->with('error', 'Gagal membuat PDF notulen. File PDF tidak valid.');
+        }
 
         // Siapkan file lampiran
         $files = [];
