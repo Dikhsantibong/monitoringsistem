@@ -422,79 +422,48 @@ class NotulenController extends Controller
         }
     }
 
-    public function downloadZip($id)
-{
-    try {
-        ob_end_clean(); // hentikan output buffer agar ZIP tidak rusak
-        ob_start();
-
-        // Ambil data notulen beserta relasi
-        $notulen = \App\Models\Notulen::with(['documentations','attendances','files'])->findOrFail($id);
-
-        // Tentukan nama dan path file
-        $pdfName = 'notulen-' . $notulen->id . '.pdf';
-        $zipName = 'notulen-' . $notulen->id . '-with-lampiran.zip';
-
-        $pdfPath = storage_path('app/public/notulen-pdf/' . $pdfName);
-        $zipPath = storage_path('app/public/notulen-pdf/' . $zipName);
-
-        // Pastikan direktori ada
+    public function downloadZip(Notulen $notulen)
+    {
+        // Generate PDF notulen
+        $notulen->load(['documentations', 'attendances', 'files']);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('notulen.print-pdf', compact('notulen'));
+        $pdfPath = storage_path('app/public/notulen-pdf/notulen-' . $notulen->id . '.pdf');
         if (!file_exists(dirname($pdfPath))) {
             mkdir(dirname($pdfPath), 0777, true);
         }
-
-        // Generate PDF menggunakan DomPDF
-        $pdf = Pdf::loadView('notulen.print-pdf', compact('notulen'));
-        $pdf->setWarnings(true);
         $pdf->save($pdfPath);
 
-        // Cek apakah PDF valid
-        if (!file_exists($pdfPath) || filesize($pdfPath) === 0) {
-            Log::error("Gagal membuat PDF untuk notulen ID {$id}");
-            return back()->with('error', 'PDF gagal dibuat, cek kembali template print-pdf.');
+        // Siapkan file lampiran
+        $files = [];
+        foreach ($notulen->files as $file) {
+            $realPath = Storage::disk('public')->path($file->file_path);
+            if (file_exists($realPath)) {
+                $files[] = [
+                    'path' => $realPath,
+                    'name' => 'lampiran/' . $file->file_name
+                ];
+            }
         }
 
         // Buat ZIP
-        $zip = new \ZipArchive();
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-            
-            // Tambahkan file PDF utama
-            if (is_readable($pdfPath) && filesize($pdfPath) > 0) {
-                $zip->addFile(realpath($pdfPath), 'notulen.pdf');
-            } else {
-                Log::error("PDF tidak bisa dibaca: {$pdfPath}");
+        $zipName = 'notulen-' . $notulen->id . '-with-lampiran.zip';
+        $zipPath = storage_path('app/public/notulen-pdf/' . $zipName);
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            // Tambahkan PDF utama
+            $zip->addFile($pdfPath, 'notulen.pdf');
+            // Tambahkan file lampiran
+            foreach ($files as $f) {
+                $zip->addFile($f['path'], $f['name']);
             }
-
-            // Tambahkan lampiran
-            if ($notulen->files && count($notulen->files) > 0) {
-                foreach ($notulen->files as $file) {
-                    $filePath = storage_path('app/public/' . $file->path);
-                    if (file_exists($filePath) && filesize($filePath) > 0) {
-                        $zip->addFile(realpath($filePath), basename($file->path));
-                    } else {
-                        Log::warning("Lampiran dilewati karena tidak ditemukan atau kosong: {$filePath}");
-                    }
-                }
-            }
-
             $zip->close();
         } else {
-            Log::error("Gagal membuka ZIP untuk penulisan: {$zipPath}");
-            return back()->with('error', 'Gagal membuat file ZIP.');
+            return back()->with('error', 'Gagal membuat ZIP');
         }
 
-        // Flush cache dan beri waktu menulis file sepenuhnya
-        clearstatcache();
-        sleep(1);
-
-        // Kembalikan sebagai download
+        // Kirim ZIP ke user
         return response()->download($zipPath)->deleteFileAfterSend(true);
-
-    } catch (\Exception $e) {
-        Log::error("Terjadi error saat membuat ZIP Notulen: " . $e->getMessage());
-        return back()->with('error', 'Terjadi kesalahan saat membuat ZIP. Detail sudah dicatat di log.');
     }
-}
 
     /**
      * Show the form for editing the specified notulen.
