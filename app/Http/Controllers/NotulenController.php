@@ -481,6 +481,7 @@ class NotulenController extends Controller
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
+
     /**
      * Show the form for editing the specified notulen.
      */
