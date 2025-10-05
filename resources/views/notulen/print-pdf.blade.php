@@ -5,197 +5,219 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Notulen Rapat' }}</title>
-    
     <style>
-        /* Hilangkan @media print dan @page, DomPDF tidak mendukung penuh */
-        body {
-            font-family: DejaVu Sans, Arial, sans-serif;
-            line-height: 1.6;
-            margin: 1.5cm;
-            padding: 0;
-            background: #fff;
+        @media print {
+            @page {
+                size: A4;
+                margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
-    
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
         .notulen-container {
             width: 100%;
-            margin: 10px auto;
-            padding: 10px;
-            background: #fff;
-            border: 0;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
         }
-    
+
         /* Header table layout */
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-    
+
         .header-table td {
             border: 1px solid #000;
             padding: 5px;
             vertical-align: middle;
         }
-    
+
         .logo-cell {
-            width: 100px;
+            width: 120px;
             text-align: center;
         }
-    
+
         .logo-cell img {
-            width: 80px;
+            width: 100px;
             height: auto;
         }
-    
+
         .title-cell {
             width: 40%;
             text-align: center;
             font-size: 8pt;
         }
-    
+
         .number-cell {
             font-size: 8pt;
             padding-left: 10px;
         }
-    
+
         .border-bottom {
             border-bottom: 1px solid #000;
-            padding-bottom: 4px;
-            margin-bottom: 4px;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
         }
-    
+
         /* Info table layout */
         .info-table {
             width: 100%;
-            margin: 10px 0;
-            border-collapse: collapse;
+            margin: 20px 0;
+            border-collapse: separate;
+            border-spacing: 0 8px;
         }
-    
+
         .info-table td {
             font-size: 8pt;
-            padding: 2px 0;
+            padding: 3px 0;
             vertical-align: top;
         }
-    
+
         .info-label {
             width: 120px;
         }
-    
+
         /* Content layout */
         .content-wrapper {
             border: 1px solid #000;
-            padding: 10px;
-            margin: 15px 0;
+            padding: 15px;
+            margin: 20px 0;
         }
-    
+
         .content-section {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
-    
+
         .content-title {
             font-weight: bold;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
             font-size: 8pt;
         }
-    
+
         .content-body {
             font-size: 8pt;
-            padding-left: 10px;
+            padding-left: 15px;
         }
-    
-        /* List */
+
+        /* Remove bullet points from lists */
         .content-body ul,
         .content-body ol {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
+            list-style: none;
+            padding-left: 0;
+            margin-left: 0;
         }
-    
+
         .content-body li {
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
-    
+
+        /* Consistent point styling for both sections */
         .content-body .pembahasan-point,
         .content-body .tindak-lanjut-point {
-            margin-bottom: 4px;
+            margin-bottom: 5px;
+            font-weight: normal;
         }
-    
+
+        .content-body .pembahasan-point strong,
+        .content-body .tindak-lanjut-point strong {
+            font-weight: bold;
+        }
+
+        .content-body .pembahasan-detail,
+        .content-body .tindak-lanjut-detail,
         .content-body .pembahasan-subpoints,
         .content-body .tindak-lanjut-subpoints {
-            margin-left: 10px;
+            margin-left: 15px;
+            margin-bottom: 5px;
         }
-    
-        /* Gambar */
+
+        /* Pasted image styles */
         .content-body img {
             display: block;
             max-width: 100%;
             height: auto;
-            margin: 10px auto;
-            border: 1px solid #ccc;
-            /* ❌ Hapus box-shadow, DomPDF tidak dukung */
+            margin: 12px auto 18px auto;
+            page-break-inside: avoid;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-    
+
         .content-body .image-wrapper {
+            margin: 10px 0;
             text-align: center;
-            margin: 8px 0;
+            page-break-inside: avoid;
         }
-    
+
         .content-body .image-wrapper img {
             display: inline-block;
             margin: 0;
-            max-height: 250px;
+            max-height: 300px;
+            /* Limit height for better PDF layout */
         }
-    
+
         /* Signature table layout */
         .signature-table {
             width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
+            margin-top: 30px;
         }
-    
+
         .signature-table td {
             width: 50%;
             text-align: center;
             font-size: 8pt;
             vertical-align: top;
         }
-    
+
         .signature-line {
-            width: 150px;
+            width: 200px;
             border-bottom: 1px solid #000;
-            margin: 30px auto 5px;
+            margin: 50px auto 5px;
         }
-    
+
         /* Documentation table layout */
         .doc-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
+            margin-top: 10px;
         }
-    
+
         .doc-table th,
         .doc-table td {
             border: 1px solid #000;
-            padding: 6px;
+            padding: 8px;
             font-size: 8pt;
         }
-    
+
         .doc-table th {
-            background-color: #eaeaea;
+            background-color: #f5f5f5;
         }
-    
+
+        /* Utility classes */
         .page-break {
             page-break-before: always;
         }
-    
+
         .text-center {
             text-align: center;
         }
-    
+
         .mb-5 {
             margin-bottom: 5px;
         }
-    
+
         .mb-10 {
             margin-bottom: 10px;
         }
