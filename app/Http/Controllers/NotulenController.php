@@ -449,19 +449,35 @@ class NotulenController extends Controller
         $zipName = 'notulen-' . $notulen->id . '-with-lampiran.zip';
         $zipPath = storage_path('app/public/notulen-pdf/' . $zipName);
         $zip = new ZipArchive;
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+        $zipResult = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        if ($zipResult === TRUE) {
             // Tambahkan PDF utama
-            $zip->addFile($pdfPath, 'notulen.pdf');
+            if (file_exists($pdfPath)) {
+                $zip->addFile($pdfPath, 'notulen.pdf');
+            } else {
+                Log::error('PDF utama tidak ditemukan: ' . $pdfPath);
+                return back()->with('error', 'PDF utama tidak ditemukan');
+            }
             // Tambahkan file lampiran
             foreach ($files as $f) {
-                $zip->addFile($f['path'], $f['name']);
+                if (file_exists($f['path'])) {
+                    $zip->addFile($f['path'], $f['name']);
+                } else {
+                    Log::warning('Lampiran tidak ditemukan: ' . $f['path']);
+                }
             }
             $zip->close();
         } else {
+            Log::error('Gagal membuka ZIP: ' . $zipPath . ' (code: ' . $zipResult . ')');
             return back()->with('error', 'Gagal membuat ZIP');
         }
-
-        // Kirim ZIP ke user
+        // Pastikan file ZIP valid
+        if (!file_exists($zipPath) || filesize($zipPath) == 0) {
+            Log::error('ZIP gagal dibuat atau kosong: ' . $zipPath);
+            return back()->with('error', 'ZIP gagal dibuat atau kosong');
+        }
+        // Bersihkan output buffer sebelum download
+        if (ob_get_length()) ob_end_clean();
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
