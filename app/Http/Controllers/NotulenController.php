@@ -423,54 +423,64 @@ class NotulenController extends Controller
     }
 
     public function downloadZip(Notulen $notulen)
-    {
-        // Generate PDF notulen
-        $notulen->load(['documentations', 'attendances', 'files']);
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('notulen.print-pdf', compact('notulen'));
-        $pdfPath = storage_path('app/public/notulen-pdf/notulen-' . $notulen->id . '.pdf');
-        if (!file_exists(dirname($pdfPath))) {
-            mkdir(dirname($pdfPath), 0777, true);
-        }
-        $pdf->save($pdfPath);
-        // Cek apakah PDF berhasil dibuat dan valid
-        if (!file_exists($pdfPath) || filesize($pdfPath) < 1024) {
-            return back()->with('error', 'Gagal membuat PDF notulen. File PDF tidak valid.');
-        }
+{
+    $notulen->load(['documentations', 'attendances', 'files']);
 
-        // Siapkan file lampiran
-        $files = [];
-        foreach ($notulen->files as $file) {
-            $realPath = Storage::disk('public')->path($file->file_path);
-            if (file_exists($realPath)) {
-                $files[] = [
-                    'path' => $realPath,
-                    'name' => 'lampiran/' . $file->file_name
-                ];
-            }
-        }
-
-        // Buat ZIP
-        $zipName = 'notulen-' . $notulen->id . '-with-lampiran.zip';
-        $zipPath = storage_path('app/public/notulen-pdf/' . $zipName);
-        $zip = new ZipArchive;
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            // Tambahkan PDF utama
-            $zip->addFile($pdfPath, 'notulen.pdf');
-            // Tambahkan file lampiran
-            foreach ($files as $f) {
-                if (file_exists($f['path']) && filesize($f['path']) >= 1024) {
-                    $zip->addFile($f['path'], $f['name']);
-                }
-                // Jika file tidak valid, skip (tidak dimasukkan ke ZIP)
-            }
-            $zip->close();
-        } else {
-            return back()->with('error', 'Gagal membuat ZIP');
-        }
-
-        // Kirim ZIP ke user
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+    // Generate PDF
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('notulen.print-pdf', compact('notulen'));
+    $pdfPath = storage_path('app/public/notulen-pdf/notulen-' . $notulen->id . '.pdf');
+    if (!file_exists(dirname($pdfPath))) {
+        mkdir(dirname($pdfPath), 0777, true);
     }
+    $pdf->save($pdfPath);
+
+    // Pastikan PDF valid
+    clearstatcache();
+    if (!file_exists($pdfPath) || filesize($pdfPath) < 100) {
+        return back()->with('error', 'Gagal membuat PDF notulen. File PDF tidak valid atau kosong.');
+    }
+
+    // Siapkan lampiran
+    $files = [];
+    foreach ($notulen->files as $file) {
+        $realPath = Storage::disk('public')->path($file->file_path);
+        if (file_exists($realPath)) {
+            $files[] = [
+                'path' => $realPath,
+                'name' => 'lampiran/' . basename($file->file_name ?? $file->file_path)
+            ];
+        } else {
+            Log::warning("Lampiran tidak ditemukan: " . $realPath);
+        }
+    }
+
+    // Buat ZIP
+    $zipName = 'notulen-' . $notulen->id . '-with-lampiran.zip';
+    $zipPath = storage_path('app/public/notulen-pdf/' . $zipName);
+
+    $zip = new \ZipArchive();
+    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+        return back()->with('error', 'Gagal membuka ZIP untuk ditulis');
+    }
+
+    // Tambahkan PDF utama
+    $zip->addFile($pdfPath, 'notulen.pdf');
+
+    // Tambahkan lampiran
+    foreach ($files as $f) {
+        if (file_exists($f['path']) && filesize($f['path']) > 0) {
+            $zip->addFile($f['path'], $f['name']);
+        }
+    }
+
+    $zip->close();
+    clearstatcache();
+    sleep(1);
+
+    // Kirim file ZIP
+    return response()->download($zipPath);
+}
+
 
     /**
      * Show the form for editing the specified notulen.
