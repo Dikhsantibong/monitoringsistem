@@ -475,6 +475,15 @@ class LaporanController extends Controller
                 throw new \Exception('WO yang sudah Closed tidak dapat diubah statusnya');
             }
 
+            // Cek jika status akan diubah ke Closed dan belum ada dokumen
+            if ($request->status === 'Closed' && empty($wo->document_path)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda harus mengupload dokumen terlebih dahulu sebelum mengubah status menjadi Closed',
+                    'redirect_url' => route('admin.laporan.edit-wo', $id)
+                ], 400);
+            }
+
             $oldStatus = $wo->status;
             $wo->status = $request->status;
             

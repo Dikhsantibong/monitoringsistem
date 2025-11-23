@@ -961,8 +961,23 @@
 
         // Cek apakah dokumen sudah diupload sebelum mengubah status ke Closed
         const row = document.querySelector(`tr[data-wo-id="WO-${String(woId).padStart(4, '0')}"]`);
-        const documentCell = row.querySelector('td:nth-last-child(2)'); // Kolom dokumen
-        const hasDocument = documentCell.textContent.trim() !== '-';
+        if (!row) {
+            console.error('Row not found for WO ID:', woId);
+            return;
+        }
+        
+        // Cari kolom dokumen (kolom ke-13 dari awal, atau nth-last-child(4) dari belakang)
+        // Struktur: ... Dokumen, Labor, Nama Labor, Aksi
+        const documentCell = row.querySelector('td:nth-last-child(4)'); // Kolom dokumen
+        if (!documentCell) {
+            console.error('Document cell not found');
+            return;
+        }
+        
+        // Cek apakah ada link dokumen atau teks bukan "-"
+        const hasDocumentLink = documentCell.querySelector('a[href*="download-document"]') !== null;
+        const hasDocumentText = documentCell.textContent.trim() !== '-' && documentCell.textContent.trim() !== '';
+        const hasDocument = hasDocumentLink || hasDocumentText;
 
         Swal.fire({
             title: 'Pilih Status',
@@ -1023,9 +1038,39 @@
             },
             body: JSON.stringify({ status: newStatus })
         })
-        .then(response => response.json())
+        .then(response => {
+            // Cek jika response tidak OK
+            if (!response.ok) {
+                return response.json().then(data => {
+                    // Jika ada redirect_url, berarti perlu upload dokumen
+                    if (data.redirect_url) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Dokumen Diperlukan',
+                            text: data.message || 'silahkan Upload Job Card yang telah di validasi.',
+                            showCancelButton: true,
+                            confirmButtonText: 'Upload Dokumen',
+                            cancelButtonText: 'Batal',
+                            confirmButtonColor: '#3085d6'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = data.redirect_url;
+                            }
+                        });
+                        return { success: false, handled: true };
+                    }
+                    throw new Error(data.message || 'Terjadi kesalahan saat mengubah status');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.success) {
+            // Skip jika sudah di-handle (misalnya redirect)
+            if (data && data.handled) {
+                return;
+            }
+            
+            if (data && data.success) {
                 // Play success sound
                 playSound('success');
                 
@@ -1045,16 +1090,30 @@
                 if (actionCell) {
                     if (newStatus === 'Closed') {
                         actionCell.innerHTML = `
-                            <button disabled class="px-3 py-1 text-sm rounded-full bg-gray-400 text-white">
-                                Closed
-                            </button>
+                            <span class="p-2 flex items-center text-gray-400" title="WO Closed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <span class="ml-2">Closed</span>
+                            </span>
                         `;
                     } else {
                         actionCell.innerHTML = `
-                            <button onclick="showStatusOptions('${id}', '${newStatus}')"
-                                class="px-3 py-1 text-sm rounded-full ${newStatus === 'Open' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">
-                                ${newStatus === 'Open' ? 'Tutup' : 'Buka'}
-                            </button>
+                            <div class="flex space-x-2">
+                                <button onclick="showStatusOptions('${id}', '${newStatus}')"
+                                    class="p-2 flex items-center text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors group"
+                                    title="Ubah Status">
+                                    <i class="fas fa-exchange-alt mr-2"></i>
+                                    <span class="opacity-100">Update Status</span>
+                                </button>
+                                <a href="/admin/laporan/edit-wo/${id}"
+                                    class="p-2 flex items-center text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors group"
+                                    title="Edit WO">
+                                    <i class="fas fa-edit mr-2 text-green-600"></i>
+                                    <span class="opacity-100">Edit WO</span>
+                                </a>
+                            </div>
                         `;
                     }
                 }
@@ -1069,7 +1128,7 @@
                     toast: true,
                     position: 'top-end'
                 });
-            } else {
+            } else if (data && !data.success) {
                 throw new Error(data.message || 'Terjadi kesalahan saat mengubah status');
             }
         })
