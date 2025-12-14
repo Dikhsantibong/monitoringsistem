@@ -9,11 +9,12 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.0",
         "barryvdh/laravel-snappy": "^1.0",
+        "clegginabox/pdf-merger": "dev-master",
         "doctrine/dbal": "^4.2",
         "endroid/qr-code": "^6.0",
         "firebase/php-jwt": "^6.10",
         "guzzlehttp/guzzle": "^7.9",
-        "iio/libmergepdf": "^3.1",
+        "iio/libmergepdf": "*",
         "itsgoingd/clockwork": "^5.3",
         "jurosh/pdf-merge": "*",
         "laravel/framework": "^11.31",
@@ -25,7 +26,8 @@
         "realrashid/sweet-alert": "^7.2",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "*",
-        "tecnickcom/tcpdf": "*"
+        "tecnickcom/tcpdf": "*",
+        "webklex/laravel-pdfmerger": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
