@@ -51,7 +51,7 @@
     <div class="card">
         <h1>Pemberitahuan Maintenance</h1>
         <p>Sistem saat ini sedang menjalani proses maintenance karena sedang beralih ke jaringan <strong>Intranet</strong>. Selama proses ini berlangsung, beberapa layanan mungkin tidak dapat diakses sementara.</p>
-        <p class="date">Tanggal Maintenance: <strong>11 Desember 2025</strong></p>
+        <p class="date">Tanggal Maintenance: <strong>16 Desember 2025</strong></p>
         <p>Sistem dapat diakses kembali pada hari <strong>Jumat, 12 Desember 2025</strong>. Kami berupaya menyelesaikan proses ini secepat mungkin. Terima kasih atas pengertian dan kesabaran Anda.</p>
         <div class="footer">© {{ date('Y') }} — Tim IT UP KENDARI</div>
     </div>
