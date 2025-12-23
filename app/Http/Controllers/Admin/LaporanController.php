@@ -153,16 +153,14 @@ class LaporanController extends Controller
             }
 
             // 3. Get results
-            // Gunakan pagination untuk meringankan halaman
-            // Gunakan pagination 20 per halaman
-            $serviceRequests = $serviceRequests->paginate(20)->withQueryString();
-            $workOrders = $workOrders->paginate(20)->withQueryString();
-            $woBacklogs = $woBacklogs->paginate(20)->withQueryString();
+            $serviceRequests = $serviceRequests->paginate(10000);
+            $workOrders = $workOrders->take(10000)->get();
+            $woBacklogs = $woBacklogs->take(10000)->get();
 
             // 5. Update table counts
             $srCount = $serviceRequests->total();
-            $woCount = $workOrders->total();
-            $backlogCount = $woBacklogs->total();
+            $woCount = $workOrders->count();
+            $backlogCount = $woBacklogs->count();
 
             // Debug log untuk memeriksa data
             Log::info('Work Orders Data:', [

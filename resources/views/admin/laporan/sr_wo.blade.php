@@ -178,14 +178,13 @@
                             
                             <!-- Counter dengan style yang konsisten -->
                             <div class="text-sm text-gray-600">
-                                Menampilkan <span id="srVisibleCount" class="font-medium">{{ $serviceRequests->count() }}</span> dari <span id="srTotalCount" class="font-medium">{{ $serviceRequests->total() }}</span> data
+                                Menampilkan <span id="srVisibleCount" class="font-medium">0</span> dari <span id="srTotalCount" class="font-medium">0</span> data
                             </div>
                         </div>
 
                         <!-- Tabel content tetap sama seperti sebelumnya -->
                         <div class="overflow-auto max-h-[calc(100vh-300px)]">
                             <table id="srTable"
-                                data-total="{{ $serviceRequests->total() }}"
                                 class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
@@ -293,7 +292,7 @@
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($serviceRequests as $index => $sr)
                                         <tr data-sr-id="SR-{{ str_pad($sr->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
-                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $serviceRequests->firstItem() + $index }}</td>
+                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     SR{{ $sr->id }}
@@ -341,9 +340,6 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-                        <div class="mt-3">
-                            {{ $serviceRequests->links() }}
                         </div>
                     </div>
                 </div>
@@ -416,7 +412,7 @@
                             </div>
                             
                             <div class="text-sm text-gray-600">
-                                Menampilkan <span id="woVisibleCount" class="font-medium">{{ $workOrders->count() }}</span> dari <span id="woTotalCount" class="font-medium">{{ $workOrders->total() }}</span> data
+                                Menampilkan <span id="woVisibleCount" class="font-medium">0</span> dari <span id="woTotalCount" class="font-medium">0</span> data
                             </div>
                         </div>
 
@@ -428,7 +424,7 @@
                                 <p>{{ session('backlog_notification') }}</p>
                             </div>
                             @endif
-                            <table id="woTable" data-total="{{ $workOrders->total() }}" class="min-w-full bg-white border border-gray-300">
+                            <table id="woTable" class="min-w-full bg-white border border-gray-300">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
                                         <th class="py-2 px-4 border-b min-w-[10px]">No</th>
@@ -528,7 +524,7 @@
                                 <tbody>
                                     @foreach ($workOrders as $index => $wo)
                                         <tr data-wo-id="WO-{{ str_pad($wo->id, 4, '0', STR_PAD_LEFT) }}" class="hover:bg-gray-50 transition-colors duration-150">
-                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $workOrders->firstItem() + $index }}</td>
+                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     WO{{ $wo->id }}
@@ -629,9 +625,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="mt-3">
-                            {{ $workOrders->links() }}
-                        </div>
                     </div>
                 </div>
 
@@ -703,13 +696,13 @@
                             </div>
                             
                             <div class="text-sm text-gray-600">
-                                Menampilkan <span id="backlogVisibleCount" class="font-medium">{{ $woBacklogs->count() }}</span> dari <span id="backlogTotalCount" class="font-medium">{{ $woBacklogs->total() }}</span> data
+                                Menampilkan <span id="backlogVisibleCount" class="font-medium">0</span> dari <span id="backlogTotalCount" class="font-medium">0</span> data
                             </div>
                         </div>
 
                         <!-- Tabel Backlog -->
                         <div class="overflow-auto max-h-[calc(100vh-300px)]">
-                            <table id="backlogTable" data-total="{{ $woBacklogs->total() }}" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
+                            <table id="backlogTable" class="min-w-full divide-y divide-gray-200 border-collapse border border-gray-200">
                                 <thead class="sticky top-0 z-10">
                                     <tr style="background-color: #0A749B; color: white;">
                                         <th class="py-2 px-4 border-b min-w-[10px]">No</th>
@@ -804,7 +797,7 @@
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($woBacklogs as $index => $backlog)
                                         <tr data-backlog-id="{{ $backlog->id }}" class="hover:bg-gray-50 transition-colors duration-150">
-                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $woBacklogs->firstItem() + $index }}</td>
+                                            <td class="px-4 py-2 text-center border border-gray-200">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 border border-gray-200 min-w-[120px] whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     WO{{ str_pad($backlog->no_wo, 5, '0', STR_PAD_LEFT) }}
@@ -909,9 +902,6 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-                        <div class="mt-3">
-                            {{ $woBacklogs->links() }}
                         </div>
                     </div>
                 </div>
@@ -1634,26 +1624,24 @@
     document.getElementById('searchWO').addEventListener('input', debouncedWOSearch);
     document.getElementById('searchBacklog').addEventListener('input', debouncedBacklogSearch);
 
-    // Fungsi untuk memperbarui jumlah data yang ditampilkan (gunakan total dari server jika ada)
+    // Fungsi untuk memperbarui jumlah data yang ditampilkan
     function updateTableCounts(tableId, visibleCountId, totalCountId) {
         const table = document.getElementById(tableId);
-        const rows = table ? table.getElementsByTagName('tr') : [];
+        const rows = table.getElementsByTagName('tr');
         let visibleCount = 0;
+        let totalCount = 0;
 
+        // Hitung jumlah baris yang terlihat dan total (skip header)
         for (let i = 1; i < rows.length; i++) {
+            totalCount++;
             if (rows[i].style.display !== 'none') {
                 visibleCount++;
             }
         }
 
-        const visibleEl = document.getElementById(visibleCountId);
-        if (visibleEl) visibleEl.textContent = visibleCount;
-
-        const totalEl = document.getElementById(totalCountId);
-        if (totalEl) {
-            const datasetTotal = table?.dataset?.total;
-            totalEl.textContent = datasetTotal || (rows.length ? rows.length - 1 : 0);
-        }
+        // Update tampilan jumlah
+        document.getElementById(visibleCountId).textContent = visibleCount;
+        document.getElementById(totalCountId).textContent = totalCount;
     }
 
     // Perbaikan fungsi pencarian
@@ -1844,8 +1832,7 @@
                               tableId === 'woTable' ? 'woTotalCount' : 'backlogTotalCount';
         const totalCounter = document.getElementById(totalCounterId);
         if (totalCounter) {
-            const datasetTotal = table.dataset ? table.dataset.total : null;
-            totalCounter.textContent = datasetTotal || rows.length;
+            totalCounter.textContent = rows.length;
         }
     }
 
@@ -1922,10 +1909,7 @@
         const totalCounter = document.getElementById('woTotalCount');
         
         if (visibleCounter) visibleCounter.textContent = visibleCount;
-        if (totalCounter) {
-            const datasetTotal = table.dataset ? table.dataset.total : null;
-            totalCounter.textContent = datasetTotal || (rows.length - 1);
-        }
+        if (totalCounter) totalCounter.textContent = rows.length - 1; // Subtract header row
     }
 
     // Backlog Table filter
