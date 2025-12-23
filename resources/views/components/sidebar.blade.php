@@ -1,9 +1,9 @@
 <aside id="mobile-menu"
     class="fixed z-20 transform overflow-hidden transition-transform duration-300 md:relative md:translate-x-0 h-screen w-[280px] bg-transparent shadow-md text-white hidden md:block p-3 text-sm">
-    <!-- Container untuk background dengan padding -->
-    <div class="bg-[#0A749B] rounded-2xl h-full px-4 py-6 flex flex-col">
+    <!-- Container untuk background dengan padding dan SCROLL -->
+    <div class="bg-[#0A749B] rounded-2xl h-full px-4 py-6 flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-[#e5e5e5]/40 scrollbar-track-[#0A749B]/20">
         <!-- Logo section -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-8 flex-shrink-0">
             <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Rapat Harian" class="w-40">
             <button id="menu-toggle-close"
                 class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#0A749B] hover:text-white focus:outline-none">
@@ -120,7 +120,7 @@
         </nav>
 
         <!-- Bottom Section: Logout -->
-        <div class="mt-2">
+        <div class="mt-2 flex-shrink-0">
             <form method="POST" action="{{ route('logout') }}" id="logout-form">
                 @csrf
                 <button type="button" 
