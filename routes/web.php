@@ -53,6 +53,7 @@ use App\Http\Controllers\Admin\ScoreCardController;
 use App\Http\Controllers\Admin\ScoreCardMonthlyController;
 use App\Http\Controllers\Admin\ScoreCardQuarterlyController;
 use App\Http\Controllers\Admin\ScoreCardWeeklyController;
+use App\Http\Controllers\AttendanceQRController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -79,6 +80,19 @@ Route::prefix('api')->group(function () {
     Route::get('/notulen-draft/load/{tempNotulenId}', [NotulenDraftController::class, 'load']);
     Route::delete('/notulen-draft/delete/{tempNotulenId}', [NotulenDraftController::class, 'delete']);
 });
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/admin/attendance/qr',
+        [AttendanceQRController::class, 'index']
+    )->name('admin.attendance.qr');
+
+    Route::post('/admin/attendance/qr/generate',
+        [AttendanceQRController::class, 'generate']
+    )->name('admin.attendance.qr.generate');
+
+});
+
 
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

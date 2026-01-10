@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'attendance_external' => [
+        'url' => env('ATTENDANCE_EXTERNAL_URL'),
+    ],
+
 ];

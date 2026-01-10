@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\OtherDiscussionController;
 use App\Http\Controllers\Api\NotulenDraftController;
 use App\Http\Controllers\Api\NotulenFileController;
+use App\Http\Controllers\Api\AttendanceApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,3 +68,6 @@ Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'genera
     ->name('api.generate-no-pembahasan');
 Route::get('/generate-no-pembahasan', [OtherDiscussionController::class, 'generateNoPembahasan'])
     ->name('api.generate-no-pembahasan');
+
+Route::post('/attendance/submit', [AttendanceApiController::class, 'submit']);
+
