@@ -82,6 +82,20 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+        'oracle' => [
+        'driver'        => 'oracle',
+        'tns'           => '',
+        'host'          => env('ORACLE_DB_HOST'),
+        'port'          => env('ORACLE_DB_PORT', '1521'),
+        'database'      => '',
+        'service_name'  => env('ORACLE_DB_SERVICE_NAME'),
+        'username'      => env('ORACLE_DB_USERNAME'),
+        'password'      => env('ORACLE_DB_PASSWORD'),
+        'charset'       => env('ORACLE_DB_CHARSET', 'AL32UTF8'),
+        'prefix'        => '',
+        'prefix_schema' => '',
+        ],
+
 
         'pgsql' => [
             'driver' => 'pgsql',
