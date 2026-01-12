@@ -65,6 +65,26 @@
                         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
                             <p class="font-bold">Error!</p>
                             <p>{{ $error }}</p>
+                            @if(str_contains($error, 'could not find driver') || str_contains($error, 'Extension PHP untuk Oracle'))
+                                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-300 rounded">
+                                    <p class="font-semibold mb-2">Cara Mengatasi:</p>
+                                    <ol class="list-decimal list-inside space-y-1 text-sm">
+                                        <li><strong>Install Package Laravel (Recommended):</strong><br>
+                                            <code class="bg-gray-200 px-2 py-1 rounded">composer require yajra/laravel-oci8</code>
+                                        </li>
+                                        <li><strong>Atau Install Extension PHP Manual:</strong><br>
+                                            Install extension <code class="bg-gray-200 px-2 py-1 rounded">oci8</code> atau <code class="bg-gray-200 px-2 py-1 rounded">pdo_oci</code> di PHP Anda
+                                        </li>
+                                        <li><strong>Pastikan konfigurasi Oracle di .env sudah benar:</strong><br>
+                                            <code class="bg-gray-200 px-2 py-1 rounded">ORACLE_DB_HOST</code>, 
+                                            <code class="bg-gray-200 px-2 py-1 rounded">ORACLE_DB_PORT</code>, 
+                                            <code class="bg-gray-200 px-2 py-1 rounded">ORACLE_DB_SERVICE_NAME</code>, 
+                                            <code class="bg-gray-200 px-2 py-1 rounded">ORACLE_DB_USERNAME</code>, 
+                                            <code class="bg-gray-200 px-2 py-1 rounded">ORACLE_DB_PASSWORD</code>
+                                        </li>
+                                    </ol>
+                                </div>
+                            @endif
                         </div>
                     @endif
 
