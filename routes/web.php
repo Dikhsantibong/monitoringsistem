@@ -54,6 +54,7 @@ use App\Http\Controllers\Admin\ScoreCardMonthlyController;
 use App\Http\Controllers\Admin\ScoreCardQuarterlyController;
 use App\Http\Controllers\Admin\ScoreCardWeeklyController;
 use App\Http\Controllers\AttendanceQRController;
+use App\Http\Controllers\Admin\MaximoController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -171,6 +172,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
     });
+
+    // Maximo Akses Route
+    Route::get('/maximo', [MaximoController::class, 'index'])->name('maximo.index');
 
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {

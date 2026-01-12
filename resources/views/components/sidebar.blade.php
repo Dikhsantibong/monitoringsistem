@@ -37,10 +37,10 @@
                 <span class="ml-3 text-sm">Laporan SR/WO</span>
             </a>
 
-            <a href="#"
-                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.laporan.sr_wo') || request()->routeIs('admin.laporan.manage') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
+            <a href="{{ route('admin.maximo.index') }}"
+                class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.maximo.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-file-alt w-6 h-6"></i>
-                <span class="ml-3 text-sm">Laporan SR/WO (maximo akses)</span>
+                <span class="ml-3 text-sm">Laporan SR/WO (Maximo Akses)</span>
             </a>
 
 
