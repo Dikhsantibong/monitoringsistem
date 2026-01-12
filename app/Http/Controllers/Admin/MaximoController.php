@@ -87,8 +87,8 @@ class MaximoController extends Controller
         $host = env('ORACLE_DB_HOST', '127.0.0.1');
         $port = env('ORACLE_DB_PORT', '1521');
         $serviceName = env('ORACLE_DB_SERVICE_NAME', '');
-        $username = env('ORACLE_DB_USERNAME', '');
-        $password = env('ORACLE_DB_PASSWORD', '');
+        $username = env('ORACLE_DB_USERNAME_MAXIMO', '');
+        $password = env('ORACLE_DB_PASSWORD_MAXIMO', '');
         $charset = env('ORACLE_DB_CHARSET', 'AL32UTF8');
 
         if (empty($serviceName) || empty($username) || empty($password)) {

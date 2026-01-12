@@ -87,7 +87,6 @@ return [
             'tns'           => env('ORACLE_DB_TNS', ''),
             'host'          => env('ORACLE_DB_HOST', '127.0.0.1'),
             'port'          => env('ORACLE_DB_PORT', '1521'),
-            'database'      => env('ORACLE_DB_DATABASE', ''),
             'service_name'  => env('ORACLE_DB_SERVICE_NAME', ''),
             'username'      => env('ORACLE_DB_USERNAME_MAXIMO', ''),
             'password'      => env('ORACLE_DB_PASSWORD_MAXIMO', ''),
