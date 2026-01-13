@@ -53,7 +53,7 @@ return [
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
+            'prefix' => '', 
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
@@ -87,14 +87,15 @@ return [
             'driver'        => 'oracle',
             'host'          => env('ORACLE_DB_HOST'),
             'port'          => env('ORACLE_DB_PORT', '1521'),
-            'database'      => env('ORACLE_DB_SERVICE_NAME'),
+            'database'      => env('ORACLE_DB_SERVICE_NAME', ''),
             'service_name'  => env('ORACLE_DB_SERVICE_NAME'),
             'username'      => env('ORACLE_DB_USERNAME_MAXIMO'),
             'password'      => env('ORACLE_DB_PASSWORD_MAXIMO'),
-            'charset'       => 'AL32UTF8',
+            'charset'       => env('ORACLE_DB_CHARSET', 'AL32UTF8'),
             'prefix'        => '',
-            'prefix_schema' => 'MAXIMO',
+            'prefix_schema' => env('ORACLE_DB_SCHEMA', 'MAXIMO'),
         ],
+
 
 
 

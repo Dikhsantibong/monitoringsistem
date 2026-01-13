@@ -12,22 +12,20 @@ class MaximoController extends Controller
     public function index()
     {
         try {
-            // Pastikan koneksi oracle ada
-            $oracleConfig = config('database.connections.oracle');
+            // Validasi config Oracle
+            $oracle = config('database.connections.oracle');
 
             if (
-                empty($oracleConfig['username']) ||
-                empty($oracleConfig['password']) ||
-                empty($oracleConfig['database'])
+                empty($oracle['username']) ||
+                empty($oracle['password']) ||
+                empty($oracle['service_name'])
             ) {
-                throw new \Exception(
-                    'Konfigurasi Oracle belum lengkap. Pastikan username, password, dan service_name terisi di config/database.php'
-                );
+                throw new \Exception('Konfigurasi Oracle tidak lengkap');
             }
 
-            // Query ke MAXIMO
+            // QUERY ORACLE MAXIMO (JANGAN pakai schema di table)
             $workOrders = DB::connection('oracle')
-                ->table('MAXIMO.WORKORDER')
+                ->table('WORKORDER')
                 ->select(
                     'WONUM',
                     'PARENT',
@@ -39,19 +37,20 @@ class MaximoController extends Controller
                     'LOCATION',
                     'SITEID'
                 )
-                ->where('SITEID', 'KD')
+                ->where('SITEID', '=', 'KD')
                 ->orderBy('STATUSDATE', 'desc')
                 ->limit(5)
                 ->get();
 
-            $formattedData = $this->formatWorkOrders($workOrders);
-
-            return view('admin.maximo.index', compact('formattedData'));
+            return view('admin.maximo.index', [
+                'formattedData' => $this->formatWorkOrders($workOrders),
+                'error' => null
+            ]);
 
         } catch (\Throwable $e) {
-            Log::error('MAXIMO ORACLE ERROR', [
+            Log::error('ORACLE MAXIMO ERROR', [
                 'message' => $e->getMessage(),
-                'trace'   => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString()
             ]);
 
             return view('admin.maximo.index', [
@@ -64,21 +63,13 @@ class MaximoController extends Controller
     private function formatWorkOrders($workOrders)
     {
         return collect($workOrders)->map(function ($wo) {
-            $statusDate = null;
-
-            if (!empty($wo->STATUSDATE)) {
-                try {
-                    $statusDate = Carbon::parse($wo->STATUSDATE);
-                } catch (\Exception $e) {
-                    $statusDate = $wo->STATUSDATE;
-                }
-            }
-
             return [
                 'wonum'       => $wo->WONUM ?? '-',
                 'parent'      => $wo->PARENT ?? '-',
                 'status'      => $wo->STATUS ?? '-',
-                'statusdate'  => $statusDate,
+                'statusdate'  => !empty($wo->STATUSDATE)
+                    ? Carbon::parse($wo->STATUSDATE)
+                    : null,
                 'worktype'    => $wo->WORKTYPE ?? '-',
                 'description' => $wo->DESCRIPTION ?? '-',
                 'assetnum'    => $wo->ASSETNUM ?? '-',
