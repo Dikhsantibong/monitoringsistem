@@ -6,39 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 
 class MaximoController extends Controller
 {
     public function index()
     {
         try {
-            /* =========================
-             * SERVICE REQUEST (SR)
-             * ========================= */
-            $sr = DB::connection('oracle')
-                ->table('SR')
-                ->select(
-                    'TICKETID',
-                    'DESCRIPTION',
-                    'STATUS',
-                    'STATUSDATE',
-                    'SITEID',
-                    'LOCATION',
-                    'ASSETNUM',
-                    'REPORTEDBY',
-                    'REPORTDATE'
-                )
-                ->where('SITEID', 'KD')
-                ->orderBy('REPORTDATE', 'desc')
-                ->limit(5)
-                ->get();
-
-            /* =========================
-             * WORK ORDER (WO)
-             * ========================= */
-            $wo = DB::connection('oracle')
+            $workOrders = DB::connection('oracle')
                 ->table('WORKORDER')
-                ->select(
+                ->select([
                     'WONUM',
                     'PARENT',
                     'STATUS',
@@ -47,78 +24,82 @@ class MaximoController extends Controller
                     'DESCRIPTION',
                     'ASSETNUM',
                     'LOCATION',
-                    'SITEID'
-                )
+                    'SITEID',
+                ])
                 ->where('SITEID', 'KD')
                 ->orderBy('STATUSDATE', 'desc')
                 ->limit(5)
                 ->get();
 
             return view('admin.maximo.index', [
-                'srData' => $this->formatSR($sr),
-                'woData' => $this->formatWO($wo),
-                'error'  => null
+                'formattedData' => $this->formatWorkOrders($workOrders),
+                'error' => null,
+                'errorDetail' => null,
+            ]);
+
+        } catch (QueryException $e) {
+
+            // ERROR DARI ORACLE (PALING PENTING)
+            $oracleMessage = $e->getMessage();
+            $oracleCode    = $e->errorInfo[1] ?? null;
+            $sql           = $e->getSql();
+            $bindings      = $e->getBindings();
+
+            Log::error('ORACLE QUERY ERROR', [
+                'oracle_code' => $oracleCode,
+                'message'     => $oracleMessage,
+                'sql'         => $sql,
+                'bindings'    => $bindings,
+            ]);
+
+            return view('admin.maximo.index', [
+                'formattedData' => collect([]),
+                'error' => 'Gagal mengambil data dari Maximo (Query Error)',
+                'errorDetail' => [
+                    'oracle_code' => $oracleCode,
+                    'message' => $oracleMessage,
+                    'sql' => $sql,
+                    'bindings' => $bindings,
+                ],
             ]);
 
         } catch (\Throwable $e) {
 
-            Log::error('MAXIMO ORACLE ERROR', [
+            Log::error('ORACLE GENERAL ERROR', [
                 'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-                'file'    => $e->getFile()
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
 
             return view('admin.maximo.index', [
-                'srData' => collect([]),
-                'woData' => collect([]),
-                'error'  => $e->getMessage()
+                'formattedData' => collect([]),
+                'error' => 'Gagal mengambil data dari Maximo (General Error)',
+                'errorDetail' => [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ],
             ]);
         }
     }
 
-    /* =========================
-     * FORMAT SERVICE REQUEST
-     * ========================= */
-    private function formatSR($data)
+    private function formatWorkOrders($workOrders)
     {
-        return collect($data)->map(function ($sr) {
+        return collect($workOrders)->map(function ($wo) {
             return [
-                'ticketid'    => $sr->TICKETID ?? '-',
-                'description' => $sr->DESCRIPTION ?? '-',
-                'status'      => $sr->STATUS ?? '-',
-                'statusdate'  => !empty($sr->STATUSDATE)
-                    ? Carbon::parse($sr->STATUSDATE)
+                'wonum'       => $wo->wonum ?? '-',
+                'parent'      => $wo->parent ?? '-',
+                'status'      => $wo->status ?? '-',
+                'statusdate'  => !empty($wo->statusdate)
+                    ? Carbon::parse($wo->statusdate)
                     : null,
-                'siteid'      => $sr->SITEID ?? '-',
-                'location'    => $sr->LOCATION ?? '-',
-                'assetnum'    => $sr->ASSETNUM ?? '-',
-                'reportedby'  => $sr->REPORTEDBY ?? '-',
-                'reportdate'  => !empty($sr->REPORTDATE)
-                    ? Carbon::parse($sr->REPORTDATE)
-                    : null,
+                'worktype'    => $wo->worktype ?? '-',
+                'description' => $wo->description ?? '-',
+                'assetnum'    => $wo->assetnum ?? '-',
+                'location'    => $wo->location ?? '-',
+                'siteid'      => $wo->siteid ?? '-',
             ];
         });
     }
 
-    /* =========================
-     * FORMAT WORK ORDER
-     * ========================= */
-    private function formatWO($data)
-    {
-        return collect($data)->map(function ($wo) {
-            return [
-                'wonum'       => $wo->WONUM ?? '-',
-                'parent'      => $wo->PARENT ?? '-',
-                'status'      => $wo->STATUS ?? '-',
-                'statusdate'  => !empty($wo->STATUSDATE)
-                    ? Carbon::parse($wo->STATUSDATE)
-                    : null,
-                'worktype'    => $wo->WORKTYPE ?? '-',
-                'description' => $wo->DESCRIPTION ?? '-',
-                'assetnum'    => $wo->ASSETNUM ?? '-',
-                'location'    => $wo->LOCATION ?? '-',
-                'siteid'      => $wo->SITEID ?? '-',
-            ];
-        });
-    }
 }
