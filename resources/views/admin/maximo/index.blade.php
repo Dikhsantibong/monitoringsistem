@@ -21,11 +21,34 @@
                     Data Work Order (SITEID: KD)
                 </h2>
 
-                @if(!empty($error))
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
-                        {{ $error }}
-                    </div>
-                @endif
+                @if(!empty($errorDetail))
+                <div class="mt-4 bg-gray-100 border border-gray-300 p-4 rounded text-sm">
+                    <p class="font-semibold mb-2">Detail Error (Debug):</p>
+            
+                    @if(isset($errorDetail['oracle_code']))
+                        <p><strong>Oracle Code:</strong> ORA-{{ $errorDetail['oracle_code'] }}</p>
+                    @endif
+            
+                    @if(isset($errorDetail['message']))
+                        <p class="break-all"><strong>Message:</strong> {{ $errorDetail['message'] }}</p>
+                    @endif
+            
+                    @if(isset($errorDetail['sql']))
+                        <p class="mt-2"><strong>SQL:</strong></p>
+                        <pre class="bg-white p-2 border rounded text-xs overflow-x-auto">
+            {{ $errorDetail['sql'] }}
+                        </pre>
+                    @endif
+            
+                    @if(isset($errorDetail['bindings']))
+                        <p class="mt-2"><strong>Bindings:</strong></p>
+                        <pre class="bg-white p-2 border rounded text-xs">
+            {{ json_encode($errorDetail['bindings'], JSON_PRETTY_PRINT) }}
+                        </pre>
+                    @endif
+                </div>
+            @endif
+                           
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full border border-gray-300">

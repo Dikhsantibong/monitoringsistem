@@ -6,18 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 
 class MaximoController extends Controller
 {
     public function index()
     {
         try {
-            /**
-             * NOTE:
-             * - Tidak perlu cek username/password/service_name di runtime
-             * - Jika salah, Oracle akan throw exception otomatis
-             */
-
             $workOrders = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
@@ -36,49 +31,68 @@ class MaximoController extends Controller
                 ->limit(5)
                 ->get();
 
-            $formattedData = $this->formatWorkOrders($workOrders);
-
             return view('admin.maximo.index', [
-                'formattedData' => $formattedData,
+                'formattedData' => $this->formatWorkOrders($workOrders),
                 'error' => null,
+                'errorDetail' => null,
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (QueryException $e) {
 
-            Log::error('ORACLE MAXIMO ERROR', [
-                'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
+            // ERROR DARI ORACLE (PALING PENTING)
+            $oracleMessage = $e->getMessage();
+            $oracleCode    = $e->errorInfo[1] ?? null;
+            $sql           = $e->getSql();
+            $bindings      = $e->getBindings();
+
+            Log::error('ORACLE QUERY ERROR', [
+                'oracle_code' => $oracleCode,
+                'message'     => $oracleMessage,
+                'sql'         => $sql,
+                'bindings'    => $bindings,
             ]);
 
             return view('admin.maximo.index', [
                 'formattedData' => collect([]),
-                'error' => 'Gagal mengambil data Work Order dari Maximo',
+                'error' => 'Gagal mengambil data dari Maximo (Query Error)',
+                'errorDetail' => [
+                    'oracle_code' => $oracleCode,
+                    'message' => $oracleMessage,
+                    'sql' => $sql,
+                    'bindings' => $bindings,
+                ],
+            ]);
+
+        } catch (\Throwable $e) {
+
+            Log::error('ORACLE GENERAL ERROR', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return view('admin.maximo.index', [
+                'formattedData' => collect([]),
+                'error' => 'Gagal mengambil data dari Maximo (General Error)',
+                'errorDetail' => [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ],
             ]);
         }
     }
 
-    /**
-     * Normalisasi data Oracle → Laravel
-     */
     private function formatWorkOrders($workOrders)
     {
         return collect($workOrders)->map(function ($wo) {
-
-            $statusDate = null;
-            if (!empty($wo->STATUSDATE)) {
-                try {
-                    $statusDate = Carbon::parse($wo->STATUSDATE);
-                } catch (\Throwable $e) {
-                    $statusDate = null;
-                }
-            }
-
             return [
                 'wonum'       => $wo->WONUM,
                 'parent'      => $wo->PARENT,
                 'status'      => $wo->STATUS,
-                'statusdate'  => $statusDate,
+                'statusdate'  => $wo->STATUSDATE
+                    ? Carbon::parse($wo->STATUSDATE)
+                    : null,
                 'worktype'    => $wo->WORKTYPE,
                 'description' => $wo->DESCRIPTION,
                 'assetnum'    => $wo->ASSETNUM,
