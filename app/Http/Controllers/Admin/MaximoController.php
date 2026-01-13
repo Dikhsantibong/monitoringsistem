@@ -75,6 +75,8 @@ class MaximoController extends Controller
             return view('admin.maximo.index', [
                 'workOrders'       => collect([]),
                 'serviceRequests' => collect([]),
+                'workOrdersPaginate' => collect([]),
+                'serviceRequestsPaginate' => collect([]),
                 'error' => 'Gagal mengambil data dari Maximo (Query Error)',
                 'errorDetail' => [
                     'oracle_code' => $e->errorInfo[1] ?? null,
@@ -93,6 +95,8 @@ class MaximoController extends Controller
             return view('admin.maximo.index', [
                 'workOrders'       => collect([]),
                 'serviceRequests' => collect([]),
+                'workOrdersPaginate' => collect([]),
+                'serviceRequestsPaginate' => collect([]),
                 'error' => 'Gagal mengambil data dari Maximo (General Error)',
                 'errorDetail' => [
                     'message' => $e->getMessage(),
