@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class MaximoController extends Controller
 {
@@ -72,17 +73,22 @@ class MaximoController extends Controller
                 'bindings'    => $e->getBindings(),
             ]);
 
-            return view('admin.maximo.index', [
-                'workOrders'       => collect([]),
-                'serviceRequests' => collect([]),
-                'workOrdersPaginate' => collect([]),
-                'serviceRequestsPaginate' => collect([]),
-                'error' => 'Gagal mengambil data dari Maximo (Query Error)',
-                'errorDetail' => [
-                    'oracle_code' => $e->errorInfo[1] ?? null,
-                    'message' => $e->getMessage(),
-                ],
-            ]);
+                            $emptyPaginator = new LengthAwarePaginator([], 0, 10, 1, [
+                    'path' => request()->url(),
+                    'query' => request()->query(),
+                ]);
+                return view('admin.maximo.index', [
+                    'workOrders'       => collect([]),
+                    'serviceRequests' => collect([]),
+                    'workOrdersPaginate' => $emptyPaginator,
+                    'serviceRequestsPaginate' => $emptyPaginator,
+                    'error' => 'Gagal mengambil data dari Maximo (Query Error)',
+                    'errorDetail' => [
+                        'oracle_code' => $e->errorInfo[1] ?? null,
+                        'message' => $e->getMessage(),
+                    ],
+                ]);
+
 
         } catch (\Throwable $e) {
 
@@ -92,16 +98,20 @@ class MaximoController extends Controller
                 'line' => $e->getLine(),
             ]);
 
-            return view('admin.maximo.index', [
-                'workOrders'       => collect([]),
-                'serviceRequests' => collect([]),
-                'workOrdersPaginate' => collect([]),
-                'serviceRequestsPaginate' => collect([]),
-                'error' => 'Gagal mengambil data dari Maximo (General Error)',
-                'errorDetail' => [
-                    'message' => $e->getMessage(),
-                ],
-            ]);
+                            $emptyPaginator = new LengthAwarePaginator([], 0, 10, 1, [
+                    'path' => request()->url(),
+                    'query' => request()->query(),
+                ]);
+                return view('admin.maximo.index', [
+                    'workOrders'       => collect([]),
+                    'serviceRequests' => collect([]),
+                    'workOrdersPaginate' => $emptyPaginator,
+                    'serviceRequestsPaginate' => $emptyPaginator,
+                    'error' => 'Gagal mengambil data dari Maximo (General Error)',
+                    'errorDetail' => [
+                        'message' => $e->getMessage(),
+                    ],
+                ]);
         }
     }
 
