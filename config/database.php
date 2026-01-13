@@ -82,19 +82,20 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+
         'oracle' => [
             'driver'        => 'oracle',
-            'tns'           => env('ORACLE_DB_TNS', ''),
-            'host'          => env('ORACLE_DB_HOST', '127.0.0.1'),
+            'host'          => env('ORACLE_DB_HOST'),
             'port'          => env('ORACLE_DB_PORT', '1521'),
-            'database'      => env('ORACLE_DB_SERVICE_NAME', ''),
-            'service_name'  => env('ORACLE_DB_SERVICE_NAME', ''),
-            'username'      => env('ORACLE_DB_USERNAME_MAXIMO', ''),
-            'password'      => env('ORACLE_DB_PASSWORD_MAXIMO', ''),
-            'charset'       => env('ORACLE_DB_CHARSET', 'AL32UTF8'),
+            'database'      => env('ORACLE_DB_SERVICE_NAME'),
+            'service_name'  => env('ORACLE_DB_SERVICE_NAME'),
+            'username'      => env('ORACLE_DB_USERNAME_MAXIMO'),
+            'password'      => env('ORACLE_DB_PASSWORD_MAXIMO'),
+            'charset'       => 'AL32UTF8',
             'prefix'        => '',
-            'prefix_schema' => env('ORACLE_DB_SCHEMA', 'MAXIMO'),
+            'prefix_schema' => 'MAXIMO',
         ],
+
 
 
         'pgsql' => [
