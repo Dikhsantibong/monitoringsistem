@@ -51,31 +51,35 @@
                             <table class="min-w-full border border-gray-300 text-sm">
                                 <thead class="bg-blue-700 text-white">
                                     <tr>
-                                        <th class="px-3 py-2">No</th>
-                                        <th class="px-3 py-2">WO</th>
-                                        <th class="px-3 py-2">Parent</th>
-                                        <th class="px-3 py-2">Status</th>
-                                        <th class="px-3 py-2">Status Date</th>
-                                        <th class="px-3 py-2">Work Type</th>
-                                        <th class="px-3 py-2">Description</th>
-                                        <th class="px-3 py-2">Asset</th>
-                                        <th class="px-3 py-2">Location</th>
-                                        <th class="px-3 py-2">Site</th>
+                                        <th class="border-r gray-300px-3 py-2">No</th>
+                                        <th class="border-r gray-300px-3 py-2">WO</th>
+                                        <th class="border-r gray-300px-3 py-2">Parent</th>
+                                        <th class="border-r gray-300px-3 py-2">Status</th>
+                                        <th class="border-r gray-300px-3 py-2">Status Date</th>
+                                        <th class="border-r gray-300px-3 py-2">Work Type</th>
+                                        <th class="border-r gray-300px-3 py-2">Description</th>
+                                        <th class="border-r gray-300px-3 py-2">Asset</th>
+                                        <th class="border-r gray-300px-3 py-2">Location</th>
+                                        <th class="border-r gray-300px-3 py-2">Site</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @forelse($workOrders as $i => $wo)
+                                @forelse($workOrdersPaginate as $i => $wo)
                                     <tr class="border-b hover:bg-gray-100">
-                                        <td class="px-3 py-2">{{ $i+1 }}</td>
-                                        <td class="px-3 py-2">{{ $wo['wonum'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['parent'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['status'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['statusdate'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['worktype'] }}</td>
-                                        <td class="px-3 py-2 truncate max-w-md">{{ $wo['description'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['assetnum'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['location'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['siteid'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $i+1 }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['wonum'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['parent'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['status'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['statusdate'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['worktype'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">
+    <div style="display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;overflow: hidden;white-space: pre-line;word-break: break-word;">
+        {{ $wo['description'] }}
+    </div>
+</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['assetnum'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['location'] }}</td>
+                                        <td class="border-r gray-300px-3 py-2">{{ $wo['siteid'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -86,6 +90,71 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                        <div class="mt-4 flex justify-between items-center">
+                            <div class="text-sm text-gray-700">
+                                Menampilkan 
+                                {{ ($workOrdersPaginate->currentPage() - 1) * $workOrdersPaginate->perPage() + 1 }} 
+                                hingga 
+                                {{ min($workOrdersPaginate->currentPage() * $workOrdersPaginate->perPage(), $workOrdersPaginate->total()) }} 
+                                dari 
+                                {{ $workOrdersPaginate->total() }} 
+                                entri
+                            </div>
+                            <div class="flex items-center gap-1">
+                                @if (!$workOrdersPaginate->onFirstPage())
+                                    <a href="{{ $workOrdersPaginate->previousPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                                @endif
+                                @foreach ($workOrdersPaginate->getUrlRange(1, $workOrdersPaginate->lastPage()) as $page => $url)
+                                    @if ($page == $workOrdersPaginate->currentPage())
+                                        <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $url }}" 
+                                           class="px-3 py-1 rounded {{ $page == $workOrdersPaginate->currentPage() 
+                                               ? 'bg-[#0A749B] text-white' 
+                                               : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">
+                                            {{ $page }}
+                                        </a>
+                                    @endif
+                                @endforeach
+                                @if ($workOrdersPaginate->hasMorePages())
+                                    <a href="{{ $workOrdersPaginate->nextPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-between items-center">
+                            <div class="text-sm text-gray-700">
+                                Menampilkan 
+                                {{ ($serviceRequestsPaginate->currentPage() - 1) * $serviceRequestsPaginate->perPage() + 1 }} 
+                                hingga 
+                                {{ min($serviceRequestsPaginate->currentPage() * $serviceRequestsPaginate->perPage(), $serviceRequestsPaginate->total()) }} 
+                                dari 
+                                {{ $serviceRequestsPaginate->total() }} 
+                                entri
+                            </div>
+                            <div class="flex items-center gap-1">
+                                @if (!$serviceRequestsPaginate->onFirstPage())
+                                    <a href="{{ $serviceRequestsPaginate->previousPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                                @endif
+                                @foreach ($serviceRequestsPaginate->getUrlRange(1, $serviceRequestsPaginate->lastPage()) as $page => $url)
+                                    @if ($page == $serviceRequestsPaginate->currentPage())
+                                        <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $url }}" 
+                                           class="px-3 py-1 rounded {{ $page == $serviceRequestsPaginate->currentPage() 
+                                               ? 'bg-[#0A749B] text-white' 
+                                               : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">
+                                            {{ $page }}
+                                        </a>
+                                    @endif
+                                @endforeach
+                                @if ($serviceRequestsPaginate->hasMorePages())
+                                    <a href="{{ $serviceRequestsPaginate->nextPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -110,13 +179,17 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @forelse($serviceRequests as $i => $sr)
+                                @forelse($serviceRequestsPaginate as $i => $sr)
                                     <tr class="border-b hover:bg-gray-100">
                                         <td class="px-3 py-2">{{ $i+1 }}</td>
                                         <td class="px-3 py-2">{{ $sr['ticketid'] }}</td>
                                         <td class="px-3 py-2">{{ $sr['status'] }}</td>
                                         <td class="px-3 py-2">{{ $sr['statusdate'] }}</td>
-                                        <td class="px-3 py-2 truncate max-w-md">{{ $sr['description'] }}</td>
+                                        <td class="px-3 py-2">
+    <div style="display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;overflow: hidden;white-space: pre-line;word-break: break-word;">
+        {{ $sr['description'] }}
+    </div>
+</td>
                                         <td class="px-3 py-2">{{ $sr['assetnum'] }}</td>
                                         <td class="px-3 py-2">{{ $sr['location'] }}</td>
                                         <td class="px-3 py-2">{{ $sr['reportedby'] }}</td>

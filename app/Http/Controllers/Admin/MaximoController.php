@@ -32,8 +32,7 @@ class MaximoController extends Controller
                 ])
                 ->where('SITEID', 'KD')
                 ->orderBy('STATUSDATE', 'desc')
-                ->limit(5)
-                ->get();
+                ->paginate(10);
 
             /* ==========================
              * SERVICE REQUEST (BARU)
@@ -53,12 +52,13 @@ class MaximoController extends Controller
                 ])
                 ->where('SITEID', 'KD')
                 ->orderBy('REPORTDATE', 'desc')
-                ->limit(5)
-                ->get();
+                ->paginate(10);
 
             return view('admin.maximo.index', [
                 'workOrders'      => $this->formatWorkOrders($workOrders),
                 'serviceRequests'=> $this->formatServiceRequests($serviceRequests),
+                'workOrdersPaginate' => $workOrders,
+                'serviceRequestsPaginate' => $serviceRequests,
                 'error'           => null,
                 'errorDetail'     => null,
             ]);
