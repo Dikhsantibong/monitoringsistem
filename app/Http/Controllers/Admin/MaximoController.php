@@ -87,18 +87,19 @@ class MaximoController extends Controller
     {
         return collect($workOrders)->map(function ($wo) {
             return [
-                'wonum'       => $wo->WONUM,
-                'parent'      => $wo->PARENT,
-                'status'      => $wo->STATUS,
-                'statusdate'  => $wo->STATUSDATE
-                    ? Carbon::parse($wo->STATUSDATE)
+                'wonum'       => $wo->wonum ?? '-',
+                'parent'      => $wo->parent ?? '-',
+                'status'      => $wo->status ?? '-',
+                'statusdate'  => !empty($wo->statusdate)
+                    ? Carbon::parse($wo->statusdate)
                     : null,
-                'worktype'    => $wo->WORKTYPE,
-                'description' => $wo->DESCRIPTION,
-                'assetnum'    => $wo->ASSETNUM,
-                'location'    => $wo->LOCATION,
-                'siteid'      => $wo->SITEID,
+                'worktype'    => $wo->worktype ?? '-',
+                'description' => $wo->description ?? '-',
+                'assetnum'    => $wo->assetnum ?? '-',
+                'location'    => $wo->location ?? '-',
+                'siteid'      => $wo->siteid ?? '-',
             ];
         });
     }
+
 }
