@@ -4,109 +4,143 @@
 <div class="flex h-screen bg-gray-50 overflow-auto">
     @include('components.sidebar')
 
-    <div id="main-content" class="flex-1 overflow-auto">
-        <header class="bg-white shadow-sm sticky z-10">
-            <div class="flex justify-between items-center px-6 py-3">
+    <div class="flex-1 overflow-auto">
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="px-6 py-3 flex justify-between items-center">
                 <h1 class="text-xl font-semibold text-gray-800">
-                    Maximo Akses - Work Order
+                    Maximo - Service Request & Work Order
                 </h1>
-                @include('components.timer')
             </div>
         </header>
 
-        <main class="px-6 mt-4">
-            <div class="bg-white rounded-lg shadow p-6">
+        <main class="p-6">
 
-                <h2 class="text-lg font-semibold mb-4">
-                    Data Work Order (SITEID: KD)
-                </h2>
-
-                @if(!empty($errorDetail))
-                <div class="mt-4 bg-gray-100 border border-gray-300 p-4 rounded text-sm">
-                    <p class="font-semibold mb-2">Detail Error (Debug):</p>
-            
-                    @if(isset($errorDetail['oracle_code']))
-                        <p><strong>Oracle Code:</strong> ORA-{{ $errorDetail['oracle_code'] }}</p>
-                    @endif
-            
-                    @if(isset($errorDetail['message']))
-                        <p class="break-all"><strong>Message:</strong> {{ $errorDetail['message'] }}</p>
-                    @endif
-            
-                    @if(isset($errorDetail['sql']))
-                        <p class="mt-2"><strong>SQL:</strong></p>
-                        <pre class="bg-white p-2 border rounded text-xs overflow-x-auto">
-            {{ $errorDetail['sql'] }}
-                        </pre>
-                    @endif
-            
-                    @if(isset($errorDetail['bindings']))
-                        <p class="mt-2"><strong>Bindings:</strong></p>
-                        <pre class="bg-white p-2 border rounded text-xs">
-            {{ json_encode($errorDetail['bindings'], JSON_PRETTY_PRINT) }}
-                        </pre>
-                    @endif
+            {{-- ================= ERROR ================= --}}
+            @if(!empty($error))
+                <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
+                    <strong>Gagal mengambil data dari Maximo</strong>
+                    <div class="mt-2 text-sm break-all">
+                        {{ $error }}
+                    </div>
                 </div>
             @endif
-                           
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border border-gray-300">
-                        <thead style="background:#0A749B;color:white">
+            {{-- ================= TAB BUTTON ================= --}}
+            <div class="flex gap-3 mb-6">
+                <button onclick="openTab('sr')"
+                    class="tab-btn px-4 py-2 rounded bg-blue-600 text-white font-semibold">
+                    Service Request
+                </button>
+                <button onclick="openTab('wo')"
+                    class="tab-btn px-4 py-2 rounded bg-gray-300 text-gray-800 font-semibold">
+                    Work Order
+                </button>
+            </div>
+
+            {{-- ================= SERVICE REQUEST ================= --}}
+            <div id="sr" class="tab-content">
+                <h2 class="text-lg font-semibold mb-3">
+                    Service Request (5 Data Terakhir)
+                </h2>
+
+                <div class="overflow-x-auto bg-white rounded shadow">
+                    <table class="min-w-full border text-sm">
+                        <thead class="bg-gray-100">
                             <tr>
-                                <th class="px-4 py-2">No</th>
-                                <th class="px-4 py-2">WO</th>
-                                <th class="px-4 py-2">Parent</th>
-                                <th class="px-4 py-2">Status</th>
-                                <th class="px-4 py-2">Status Date</th>
-                                <th class="px-4 py-2">Work Type</th>
-                                <th class="px-4 py-2">Description</th>
-                                <th class="px-4 py-2">Asset</th>
-                                <th class="px-4 py-2">Location</th>
-                                <th class="px-4 py-2">Site</th>
+                                <th class="border px-3 py-2">No</th>
+                                <th class="border px-3 py-2">Ticket ID</th>
+                                <th class="border px-3 py-2">Status</th>
+                                <th class="border px-3 py-2">Report Date</th>
+                                <th class="border px-3 py-2">Location</th>
+                                <th class="border px-3 py-2">Reported By</th>
                             </tr>
                         </thead>
-
                         <tbody>
-                        @forelse($formattedData as $i => $wo)
-                            <tr class="border-b hover:bg-gray-100">
-                                <td class="px-4 py-2">{{ $i+1 }}</td>
-                                <td class="px-4 py-2">{{ $wo['wonum'] }}</td>
-                                <td class="px-4 py-2">{{ $wo['parent'] }}</td>
-                                <td class="px-4 py-2">
-                                    <span class="px-2 py-1 rounded text-xs
-                                        {{ $wo['status'] === 'COMP' ? 'bg-green-100 text-green-700' :
-                                           ($wo['status'] === 'WAPPR' ? 'bg-yellow-100 text-yellow-700' :
-                                           'bg-gray-100 text-gray-700') }}">
-                                        {{ $wo['status'] }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2">
-                                    {{ $wo['statusdate']
-                                        ? $wo['statusdate']->format('d M Y H:i')
-                                        : '-' }}
-                                </td>
-                                <td class="px-4 py-2">{{ $wo['worktype'] }}</td>
-                                <td class="px-4 py-2 truncate max-w-md">
-                                    {{ $wo['description'] }}
-                                </td>
-                                <td class="px-4 py-2">{{ $wo['assetnum'] }}</td>
-                                <td class="px-4 py-2">{{ $wo['location'] }}</td>
-                                <td class="px-4 py-2">{{ $wo['siteid'] }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="10" class="text-center py-6 text-gray-500">
-                                    Tidak ada data Work Order
-                                </td>
-                            </tr>
-                        @endforelse
+                            @forelse($srData as $i => $sr)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="border px-3 py-2">{{ $i + 1 }}</td>
+                                    <td class="border px-3 py-2">{{ $sr['ticketid'] }}</td>
+                                    <td class="border px-3 py-2">{{ $sr['status'] }}</td>
+                                    <td class="border px-3 py-2">
+                                        {{ $sr['reportdate']?->format('d M Y H:i') ?? '-' }}
+                                    </td>
+                                    <td class="border px-3 py-2">{{ $sr['location'] }}</td>
+                                    <td class="border px-3 py-2">{{ $sr['reportedby'] }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-gray-500">
+                                        Tidak ada data Service Request
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-
             </div>
+
+            {{-- ================= WORK ORDER ================= --}}
+            <div id="wo" class="tab-content hidden">
+                <h2 class="text-lg font-semibold mb-3">
+                    Work Order (5 Data Terakhir)
+                </h2>
+
+                <div class="overflow-x-auto bg-white rounded shadow">
+                    <table class="min-w-full border text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="border px-3 py-2">No</th>
+                                <th class="border px-3 py-2">WO Number</th>
+                                <th class="border px-3 py-2">Status</th>
+                                <th class="border px-3 py-2">Status Date</th>
+                                <th class="border px-3 py-2">Location</th>
+                                <th class="border px-3 py-2">Asset</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($woData as $i => $wo)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="border px-3 py-2">{{ $i + 1 }}</td>
+                                    <td class="border px-3 py-2">{{ $wo['wonum'] }}</td>
+                                    <td class="border px-3 py-2">{{ $wo['status'] }}</td>
+                                    <td class="border px-3 py-2">
+                                        {{ $wo['statusdate']?->format('d M Y H:i') ?? '-' }}
+                                    </td>
+                                    <td class="border px-3 py-2">{{ $wo['location'] }}</td>
+                                    <td class="border px-3 py-2">{{ $wo['assetnum'] }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-gray-500">
+                                        Tidak ada data Work Order
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
     </div>
 </div>
+
+{{-- ================= TAB SCRIPT ================= --}}
+<script>
+    function openTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(el => {
+            el.classList.add('hidden');
+        });
+
+        document.getElementById(tab).classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('bg-gray-300', 'text-gray-800');
+        });
+
+        event.target.classList.add('bg-blue-600', 'text-white');
+        event.target.classList.remove('bg-gray-300', 'text-gray-800');
+    }
+</script>
 @endsection
