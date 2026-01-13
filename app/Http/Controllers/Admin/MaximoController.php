@@ -12,21 +12,15 @@ class MaximoController extends Controller
     public function index()
     {
         try {
-            // Validasi config Oracle
-            $oracle = config('database.connections.oracle');
+            /**
+             * NOTE:
+             * - Tidak perlu cek username/password/service_name di runtime
+             * - Jika salah, Oracle akan throw exception otomatis
+             */
 
-            if (
-                empty($oracle['username']) ||
-                empty($oracle['password']) ||
-                empty($oracle['service_name'])
-            ) {
-                throw new \Exception('Konfigurasi Oracle tidak lengkap');
-            }
-
-            // QUERY ORACLE MAXIMO (JANGAN pakai schema di table)
             $workOrders = DB::connection('oracle')
                 ->table('WORKORDER')
-                ->select(
+                ->select([
                     'WONUM',
                     'PARENT',
                     'STATUS',
@@ -35,46 +29,61 @@ class MaximoController extends Controller
                     'DESCRIPTION',
                     'ASSETNUM',
                     'LOCATION',
-                    'SITEID'
-                )
-                ->where('SITEID', '=', 'KD')
+                    'SITEID',
+                ])
+                ->where('SITEID', 'KD')
                 ->orderBy('STATUSDATE', 'desc')
                 ->limit(5)
                 ->get();
 
+            $formattedData = $this->formatWorkOrders($workOrders);
+
             return view('admin.maximo.index', [
-                'formattedData' => $this->formatWorkOrders($workOrders),
-                'error' => null
+                'formattedData' => $formattedData,
+                'error' => null,
             ]);
 
         } catch (\Throwable $e) {
+
             Log::error('ORACLE MAXIMO ERROR', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ]);
 
             return view('admin.maximo.index', [
                 'formattedData' => collect([]),
-                'error' => $e->getMessage()
+                'error' => 'Gagal mengambil data Work Order dari Maximo',
             ]);
         }
     }
 
+    /**
+     * Normalisasi data Oracle → Laravel
+     */
     private function formatWorkOrders($workOrders)
     {
         return collect($workOrders)->map(function ($wo) {
+
+            $statusDate = null;
+            if (!empty($wo->STATUSDATE)) {
+                try {
+                    $statusDate = Carbon::parse($wo->STATUSDATE);
+                } catch (\Throwable $e) {
+                    $statusDate = null;
+                }
+            }
+
             return [
-                'wonum'       => $wo->WONUM ?? '-',
-                'parent'      => $wo->PARENT ?? '-',
-                'status'      => $wo->STATUS ?? '-',
-                'statusdate'  => !empty($wo->STATUSDATE)
-                    ? Carbon::parse($wo->STATUSDATE)
-                    : null,
-                'worktype'    => $wo->WORKTYPE ?? '-',
-                'description' => $wo->DESCRIPTION ?? '-',
-                'assetnum'    => $wo->ASSETNUM ?? '-',
-                'location'    => $wo->LOCATION ?? '-',
-                'siteid'      => $wo->SITEID ?? '-',
+                'wonum'       => $wo->WONUM,
+                'parent'      => $wo->PARENT,
+                'status'      => $wo->STATUS,
+                'statusdate'  => $statusDate,
+                'worktype'    => $wo->WORKTYPE,
+                'description' => $wo->DESCRIPTION,
+                'assetnum'    => $wo->ASSETNUM,
+                'location'    => $wo->LOCATION,
+                'siteid'      => $wo->SITEID,
             ];
         });
     }
