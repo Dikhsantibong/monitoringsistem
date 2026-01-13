@@ -1,216 +1,149 @@
-@extends('layouts.app')
+<?php
 
-@section('content')
-<div class="flex h-screen bg-gray-50 overflow-auto">
-    @include('components.sidebar')
+namespace App\Http\Controllers\Admin;
 
-    <div id="main-content" class="flex-1 overflow-auto">
-        <header class="bg-white shadow-sm sticky z-10">
-            <div class="flex justify-between items-center px-6 py-3">
-                <h1 class="text-xl font-semibold text-gray-800">
-                    Maximo Akses (SITEID: KD)
-                </h1>
-                @include('components.timer')
-            </div>
-        </header>
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 
-        <main class="px-6 mt-4">
-            <div class="bg-white rounded-lg shadow p-6">
+class MaximoController extends Controller
+{
+    public function index()
+    {
+        try {
 
-                {{-- ERROR DEBUG --}}
-                @if(!empty($errorDetail))
-                <div class="mb-4 bg-gray-100 border border-gray-300 p-4 rounded text-sm">
-                    <p class="font-semibold mb-2">Detail Error (Debug)</p>
-                    <pre class="text-xs break-all">{{ json_encode($errorDetail, JSON_PRETTY_PRINT) }}</pre>
-                </div>
-                @endif
+            /* ==========================
+             * WORK ORDER (TETAP)
+             * ========================== */
+            $workOrders = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'PARENT',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'DESCRIPTION',
+                    'ASSETNUM',
+                    'LOCATION',
+                    'SITEID',
+                ])
+                ->where('SITEID', 'KD')
+                ->orderBy('STATUSDATE', 'desc')
+                ->limit(5)
+                ->get();
 
-                {{-- TABS --}}
-                <div x-data="{ tab: 'wo' }">
-                    <div class="border-b mb-4 flex gap-4">
-                        <button
-                            @click="tab='wo'"
-                            :class="tab==='wo' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'"
-                            class="pb-2 font-semibold">
-                            Work Order
-                        </button>
+            /* ==========================
+             * SERVICE REQUEST (BARU)
+             * ========================== */
+            $serviceRequests = DB::connection('oracle')
+                ->table('SR')
+                ->select([
+                    'TICKETID',
+                    'DESCRIPTION',
+                    'STATUS',
+                    'STATUSDATE',
+                    'SITEID',
+                    'LOCATION',
+                    'ASSETNUM',
+                    'REPORTEDBY',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD')
+                ->orderBy('REPORTDATE', 'desc')
+                ->limit(5)
+                ->get();
 
-                        <button
-                            @click="tab='sr'"
-                            :class="tab==='sr' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'"
-                            class="pb-2 font-semibold">
-                            Service Request
-                        </button>
-                    </div>
+            return view('admin.maximo.index', [
+                'workOrders'      => $this->formatWorkOrders($workOrders),
+                'serviceRequests'=> $this->formatServiceRequests($serviceRequests),
+                'error'           => null,
+                'errorDetail'     => null,
+            ]);
 
-                    {{-- ================= WORK ORDER TAB ================= --}}
-                    <div x-show="tab==='wo'">
-                        <h2 class="text-lg font-semibold mb-3">Data Work Order</h2>
+        } catch (QueryException $e) {
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full border border-gray-300 text-sm">
-                                <thead class="bg-blue-700 text-white">
-                                    <tr>
-                                        <th class="border-r gray-300px-3 py-2">No</th>
-                                        <th class="border-r gray-300px-3 py-2">WO</th>
-                                        <th class="border-r gray-300px-3 py-2">Parent</th>
-                                        <th class="border-r gray-300px-3 py-2">Status</th>
-                                        <th class="border-r gray-300px-3 py-2">Status Date</th>
-                                        <th class="border-r gray-300px-3 py-2">Work Type</th>
-                                        <th class="border-r gray-300px-3 py-2">Description</th>
-                                        <th class="border-r gray-300px-3 py-2">Asset</th>
-                                        <th class="border-r gray-300px-3 py-2">Location</th>
-                                        <th class="border-r gray-300px-3 py-2">Site</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                @forelse($workOrdersPaginate as $i => $wo)
-                                    <tr class="border-b hover:bg-gray-100">
-                                        <td class="border-r gray-300px-3 py-2">{{ $i+1 }}</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['wonum'] }}</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['parent'] }}</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['status'] }}</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['statusdate'] }}</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['worktype'] }}</td>
-                                        <td class="border-r gray-300px-3 py-2">
-    <div style="display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;overflow: hidden;white-space: pre-line;word-break: break-word;">
-        {{ $wo['description'] }}
-    </div>
-</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['assetnum'] }}</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['location'] }}</td>
-                                        <td class="border-r gray-300px-3 py-2">{{ $wo['siteid'] }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="10" class="text-center py-4 text-gray-500">
-                                            Tidak ada data Work Order
-                                        </td>
-                                    </tr>
-                                @endforelse
-                                </tbody>
-                            </table>
-                        <div class="mt-4 flex justify-between items-center">
-                            <div class="text-sm text-gray-700">
-                                Menampilkan 
-                                {{ ($workOrdersPaginate->currentPage() - 1) * $workOrdersPaginate->perPage() + 1 }} 
-                                hingga 
-                                {{ min($workOrdersPaginate->currentPage() * $workOrdersPaginate->perPage(), $workOrdersPaginate->total()) }} 
-                                dari 
-                                {{ $workOrdersPaginate->total() }} 
-                                entri
-                            </div>
-                            <div class="flex items-center gap-1">
-                                @if (!$workOrdersPaginate->onFirstPage())
-                                    <a href="{{ $workOrdersPaginate->previousPageUrl() }}" 
-                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
-                                @endif
-                                @foreach ($workOrdersPaginate->getUrlRange(1, $workOrdersPaginate->lastPage()) as $page => $url)
-                                    @if ($page == $workOrdersPaginate->currentPage())
-                                        <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
-                                    @else
-                                        <a href="{{ $url }}" 
-                                           class="px-3 py-1 rounded {{ $page == $workOrdersPaginate->currentPage() 
-                                               ? 'bg-[#0A749B] text-white' 
-                                               : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">
-                                            {{ $page }}
-                                        </a>
-                                    @endif
-                                @endforeach
-                                @if ($workOrdersPaginate->hasMorePages())
-                                    <a href="{{ $workOrdersPaginate->nextPageUrl() }}" 
-                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="mt-4 flex justify-between items-center">
-                            <div class="text-sm text-gray-700">
-                                Menampilkan 
-                                {{ ($serviceRequestsPaginate->currentPage() - 1) * $serviceRequestsPaginate->perPage() + 1 }} 
-                                hingga 
-                                {{ min($serviceRequestsPaginate->currentPage() * $serviceRequestsPaginate->perPage(), $serviceRequestsPaginate->total()) }} 
-                                dari 
-                                {{ $serviceRequestsPaginate->total() }} 
-                                entri
-                            </div>
-                            <div class="flex items-center gap-1">
-                                @if (!$serviceRequestsPaginate->onFirstPage())
-                                    <a href="{{ $serviceRequestsPaginate->previousPageUrl() }}" 
-                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
-                                @endif
-                                @foreach ($serviceRequestsPaginate->getUrlRange(1, $serviceRequestsPaginate->lastPage()) as $page => $url)
-                                    @if ($page == $serviceRequestsPaginate->currentPage())
-                                        <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
-                                    @else
-                                        <a href="{{ $url }}" 
-                                           class="px-3 py-1 rounded {{ $page == $serviceRequestsPaginate->currentPage() 
-                                               ? 'bg-[#0A749B] text-white' 
-                                               : 'bg-white text-[#0A749B] border border-[#0A749B]' }}">
-                                            {{ $page }}
-                                        </a>
-                                    @endif
-                                @endforeach
-                                @if ($serviceRequestsPaginate->hasMorePages())
-                                    <a href="{{ $serviceRequestsPaginate->nextPageUrl() }}" 
-                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+            Log::error('ORACLE QUERY ERROR', [
+                'oracle_code' => $e->errorInfo[1] ?? null,
+                'message'     => $e->getMessage(),
+                'sql'         => $e->getSql(),
+                'bindings'    => $e->getBindings(),
+            ]);
 
-                    {{-- ================= SERVICE REQUEST TAB ================= --}}
-                    <div x-show="tab==='sr'">
-                        <h2 class="text-lg font-semibold mb-3">Data Service Request</h2>
+            return view('admin.maximo.index', [
+                'workOrders'       => collect([]),
+                'serviceRequests' => collect([]),
+                'error' => 'Gagal mengambil data dari Maximo (Query Error)',
+                'errorDetail' => [
+                    'oracle_code' => $e->errorInfo[1] ?? null,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full border border-gray-300 text-sm">
-                                <thead class="bg-green-700 text-white">
-                                    <tr>
-                                        <th class="px-3 py-2">No</th>
-                                        <th class="px-3 py-2">Ticket</th>
-                                        <th class="px-3 py-2">Status</th>
-                                        <th class="px-3 py-2">Status Date</th>
-                                        <th class="px-3 py-2">Description</th>
-                                        <th class="px-3 py-2">Asset</th>
-                                        <th class="px-3 py-2">Location</th>
-                                        <th class="px-3 py-2">Reported By</th>
-                                        <th class="px-3 py-2">Report Date</th>
-                                        <th class="px-3 py-2">Site</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                @forelse($serviceRequestsPaginate as $i => $sr)
-                                    <tr class="border-b hover:bg-gray-100">
-                                        <td class="px-3 py-2">{{ $i+1 }}</td>
-                                        <td class="px-3 py-2">{{ $sr['ticketid'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['status'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['statusdate'] }}</td>
-                                        <td class="px-3 py-2">
-    <div style="display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;overflow: hidden;white-space: pre-line;word-break: break-word;">
-        {{ $sr['description'] }}
-    </div>
-</td>
-                                        <td class="px-3 py-2">{{ $sr['assetnum'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['location'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['reportedby'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['reportdate'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['siteid'] }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="10" class="text-center py-4 text-gray-500">
-                                            Tidak ada data Service Request
-                                        </td>
-                                    </tr>
-                                @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        } catch (\Throwable $e) {
 
-                </div>
-            </div>
-        </main>
-    </div>
-</div>
-@endsection
+            Log::error('ORACLE GENERAL ERROR', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return view('admin.maximo.index', [
+                'workOrders'       => collect([]),
+                'serviceRequests' => collect([]),
+                'error' => 'Gagal mengambil data dari Maximo (General Error)',
+                'errorDetail' => [
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+    }
+
+    /* ==========================
+     * FORMAT WORK ORDER
+     * ========================== */
+    private function formatWorkOrders($workOrders)
+    {
+        return collect($workOrders)->map(function ($wo) {
+            return [
+                'wonum'       => $wo->wonum ?? '-',
+                'parent'      => $wo->parent ?? '-',
+                'status'      => $wo->status ?? '-',
+                'statusdate'  => $wo->statusdate
+                    ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i')
+                    : '-',
+                'worktype'    => $wo->worktype ?? '-',
+                'description' => $wo->description ?? '-',
+                'assetnum'    => $wo->assetnum ?? '-',
+                'location'    => $wo->location ?? '-',
+                'siteid'      => $wo->siteid ?? '-',
+            ];
+        });
+    }
+
+    /* ==========================
+     * FORMAT SERVICE REQUEST
+     * ========================== */
+    private function formatServiceRequests($serviceRequests)
+    {
+        return collect($serviceRequests)->map(function ($sr) {
+            return [
+                'ticketid'    => $sr->ticketid ?? '-',
+                'description' => $sr->description ?? '-',
+                'status'      => $sr->status ?? '-',
+                'statusdate'  => $sr->statusdate
+                    ? Carbon::parse($sr->statusdate)->format('d-m-Y H:i')
+                    : '-',
+                'siteid'      => $sr->siteid ?? '-',
+                'location'    => $sr->location ?? '-',
+                'assetnum'    => $sr->assetnum ?? '-',
+                'reportedby'  => $sr->reportedby ?? '-',
+                'reportdate'  => $sr->reportdate
+                    ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i')
+                    : '-',
+            ];
+        });
+    }
+}
