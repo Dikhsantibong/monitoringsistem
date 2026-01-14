@@ -159,7 +159,11 @@
                                             @endif
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2 max-w-md maximo-description">{{ $wo['description'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            <span class="inline-block w-96 break-words whitespace-normal maximo-description">
+                                                {{ $wo['description'] }}
+                                            </span>
+                                        </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['assetnum'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['location'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['siteid'] }}</td>
@@ -265,7 +269,11 @@
                                                 <span class="text-gray-400">-</span>
                                             @endif
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2 max-w-md maximo-description">{{ $sr['description'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            <span class="inline-block w-96 break-words whitespace-normal maximo-description">
+                                                {{ $sr['description'] }}
+                                            </span>
+                                        </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['assetnum'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['location'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportedby'] }}</td>
@@ -337,11 +345,8 @@
 
 <style>
     .maximo-description {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
         white-space: normal;
+        word-break: break-word;
     }
 </style>
 @endsection
