@@ -8,7 +8,7 @@
         <header class="bg-white shadow-sm sticky z-10">
             <div class="flex justify-between items-center px-6 py-3">
                 <h1 class="text-xl font-semibold text-gray-800">
-                    Maximo Akses (SITEID: KD)
+                    Maximo Akses (UP KENDARI)
                 </h1>
                 @include('components.timer')
             </div>
