@@ -16,6 +16,7 @@ class MaximoController extends Controller
         try {
             $workOrderPage = $request->input('wo_page', 1);
             $serviceRequestPage = $request->input('sr_page', 1);
+            $search = $request->input('search');
 
             /* ==========================
              * WORK ORDER (TETAP)
@@ -33,8 +34,21 @@ class MaximoController extends Controller
                     'LOCATION',
                     'SITEID',
                 ])
-                ->where('SITEID', 'KD')
-                ->orderBy('STATUSDATE', 'desc');
+                ->where('SITEID', 'KD');
+
+            if ($search) {
+                $workOrdersQuery->where(function ($q) use ($search) {
+                    $q->where('WONUM', 'LIKE', "%{$search}%")
+                        ->orWhere('PARENT', 'LIKE', "%{$search}%")
+                        ->orWhere('STATUS', 'LIKE', "%{$search}%")
+                        ->orWhere('WORKTYPE', 'LIKE', "%{$search}%")
+                        ->orWhere('DESCRIPTION', 'LIKE', "%{$search}%")
+                        ->orWhere('ASSETNUM', 'LIKE', "%{$search}%")
+                        ->orWhere('LOCATION', 'LIKE', "%{$search}%");
+                });
+            }
+
+            $workOrdersQuery->orderBy('STATUSDATE', 'desc');
 
             $workOrders = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
 
@@ -54,8 +68,21 @@ class MaximoController extends Controller
                     'REPORTEDBY',
                     'REPORTDATE',
                 ])
-                ->where('SITEID', 'KD')
-                ->orderBy('REPORTDATE', 'desc');
+                ->where('SITEID', 'KD');
+
+            if ($search) {
+                $serviceRequestsQuery->where(function ($q) use ($search) {
+                    $q->where('TICKETID', 'LIKE', "%{$search}%")
+                        ->orWhere('DESCRIPTION', 'LIKE', "%{$search}%")
+                        ->orWhere('STATUS', 'LIKE', "%{$search}%")
+                        ->orWhere('SITEID', 'LIKE', "%{$search}%")
+                        ->orWhere('LOCATION', 'LIKE', "%{$search}%")
+                        ->orWhere('ASSETNUM', 'LIKE', "%{$search}%")
+                        ->orWhere('REPORTEDBY', 'LIKE', "%{$search}%");
+                });
+            }
+
+            $serviceRequestsQuery->orderBy('REPORTDATE', 'desc');
 
             $serviceRequests = $serviceRequestsQuery->paginate(10, ['*'], 'sr_page', $serviceRequestPage);
 

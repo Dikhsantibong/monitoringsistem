@@ -25,6 +25,29 @@
                 </div>
                 @endif
 
+                {{-- SEARCH --}}
+                <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div class="w-full md:w-1/3">
+                        <form method="GET" action="{{ route('admin.maximo') }}">
+                            <div class="flex">
+                                <input
+                                    type="text"
+                                    name="search"
+                                    value="{{ request('search') }}"
+                                    placeholder="Cari WO, Ticket, Description, Asset, Location..."
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                >
+                                <button
+                                    type="submit"
+                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-r-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Cari
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 {{-- TABS --}}
                 <div x-data="{ tab: 'wo' }">
                     <div class="border-b mb-4 flex gap-4">
@@ -65,23 +88,23 @@
                                 </thead>
                                 <tbody>
                                 @forelse($workOrders as $i => $wo)
-                                    <tr class="border-b hover:bg-gray-100">
-                                        <td class="px-3 py-2">
+                                    <tr class="border-b border-gray-300 hover:bg-gray-100">
+                                        <td class="border-r border-gray-300 px-3 py-2">
                                             @if($workOrdersPaginator)
                                                 {{ ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() + $loop->iteration }}
                                             @else
                                                 {{ $i+1 }}
                                             @endif
                                         </td>
-                                        <td class="px-3 py-2">{{ $wo['wonum'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['parent'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['status'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['statusdate'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['worktype'] }}</td>
-                                        <td class="px-3 py-2 truncate max-w-md">{{ $wo['description'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['assetnum'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['location'] }}</td>
-                                        <td class="px-3 py-2">{{ $wo['siteid'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['wonum'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['parent'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['status'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['statusdate'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2 truncate max-w-md">{{ $wo['description'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['assetnum'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['location'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['siteid'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -108,7 +131,7 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 @if (!$workOrdersPaginator->onFirstPage())
-                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1)])->previousPageUrl() }}" 
+                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->previousPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                                 @endif
 
@@ -116,7 +139,7 @@
                                     @if ($page == $workOrdersPaginator->currentPage())
                                         <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                                     @else
-                                        <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1)])->url($page) }}" 
+                                        <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->url($page) }}" 
                                            class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
                                             {{ $page }}
                                         </a>
@@ -124,7 +147,7 @@
                                 @endforeach
 
                                 @if ($workOrdersPaginator->hasMorePages())
-                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1)])->nextPageUrl() }}" 
+                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->nextPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                                 @endif
                             </div>
@@ -154,23 +177,23 @@
                                 </thead>
                                 <tbody>
                                 @forelse($serviceRequests as $i => $sr)
-                                    <tr class="border-b hover:bg-gray-100">
-                                        <td class="px-3 py-2">
+                                    <tr class="border-b border-gray-300 hover:bg-gray-100">
+                                        <td class="border-r border-gray-300 px-3 py-2">
                                             @if($serviceRequestsPaginator)
                                                 {{ ($serviceRequestsPaginator->currentPage() - 1) * $serviceRequestsPaginator->perPage() + $loop->iteration }}
                                             @else
                                                 {{ $i+1 }}
                                             @endif
                                         </td>
-                                        <td class="px-3 py-2">{{ $sr['ticketid'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['status'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['statusdate'] }}</td>
-                                        <td class="px-3 py-2 truncate max-w-md">{{ $sr['description'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['assetnum'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['location'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['reportedby'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['reportdate'] }}</td>
-                                        <td class="px-3 py-2">{{ $sr['siteid'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['ticketid'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['status'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['statusdate'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2 truncate max-w-md">{{ $sr['description'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['assetnum'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['location'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportedby'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportdate'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['siteid'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -197,7 +220,7 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 @if (!$serviceRequestsPaginator->onFirstPage())
-                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1)])->previousPageUrl() }}" 
+                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->previousPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                                 @endif
 
@@ -205,7 +228,7 @@
                                     @if ($page == $serviceRequestsPaginator->currentPage())
                                         <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                                     @else
-                                        <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1)])->url($page) }}" 
+                                        <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->url($page) }}" 
                                            class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
                                             {{ $page }}
                                         </a>
@@ -213,7 +236,7 @@
                                 @endforeach
 
                                 @if ($serviceRequestsPaginator->hasMorePages())
-                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1)])->nextPageUrl() }}" 
+                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->nextPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                                 @endif
                             </div>
