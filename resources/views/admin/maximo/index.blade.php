@@ -5,12 +5,51 @@
     @include('components.sidebar')
 
     <div id="main-content" class="flex-1 overflow-auto">
-        <header class="bg-white shadow-sm sticky z-10">
+        <header class="bg-white shadow-sm sticky top-0">
             <div class="flex justify-between items-center px-6 py-3">
-                <h1 class="text-xl font-semibold text-gray-800">
-                    Maximo Akses (UP KENDARI)
-                </h1>
-                @include('components.timer')
+                <div class="flex items-center gap-x-3">
+                    <button id="mobile-menu-toggle"
+                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <button id="desktop-menu-toggle"
+                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800">Maximo Akses</h1>
+                </div>
+                <div class="flex items-center gap-x-4 relative">
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                            <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                                class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-caret-down ml-2"></i>
+                        </button>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                            <a href="{{ route('user.profile') }}"
+                                class="block px-4 py-2 text-gray-800 hover:bg-gray-200">Profile</a>
+                            <a href="{{ route('logout') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -98,10 +137,29 @@
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['wonum'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['parent'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['status'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['statusdate'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            @php
+                                                $woStatus = strtoupper($wo['status']);
+                                            @endphp
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                                @if(in_array($woStatus, ['COMP', 'CLOSE', 'RESOLVED'])) bg-green-100 text-green-800
+                                                @elseif(in_array($woStatus, ['WAPPR', 'APPR'])) bg-blue-100 text-blue-800
+                                                @elseif(in_array($woStatus, ['INPRG', 'IN PROGRESS'])) bg-yellow-100 text-yellow-800
+                                                @else bg-gray-100 text-gray-800 @endif">
+                                                {{ $wo['status'] }}
+                                            </span>
+                                        </td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            @if($wo['statusdate'] !== '-')
+                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-800 rounded-md">
+                                                    {{ $wo['statusdate'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2 truncate max-w-md">{{ $wo['description'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2 max-w-md maximo-description">{{ $wo['description'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['assetnum'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['location'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['siteid'] }}</td>
@@ -186,13 +244,40 @@
                                             @endif
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['ticketid'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['status'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['statusdate'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2 truncate max-w-md">{{ $sr['description'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            @php
+                                                $srStatus = strtoupper($sr['status']);
+                                            @endphp
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                                @if(in_array($srStatus, ['COMP', 'CLOSE', 'RESOLVED'])) bg-green-100 text-green-800
+                                                @elseif(in_array($srStatus, ['WAPPR', 'APPR'])) bg-blue-100 text-blue-800
+                                                @elseif(in_array($srStatus, ['INPRG', 'IN PROGRESS'])) bg-yellow-100 text-yellow-800
+                                                @else bg-gray-100 text-gray-800 @endif">
+                                                {{ $sr['status'] }}
+                                            </span>
+                                        </td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            @if($sr['statusdate'] !== '-')
+                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-800 rounded-md">
+                                                    {{ $sr['statusdate'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="border-r border-gray-300 px-3 py-2 max-w-md maximo-description">{{ $sr['description'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['assetnum'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['location'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportedby'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportdate'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            @if($sr['reportdate'] !== '-')
+                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
+                                                    {{ $sr['reportdate'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['siteid'] }}</td>
                                     </tr>
                                 @empty
@@ -249,4 +334,14 @@
         </main>
     </div>
 </div>
+
+<style>
+    .maximo-description {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+    }
+</style>
 @endsection
