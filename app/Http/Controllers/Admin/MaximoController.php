@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -10,14 +11,16 @@ use Illuminate\Database\QueryException;
 
 class MaximoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
+            $workOrderPage = $request->input('wo_page', 1);
+            $serviceRequestPage = $request->input('sr_page', 1);
 
             /* ==========================
              * WORK ORDER (TETAP)
              * ========================== */
-            $workOrders = DB::connection('oracle')
+            $workOrdersQuery = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
                     'WONUM',
@@ -31,14 +34,14 @@ class MaximoController extends Controller
                     'SITEID',
                 ])
                 ->where('SITEID', 'KD')
-                ->orderBy('STATUSDATE', 'desc')
-                ->limit(5)
-                ->get();
+                ->orderBy('STATUSDATE', 'desc');
+
+            $workOrders = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
 
             /* ==========================
              * SERVICE REQUEST (BARU)
              * ========================== */
-            $serviceRequests = DB::connection('oracle')
+            $serviceRequestsQuery = DB::connection('oracle')
                 ->table('SR')
                 ->select([
                     'TICKETID',
@@ -52,13 +55,15 @@ class MaximoController extends Controller
                     'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD')
-                ->orderBy('REPORTDATE', 'desc')
-                ->limit(5)
-                ->get();
+                ->orderBy('REPORTDATE', 'desc');
+
+            $serviceRequests = $serviceRequestsQuery->paginate(10, ['*'], 'sr_page', $serviceRequestPage);
 
             return view('admin.maximo.index', [
-                'workOrders'      => $this->formatWorkOrders($workOrders),
-                'serviceRequests'=> $this->formatServiceRequests($serviceRequests),
+                'workOrders'      => $this->formatWorkOrders($workOrders->items()),
+                'workOrdersPaginator' => $workOrders,
+                'serviceRequests' => $this->formatServiceRequests($serviceRequests->items()),
+                'serviceRequestsPaginator' => $serviceRequests,
                 'error'           => null,
                 'errorDetail'     => null,
             ]);
@@ -74,7 +79,9 @@ class MaximoController extends Controller
 
             return view('admin.maximo.index', [
                 'workOrders'       => collect([]),
+                'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
+                'serviceRequestsPaginator' => null,
                 'error' => 'Gagal mengambil data dari Maximo (Query Error)',
                 'errorDetail' => [
                     'oracle_code' => $e->errorInfo[1] ?? null,
@@ -92,7 +99,9 @@ class MaximoController extends Controller
 
             return view('admin.maximo.index', [
                 'workOrders'       => collect([]),
+                'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
+                'serviceRequestsPaginator' => null,
                 'error' => 'Gagal mengambil data dari Maximo (General Error)',
                 'errorDetail' => [
                     'message' => $e->getMessage(),

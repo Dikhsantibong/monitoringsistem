@@ -66,7 +66,13 @@
                                 <tbody>
                                 @forelse($workOrders as $i => $wo)
                                     <tr class="border-b hover:bg-gray-100">
-                                        <td class="px-3 py-2">{{ $i+1 }}</td>
+                                        <td class="px-3 py-2">
+                                            @if($workOrdersPaginator)
+                                                {{ ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() + $loop->iteration }}
+                                            @else
+                                                {{ $i+1 }}
+                                            @endif
+                                        </td>
                                         <td class="px-3 py-2">{{ $wo['wonum'] }}</td>
                                         <td class="px-3 py-2">{{ $wo['parent'] }}</td>
                                         <td class="px-3 py-2">{{ $wo['status'] }}</td>
@@ -87,6 +93,43 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        {{-- Pagination Work Order --}}
+                        @if($workOrdersPaginator && $workOrdersPaginator->hasPages())
+                        <div class="mt-4 flex justify-between items-center">
+                            <div class="text-sm text-gray-700">
+                                Menampilkan 
+                                {{ ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() + 1 }} 
+                                hingga 
+                                {{ min($workOrdersPaginator->currentPage() * $workOrdersPaginator->perPage(), $workOrdersPaginator->total()) }} 
+                                dari 
+                                {{ $workOrdersPaginator->total() }} 
+                                entri
+                            </div>
+                            <div class="flex items-center gap-1">
+                                @if (!$workOrdersPaginator->onFirstPage())
+                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1)])->previousPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                                @endif
+
+                                @foreach ($workOrdersPaginator->getUrlRange(1, min($workOrdersPaginator->lastPage(), 10)) as $page => $url)
+                                    @if ($page == $workOrdersPaginator->currentPage())
+                                        <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1)])->url($page) }}" 
+                                           class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
+                                            {{ $page }}
+                                        </a>
+                                    @endif
+                                @endforeach
+
+                                @if ($workOrdersPaginator->hasMorePages())
+                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1)])->nextPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                     {{-- ================= SERVICE REQUEST TAB ================= --}}
@@ -112,7 +155,13 @@
                                 <tbody>
                                 @forelse($serviceRequests as $i => $sr)
                                     <tr class="border-b hover:bg-gray-100">
-                                        <td class="px-3 py-2">{{ $i+1 }}</td>
+                                        <td class="px-3 py-2">
+                                            @if($serviceRequestsPaginator)
+                                                {{ ($serviceRequestsPaginator->currentPage() - 1) * $serviceRequestsPaginator->perPage() + $loop->iteration }}
+                                            @else
+                                                {{ $i+1 }}
+                                            @endif
+                                        </td>
                                         <td class="px-3 py-2">{{ $sr['ticketid'] }}</td>
                                         <td class="px-3 py-2">{{ $sr['status'] }}</td>
                                         <td class="px-3 py-2">{{ $sr['statusdate'] }}</td>
@@ -133,6 +182,43 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        {{-- Pagination Service Request --}}
+                        @if($serviceRequestsPaginator && $serviceRequestsPaginator->hasPages())
+                        <div class="mt-4 flex justify-between items-center">
+                            <div class="text-sm text-gray-700">
+                                Menampilkan 
+                                {{ ($serviceRequestsPaginator->currentPage() - 1) * $serviceRequestsPaginator->perPage() + 1 }} 
+                                hingga 
+                                {{ min($serviceRequestsPaginator->currentPage() * $serviceRequestsPaginator->perPage(), $serviceRequestsPaginator->total()) }} 
+                                dari 
+                                {{ $serviceRequestsPaginator->total() }} 
+                                entri
+                            </div>
+                            <div class="flex items-center gap-1">
+                                @if (!$serviceRequestsPaginator->onFirstPage())
+                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1)])->previousPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                                @endif
+
+                                @foreach ($serviceRequestsPaginator->getUrlRange(1, min($serviceRequestsPaginator->lastPage(), 10)) as $page => $url)
+                                    @if ($page == $serviceRequestsPaginator->currentPage())
+                                        <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1)])->url($page) }}" 
+                                           class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
+                                            {{ $page }}
+                                        </a>
+                                    @endif
+                                @endforeach
+
+                                @if ($serviceRequestsPaginator->hasMorePages())
+                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1)])->nextPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                 </div>
