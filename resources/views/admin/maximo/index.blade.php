@@ -28,7 +28,7 @@
                 {{-- SEARCH --}}
                 <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div class="w-full md:w-1/3">
-                        <form method="GET" action="{{ route('admin.maximo') }}">
+                        <form method="GET" action="{{ route('admin.maximo.index') }}">
                             <div class="flex">
                                 <input
                                     type="text"
