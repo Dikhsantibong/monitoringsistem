@@ -37,6 +37,7 @@ class MaximoController extends Controller
                     'DOWNTIME',
                     'SCHEDSTART',
                     'SCHEDFINISH',
+                    'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD');
 
@@ -151,20 +152,23 @@ class MaximoController extends Controller
                 'wonum'       => $wo->wonum ?? '-',
                 'parent'      => $wo->parent ?? '-',
                 'status'      => $wo->status ?? '-',
-                'statusdate'  => $wo->statusdate
+                'statusdate'  => isset($wo->statusdate) && $wo->statusdate
                     ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i')
                     : '-',
                 'worktype'    => $wo->worktype ?? '-',
                 'description' => $wo->description ?? '-',
+                'reportdate'  => isset($wo->reportdate) && $wo->reportdate
+                    ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i')
+                    : '-',
                 'assetnum'    => $wo->assetnum ?? '-',
                 'wopriority'  => $wo->wopriority ?? '-',
                 'location'    => $wo->location ?? '-',
                 'siteid'      => $wo->siteid ?? '-',
                 'downtime'    => $wo->downtime ?? '-',
-                'schedstart'  => $wo->schedstart
+                'schedstart'  => isset($wo->schedstart) && $wo->schedstart
                     ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i')
                     : '-',
-                'schedfinish' => $wo->schedfinish
+                'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish
                     ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i')
                     : '-',
             ];
@@ -181,14 +185,14 @@ class MaximoController extends Controller
                 'ticketid'    => $sr->ticketid ?? '-',
                 'description' => $sr->description ?? '-',
                 'status'      => $sr->status ?? '-',
-                'statusdate'  => $sr->statusdate
+                'statusdate'  => isset($sr->statusdate) && $sr->statusdate
                     ? Carbon::parse($sr->statusdate)->format('d-m-Y H:i')
                     : '-',
                 'siteid'      => $sr->siteid ?? '-',
                 'location'    => $sr->location ?? '-',
                 'assetnum'    => $sr->assetnum ?? '-',
                 'reportedby'  => $sr->reportedby ?? '-',
-                'reportdate'  => $sr->reportdate
+                'reportdate'  => isset($sr->reportdate) && $sr->reportdate
                     ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i')
                     : '-',
             ];
