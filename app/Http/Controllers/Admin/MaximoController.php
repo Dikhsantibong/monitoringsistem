@@ -227,30 +227,53 @@ class MaximoController extends Controller
     private function formatWorkOrders($workOrders)
     {
         return collect($workOrders)->map(function ($wo) {
-            return [
-                'wonum'       => $wo->wonum ?? '-',
-                'parent'      => $wo->parent ?? '-',
-                'status'      => $wo->status ?? '-',
-                'statusdate'  => $wo->statusdate
-                    ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i')
-                    : '-',
-                'worktype'    => $wo->worktype ?? '-',
-                'description' => $wo->description ?? '-',
-                'reportdate'  => $wo->reportdate
-                    ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i')
-                    : '-',
-                'assetnum'    => $wo->assetnum ?? '-',
-                'wopriority'  => $wo->wopriority ?? '-',
-                'location'    => $wo->location ?? '-',
-                'siteid'      => $wo->siteid ?? '-',
-                'downtime'    => $wo->downtime ?? '-',
-                'schedstart'  => $wo->schedstart
-                    ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i')
-                    : '-',
-                'schedfinish' => $wo->schedfinish
-                    ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i')
-                    : '-',
-            ];
+            try {
+                return [
+                    'wonum'       => $wo->wonum ?? '-',
+                    'parent'      => $wo->parent ?? '-',
+                    'status'      => $wo->status ?? '-',
+                    'statusdate'  => isset($wo->statusdate) && $wo->statusdate
+                        ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i')
+                        : '-',
+                    'worktype'    => $wo->worktype ?? '-',
+                    'description' => $wo->description ?? '-',
+                    'reportdate'  => isset($wo->reportdate) && $wo->reportdate
+                        ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i')
+                        : '-',
+                    'assetnum'    => $wo->assetnum ?? '-',
+                    'wopriority'  => $wo->wopriority ?? '-',
+                    'location'    => $wo->location ?? '-',
+                    'siteid'      => $wo->siteid ?? '-',
+                    'downtime'    => $wo->downtime ?? '-',
+                    'schedstart'  => isset($wo->schedstart) && $wo->schedstart
+                        ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i')
+                        : '-',
+                    'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish
+                        ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i')
+                        : '-',
+                ];
+            } catch (\Exception $e) {
+                Log::warning('Error formatting work order', [
+                    'error' => $e->getMessage(),
+                    'wo_data' => $wo ?? null
+                ]);
+                return [
+                    'wonum'       => '-',
+                    'parent'      => '-',
+                    'status'      => '-',
+                    'statusdate'  => '-',
+                    'worktype'    => '-',
+                    'description' => '-',
+                    'reportdate'  => '-',
+                    'assetnum'    => '-',
+                    'wopriority'  => '-',
+                    'location'    => '-',
+                    'siteid'      => '-',
+                    'downtime'    => '-',
+                    'schedstart'  => '-',
+                    'schedfinish' => '-',
+                ];
+            }
         });
     }
 
@@ -260,21 +283,39 @@ class MaximoController extends Controller
     private function formatServiceRequests($serviceRequests)
     {
         return collect($serviceRequests)->map(function ($sr) {
-            return [
-                'ticketid'    => $sr->ticketid ?? '-',
-                'description' => $sr->description ?? '-',
-                'status'      => $sr->status ?? '-',
-                'statusdate'  => $sr->statusdate
-                    ? Carbon::parse($sr->statusdate)->format('d-m-Y H:i')
-                    : '-',
-                'siteid'      => $sr->siteid ?? '-',
-                'location'    => $sr->location ?? '-',
-                'assetnum'    => $sr->assetnum ?? '-',
-                'reportedby'  => $sr->reportedby ?? '-',
-                'reportdate'  => $sr->reportdate
-                    ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i')
-                    : '-',
-            ];
+            try {
+                return [
+                    'ticketid'    => $sr->ticketid ?? '-',
+                    'description' => $sr->description ?? '-',
+                    'status'      => $sr->status ?? '-',
+                    'statusdate'  => isset($sr->statusdate) && $sr->statusdate
+                        ? Carbon::parse($sr->statusdate)->format('d-m-Y H:i')
+                        : '-',
+                    'siteid'      => $sr->siteid ?? '-',
+                    'location'    => $sr->location ?? '-',
+                    'assetnum'    => $sr->assetnum ?? '-',
+                    'reportedby'  => $sr->reportedby ?? '-',
+                    'reportdate'  => isset($sr->reportdate) && $sr->reportdate
+                        ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i')
+                        : '-',
+                ];
+            } catch (\Exception $e) {
+                Log::warning('Error formatting service request', [
+                    'error' => $e->getMessage(),
+                    'sr_data' => $sr ?? null
+                ]);
+                return [
+                    'ticketid'    => '-',
+                    'description' => '-',
+                    'status'      => '-',
+                    'statusdate'  => '-',
+                    'siteid'      => '-',
+                    'location'    => '-',
+                    'assetnum'    => '-',
+                    'reportedby'  => '-',
+                    'reportdate'  => '-',
+                ];
+            }
         });
     }
 }

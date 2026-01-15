@@ -224,7 +224,7 @@
                                             </span>
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">
-                                            @if($wo['reportdate'] !== '-')
+                                            @if(isset($wo['reportdate']) && $wo['reportdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
                                                     {{ $wo['reportdate'] }}
                                                 </span>
@@ -389,7 +389,7 @@
                                             </span>
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">
-                                            @if($sr['statusdate'] !== '-')
+                                            @if(isset($sr['statusdate']) && $sr['statusdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-800 rounded-md">
                                                     {{ $sr['statusdate'] }}
                                                 </span>
@@ -406,7 +406,7 @@
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['location'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportedby'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">
-                                            @if($sr['reportdate'] !== '-')
+                                            @if(isset($sr['reportdate']) && $sr['reportdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
                                                     {{ $sr['reportdate'] }}
                                                 </span>
