@@ -33,6 +33,9 @@ class MaximoController extends Controller
                     'ASSETNUM',
                     'LOCATION',
                     'SITEID',
+                    'DOWNTIME',
+                    'SCHEDSTART',
+                    'SCHEDFINISH',
                 ])
                 ->where('SITEID', 'KD');
 
@@ -155,6 +158,13 @@ class MaximoController extends Controller
                 'assetnum'    => $wo->assetnum ?? '-',
                 'location'    => $wo->location ?? '-',
                 'siteid'      => $wo->siteid ?? '-',
+                'downtime'    => $wo->downtime ?? '-',
+                'schedstart'  => $wo->schedstart
+                    ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i')
+                    : '-',
+                'schedfinish' => $wo->schedfinish
+                    ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i')
+                    : '-',
             ];
         });
     }

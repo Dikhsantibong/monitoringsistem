@@ -116,13 +116,15 @@
                                         <th class="px-3 py-2">No</th>
                                         <th class="px-3 py-2">WO</th>
                                         <th class="px-3 py-2">Parent</th>
+                                        <th class="px-3 py-2">Location</th>
                                         <th class="px-3 py-2">Status</th>
                                         <th class="px-3 py-2">Status Date</th>
+                                        <th class="px-3 py-2">Downtime</th>
+                                        <th class="px-3 py-2">Sched Start</th>
+                                        <th class="px-3 py-2">Sched Finish</th>
                                         <th class="px-3 py-2">Work Type</th>
                                         <th class="px-3 py-2">Description</th>
                                         <th class="px-3 py-2">Asset</th>
-                                        <th class="px-3 py-2">Location</th>
-                                        <th class="px-3 py-2">Site</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -137,6 +139,7 @@
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['wonum'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['parent'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['location'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">
                                             @php
                                                 $woStatus = strtoupper($wo['status']);
@@ -158,6 +161,9 @@
                                                 <span class="text-gray-400">-</span>
                                             @endif
                                         </td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['downtime'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedstart'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedfinish'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">
                                             <span class="inline-block w-96 break-words whitespace-normal maximo-description">
@@ -165,8 +171,6 @@
                                             </span>
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['assetnum'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['location'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['siteid'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -234,7 +238,6 @@
                                         <th class="px-3 py-2">Location</th>
                                         <th class="px-3 py-2">Reported By</th>
                                         <th class="px-3 py-2">Report Date</th>
-                                        <th class="px-3 py-2">Site</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -286,7 +289,6 @@
                                                 <span class="text-gray-400">-</span>
                                             @endif
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['siteid'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
