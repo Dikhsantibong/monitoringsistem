@@ -68,6 +68,10 @@
                 <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div class="w-full md:w-1/3">
                         <form method="GET" action="{{ route('admin.maximo.index') }}">
+                            <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
+                            <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
+                            <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
+                            <input type="hidden" name="wo_worktype" value="{{ request('wo_worktype') }}">
                             <div class="flex">
                                 <input
                                     type="text"
@@ -109,23 +113,71 @@
                     <div x-show="tab==='wo'">
                         <h2 class="text-lg font-semibold mb-3">Data Work Order</h2>
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full border border-gray-300 text-sm">
-                                <thead class="bg-blue-700 text-white">
-                                    <tr>
-                                        <th class="px-3 py-2">No</th>
-                                        <th class="px-3 py-2">WO</th>
-                                        <th class="px-3 py-2">Parent</th>
-                                        <th class="px-3 py-2">Description</th>
-                                        <th class="px-3 py-2">Asset</th>
-                                        <th class="px-3 py-2">Status</th>
-                                        <th class="px-3 py-2">Report Date</th>
-                                        <th class="px-3 py-2">Priority</th>
-                                        <th class="px-3 py-2">Work Type</th>
-                                        <th class="px-3 py-2">Sched Start</th>
-                                        <th class="px-3 py-2">Sched Finish</th>
-                                    </tr>
-                                </thead>
+                        <form method="GET" action="{{ route('admin.maximo.index') }}" id="woFilterForm">
+                            <input type="hidden" name="wo_page" value="1">
+                            <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
+                            <input type="hidden" name="search" value="{{ request('search') }}">
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border border-gray-300 text-sm">
+                                    <thead class="bg-blue-700 text-white">
+                                        <tr>
+                                            <th class="px-3 py-2">No</th>
+                                            <th class="px-3 py-2">WO</th>
+                                            <th class="px-3 py-2">Parent</th>
+                                            <th class="px-3 py-2">Description</th>
+                                            <th class="px-3 py-2">Asset</th>
+                                            <th class="px-3 py-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Status</span>
+                                                    <div class="relative ml-2">
+                                                        <select name="wo_status" onchange="document.getElementById('woFilterForm').submit()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-1 pr-5 py-0 text-xs focus:outline-none border border-blue-500 rounded">
+                                                            <option value="" class="text-gray-700" {{ !request('wo_status') ? 'selected' : '' }}>Semua</option>
+                                                            <option value="WAPPR" class="text-gray-700" {{ request('wo_status') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
+                                                            <option value="APPR" class="text-gray-700" {{ request('wo_status') == 'APPR' ? 'selected' : '' }}>APPR</option>
+                                                            <option value="INPRG" class="text-gray-700" {{ request('wo_status') == 'INPRG' ? 'selected' : '' }}>INPRG</option>
+                                                            <option value="COMP" class="text-gray-700" {{ request('wo_status') == 'COMP' ? 'selected' : '' }}>COMP</option>
+                                                            <option value="CLOSE" class="text-gray-700" {{ request('wo_status') == 'CLOSE' ? 'selected' : '' }}>CLOSE</option>
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1">
+                                                            <svg class="h-3 w-3 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th class="px-3 py-2">Report Date</th>
+                                            <th class="px-3 py-2">Priority</th>
+                                            <th class="px-3 py-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Work Type</span>
+                                                    <div class="relative ml-2">
+                                                        <select name="wo_worktype" onchange="document.getElementById('woFilterForm').submit()" 
+                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-1 pr-5 py-0 text-xs focus:outline-none border border-blue-500 rounded">
+                                                            <option value="" class="text-gray-700" {{ !request('wo_worktype') ? 'selected' : '' }}>Semua</option>
+                                                            <option value="CH" class="text-gray-700" {{ request('wo_worktype') == 'CH' ? 'selected' : '' }}>CH</option>
+                                                            <option value="CM" class="text-gray-700" {{ request('wo_worktype') == 'CM' ? 'selected' : '' }}>CM</option>
+                                                            <option value="CP" class="text-gray-700" {{ request('wo_worktype') == 'CP' ? 'selected' : '' }}>CP</option>
+                                                            <option value="OH" class="text-gray-700" {{ request('wo_worktype') == 'OH' ? 'selected' : '' }}>OH</option>
+                                                            <option value="OP" class="text-gray-700" {{ request('wo_worktype') == 'OP' ? 'selected' : '' }}>OP</option>
+                                                            <option value="PAM" class="text-gray-700" {{ request('wo_worktype') == 'PAM' ? 'selected' : '' }}>PAM</option>
+                                                            <option value="PDM" class="text-gray-700" {{ request('wo_worktype') == 'PDM' ? 'selected' : '' }}>PDM</option>
+                                                            <option value="PM" class="text-gray-700" {{ request('wo_worktype') == 'PM' ? 'selected' : '' }}>PM</option>
+                                                        </select>
+                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1">
+                                                            <svg class="h-3 w-3 fill-current text-white" viewBox="0 0 20 20">
+                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th class="px-3 py-2">Sched Start</th>
+                                            <th class="px-3 py-2">Sched Finish</th>
+                                        </tr>
+                                    </thead>
                                 <tbody>
                                 @forelse($workOrders as $i => $wo)
                                     <tr class="border-b border-gray-300 hover:bg-gray-100">
@@ -180,6 +232,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        </form>
 
                         {{-- Pagination Work Order --}}
                         @if($workOrdersPaginator && $workOrdersPaginator->hasPages())
@@ -195,7 +248,12 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 @if (!$workOrdersPaginator->onFirstPage())
-                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->previousPageUrl() }}" 
+                                    <a href="{{ $workOrdersPaginator->appends([
+                                        'sr_page' => request('sr_page', 1), 
+                                        'search' => request('search'),
+                                        'wo_status' => request('wo_status'),
+                                        'wo_worktype' => request('wo_worktype')
+                                    ])->previousPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                                 @endif
 
@@ -203,7 +261,12 @@
                                     @if ($page == $workOrdersPaginator->currentPage())
                                         <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                                     @else
-                                        <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->url($page) }}" 
+                                        <a href="{{ $workOrdersPaginator->appends([
+                                            'sr_page' => request('sr_page', 1), 
+                                            'search' => request('search'),
+                                            'wo_status' => request('wo_status'),
+                                            'wo_worktype' => request('wo_worktype')
+                                        ])->url($page) }}" 
                                            class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
                                             {{ $page }}
                                         </a>
@@ -211,7 +274,12 @@
                                 @endforeach
 
                                 @if ($workOrdersPaginator->hasMorePages())
-                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->nextPageUrl() }}" 
+                                    <a href="{{ $workOrdersPaginator->appends([
+                                        'sr_page' => request('sr_page', 1), 
+                                        'search' => request('search'),
+                                        'wo_status' => request('wo_status'),
+                                        'wo_worktype' => request('wo_worktype')
+                                    ])->nextPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                                 @endif
                             </div>

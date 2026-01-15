@@ -17,6 +17,10 @@ class MaximoController extends Controller
             $workOrderPage = $request->input('wo_page', 1);
             $serviceRequestPage = $request->input('sr_page', 1);
             $search = $request->input('search');
+            
+            // Filter untuk Work Order
+            $woStatusFilter = $request->input('wo_status');
+            $woWorkTypeFilter = $request->input('wo_worktype');
 
             /* ==========================
              * WORK ORDER (TETAP)
@@ -51,6 +55,16 @@ class MaximoController extends Controller
                         ->orWhere('ASSETNUM', 'LIKE', "%{$search}%")
                         ->orWhere('LOCATION', 'LIKE', "%{$search}%");
                 });
+            }
+            
+            // Filter Status
+            if ($woStatusFilter) {
+                $workOrdersQuery->where('STATUS', $woStatusFilter);
+            }
+            
+            // Filter Work Type
+            if ($woWorkTypeFilter) {
+                $workOrdersQuery->where('WORKTYPE', $woWorkTypeFilter);
             }
 
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
