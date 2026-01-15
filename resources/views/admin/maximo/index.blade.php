@@ -68,15 +68,6 @@
                 <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div class="w-full md:w-1/3">
                         <form method="GET" action="{{ route('admin.maximo.index') }}">
-                            <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
-                            <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
-                            <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
-                            <input type="hidden" name="wo_worktype" value="{{ request('wo_worktype') }}">
-                            <input type="hidden" name="wo_date_from" value="{{ request('wo_date_from') }}">
-                            <input type="hidden" name="wo_date_to" value="{{ request('wo_date_to') }}">
-                            <input type="hidden" name="sr_status" value="{{ request('sr_status') }}">
-                            <input type="hidden" name="sr_date_from" value="{{ request('sr_date_from') }}">
-                            <input type="hidden" name="sr_date_to" value="{{ request('sr_date_to') }}">
                             <div class="flex">
                                 <input
                                     type="text"
@@ -118,81 +109,23 @@
                     <div x-show="tab==='wo'">
                         <h2 class="text-lg font-semibold mb-3">Data Work Order</h2>
 
-                        <form method="GET" action="{{ route('admin.maximo.index') }}" id="woFilterForm">
-                            <input type="hidden" name="wo_page" value="1">
-                            <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
-                            <input type="hidden" name="search" value="{{ request('search') }}">
-                            
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full border border-gray-300 text-sm">
-                                    <thead class="bg-blue-700 text-white">
-                                        <tr>
-                                            <th class="px-3 py-2">No</th>
-                                            <th class="px-3 py-2">WO</th>
-                                            <th class="px-3 py-2">Parent</th>
-                                            <th class="px-3 py-2">Description</th>
-                                            <th class="px-3 py-2">Asset</th>
-                                            <th class="px-3 py-2">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Status</span>
-                                                    <div class="relative ml-2">
-                                                        <select name="wo_status" onchange="document.getElementById('woFilterForm').submit()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-1 pr-5 py-0 text-xs focus:outline-none border border-blue-500 rounded">
-                                                            <option value="" class="text-gray-700" {{ !request('wo_status') ? 'selected' : '' }}>Semua</option>
-                                                            @foreach($woStatuses ?? [] as $status)
-                                                                <option value="{{ $status }}" class="text-gray-700" {{ request('wo_status') == $status ? 'selected' : '' }}>
-                                                                    {{ $status }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1">
-                                                            <svg class="h-3 w-3 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th class="px-3 py-2">
-                                                <div class="flex flex-col gap-1">
-                                                    <span>Report Date</span>
-                                                    <div class="flex gap-1">
-                                                        <input type="date" name="wo_date_from" value="{{ request('wo_date_from') }}" 
-                                                               onchange="document.getElementById('woFilterForm').submit()"
-                                                               class="text-xs px-1 py-0.5 text-gray-700 rounded border border-blue-500">
-                                                        <span class="text-xs">-</span>
-                                                        <input type="date" name="wo_date_to" value="{{ request('wo_date_to') }}" 
-                                                               onchange="document.getElementById('woFilterForm').submit()"
-                                                               class="text-xs px-1 py-0.5 text-gray-700 rounded border border-blue-500">
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th class="px-3 py-2">Priority</th>
-                                            <th class="px-3 py-2">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Work Type</span>
-                                                    <div class="relative ml-2">
-                                                        <select name="wo_worktype" onchange="document.getElementById('woFilterForm').submit()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-1 pr-5 py-0 text-xs focus:outline-none border border-blue-500 rounded">
-                                                            <option value="" class="text-gray-700" {{ !request('wo_worktype') ? 'selected' : '' }}>Semua</option>
-                                                            @foreach($woWorkTypes ?? [] as $worktype)
-                                                                <option value="{{ $worktype }}" class="text-gray-700" {{ request('wo_worktype') == $worktype ? 'selected' : '' }}>
-                                                                    {{ $worktype }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1">
-                                                            <svg class="h-3 w-3 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th class="px-3 py-2">Sched Start</th>
-                                            <th class="px-3 py-2">Sched Finish</th>
-                                        </tr>
-                                    </thead>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full border border-gray-300 text-sm">
+                                <thead class="bg-blue-700 text-white">
+                                    <tr>
+                                        <th class="px-3 py-2">No</th>
+                                        <th class="px-3 py-2">WO</th>
+                                        <th class="px-3 py-2">Parent</th>
+                                        <th class="px-3 py-2">Description</th>
+                                        <th class="px-3 py-2">Asset</th>
+                                        <th class="px-3 py-2">Status</th>
+                                        <th class="px-3 py-2">Report Date</th>
+                                        <th class="px-3 py-2">Priority</th>
+                                        <th class="px-3 py-2">Work Type</th>
+                                        <th class="px-3 py-2">Sched Start</th>
+                                        <th class="px-3 py-2">Sched Finish</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                 @forelse($workOrders as $i => $wo)
                                     <tr class="border-b border-gray-300 hover:bg-gray-100">
@@ -224,7 +157,7 @@
                                             </span>
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">
-                                            @if(isset($wo['reportdate']) && $wo['reportdate'] !== '-')
+                                            @if($wo['reportdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
                                                     {{ $wo['reportdate'] }}
                                                 </span>
@@ -247,7 +180,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        </form>
 
                         {{-- Pagination Work Order --}}
                         @if($workOrdersPaginator && $workOrdersPaginator->hasPages())
@@ -263,14 +195,7 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 @if (!$workOrdersPaginator->onFirstPage())
-                                    <a href="{{ $workOrdersPaginator->appends([
-                                        'sr_page' => request('sr_page', 1), 
-                                        'search' => request('search'),
-                                        'wo_status' => request('wo_status'),
-                                        'wo_worktype' => request('wo_worktype'),
-                                        'wo_date_from' => request('wo_date_from'),
-                                        'wo_date_to' => request('wo_date_to')
-                                    ])->previousPageUrl() }}" 
+                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->previousPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                                 @endif
 
@@ -278,14 +203,7 @@
                                     @if ($page == $workOrdersPaginator->currentPage())
                                         <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                                     @else
-                                        <a href="{{ $workOrdersPaginator->appends([
-                                            'sr_page' => request('sr_page', 1), 
-                                            'search' => request('search'),
-                                            'wo_status' => request('wo_status'),
-                                            'wo_worktype' => request('wo_worktype'),
-                                            'wo_date_from' => request('wo_date_from'),
-                                            'wo_date_to' => request('wo_date_to')
-                                        ])->url($page) }}" 
+                                        <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->url($page) }}" 
                                            class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
                                             {{ $page }}
                                         </a>
@@ -293,14 +211,7 @@
                                 @endforeach
 
                                 @if ($workOrdersPaginator->hasMorePages())
-                                    <a href="{{ $workOrdersPaginator->appends([
-                                        'sr_page' => request('sr_page', 1), 
-                                        'search' => request('search'),
-                                        'wo_status' => request('wo_status'),
-                                        'wo_worktype' => request('wo_worktype'),
-                                        'wo_date_from' => request('wo_date_from'),
-                                        'wo_date_to' => request('wo_date_to')
-                                    ])->nextPageUrl() }}" 
+                                    <a href="{{ $workOrdersPaginator->appends(['sr_page' => request('sr_page', 1), 'search' => request('search')])->nextPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                                 @endif
                             </div>
@@ -312,59 +223,21 @@
                     <div x-show="tab==='sr'">
                         <h2 class="text-lg font-semibold mb-3">Data Service Request</h2>
 
-                        <form method="GET" action="{{ route('admin.maximo.index') }}" id="srFilterForm">
-                            <input type="hidden" name="sr_page" value="1">
-                            <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
-                            <input type="hidden" name="search" value="{{ request('search') }}">
-                            
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full border border-gray-300 text-sm">
-                                    <thead class="bg-green-700 text-white">
-                                        <tr>
-                                            <th class="px-3 py-2">No</th>
-                                            <th class="px-3 py-2">Ticket</th>
-                                            <th class="px-3 py-2">
-                                                <div class="flex items-center justify-between">
-                                                    <span>Status</span>
-                                                    <div class="relative ml-2">
-                                                        <select name="sr_status" onchange="document.getElementById('srFilterForm').submit()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-1 pr-5 py-0 text-xs focus:outline-none border border-green-500 rounded">
-                                                            <option value="" class="text-gray-700" {{ !request('sr_status') ? 'selected' : '' }}>Semua</option>
-                                                            @foreach($srStatuses ?? [] as $status)
-                                                                <option value="{{ $status }}" class="text-gray-700" {{ request('sr_status') == $status ? 'selected' : '' }}>
-                                                                    {{ $status }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1">
-                                                            <svg class="h-3 w-3 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th class="px-3 py-2">Status Date</th>
-                                            <th class="px-3 py-2">Description</th>
-                                            <th class="px-3 py-2">Asset</th>
-                                            <th class="px-3 py-2">Location</th>
-                                            <th class="px-3 py-2">Reported By</th>
-                                            <th class="px-3 py-2">
-                                                <div class="flex flex-col gap-1">
-                                                    <span>Report Date</span>
-                                                    <div class="flex gap-1">
-                                                        <input type="date" name="sr_date_from" value="{{ request('sr_date_from') }}" 
-                                                               onchange="document.getElementById('srFilterForm').submit()"
-                                                               class="text-xs px-1 py-0.5 text-gray-700 rounded border border-green-500">
-                                                        <span class="text-xs">-</span>
-                                                        <input type="date" name="sr_date_to" value="{{ request('sr_date_to') }}" 
-                                                               onchange="document.getElementById('srFilterForm').submit()"
-                                                               class="text-xs px-1 py-0.5 text-gray-700 rounded border border-green-500">
-                                                    </div>
-                                                </div>
-                                            </th>
-                                        </tr>
-                                    </thead>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full border border-gray-300 text-sm">
+                                <thead class="bg-green-700 text-white">
+                                    <tr>
+                                        <th class="px-3 py-2">No</th>
+                                        <th class="px-3 py-2">Ticket</th>
+                                        <th class="px-3 py-2">Status</th>
+                                        <th class="px-3 py-2">Status Date</th>
+                                        <th class="px-3 py-2">Description</th>
+                                        <th class="px-3 py-2">Asset</th>
+                                        <th class="px-3 py-2">Location</th>
+                                        <th class="px-3 py-2">Reported By</th>
+                                        <th class="px-3 py-2">Report Date</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                 @forelse($serviceRequests as $i => $sr)
                                     <tr class="border-b border-gray-300 hover:bg-gray-100">
@@ -389,7 +262,7 @@
                                             </span>
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">
-                                            @if(isset($sr['statusdate']) && $sr['statusdate'] !== '-')
+                                            @if($sr['statusdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-800 rounded-md">
                                                     {{ $sr['statusdate'] }}
                                                 </span>
@@ -406,7 +279,7 @@
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['location'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportedby'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">
-                                            @if(isset($sr['reportdate']) && $sr['reportdate'] !== '-')
+                                            @if($sr['reportdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
                                                     {{ $sr['reportdate'] }}
                                                 </span>
@@ -425,7 +298,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        </form>
 
                         {{-- Pagination Service Request --}}
                         @if($serviceRequestsPaginator && $serviceRequestsPaginator->hasPages())
@@ -441,13 +313,7 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 @if (!$serviceRequestsPaginator->onFirstPage())
-                                    <a href="{{ $serviceRequestsPaginator->appends([
-                                        'wo_page' => request('wo_page', 1), 
-                                        'search' => request('search'),
-                                        'sr_status' => request('sr_status'),
-                                        'sr_date_from' => request('sr_date_from'),
-                                        'sr_date_to' => request('sr_date_to')
-                                    ])->previousPageUrl() }}" 
+                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->previousPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                                 @endif
 
@@ -455,13 +321,7 @@
                                     @if ($page == $serviceRequestsPaginator->currentPage())
                                         <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                                     @else
-                                        <a href="{{ $serviceRequestsPaginator->appends([
-                                            'wo_page' => request('wo_page', 1), 
-                                            'search' => request('search'),
-                                            'sr_status' => request('sr_status'),
-                                            'sr_date_from' => request('sr_date_from'),
-                                            'sr_date_to' => request('sr_date_to')
-                                        ])->url($page) }}" 
+                                        <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->url($page) }}" 
                                            class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
                                             {{ $page }}
                                         </a>
@@ -469,13 +329,7 @@
                                 @endforeach
 
                                 @if ($serviceRequestsPaginator->hasMorePages())
-                                    <a href="{{ $serviceRequestsPaginator->appends([
-                                        'wo_page' => request('wo_page', 1), 
-                                        'search' => request('search'),
-                                        'sr_status' => request('sr_status'),
-                                        'sr_date_from' => request('sr_date_from'),
-                                        'sr_date_to' => request('sr_date_to')
-                                    ])->nextPageUrl() }}" 
+                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->nextPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                                 @endif
                             </div>
