@@ -17,6 +17,17 @@ class MaximoController extends Controller
             $workOrderPage = $request->input('wo_page', 1);
             $serviceRequestPage = $request->input('sr_page', 1);
             $search = $request->input('search');
+            
+            // Filter untuk Work Order
+            $woStatusFilter = $request->input('wo_status');
+            $woWorkTypeFilter = $request->input('wo_worktype');
+            $woDateFrom = $request->input('wo_date_from');
+            $woDateTo = $request->input('wo_date_to');
+            
+            // Filter untuk Service Request
+            $srStatusFilter = $request->input('sr_status');
+            $srDateFrom = $request->input('sr_date_from');
+            $srDateTo = $request->input('sr_date_to');
 
             /* ==========================
              * WORK ORDER (TETAP)
@@ -37,6 +48,7 @@ class MaximoController extends Controller
                     'DOWNTIME',
                     'SCHEDSTART',
                     'SCHEDFINISH',
+                    'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD');
 
@@ -50,6 +62,24 @@ class MaximoController extends Controller
                         ->orWhere('ASSETNUM', 'LIKE', "%{$search}%")
                         ->orWhere('LOCATION', 'LIKE', "%{$search}%");
                 });
+            }
+            
+            // Filter Status
+            if ($woStatusFilter) {
+                $workOrdersQuery->where('STATUS', $woStatusFilter);
+            }
+            
+            // Filter Work Type
+            if ($woWorkTypeFilter) {
+                $workOrdersQuery->where('WORKTYPE', $woWorkTypeFilter);
+            }
+            
+            // Filter Tanggal (Report Date)
+            if ($woDateFrom) {
+                $workOrdersQuery->whereDate('REPORTDATE', '>=', Carbon::parse($woDateFrom)->format('Y-m-d'));
+            }
+            if ($woDateTo) {
+                $workOrdersQuery->whereDate('REPORTDATE', '<=', Carbon::parse($woDateTo)->format('Y-m-d'));
             }
 
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
@@ -85,16 +115,60 @@ class MaximoController extends Controller
                         ->orWhere('REPORTEDBY', 'LIKE', "%{$search}%");
                 });
             }
+            
+            // Filter Status
+            if ($srStatusFilter) {
+                $serviceRequestsQuery->where('STATUS', $srStatusFilter);
+            }
+            
+            // Filter Tanggal (Report Date)
+            if ($srDateFrom) {
+                $serviceRequestsQuery->whereDate('REPORTDATE', '>=', Carbon::parse($srDateFrom)->format('Y-m-d'));
+            }
+            if ($srDateTo) {
+                $serviceRequestsQuery->whereDate('REPORTDATE', '<=', Carbon::parse($srDateTo)->format('Y-m-d'));
+            }
 
             $serviceRequestsQuery->orderBy('REPORTDATE', 'desc');
 
             $serviceRequests = $serviceRequestsQuery->paginate(10, ['*'], 'sr_page', $serviceRequestPage);
+
+            // Ambil unique values untuk dropdown filter
+            $woStatuses = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->distinct()
+                ->pluck('STATUS')
+                ->filter()
+                ->sort()
+                ->values();
+                
+            $woWorkTypes = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->distinct()
+                ->pluck('WORKTYPE')
+                ->filter()
+                ->sort()
+                ->values();
+                
+            $srStatuses = DB::connection('oracle')
+                ->table('SR')
+                ->where('SITEID', 'KD')
+                ->distinct()
+                ->pluck('STATUS')
+                ->filter()
+                ->sort()
+                ->values();
 
             return view('admin.maximo.index', [
                 'workOrders'      => $this->formatWorkOrders($workOrders->items()),
                 'workOrdersPaginator' => $workOrders,
                 'serviceRequests' => $this->formatServiceRequests($serviceRequests->items()),
                 'serviceRequestsPaginator' => $serviceRequests,
+                'woStatuses' => $woStatuses,
+                'woWorkTypes' => $woWorkTypes,
+                'srStatuses' => $srStatuses,
                 'error'           => null,
                 'errorDetail'     => null,
             ]);
@@ -113,6 +187,9 @@ class MaximoController extends Controller
                 'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
                 'serviceRequestsPaginator' => null,
+                'woStatuses' => collect([]),
+                'woWorkTypes' => collect([]),
+                'srStatuses' => collect([]),
                 'error' => 'Gagal mengambil data dari Maximo (Query Error)',
                 'errorDetail' => [
                     'oracle_code' => $e->errorInfo[1] ?? null,
@@ -133,6 +210,9 @@ class MaximoController extends Controller
                 'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
                 'serviceRequestsPaginator' => null,
+                'woStatuses' => collect([]),
+                'woWorkTypes' => collect([]),
+                'srStatuses' => collect([]),
                 'error' => 'Gagal mengambil data dari Maximo (General Error)',
                 'errorDetail' => [
                     'message' => $e->getMessage(),
@@ -156,6 +236,9 @@ class MaximoController extends Controller
                     : '-',
                 'worktype'    => $wo->worktype ?? '-',
                 'description' => $wo->description ?? '-',
+                'reportdate'  => $wo->reportdate
+                    ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i')
+                    : '-',
                 'assetnum'    => $wo->assetnum ?? '-',
                 'wopriority'  => $wo->wopriority ?? '-',
                 'location'    => $wo->location ?? '-',
