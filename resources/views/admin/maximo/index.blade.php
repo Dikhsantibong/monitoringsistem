@@ -119,11 +119,11 @@
                                         <th class="px-3 py-2">Description</th>
                                         <th class="px-3 py-2">Asset</th>
                                         <th class="px-3 py-2">Status</th>
+                                        <th class="px-3 py-2">Report Date</th>
                                         <th class="px-3 py-2">Priority</th>
-                                        <th class="px-3 py-2">Downtime</th>
+                                        <th class="px-3 py-2">Work Type</th>
                                         <th class="px-3 py-2">Sched Start</th>
                                         <th class="px-3 py-2">Sched Finish</th>
-                                        <th class="px-3 py-2">Work Type</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -156,11 +156,19 @@
                                                 {{ $wo['status'] }}
                                             </span>
                                         </td>
+                                        <td class="border-r border-gray-300 px-3 py-2">
+                                            @if($wo['reportdate'] !== '-')
+                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
+                                                    {{ $wo['reportdate'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['wopriority'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['downtime'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedstart'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedfinish'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
