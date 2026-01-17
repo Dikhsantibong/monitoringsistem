@@ -9,13 +9,11 @@ use App\Models\Activity;
 use Carbon\Carbon;
 use App\Models\Machine;
 use App\Models\ScoreCardDaily;
-use App\Models\ServiceRequest;
-use App\Models\WorkOrder;
-use App\Models\WoBacklog;
 use App\Models\OtherDiscussion;
 use App\Models\Commitment;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 
 class DashboardController extends Controller
@@ -98,11 +96,50 @@ class DashboardController extends Controller
         \Log::info('Formatted ScoreCard:', ['data' => $formattedScoreCard->toArray()]);
         \Log::info('Formatted Attendance:', ['data' => $formattedAttendance->toArray()]);
 
-        // Debug: Tampilkan jumlah WO di log
-        \Log::info('Work Order Counts:', [
-            'open' => WorkOrder::where('status', 'open')->count(),
-            'closed' => WorkOrder::where('status', 'closed')->count()
-        ]);
+        // Ambil data dari Maximo (Oracle) untuk SR dan WO
+        try {
+            // SR Open/Closed dari Maximo
+            $srOpen = DB::connection('oracle')
+                ->table('SR')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['Open', 'WAPPR', 'APPR', 'INPRG'])
+                ->count();
+                
+            $srClosed = DB::connection('oracle')
+                ->table('SR')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['COMP', 'CLOSE', 'RESOLVED'])
+                ->count();
+            
+            // WO Open/Closed dari Maximo
+            $woOpen = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
+                ->count();
+                
+            $woClosed = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['COMP', 'CLOSE'])
+                ->count();
+                
+            \Log::info('Maximo Work Order Counts:', [
+                'open' => $woOpen,
+                'closed' => $woClosed
+            ]);
+            
+            \Log::info('Maximo Service Request Counts:', [
+                'open' => $srOpen,
+                'closed' => $srClosed
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting Maximo data: ' . $e->getMessage());
+            $srOpen = 0;
+            $srClosed = 0;
+            $woOpen = 0;
+            $woClosed = 0;
+        }
 
         // Debug log untuk memeriksa data komitmen
         $openCommitments = Commitment::where('status', 'Open')->count();
@@ -174,19 +211,19 @@ class DashboardController extends Controller
             ],
             'srData' => [
                 'counts' => [
-                    ServiceRequest::where('status', 'Open')->count(),
-                    ServiceRequest::where('status', 'Closed')->count(),
+                    $srOpen,
+                    $srClosed,
                 ]
             ],
             'woData' => [
                 'counts' => [
-                    WorkOrder::where('status', 'Open')->count(),
-                    WorkOrder::where('status', 'Closed')->count(),
+                    $woOpen,
+                    $woClosed,
                 ]
             ],
             'woBacklogData' => [
                 'counts' => [
-                    WoBacklog::where('status', 'Open')->count()
+                    0 // WO Backlog tidak ada di Maximo, set 0 atau hapus jika tidak diperlukan
                 ]
             ],
             'otherDiscussionData' => [
@@ -209,9 +246,8 @@ class DashboardController extends Controller
         // Tambahkan data untuk statistik
         $totalUsers = User::count();
         
-        // Menggabungkan total SR dan WO yang closed
-        $totalClosedSRWO = ServiceRequest::where('status', 'Closed')->count() +
-                           WorkOrder::where('status', 'Closed')->count();
+        // Menggabungkan total SR dan WO yang closed dari Maximo
+        $totalClosedSRWO = $srClosed + $woClosed;
                            
         $recentActivities = Activity::with('user')
             ->latest()
@@ -320,38 +356,104 @@ class DashboardController extends Controller
                 }
             } catch (\Exception $e) {}
         }
-        // 3. Jumlah WO/SR/Pengajuan Material per Bulan (6 bulan terakhir)
+        // 3. Jumlah WO/SR/Pengajuan Material per Bulan (6 bulan terakhir) - dari Maximo
         $monthlyCounts = [];
         $months = collect(range(5,0))->map(function($i) { return now()->subMonths($i)->format('Y-m'); });
         foreach ($months as $month) {
             $wo = $sr = $mat = 0;
-            foreach ($unitConnections as $conn => $unitLabel) {
-                try {
-                    $wo += \App\Models\WorkOrder::on($conn)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])->count();
-                } catch (\Exception $e) {}
-                try {
-                    $sr += \App\Models\ServiceRequest::on($conn)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])->count();
-                } catch (\Exception $e) {}
-                try {
-                    $mat += \App\Models\PengajuanMaterialFile::on($conn)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])->count();
-                } catch (\Exception $e) {}
+            try {
+                // WO dari Maximo (Oracle) - gunakan REPORTDATE atau STATUSDATE jika REPORTDATE null
+                $wo = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->whereNotNull('REPORTDATE')
+                    ->whereRaw("TO_CHAR(REPORTDATE, 'YYYY-MM') = ?", [$month])
+                    ->count();
+                    
+                // Jika tidak ada data dengan REPORTDATE, gunakan STATUSDATE
+                if ($wo == 0) {
+                    $wo = DB::connection('oracle')
+                        ->table('WORKORDER')
+                        ->where('SITEID', 'KD')
+                        ->whereNotNull('STATUSDATE')
+                        ->whereRaw("TO_CHAR(STATUSDATE, 'YYYY-MM') = ?", [$month])
+                        ->count();
+                }
+            } catch (\Exception $e) {
+                \Log::warning("Error getting WO monthly count for $month: " . $e->getMessage());
+                $wo = 0;
             }
+            try {
+                // SR dari Maximo (Oracle) - gunakan REPORTDATE atau STATUSDATE jika REPORTDATE null
+                $sr = DB::connection('oracle')
+                    ->table('SR')
+                    ->where('SITEID', 'KD')
+                    ->whereNotNull('REPORTDATE')
+                    ->whereRaw("TO_CHAR(REPORTDATE, 'YYYY-MM') = ?", [$month])
+                    ->count();
+                    
+                // Jika tidak ada data dengan REPORTDATE, gunakan STATUSDATE
+                if ($sr == 0) {
+                    $sr = DB::connection('oracle')
+                        ->table('SR')
+                        ->where('SITEID', 'KD')
+                        ->whereNotNull('STATUSDATE')
+                        ->whereRaw("TO_CHAR(STATUSDATE, 'YYYY-MM') = ?", [$month])
+                        ->count();
+                }
+            } catch (\Exception $e) {
+                \Log::warning("Error getting SR monthly count for $month: " . $e->getMessage());
+                $sr = 0;
+            }
+            try {
+                // Material tetap dari model lokal (tidak ada di Maximo)
+                foreach ($unitConnections as $conn => $unitLabel) {
+                    try {
+                        $mat += \App\Models\PengajuanMaterialFile::on($conn)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])->count();
+                    } catch (\Exception $e) {}
+                }
+            } catch (\Exception $e) {}
             $monthlyCounts[] = [ 'month' => $month, 'wo' => $wo, 'sr' => $sr, 'material' => $mat ];
         }
-        // 4. Penyelesaian WO/SR per Unit (stacked bar)
+        // 4. Penyelesaian WO/SR per Unit (stacked bar) - dari Maximo (semua data dari SITEID KD)
         $woSrCompletion = [];
-        foreach ($unitConnections as $conn => $unitLabel) {
-            if ($conn === 'mysql') continue; // HILANGKAN UP KENDARI dari grafik per unit
-            $woOpen = $woClosed = $srOpen = $srClosed = 0;
-            try {
-                $woOpen = \App\Models\WorkOrder::on($conn)->where('unit_source', $conn)->where('status','Open')->count();
-                $woClosed = \App\Models\WorkOrder::on($conn)->where('unit_source', $conn)->where('status','Closed')->count();
-            } catch (\Exception $e) {}
-            try {
-                $srOpen = \App\Models\ServiceRequest::on($conn)->where('unit_source', $conn)->where('status','Open')->count();
-                $srClosed = \App\Models\ServiceRequest::on($conn)->where('unit_source', $conn)->where('status','Closed')->count();
-            } catch (\Exception $e) {}
-            $woSrCompletion[$unitLabel] = [ 'wo_open' => $woOpen, 'wo_closed' => $woClosed, 'sr_open' => $srOpen, 'sr_closed' => $srClosed ];
+        // Dari Maximo, semua data berasal dari SITEID 'KD', jadi tidak ada per unit
+        // Tetap tampilkan data total untuk konsistensi
+        try {
+            $woOpenTotal = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
+                ->count();
+                
+            $woClosedTotal = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['COMP', 'CLOSE'])
+                ->count();
+                
+            $srOpenTotal = DB::connection('oracle')
+                ->table('SR')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['Open', 'WAPPR', 'APPR', 'INPRG'])
+                ->count();
+                
+            $srClosedTotal = DB::connection('oracle')
+                ->table('SR')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['COMP', 'CLOSE', 'RESOLVED'])
+                ->count();
+                
+            // Tampilkan data total untuk semua unit
+            $woSrCompletion['MAXIMO'] = [
+                'wo_open' => $woOpenTotal,
+                'wo_closed' => $woClosedTotal,
+                'sr_open' => $srOpenTotal,
+                'sr_closed' => $srClosedTotal
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error getting Maximo WO/SR completion: ' . $e->getMessage());
+            $woSrCompletion['MAXIMO'] = ['wo_open' => 0, 'wo_closed' => 0, 'sr_open' => 0, 'sr_closed' => 0];
         }
         // 5. Top 5 Material Paling Sering Diajukan
         $materialCounts = [];
@@ -414,14 +516,11 @@ class DashboardController extends Controller
             $attendanceUnitLabels[$conn] = $unitLabel;
         }
 
-        // Ambil data WO Backlog (status Open) untuk tabel di dashboard
-        $woBacklogList = \App\Models\WoBacklog::where('status', 'Open')->orderByDesc('tanggal_backlog')->get();
+        // WO Backlog tidak ada di Maximo, set empty
+        $woBacklogList = collect([]);
 
-        // Data untuk grafik WO Backlog Status (jumlah per status)
-        $woBacklogStatus = WoBacklog::select('status', \DB::raw('COUNT(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
+        // Data untuk grafik WO Backlog Status (kosong karena tidak ada di Maximo)
+        $woBacklogStatus = [];
 
         return view('admin.dashboard', compact(
             'chartData',
