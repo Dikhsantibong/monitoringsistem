@@ -16,9 +16,10 @@ class CalendarController extends Controller
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
         
-        // Filter status dan worktype
+        // Filter status, worktype, dan unit
         $statusFilter = $request->input('status');
         $workTypeFilter = $request->input('worktype');
+        $unitFilter = $request->input('unit');
         
         // Parameter hari peringatan backlog (default 5 hari - H-5)
         $backlogWarningDays = $request->input('backlog_warning_days', 5);
@@ -59,6 +60,11 @@ class CalendarController extends Controller
             // Filter Work Type
             if ($workTypeFilter) {
                 $workOrdersQuery->where('WORKTYPE', $workTypeFilter);
+            }
+            
+            // Filter Unit (berdasarkan prefix LOCATION)
+            if ($unitFilter) {
+                $workOrdersQuery->where('LOCATION', 'LIKE', $unitFilter . '%');
             }
             
             // Filter berdasarkan bulan dan tahun dari REPORTDATE atau STATUSDATE
@@ -219,6 +225,27 @@ class CalendarController extends Controller
         // Opsi filter untuk dropdown
         $statusOptions = ['WAPPR', 'APPR', 'INPRG', 'COMP', 'CLOSE'];
         $workTypeOptions = ['CH', 'CM', 'CP', 'OH', 'OP', 'PAM', 'PDM', 'PM'];
+        
+        // Opsi filter Unit berdasarkan mapping LOCATION
+        $unitOptions = [
+            // ULPLTD KOLAKA
+            'KLKA' => 'PLTD Kolaka',
+            'LANI' => 'PLTD Lanipa-Nipa',
+            'SABI' => 'PLTM Sabilambo',
+            'MIKU' => 'PLTM Mikuasi',
+            // ULPLTD BAU-BAU
+            'BBAU' => 'PLTD Bau-Bau',
+            'RAHA' => 'PLTD Raha',
+            'WANG' => 'PLTD WANGI-WANGI',
+            'EREK' => 'PLTD Ereke',
+            'RONG' => 'PLTM Rongi',
+            'WINN' => 'PLTM Winning',
+            // ULPLTD POASIA
+            'POAS' => 'PLTD Poasia',
+            // ULPLTD WUA-WUA
+            'WUAW' => 'PLTD Wua-Wua',
+            'LANG' => 'PLTD Langara',
+        ];
 
         // Hitung presentasi worktype berdasarkan total WO bulan ini
         // Gunakan data mentah untuk perhitungan yang lebih akurat
@@ -316,8 +343,10 @@ class CalendarController extends Controller
             'backlogEvents' => $backlogEventsMap,
             'statusFilter' => $statusFilter,
             'workTypeFilter' => $workTypeFilter,
+            'unitFilter' => $unitFilter,
             'statusOptions' => $statusOptions,
             'workTypeOptions' => $workTypeOptions,
+            'unitOptions' => $unitOptions,
             'backlogWarningDays' => $backlogWarningDays,
             'workTypeStats' => $workTypeStats,
             'totalWO' => $totalWO,

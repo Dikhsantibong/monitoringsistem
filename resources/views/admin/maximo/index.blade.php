@@ -126,7 +126,7 @@
                                             <th class="px-3 py-2">WO</th>
                                             <th class="px-3 py-2">Parent</th>
                                             <th class="px-3 py-2">Description</th>
-                                            <th class="px-3 py-2">Location</th>
+                                            <th class="px-3 py-2">Asset</th>
                                             <th class="px-3 py-2">
                                                 <div class="flex items-center justify-between">
                                                     <span>Status</span>
@@ -195,7 +195,7 @@
                                                 {{ $wo['description'] }}
                                             </span>
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['location'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['assetnum'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">
                                             @php
                                                 $woStatus = strtoupper($wo['status']);
