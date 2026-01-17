@@ -3,46 +3,12 @@
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/calender.css') }}">
 <style>
-    .calendar-fixed-layout {
-        display: flex;
-        min-height: 100vh;
-        background: #f9fafb;
-    }
-    .calendar-sidebar-fixed {
-        position: sticky;
-        top: 0;
-        height: 100vh;
-        z-index: 30;
-        flex-shrink: 0;
-    }
-    .calendar-header-fixed {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        background: #fff;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .calendar-main-scroll {
-        height: calc(100vh - 64px);
-        /* 64px = header height, adjust if needed */
-        overflow-y: auto;
-        padding: 24px;
-        background: #f9fafb;
-    }
-    @media (max-width: 768px) {
-        .calendar-main-scroll {
-            height: auto;
-            min-height: 100vh;
-            padding: 12px;
-        }
-    }
-
     /* Sticky positioning untuk navigasi dan presentasi */
     .calendar-sticky-nav {
         position: sticky;
-        top: 64px; /* Sesuaikan dengan tinggi header */
+        top: 64px; /* Di bawah header (tinggi header sekitar 64px) */
         background: white;
-        z-index: 20;
+        z-index: 10;
         padding: 1rem 0;
         margin-bottom: 1rem;
         border-bottom: 1px solid #e5e7eb;
@@ -51,30 +17,25 @@
 
     .calendar-sticky-presentation {
         position: sticky;
-        top: 164px; /* Di bawah navigasi (64px header + ~100px navigasi) */
+        top: 180px; /* Di bawah navigasi (64px header + ~116px navigasi) */
         background: white;
-        z-index: 19;
+        z-index: 9;
         padding: 1rem 0;
         margin-bottom: 1rem;
         border-bottom: 1px solid #e5e7eb;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-
-    /* Bagian kalender yang bisa di-scroll */
-    .calendar-scrollable {
-        overflow-y: visible; /* Biarkan natural scroll, tidak perlu max-height */
-    }
 </style>
 @endsection
 
 @section('content')
-<div class="calendar-fixed-layout">
-    <div class="calendar-sidebar-fixed hidden md:block">
-        @include('components.sidebar')
-    </div>
-    <div class="flex-1 flex flex-col min-w-0">
+<div class="flex h-screen bg-gray-50">
+    <!-- Sidebar -->
+    @include('components.sidebar')
+    <!-- Main Content -->
+    <div id="main-content" class="flex-1 overflow-auto">
         <!-- Header -->
-        <header class="calendar-header-fixed w-full">
+        <header class="bg-white shadow-sm sticky top-0">
             <div class="flex justify-between items-center px-6 py-3">
                 <div class="flex items-center gap-x-3">
                     <button id="mobile-menu-toggle"
@@ -87,9 +48,20 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
+                    <button id="desktop-menu-toggle"
+                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
                     <h1 class="text-xl font-semibold text-gray-800">Kalender Pemeliharaan</h1>
                 </div>
                 <div class="flex items-center gap-x-4 relative">
+                    <!-- User Dropdown -->
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
                             <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
@@ -110,10 +82,9 @@
                 </div>
             </div>
         </header>
-        <main class="calendar-main-scroll flex-1 min-w-0">
-            <div class="calendar-container">
-                <!-- Navigasi Bulan & Tahun dengan Filter - Sticky -->
-                <div class="calendar-sticky-nav">
+        <main class="px-6 py-4">
+            <!-- Navigasi Bulan & Tahun dengan Filter - Sticky -->
+            <div class="calendar-sticky-nav">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                     <div class="flex gap-2 items-center flex-wrap">
                         <a href="{{ route('kalender.pemeliharaan', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter, 'unit' => $unitFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
@@ -235,17 +206,16 @@
                     @endif
                 </div>
                 </div>
-                @php
-                use Carbon\Carbon;
-                \Carbon\Carbon::setLocale('id');
-                $daysOfWeek = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-                $firstDayOfMonth = Carbon::create($year, $month, 1);
-                $startDayOfWeek = $firstDayOfMonth->dayOfWeekIso; // 1=Senin, 7=Minggu
-                $totalDays = $lastDay->day;
-                @endphp
-                {{-- Bagian Kalender yang bisa di-scroll --}}
-                <div class="calendar-scrollable">
-                <div class="calendar-grid-month w-full bg-white rounded-lg shadow p-4">
+            @php
+            use Carbon\Carbon;
+            \Carbon\Carbon::setLocale('id');
+            $daysOfWeek = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+            $firstDayOfMonth = Carbon::create($year, $month, 1);
+            $startDayOfWeek = $firstDayOfMonth->dayOfWeekIso; // 1=Senin, 7=Minggu
+            $totalDays = $lastDay->day;
+            @endphp
+            {{-- Bagian Kalender --}}
+            <div class="calendar-grid-month w-full bg-white rounded-lg shadow p-4">
                     <div class="grid grid-cols-7 gap-1 mb-2">
                         @foreach($daysOfWeek as $day)
                         <div class="text-center font-semibold text-xs text-gray-600 py-1">{{ $day }}</div>
@@ -356,7 +326,6 @@
                             </div>
                         @endfor
                     </div>
-                </div>
                 </div>
             </div>
         </main>
