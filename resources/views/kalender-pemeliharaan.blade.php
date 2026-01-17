@@ -84,23 +84,58 @@
         </header>
         <main class="calendar-main-scroll flex-1 min-w-0">
             <div class="calendar-container">
-                <div class="flex flex-col md:flex-row items-center justify-between mb-4 gap-2">
-                    <div class="flex gap-2">
-                        <a href="{{ route('kalender.pemeliharaan', ['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year]) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
+                <!-- Navigasi Bulan & Tahun dengan Filter -->
+                <div class="flex flex-col md:flex-row items-center justify-between mb-4 gap-2 flex-wrap">
+                    <div class="flex gap-2 items-center flex-wrap">
+                        <a href="{{ route('kalender.pemeliharaan', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
+                        
+                        <!-- Filter Status & Work Type -->
+                        <form method="GET" action="{{ route('kalender.pemeliharaan') }}" id="filterForm" class="flex items-center gap-2">
+                            <input type="hidden" name="month" value="{{ $month }}">
+                            <input type="hidden" name="year" value="{{ $year }}">
+                            
+                            <select name="status" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-32">
+                                <option value="">Semua Status</option>
+                                @foreach($statusOptions as $status)
+                                    <option value="{{ $status }}" @if($statusFilter == $status) selected @endif>{{ $status }}</option>
+                                @endforeach
+                            </select>
+                            
+                            <select name="worktype" onchange="document.getElementById('filterForm').submit()" class=" border rounded px-2 py-1 text-sm w-32">
+                                <option value="">Semua Work Type</option>
+                                @foreach($workTypeOptions as $workType)
+                                    <option value="{{ $workType }}" @if($workTypeFilter == $workType) selected @endif>{{ $workType }}</option>
+                                @endforeach
+                            </select>
+                            
+                            @if($statusFilter || $workTypeFilter)
+                                <a href="{{ route('kalender.pemeliharaan', ['month' => $month, 'year' => $year]) }}" class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600">
+                                    Reset
+                                </a>
+                            @endif
+                        </form>
                     </div>
+                    
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-lg">{{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}</span>
-                        <form method="GET" action="" class="inline-block">
+                        <form method="GET" action="{{ route('kalender.pemeliharaan') }}" class="inline-block">
                             <select name="year" onchange="this.form.submit()" class="border rounded px-2 py-1 text-sm w-20">
                                 @for($y = $year-5; $y <= $year+5; $y++)
                                     <option value="{{ $y }}" @if($y==$year) selected @endif>{{ $y }}</option>
                                 @endfor
                             </select>
                             <input type="hidden" name="month" value="{{ $month }}">
+                            @if($statusFilter)
+                                <input type="hidden" name="status" value="{{ $statusFilter }}">
+                            @endif
+                            @if($workTypeFilter)
+                                <input type="hidden" name="worktype" value="{{ $workTypeFilter }}">
+                            @endif
                         </form>
                     </div>
+                    
                     <div class="flex gap-2">
-                        <a href="{{ route('kalender.pemeliharaan', ['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year]) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
+                        <a href="{{ route('kalender.pemeliharaan', array_merge(['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
                     </div>
                 </div>
                 @php
@@ -132,19 +167,33 @@
                                 <div class="flex-1 flex flex-col gap-1">
                                     @foreach($dateEvents as $event)
                                         @php
-                                            $status = strtolower($event['status']);
-                                            if ($status === 'closed') {
+                                            $status = strtoupper($event['status'] ?? '');
+                                            // Warna khusus per status WO dari Maximo: WAPPR, APPR, INPRG, COMP, CLOSE
+                                            if ($status === 'CLOSE' || $status === 'COMP') {
+                                                // Completed/Closed -> Hijau
                                                 $border = 'border-2 border-green-500';
                                                 $bg = 'bg-green-50';
                                                 $badge = 'bg-green-300 text-green-900';
-                                            } elseif ($status === 'wmatl') {
-                                                $border = 'border-2 border-blue-500';
+                                            } elseif ($status === 'INPRG') {
+                                                // In Progress -> Kuning/Orange
+                                                $border = 'border-2 border-yellow-500';
                                                 $bg = 'bg-yellow-50';
                                                 $badge = 'bg-yellow-300 text-yellow-900';
+                                            } elseif ($status === 'APPR') {
+                                                // Approved -> Biru muda
+                                                $border = 'border-2 border-blue-400';
+                                                $bg = 'bg-blue-50';
+                                                $badge = 'bg-blue-200 text-blue-900';
+                                            } elseif ($status === 'WAPPR') {
+                                                // Waiting Approval -> Biru
+                                                $border = 'border-2 border-blue-500';
+                                                $bg = 'bg-blue-50';
+                                                $badge = 'bg-blue-300 text-blue-900';
                                             } else {
-                                                $border = 'border-2 border-red-500';
-                                                $bg = 'bg-red-50';
-                                                $badge = 'bg-red-300 text-red-900';
+                                                // Status lainnya -> Abu-abu
+                                                $border = 'border-2 border-gray-500';
+                                                $bg = 'bg-gray-50';
+                                                $badge = 'bg-gray-300 text-gray-900';
                                             }
                                         @endphp
                                         <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
