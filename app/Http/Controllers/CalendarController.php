@@ -29,6 +29,7 @@ class CalendarController extends Controller
 
         // Get work orders dari Maximo (Oracle) untuk bulan & tahun yang dipilih
         $workOrders = collect();
+        $workOrdersRaw = collect(); // Inisialisasi untuk worktype stats
         try {
             $workOrdersQuery = DB::connection('oracle')
                 ->table('WORKORDER')
@@ -136,6 +137,7 @@ class CalendarController extends Controller
         } catch (\Exception $e) {
             Log::error('Error getting Work Orders from Maximo in CalendarController: ' . $e->getMessage());
             $workOrders = collect([]);
+            $workOrdersRaw = collect([]);
         }
 
         // Backlog tidak ada di Maximo, set empty collection
@@ -217,6 +219,33 @@ class CalendarController extends Controller
         $statusOptions = ['WAPPR', 'APPR', 'INPRG', 'COMP', 'CLOSE'];
         $workTypeOptions = ['CH', 'CM', 'CP', 'OH', 'OP', 'PAM', 'PDM', 'PM'];
 
+        // Hitung presentasi worktype berdasarkan total WO bulan ini
+        // Gunakan data mentah untuk perhitungan yang lebih akurat
+        $totalWO = $workOrdersRaw->count();
+        $workTypeStats = [];
+        
+        if ($totalWO > 0) {
+            // Hitung jumlah per worktype dari data mentah
+            $workTypeCounts = $workOrdersRaw->groupBy('worktype')->map(function ($group) {
+                return $group->count();
+            });
+            
+            // Hitung persentase per worktype
+            foreach ($workTypeCounts as $workType => $count) {
+                $workTypeLabel = $workType ?? 'N/A';
+                $percentage = round(($count / $totalWO) * 100, 1);
+                $workTypeStats[$workTypeLabel] = [
+                    'count' => $count,
+                    'percentage' => $percentage,
+                ];
+            }
+            
+            // Sort by percentage descending
+            uasort($workTypeStats, function ($a, $b) {
+                return $b['percentage'] <=> $a['percentage'];
+            });
+        }
+
         // Untuk grid kalender, butuh info bulan & tahun
         return view('calendar.index', [
             'events' => $events,
@@ -231,6 +260,8 @@ class CalendarController extends Controller
             'statusOptions' => $statusOptions,
             'workTypeOptions' => $workTypeOptions,
             'backlogWarningDays' => $backlogWarningDays,
+            'workTypeStats' => $workTypeStats,
+            'totalWO' => $totalWO,
         ]);
     }
 }
