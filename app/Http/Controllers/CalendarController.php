@@ -247,6 +247,64 @@ class CalendarController extends Controller
             });
         }
 
+        // Hitung persentase WO Open vs WO Close
+        $woOpenCount = 0;
+        $woCloseCount = 0;
+        $woOpenCloseStats = [];
+        
+        if ($totalWO > 0) {
+            $completedStatuses = ['COMP', 'CLOSE'];
+            
+            foreach ($workOrdersRaw as $wo) {
+                $status = strtoupper($wo->status ?? '');
+                if (in_array($status, $completedStatuses)) {
+                    $woCloseCount++;
+                } else {
+                    $woOpenCount++;
+                }
+            }
+            
+            $woOpenCloseStats = [
+                'open' => [
+                    'count' => $woOpenCount,
+                    'percentage' => round(($woOpenCount / $totalWO) * 100, 1),
+                ],
+                'close' => [
+                    'count' => $woCloseCount,
+                    'percentage' => round(($woCloseCount / $totalWO) * 100, 1),
+                ],
+            ];
+        }
+
+        // Hitung persentase WO Terencana vs WO Tidak Terencana
+        $woTerencanaCount = 0;
+        $woTidakTerencanaCount = 0;
+        $woTerencanaStats = [];
+        
+        if ($totalWO > 0) {
+            $tidakTerencanaTypes = ['EM', 'CM'];
+            
+            foreach ($workOrdersRaw as $wo) {
+                $workType = strtoupper($wo->worktype ?? '');
+                if (in_array($workType, $tidakTerencanaTypes)) {
+                    $woTidakTerencanaCount++;
+                } else {
+                    $woTerencanaCount++;
+                }
+            }
+            
+            $woTerencanaStats = [
+                'terencana' => [
+                    'count' => $woTerencanaCount,
+                    'percentage' => round(($woTerencanaCount / $totalWO) * 100, 1),
+                ],
+                'tidak_terencana' => [
+                    'count' => $woTidakTerencanaCount,
+                    'percentage' => round(($woTidakTerencanaCount / $totalWO) * 100, 1),
+                ],
+            ];
+        }
+
         // Untuk grid kalender, butuh info bulan & tahun
         return view('calendar.index', [
             'events' => $events,
@@ -263,6 +321,8 @@ class CalendarController extends Controller
             'backlogWarningDays' => $backlogWarningDays,
             'workTypeStats' => $workTypeStats,
             'totalWO' => $totalWO,
+            'woOpenCloseStats' => $woOpenCloseStats,
+            'woTerencanaStats' => $woTerencanaStats,
         ]);
     }
 }

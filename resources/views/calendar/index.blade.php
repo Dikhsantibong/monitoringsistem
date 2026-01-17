@@ -207,23 +207,56 @@
                 </div>
             </div>
 
-            <div class="calendar-header flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
-                
-                {{-- Presentasi Work Type - Satu Baris Kecil --}}
-                @if(isset($workTypeStats) && count($workTypeStats) > 0)
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-xs text-gray-600 font-semibold">Work Type:</span>
+            <div class="calendar-header mb-4">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
+                    <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
+                    
+                    {{-- Presentasi Work Type - Satu Baris Kecil --}}
+                    @if(isset($workTypeStats) && count($workTypeStats) > 0)
                     <div class="flex items-center gap-2 flex-wrap">
-                        @foreach($workTypeStats as $workType => $stat)
-                        <div class="flex items-center gap-1 bg-gray-100 border border-gray-300 rounded px-2 py-1">
-                            <span class="text-xs font-bold text-blue-600">{{ $stat['percentage'] }}%</span>
-                            <span class="text-xs text-gray-700">{{ $workType }}</span>
-                            <span class="text-[10px] text-gray-500">({{ $stat['count'] }})</span>
+                        <span class="text-xs text-gray-600 font-semibold">Work Type:</span>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            @foreach($workTypeStats as $workType => $stat)
+                            <div class="flex items-center gap-1 bg-gray-100 border border-gray-300 rounded px-2 py-1">
+                                <span class="text-xs font-bold text-blue-600">{{ $stat['percentage'] }}%</span>
+                                <span class="text-xs text-gray-700">{{ $workType }}</span>
+                                <span class="text-[10px] text-gray-500">({{ $stat['count'] }})</span>
+                            </div>
+                            @endforeach
                         </div>
-                        @endforeach
+                        <span class="text-xs text-gray-500">Total: <strong>{{ $totalWO }}</strong></span>
                     </div>
-                    <span class="text-xs text-gray-500">Total: <strong>{{ $totalWO }}</strong></span>
+                    @endif
+                </div>
+                
+                {{-- Presentasi WO Open/Close dan Terencana/Tidak Terencana - Satu Baris Kecil --}}
+                @if(isset($woOpenCloseStats) && isset($woTerencanaStats))
+                <div class="flex items-center gap-4 flex-wrap text-xs">
+                    {{-- WO Open vs Close --}}
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-600 font-semibold">Status:</span>
+                        <div class="flex items-center gap-1 bg-green-100 border border-green-300 rounded px-2 py-0.5">
+                            <span class="font-bold text-green-700">Open: {{ $woOpenCloseStats['open']['percentage'] }}%</span>
+                            <span class="text-gray-500">({{ $woOpenCloseStats['open']['count'] }})</span>
+                        </div>
+                        <div class="flex items-center gap-1 bg-blue-100 border border-blue-300 rounded px-2 py-0.5">
+                            <span class="font-bold text-blue-700">Close: {{ $woOpenCloseStats['close']['percentage'] }}%</span>
+                            <span class="text-gray-500">({{ $woOpenCloseStats['close']['count'] }})</span>
+                        </div>
+                    </div>
+                    
+                    {{-- WO Terencana vs Tidak Terencana --}}
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-600 font-semibold">Rencana:</span>
+                        <div class="flex items-center gap-1 bg-purple-100 border border-purple-300 rounded px-2 py-0.5">
+                            <span class="font-bold text-purple-700">Terencana: {{ $woTerencanaStats['terencana']['percentage'] }}%</span>
+                            <span class="text-gray-500">({{ $woTerencanaStats['terencana']['count'] }})</span>
+                        </div>
+                        <div class="flex items-center gap-1 bg-orange-100 border border-orange-300 rounded px-2 py-0.5">
+                            <span class="font-bold text-orange-700">Tidak Terencana: {{ $woTerencanaStats['tidak_terencana']['percentage'] }}%</span>
+                            <span class="text-gray-500">({{ $woTerencanaStats['tidak_terencana']['count'] }})</span>
+                        </div>
+                    </div>
                 </div>
                 @endif
             </div>
