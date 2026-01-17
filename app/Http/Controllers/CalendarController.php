@@ -281,7 +281,16 @@ class CalendarController extends Controller
         // Hitung persentase WO Open vs WO Close
         $woOpenCount = 0;
         $woCloseCount = 0;
-        $woOpenCloseStats = [];
+        $woOpenCloseStats = [
+            'open' => [
+                'count' => 0,
+                'percentage' => 0,
+            ],
+            'close' => [
+                'count' => 0,
+                'percentage' => 0,
+            ],
+        ];
         
         if ($totalWO > 0) {
             $completedStatuses = ['COMP', 'CLOSE'];
@@ -310,7 +319,16 @@ class CalendarController extends Controller
         // Hitung persentase WO Terencana vs WO Tidak Terencana
         $woTerencanaCount = 0;
         $woTidakTerencanaCount = 0;
-        $woTerencanaStats = [];
+        $woTerencanaStats = [
+            'terencana' => [
+                'count' => 0,
+                'percentage' => 0,
+            ],
+            'tidak_terencana' => [
+                'count' => 0,
+                'percentage' => 0,
+            ],
+        ];
         
         if ($totalWO > 0) {
             $tidakTerencanaTypes = ['EM', 'CM'];
