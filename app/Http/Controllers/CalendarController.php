@@ -20,8 +20,8 @@ class CalendarController extends Controller
         $statusFilter = $request->input('status');
         $workTypeFilter = $request->input('worktype');
         
-        // Parameter hari peringatan backlog (default 3 hari)
-        $backlogWarningDays = $request->input('backlog_warning_days', 3);
+        // Parameter hari peringatan backlog (default 5 hari - H-5)
+        $backlogWarningDays = $request->input('backlog_warning_days', 5);
 
         // Tanggal awal dan akhir bulan
         $firstDay = Carbon::create($year, $month, 1);
