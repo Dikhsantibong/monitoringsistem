@@ -207,28 +207,26 @@
                 </div>
             </div>
 
-            <div class="calendar-header">
+            <div class="calendar-header flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                 <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
-            </div>
-
-            {{-- Presentasi Work Type --}}
-            @if(isset($workTypeStats) && count($workTypeStats) > 0)
-            <div class="bg-white rounded-lg shadow p-4 mb-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-semibold text-gray-800">Presentasi Work Type</h3>
-                    <span class="text-sm text-gray-600">Total WO: <strong>{{ $totalWO }}</strong></span>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-                    @foreach($workTypeStats as $workType => $stat)
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
-                        <div class="text-2xl font-bold text-blue-600">{{ $stat['percentage'] }}%</div>
-                        <div class="text-xs text-gray-600 mt-1">{{ $workType }}</div>
-                        <div class="text-xs text-gray-500 mt-1">({{ $stat['count'] }} WO)</div>
+                
+                {{-- Presentasi Work Type - Satu Baris Kecil --}}
+                @if(isset($workTypeStats) && count($workTypeStats) > 0)
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs text-gray-600 font-semibold">Work Type:</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        @foreach($workTypeStats as $workType => $stat)
+                        <div class="flex items-center gap-1 bg-gray-100 border border-gray-300 rounded px-2 py-1">
+                            <span class="text-xs font-bold text-blue-600">{{ $stat['percentage'] }}%</span>
+                            <span class="text-xs text-gray-700">{{ $workType }}</span>
+                            <span class="text-[10px] text-gray-500">({{ $stat['count'] }})</span>
+                        </div>
+                        @endforeach
                     </div>
-                    @endforeach
+                    <span class="text-xs text-gray-500">Total: <strong>{{ $totalWO }}</strong></span>
                 </div>
+                @endif
             </div>
-            @endif
 
             {{-- Hapus form filter tanggal dan ganti dengan navigasi di atas --}}
             @php
