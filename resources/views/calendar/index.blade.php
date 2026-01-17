@@ -163,6 +163,14 @@
         border-bottom: 1px solid #e5e7eb;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
+    .calendar-sticky-dan-presentasi-container {
+        background-color: #f9fafb;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
 
     /* Bagian kalender yang bisa di-scroll */
     .calendar-scrollable {
@@ -181,6 +189,7 @@
 
         <div class="calendar-container">
             <!-- Navigasi Bulan & Tahun dengan Filter - Sticky -->
+            <div class="calendar-sticky-dan-presentasi-container">
             <div class="calendar-sticky-nav">
             <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                 <div class="flex gap-2 items-center flex-wrap">
@@ -301,6 +310,7 @@
                     </div>
                 </div>
                 @endif
+            </div>
             </div>
             </div>
 
