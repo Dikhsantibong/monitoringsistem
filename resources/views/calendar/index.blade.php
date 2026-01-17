@@ -169,7 +169,7 @@
                             @endforeach
                         </select>
                         
-                        <select name="worktype" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-48 min-w-[12rem] lg:w-64">
+                        <select name="worktype" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-40 min-w-[12rem] lg:w-64">
                             <option value="">Semua Work Type</option>
                             @foreach($workTypeOptions as $workType)
                                 <option value="{{ $workType }}" @if($workTypeFilter == $workType) selected @endif>{{ $workType }}</option>
