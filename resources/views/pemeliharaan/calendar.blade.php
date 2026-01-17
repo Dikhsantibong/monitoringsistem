@@ -36,6 +36,34 @@
             padding: 12px;
         }
     }
+
+    /* Sticky positioning untuk navigasi dan presentasi */
+    .calendar-sticky-nav {
+        position: sticky;
+        top: 64px; /* Sesuaikan dengan tinggi header */
+        background: white;
+        z-index: 20;
+        padding: 1rem 0;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar-sticky-presentation {
+        position: sticky;
+        top: 164px; /* Di bawah navigasi (64px header + ~100px navigasi) */
+        background: white;
+        z-index: 19;
+        padding: 1rem 0;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Bagian kalender yang bisa di-scroll */
+    .calendar-scrollable {
+        overflow-y: visible; /* Biarkan natural scroll, tidak perlu max-height */
+    }
 </style>
 @endsection
 
@@ -84,12 +112,13 @@
         </header>
         <main class="calendar-main-scroll flex-1 min-w-0">
             <div class="calendar-container">
-                <!-- Navigasi Bulan & Tahun dengan Filter -->
-                <div class="flex flex-col md:flex-row items-center justify-between mb-4 gap-2 flex-wrap">
+                <!-- Navigasi Bulan & Tahun dengan Filter - Sticky -->
+                <div class="calendar-sticky-nav">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                     <div class="flex gap-2 items-center flex-wrap">
-                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
+                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter, 'unit' => $unitFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
                         
-                        <!-- Filter Status & Work Type -->
+                        <!-- Filter Status, Work Type & Unit -->
                         <form method="GET" action="{{ route('pemeliharaan.calendar') }}" id="filterForm" class="flex items-center gap-2">
                             <input type="hidden" name="month" value="{{ $month }}">
                             <input type="hidden" name="year" value="{{ $year }}">
@@ -101,14 +130,21 @@
                                 @endforeach
                             </select>
                             
-                            <select name="worktype" onchange="document.getElementById('filterForm').submit()" class=" border rounded px-2 py-1 text-sm w-32">
+                            <select name="worktype" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-40 min-w-[12rem] lg:w-64">
                                 <option value="">Semua Work Type</option>
                                 @foreach($workTypeOptions as $workType)
                                     <option value="{{ $workType }}" @if($workTypeFilter == $workType) selected @endif>{{ $workType }}</option>
                                 @endforeach
                             </select>
                             
-                            @if($statusFilter || $workTypeFilter)
+                            <select name="unit" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-48 min-w-[12rem]">
+                                <option value="">Semua Unit</option>
+                                @foreach($unitOptions as $unitCode => $unitName)
+                                    <option value="{{ $unitCode }}" @if($unitFilter == $unitCode) selected @endif>{{ $unitName }}</option>
+                                @endforeach
+                            </select>
+                            
+                            @if($statusFilter || $workTypeFilter || $unitFilter)
                                 <a href="{{ route('pemeliharaan.calendar', ['month' => $month, 'year' => $year]) }}" class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600">
                                     Reset
                                 </a>
@@ -131,12 +167,73 @@
                             @if($workTypeFilter)
                                 <input type="hidden" name="worktype" value="{{ $workTypeFilter }}">
                             @endif
+                            @if($unitFilter)
+                                <input type="hidden" name="unit" value="{{ $unitFilter }}">
+                            @endif
                         </form>
                     </div>
                     
                     <div class="flex gap-2">
-                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
+                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter, 'unit' => $unitFilter]))) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
                     </div>
+                </div>
+                </div>
+
+                <!-- Presentasi - Sticky -->
+                <div class="calendar-sticky-presentation">
+                <div class="calendar-header mb-0">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
+                        <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
+                        
+                        {{-- Presentasi Work Type - Satu Baris Kecil --}}
+                        @if(isset($workTypeStats) && count($workTypeStats) > 0)
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs text-gray-600 font-semibold">Work Type:</span>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                @foreach($workTypeStats as $workType => $stat)
+                                <div class="flex items-center gap-1 bg-gray-100 border border-gray-300 rounded px-2 py-1">
+                                    <span class="text-xs font-bold text-blue-600">{{ $stat['percentage'] }}%</span>
+                                    <span class="text-xs text-gray-700">{{ $workType }}</span>
+                                    <span class="text-[10px] text-gray-500">({{ $stat['count'] }})</span>
+                                </div>
+                                @endforeach
+                            </div>
+                            <span class="text-xs text-gray-500">Total: <strong>{{ $totalWO }}</strong></span>
+                        </div>
+                        @endif
+                    </div>
+                    
+                    {{-- Presentasi WO Open/Close dan Terencana/Tidak Terencana - Satu Baris Kecil --}}
+                    @if(isset($woOpenCloseStats) && isset($woTerencanaStats))
+                    <div class="flex items-center gap-4 flex-wrap text-xs">
+                        {{-- WO Open vs Close --}}
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-600 font-semibold">Status:</span>
+                            <div class="flex items-center gap-1 bg-red-100 border border-red-300 rounded px-2 py-0.5">
+                                <span class="font-bold text-red-700">Open: {{ $woOpenCloseStats['open']['percentage'] }}%</span>
+                                <span class="text-gray-500">({{ $woOpenCloseStats['open']['count'] }})</span>
+                            </div>
+                            <div class="flex items-center gap-1 bg-blue-100 border border-blue-300 rounded px-2 py-0.5">
+                                <span class="font-bold text-green-700">Close: {{ $woOpenCloseStats['close']['percentage'] }}%</span>
+                                <span class="text-gray-500">({{ $woOpenCloseStats['close']['count'] }})</span>
+                            </div>
+                        </div>
+                        
+                        {{-- WO Terencana vs Tidak Terencana --}}
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-600 font-semibold">Rencana:</span>
+                            <div class="flex items-center gap-1 bg-purple-100 border border-purple-300 rounded px-2 py-0.5">
+                                <span class="font-bold text-purple-700">Terencana: {{ $woTerencanaStats['terencana']['percentage'] }}%</span>
+                                <span class="text-gray-500">({{ $woTerencanaStats['terencana']['count'] }})</span>
+                            </div>
+                            <div class="flex items-center gap-1 bg-orange-100 border border-orange-300 rounded px-2 py-0.5">
+                                <span class="font-bold text-orange-700">Tidak Terencana: {{ $woTerencanaStats['tidak_terencana']['percentage'] }}%</span>
+                                <span class="text-gray-500">({{ $woTerencanaStats['tidak_terencana']['count'] }})</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
                 </div>
                 @php
                 use Carbon\Carbon;
@@ -146,6 +243,8 @@
                 $startDayOfWeek = $firstDayOfMonth->dayOfWeekIso; // 1=Senin, 7=Minggu
                 $totalDays = $lastDay->day;
                 @endphp
+                {{-- Bagian Kalender yang bisa di-scroll --}}
+                <div class="calendar-scrollable">
                 <div class="calendar-grid-month w-full bg-white rounded-lg shadow p-4">
                     <div class="grid grid-cols-7 gap-1 mb-2">
                         @foreach($daysOfWeek as $day)
@@ -199,7 +298,20 @@
                                         <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
                                             <div class="flex justify-between items-center">
                                                 <span class="font-bold text-xs">#{{ $event['id'] }}</span>
-                                                <span class="text-[10px] px-1 py-0.5 rounded {{ $badge }}">{{ ucfirst($event['status']) }}</span>
+                                                <div class="flex gap-1 items-center">
+                                                    <span class="text-[10px] px-1 py-0.5 rounded {{ $badge }}">{{ ucfirst($event['status']) }}</span>
+                                                    @if(isset($event['backlog_status']) && $event['backlog_status'] !== null)
+                                                        @if($event['backlog_status'] === 'overdue')
+                                                            <span class="text-[9px] px-1 py-0.5 rounded bg-red-600 text-white font-bold" title="Sudah backlog: {{ (int)$event['backlog_days'] }} hari">
+                                                                ❌ {{ (int)$event['backlog_days'] }}h
+                                                            </span>
+                                                        @elseif($event['backlog_status'] === 'warning')
+                                                            <span class="text-[9px] px-1 py-0.5 rounded bg-orange-500 text-white font-bold" title="Akan backlog dalam {{ (int)$event['backlog_days'] }} hari">
+                                                                ⚠️ {{ (int)$event['backlog_days'] }}h
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             </div>
                                             <div class="font-semibold text-[11px]">{{ $event['type'] }}</div>
                                             <div class="text-[10px] text-gray-700 event-desc">{{ $event['description'] }}</div>
@@ -211,6 +323,11 @@
                                             <div class="flex flex-col text-[9px] text-gray-500">
                                                 <span>Start: {{ isset($event['schedule_start']) ? \Carbon\Carbon::parse($event['schedule_start'])->format('d/m/Y') : '-' }}</span>
                                                 <span>Finish: {{ isset($event['schedule_finish']) ? \Carbon\Carbon::parse($event['schedule_finish'])->format('d/m/Y') : '-' }}</span>
+                                                @if(isset($event['is_backlog']) && $event['is_backlog'])
+                                                    <span class="text-red-600 font-bold">❌ Sudah backlog: {{ (int)$event['backlog_days'] }} hari</span>
+                                                @elseif(isset($event['backlog_status']) && $event['backlog_status'] === 'warning')
+                                                    <span class="text-orange-600 font-bold">⚠️ Akan backlog: {{ (int)$event['backlog_days'] }} hari lagi</span>
+                                                @endif
                                                 <span>Labor: <b>{{ $event['labor'] ?? '-' }}</b></span>
                                             </div>
                                         </div>
@@ -239,6 +356,7 @@
                             </div>
                         @endfor
                     </div>
+                </div>
                 </div>
             </div>
         </main>
