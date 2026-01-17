@@ -92,8 +92,11 @@ class CalendarController extends Controller
                 $backlogStatus = null; // 'overdue', 'warning', 'normal'
                 
                 if (!$isCompleted && isset($wo->schedfinish) && $wo->schedfinish) {
-                    $scheduleFinish = Carbon::parse($wo->schedfinish);
-                    $diffDays = $now->diffInDays($scheduleFinish, false); // false = tidak absolute, negatif jika sudah lewat
+                    $scheduleFinish = Carbon::parse($wo->schedfinish)->startOfDay();
+                    $nowStartOfDay = $now->copy()->startOfDay();
+                    
+                    // Hitung selisih hari dengan memastikan integer
+                    $diffDays = (int) $nowStartOfDay->diffInDays($scheduleFinish, false); // false = tidak absolute, negatif jika sudah lewat
                     
                     if ($diffDays < 0) {
                         // Sudah backlog (schedule_finish sudah lewat)
