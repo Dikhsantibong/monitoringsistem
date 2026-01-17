@@ -276,12 +276,12 @@
                                     <span class="text-[10px] px-1 py-0.5 rounded {{ $badge }}">{{ ucfirst($event['status']) }}</span>
                                     @if(isset($event['backlog_status']) && $event['backlog_status'] !== null)
                                         @if($event['backlog_status'] === 'overdue')
-                                            <span class="text-[9px] px-1 py-0.5 rounded bg-red-600 text-white font-bold" title="Backlog: {{ (int)$event['backlog_days'] }} hari">
-                                                ⚠️ {{ (int)$event['backlog_days'] }}h
+                                            <span class="text-[9px] px-1 py-0.5 rounded bg-red-600 text-white font-bold" title="Sudah backlog: {{ (int)$event['backlog_days'] }} hari">
+                                                ❌ {{ (int)$event['backlog_days'] }}h
                                             </span>
                                         @elseif($event['backlog_status'] === 'warning')
                                             <span class="text-[9px] px-1 py-0.5 rounded bg-orange-500 text-white font-bold" title="Akan backlog dalam {{ (int)$event['backlog_days'] }} hari">
-                                                ⏰ {{ (int)$event['backlog_days'] }}h
+                                                ⚠️ {{ (int)$event['backlog_days'] }}h
                                             </span>
                                         @endif
                                     @endif
@@ -298,9 +298,9 @@
                                 <span>Start: {{ isset($event['schedule_start']) ? \Carbon\Carbon::parse($event['schedule_start'])->format('d/m/Y') : '-' }}</span>
                                 <span>Finish: {{ isset($event['schedule_finish']) ? \Carbon\Carbon::parse($event['schedule_finish'])->format('d/m/Y') : '-' }}</span>
                                 @if(isset($event['is_backlog']) && $event['is_backlog'])
-                                    <span class="text-red-600 font-bold">⚠️ Backlog: {{ (int)$event['backlog_days'] }} hari</span>
+                                    <span class="text-red-600 font-bold">❌ Sudah backlog: {{ (int)$event['backlog_days'] }} hari</span>
                                 @elseif(isset($event['backlog_status']) && $event['backlog_status'] === 'warning')
-                                    <span class="text-orange-600 font-bold">⏰ Akan backlog: {{ (int)$event['backlog_days'] }} hari lagi</span>
+                                    <span class="text-orange-600 font-bold">⚠️ Akan backlog: {{ (int)$event['backlog_days'] }} hari lagi</span>
                                 @endif
                                 <span>Labor: <b>{{ $event['labor'] ?? '-' }}</b></span>
                             </div>
@@ -457,10 +457,10 @@
                 let backlogBadge = '';
                 if (event.backlog_status === 'overdue') {
                     const days = Math.floor(event.backlog_days || 0);
-                    backlogBadge = `<span class="text-[9px] px-1 py-0.5 rounded bg-red-600 text-white font-bold ml-1" title="Backlog: ${days} hari">⚠️ ${days}h</span>`;
+                    backlogBadge = `<span class="text-[9px] px-1 py-0.5 rounded bg-red-600 text-white font-bold ml-1" title="Sudah backlog: ${days} hari">❌ ${days}h</span>`;
                 } else if (event.backlog_status === 'warning') {
                     const days = Math.floor(event.backlog_days || 0);
-                    backlogBadge = `<span class="text-[9px] px-1 py-0.5 rounded bg-orange-500 text-white font-bold ml-1" title="Akan backlog dalam ${days} hari">⏰ ${days}h</span>`;
+                    backlogBadge = `<span class="text-[9px] px-1 py-0.5 rounded bg-orange-500 text-white font-bold ml-1" title="Akan backlog dalam ${days} hari">⚠️ ${days}h</span>`;
                 }
 
                 html += `<div class="mb-3 border-b pb-2 ${highlightClass} rounded px-2 py-1">
@@ -473,8 +473,8 @@
                     <div class="text-[11px] text-gray-500 mb-1">Priority: <b>${event.priority ?? '-'}</b></div>
                     <div class="text-[11px] text-gray-500 mb-1">Start: <b>${event.schedule_start?.substring(0,10) ?? '-'}</b></div>
                     <div class="text-[11px] text-gray-500 mb-1">Finish: <b>${event.schedule_finish?.substring(0,10) ?? '-'}</b></div>
-                    ${event.is_backlog ? `<div class="text-[11px] text-red-600 font-bold mb-1">⚠️ Backlog: ${Math.floor(event.backlog_days || 0)} hari</div>` : ''}
-                    ${event.backlog_status === 'warning' ? `<div class="text-[11px] text-orange-600 font-bold mb-1">⏰ Akan backlog: ${Math.floor(event.backlog_days || 0)} hari lagi</div>` : ''}
+                    ${event.is_backlog ? `<div class="text-[11px] text-red-600 font-bold mb-1">❌ Sudah backlog: ${Math.floor(event.backlog_days || 0)} hari</div>` : ''}
+                    ${event.backlog_status === 'warning' ? `<div class="text-[11px] text-orange-600 font-bold mb-1">⚠️ Akan backlog: ${Math.floor(event.backlog_days || 0)} hari lagi</div>` : ''}
                     <div class="text-[11px] text-gray-500 mb-1">Labor: <b>${event.labor ?? '-'}</b></div>
                 </div>`;
             });
