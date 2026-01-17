@@ -152,45 +152,38 @@
         <div class="h-[80px]"></div>
 
         <div class="calendar-container">
-            <!-- Filter Status & Work Type -->
-            <div class="bg-white rounded-lg shadow p-4 mb-4">
-                <form method="GET" action="{{ route('calendar.index') }}" id="filterForm" class="flex flex-wrap items-center gap-4">
-                    <input type="hidden" name="month" value="{{ $month }}">
-                    <input type="hidden" name="year" value="{{ $year }}">
+            <!-- Navigasi Bulan & Tahun dengan Filter -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-4 gap-2 flex-wrap">
+                <div class="flex gap-2 items-center flex-wrap">
+                    <a href="{{ route('calendar.index', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
                     
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-semibold text-gray-700">Status:</label>
-                        <select name="status" onchange="document.getElementById('filterForm').submit()" class="border rounded px-3 py-2 text-sm w-40">
+                    <!-- Filter Status & Work Type -->
+                    <form method="GET" action="{{ route('calendar.index') }}" id="filterForm" class="flex items-center gap-2">
+                        <input type="hidden" name="month" value="{{ $month }}">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        
+                        <select name="status" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-32">
                             <option value="">Semua Status</option>
                             @foreach($statusOptions as $status)
                                 <option value="{{ $status }}" @if($statusFilter == $status) selected @endif>{{ $status }}</option>
                             @endforeach
                         </select>
-                    </div>
-                    
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-semibold text-gray-700">Work Type:</label>
-                        <select name="worktype" onchange="document.getElementById('filterForm').submit()" class="border rounded px-3 py-2 text-sm w-40">
+                        
+                        <select name="worktype" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-32">
                             <option value="">Semua Work Type</option>
                             @foreach($workTypeOptions as $workType)
                                 <option value="{{ $workType }}" @if($workTypeFilter == $workType) selected @endif>{{ $workType }}</option>
                             @endforeach
                         </select>
-                    </div>
-                    
-                    @if($statusFilter || $workTypeFilter)
-                        <a href="{{ route('calendar.index', ['month' => $month, 'year' => $year]) }}" class="px-4 py-2 bg-gray-500 text-white rounded text-sm hover:bg-gray-600">
-                            Reset Filter
-                        </a>
-                    @endif
-                </form>
-            </div>
-            
-            <!-- Navigasi Bulan & Tahun -->
-            <div class="flex flex-col md:flex-row items-center justify-between mb-4 gap-2">
-                <div class="flex gap-2">
-                    <a href="{{ route('calendar.index', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
+                        
+                        @if($statusFilter || $workTypeFilter)
+                            <a href="{{ route('calendar.index', ['month' => $month, 'year' => $year]) }}" class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600">
+                                Reset
+                            </a>
+                        @endif
+                    </form>
                 </div>
+                
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-lg">{{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}</span>
                     <form method="GET" action="{{ route('calendar.index') }}" class="inline-block">
@@ -208,6 +201,7 @@
                         @endif
                     </form>
                 </div>
+                
                 <div class="flex gap-2">
                     <a href="{{ route('calendar.index', array_merge(['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
                 </div>
