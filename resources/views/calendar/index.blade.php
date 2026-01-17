@@ -140,34 +140,6 @@
     #eventPopup .popup-content {
         transform: scale(1) !important;
     }
-
-    /* Sticky positioning untuk navigasi dan presentasi */
-    .calendar-sticky-nav {
-        position: sticky;
-        top: 80px; /* Sesuaikan dengan tinggi navbar */
-        background: white;
-        z-index: 20;
-        padding: 1rem 0;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .calendar-sticky-presentation {
-        position: sticky;
-        top: 180px; /* Di bawah navigasi (80px navbar + ~100px navigasi) */
-        background: white;
-        z-index: 19;
-        padding: 1rem 0;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Bagian kalender yang bisa di-scroll */
-    .calendar-scrollable {
-        overflow-y: visible; /* Biarkan natural scroll, tidak perlu max-height */
-    }
 </style>
 @endsection
 
@@ -180,9 +152,8 @@
         <div class="h-[80px]"></div>
 
         <div class="calendar-container">
-            <!-- Navigasi Bulan & Tahun dengan Filter - Sticky -->
-            <div class="calendar-sticky-nav">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
+            <!-- Navigasi Bulan & Tahun dengan Filter -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-4 gap-2 flex-wrap">
                 <div class="flex gap-2 items-center flex-wrap">
                     <a href="{{ route('calendar.index', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
                     
@@ -235,11 +206,8 @@
                     <a href="{{ route('calendar.index', array_merge(['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
                 </div>
             </div>
-            </div>
 
-            <!-- Presentasi - Sticky -->
-            <div class="calendar-sticky-presentation">
-            <div class="calendar-header mb-0">
+            <div class="calendar-header mb-4">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
                     <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
                     
@@ -267,12 +235,12 @@
                     {{-- WO Open vs Close --}}
                     <div class="flex items-center gap-2">
                         <span class="text-gray-600 font-semibold">Status:</span>
-                        <div class="flex items-center gap-1 bg-red-100 border border-red-300 rounded px-2 py-0.5">
-                            <span class="font-bold text-red-700">Open: {{ $woOpenCloseStats['open']['percentage'] }}%</span>
+                        <div class="flex items-center gap-1 bg-green-100 border border-green-300 rounded px-2 py-0.5">
+                            <span class="font-bold text-green-700">Open: {{ $woOpenCloseStats['open']['percentage'] }}%</span>
                             <span class="text-gray-500">({{ $woOpenCloseStats['open']['count'] }})</span>
                         </div>
                         <div class="flex items-center gap-1 bg-blue-100 border border-blue-300 rounded px-2 py-0.5">
-                            <span class="font-bold text-green-700">Close: {{ $woOpenCloseStats['close']['percentage'] }}%</span>
+                            <span class="font-bold text-blue-700">Close: {{ $woOpenCloseStats['close']['percentage'] }}%</span>
                             <span class="text-gray-500">({{ $woOpenCloseStats['close']['count'] }})</span>
                         </div>
                     </div>
@@ -292,7 +260,6 @@
                 </div>
                 @endif
             </div>
-            </div>
 
             {{-- Hapus form filter tanggal dan ganti dengan navigasi di atas --}}
             @php
@@ -303,8 +270,6 @@
             $startDayOfWeek = $firstDayOfMonth->dayOfWeekIso; // 1=Senin, 7=Minggu
             $totalDays = $lastDay->day;
             @endphp
-            {{-- Bagian Kalender yang bisa di-scroll --}}
-            <div class="calendar-scrollable">
             <div class="calendar-grid-month w-full bg-white rounded-lg shadow p-4">
                 <div class="grid grid-cols-7 gap-1 mb-2">
                     @foreach($daysOfWeek as $day)
@@ -456,8 +421,6 @@
                     </div>
                 </div>
                 @endforeach
-            </div>
-        </div>
             </div>
         </div>
     </div>
