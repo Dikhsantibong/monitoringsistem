@@ -189,7 +189,7 @@
 
         <div class="calendar-container">
             <!-- Navigasi Bulan & Tahun dengan Filter - Sticky -->
-            <div class="w-full fixed calendar-sticky-dan-presentasi-container">
+            <div class="fixed w-full top-0 z-10 calendar-sticky-dan-presentasi-container">
             <div class="calendar-sticky-nav">
             <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                 <div class="flex gap-2 items-center flex-wrap">
@@ -257,7 +257,7 @@
             </div>
 
             <!-- Presentasi - Sticky -->
-            <div class="w-full fixed calendar-sticky-presentation">
+            <div class="calendar-sticky-presentation">
             <div class="calendar-header mb-0">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
                     <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
