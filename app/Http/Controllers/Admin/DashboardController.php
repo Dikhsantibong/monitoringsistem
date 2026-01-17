@@ -99,16 +99,17 @@ class DashboardController extends Controller
         // Ambil data dari Maximo (Oracle) untuk SR dan WO
         try {
             // SR Open/Closed dari Maximo
+            // Status SR: NEW, WOCREATED, QUEVED (Open), RESOLVED, CLOSED (Closed)
             $srOpen = DB::connection('oracle')
                 ->table('SR')
                 ->where('SITEID', 'KD')
-                ->whereIn('STATUS', ['Open', 'WAPPR', 'APPR', 'INPRG'])
+                ->whereIn('STATUS', ['NEW', 'WOCREATED', 'QUEVED'])
                 ->count();
                 
             $srClosed = DB::connection('oracle')
                 ->table('SR')
                 ->where('SITEID', 'KD')
-                ->whereIn('STATUS', ['COMP', 'CLOSE', 'RESOLVED'])
+                ->whereIn('STATUS', ['RESOLVED', 'CLOSED'])
                 ->count();
             
             // WO Open/Closed dari Maximo
@@ -435,13 +436,13 @@ class DashboardController extends Controller
             $srOpenTotal = DB::connection('oracle')
                 ->table('SR')
                 ->where('SITEID', 'KD')
-                ->whereIn('STATUS', ['Open', 'WAPPR', 'APPR', 'INPRG'])
+                ->whereIn('STATUS', ['NEW', 'WOCREATED', 'QUEVED'])
                 ->count();
                 
             $srClosedTotal = DB::connection('oracle')
                 ->table('SR')
                 ->where('SITEID', 'KD')
-                ->whereIn('STATUS', ['COMP', 'CLOSE', 'RESOLVED'])
+                ->whereIn('STATUS', ['RESOLVED', 'CLOSED'])
                 ->count();
                 
             // Tampilkan data total untuk semua unit
