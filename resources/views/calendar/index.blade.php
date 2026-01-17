@@ -208,7 +208,7 @@
                         <select name="unit" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-48 min-w-[12rem]">
                             <option value="">Semua Unit</option>
                             @foreach($unitOptions as $unitCode => $unitName)
-                                <option value="{{ $unitCode }}" @if($unitFilter == $unitCode) selected @endif>{{ $unitName }} ({{ $unitCode }})</option>
+                                <option value="{{ $unitCode }}" @if($unitFilter == $unitCode) selected @endif>{{ $unitName }}</option>
                             @endforeach
                         </select>
                         

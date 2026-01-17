@@ -62,9 +62,26 @@ class CalendarController extends Controller
                 $workOrdersQuery->where('WORKTYPE', $workTypeFilter);
             }
             
-            // Filter Unit (berdasarkan prefix LOCATION)
+            // Filter Unit (berdasarkan UL - Unit Layanan)
             if ($unitFilter) {
-                $workOrdersQuery->where('LOCATION', 'LIKE', $unitFilter . '%');
+                // Mapping UL ke kode-kode unit
+                $ulMapping = [
+                    'ULPLTD_KOLAKA' => ['KLKA', 'LANI', 'SABI', 'MIKU'],
+                    'ULPLTD_BAU_BAU' => ['BBAU', 'RAHA', 'WANG', 'EREK', 'RONG', 'WINN'],
+                    'ULPLTD_POASIA' => ['POAS'],
+                    'ULPLTD_WUA_WUA' => ['WUAW', 'LANG'],
+                ];
+                
+                if (isset($ulMapping[$unitFilter])) {
+                    $unitCodes = $ulMapping[$unitFilter];
+                    $workOrdersQuery->where(function ($q) use ($unitCodes) {
+                        $firstCode = array_shift($unitCodes);
+                        $q->where('LOCATION', 'LIKE', $firstCode . '%');
+                        foreach ($unitCodes as $code) {
+                            $q->orWhere('LOCATION', 'LIKE', $code . '%');
+                        }
+                    });
+                }
             }
             
             // Filter berdasarkan bulan dan tahun dari REPORTDATE atau STATUSDATE
@@ -226,25 +243,12 @@ class CalendarController extends Controller
         $statusOptions = ['WAPPR', 'APPR', 'INPRG', 'COMP', 'CLOSE'];
         $workTypeOptions = ['CH', 'CM', 'CP', 'OH', 'OP', 'PAM', 'PDM', 'PM'];
         
-        // Opsi filter Unit berdasarkan mapping LOCATION
+        // Opsi filter Unit berdasarkan UL (Unit Layanan)
         $unitOptions = [
-            // ULPLTD KOLAKA
-            'KLKA' => 'PLTD Kolaka',
-            'LANI' => 'PLTD Lanipa-Nipa',
-            'SABI' => 'PLTM Sabilambo',
-            'MIKU' => 'PLTM Mikuasi',
-            // ULPLTD BAU-BAU
-            'BBAU' => 'PLTD Bau-Bau',
-            'RAHA' => 'PLTD Raha',
-            'WANG' => 'PLTD WANGI-WANGI',
-            'EREK' => 'PLTD Ereke',
-            'RONG' => 'PLTM Rongi',
-            'WINN' => 'PLTM Winning',
-            // ULPLTD POASIA
-            'POAS' => 'PLTD Poasia',
-            // ULPLTD WUA-WUA
-            'WUAW' => 'PLTD Wua-Wua',
-            'LANG' => 'PLTD Langara',
+            'ULPLTD_KOLAKA' => 'ULPLTD KOLAKA',
+            'ULPLTD_BAU_BAU' => 'ULPLTD BAU-BAU',
+            'ULPLTD_POASIA' => 'ULPLTD POASIA',
+            'ULPLTD_WUA_WUA' => 'ULPLTD WUA-WUA',
         ];
 
         // Hitung presentasi worktype berdasarkan total WO bulan ini
