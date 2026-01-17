@@ -189,7 +189,7 @@
 
         <div class="calendar-container">
             <!-- Navigasi Bulan & Tahun dengan Filter - Sticky -->
-            <div class="calendar-sticky-dan-presentasi-container">
+            <div class="fixed calendar-sticky-dan-presentasi-container">
             <div class="calendar-sticky-nav">
             <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                 <div class="flex gap-2 items-center flex-wrap">
