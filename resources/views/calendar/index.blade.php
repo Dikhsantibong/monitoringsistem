@@ -206,20 +206,33 @@
                     <div class="flex-1 flex flex-col gap-1 hidden md:flex">
                         @forelse($dateEvents as $event)
                         @php
-                        $status = strtolower($event['status']);
-                        // Warna khusus per status WO
-                        if ($status === 'closed') {
+                        $status = strtoupper($event['status'] ?? '');
+                        // Warna khusus per status WO dari Maximo: WAPPR, APPR, INPRG, COMP, CLOSE
+                        if ($status === 'CLOSE' || $status === 'COMP') {
+                            // Completed/Closed -> Hijau
                             $border = 'border-2 border-green-500';
                             $bg = 'bg-green-50';
                             $badge = 'bg-green-300 text-green-900';
-                        } elseif ($status === 'wmatl') {
-                            $border = 'border-2 border-blue-500';
+                        } elseif ($status === 'INPRG') {
+                            // In Progress -> Kuning/Orange
+                            $border = 'border-2 border-yellow-500';
                             $bg = 'bg-yellow-50';
                             $badge = 'bg-yellow-300 text-yellow-900';
-                        } else { // open dan lainnya
-                            $border = 'border-2 border-red-500';
-                            $bg = 'bg-red-50';
-                            $badge = 'bg-red-300 text-red-900';
+                        } elseif ($status === 'APPR') {
+                            // Approved -> Biru muda
+                            $border = 'border-2 border-blue-400';
+                            $bg = 'bg-blue-50';
+                            $badge = 'bg-blue-200 text-blue-900';
+                        } elseif ($status === 'WAPPR') {
+                            // Waiting Approval -> Biru
+                            $border = 'border-2 border-blue-500';
+                            $bg = 'bg-blue-50';
+                            $badge = 'bg-blue-300 text-blue-900';
+                        } else {
+                            // Status lainnya -> Abu-abu
+                            $border = 'border-2 border-gray-500';
+                            $bg = 'bg-gray-50';
+                            $badge = 'bg-gray-300 text-gray-900';
                         }
                         @endphp
                         <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
@@ -362,17 +375,28 @@
             html = '<div class="text-gray-400 text-sm">Tidak ada event</div>';
         } else {
             events.forEach(function(event, idx) {
-                // Highlight open (red) and closed (green)
-                let status = (event.status || '').toLowerCase();
+                // Warna berdasarkan status Maximo: WAPPR, APPR, INPRG, COMP, CLOSE
+                let status = (event.status || '').toUpperCase();
                 let highlightClass = '';
                 let highlightBg = '';
-                if (status === 'open') {
-                    highlightClass = 'border border-red-400 bg-red-50';
-                    highlightBg = 'bg-red-300 text-red-900';
-                } else if (status === 'closed') {
+                if (status === 'CLOSE' || status === 'COMP') {
+                    // Completed/Closed -> Hijau
                     highlightClass = 'border border-green-400 bg-green-50';
                     highlightBg = 'bg-green-300 text-green-900';
+                } else if (status === 'INPRG') {
+                    // In Progress -> Kuning
+                    highlightClass = 'border border-yellow-400 bg-yellow-50';
+                    highlightBg = 'bg-yellow-300 text-yellow-900';
+                } else if (status === 'APPR') {
+                    // Approved -> Biru muda
+                    highlightClass = 'border border-blue-400 bg-blue-50';
+                    highlightBg = 'bg-blue-200 text-blue-900';
+                } else if (status === 'WAPPR') {
+                    // Waiting Approval -> Biru
+                    highlightClass = 'border border-blue-400 bg-blue-50';
+                    highlightBg = 'bg-blue-300 text-blue-900';
                 } else {
+                    // Status lainnya -> Abu-abu
                     highlightClass = 'border border-gray-300 bg-gray-50';
                     highlightBg = 'bg-gray-300 text-gray-900';
                 }

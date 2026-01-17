@@ -132,19 +132,33 @@
                                 <div class="flex-1 flex flex-col gap-1">
                                     @foreach($dateEvents as $event)
                                         @php
-                                            $status = strtolower($event['status']);
-                                            if ($status === 'closed') {
+                                            $status = strtoupper($event['status'] ?? '');
+                                            // Warna khusus per status WO dari Maximo: WAPPR, APPR, INPRG, COMP, CLOSE
+                                            if ($status === 'CLOSE' || $status === 'COMP') {
+                                                // Completed/Closed -> Hijau
                                                 $border = 'border-2 border-green-500';
                                                 $bg = 'bg-green-50';
                                                 $badge = 'bg-green-300 text-green-900';
-                                            } elseif ($status === 'wmatl') {
+                                            } elseif ($status === 'INPRG') {
+                                                // In Progress -> Kuning/Orange
+                                                $border = 'border-2 border-yellow-500';
+                                                $bg = 'bg-yellow-50';
+                                                $badge = 'bg-yellow-300 text-yellow-900';
+                                            } elseif ($status === 'APPR') {
+                                                // Approved -> Biru muda
+                                                $border = 'border-2 border-blue-400';
+                                                $bg = 'bg-blue-50';
+                                                $badge = 'bg-blue-200 text-blue-900';
+                                            } elseif ($status === 'WAPPR') {
+                                                // Waiting Approval -> Biru
                                                 $border = 'border-2 border-blue-500';
                                                 $bg = 'bg-blue-50';
                                                 $badge = 'bg-blue-300 text-blue-900';
                                             } else {
-                                                $border = 'border-2 border-red-500';
-                                                $bg = 'bg-red-50';
-                                                $badge = 'bg-red-300 text-red-900';
+                                                // Status lainnya -> Abu-abu
+                                                $border = 'border-2 border-gray-500';
+                                                $bg = 'bg-gray-50';
+                                                $badge = 'bg-gray-300 text-gray-900';
                                             }
                                         @endphp
                                         <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
