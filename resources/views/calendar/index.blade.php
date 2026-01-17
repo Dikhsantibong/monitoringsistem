@@ -272,7 +272,20 @@
                         <div class="event-item-mini {{ $bg }} {{ $border }} px-1 py-1 mb-1 rounded flex flex-col gap-0.5">
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-xs">#{{ $event['id'] }}</span>
-                                <span class="text-[10px] px-1 py-0.5 rounded {{ $badge }}">{{ ucfirst($event['status']) }}</span>
+                                <div class="flex gap-1 items-center">
+                                    <span class="text-[10px] px-1 py-0.5 rounded {{ $badge }}">{{ ucfirst($event['status']) }}</span>
+                                    @if(isset($event['backlog_status']) && $event['backlog_status'] !== null)
+                                        @if($event['backlog_status'] === 'overdue')
+                                            <span class="text-[9px] px-1 py-0.5 rounded bg-red-600 text-white font-bold" title="Backlog: {{ $event['backlog_days'] }} hari">
+                                                ⚠️ {{ $event['backlog_days'] }}h
+                                            </span>
+                                        @elseif($event['backlog_status'] === 'warning')
+                                            <span class="text-[9px] px-1 py-0.5 rounded bg-orange-500 text-white font-bold" title="Akan backlog dalam {{ $event['backlog_days'] }} hari">
+                                                ⏰ {{ $event['backlog_days'] }}h
+                                            </span>
+                                        @endif
+                                    @endif
+                                </div>
                             </div>
                             <div class="font-semibold text-[11px]">{{ $event['type'] }}</div>
                             <div class="text-[10px] text-gray-700 event-desc">{{ $event['description'] }}</div>
@@ -284,6 +297,11 @@
                             <div class="flex flex-col text-[9px] text-gray-500">
                                 <span>Start: {{ isset($event['schedule_start']) ? \Carbon\Carbon::parse($event['schedule_start'])->format('d/m/Y') : '-' }}</span>
                                 <span>Finish: {{ isset($event['schedule_finish']) ? \Carbon\Carbon::parse($event['schedule_finish'])->format('d/m/Y') : '-' }}</span>
+                                @if(isset($event['is_backlog']) && $event['is_backlog'])
+                                    <span class="text-red-600 font-bold">⚠️ Backlog: {{ $event['backlog_days'] }} hari</span>
+                                @elseif(isset($event['backlog_status']) && $event['backlog_status'] === 'warning')
+                                    <span class="text-orange-600 font-bold">⏰ Akan backlog: {{ $event['backlog_days'] }} hari lagi</span>
+                                @endif
                                 <span>Labor: <b>{{ $event['labor'] ?? '-' }}</b></span>
                             </div>
                         </div>
@@ -435,16 +453,26 @@
                     highlightBg = 'bg-gray-300 text-gray-900';
                 }
 
+                // Backlog badge
+                let backlogBadge = '';
+                if (event.backlog_status === 'overdue') {
+                    backlogBadge = `<span class="text-[9px] px-1 py-0.5 rounded bg-red-600 text-white font-bold ml-1" title="Backlog: ${event.backlog_days} hari">⚠️ ${event.backlog_days}h</span>`;
+                } else if (event.backlog_status === 'warning') {
+                    backlogBadge = `<span class="text-[9px] px-1 py-0.5 rounded bg-orange-500 text-white font-bold ml-1" title="Akan backlog dalam ${event.backlog_days} hari">⏰ ${event.backlog_days}h</span>`;
+                }
+
                 html += `<div class="mb-3 border-b pb-2 ${highlightClass} rounded px-2 py-1">
                     <div class="font-bold text-blue-700 text-xs mb-1">#${event.id} - ${event.type}</div>
                     <div class="text-xs text-gray-700 mb-1">${event.description}</div>
-                    <div class="text-[11px] text-gray-500 mb-1">
-                        Status: <b class="px-1 py-0.5 rounded ${highlightBg}">${event.status}</b>
+                    <div class="text-[11px] text-gray-500 mb-1 flex items-center">
+                        Status: <b class="px-1 py-0.5 rounded ${highlightBg}">${event.status}</b>${backlogBadge}
                     </div>
                     <div class="text-[11px] text-gray-500 mb-1">Unit: <b>${event.power_plant_name}</b></div>
                     <div class="text-[11px] text-gray-500 mb-1">Priority: <b>${event.priority ?? '-'}</b></div>
                     <div class="text-[11px] text-gray-500 mb-1">Start: <b>${event.schedule_start?.substring(0,10) ?? '-'}</b></div>
                     <div class="text-[11px] text-gray-500 mb-1">Finish: <b>${event.schedule_finish?.substring(0,10) ?? '-'}</b></div>
+                    ${event.is_backlog ? `<div class="text-[11px] text-red-600 font-bold mb-1">⚠️ Backlog: ${event.backlog_days} hari</div>` : ''}
+                    ${event.backlog_status === 'warning' ? `<div class="text-[11px] text-orange-600 font-bold mb-1">⏰ Akan backlog: ${event.backlog_days} hari lagi</div>` : ''}
                     <div class="text-[11px] text-gray-500 mb-1">Labor: <b>${event.labor ?? '-'}</b></div>
                 </div>`;
             });

@@ -72,10 +72,36 @@ class CalendarController extends Controller
             
             $workOrdersRaw = $workOrdersQuery->get();
             
-            $workOrders = $workOrdersRaw->map(function ($wo) {
+            $now = Carbon::now();
+            $workOrders = $workOrdersRaw->map(function ($wo) use ($now) {
                 // Gunakan REPORTDATE jika ada, fallback ke STATUSDATE
                 $dateField = $wo->reportdate ?? $wo->statusdate;
                 $date = $dateField ? Carbon::parse($dateField) : now();
+                
+                // Hitung backlog days
+                $backlogDays = null;
+                $isBacklog = false;
+                $backlogStatus = null; // 'overdue', 'warning', 'normal'
+                
+                if (isset($wo->schedfinish) && $wo->schedfinish) {
+                    $scheduleFinish = Carbon::parse($wo->schedfinish);
+                    $diffDays = $now->diffInDays($scheduleFinish, false); // false = tidak absolute, negatif jika sudah lewat
+                    
+                    if ($diffDays < 0) {
+                        // Sudah backlog (schedule_finish sudah lewat)
+                        $isBacklog = true;
+                        $backlogStatus = 'overdue';
+                        $backlogDays = abs($diffDays); // Convert ke positif untuk display (sudah berapa hari backlog)
+                    } elseif ($diffDays <= 3 && $diffDays >= 0) {
+                        // Warning: akan backlog dalam 3 hari atau kurang
+                        $backlogStatus = 'warning';
+                        $backlogDays = $diffDays; // Jumlah hari tersisa (masih positif)
+                    } else {
+                        // Normal: masih ada waktu lebih dari 3 hari
+                        $backlogStatus = 'normal';
+                        $backlogDays = null; // Tidak perlu ditampilkan
+                    }
+                }
                 
                 return [
                     'id' => $wo->wonum ?? '-',
@@ -90,7 +116,10 @@ class CalendarController extends Controller
                     'power_plant_name' => $wo->location ?? ($wo->siteid ?? 'KD'), // Gunakan LOCATION atau SITEID sebagai power plant name
                     'created_at' => $date->format('Y-m-d H:i:s'),
                     'updated_at' => isset($wo->statusdate) ? Carbon::parse($wo->statusdate)->format('Y-m-d H:i:s') : $date->format('Y-m-d H:i:s'),
-                    'labor' => null // Labor tidak ada di Maximo
+                    'labor' => null, // Labor tidak ada di Maximo
+                    'is_backlog' => $isBacklog,
+                    'backlog_days' => $backlogDays,
+                    'backlog_status' => $backlogStatus,
                 ];
             });
         } catch (\Exception $e) {
