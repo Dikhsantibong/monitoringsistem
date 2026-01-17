@@ -19,6 +19,9 @@ class CalendarController extends Controller
         // Filter status dan worktype
         $statusFilter = $request->input('status');
         $workTypeFilter = $request->input('worktype');
+        
+        // Parameter hari peringatan backlog (default 3 hari)
+        $backlogWarningDays = $request->input('backlog_warning_days', 3);
 
         // Tanggal awal dan akhir bulan
         $firstDay = Carbon::create($year, $month, 1);
@@ -73,17 +76,22 @@ class CalendarController extends Controller
             $workOrdersRaw = $workOrdersQuery->get();
             
             $now = Carbon::now();
-            $workOrders = $workOrdersRaw->map(function ($wo) use ($now) {
+            $workOrders = $workOrdersRaw->map(function ($wo) use ($now, $backlogWarningDays) {
                 // Gunakan REPORTDATE jika ada, fallback ke STATUSDATE
                 $dateField = $wo->reportdate ?? $wo->statusdate;
                 $date = $dateField ? Carbon::parse($dateField) : now();
                 
-                // Hitung backlog days
+                // Status yang sudah selesai (tidak perlu dihitung backlog)
+                $completedStatuses = ['COMP', 'CLOSE'];
+                $currentStatus = strtoupper($wo->status ?? '');
+                $isCompleted = in_array($currentStatus, $completedStatuses);
+                
+                // Hitung backlog days (hanya untuk status yang belum selesai)
                 $backlogDays = null;
                 $isBacklog = false;
                 $backlogStatus = null; // 'overdue', 'warning', 'normal'
                 
-                if (isset($wo->schedfinish) && $wo->schedfinish) {
+                if (!$isCompleted && isset($wo->schedfinish) && $wo->schedfinish) {
                     $scheduleFinish = Carbon::parse($wo->schedfinish);
                     $diffDays = $now->diffInDays($scheduleFinish, false); // false = tidak absolute, negatif jika sudah lewat
                     
@@ -92,12 +100,12 @@ class CalendarController extends Controller
                         $isBacklog = true;
                         $backlogStatus = 'overdue';
                         $backlogDays = abs($diffDays); // Convert ke positif untuk display (sudah berapa hari backlog)
-                    } elseif ($diffDays <= 3 && $diffDays >= 0) {
-                        // Warning: akan backlog dalam 3 hari atau kurang
+                    } elseif ($diffDays <= $backlogWarningDays && $diffDays >= 0) {
+                        // Warning: akan backlog dalam X hari atau kurang (sesuai parameter)
                         $backlogStatus = 'warning';
                         $backlogDays = $diffDays; // Jumlah hari tersisa (masih positif)
                     } else {
-                        // Normal: masih ada waktu lebih dari 3 hari
+                        // Normal: masih ada waktu lebih dari X hari
                         $backlogStatus = 'normal';
                         $backlogDays = null; // Tidak perlu ditampilkan
                     }
@@ -219,6 +227,7 @@ class CalendarController extends Controller
             'workTypeFilter' => $workTypeFilter,
             'statusOptions' => $statusOptions,
             'workTypeOptions' => $workTypeOptions,
+            'backlogWarningDays' => $backlogWarningDays,
         ]);
     }
 }
