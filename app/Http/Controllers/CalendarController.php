@@ -15,6 +15,10 @@ class CalendarController extends Controller
         // Ambil bulan dan tahun dari query string, default ke bulan & tahun sekarang
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
+        
+        // Filter status dan worktype
+        $statusFilter = $request->input('status');
+        $workTypeFilter = $request->input('worktype');
 
         // Tanggal awal dan akhir bulan
         $firstDay = Carbon::create($year, $month, 1);
@@ -41,6 +45,16 @@ class CalendarController extends Controller
                     'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD');
+            
+            // Filter Status
+            if ($statusFilter) {
+                $workOrdersQuery->where('STATUS', $statusFilter);
+            }
+            
+            // Filter Work Type
+            if ($workTypeFilter) {
+                $workOrdersQuery->where('WORKTYPE', $workTypeFilter);
+            }
             
             // Filter berdasarkan bulan dan tahun dari REPORTDATE atau STATUSDATE
             $workOrdersQuery->where(function ($q) use ($year, $month) {
@@ -159,6 +173,10 @@ class CalendarController extends Controller
             return [$date => $backlogsByDate->get($date, collect())];
         });
 
+        // Opsi filter untuk dropdown
+        $statusOptions = ['WAPPR', 'APPR', 'INPRG', 'COMP', 'CLOSE'];
+        $workTypeOptions = ['CH', 'CM', 'CP', 'OH', 'OP', 'PAM', 'PDM', 'PM'];
+
         // Untuk grid kalender, butuh info bulan & tahun
         return view('calendar.index', [
             'events' => $events,
@@ -168,6 +186,10 @@ class CalendarController extends Controller
             'lastDay' => $lastDay,
             'maintenanceEvents' => $maintenanceEventsMap,
             'backlogEvents' => $backlogEventsMap,
+            'statusFilter' => $statusFilter,
+            'workTypeFilter' => $workTypeFilter,
+            'statusOptions' => $statusOptions,
+            'workTypeOptions' => $workTypeOptions,
         ]);
     }
 }

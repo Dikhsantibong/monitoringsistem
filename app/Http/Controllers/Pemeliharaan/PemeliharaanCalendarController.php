@@ -14,6 +14,11 @@ class PemeliharaanCalendarController extends Controller
     {
         $month = $request->input('month', date('n'));
         $year = $request->input('year', date('Y'));
+        
+        // Filter status dan worktype
+        $statusFilter = $request->input('status');
+        $workTypeFilter = $request->input('worktype');
+        
         $firstDay = Carbon::create($year, $month, 1);
         $lastDay = $firstDay->copy()->endOfMonth();
 
@@ -38,6 +43,16 @@ class PemeliharaanCalendarController extends Controller
                     'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD');
+            
+            // Filter Status
+            if ($statusFilter) {
+                $workOrdersQuery->where('STATUS', $statusFilter);
+            }
+            
+            // Filter Work Type
+            if ($workTypeFilter) {
+                $workOrdersQuery->where('WORKTYPE', $workTypeFilter);
+            }
             
             // Filter berdasarkan bulan dan tahun dari SCHEDSTART
             $workOrdersQuery->where(function ($q) use ($year, $month) {
@@ -111,6 +126,10 @@ class PemeliharaanCalendarController extends Controller
         // Backlog events (kosong karena tidak ada di Maximo)
         $backlogEvents = [];
 
+        // Opsi filter untuk dropdown
+        $statusOptions = ['WAPPR', 'APPR', 'INPRG', 'COMP', 'CLOSE'];
+        $workTypeOptions = ['CH', 'CM', 'CP', 'OH', 'OP', 'PAM', 'PDM', 'PM'];
+
         return view('pemeliharaan.calendar', [
             'month' => $month,
             'year' => $year,
@@ -118,6 +137,10 @@ class PemeliharaanCalendarController extends Controller
             'lastDay' => $lastDay,
             'events' => $events,
             'backlogEvents' => $backlogEvents,
+            'statusFilter' => $statusFilter,
+            'workTypeFilter' => $workTypeFilter,
+            'statusOptions' => $statusOptions,
+            'workTypeOptions' => $workTypeOptions,
         ]);
     }
 }
