@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ServiceRequest;
-use App\Models\WorkOrder;
 use App\Models\MachineStatusLog;
-use App\Models\WoBacklog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CalendarController extends Controller
 {
@@ -21,59 +20,72 @@ class CalendarController extends Controller
         $firstDay = Carbon::create($year, $month, 1);
         $lastDay = (clone $firstDay)->endOfMonth();
 
-        // Get work orders only untuk bulan & tahun yang dipilih
-        $workOrdersQuery = WorkOrder::with('powerPlant')
-            ->select('id', 'description', 'created_at', 'type', 'status', 'priority', 'schedule_start', 'schedule_finish', 'power_plant_id', 'unit_source', 'labor')
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', $month);
-        $workOrders = $workOrdersQuery->get()
-            ->map(function ($wo) {
+        // Get work orders dari Maximo (Oracle) untuk bulan & tahun yang dipilih
+        $workOrders = collect();
+        try {
+            $workOrdersQuery = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'PARENT',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'WOPRIORITY',
+                    'DESCRIPTION',
+                    'ASSETNUM',
+                    'LOCATION',
+                    'SITEID',
+                    'SCHEDSTART',
+                    'SCHEDFINISH',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD');
+            
+            // Filter berdasarkan bulan dan tahun dari REPORTDATE atau STATUSDATE
+            $workOrdersQuery->where(function ($q) use ($year, $month) {
+                $q->where(function ($subQ) use ($year, $month) {
+                    $subQ->whereNotNull('REPORTDATE')
+                        ->whereRaw("TO_CHAR(REPORTDATE, 'YYYY') = ?", [$year])
+                        ->whereRaw("TO_CHAR(REPORTDATE, 'MM') = ?", [str_pad($month, 2, '0', STR_PAD_LEFT)]);
+                })->orWhere(function ($subQ) use ($year, $month) {
+                    $subQ->whereNotNull('STATUSDATE')
+                        ->whereNull('REPORTDATE')
+                        ->whereRaw("TO_CHAR(STATUSDATE, 'YYYY') = ?", [$year])
+                        ->whereRaw("TO_CHAR(STATUSDATE, 'MM') = ?", [str_pad($month, 2, '0', STR_PAD_LEFT)]);
+                });
+            });
+            
+            $workOrdersRaw = $workOrdersQuery->get();
+            
+            $workOrders = $workOrdersRaw->map(function ($wo) {
+                // Gunakan REPORTDATE jika ada, fallback ke STATUSDATE
+                $dateField = $wo->reportdate ?? $wo->statusdate;
+                $date = $dateField ? Carbon::parse($dateField) : now();
+                
                 return [
-                    'id' => $wo->id,
-                    'type' => 'Work Order - ' . $wo->type,
-                    'description' => $wo->description,
-                    'date' => Carbon::parse($wo->created_at)->format('Y-m-d'),
+                    'id' => $wo->wonum ?? '-',
+                    'type' => 'Work Order - ' . ($wo->worktype ?? 'N/A'),
+                    'description' => $wo->description ?? '-',
+                    'date' => $date->format('Y-m-d'),
                     'status' => $wo->status ?? 'Pending',
-                    'priority' => $wo->priority ?? null,
-                    'schedule_start' => $wo->schedule_start ?? null,
-                    'schedule_finish' => $wo->schedule_finish ?? null,
-                    'unit_source' => $wo->unit_source ?? null,
-                    'power_plant_name' => $wo->powerPlant->name ?? '-',
-                    'created_at' => $wo->created_at,
-                    'updated_at' => $wo->updated_at,
-                    'labor' => $wo->labor ?? null // Tambahan labor
+                    'priority' => $wo->wopriority ?? null,
+                    'schedule_start' => isset($wo->schedstart) ? Carbon::parse($wo->schedstart)->format('Y-m-d H:i:s') : null,
+                    'schedule_finish' => isset($wo->schedfinish) ? Carbon::parse($wo->schedfinish)->format('Y-m-d H:i:s') : null,
+                    'unit_source' => $wo->siteid ?? 'KD',
+                    'power_plant_name' => $wo->location ?? ($wo->siteid ?? 'KD'), // Gunakan LOCATION atau SITEID sebagai power plant name
+                    'created_at' => $date->format('Y-m-d H:i:s'),
+                    'updated_at' => isset($wo->statusdate) ? Carbon::parse($wo->statusdate)->format('Y-m-d H:i:s') : $date->format('Y-m-d H:i:s'),
+                    'labor' => null // Labor tidak ada di Maximo
                 ];
             });
+        } catch (\Exception $e) {
+            Log::error('Error getting Work Orders from Maximo in CalendarController: ' . $e->getMessage());
+            $workOrders = collect([]);
+        }
 
-        // Get backlog for selected month & year (gunakan tanggal_backlog jika ada, fallback ke created_at)
-        $backlogsQuery = WoBacklog::with('powerPlant')
-            ->select(
-                'id', 'no_wo', 'deskripsi', 'type_wo', 'status', 'priority', 'tanggal_backlog',
-                'schedule_start', 'schedule_finish', 'power_plant_id', 'unit_source', 'labor', 'created_at', 'updated_at'
-            )
-            ->whereYear('tanggal_backlog', $year)
-            ->whereMonth('tanggal_backlog', $month);
-
-        $backlogs = $backlogsQuery->get()
-            ->map(function ($bl) {
-                $date = $bl->tanggal_backlog ?: $bl->created_at;
-                return [
-                    'id' => 'BL-' . ($bl->no_wo ?? $bl->id),
-                    'type' => 'Backlog - ' . strtoupper((string) $bl->type_wo),
-                    'description' => $bl->deskripsi,
-                    'date' => \Carbon\Carbon::parse($date)->format('Y-m-d'),
-                    'status' => $bl->status ?? 'Open',
-                    'priority' => $bl->priority ?? null,
-                    'schedule_start' => $bl->schedule_start ?? null,
-                    'schedule_finish' => $bl->schedule_finish ?? null,
-                    'unit_source' => $bl->unit_source ?? null,
-                    'power_plant_name' => optional($bl->powerPlant)->name ?? '-',
-                    'created_at' => $bl->created_at,
-                    'updated_at' => $bl->updated_at,
-                    'labor' => $bl->labor ?? null,
-                    'is_backlog' => true,
-                ];
-            });
+        // Backlog tidak ada di Maximo, set empty collection
+        $backlogs = collect([]);
 
         // Generate maintenance notifications when cumulative JSMO crosses thresholds
         $thresholds = [
