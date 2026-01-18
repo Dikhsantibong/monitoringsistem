@@ -350,7 +350,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <a href="{{ route('maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
+                                            <a href="{{ route('admin.maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
                                                class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                 Detail
                                             </a>
