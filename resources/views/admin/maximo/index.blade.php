@@ -54,6 +54,28 @@
         </header>
 
         <main class="px-6 mt-4">
+            {{-- Success Message dengan Link ke PDF.js Viewer --}}
+            @if(session('success') && session('jobcard_url'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                    <a href="{{ session('jobcard_url') }}" target="_blank" 
+                       class="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-semibold">
+                        Buka & Edit Jobcard di PDF.js Viewer
+                    </a>
+                </div>
+            @elseif(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- Error Message --}}
+            @if(session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="bg-white rounded-lg shadow p-6">
 
                 {{-- ERROR DEBUG --}}
@@ -180,10 +202,23 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
-                                               class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
-                                                Detail
-                                            </a>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <a href="{{ route('maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
+                                                   class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
+                                                    Detail
+                                                </a>
+                                                @if(strtoupper($wo['status']) === 'APPR')
+                                                    <form method="POST" action="{{ route('maximo.jobcard.generate') }}" class="inline">
+                                                        @csrf
+                                                        <input type="hidden" name="wonum" value="{{ $wo['wonum'] }}">
+                                                        <button type="submit" 
+                                                                class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                                                                onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
+                                                            Generate Jobcard
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['wonum'] }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['parent'] }}</td>
@@ -315,7 +350,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <a href="{{ route('admin.maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
+                                            <a href="{{ route('maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
                                                class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                 Detail
                                             </a>
