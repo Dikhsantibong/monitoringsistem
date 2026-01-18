@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\WorkOrder;
 use App\Models\PowerPlant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use App\Models\WoBacklog;
 use App\Models\MaterialMaster;
+use Carbon\Carbon;
 
 class LaborSayaController extends Controller
 {
@@ -22,73 +21,101 @@ class LaborSayaController extends Controller
             ->lower()
             ->replace(['-', ' '], '');
 
-        $workOrders = WorkOrder::whereRaw(
-                "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ?",
-                ['%' . $normalizedName . '%']
-            )
-            ->when($search !== '', function ($query) use ($search) {
-                $like = "%{$search}%";
-                $query->where(function ($q) use ($like) {
-                    $q->where('id', 'LIKE', $like)
-                      ->orWhere('description', 'LIKE', $like)
-                      ->orWhere('kendala', 'LIKE', $like)
-                      ->orWhere('tindak_lanjut', 'LIKE', $like)
-                      ->orWhere('status', 'LIKE', $like)
-                      ->orWhere('type', 'LIKE', $like)
-                      ->orWhere('priority', 'LIKE', $like);
-                });
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get Work Orders dari Maximo (Oracle)
+        $workOrders = collect();
+        try {
+            $workOrdersQuery = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'PARENT',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'WOPRIORITY',
+                    'DESCRIPTION',
+                    'ASSETNUM',
+                    'LOCATION',
+                    'SITEID',
+                    'DOWNTIME',
+                    'SCHEDSTART',
+                    'SCHEDFINISH',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%'); // Hanya ambil WO yang dimulai dengan "WO"
 
-        $laborBacklogs = WoBacklog::whereRaw(
-                "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ?",
-                ['%' . $normalizedName . '%']
-            )
-            ->when($search !== '', function ($query) use ($search) {
-                $like = "%{$search}%";
-                $query->where(function ($q) use ($like) {
-                    $q->where('no_wo', 'LIKE', $like)
-                      ->orWhere('deskripsi', 'LIKE', $like)
-                      ->orWhere('kendala', 'LIKE', $like)
-                      ->orWhere('tindak_lanjut', 'LIKE', $like)
-                      ->orWhere('status', 'LIKE', $like)
-                      ->orWhere('type_wo', 'LIKE', $like)
-                      ->orWhere('priority', 'LIKE', $like);
+            // Search filter
+            if ($search !== '') {
+                $workOrdersQuery->where(function ($q) use ($search) {
+                    $like = "%{$search}%";
+                    $q->where('WONUM', 'LIKE', $like)
+                      ->orWhere('DESCRIPTION', 'LIKE', $like)
+                      ->orWhere('STATUS', 'LIKE', $like)
+                      ->orWhere('WORKTYPE', 'LIKE', $like)
+                      ->orWhere('WOPRIORITY', 'LIKE', $like)
+                      ->orWhere('LOCATION', 'LIKE', $like)
+                      ->orWhere('ASSETNUM', 'LIKE', $like);
                 });
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $warehouseKeywords = [
-            'UPDK' => '2020',
-            'PLTD WUA WUA' => '3011',
-            'PLTD BAU BAU' => '3012',
-            'PLTD KOLAKA' => '3013',
-            'PLTD POASIA' => '3014',
-            'PLTU TANASA' => '3015',
-            'PLTD RAHA' => '3016',
-            'PLTD WANGI' => '3017',
-            'PLTD LAMBUYA' => '3018',
-            'PLTMG TANASA' => '3022',
-            'PLTM MIKUASI' => '3023',
-            'PLTD PASARWAJO' => '3035',
-            'PLTD LADUMPI' => '3047',
-            'PLTD LANIPA' => '4048',
-            'PLTD EREKE' => '3049',
-            'PLTD LANGARA' => '3050',
-            'PLTM RONGI' => '3054',
-            'PLTMG BAU BAU' => '3053',
-        ];
-        $warehouseCode = null;
-        if ($search) {
-            foreach ($warehouseKeywords as $keyword => $code) {
-                if (stripos($search, $keyword) !== false || stripos($keyword, $search) !== false) {
-                    $warehouseCode = $code;
-                    break;
-                }
             }
+
+            $workOrdersQuery->orderBy('STATUSDATE', 'desc');
+
+            $workOrdersRaw = $workOrdersQuery->get();
+
+            // Format data untuk view
+            $workOrders = $workOrdersRaw->map(function ($wo) {
+                return [
+                    'id' => $wo->wonum ?? '-',
+                    'wonum' => $wo->wonum ?? '-',
+                    'parent' => $wo->parent ?? '-',
+                    'description' => $wo->description ?? '-',
+                    'status' => $wo->status ?? '-',
+                    'statusdate' => isset($wo->statusdate) && $wo->statusdate
+                        ? Carbon::parse($wo->statusdate)->format('Y-m-d H:i:s')
+                        : null,
+                    'worktype' => $wo->worktype ?? '-',
+                    'type' => $wo->worktype ?? '-',
+                    'wopriority' => $wo->wopriority ?? '-',
+                    'priority' => $wo->wopriority ?? '-',
+                    'assetnum' => $wo->assetnum ?? '-',
+                    'location' => $wo->location ?? '-',
+                    'siteid' => $wo->siteid ?? '-',
+                    'downtime' => $wo->downtime ?? '-',
+                    'schedstart' => isset($wo->schedstart) && $wo->schedstart
+                        ? Carbon::parse($wo->schedstart)->format('Y-m-d H:i:s')
+                        : null,
+                    'schedule_start' => isset($wo->schedstart) && $wo->schedstart
+                        ? Carbon::parse($wo->schedstart)->format('Y-m-d H:i:s')
+                        : null,
+                    'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish
+                        ? Carbon::parse($wo->schedfinish)->format('Y-m-d H:i:s')
+                        : null,
+                    'schedule_finish' => isset($wo->schedfinish) && $wo->schedfinish
+                        ? Carbon::parse($wo->schedfinish)->format('Y-m-d H:i:s')
+                        : null,
+                    'reportdate' => isset($wo->reportdate) && $wo->reportdate
+                        ? Carbon::parse($wo->reportdate)->format('Y-m-d H:i:s')
+                        : null,
+                    'created_at' => isset($wo->reportdate) && $wo->reportdate
+                        ? Carbon::parse($wo->reportdate)->format('Y-m-d H:i:s')
+                        : Carbon::now()->format('Y-m-d H:i:s'),
+                    'kendala' => null, // Tidak ada di Maximo
+                    'tindak_lanjut' => null, // Tidak ada di Maximo
+                    'labor' => null, // Tidak ada di Maximo
+                    'labors' => [], // Tidak ada di Maximo
+                    'document_path' => null, // Tidak ada di Maximo
+                    'power_plant_name' => $wo->location ?? ($wo->siteid ?? 'KD'),
+                ];
+            });
+
+        } catch (\Exception $e) {
+            Log::error('Error getting Work Orders from Maximo in LaborSayaController: ' . $e->getMessage());
+            $workOrders = collect([]);
         }
+
+        // Backlog tidak ada di Maximo, set empty collection
+        $laborBacklogs = collect([]);
 
         return view('pemeliharaan.labor-saya', [
             'workOrders' => $workOrders,
@@ -99,7 +126,80 @@ class LaborSayaController extends Controller
 
     public function edit($id)
     {
-        $workOrder = WorkOrder::findOrFail($id);
+        // Ambil data dari Maximo berdasarkan WONUM
+        try {
+            $workOrderRaw = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'PARENT',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'WOPRIORITY',
+                    'DESCRIPTION',
+                    'ASSETNUM',
+                    'LOCATION',
+                    'SITEID',
+                    'DOWNTIME',
+                    'SCHEDSTART',
+                    'SCHEDFINISH',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('WONUM', $id)
+                ->first();
+
+            if (!$workOrderRaw) {
+                return redirect()->route('pemeliharaan.labor-saya')
+                    ->with('error', 'Work Order tidak ditemukan di Maximo.');
+            }
+
+            // Format data untuk view
+            $workOrder = (object) [
+                'id' => $workOrderRaw->wonum ?? '-',
+                'wonum' => $workOrderRaw->wonum ?? '-',
+                'parent' => $workOrderRaw->parent ?? '-',
+                'description' => $workOrderRaw->description ?? '-',
+                'status' => $workOrderRaw->status ?? '-',
+                'worktype' => $workOrderRaw->worktype ?? '-',
+                'type' => $workOrderRaw->worktype ?? '-',
+                'wopriority' => $workOrderRaw->wopriority ?? '-',
+                'priority' => $workOrderRaw->wopriority ?? '-',
+                'assetnum' => $workOrderRaw->assetnum ?? '-',
+                'location' => $workOrderRaw->location ?? '-',
+                'siteid' => $workOrderRaw->siteid ?? '-',
+                'downtime' => $workOrderRaw->downtime ?? '-',
+                'schedstart' => isset($workOrderRaw->schedstart) && $workOrderRaw->schedstart
+                    ? Carbon::parse($workOrderRaw->schedstart)->format('Y-m-d H:i:s')
+                    : null,
+                'schedule_start' => isset($workOrderRaw->schedstart) && $workOrderRaw->schedstart
+                    ? Carbon::parse($workOrderRaw->schedstart)->format('Y-m-d H:i:s')
+                    : null,
+                'schedfinish' => isset($workOrderRaw->schedfinish) && $workOrderRaw->schedfinish
+                    ? Carbon::parse($workOrderRaw->schedfinish)->format('Y-m-d H:i:s')
+                    : null,
+                'schedule_finish' => isset($workOrderRaw->schedfinish) && $workOrderRaw->schedfinish
+                    ? Carbon::parse($workOrderRaw->schedfinish)->format('Y-m-d H:i:s')
+                    : null,
+                'reportdate' => isset($workOrderRaw->reportdate) && $workOrderRaw->reportdate
+                    ? Carbon::parse($workOrderRaw->reportdate)->format('Y-m-d H:i:s')
+                    : null,
+                'kendala' => null,
+                'tindak_lanjut' => null,
+                'labor' => null,
+                'labors' => [],
+                'document_path' => null,
+                'power_plant_id' => null,
+                'power_plant_name' => $workOrderRaw->location ?? ($workOrderRaw->siteid ?? 'KD'),
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Error getting Work Order from Maximo in LaborSayaController::edit: ' . $e->getMessage());
+            return redirect()->route('pemeliharaan.labor-saya')
+                ->with('error', 'Gagal mengambil data Work Order dari Maximo.');
+        }
+
         $powerPlants = PowerPlant::all();
         $userName = Auth::user()->name;
         $masterLabors = DB::table('master_labors')->where('unit', $userName)->orderBy('nama')->get();

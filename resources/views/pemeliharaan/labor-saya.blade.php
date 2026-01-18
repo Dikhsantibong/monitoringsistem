@@ -124,51 +124,77 @@
                         </thead>
                         <tbody>
                             @forelse($workOrders as $wo)
+                            @php
+                                $woStatus = strtoupper($wo['status'] ?? '');
+                                $isClosed = in_array($woStatus, ['COMP', 'CLOSE']);
+                            @endphp
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-2 text-center border border-gray-200">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    @if($wo->status == 'Closed')
+                                    @if($isClosed)
                                         <span class="inline-block px-3 py-1 bg-gray-400 text-white rounded text-xs cursor-not-allowed">
                                             <i class="fas fa-lock mr-1"></i> Closed
                                         </span>
                                     @else
-                                        <a href="{{ route('pemeliharaan.labor-saya.edit', $wo->id) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
+                                        <a href="{{ route('pemeliharaan.labor-saya.edit', $wo['wonum']) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
                                     @endif
                                 </td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo->id }}</td>
-                                <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo->description }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo->kendala }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo->tindak_lanjut }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['wonum'] }}</td>
+                                <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo['description'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['tindak_lanjut'] ?? '-' }}</td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    @if($wo->document_path)
-                                        <a href="{{ url('storage/' . $wo->document_path) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
+                                    @if(isset($wo['document_path']) && $wo['document_path'])
+                                        <a href="{{ url('storage/' . $wo['document_path']) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
                                     @else
                                         -
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    <span class="px-2 py-1 rounded-full {{ $wo->type == 'PM' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-600' }}">
-                                        {{ $wo->type }}
+                                    <span class="px-2 py-1 rounded-full {{ ($wo['worktype'] ?? '') == 'PM' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-600' }}">
+                                        {{ $wo['worktype'] ?? '-' }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    <span class="px-2 py-1 rounded-full {{ $wo->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-                                        {{ $wo->status }}
+                                    @php
+                                        $statusClass = 'bg-gray-100 text-gray-800';
+                                        if (in_array($woStatus, ['COMP', 'CLOSE'])) {
+                                            $statusClass = 'bg-green-100 text-green-800';
+                                        } elseif (in_array($woStatus, ['WAPPR', 'APPR'])) {
+                                            $statusClass = 'bg-blue-100 text-blue-800';
+                                        } elseif (in_array($woStatus, ['INPRG', 'IN PROGRESS'])) {
+                                            $statusClass = 'bg-yellow-100 text-yellow-800';
+                                        }
+                                    @endphp
+                                    <span class="px-2 py-1 rounded-full {{ $statusClass }}">
+                                        {{ $wo['status'] ?? '-' }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    <span class="px-2 py-1 rounded-full {{ $wo->priority == 'Low' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
-                                        {{ $wo->priority }}
+                                    <span class="px-2 py-1 rounded-full {{ ($wo['wopriority'] ?? '') == 'Low' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                        {{ $wo['wopriority'] ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo->schedule_start }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo->schedule_finish }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo->labor }}</td>
                                 <td class="px-4 py-2 border border-gray-200">
-                                    @if(is_array($wo->labors))
-                                        {{ implode(', ', $wo->labors) }}
-                                    @elseif(is_string($wo->labors))
-                                        {{ $wo->labors }}
+                                    @if(isset($wo['schedule_start']) && $wo['schedule_start'])
+                                        {{ \Carbon\Carbon::parse($wo['schedule_start'])->format('d-m-Y H:i') }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200">
+                                    @if(isset($wo['schedule_finish']) && $wo['schedule_finish'])
+                                        {{ \Carbon\Carbon::parse($wo['schedule_finish'])->format('d-m-Y H:i') }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['labor'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200">
+                                    @if(isset($wo['labors']) && is_array($wo['labors']))
+                                        {{ implode(', ', $wo['labors']) }}
+                                    @elseif(isset($wo['labors']) && is_string($wo['labors']))
+                                        {{ $wo['labors'] }}
                                     @else
                                         -
                                     @endif
@@ -177,7 +203,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="18" class="text-center py-4">Tidak ada data work order untuk labor Anda.</td>
+                                <td colspan="14" class="text-center py-4">Tidak ada data work order untuk labor Anda.</td>
                             </tr>
                             @endforelse
                         </tbody>
