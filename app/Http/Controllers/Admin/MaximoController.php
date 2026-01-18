@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\WorkOrder as LocalWorkOrder;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 
@@ -74,22 +71,6 @@ class MaximoController extends Controller
 
             $workOrders = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
 
-            // Ambil document_path jobcard dari DB utama (mysql) untuk WONUM yang tampil (jika ada)
-            $wonums = collect($workOrders->items())
-                ->pluck('wonum')
-                ->filter()
-                ->values()
-                ->all();
-            $jobcardPaths = [];
-            if (!empty($wonums)) {
-                $jobcardPaths = DB::connection('mysql')
-                    ->table('work_orders')
-                    ->whereIn('id', $wonums)
-                    ->whereNotNull('document_path')
-                    ->pluck('document_path', 'id')
-                    ->toArray();
-            }
-
             /* ==========================
              * SERVICE REQUEST (BARU)
              * ========================== */
@@ -125,7 +106,7 @@ class MaximoController extends Controller
             $serviceRequests = $serviceRequestsQuery->paginate(10, ['*'], 'sr_page', $serviceRequestPage);
 
             return view('admin.maximo.index', [
-                'workOrders'      => $this->formatWorkOrders($workOrders->items(), $jobcardPaths),
+                'workOrders'      => $this->formatWorkOrders($workOrders->items()),
                 'workOrdersPaginator' => $workOrders,
                 'serviceRequests' => $this->formatServiceRequests($serviceRequests->items()),
                 'serviceRequestsPaginator' => $serviceRequests,
@@ -175,132 +156,14 @@ class MaximoController extends Controller
         }
     }
 
-    public function generateJobcard(string $wonum)
-    {
-        // Hanya akun session mysql yang boleh generate
-        if (session('unit', 'mysql') !== 'mysql') {
-            abort(403, 'Anda tidak memiliki akses untuk generate Jobcard.');
-        }
-
-        try {
-            $wonum = trim($wonum);
-            if ($wonum === '') {
-                return redirect()
-                    ->route('admin.maximo.index')
-                    ->with('error', 'WONUM tidak valid.');
-            }
-
-            $workOrder = DB::connection('oracle')
-                ->table('WORKORDER')
-                ->select([
-                    'WONUM',
-                    'PARENT',
-                    'STATUS',
-                    'STATUSDATE',
-                    'WORKTYPE',
-                    'WOPRIORITY',
-                    'DESCRIPTION',
-                    'ASSETNUM',
-                    'LOCATION',
-                    'SITEID',
-                    'DOWNTIME',
-                    'SCHEDSTART',
-                    'SCHEDFINISH',
-                    'REPORTDATE',
-                ])
-                ->where('SITEID', 'KD')
-                ->where('WONUM', $wonum)
-                ->first();
-
-            if (!$workOrder) {
-                return redirect()
-                    ->route('admin.maximo.index')
-                    ->with('error', 'Work Order tidak ditemukan di Maximo.');
-            }
-
-            $jobcard = [
-                'wonum' => $workOrder->wonum ?? $wonum,
-                'parent' => $workOrder->parent ?? '-',
-                'status' => $workOrder->status ?? '-',
-                'statusdate' => isset($workOrder->statusdate) && $workOrder->statusdate
-                    ? Carbon::parse($workOrder->statusdate)->format('d-m-Y H:i')
-                    : '-',
-                'worktype' => $workOrder->worktype ?? '-',
-                'priority' => $workOrder->wopriority ?? '-',
-                'description' => $workOrder->description ?? '-',
-                'assetnum' => $workOrder->assetnum ?? '-',
-                'location' => $workOrder->location ?? '-',
-                'schedstart' => isset($workOrder->schedstart) && $workOrder->schedstart
-                    ? Carbon::parse($workOrder->schedstart)->format('d-m-Y H:i')
-                    : '-',
-                'schedfinish' => isset($workOrder->schedfinish) && $workOrder->schedfinish
-                    ? Carbon::parse($workOrder->schedfinish)->format('d-m-Y H:i')
-                    : '-',
-                'reportdate' => isset($workOrder->reportdate) && $workOrder->reportdate
-                    ? Carbon::parse($workOrder->reportdate)->format('d-m-Y H:i')
-                    : '-',
-                'siteid' => $workOrder->siteid ?? 'KD',
-                'downtime' => $workOrder->downtime ?? '-',
-                'generated_at' => Carbon::now()->format('d-m-Y H:i'),
-            ];
-
-            // Simpan PDF dengan nama stabil agar bisa diedit/overwrite via pdf.js
-            $safeWonum = preg_replace('/[^A-Za-z0-9_\-]/', '_', $wonum);
-            $fileName = "Jobcard_{$safeWonum}.pdf";
-            $documentPath = "work-orders/{$fileName}";
-
-            $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', [
-                'jobcard' => $jobcard,
-            ])->setPaper('a4', 'portrait');
-
-            Storage::disk('public')->put($documentPath, $pdf->output());
-
-            // Catat/Update di DB utama (mysql) supaya bisa dibaca akun pemeliharaan
-            LocalWorkOrder::on('mysql')->updateOrCreate(
-                ['id' => $wonum],
-                [
-                    'description' => $workOrder->description ?? null,
-                    'type' => $workOrder->worktype ?? null,
-                    'status' => $workOrder->status ?? null,
-                    'priority' => (string)($workOrder->wopriority ?? 'normal'),
-                    'schedule_start' => isset($workOrder->schedstart) && $workOrder->schedstart ? Carbon::parse($workOrder->schedstart) : null,
-                    'schedule_finish' => isset($workOrder->schedfinish) && $workOrder->schedfinish ? Carbon::parse($workOrder->schedfinish) : null,
-                    'document_path' => $documentPath,
-                    'unit_source' => 'mysql',
-                    'labor' => null,
-                    'labors' => [],
-                    'materials' => [],
-                ]
-            );
-
-            return redirect()
-                ->back()
-                ->with('success', "Jobcard {$wonum} berhasil digenerate.");
-
-        } catch (\Throwable $e) {
-            Log::error('Error generating Jobcard PDF', [
-                'wonum' => $wonum,
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-
-            return redirect()
-                ->back()
-                ->with('error', 'Gagal membuat Jobcard PDF: ' . $e->getMessage());
-        }
-    }
-
     /* ==========================
      * FORMAT WORK ORDER
      * ========================== */
-    private function formatWorkOrders($workOrders, array $jobcardPaths = [])
+    private function formatWorkOrders($workOrders)
     {
-        return collect($workOrders)->map(function ($wo) use ($jobcardPaths) {
-            $wonum = $wo->wonum ?? '-';
-            $jobcardPath = $wonum !== '-' ? ($jobcardPaths[$wonum] ?? null) : null;
+        return collect($workOrders)->map(function ($wo) {
             return [
-                'wonum'       => $wonum,
+                'wonum'       => $wo->wonum ?? '-',
                 'parent'      => $wo->parent ?? '-',
                 'status'      => $wo->status ?? '-',
                 'statusdate'  => isset($wo->statusdate) && $wo->statusdate
@@ -322,8 +185,6 @@ class MaximoController extends Controller
                 'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish
                     ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i')
                     : '-',
-                'jobcard_path' => $jobcardPath,
-                'jobcard_url' => $jobcardPath ? url('storage/' . $jobcardPath) : null,
             ];
         });
     }
