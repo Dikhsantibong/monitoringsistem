@@ -380,12 +380,12 @@ class MaximoController extends Controller
                 ->first();
 
             if (!$wo) {
-                return redirect()->route('maximo.index')->with('error', 'Work Order tidak ditemukan.');
+                return redirect()->route('admin.maximo.index')->with('error', 'Work Order tidak ditemukan.');
             }
 
             // Cek apakah status adalah APPR
             if (strtoupper($wo->status ?? '') !== 'APPR') {
-                return redirect()->route('maximo.index')->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
+                return redirect()->route('admin.maximo.index')->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
             }
 
             // Format data untuk PDF
@@ -424,7 +424,7 @@ class MaximoController extends Controller
             $pdfUrl = asset('storage/' . $filePath);
             $viewerUrl = asset('pdf.js/web/viewer.html') . '?file=' . urlencode($pdfUrl);
 
-            return redirect()->route('maximo.index')
+            return redirect()->route('admin.maximo.index')
                 ->with('success', 'Jobcard berhasil di-generate!')
                 ->with('jobcard_url', $viewerUrl)
                 ->with('jobcard_path', $filePath);
@@ -436,14 +436,14 @@ class MaximoController extends Controller
                 'sql' => $e->getSql(),
                 'bindings' => $e->getBindings(),
             ]);
-            return redirect()->route('maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
         } catch (\Throwable $e) {
             Log::error('ERROR GENERATE JOBCARD', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            return redirect()->route('maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
         }
     }
 }
