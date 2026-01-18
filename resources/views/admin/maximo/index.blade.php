@@ -176,7 +176,6 @@
                                             </th>
                                             <th class="px-3 py-2">Sched Start</th>
                                             <th class="px-3 py-2">Sched Finish</th>
-                                            <th class="px-3 py-2">Jobcard</th>
                                         </tr>
                                     </thead>
                                 <tbody>
@@ -222,18 +221,10 @@
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedstart'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedfinish'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2 text-center">
-                                            <a href="{{ route('admin.maximo.jobcard', ['wonum' => $wo['wonum']]) }}" 
-                                               target="_blank"
-                                               class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition-colors">
-                                                <i class="fas fa-file-pdf mr-1"></i>
-                                                Jobcard
-                                            </a>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="11" class="text-center py-4 text-gray-500">
+                                        <td colspan="10" class="text-center py-4 text-gray-500">
                                             Tidak ada data Work Order
                                         </td>
                                     </tr>

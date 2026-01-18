@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class MaximoController extends Controller
 {
@@ -212,86 +211,5 @@ class MaximoController extends Controller
                     : '-',
             ];
         });
-    }
-
-    /* ==========================
-     * GENERATE JOBCARD PDF
-     * ========================== */
-    public function generateJobcard($wonum)
-    {
-        try {
-            // Ambil data Work Order dari Maximo berdasarkan WONUM
-            $workOrder = DB::connection('oracle')
-                ->table('WORKORDER')
-                ->select([
-                    'WONUM',
-                    'PARENT',
-                    'STATUS',
-                    'STATUSDATE',
-                    'WORKTYPE',
-                    'WOPRIORITY',
-                    'DESCRIPTION',
-                    'ASSETNUM',
-                    'LOCATION',
-                    'SITEID',
-                    'DOWNTIME',
-                    'SCHEDSTART',
-                    'SCHEDFINISH',
-                    'REPORTDATE',
-                ])
-                ->where('SITEID', 'KD')
-                ->where('WONUM', $wonum)
-                ->first();
-
-            if (!$workOrder) {
-                return redirect()->route('admin.maximo.index')
-                    ->with('error', 'Work Order tidak ditemukan.');
-            }
-
-            // Format data untuk PDF
-            $jobcardData = [
-                'wonum' => $workOrder->wonum ?? '-',
-                'parent' => $workOrder->parent ?? '-',
-                'status' => $workOrder->status ?? '-',
-                'statusdate' => isset($workOrder->statusdate) && $workOrder->statusdate
-                    ? Carbon::parse($workOrder->statusdate)->format('d-m-Y H:i')
-                    : '-',
-                'worktype' => $workOrder->worktype ?? '-',
-                'description' => $workOrder->description ?? '-',
-                'reportdate' => isset($workOrder->reportdate) && $workOrder->reportdate
-                    ? Carbon::parse($workOrder->reportdate)->format('d-m-Y H:i')
-                    : '-',
-                'assetnum' => $workOrder->assetnum ?? '-',
-                'wopriority' => $workOrder->wopriority ?? '-',
-                'location' => $workOrder->location ?? '-',
-                'siteid' => $workOrder->siteid ?? '-',
-                'downtime' => $workOrder->downtime ?? '-',
-                'schedstart' => isset($workOrder->schedstart) && $workOrder->schedstart
-                    ? Carbon::parse($workOrder->schedstart)->format('d-m-Y H:i')
-                    : '-',
-                'schedfinish' => isset($workOrder->schedfinish) && $workOrder->schedfinish
-                    ? Carbon::parse($workOrder->schedfinish)->format('d-m-Y H:i')
-                    : '-',
-                'generated_at' => Carbon::now()->format('d-m-Y H:i:s'),
-            ];
-
-            // Generate PDF
-            $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', ['jobcard' => $jobcardData]);
-            
-            // Set nama file
-            $filename = 'Jobcard_' . $wonum . '_' . Carbon::now()->format('YmdHis') . '.pdf';
-            
-            // Download PDF
-            return $pdf->download($filename);
-
-        } catch (\Exception $e) {
-            Log::error('Error generating Jobcard PDF: ' . $e->getMessage(), [
-                'wonum' => $wonum,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return redirect()->route('admin.maximo.index')
-                ->with('error', 'Gagal membuat Jobcard PDF: ' . $e->getMessage());
-        }
     }
 }
