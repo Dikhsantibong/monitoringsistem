@@ -208,7 +208,7 @@
                                                     Detail
                                                 </a>
                                                 @if(strtoupper($wo['status']) === 'APPR')
-                                                    <form method="POST" action="{{ route('maximo.jobcard.generate') }}" class="inline">
+                                                    <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
                                                         @csrf
                                                         <input type="hidden" name="wonum" value="{{ $wo['wonum'] }}">
                                                         <button type="submit" 
