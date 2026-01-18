@@ -156,6 +156,138 @@ class MaximoController extends Controller
         }
     }
 
+    public function showWorkOrder(string $wonum)
+    {
+        try {
+            $wonum = trim($wonum);
+            if ($wonum === '') {
+                return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
+            }
+
+            $wo = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'PARENT',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'WOPRIORITY',
+                    'DESCRIPTION',
+                    'ASSETNUM',
+                    'LOCATION',
+                    'SITEID',
+                    'DOWNTIME',
+                    'SCHEDSTART',
+                    'SCHEDFINISH',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('WONUM', $wonum)
+                ->first();
+
+            if (!$wo) {
+                return redirect()->route('admin.maximo.index')->with('error', 'Work Order tidak ditemukan.');
+            }
+
+            return view('admin.maximo.workorder-detail', [
+                'wo' => [
+                    'wonum' => $wo->wonum ?? '-',
+                    'parent' => $wo->parent ?? '-',
+                    'status' => $wo->status ?? '-',
+                    'statusdate' => isset($wo->statusdate) && $wo->statusdate ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i') : '-',
+                    'worktype' => $wo->worktype ?? '-',
+                    'wopriority' => $wo->wopriority ?? '-',
+                    'reportdate' => isset($wo->reportdate) && $wo->reportdate ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i') : '-',
+                    'assetnum' => $wo->assetnum ?? '-',
+                    'location' => $wo->location ?? '-',
+                    'siteid' => $wo->siteid ?? '-',
+                    'downtime' => $wo->downtime ?? '-',
+                    'schedstart' => isset($wo->schedstart) && $wo->schedstart ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i') : '-',
+                    'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i') : '-',
+                    'description' => $wo->description ?? '-',
+                ],
+            ]);
+
+        } catch (QueryException $e) {
+            Log::error('ORACLE QUERY ERROR (WO DETAIL)', [
+                'oracle_code' => $e->errorInfo[1] ?? null,
+                'message'     => $e->getMessage(),
+                'sql'         => $e->getSql(),
+                'bindings'    => $e->getBindings(),
+            ]);
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil detail Work Order (Query Error).');
+        } catch (\Throwable $e) {
+            Log::error('ORACLE GENERAL ERROR (WO DETAIL)', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil detail Work Order.');
+        }
+    }
+
+    public function showServiceRequest(string $ticketid)
+    {
+        try {
+            $ticketid = trim($ticketid);
+            if ($ticketid === '') {
+                return redirect()->route('admin.maximo.index')->with('error', 'Ticket ID tidak valid.');
+            }
+
+            $sr = DB::connection('oracle')
+                ->table('SR')
+                ->select([
+                    'TICKETID',
+                    'DESCRIPTION',
+                    'STATUS',
+                    'STATUSDATE',
+                    'SITEID',
+                    'LOCATION',
+                    'ASSETNUM',
+                    'REPORTEDBY',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('TICKETID', $ticketid)
+                ->first();
+
+            if (!$sr) {
+                return redirect()->route('admin.maximo.index')->with('error', 'Service Request tidak ditemukan.');
+            }
+
+            return view('admin.maximo.service-request-detail', [
+                'sr' => [
+                    'ticketid' => $sr->ticketid ?? '-',
+                    'status' => $sr->status ?? '-',
+                    'statusdate' => isset($sr->statusdate) && $sr->statusdate ? Carbon::parse($sr->statusdate)->format('d-m-Y H:i') : '-',
+                    'reportedby' => $sr->reportedby ?? '-',
+                    'reportdate' => isset($sr->reportdate) && $sr->reportdate ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i') : '-',
+                    'siteid' => $sr->siteid ?? '-',
+                    'location' => $sr->location ?? '-',
+                    'assetnum' => $sr->assetnum ?? '-',
+                    'description' => $sr->description ?? '-',
+                ],
+            ]);
+
+        } catch (QueryException $e) {
+            Log::error('ORACLE QUERY ERROR (SR DETAIL)', [
+                'oracle_code' => $e->errorInfo[1] ?? null,
+                'message'     => $e->getMessage(),
+                'sql'         => $e->getSql(),
+                'bindings'    => $e->getBindings(),
+            ]);
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil detail Service Request (Query Error).');
+        } catch (\Throwable $e) {
+            Log::error('ORACLE GENERAL ERROR (SR DETAIL)', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil detail Service Request.');
+        }
+    }
+
     /* ==========================
      * FORMAT WORK ORDER
      * ========================== */

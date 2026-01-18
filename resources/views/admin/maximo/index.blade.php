@@ -119,84 +119,81 @@
                             <input type="hidden" name="search" value="{{ request('search') }}">
                             
                             <div class="overflow-x-auto">
-                                <table class="min-w-full border border-gray-300 text-sm">
-                                    <thead class="bg-blue-700 text-white">
+                                <table class="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200 whitespace-nowrap text-sm">
+                                    <thead class="bg-gray-100">
                                         <tr>
-                                            <th class="px-3 py-2">No</th>
-                                            <th class="px-3 py-2">WO</th>
-                                            <th class="px-3 py-2">Parent</th>
-                                            <th class="px-3 py-2">Description</th>
-                                            <th class="px-3 py-2">Asset</th>
-                                            <th class="px-3 py-2">
+                                            <th class="px-4 py-2 text-center">No</th>
+                                            <th class="px-4 py-2 text-center">Aksi</th>
+                                            <th class="px-4 py-2 text-center">WO</th>
+                                            <th class="px-4 py-2 text-center">Parent</th>
+                                            <th class="px-4 py-2 text-center">Description</th>
+                                            <th class="px-4 py-2 text-center">Asset</th>
+                                            <th class="px-4 py-2 text-center">
                                                 <div class="flex items-center justify-between">
                                                     <span>Status</span>
                                                     <div class="relative ml-2">
                                                         <select name="wo_status" onchange="document.getElementById('woFilterForm').submit()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-1 pr-5 py-0 text-xs focus:outline-none border border-blue-500 rounded">
-                                                            <option value="" class="text-gray-700" {{ !request('wo_status') ? 'selected' : '' }}>Semua</option>
-                                                            <option value="WAPPR" class="text-gray-700" {{ request('wo_status') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
-                                                            <option value="APPR" class="text-gray-700" {{ request('wo_status') == 'APPR' ? 'selected' : '' }}>APPR</option>
-                                                            <option value="INPRG" class="text-gray-700" {{ request('wo_status') == 'INPRG' ? 'selected' : '' }}>INPRG</option>
-                                                            <option value="COMP" class="text-gray-700" {{ request('wo_status') == 'COMP' ? 'selected' : '' }}>COMP</option>
-                                                            <option value="CLOSE" class="text-gray-700" {{ request('wo_status') == 'CLOSE' ? 'selected' : '' }}>CLOSE</option>
+                                                                class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
+                                                            <option value="" {{ !request('wo_status') ? 'selected' : '' }}>Semua</option>
+                                                            <option value="WAPPR" {{ request('wo_status') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
+                                                            <option value="APPR" {{ request('wo_status') == 'APPR' ? 'selected' : '' }}>APPR</option>
+                                                            <option value="INPRG" {{ request('wo_status') == 'INPRG' ? 'selected' : '' }}>INPRG</option>
+                                                            <option value="COMP" {{ request('wo_status') == 'COMP' ? 'selected' : '' }}>COMP</option>
+                                                            <option value="CLOSE" {{ request('wo_status') == 'CLOSE' ? 'selected' : '' }}>CLOSE</option>
                                                         </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1">
-                                                            <svg class="h-3 w-3 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </th>
-                                            <th class="px-3 py-2">Report Date</th>
-                                            <th class="px-3 py-2">Priority</th>
-                                            <th class="px-3 py-2">
+                                            <th class="px-4 py-2 text-center">Report Date</th>
+                                            <th class="px-4 py-2 text-center">Priority</th>
+                                            <th class="px-4 py-2 text-center">
                                                 <div class="flex items-center justify-between">
                                                     <span>Work Type</span>
                                                     <div class="relative ml-2">
                                                         <select name="wo_worktype" onchange="document.getElementById('woFilterForm').submit()" 
-                                                                class="appearance-none bg-transparent text-white cursor-pointer pl-1 pr-5 py-0 text-xs focus:outline-none border border-blue-500 rounded">
-                                                            <option value="" class="text-gray-700" {{ !request('wo_worktype') ? 'selected' : '' }}>Semua</option>
-                                                            <option value="CH" class="text-gray-700" {{ request('wo_worktype') == 'CH' ? 'selected' : '' }}>CH</option>
-                                                            <option value="CM" class="text-gray-700" {{ request('wo_worktype') == 'CM' ? 'selected' : '' }}>CM</option>
-                                                            <option value="CP" class="text-gray-700" {{ request('wo_worktype') == 'CP' ? 'selected' : '' }}>CP</option>
-                                                            <option value="OH" class="text-gray-700" {{ request('wo_worktype') == 'OH' ? 'selected' : '' }}>OH</option>
-                                                            <option value="OP" class="text-gray-700" {{ request('wo_worktype') == 'OP' ? 'selected' : '' }}>OP</option>
-                                                            <option value="PAM" class="text-gray-700" {{ request('wo_worktype') == 'PAM' ? 'selected' : '' }}>PAM</option>
-                                                            <option value="PDM" class="text-gray-700" {{ request('wo_worktype') == 'PDM' ? 'selected' : '' }}>PDM</option>
-                                                            <option value="PM" class="text-gray-700" {{ request('wo_worktype') == 'PM' ? 'selected' : '' }}>PM</option>
+                                                                class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
+                                                            <option value="" {{ !request('wo_worktype') ? 'selected' : '' }}>Semua</option>
+                                                            <option value="CH" {{ request('wo_worktype') == 'CH' ? 'selected' : '' }}>CH</option>
+                                                            <option value="CM" {{ request('wo_worktype') == 'CM' ? 'selected' : '' }}>CM</option>
+                                                            <option value="CP" {{ request('wo_worktype') == 'CP' ? 'selected' : '' }}>CP</option>
+                                                            <option value="OH" {{ request('wo_worktype') == 'OH' ? 'selected' : '' }}>OH</option>
+                                                            <option value="OP" {{ request('wo_worktype') == 'OP' ? 'selected' : '' }}>OP</option>
+                                                            <option value="PAM" {{ request('wo_worktype') == 'PAM' ? 'selected' : '' }}>PAM</option>
+                                                            <option value="PDM" {{ request('wo_worktype') == 'PDM' ? 'selected' : '' }}>PDM</option>
+                                                            <option value="PM" {{ request('wo_worktype') == 'PM' ? 'selected' : '' }}>PM</option>
                                                         </select>
-                                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1">
-                                                            <svg class="h-3 w-3 fill-current text-white" viewBox="0 0 20 20">
-                                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                                            </svg>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </th>
-                                            <th class="px-3 py-2">Sched Start</th>
-                                            <th class="px-3 py-2">Sched Finish</th>
+                                            <th class="px-4 py-2 text-center">Sched Start</th>
+                                            <th class="px-4 py-2 text-center">Sched Finish</th>
                                         </tr>
                                     </thead>
                                 <tbody>
                                 @forelse($workOrders as $i => $wo)
-                                    <tr class="border-b border-gray-300 hover:bg-gray-100">
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-2 text-center border border-gray-200">
                                             @if($workOrdersPaginator)
                                                 {{ ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() + $loop->iteration }}
                                             @else
                                                 {{ $i+1 }}
                                             @endif
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['wonum'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['parent'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                        <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
+                                            <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
+                                               class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
+                                                Detail
+                                            </a>
+                                        </td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['wonum'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['parent'] }}</td>
+                                        <td class="px-4 py-2 border border-gray-200">
                                             <span class="inline-block w-96 break-words whitespace-normal maximo-description">
                                                 {{ $wo['description'] }}
                                             </span>
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['assetnum'] }}</td>
-                                        <td class="text-center border-r border-gray-300 px-3 py-2">
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['assetnum'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">
                                             @php
                                                 $woStatus = strtoupper($wo['status']);
                                             @endphp
@@ -208,7 +205,7 @@
                                                 {{ $wo['status'] }}
                                             </span>
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                        <td class="px-4 py-2 text-center border border-gray-200">
                                             @if(isset($wo['reportdate']) && $wo['reportdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
                                                     {{ $wo['reportdate'] }}
@@ -217,14 +214,14 @@
                                                 <span class="text-gray-400">-</span>
                                             @endif
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['wopriority'] }}</td>
-                                        <td class="text-center border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
-                                        <td class="text-center border-r border-gray-300 px-3 py-2">{{ $wo['schedstart'] }}</td>
-                                        <td class="text-center border-r border-gray-300 px-3 py-2">{{ $wo['schedfinish'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['wopriority'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['worktype'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['schedstart'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['schedfinish'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center py-4 text-gray-500">
+                                        <td colspan="11" class="text-center py-4 text-gray-500">
                                             Tidak ada data Work Order
                                         </td>
                                     </tr>
@@ -292,32 +289,39 @@
                         <h2 class="text-lg font-semibold mb-3">Data Service Request</h2>
 
                         <div class="overflow-x-auto">
-                            <table class="min-w-full border border-gray-300 text-sm">
-                                <thead class="bg-green-700 text-white">
+                            <table class="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200 whitespace-nowrap text-sm">
+                                <thead class="bg-gray-100">
                                     <tr>
-                                        <th class="px-3 py-2">No</th>
-                                        <th class="px-3 py-2">Ticket</th>
-                                        <th class="px-3 py-2">Status</th>
-                                        <th class="px-3 py-2">Status Date</th>
-                                        <th class="px-3 py-2">Description</th>
-                                        <th class="px-3 py-2">Asset</th>
-                                        <th class="px-3 py-2">Location</th>
-                                        <th class="px-3 py-2">Reported By</th>
-                                        <th class="px-3 py-2">Report Date</th>
+                                        <th class="px-4 py-2 text-center">No</th>
+                                        <th class="px-4 py-2 text-center">Aksi</th>
+                                        <th class="px-4 py-2 text-center">Ticket</th>
+                                        <th class="px-4 py-2 text-center">Status</th>
+                                        <th class="px-4 py-2 text-center">Status Date</th>
+                                        <th class="px-4 py-2 text-center">Description</th>
+                                        <th class="px-4 py-2 text-center">Asset</th>
+                                        <th class="px-4 py-2 text-center">Location</th>
+                                        <th class="px-4 py-2 text-center">Reported By</th>
+                                        <th class="px-4 py-2 text-center">Report Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 @forelse($serviceRequests as $i => $sr)
-                                    <tr class="border-b border-gray-300 hover:bg-gray-100">
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-2 text-center border border-gray-200">
                                             @if($serviceRequestsPaginator)
                                                 {{ ($serviceRequestsPaginator->currentPage() - 1) * $serviceRequestsPaginator->perPage() + $loop->iteration }}
                                             @else
                                                 {{ $i+1 }}
                                             @endif
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['ticketid'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                        <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
+                                            <a href="{{ route('admin.maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
+                                               class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
+                                                Detail
+                                            </a>
+                                        </td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['ticketid'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">
                                             @php
                                                 $srStatus = strtoupper($sr['status']);
                                             @endphp
@@ -329,7 +333,7 @@
                                                 {{ $sr['status'] }}
                                             </span>
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                        <td class="px-4 py-2 text-center border border-gray-200">
                                             @if(isset($sr['statusdate']) && $sr['statusdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-800 rounded-md">
                                                     {{ $sr['statusdate'] }}
@@ -338,15 +342,15 @@
                                                 <span class="text-gray-400">-</span>
                                             @endif
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                        <td class="px-4 py-2 border border-gray-200">
                                             <span class="inline-block w-96 break-words whitespace-normal maximo-description">
                                                 {{ $sr['description'] }}
                                             </span>
                                         </td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['assetnum'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['location'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $sr['reportedby'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['assetnum'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['location'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['reportedby'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">
                                             @if(isset($sr['reportdate']) && $sr['reportdate'] !== '-')
                                                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-800 rounded-md">
                                                     {{ $sr['reportdate'] }}
