@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PowerPlant;
+use App\Models\WorkOrder;
+use App\Models\WoBacklog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -163,49 +165,64 @@ class LaborSayaController extends Controller
                     ->with('error', 'Work Order tidak ditemukan di Maximo.');
             }
 
-            // Format data untuk view
-            $workOrder = (object) [
-                'id' => $workOrderRaw->wonum ?? '-',
-                'wonum' => $workOrderRaw->wonum ?? '-',
-                'parent' => $workOrderRaw->parent ?? '-',
-                'description' => $workOrderRaw->description ?? '-',
-                'status' => $workOrderRaw->status ?? '-',
-                'worktype' => $workOrderRaw->worktype ?? '-',
-                'type' => $workOrderRaw->worktype ?? '-',
-                'wopriority' => $workOrderRaw->wopriority ?? '-',
-                'priority' => $workOrderRaw->wopriority ?? '-',
-                'assetnum' => $workOrderRaw->assetnum ?? '-',
-                'location' => $workOrderRaw->location ?? '-',
-                'siteid' => $workOrderRaw->siteid ?? '-',
-                'downtime' => $workOrderRaw->downtime ?? '-',
-                'schedstart' => isset($workOrderRaw->schedstart) && $workOrderRaw->schedstart
-                    ? Carbon::parse($workOrderRaw->schedstart)->format('Y-m-d H:i:s')
-                    : null,
-                'schedule_start' => isset($workOrderRaw->schedstart) && $workOrderRaw->schedstart
-                    ? Carbon::parse($workOrderRaw->schedstart)->format('Y-m-d H:i:s')
-                    : null,
-                'schedfinish' => isset($workOrderRaw->schedfinish) && $workOrderRaw->schedfinish
-                    ? Carbon::parse($workOrderRaw->schedfinish)->format('Y-m-d H:i:s')
-                    : null,
-                'schedule_finish' => isset($workOrderRaw->schedfinish) && $workOrderRaw->schedfinish
-                    ? Carbon::parse($workOrderRaw->schedfinish)->format('Y-m-d H:i:s')
-                    : null,
-                'reportdate' => isset($workOrderRaw->reportdate) && $workOrderRaw->reportdate
-                    ? Carbon::parse($workOrderRaw->reportdate)->format('Y-m-d H:i:s')
-                    : null,
-                'kendala' => null,
-                'tindak_lanjut' => null,
-                'labor' => null,
-                'labors' => [],
-                'document_path' => null,
-                'power_plant_id' => null,
-                'power_plant_name' => $workOrderRaw->location ?? ($workOrderRaw->siteid ?? 'KD'),
-            ];
-
         } catch (\Exception $e) {
             Log::error('Error getting Work Order from Maximo in LaborSayaController::edit: ' . $e->getMessage());
             return redirect()->route('pemeliharaan.labor-saya')
                 ->with('error', 'Gagal mengambil data Work Order dari Maximo.');
+        }
+
+        // Pastikan ada record lokal (per-unit) untuk kebutuhan edit (kendala, tindak lanjut, dokumen, dll)
+        $workOrder = WorkOrder::find($id);
+        if (!$workOrder) {
+            $workOrder = new WorkOrder();
+            $workOrder->id = $id;
+            $workOrder->unit_source = session('unit', 'mysql');
+        }
+
+        // Sinkronkan field yang sumbernya dari Maximo (tanpa menghapus input lokal yang sudah ada)
+        $workOrder->description = $workOrder->description ?: ($workOrderRaw->description ?? null);
+        $workOrder->type = $workOrder->type ?: ($workOrderRaw->worktype ?? null);
+
+        // Status lokal (Open/Closed/Comp/APPR/WAPPR/WMATL) — mapping dari status Maximo
+        if (empty($workOrder->status)) {
+            $maxStatus = strtoupper((string)($workOrderRaw->status ?? ''));
+            $mapped = 'Open';
+            if ($maxStatus === 'CLOSE') $mapped = 'Closed';
+            elseif ($maxStatus === 'COMP') $mapped = 'Comp';
+            elseif (in_array($maxStatus, ['WAPPR', 'APPR', 'WMATL'], true)) $mapped = $maxStatus;
+            $workOrder->status = $mapped;
+        }
+
+        // Priority lokal untuk dropdown (emergency/normal/outage/urgent) — default normal
+        if (empty($workOrder->priority) || !in_array($workOrder->priority, ['emergency', 'normal', 'outage', 'urgent'], true)) {
+            $workOrder->priority = 'normal';
+        }
+
+        if (!$workOrder->schedule_start && !empty($workOrderRaw->schedstart)) {
+            $workOrder->schedule_start = Carbon::parse($workOrderRaw->schedstart);
+        }
+        if (!$workOrder->schedule_finish && !empty($workOrderRaw->schedfinish)) {
+            $workOrder->schedule_finish = Carbon::parse($workOrderRaw->schedfinish);
+        }
+
+        // Default array untuk cast agar view aman
+        if (!is_array($workOrder->labors)) $workOrder->labors = [];
+        if (!is_array($workOrder->materials)) $workOrder->materials = [];
+
+        // Ambil jobcard dari DB utama (mysql) agar bisa dilihat & diedit oleh akun pemeliharaan
+        if (empty($workOrder->document_path)) {
+            $masterDocPath = DB::connection('mysql')
+                ->table('work_orders')
+                ->where('id', $id)
+                ->value('document_path');
+            if ($masterDocPath) {
+                $workOrder->document_path = $masterDocPath;
+            }
+        }
+
+        // Simpan jika record baru atau ada update field penting
+        if (!$workOrder->exists || $workOrder->isDirty()) {
+            $workOrder->save();
         }
 
         $powerPlants = PowerPlant::all();
@@ -218,6 +235,14 @@ class LaborSayaController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Akun session mysql hanya boleh generate jobcard, tidak boleh edit/upload dokumen via pemeliharaan
+        if (session('unit', 'mysql') === 'mysql') {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+            }
+            return redirect()->route('pemeliharaan.labor-saya')->with('error', 'Akses ditolak.');
+        }
+
         $workOrder = WorkOrder::findOrFail($id);
         // Jika hanya upload dokumen (AJAX PDF), tidak perlu validasi field lain
         if ($request->hasFile('document') && $request->file('document')->isValid()) {

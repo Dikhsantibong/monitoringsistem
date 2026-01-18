@@ -176,6 +176,7 @@
                                             </th>
                                             <th class="px-3 py-2">Sched Start</th>
                                             <th class="px-3 py-2">Sched Finish</th>
+                                            <th class="px-3 py-2">Jobcard</th>
                                         </tr>
                                     </thead>
                                 <tbody>
@@ -221,10 +222,33 @@
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedstart'] }}</td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedfinish'] }}</td>
+                                        <td class="border-r border-gray-300 px-3 py-2 text-center whitespace-nowrap">
+                                            <div class="flex items-center justify-center gap-2">
+                                                @if(!empty($wo['jobcard_url']))
+                                                    <a href="{{ $wo['jobcard_url'] }}" target="_blank"
+                                                       class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded hover:bg-green-700 transition-colors">
+                                                        Lihat
+                                                    </a>
+                                                @else
+                                                    <span class="text-xs text-gray-400">Belum ada</span>
+                                                @endif
+
+                                                @if(session('unit', 'mysql') === 'mysql')
+                                                    <form method="POST" action="{{ route('admin.maximo.jobcard.generate', ['wonum' => $wo['wonum']]) }}">
+                                                        @csrf
+                                                        <button type="submit"
+                                                            class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition-colors"
+                                                            onclick="return confirm('Generate Jobcard untuk {{ $wo['wonum'] }}? File sebelumnya (jika ada) akan ditimpa.');">
+                                                            Generate
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center py-4 text-gray-500">
+                                        <td colspan="11" class="text-center py-4 text-gray-500">
                                             Tidak ada data Work Order
                                         </td>
                                     </tr>

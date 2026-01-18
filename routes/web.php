@@ -175,6 +175,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Maximo Akses Route
     Route::get('/maximo', [MaximoController::class, 'index'])->name('maximo.index');
+    Route::post('/maximo/jobcard/{wonum}', [MaximoController::class, 'generateJobcard'])
+        ->name('maximo.jobcard.generate');
 
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
