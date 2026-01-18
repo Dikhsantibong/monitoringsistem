@@ -11,6 +11,10 @@
             min-height: 100vh;
             padding-bottom: 2rem;
         }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -40,21 +44,35 @@
         }
         .chart-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .chart-card {
             background: white;
             border-radius: 0.75rem;
-            padding: 1.5rem;
+            padding: 1.25rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        .chart-wrapper canvas {
+            max-width: 100% !important;
+            height: auto !important;
         }
         .chart-title {
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #1e293b;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             text-align: center;
         }
         .data-table {
@@ -112,7 +130,7 @@
 @section('content')
 @include('components.navbar')
 <div class="dashboard-bg">
-    <div class="container mx-auto py-6 mt-10 px-4" style="max-width:100vw;">
+    <div class="dashboard-container py-6 mt-10 px-4">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Kinerja Pemeliharaan</h1>
         
         <!-- Summary Cards -->
@@ -146,13 +164,17 @@
             <!-- Grafik Donut Distribusi PM vs CM -->
             <div class="chart-card">
                 <div class="chart-title">Distribusi PM vs CM</div>
-                <canvas id="pmcmDonutChart" height="250"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="pmcmDonutChart" style="max-height: 220px;"></canvas>
+                </div>
             </div>
             
             <!-- Grafik Bar PM & CM per Unit -->
             <div class="chart-card">
                 <div class="chart-title">Distribusi per Unit Layanan</div>
-                <canvas id="unitBarChart" height="250"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="unitBarChart" style="max-height: 220px;"></canvas>
+                </div>
             </div>
         </div>
 
@@ -243,6 +265,8 @@
                 }]
             },
             options: {
+                maintainAspectRatio: true,
+                aspectRatio: 1.2,
                 cutout: '60%',
                 plugins: {
                     legend: { 
@@ -286,6 +310,8 @@
                 ]
             },
             options: {
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
                 plugins: {
                     legend: {
                         display: true,
