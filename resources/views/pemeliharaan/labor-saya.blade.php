@@ -71,6 +71,8 @@
         <main class="px-6 pt-6">
             <form method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-4 flex items-center gap-2">
                 <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO/Backlog (id, deskripsi, status, type, priority, kendala, tindak lanjut)" class="flex-1 border rounded px-3 py-2" />
+                <input type="hidden" name="wo_page" value="1" />
+                <input type="hidden" name="backlog_page" value="{{ request('backlog_page', 1) }}" />
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Cari</button>
                 @if(!empty($q))
                     <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-3 py-2 rounded border">Reset</a>
@@ -84,7 +86,7 @@
                            data-tab="wo">
                             Work Order
                             <span class="ml-2 bg-green-400 text-gray-700 px-2 py-1 rounded-full text-xs">
-                                {{ count($workOrders) }}
+                                {{ $workOrdersPaginator ? $workOrdersPaginator->total() : count($workOrders) }}
                             </span>
                         </a>
                     </li>
@@ -209,6 +211,52 @@
                         </tbody>
                     </table>
                 </div>
+
+                {{-- Pagination Work Order --}}
+                @if($workOrdersPaginator && $workOrdersPaginator->hasPages())
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="text-sm text-gray-700">
+                        Menampilkan 
+                        {{ ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() + 1 }} 
+                        hingga 
+                        {{ min($workOrdersPaginator->currentPage() * $workOrdersPaginator->perPage(), $workOrdersPaginator->total()) }} 
+                        dari 
+                        {{ $workOrdersPaginator->total() }} 
+                        entri
+                    </div>
+                    <div class="flex items-center gap-1">
+                        @if (!$workOrdersPaginator->onFirstPage())
+                            <a href="{{ $workOrdersPaginator->appends(array_filter([
+                                'backlog_page' => request('backlog_page', 1), 
+                                'q' => request('q')
+                            ]))->previousPageUrl() }}" 
+                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                        @endif
+
+                        @foreach ($workOrdersPaginator->getUrlRange(1, min($workOrdersPaginator->lastPage(), 10)) as $page => $url)
+                            @if ($page == $workOrdersPaginator->currentPage())
+                                <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
+                            @else
+                                <a href="{{ $workOrdersPaginator->appends(array_filter([
+                                    'backlog_page' => request('backlog_page', 1), 
+                                    'q' => request('q')
+                                ]))->url($page) }}" 
+                                   class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
+                                    {{ $page }}
+                                </a>
+                            @endif
+                        @endforeach
+
+                        @if ($workOrdersPaginator->hasMorePages())
+                            <a href="{{ $workOrdersPaginator->appends(array_filter([
+                                'backlog_page' => request('backlog_page', 1), 
+                                'q' => request('q')
+                            ]))->nextPageUrl() }}" 
+                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                        @endif
+                    </div>
+                </div>
+                @endif
             </div>
             <div id="backlog-tab" class="tab-content hidden">
                 <div class="bg-white rounded shadow p-4 overflow-x-auto">

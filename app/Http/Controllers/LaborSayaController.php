@@ -17,12 +17,15 @@ class LaborSayaController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->input('q'));
+        $workOrderPage = $request->input('wo_page', 1);
+        $backlogPage = $request->input('backlog_page', 1);
         $normalizedName = Str::of(Auth::user()->name)
             ->lower()
             ->replace(['-', ' '], '');
 
         // Get Work Orders dari Maximo (Oracle)
         $workOrders = collect();
+        $workOrdersPaginator = null;
         try {
             $workOrdersQuery = DB::connection('oracle')
                 ->table('WORKORDER')
@@ -61,10 +64,11 @@ class LaborSayaController extends Controller
 
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
 
-            $workOrdersRaw = $workOrdersQuery->get();
+            // Paginate query
+            $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
 
             // Format data untuk view
-            $workOrders = $workOrdersRaw->map(function ($wo) {
+            $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) {
                 return [
                     'id' => $wo->wonum ?? '-',
                     'wonum' => $wo->wonum ?? '-',
@@ -112,14 +116,18 @@ class LaborSayaController extends Controller
         } catch (\Exception $e) {
             Log::error('Error getting Work Orders from Maximo in LaborSayaController: ' . $e->getMessage());
             $workOrders = collect([]);
+            $workOrdersPaginator = null;
         }
 
         // Backlog tidak ada di Maximo, set empty collection
         $laborBacklogs = collect([]);
+        $laborBacklogsPaginator = null;
 
         return view('pemeliharaan.labor-saya', [
             'workOrders' => $workOrders,
+            'workOrdersPaginator' => $workOrdersPaginator,
             'laborBacklogs' => $laborBacklogs,
+            'laborBacklogsPaginator' => $laborBacklogsPaginator,
             'q' => $search,
         ]);
     }
