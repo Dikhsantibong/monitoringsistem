@@ -196,11 +196,11 @@
                                             </span>
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['assetnum'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">
+                                        <td class="text-center border-r border-gray-300 px-3 py-2">
                                             @php
                                                 $woStatus = strtoupper($wo['status']);
                                             @endphp
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full text-center
                                                 @if(in_array($woStatus, ['COMP', 'CLOSE', 'RESOLVED'])) bg-green-100 text-green-800
                                                 @elseif(in_array($woStatus, ['WAPPR', 'APPR'])) bg-blue-100 text-blue-800
                                                 @elseif(in_array($woStatus, ['INPRG', 'IN PROGRESS'])) bg-yellow-100 text-yellow-800
@@ -218,9 +218,9 @@
                                             @endif
                                         </td>
                                         <td class="border-r border-gray-300 px-3 py-2">{{ $wo['wopriority'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedstart'] }}</td>
-                                        <td class="border-r border-gray-300 px-3 py-2">{{ $wo['schedfinish'] }}</td>
+                                        <td class="text-center border-r border-gray-300 px-3 py-2">{{ $wo['worktype'] }}</td>
+                                        <td class="text-center border-r border-gray-300 px-3 py-2">{{ $wo['schedstart'] }}</td>
+                                        <td class="text-center border-r border-gray-300 px-3 py-2">{{ $wo['schedfinish'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
