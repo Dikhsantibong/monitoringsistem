@@ -17,16 +17,19 @@
         }
         .summary-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
             margin-bottom: 2rem;
         }
         .summary-card {
             background: white;
             border-radius: 0.75rem;
-            padding: 1.5rem;
+            padding: 1.25rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             border-left: 4px solid;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .summary-card.total { border-left-color: #3b82f6; }
         .summary-card.pm { border-left-color: #2563eb; }
@@ -38,38 +41,36 @@
             margin-bottom: 0.5rem;
         }
         .summary-card-value {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: bold;
             color: #1e293b;
         }
         .chart-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
         }
         .chart-card {
             background: white;
             border-radius: 0.75rem;
             padding: 1.25rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            max-width: 100%;
+            display: flex;
+            flex-direction: column;
         }
         .chart-wrapper {
             position: relative;
             width: 100%;
-            max-width: 100%;
+            height: 200px;
             margin: 0 auto;
         }
         .chart-wrapper canvas {
             max-width: 100% !important;
-            height: auto !important;
+            max-height: 100% !important;
         }
         .chart-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: #1e293b;
             margin-bottom: 0.75rem;
@@ -116,12 +117,23 @@
             background: #fee2e2;
             color: #991b1b;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 1200px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
             .chart-section {
                 grid-template-columns: 1fr;
             }
+        }
+        @media (max-width: 768px) {
             .summary-cards {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
+            }
+            .chart-section {
+                grid-template-columns: 1fr;
+            }
+            .chart-wrapper {
+                height: 180px;
             }
         }
     </style>
@@ -165,7 +177,7 @@
             <div class="chart-card">
                 <div class="chart-title">Distribusi PM vs CM</div>
                 <div class="chart-wrapper">
-                    <canvas id="pmcmDonutChart" style="max-height: 220px;"></canvas>
+                    <canvas id="pmcmDonutChart"></canvas>
                 </div>
             </div>
             
@@ -173,7 +185,7 @@
             <div class="chart-card">
                 <div class="chart-title">Distribusi per Unit Layanan</div>
                 <div class="chart-wrapper">
-                    <canvas id="unitBarChart" style="max-height: 220px;"></canvas>
+                    <canvas id="unitBarChart"></canvas>
                 </div>
             </div>
         </div>
@@ -265,8 +277,8 @@
                 }]
             },
             options: {
-                maintainAspectRatio: true,
-                aspectRatio: 1.2,
+                maintainAspectRatio: false,
+                responsive: true,
                 cutout: '60%',
                 plugins: {
                     legend: { 
@@ -310,8 +322,8 @@
                 ]
             },
             options: {
-                maintainAspectRatio: true,
-                aspectRatio: 1.5,
+                maintainAspectRatio: false,
+                responsive: true,
                 plugins: {
                     legend: {
                         display: true,
