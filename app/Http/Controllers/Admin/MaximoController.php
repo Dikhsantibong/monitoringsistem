@@ -353,7 +353,7 @@ class MaximoController extends Controller
             $wonum = $request->input('wonum');
             
             if (!$wonum) {
-                return redirect()->route('maximo.index')->with('error', 'WONUM tidak valid.');
+                return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
             }
 
             // Ambil data Work Order dari Maximo
@@ -423,7 +423,7 @@ class MaximoController extends Controller
             // Redirect dengan success message dan link untuk membuka PDF di PDF.js viewer
             $pdfUrl = asset('storage/' . $filePath);
 
-            return redirect()->route('maximo.index')
+            return redirect()->route('admin.maximo.index')
                 ->with('success', 'Jobcard berhasil di-generate!')
                 ->with('jobcard_url', $pdfUrl)
                 ->with('jobcard_path', $filePath)
@@ -436,14 +436,14 @@ class MaximoController extends Controller
                 'sql' => $e->getSql(),
                 'bindings' => $e->getBindings(),
             ]);
-            return redirect()->route('maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
         } catch (\Throwable $e) {
             Log::error('ERROR GENERATE JOBCARD', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            return redirect()->route('maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
         }
     }
 
@@ -453,7 +453,7 @@ class MaximoController extends Controller
             $filePath = $request->input('path');
             
             if (!$filePath || !Storage::disk('public')->exists($filePath)) {
-                return redirect()->route('maximo.index')->with('error', 'File jobcard tidak ditemukan.');
+                return redirect()->route('admin.maximo.index')->with('error', 'File jobcard tidak ditemukan.');
             }
 
             return Storage::disk('public')->download($filePath);
@@ -461,7 +461,7 @@ class MaximoController extends Controller
             Log::error('ERROR DOWNLOAD JOBCARD', [
                 'message' => $e->getMessage(),
             ]);
-            return redirect()->route('maximo.index')->with('error', 'Gagal download jobcard.');
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal download jobcard.');
         }
     }
 
