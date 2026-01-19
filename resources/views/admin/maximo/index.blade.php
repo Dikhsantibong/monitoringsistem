@@ -497,16 +497,21 @@
         margin: 0 !important;
         border: none !important;
         display: block !important;
+        overflow: hidden !important;
+        scrolling: no !important;
     }
     #pdfWrapper {
         width: 100% !important;
         padding: 0 !important;
         margin: 0 !important;
         position: relative !important;
+        overflow: visible !important;
     }
     #pdfViewerContainer {
         padding: 0 !important;
         margin: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
     }
 </style>
 
@@ -540,9 +545,9 @@
         
         <!-- PDF Viewer Container dengan iframe -->
         <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px); padding:0; margin:0; width:100%;">
-            <div id="pdfWrapper" style="position:relative;width:100%;height:100%;padding:0;margin:0;min-height:100%;display:block;">
-                <iframe id="pdfIframe" src="" style="width:100% !important;height:auto !important;min-height:100vh !important;border:none !important;pointer-events:auto !important;display:block !important;padding:0 !important;margin:0 !important;"></iframe>
-                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100% !important;height:100% !important;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
+            <div id="pdfWrapper" style="position:relative;width:100%;padding:0;margin:0;display:block;">
+                <iframe id="pdfIframe" src="" style="width:100% !important;height:auto !important;min-height:100vh !important;border:none !important;pointer-events:auto !important;display:block !important;padding:0 !important;margin:0 !important;overflow:hidden !important;"></iframe>
+                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100% !important;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
             </div>
         </div>
         
@@ -612,13 +617,15 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
     document.getElementById('downloadPath').value = pdfPath;
     
     // Load PDF in iframe (browser native viewer)
-    // Pastikan iframe mengisi lebar penuh tanpa padding
+    // Pastikan iframe mengisi lebar penuh tanpa padding dan TIDAK memiliki scrollbar sendiri
     iframe.style.width = '100%';
     iframe.style.height = 'auto';
     iframe.style.minHeight = '100%';
     iframe.style.padding = '0';
     iframe.style.margin = '0';
     iframe.style.display = 'block';
+    iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
+    iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
     
     // Tambahkan parameter zoom untuk memaksa PDF mengisi lebar penuh
     // #zoom=page-width akan membuat PDF mengisi lebar penuh
@@ -678,26 +685,46 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
                 }
                 
                 // Gunakan tinggi wrapper atau iframe, ambil yang terbesar
+                // Pastikan mendapatkan tinggi konten PDF yang sebenarnya (bukan hanya viewport)
                 const wrapperHeight = pdfWrapper.scrollHeight || pdfWrapper.offsetHeight || iframeHeight;
-                const finalHeight = Math.max(iframeHeight, wrapperHeight, container.scrollHeight || 1000);
+                let finalHeight = Math.max(iframeHeight, wrapperHeight, container.scrollHeight || 1000);
+                
+                // Jika masih belum mendapatkan tinggi yang benar, coba lagi setelah delay
+                // Tinggi PDF biasanya lebih besar dari viewport
+                if (finalHeight < 2000) {
+                    // Mungkin PDF multi-halaman, estimasi tinggi minimal
+                    finalHeight = Math.max(finalHeight, 2000);
+                }
                 
                 // Set iframe height untuk memastikan PDF mengisi penuh
+                // Pastikan iframe tidak memiliki scrollbar sendiri
                 iframe.style.height = finalHeight + 'px';
                 iframe.style.minHeight = finalHeight + 'px';
+                iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
+                iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
                 
-                // Set wrapper height
+                // Set wrapper height - wrapper akan di-scroll oleh container
                 pdfWrapper.style.height = finalHeight + 'px';
                 pdfWrapper.style.minHeight = finalHeight + 'px';
+                pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
                 
                 // Set canvas size sesuai konten PDF - pastikan lebar 100%
+                // Canvas harus mengikuti tinggi wrapper agar ikut scroll
                 drawingCanvas.width = containerWidth;
                 drawingCanvas.height = finalHeight;
                 
                 // Set canvas style untuk mengikuti wrapper - lebar 100%
+                // Canvas absolute di dalam wrapper, jadi akan ikut scroll otomatis
                 drawingCanvas.style.width = '100%';
                 drawingCanvas.style.height = finalHeight + 'px';
                 drawingCanvas.style.left = '0';
                 drawingCanvas.style.top = '0';
+                drawingCanvas.style.position = 'absolute'; // Pastikan absolute
+                
+                // Pastikan container bisa scroll seluruh konten
+                container.style.overflow = 'auto';
+                container.style.overflowY = 'auto';
+                container.style.overflowX = 'hidden';
                 
                 if (typeof updateDrawingCanvasTool === 'function') {
                     updateDrawingCanvasTool();
@@ -714,11 +741,21 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
         
         // Update canvas saat iframe load
         iframe.addEventListener('load', () => {
+            // Tunggu beberapa kali untuk memastikan PDF fully loaded
             setTimeout(() => {
                 updateCanvasSize();
-                // Setup scroll handler untuk update canvas position
                 setupScrollHandler();
-            }, 800); // Delay lebih lama untuk memastikan PDF sudah render sepenuhnya
+            }, 500);
+            
+            // Update lagi setelah delay lebih lama untuk memastikan tinggi PDF terdeteksi
+            setTimeout(() => {
+                updateCanvasSize();
+            }, 1500);
+            
+            // Update sekali lagi untuk memastikan
+            setTimeout(() => {
+                updateCanvasSize();
+            }, 3000);
         });
         
         // Update canvas saat resize
@@ -728,6 +765,15 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
         
         // Initial update dengan delay lebih lama
         setTimeout(updateCanvasSize, 500);
+        
+        // Update berkala untuk memastikan tinggi selalu sesuai
+        const sizeCheckInterval = setInterval(() => {
+            if (modal && !modal.classList.contains('hidden')) {
+                updateCanvasSize();
+            } else {
+                clearInterval(sizeCheckInterval);
+            }
+        }, 2000);
     }
     
     // Setup scroll handler untuk memastikan canvas mengikuti scroll
@@ -737,16 +783,53 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
         
         if (!container || !pdfWrapper || !drawingCanvas) return;
         
+        // Pastikan hanya container yang memiliki scrollbar
+        container.style.overflow = 'auto';
+        container.style.overflowY = 'auto';
+        container.style.overflowX = 'hidden';
+        
+        // Pastikan iframe tidak memiliki scrollbar
+        const iframe = document.getElementById('pdfIframe');
+        if (iframe) {
+            iframe.style.overflow = 'hidden';
+            iframe.scrolling = 'no';
+        }
+        
+        // Pastikan wrapper tidak memiliki scrollbar sendiri
+        pdfWrapper.style.overflow = 'visible';
+        
         // Handler untuk update canvas saat scroll
+        // Canvas sudah absolute di dalam wrapper, jadi akan ikut scroll otomatis
+        // Tidak perlu melakukan transform manual karena canvas sudah di dalam wrapper yang di-scroll
         container.addEventListener('scroll', () => {
-            // Canvas sudah absolute di dalam wrapper, jadi akan ikut scroll otomatis
-            // Tapi kita perlu memastikan canvas height sesuai dengan konten
+            // Pastikan canvas height selalu sesuai dengan wrapper height
             const wrapperHeight = pdfWrapper.scrollHeight || pdfWrapper.offsetHeight;
-            if (drawingCanvas.height < wrapperHeight) {
+            if (drawingCanvas.height !== wrapperHeight) {
+                // Simpan drawing sebelum resize
+                let savedImageData = null;
+                if (drawingCanvas.width > 0 && drawingCanvas.height > 0) {
+                    try {
+                        const saveHeight = Math.min(drawingCanvas.height, wrapperHeight);
+                        savedImageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, saveHeight);
+                    } catch (e) {
+                        console.log('[Jobcard] Tidak bisa save image data saat scroll:', e);
+                    }
+                }
+                
+                // Update canvas height
                 drawingCanvas.height = wrapperHeight;
                 drawingCanvas.style.height = wrapperHeight + 'px';
+                
+                // Restore drawing
+                if (savedImageData && savedImageData.data) {
+                    try {
+                        drawingCtx.putImageData(savedImageData, 0, 0);
+                    } catch (e) {
+                        console.log('[Jobcard] Tidak bisa restore image data saat scroll:', e);
+                    }
+                }
             }
-        });
+        }, { passive: true });
     }
     
     // Set default tool ke scroll saat pertama kali buka
@@ -930,13 +1013,22 @@ function updateCanvasCursor() {
     
     const container = document.getElementById('pdfViewerContainer');
     
+    // Pastikan hanya container yang memiliki scrollbar, bukan iframe
+    const iframe = document.getElementById('pdfIframe');
+    if (iframe) {
+        iframe.style.overflow = 'hidden';
+        iframe.scrolling = 'no';
+    }
+    
     // Ubah cursor berdasarkan tool yang aktif
     if (currentTool === 'scroll') {
-        // Mode Scroll: nonaktifkan canvas, aktifkan scroll
+        // Mode Scroll: nonaktifkan canvas, aktifkan scroll container
         drawingCanvas.style.cursor = 'default';
         drawingCanvas.style.pointerEvents = 'none';
         if (container) {
             container.style.overflow = 'auto';
+            container.style.overflowY = 'auto';
+            container.style.overflowX = 'hidden';
             container.style.cursor = 'default';
         }
         return;
@@ -952,15 +1044,19 @@ function updateCanvasCursor() {
         drawingCanvas.style.pointerEvents = 'none';
         if (container) {
             container.style.overflow = 'auto';
+            container.style.overflowY = 'auto';
+            container.style.overflowX = 'hidden';
         }
         return;
     }
     
-    // Aktifkan canvas untuk tool drawing, tapi biarkan scroll bekerja
+    // Aktifkan canvas untuk tool drawing, tapi biarkan scroll container bekerja
     // Canvas akan menangkap event saat mouse down untuk drawing
     drawingCanvas.style.pointerEvents = 'auto';
     if (container) {
-        container.style.overflow = 'auto'; // Tetap aktifkan scroll
+        container.style.overflow = 'auto'; // Tetap aktifkan scroll container
+        container.style.overflowY = 'auto';
+        container.style.overflowX = 'hidden';
     }
 }
 
@@ -1016,18 +1112,21 @@ function setupDrawingCanvas() {
                 drawingCanvas.style.left = '0';
                 drawingCanvas.style.top = '0';
                 
-                // Pastikan iframe juga mengisi lebar penuh
+                // Pastikan iframe juga mengisi lebar penuh dan TIDAK memiliki scrollbar
                 if (iframe) {
                     iframe.style.width = '100%';
                     iframe.style.height = contentHeight + 'px';
                     iframe.style.minHeight = contentHeight + 'px';
+                    iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
+                    iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
                 }
                 
-                // Pastikan wrapper juga mengisi lebar penuh
+                // Pastikan wrapper juga mengisi lebar penuh dan tidak memiliki scrollbar sendiri
                 if (pdfWrapper) {
                     pdfWrapper.style.width = '100%';
                     pdfWrapper.style.height = contentHeight + 'px';
                     pdfWrapper.style.minHeight = contentHeight + 'px';
+                    pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
                 }
                 
                 // Set background transparan untuk canvas
@@ -1123,11 +1222,21 @@ function setupDrawingCanvas() {
                             iframe.style.width = '100%';
                             iframe.style.height = contentHeight + 'px';
                             iframe.style.minHeight = contentHeight + 'px';
+                            iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
+                            iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
                         }
                         if (pdfWrapper) {
                             pdfWrapper.style.width = '100%';
                             pdfWrapper.style.height = contentHeight + 'px';
                             pdfWrapper.style.minHeight = contentHeight + 'px';
+                            pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
+                        }
+                        
+                        // Pastikan container bisa scroll seluruh konten
+                        if (container) {
+                            container.style.overflow = 'auto';
+                            container.style.overflowY = 'auto';
+                            container.style.overflowX = 'hidden';
                         }
                         
                         // Restore drawing jika ada
@@ -1152,9 +1261,12 @@ function setupDrawingCanvas() {
                         }
                         if (iframe) {
                             iframe.style.width = '100%';
+                            iframe.style.overflow = 'hidden'; // Pastikan tidak ada scrollbar iframe
+                            iframe.scrolling = 'no';
                         }
                         if (pdfWrapper) {
                             pdfWrapper.style.width = '100%';
+                            pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
                         }
                     }
                 } catch (error) {
@@ -1202,9 +1314,12 @@ function setupDrawingCanvas() {
     let lastY = 0;
     
     function getMousePos(e) {
+        const container = document.getElementById('pdfViewerContainer');
         const rect = drawingCanvas.getBoundingClientRect();
-        // Canvas sudah absolute di dalam wrapper yang di-scroll,
-        // jadi koordinat relatif terhadap canvas sudah benar
+        
+        // Canvas sudah absolute di dalam wrapper yang di-scroll oleh container
+        // getBoundingClientRect() sudah memberikan posisi relatif terhadap viewport
+        // yang sudah memperhitungkan scroll, jadi langsung gunakan saja
         return {
             x: e.clientX - rect.left,
             y: e.clientY - rect.top
