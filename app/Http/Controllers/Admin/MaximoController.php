@@ -297,8 +297,31 @@ class MaximoController extends Controller
     private function formatWorkOrders($workOrders)
     {
         return collect($workOrders)->map(function ($wo) {
+            // Pastikan WONUM di-trim untuk menghilangkan spasi
+            $wonum = isset($wo->wonum) ? trim($wo->wonum) : null;
+            
+            // Cek apakah file jobcard ada di storage
+            $jobcardExists = false;
+            $jobcardPath = null;
+            $jobcardUrl = null;
+            
+            // Pastikan WONUM valid dan tidak kosong
+            if ($wonum && $wonum !== '' && $wonum !== '-') {
+                // Format file path sama persis dengan saat generate
+                $directory = 'jobcards';
+                $filename = 'JOBCARD_' . $wonum . '.pdf';
+                $filePath = $directory . '/' . $filename;
+                
+                // Cek apakah file ada di storage
+                if (Storage::disk('public')->exists($filePath)) {
+                    $jobcardExists = true;
+                    $jobcardPath = $filePath;
+                    $jobcardUrl = asset('storage/' . $filePath);
+                }
+            }
+            
             return [
-                'wonum'       => $wo->wonum ?? '-',
+                'wonum'       => $wonum ?? '-',
                 'parent'      => $wo->parent ?? '-',
                 'status'      => $wo->status ?? '-',
                 'statusdate'  => isset($wo->statusdate) && $wo->statusdate
@@ -320,6 +343,9 @@ class MaximoController extends Controller
                 'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish
                     ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i')
                     : '-',
+                'jobcard_exists' => $jobcardExists,
+                'jobcard_path' => $jobcardPath,
+                'jobcard_url' => $jobcardUrl,
             ];
         });
     }
@@ -351,9 +377,10 @@ class MaximoController extends Controller
     public function generateJobcard(Request $request)
     {
         try {
-            $wonum = $request->input('wonum');
+            // Pastikan WONUM di-trim untuk konsistensi
+            $wonum = trim($request->input('wonum'));
             
-            if (!$wonum) {
+            if (!$wonum || $wonum === '') {
                 return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
             }
 

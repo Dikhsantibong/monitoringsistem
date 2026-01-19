@@ -211,7 +211,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <div class="flex items-center justify-center gap-2">
+                                            <div class="flex items-center justify-center gap-2 flex-wrap">
                                                 <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
                                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                     Detail
@@ -224,6 +224,21 @@
                                                                 class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
                                                                 onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
                                                             Generate Jobcard
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                                @if(isset($wo['jobcard_exists']) && $wo['jobcard_exists'] && isset($wo['jobcard_path']) && isset($wo['jobcard_url']))
+                                                    <button onclick="openPdfEditor('{{ $wo['jobcard_url'] }}', '{{ $wo['jobcard_path'] }}')" 
+                                                            class="inline-flex items-center px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs"
+                                                            title="Preview & Edit Jobcard">
+                                                        Preview
+                                                    </button>
+                                                    <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" class="inline">
+                                                        <input type="hidden" name="path" value="{{ $wo['jobcard_path'] }}">
+                                                        <button type="submit" 
+                                                                class="inline-flex items-center px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs"
+                                                                title="Download Jobcard">
+                                                            Download
                                                         </button>
                                                     </form>
                                                 @endif
