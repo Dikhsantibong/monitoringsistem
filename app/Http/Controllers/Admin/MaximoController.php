@@ -543,20 +543,24 @@ class MaximoController extends Controller
             
             // Dapatkan informasi gambar drawing untuk scaling
             $drawingImageInfo = null;
+            $firstPageSize = null;
+            $croppedImagePath = null; // Deklarasi di scope yang benar untuk cleanup
+            
             if (file_exists($tempImagePath) && in_array($imageType, ['png', 'jpg', 'jpeg'])) {
                 // Dapatkan dimensi gambar drawing
-                if ($imageType === 'png') {
-                    $drawingImageInfo = @getimagesize($tempImagePath);
-                } else {
-                    $drawingImageInfo = @getimagesize($tempImagePath);
-                }
+                $drawingImageInfo = @getimagesize($tempImagePath);
             }
             
-            // Loop setiap halaman dan tambahkan gambar drawing overlay
+            // Loop setiap halaman dan tambahkan gambar drawing overlay HANYA di halaman pertama
             for ($pageNum = 1; $pageNum <= $pageCount; $pageNum++) {
                 // Import halaman dari PDF asli
                 $templateId = $pdf->importPage($pageNum);
                 $size = $pdf->getTemplateSize($templateId);
+                
+                // Simpan ukuran halaman pertama untuk referensi
+                if ($pageNum === 1) {
+                    $firstPageSize = $size;
+                }
                 
                 // Tambahkan halaman baru dengan orientasi yang sama
                 $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
@@ -565,20 +569,83 @@ class MaximoController extends Controller
                 // Render halaman PDF asli TERLEBIH DAHULU (PDF tetap utuh)
                 $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height']);
                 
-                // Tambahkan gambar drawing overlay di ATAS PDF (tidak mengganti PDF)
-                // Drawing hanya overlay, PDF asli tetap utuh
-                if ($drawingImageInfo && file_exists($tempImagePath)) {
-                    // Hitung scaling untuk drawing agar sesuai dengan ukuran halaman PDF
-                    // Drawing canvas biasanya lebih besar dari PDF page
+                // HANYA tambahkan gambar drawing overlay pada HALAMAN PERTAMA saja
+                // Halaman lainnya hanya render PDF asli tanpa overlay
+                if ($pageNum === 1 && $drawingImageInfo && file_exists($tempImagePath) && $firstPageSize) {
+                    // Dapatkan dimensi gambar drawing
                     $drawingWidth = $drawingImageInfo[0];
                     $drawingHeight = $drawingImageInfo[1];
                     
-                    // Scale drawing ke ukuran halaman PDF
-                    // Gunakan mode overlay dengan alpha channel untuk transparansi
+                    // Potong gambar drawing hanya untuk area halaman pertama
+                    // Buat gambar baru yang hanya berisi area halaman pertama
+                    $pageHeight = $firstPageSize['height'];
+                    $pageWidth = $firstPageSize['width'];
+                    
+                    // Hitung rasio scaling antara canvas drawing dan halaman PDF
+                    // Canvas drawing biasanya lebih tinggi karena mencakup semua halaman
+                    // Kita perlu memotong hanya bagian halaman pertama
+                    $scaleRatio = $pageWidth / $drawingWidth;
+                    $scaledPageHeight = $drawingHeight * $scaleRatio;
+                    
+                    // SELALU potong gambar hanya untuk tinggi halaman pertama
+                    // Hitung tinggi gambar yang perlu diambil (dalam pixel gambar asli)
+                    $imageHeightToUse = ($pageHeight / $scaleRatio);
+                    
+                    // Pastikan tidak melebihi tinggi gambar asli
+                    $imageHeightToUse = min((int)$imageHeightToUse, $drawingHeight);
+                    
+                    // Buat gambar baru yang dipotong hanya untuk halaman pertama
+                    $croppedImagePath = $tempDir . '/drawing_cropped_' . time() . '.' . $imageType;
+                    
+                    if ($imageType === 'png') {
+                        $sourceImage = imagecreatefrompng($tempImagePath);
+                    } else {
+                        $sourceImage = imagecreatefromjpeg($tempImagePath);
+                    }
+                    
+                    if ($sourceImage) {
+                        // Buat gambar baru dengan ukuran lebar penuh, tinggi hanya halaman pertama
+                        $croppedImage = imagecreatetruecolor($drawingWidth, $imageHeightToUse);
+                        
+                        // Enable alpha blending untuk PNG (transparansi)
+                        if ($imageType === 'png') {
+                            imagealphablending($croppedImage, false);
+                            imagesavealpha($croppedImage, true);
+                            $transparent = imagecolorallocatealpha($croppedImage, 0, 0, 0, 127);
+                            imagefill($croppedImage, 0, 0, $transparent);
+                        }
+                        
+                        // Copy hanya bagian atas gambar (halaman pertama) dari gambar asli
+                        imagecopyresampled(
+                            $croppedImage, 
+                            $sourceImage, 
+                            0, 0,  // Destination x, y
+                            0, 0,  // Source x, y (mulai dari atas kiri)
+                            $drawingWidth, 
+                            $imageHeightToUse, 
+                            $drawingWidth, 
+                            $imageHeightToUse
+                        );
+                        
+                        // Simpan gambar yang sudah dipotong
+                        if ($imageType === 'png') {
+                            imagepng($croppedImage, $croppedImagePath, 9);
+                        } else {
+                            imagejpeg($croppedImage, $croppedImagePath, 100);
+                        }
+                        
+                        imagedestroy($sourceImage);
+                        imagedestroy($croppedImage);
+                        
+                        // Gunakan gambar yang sudah dipotong
+                        $tempImagePath = $croppedImagePath;
+                    }
+                    
+                    // Overlay gambar drawing ke halaman pertama dengan ukuran yang sesuai
                     $pdf->Image(
                         $tempImagePath, 
                         0, 0, 
-                        $size['width'], $size['height'], 
+                        $pageWidth, $pageHeight, 
                         strtoupper($imageType), 
                         '', '', 
                         false, // link
@@ -612,9 +679,14 @@ class MaximoController extends Controller
                 throw new \Exception('File PDF tidak ditemukan setelah disimpan.');
             }
             
-            // Hapus temporary image
+            // Hapus temporary images
             if ($tempImagePath && file_exists($tempImagePath)) {
                 @unlink($tempImagePath);
+            }
+            
+            // Hapus gambar yang sudah dipotong jika ada
+            if ($croppedImagePath && file_exists($croppedImagePath)) {
+                @unlink($croppedImagePath);
             }
             
             // Cleanup temp directory
