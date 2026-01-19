@@ -501,15 +501,16 @@
             <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-2xl font-bold">&times;</button>
         </div>
         
-        <!-- PDF Viewer Container -->
-        <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 p-4" style="max-height: calc(95vh - 120px);">
-            <div id="pdfPages" class="flex flex-col items-center gap-4"></div>
+        <!-- PDF Viewer Container dengan iframe -->
+        <div id="pdfViewerContainer" class="flex-1 overflow-hidden bg-gray-200 relative" style="max-height: calc(95vh - 120px);">
+            <iframe id="pdfIframe" src="" style="width:100%;height:100%;border:none;pointer-events:none;"></iframe>
+            <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;z-index:10;pointer-events:auto;"></canvas>
         </div>
         
         <!-- Footer dengan Actions -->
         <div class="flex justify-between items-center p-3 border-t bg-gray-50">
             <div class="text-sm text-gray-600">
-                <span id="pageInfo">Halaman: -</span>
+                <span id="pageInfo">PDF Editor</span>
             </div>
             <div class="flex gap-2">
                 <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" id="downloadForm" class="inline">
@@ -540,32 +541,16 @@
 </div>
 
 <script>
-// Load PDF.js dynamically
-let pdfjsLib = null;
-async function loadPdfJs() {
-    if (pdfjsLib) return pdfjsLib;
-    
-    try {
-        // Try to load as ES module
-        const module = await import('{{ asset('pdf.js/build/pdf.mjs') }}');
-        pdfjsLib = module;
-        window.pdfjsLib = module;
-        module.GlobalWorkerOptions.workerSrc = '{{ asset('pdf.js/build/pdf.worker.mjs') }}';
-        return module;
-    } catch (e) {
-        console.error('[Jobcard] Error loading PDF.js:', e);
-        throw new Error('Gagal memuat PDF.js library');
-    }
-}
-
 let pdfSaved = false;
 let currentPdfPath = '';
-let currentPdfDoc = null;
+let currentPdfUrl = '';
 let currentTool = 'pen';
 let isDrawing = false;
-let drawingCanvases = {}; // Store drawing canvas per page
-let pdfPages = [];
+let drawingCanvas = null;
+let drawingCtx = null;
 let signatureImage = null;
+let canvasOffset = { x: 0, y: 0 };
+let canvasScale = { x: 1, y: 1 };
 
 // Tool selection
 document.addEventListener('DOMContentLoaded', function() {
@@ -582,130 +567,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add active class to clicked tool
                 this.classList.add('active-tool');
                 currentTool = this.dataset.tool;
-                console.log('[Jobcard] Tool changed to:', currentTool);
-                
-                // Update all drawing canvases with new tool settings
-                updateDrawingCanvasesTool();
+                updateDrawingCanvasTool();
             });
         }
     });
+    
+    // Setup drawing canvas
+    drawingCanvas = document.getElementById('drawingCanvas');
+    if (drawingCanvas) {
+        drawingCtx = drawingCanvas.getContext('2d');
+        setupDrawingCanvas();
+    }
 });
 
-function updateDrawingCanvasesTool() {
-    Object.keys(drawingCanvases).forEach(pageNum => {
-        const canvas = drawingCanvases[pageNum];
-        const ctx = canvas.getContext('2d');
-        ctx.strokeStyle = currentTool === 'pen' ? '#000000' : (currentTool === 'eraser' ? '#FFFFFF' : '#000000');
-        ctx.lineWidth = currentTool === 'pen' ? 2 : (currentTool === 'eraser' ? 20 : 2);
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-    });
+function updateDrawingCanvasTool() {
+    if (!drawingCtx) return;
+    drawingCtx.strokeStyle = currentTool === 'pen' ? '#000000' : (currentTool === 'eraser' ? '#FFFFFF' : '#000000');
+    drawingCtx.lineWidth = currentTool === 'pen' ? 3 : (currentTool === 'eraser' ? 25 : 3);
+    drawingCtx.lineCap = 'round';
+    drawingCtx.lineJoin = 'round';
 }
 
-async function openPdfEditor(pdfUrl, pdfPath) {
-    console.log('[Jobcard] openPdfEditor called', { pdfUrl, pdfPath });
-    pdfSaved = false;
-    currentPdfPath = pdfPath;
-    drawingCanvases = {};
-    pdfPages = [];
-
-    const modal = document.getElementById('pdfEditorModal');
-    const container = document.getElementById('pdfPages');
-
-    if (!modal || !container) {
-        console.error('[Jobcard] Modal atau container tidak ditemukan');
-        return;
+function setupDrawingCanvas() {
+    if (!drawingCanvas || !drawingCtx) return;
+    
+    // Resize canvas to match container
+    const container = document.getElementById('pdfViewerContainer');
+    if (container) {
+        const resizeCanvas = () => {
+            drawingCanvas.width = container.clientWidth;
+            drawingCanvas.height = container.clientHeight;
+            updateDrawingCanvasTool();
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
     }
-
-    modal.classList.remove('hidden');
-    container.innerHTML = '<div class="text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><p class="mt-2">Memuat PDF...</p></div>';
-    document.body.style.overflow = 'hidden';
-    document.getElementById('downloadPath').value = pdfPath;
-
-    try {
-        // Load PDF.js library first
-        pdfjsLib = await loadPdfJs();
-        
-        // Load PDF using PDF.js
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        currentPdfDoc = await loadingTask.promise;
-        
-        console.log('[Jobcard] PDF loaded, pages:', currentPdfDoc.numPages);
-        document.getElementById('pageInfo').textContent = `Halaman: 1 / ${currentPdfDoc.numPages}`;
-        
-        container.innerHTML = '';
-        
-        // Render all pages
-        for (let pageNum = 1; pageNum <= currentPdfDoc.numPages; pageNum++) {
-            await renderPage(pageNum, container);
-        }
-        
-    } catch (error) {
-        console.error('[Jobcard] Error loading PDF:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600"><p>Gagal memuat PDF: ' + error.message + '</p></div>';
-    }
-}
-
-async function renderPage(pageNum, container) {
-    try {
-        const page = await currentPdfDoc.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 1.5 });
-        
-        // Create page wrapper
-        const pageWrapper = document.createElement('div');
-        pageWrapper.className = 'relative bg-white shadow-lg';
-        pageWrapper.style.width = viewport.width + 'px';
-        pageWrapper.id = `page-wrapper-${pageNum}`;
-        
-        // Create PDF canvas
-        const pdfCanvas = document.createElement('canvas');
-        pdfCanvas.className = 'block';
-        pdfCanvas.width = viewport.width;
-        pdfCanvas.height = viewport.height;
-        pdfCanvas.id = `pdf-canvas-${pageNum}`;
-        
-        // Create drawing canvas overlay
-        const drawCanvas = document.createElement('canvas');
-        drawCanvas.className = 'absolute top-0 left-0 cursor-crosshair';
-        drawCanvas.width = viewport.width;
-        drawCanvas.height = viewport.height;
-        drawCanvas.id = `draw-canvas-${pageNum}`;
-        drawCanvas.style.zIndex = '10';
-        
-        drawingCanvases[pageNum] = drawCanvas;
-        pdfPages.push({ pageNum, pdfCanvas, drawCanvas, viewport });
-        
-        // Render PDF to canvas
-        const context = pdfCanvas.getContext('2d');
-        await page.render({
-            canvasContext: context,
-            viewport: viewport
-        }).promise;
-        
-        // Setup drawing on overlay canvas
-        setupDrawingCanvas(drawCanvas, pageNum);
-        
-        pageWrapper.appendChild(pdfCanvas);
-        pageWrapper.appendChild(drawCanvas);
-        container.appendChild(pageWrapper);
-        
-    } catch (error) {
-        console.error(`[Jobcard] Error rendering page ${pageNum}:`, error);
-    }
-}
-
-function setupDrawingCanvas(canvas, pageNum) {
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = currentTool === 'pen' ? '#000000' : (currentTool === 'eraser' ? '#FFFFFF' : '#000000');
-    ctx.lineWidth = currentTool === 'pen' ? 2 : (currentTool === 'eraser' ? 20 : 2);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    
+    updateDrawingCanvasTool();
     
     let lastX = 0;
     let lastY = 0;
     
     function getMousePos(e) {
-        const rect = canvas.getBoundingClientRect();
+        const rect = drawingCanvas.getBoundingClientRect();
         return {
             x: e.clientX - rect.left,
             y: e.clientY - rect.top
@@ -719,8 +623,11 @@ function setupDrawingCanvas(canvas, pageNum) {
         lastY = pos.y;
         
         if (currentTool === 'signature' && signatureImage) {
-            ctx.drawImage(signatureImage, pos.x - 100, pos.y - 50, 200, 100);
+            drawingCtx.drawImage(signatureImage, pos.x - 100, pos.y - 50, 200, 100);
             isDrawing = false;
+        } else {
+            drawingCtx.beginPath();
+            drawingCtx.moveTo(lastX, lastY);
         }
     }
     
@@ -728,60 +635,92 @@ function setupDrawingCanvas(canvas, pageNum) {
         if (!isDrawing || currentTool === 'signature') return;
         
         const pos = getMousePos(e);
-        
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        
+        drawingCtx.lineTo(pos.x, pos.y);
+        drawingCtx.stroke();
         lastX = pos.x;
         lastY = pos.y;
     }
     
     function stopDrawing() {
+        if (isDrawing) {
+            drawingCtx.stroke();
+        }
         isDrawing = false;
     }
     
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseleave', stopDrawing);
+    drawingCanvas.addEventListener('mousedown', startDrawing);
+    drawingCanvas.addEventListener('mousemove', draw);
+    drawingCanvas.addEventListener('mouseup', stopDrawing);
+    drawingCanvas.addEventListener('mouseleave', stopDrawing);
     
     // Touch support
-    canvas.addEventListener('touchstart', (e) => {
+    drawingCanvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
         const touch = e.touches[0];
         const mouseEvent = new MouseEvent('mousedown', {
             clientX: touch.clientX,
             clientY: touch.clientY
         });
-        canvas.dispatchEvent(mouseEvent);
+        drawingCanvas.dispatchEvent(mouseEvent);
     });
     
-    canvas.addEventListener('touchmove', (e) => {
+    drawingCanvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         const touch = e.touches[0];
         const mouseEvent = new MouseEvent('mousemove', {
             clientX: touch.clientX,
             clientY: touch.clientY
         });
-        canvas.dispatchEvent(mouseEvent);
+        drawingCanvas.dispatchEvent(mouseEvent);
     });
     
-    canvas.addEventListener('touchend', (e) => {
+    drawingCanvas.addEventListener('touchend', (e) => {
         e.preventDefault();
         const mouseEvent = new MouseEvent('mouseup', {});
-        canvas.dispatchEvent(mouseEvent);
+        drawingCanvas.dispatchEvent(mouseEvent);
     });
+}
+
+function openPdfEditor(pdfUrl, pdfPath) {
+    pdfSaved = false;
+    currentPdfPath = pdfPath;
+    currentPdfUrl = pdfUrl;
+
+    const modal = document.getElementById('pdfEditorModal');
+    const iframe = document.getElementById('pdfIframe');
+
+    if (!modal || !iframe) {
+        console.error('[Jobcard] Modal atau iframe tidak ditemukan');
+        return;
+    }
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('downloadPath').value = pdfPath;
+    
+    // Load PDF in iframe (browser native viewer)
+    iframe.src = pdfUrl;
+    
+    // Clear previous drawings
+    if (drawingCtx) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
+    
+    // Resize canvas to match container
+    const container = document.getElementById('pdfViewerContainer');
+    if (container && drawingCanvas) {
+        drawingCanvas.width = container.clientWidth;
+        drawingCanvas.height = container.clientHeight;
+        updateDrawingCanvasTool();
+    }
 }
 
 function clearAllDrawings() {
     if (!confirm('Hapus semua gambar/tulisan yang sudah dibuat?')) return;
     
-    Object.values(drawingCanvases).forEach(canvas => {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
 }
 
 function closePdfEditor(force = false) {
@@ -792,9 +731,17 @@ function closePdfEditor(force = false) {
     }
     document.getElementById('pdfEditorModal').classList.add('hidden');
     document.body.style.overflow = '';
-    currentPdfDoc = null;
-    drawingCanvases = {};
-    pdfPages = [];
+    
+    // Clear iframe
+    const iframe = document.getElementById('pdfIframe');
+    if (iframe) {
+        iframe.src = '';
+    }
+    
+    // Clear drawings
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
 }
 
 // Signature Modal Functions
@@ -877,25 +824,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Save PDF with drawings
 document.getElementById('savePdfBtn').addEventListener('click', async function() {
-    if (!currentPdfDoc) {
+    if (!drawingCanvas || !currentPdfPath) {
         alert('PDF tidak dimuat');
         return;
     }
     
     try {
-        // Convert all drawing canvases to images
-        const drawingImages = {};
-        Object.keys(drawingCanvases).forEach(pageNum => {
-            const canvas = drawingCanvases[pageNum];
-            if (canvas) {
-                drawingImages[pageNum] = canvas.toDataURL('image/png');
-            }
-        });
+        // Convert drawing canvas to image
+        const drawingImage = drawingCanvas.toDataURL('image/png');
         
-        // Send to server to merge PDF + drawings
+        // Send to server to merge PDF + drawing
         const formData = new FormData();
         formData.append('path', currentPdfPath);
-        formData.append('drawings', JSON.stringify(drawingImages));
+        formData.append('drawing', drawingImage); // Single drawing overlay for all pages
         formData.append('_token', '{{ csrf_token() }}');
         
         const response = await fetch("{{ route('admin.maximo.jobcard.update') }}", {
