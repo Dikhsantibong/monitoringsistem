@@ -527,6 +527,16 @@
         overflow-y: auto !important;
         overflow-x: hidden !important;
     }
+    /* Canvas mengisi penuh wrapper agar coretan ikut scroll dengan dokumen PDF */
+    #pdfWrapper #drawingCanvas {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
 </style>
 
 <!-- Modal PDF Editor Custom -->
@@ -561,7 +571,7 @@
         <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px); padding:0; margin:0; width:100%;">
             <div id="pdfWrapper" style="position:relative;width:100%;padding:0;margin:0;display:block;">
                 <iframe id="pdfIframe" src="" scrolling="no" style="width:100% !important;height:auto !important;min-height:100vh !important;border:none !important;pointer-events:auto !important;display:block !important;padding:0 !important;margin:0 !important;overflow:hidden !important;"></iframe>
-                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100% !important;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
+                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
             </div>
         </div>
         
@@ -750,13 +760,15 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
                     } catch (e) { /* ignore */ }
                 }
                 
-                // Set canvas style untuk mengikuti wrapper - lebar 100%
-                // Canvas absolute di dalam wrapper, jadi akan ikut scroll otomatis
-                drawingCanvas.style.width = '100%';
-                drawingCanvas.style.height = finalHeight + 'px';
-                drawingCanvas.style.left = '0';
+                // Set canvas style: isi penuh wrapper (top/left/right/bottom) agar coretan
+                // ikut scroll dengan dokumen PDF dan menjadi bagian dokumen
+                drawingCanvas.style.position = 'absolute';
                 drawingCanvas.style.top = '0';
-                drawingCanvas.style.position = 'absolute'; // Pastikan absolute
+                drawingCanvas.style.left = '0';
+                drawingCanvas.style.right = '0';
+                drawingCanvas.style.bottom = '0';
+                drawingCanvas.style.width = '100%';
+                drawingCanvas.style.height = '100%';
                 
                 // Pastikan container bisa scroll seluruh konten
                 container.style.overflow = 'auto';
@@ -1182,11 +1194,14 @@ function setupDrawingCanvas() {
                     drawingCanvas.width = containerWidth;
                     drawingCanvas.height = contentHeight;
                     
-                    // Set canvas style - penting: lebar 100%, height sesuai konten PDF
-                    drawingCanvas.style.width = '100%';
-                    drawingCanvas.style.height = contentHeight + 'px';
-                    drawingCanvas.style.left = '0';
+                    // Set canvas style: isi penuh wrapper agar coretan ikut scroll dengan PDF
+                    drawingCanvas.style.position = 'absolute';
                     drawingCanvas.style.top = '0';
+                    drawingCanvas.style.left = '0';
+                    drawingCanvas.style.right = '0';
+                    drawingCanvas.style.bottom = '0';
+                    drawingCanvas.style.width = '100%';
+                    drawingCanvas.style.height = '100%';
                     
                     // Restore drawing jika ada
                     if (savedImageData && savedImageData.data) {
@@ -1326,13 +1341,17 @@ function setupDrawingCanvas() {
                         // Dapatkan lebar container yang sebenarnya
                         const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
                         
-                        // Update canvas width dan height
+                        // Update canvas width dan height (atribut untuk koordinat gambar)
                         drawingCanvas.width = containerWidth;
                         drawingCanvas.height = contentHeight;
-                        drawingCanvas.style.width = '100%';
-                        drawingCanvas.style.height = contentHeight + 'px';
-                        drawingCanvas.style.left = '0';
+                        // Style: isi penuh wrapper agar coretan ikut scroll dengan dokumen
+                        drawingCanvas.style.position = 'absolute';
                         drawingCanvas.style.top = '0';
+                        drawingCanvas.style.left = '0';
+                        drawingCanvas.style.right = '0';
+                        drawingCanvas.style.bottom = '0';
+                        drawingCanvas.style.width = '100%';
+                        drawingCanvas.style.height = '100%';
                         
                         // Update iframe dan wrapper juga
                         if (iframe) {
@@ -1389,13 +1408,14 @@ function setupDrawingCanvas() {
                             }
                             drawingCanvas.width = containerWidth;
                             drawingCanvas.style.width = '100%';
+                            drawingCanvas.style.right = '0';
+                            drawingCanvas.style.bottom = '0';
                             if (saved && saved.data && drawingCtx) {
                                 try { drawingCtx.putImageData(saved, 0, 0); } catch (e) {}
                             }
                         }
-                        if (drawingCanvas.style.height !== contentHeight + 'px') {
-                            drawingCanvas.style.height = contentHeight + 'px';
-                        }
+                        // Pastikan canvas tetap isi penuh wrapper (height: 100%) agar ikut scroll
+                        drawingCanvas.style.height = '100%';
                         if (iframe) {
                             iframe.style.width = '100%';
                             iframe.style.overflow = 'hidden'; // Pastikan tidak ada scrollbar iframe
@@ -1602,7 +1622,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Save PDF with drawings
+// Save PDF with drawings — coretan/tulisan digabung ke PDF dan menjadi bagian dokumen yang tercatat
 document.getElementById('savePdfBtn').addEventListener('click', async function() {
     if (!drawingCanvas || !currentPdfPath) {
         alert('PDF tidak dimuat');
@@ -1615,8 +1635,7 @@ document.getElementById('savePdfBtn').addEventListener('click', async function()
     saveBtn.textContent = 'Menyimpan...';
     
     try {
-        // Convert drawing canvas to image dengan alpha channel (PNG)
-        // Pastikan hanya drawing yang diambil, bukan PDF di bawahnya
+        // Seluruh layer coretan (seluruh halaman) dijadikan gambar dan digabung ke PDF di server
         const drawingImage = drawingCanvas.toDataURL('image/png');
         
         // Validasi apakah ada drawing yang dibuat (cek apakah ada pixel yang tidak transparan)
