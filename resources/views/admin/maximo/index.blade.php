@@ -493,10 +493,61 @@ let pdfSaved = false;
 let currentPdfPath = '';
 
 function openPdfEditor(pdfUrl, pdfPath) {
+    console.log('[Jobcard] openPdfEditor called', { pdfUrl, pdfPath });
     pdfSaved = false;
     currentPdfPath = pdfPath;
-    document.getElementById('pdfEditorModal').classList.remove('hidden');
-    document.getElementById('pdfjs-viewer').src = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
+
+    const modal = document.getElementById('pdfEditorModal');
+    const iframe = document.getElementById('pdfjs-viewer');
+
+    if (!modal || !iframe) {
+        console.error('[Jobcard] Modal atau iframe PDF.js tidak ditemukan di DOM');
+        return;
+    }
+
+    // Cek apakah file PDF bisa diakses
+    fetch(pdfUrl, { method: 'HEAD' })
+        .then(res => {
+            console.log('[Jobcard] HEAD request jobcard', { status: res.status, ok: res.ok, url: pdfUrl });
+            if (!res.ok) {
+                console.error('[Jobcard] PDF tidak bisa diakses, status:', res.status);
+            }
+        })
+        .catch(err => {
+            console.error('[Jobcard] Gagal melakukan HEAD request ke PDF', err);
+        });
+
+    modal.classList.remove('hidden');
+    const viewerUrl = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
+    console.log('[Jobcard] set iframe src ke viewerUrl', viewerUrl);
+
+    iframe.onload = function () {
+        try {
+            console.log('[Jobcard] iframe viewer.html onload');
+            const win = iframe.contentWindow;
+            if (!win) {
+                console.error('[Jobcard] contentWindow iframe null');
+                return;
+            }
+            const app = win.PDFViewerApplication;
+            if (!app) {
+                console.error('[Jobcard] PDFViewerApplication tidak tersedia di viewer (cek MIME type .mjs dan konfigurasi server)');
+            } else {
+                console.log('[Jobcard] PDFViewerApplication terdeteksi', {
+                    initialized: app.initialized,
+                    url: app.url
+                });
+            }
+        } catch (err) {
+            console.error('[Jobcard] Error saat inspeksi iframe PDF.js', err);
+        }
+    };
+
+    iframe.onerror = function (e) {
+        console.error('[Jobcard] iframe viewer.html onerror', e);
+    };
+
+    iframe.src = viewerUrl;
     document.getElementById('downloadPath').value = pdfPath;
     document.body.style.overflow = 'hidden';
 }
@@ -555,6 +606,7 @@ function saveEditedPdf(blob) {
 }
 
 window.addEventListener('message', function(event) {
+    console.log('[Jobcard] window message event', event);
     if (event.data && event.data.type === 'save-pdf' && event.data.data) {
         let blob = null;
         if (event.data.data instanceof ArrayBuffer) {
@@ -564,8 +616,10 @@ window.addEventListener('message', function(event) {
             blob = new Blob([arr], { type: 'application/pdf' });
         }
         if (blob) {
+            console.log('[Jobcard] menerima blob dari viewer, ukuran (bytes):', blob.size);
             saveEditedPdf(blob);
         } else {
+            console.error('[Jobcard] gagal membentuk Blob dari data yang diterima');
             alert('Gagal membaca data PDF hasil edit.');
         }
     }

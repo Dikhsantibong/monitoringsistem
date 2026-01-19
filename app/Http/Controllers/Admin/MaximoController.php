@@ -409,15 +409,16 @@ class MaximoController extends Controller
             // Generate PDF
             $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', ['wo' => $woData]);
 
-            // Simpan PDF ke storage public
-            $filename = 'jobcard_' . $wonum . '_' . date('YmdHis') . '.pdf';
+            // Simpan PDF ke storage public dengan nama deterministik (tanpa DB tambahan)
+            // 1 WO = 1 file jobcard yang selalu di-overwrite
             $directory = 'jobcards';
+            $filename = 'JOBCARD_' . $wonum . '.pdf';
             $filePath = $directory . '/' . $filename;
             
             // Pastikan directory ada
             Storage::disk('public')->makeDirectory($directory);
             
-            // Simpan PDF
+            // Simpan / overwrite PDF
             Storage::disk('public')->put($filePath, $pdf->output());
 
             // Redirect dengan success message dan link untuk membuka PDF di PDF.js viewer
