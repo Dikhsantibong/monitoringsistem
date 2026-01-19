@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MaximoController extends Controller
 {
@@ -343,5 +345,104 @@ class MaximoController extends Controller
                     : '-',
             ];
         });
+    }
+
+    /**
+     * Generate jobcard PDF untuk Work Order berstatus APPR dan sediakan link edit via PDF.js.
+     */
+    public function generateJobcard(Request $request)
+    {
+        try {
+            $wonum = $request->input('wonum');
+
+            if (!$wonum) {
+                return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
+            }
+
+            // Ambil data Work Order dari Maximo
+            $wo = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'PARENT',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'WOPRIORITY',
+                    'DESCRIPTION',
+                    'ASSETNUM',
+                    'LOCATION',
+                    'SITEID',
+                    'DOWNTIME',
+                    'SCHEDSTART',
+                    'SCHEDFINISH',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('WONUM', $wonum)
+                ->first();
+
+            if (!$wo) {
+                return redirect()->route('admin.maximo.index')->with('error', 'Work Order tidak ditemukan.');
+            }
+
+            // Hanya izinkan status APPR
+            if (strtoupper($wo->status ?? '') !== 'APPR') {
+                return redirect()->route('admin.maximo.index')->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
+            }
+
+            // Format data untuk PDF
+            $woData = [
+                'wonum' => $wo->wonum ?? '-',
+                'parent' => $wo->parent ?? '-',
+                'status' => $wo->status ?? '-',
+                'statusdate' => isset($wo->statusdate) && $wo->statusdate ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i') : '-',
+                'worktype' => $wo->worktype ?? '-',
+                'wopriority' => $wo->wopriority ?? '-',
+                'reportdate' => isset($wo->reportdate) && $wo->reportdate ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i') : '-',
+                'assetnum' => $wo->assetnum ?? '-',
+                'location' => $wo->location ?? '-',
+                'siteid' => $wo->siteid ?? '-',
+                'downtime' => $wo->downtime ?? '-',
+                'schedstart' => isset($wo->schedstart) && $wo->schedstart ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i') : '-',
+                'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i') : '-',
+                'description' => $wo->description ?? '-',
+            ];
+
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', ['wo' => $woData]);
+
+            // Simpan PDF ke storage/public/jobcards
+            $filename = 'jobcard_' . $wonum . '_' . date('YmdHis') . '.pdf';
+            $directory = 'jobcards';
+            $filePath = $directory . '/' . $filename;
+
+            Storage::disk('public')->makeDirectory($directory);
+            Storage::disk('public')->put($filePath, $pdf->output());
+
+            // URL untuk download & edit via PDF.js
+            $pdfUrl = asset('storage/' . $filePath);
+            $viewerUrl = asset('pdf.js/web/viewer.html') . '?file=' . urlencode($pdfUrl);
+
+            return redirect()->route('admin.maximo.index')
+                ->with('success', 'Jobcard berhasil di-generate! Klik untuk membuka atau edit.')
+                ->with('jobcard_url', $viewerUrl)
+                ->with('jobcard_download', $pdfUrl);
+        } catch (QueryException $e) {
+            Log::error('ORACLE QUERY ERROR (GENERATE JOBCARD)', [
+                'oracle_code' => $e->errorInfo[1] ?? null,
+                'message' => $e->getMessage(),
+                'sql' => $e->getSql(),
+                'bindings' => $e->getBindings(),
+            ]);
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
+        } catch (\Throwable $e) {
+            Log::error('ERROR GENERATE JOBCARD', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
+        }
     }
 }

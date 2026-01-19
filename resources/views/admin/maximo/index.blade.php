@@ -54,6 +54,33 @@
         </header>
 
         <main class="px-6 mt-4">
+            {{-- Flash messages --}}
+            @if(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
+                    <div class="flex flex-col gap-2">
+                        <span>{{ session('success') }}</span>
+                        <div class="flex gap-2 flex-wrap">
+                            @if(session('jobcard_url'))
+                                <a href="{{ session('jobcard_url') }}" target="_blank"
+                                   class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+                                    Buka & Edit di PDF.js Viewer
+                                </a>
+                            @endif
+                            @if(session('jobcard_download'))
+                                <a href="{{ session('jobcard_download') }}" download
+                                   class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                    Download PDF
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
             <div class="bg-white rounded-lg shadow p-6">
 
                 {{-- ERROR DEBUG --}}
@@ -180,10 +207,23 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
-                                               class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
-                                                Detail
-                                            </a>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
+                                                   class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
+                                                    Detail
+                                                </a>
+                                                @if(strtoupper($wo['status']) === 'APPR')
+                                                    <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
+                                                        @csrf
+                                                        <input type="hidden" name="wonum" value="{{ $wo['wonum'] }}">
+                                                        <button type="submit"
+                                                            class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                                                            onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
+                                                            Generate Jobcard
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['wonum'] }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['parent'] }}</td>
