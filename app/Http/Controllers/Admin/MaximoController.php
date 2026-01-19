@@ -347,16 +347,13 @@ class MaximoController extends Controller
         });
     }
 
-    /**
-     * Generate jobcard PDF untuk Work Order berstatus APPR dan sediakan link edit via PDF.js.
-     */
     public function generateJobcard(Request $request)
     {
         try {
             $wonum = $request->input('wonum');
-
+            
             if (!$wonum) {
-                return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
+                return redirect()->route('maximo.index')->with('error', 'WONUM tidak valid.');
             }
 
             // Ambil data Work Order dari Maximo
@@ -383,12 +380,12 @@ class MaximoController extends Controller
                 ->first();
 
             if (!$wo) {
-                return redirect()->route('admin.maximo.index')->with('error', 'Work Order tidak ditemukan.');
+                return redirect()->route('maximo.index')->with('error', 'Work Order tidak ditemukan.');
             }
 
-            // Hanya izinkan status APPR
+            // Cek apakah status adalah APPR
             if (strtoupper($wo->status ?? '') !== 'APPR') {
-                return redirect()->route('admin.maximo.index')->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
+                return redirect()->route('maximo.index')->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
             }
 
             // Format data untuk PDF
@@ -412,22 +409,26 @@ class MaximoController extends Controller
             // Generate PDF
             $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', ['wo' => $woData]);
 
-            // Simpan PDF ke storage/public/jobcards
+            // Simpan PDF ke storage public
             $filename = 'jobcard_' . $wonum . '_' . date('YmdHis') . '.pdf';
             $directory = 'jobcards';
             $filePath = $directory . '/' . $filename;
-
+            
+            // Pastikan directory ada
             Storage::disk('public')->makeDirectory($directory);
+            
+            // Simpan PDF
             Storage::disk('public')->put($filePath, $pdf->output());
 
-            // URL untuk download & edit via PDF.js
+            // Redirect dengan success message dan link untuk membuka PDF di PDF.js viewer
             $pdfUrl = asset('storage/' . $filePath);
-            $viewerUrl = asset('pdf.js/web/viewer.html') . '?file=' . urlencode($pdfUrl);
 
-            return redirect()->route('admin.maximo.index')
-                ->with('success', 'Jobcard berhasil di-generate! Klik untuk membuka atau edit.')
-                ->with('jobcard_url', $viewerUrl)
-                ->with('jobcard_download', $pdfUrl);
+            return redirect()->route('maximo.index')
+                ->with('success', 'Jobcard berhasil di-generate!')
+                ->with('jobcard_url', $pdfUrl)
+                ->with('jobcard_path', $filePath)
+                ->with('jobcard_wonum', $wonum);
+
         } catch (QueryException $e) {
             Log::error('ORACLE QUERY ERROR (GENERATE JOBCARD)', [
                 'oracle_code' => $e->errorInfo[1] ?? null,
@@ -435,14 +436,70 @@ class MaximoController extends Controller
                 'sql' => $e->getSql(),
                 'bindings' => $e->getBindings(),
             ]);
-            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
+            return redirect()->route('maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
         } catch (\Throwable $e) {
             Log::error('ERROR GENERATE JOBCARD', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            return redirect()->route('admin.maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
+            return redirect()->route('maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadJobcard(Request $request)
+    {
+        try {
+            $filePath = $request->input('path');
+            
+            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+                return redirect()->route('maximo.index')->with('error', 'File jobcard tidak ditemukan.');
+            }
+
+            return Storage::disk('public')->download($filePath);
+        } catch (\Throwable $e) {
+            Log::error('ERROR DOWNLOAD JOBCARD', [
+                'message' => $e->getMessage(),
+            ]);
+            return redirect()->route('maximo.index')->with('error', 'Gagal download jobcard.');
+        }
+    }
+
+    public function updateJobcard(Request $request)
+    {
+        try {
+            $filePath = $request->input('path');
+            
+            if (!$filePath) {
+                return response()->json(['success' => false, 'message' => 'Path tidak valid.']);
+            }
+
+            if (!$request->hasFile('document')) {
+                return response()->json(['success' => false, 'message' => 'File tidak ditemukan.']);
+            }
+
+            $file = $request->file('document');
+            
+            // Validasi file PDF
+            if ($file->getClientOriginalExtension() !== 'pdf') {
+                return response()->json(['success' => false, 'message' => 'File harus berformat PDF.']);
+            }
+
+            // Simpan file yang sudah di-edit
+            Storage::disk('public')->put($filePath, file_get_contents($file));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jobcard berhasil diupdate!'
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('ERROR UPDATE JOBCARD', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Gagal update jobcard: ' . $e->getMessage()]);
         }
     }
 }

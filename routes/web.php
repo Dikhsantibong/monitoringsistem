@@ -174,10 +174,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Maximo Akses Route
-    Route::get('/maximo', [MaximoController::class, 'index'])->name('admin.maximo.index');
-    Route::get('/maximo/workorder/{wonum}', [MaximoController::class, 'showWorkOrder'])->name('admin.maximo.workorder.show');
-    Route::get('/maximo/service-request/{ticketid}', [MaximoController::class, 'showServiceRequest'])->name('admin.maximo.service-request.show');
-    Route::post('/maximo/jobcard/generate', [MaximoController::class, 'generateJobcard'])->name('admin.maximo.jobcard.generate');
+    Route::get('/maximo', [MaximoController::class, 'index'])->name('maximo.index');
+    Route::get('/maximo/workorder/{wonum}', [MaximoController::class, 'showWorkOrder'])->name('maximo.workorder.show');
+    Route::get('/maximo/service-request/{ticketid}', [MaximoController::class, 'showServiceRequest'])->name('maximo.service-request.show');
+    Route::post('/maximo/jobcard/generate', [MaximoController::class, 'generateJobcard'])->name('maximo.jobcard.generate');
+    Route::get('/maximo/jobcard/download', [MaximoController::class, 'downloadJobcard'])->name('maximo.jobcard.download');
+    Route::post('/maximo/jobcard/update', [MaximoController::class, 'updateJobcard'])->name('maximo.jobcard.update');
 
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {

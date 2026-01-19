@@ -54,33 +54,37 @@
         </header>
 
         <main class="px-6 mt-4">
-            {{-- Flash messages --}}
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
-                    <div class="flex flex-col gap-2">
-                        <span>{{ session('success') }}</span>
-                        <div class="flex gap-2 flex-wrap">
-                            @if(session('jobcard_url'))
-                                <a href="{{ session('jobcard_url') }}" target="_blank"
-                                   class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
-                                    Buka & Edit di PDF.js Viewer
-                                </a>
-                            @endif
-                            @if(session('jobcard_download'))
-                                <a href="{{ session('jobcard_download') }}" download
-                                   class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
-                                    Download PDF
-                                </a>
-                            @endif
-                        </div>
+            {{-- Success Message dengan Link ke PDF.js Viewer --}}
+            @if(session('success') && session('jobcard_url'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                    <div class="mt-2 flex gap-2">
+                        <button onclick="openPdfEditor('{{ session('jobcard_url') }}', '{{ session('jobcard_path') }}')" 
+                                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-semibold">
+                            Buka & Edit Jobcard di PDF.js Viewer
+                        </button>
+                        <form method="GET" action="{{ route('maximo.jobcard.download') }}" class="inline">
+                            <input type="hidden" name="path" value="{{ session('jobcard_path') }}">
+                            <button type="submit" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold">
+                                Download Jobcard
+                            </button>
+                        </form>
                     </div>
                 </div>
+            @elseif(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
+                    {{ session('success') }}
+                </div>
             @endif
+
+            {{-- Error Message --}}
             @if(session('error'))
                 <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
                     {{ session('error') }}
                 </div>
             @endif
+
             <div class="bg-white rounded-lg shadow p-6">
 
                 {{-- ERROR DEBUG --}}
@@ -94,7 +98,7 @@
                 {{-- SEARCH --}}
                 <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div class="w-full md:w-1/3">
-                        <form method="GET" action="{{ route('admin.maximo.index') }}">
+                        <form method="GET" action="{{ route('maximo.index') }}">
                             <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
                             <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
                             <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
@@ -208,17 +212,17 @@
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
+                                                <a href="{{ route('maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
                                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                     Detail
                                                 </a>
                                                 @if(strtoupper($wo['status']) === 'APPR')
-                                                    <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
+                                                    <form method="POST" action="{{ route('maximo.jobcard.generate') }}" class="inline">
                                                         @csrf
                                                         <input type="hidden" name="wonum" value="{{ $wo['wonum'] }}">
-                                                        <button type="submit"
-                                                            class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
-                                                            onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
+                                                        <button type="submit" 
+                                                                class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                                                                onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
                                                             Generate Jobcard
                                                         </button>
                                                     </form>
@@ -355,7 +359,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <a href="{{ route('admin.maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
+                                            <a href="{{ route('maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
                                                class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                 Detail
                                             </a>
@@ -461,4 +465,128 @@
         word-break: break-word;
     }
 </style>
+
+<!-- Modal PDF Editor -->
+<div id="pdfEditorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-[90vw] h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center p-2 border-b">
+            <span class="font-bold">Edit Jobcard PDF</span>
+            <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
+        </div>
+        <div class="flex-1 w-full h-full overflow-auto flex items-center justify-center">
+            <iframe id="pdfjs-viewer" src="" style="width:100%;height:100%;border:none;"></iframe>
+        </div>
+        <div class="flex justify-end gap-2 p-4 border-t">
+            <form method="GET" action="{{ route('maximo.jobcard.download') }}" id="downloadForm" class="inline">
+                <input type="hidden" name="path" id="downloadPath" value="">
+                <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    Download
+                </button>
+            </form>
+            <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let pdfSaved = false;
+let currentPdfPath = '';
+
+function openPdfEditor(pdfUrl, pdfPath) {
+    pdfSaved = false;
+    currentPdfPath = pdfPath;
+    document.getElementById('pdfEditorModal').classList.remove('hidden');
+    document.getElementById('pdfjs-viewer').src = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
+    document.getElementById('downloadPath').value = pdfPath;
+    document.body.style.overflow = 'hidden';
+}
+
+function closePdfEditor(force = false) {
+    if (!pdfSaved && !force) {
+        if (!confirm('Anda belum menyimpan perubahan PDF ke server. Yakin ingin keluar tanpa menyimpan?')) {
+            return;
+        }
+    }
+    document.getElementById('pdfEditorModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Cegah klik di luar modal menutup modal tanpa konfirmasi
+const pdfEditorModal = document.getElementById('pdfEditorModal');
+if (pdfEditorModal) {
+    pdfEditorModal.addEventListener('mousedown', function(e) {
+        if (e.target === pdfEditorModal) {
+            closePdfEditor();
+        }
+    });
+}
+
+// Cegah ESC menutup modal tanpa konfirmasi
+window.addEventListener('keydown', function(e) {
+    if (pdfEditorModal && !pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
+        closePdfEditor();
+    }
+});
+
+function saveEditedPdf(blob) {
+    const formData = new FormData();
+    formData.append('document', blob, currentPdfPath.split('/').pop());
+    formData.append('path', currentPdfPath);
+    formData.append('_token', '{{ csrf_token() }}');
+    
+    fetch("{{ route('maximo.jobcard.update') }}", {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            pdfSaved = true;
+            alert('Jobcard berhasil diupdate di server!');
+            closePdfEditor(true);
+        } else {
+            alert('Gagal upload PDF ke server: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch((err) => {
+        console.error('Upload error:', err);
+        alert('Gagal upload PDF ke server. Silakan cek koneksi atau ulangi.');
+    });
+}
+
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'save-pdf' && event.data.data) {
+        let blob = null;
+        if (event.data.data instanceof ArrayBuffer) {
+            blob = new Blob([event.data.data], { type: 'application/pdf' });
+        } else if (event.data.data instanceof Object) {
+            const arr = new Uint8Array(Object.values(event.data.data));
+            blob = new Blob([arr], { type: 'application/pdf' });
+        }
+        if (blob) {
+            saveEditedPdf(blob);
+        } else {
+            alert('Gagal membaca data PDF hasil edit.');
+        }
+    }
+});
+
+document.getElementById('savePdfBtn').addEventListener('click', function() {
+    const iframe = document.getElementById('pdfjs-viewer').contentWindow;
+    iframe.postMessage({ type: 'request-save-pdf' }, '*');
+});
+
+function toggleDropdown() {
+    var dropdown = document.getElementById('dropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+document.addEventListener('click', function(event) {
+    var userDropdown = document.getElementById('dropdown');
+    var userBtn = document.getElementById('dropdownToggle');
+    if (userDropdown && !userDropdown.classList.contains('hidden') && !userBtn.contains(event.target) && !userDropdown.contains(event.target)) {
+        userDropdown.classList.add('hidden');
+    }
+});
+</script>
 @endsection
