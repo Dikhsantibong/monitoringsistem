@@ -464,92 +464,324 @@
         white-space: normal;
         word-break: break-word;
     }
+    .active-tool {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+    #pdfViewerContainer {
+        scroll-behavior: smooth;
+    }
+    #pdfPages canvas {
+        display: block;
+    }
 </style>
 
-<!-- Modal PDF Editor -->
+<!-- Modal PDF Editor Custom -->
 <div id="pdfEditorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg w-[90vw] h-[90vh] flex flex-col">
-        <div class="flex justify-between items-center p-2 border-b">
-            <span class="font-bold">Edit Jobcard PDF</span>
-            <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
+    <div class="bg-white rounded-lg shadow-lg w-[95vw] h-[95vh] flex flex-col">
+        <!-- Header dengan Tools -->
+        <div class="flex justify-between items-center p-3 border-b bg-gray-50">
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-lg">Edit Jobcard PDF</span>
+                <div class="flex items-center gap-2 border-l pl-3 ml-3">
+                    <button id="toolPen" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 active-tool" data-tool="pen">
+                        ✏️ Menulis
+                    </button>
+                    <button id="toolEraser" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700" data-tool="eraser">
+                        🧹 Hapus
+                    </button>
+                    <button id="toolSignature" class="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700" data-tool="signature">
+                        ✍️ Tanda Tangan
+                    </button>
+                    <button id="toolClear" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700" onclick="clearAllDrawings()">
+                        🗑️ Hapus Semua
+                    </button>
+                </div>
+            </div>
+            <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-2xl font-bold">&times;</button>
         </div>
-        <div class="flex-1 w-full h-full overflow-auto flex items-center justify-center">
-            <iframe id="pdfjs-viewer" src="" style="width:100%;height:100%;border:none;"></iframe>
+        
+        <!-- PDF Viewer Container -->
+        <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 p-4" style="max-height: calc(95vh - 120px);">
+            <div id="pdfPages" class="flex flex-col items-center gap-4"></div>
         </div>
-        <div class="flex justify-end gap-2 p-4 border-t">
-            <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" id="downloadForm" class="inline">
-                <input type="hidden" name="path" id="downloadPath" value="">
-                <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                    Download
+        
+        <!-- Footer dengan Actions -->
+        <div class="flex justify-between items-center p-3 border-t bg-gray-50">
+            <div class="text-sm text-gray-600">
+                <span id="pageInfo">Halaman: -</span>
+            </div>
+            <div class="flex gap-2">
+                <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" id="downloadForm" class="inline">
+                    <input type="hidden" name="path" id="downloadPath" value="">
+                    <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">
+                        Download
+                    </button>
+                </form>
+                <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                    Simpan Perubahan
                 </button>
-            </form>
-            <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Signature -->
+<div id="signatureModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
+        <span class="font-bold mb-3 text-lg">Gambar Tanda Tangan</span>
+        <canvas id="signature-canvas" width="600" height="200" class="border-2 border-gray-300 mb-3 cursor-crosshair"></canvas>
+        <div class="flex gap-2">
+            <button onclick="clearSignature()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">Bersihkan</button>
+            <button onclick="saveSignature()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Gunakan</button>
+            <button onclick="closeSignatureModal()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Batal</button>
         </div>
     </div>
 </div>
 
 <script>
+// Load PDF.js dynamically
+let pdfjsLib = null;
+async function loadPdfJs() {
+    if (pdfjsLib) return pdfjsLib;
+    
+    try {
+        // Try to load as ES module
+        const module = await import('{{ asset('pdf.js/build/pdf.mjs') }}');
+        pdfjsLib = module;
+        window.pdfjsLib = module;
+        module.GlobalWorkerOptions.workerSrc = '{{ asset('pdf.js/build/pdf.worker.mjs') }}';
+        return module;
+    } catch (e) {
+        console.error('[Jobcard] Error loading PDF.js:', e);
+        throw new Error('Gagal memuat PDF.js library');
+    }
+}
+
 let pdfSaved = false;
 let currentPdfPath = '';
+let currentPdfDoc = null;
+let currentTool = 'pen';
+let isDrawing = false;
+let drawingCanvases = {}; // Store drawing canvas per page
+let pdfPages = [];
+let signatureImage = null;
 
-function openPdfEditor(pdfUrl, pdfPath) {
+// Tool selection
+document.addEventListener('DOMContentLoaded', function() {
+    const tools = ['toolPen', 'toolEraser', 'toolSignature'];
+    tools.forEach(toolId => {
+        const btn = document.getElementById(toolId);
+        if (btn) {
+            btn.addEventListener('click', function() {
+                // Remove active class from all tools
+                tools.forEach(t => {
+                    const b = document.getElementById(t);
+                    if (b) b.classList.remove('active-tool');
+                });
+                // Add active class to clicked tool
+                this.classList.add('active-tool');
+                currentTool = this.dataset.tool;
+                console.log('[Jobcard] Tool changed to:', currentTool);
+                
+                // Update all drawing canvases with new tool settings
+                updateDrawingCanvasesTool();
+            });
+        }
+    });
+});
+
+function updateDrawingCanvasesTool() {
+    Object.keys(drawingCanvases).forEach(pageNum => {
+        const canvas = drawingCanvases[pageNum];
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = currentTool === 'pen' ? '#000000' : (currentTool === 'eraser' ? '#FFFFFF' : '#000000');
+        ctx.lineWidth = currentTool === 'pen' ? 2 : (currentTool === 'eraser' ? 20 : 2);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+    });
+}
+
+async function openPdfEditor(pdfUrl, pdfPath) {
     console.log('[Jobcard] openPdfEditor called', { pdfUrl, pdfPath });
     pdfSaved = false;
     currentPdfPath = pdfPath;
+    drawingCanvases = {};
+    pdfPages = [];
 
     const modal = document.getElementById('pdfEditorModal');
-    const iframe = document.getElementById('pdfjs-viewer');
+    const container = document.getElementById('pdfPages');
 
-    if (!modal || !iframe) {
-        console.error('[Jobcard] Modal atau iframe PDF.js tidak ditemukan di DOM');
+    if (!modal || !container) {
+        console.error('[Jobcard] Modal atau container tidak ditemukan');
         return;
     }
 
-    // Cek apakah file PDF bisa diakses
-    fetch(pdfUrl, { method: 'HEAD' })
-        .then(res => {
-            console.log('[Jobcard] HEAD request jobcard', { status: res.status, ok: res.ok, url: pdfUrl });
-            if (!res.ok) {
-                console.error('[Jobcard] PDF tidak bisa diakses, status:', res.status);
-            }
-        })
-        .catch(err => {
-            console.error('[Jobcard] Gagal melakukan HEAD request ke PDF', err);
-        });
-
     modal.classList.remove('hidden');
-    const viewerUrl = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
-    console.log('[Jobcard] set iframe src ke viewerUrl', viewerUrl);
-
-    iframe.onload = function () {
-        try {
-            console.log('[Jobcard] iframe viewer.html onload');
-            const win = iframe.contentWindow;
-            if (!win) {
-                console.error('[Jobcard] contentWindow iframe null');
-                return;
-            }
-            const app = win.PDFViewerApplication;
-            if (!app) {
-                console.error('[Jobcard] PDFViewerApplication tidak tersedia di viewer (cek MIME type .mjs dan konfigurasi server)');
-            } else {
-                console.log('[Jobcard] PDFViewerApplication terdeteksi', {
-                    initialized: app.initialized,
-                    url: app.url
-                });
-            }
-        } catch (err) {
-            console.error('[Jobcard] Error saat inspeksi iframe PDF.js', err);
-        }
-    };
-
-    iframe.onerror = function (e) {
-        console.error('[Jobcard] iframe viewer.html onerror', e);
-    };
-
-    iframe.src = viewerUrl;
-    document.getElementById('downloadPath').value = pdfPath;
+    container.innerHTML = '<div class="text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><p class="mt-2">Memuat PDF...</p></div>';
     document.body.style.overflow = 'hidden';
+    document.getElementById('downloadPath').value = pdfPath;
+
+    try {
+        // Load PDF.js library first
+        pdfjsLib = await loadPdfJs();
+        
+        // Load PDF using PDF.js
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        currentPdfDoc = await loadingTask.promise;
+        
+        console.log('[Jobcard] PDF loaded, pages:', currentPdfDoc.numPages);
+        document.getElementById('pageInfo').textContent = `Halaman: 1 / ${currentPdfDoc.numPages}`;
+        
+        container.innerHTML = '';
+        
+        // Render all pages
+        for (let pageNum = 1; pageNum <= currentPdfDoc.numPages; pageNum++) {
+            await renderPage(pageNum, container);
+        }
+        
+    } catch (error) {
+        console.error('[Jobcard] Error loading PDF:', error);
+        container.innerHTML = '<div class="text-center py-8 text-red-600"><p>Gagal memuat PDF: ' + error.message + '</p></div>';
+    }
+}
+
+async function renderPage(pageNum, container) {
+    try {
+        const page = await currentPdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1.5 });
+        
+        // Create page wrapper
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = 'relative bg-white shadow-lg';
+        pageWrapper.style.width = viewport.width + 'px';
+        pageWrapper.id = `page-wrapper-${pageNum}`;
+        
+        // Create PDF canvas
+        const pdfCanvas = document.createElement('canvas');
+        pdfCanvas.className = 'block';
+        pdfCanvas.width = viewport.width;
+        pdfCanvas.height = viewport.height;
+        pdfCanvas.id = `pdf-canvas-${pageNum}`;
+        
+        // Create drawing canvas overlay
+        const drawCanvas = document.createElement('canvas');
+        drawCanvas.className = 'absolute top-0 left-0 cursor-crosshair';
+        drawCanvas.width = viewport.width;
+        drawCanvas.height = viewport.height;
+        drawCanvas.id = `draw-canvas-${pageNum}`;
+        drawCanvas.style.zIndex = '10';
+        
+        drawingCanvases[pageNum] = drawCanvas;
+        pdfPages.push({ pageNum, pdfCanvas, drawCanvas, viewport });
+        
+        // Render PDF to canvas
+        const context = pdfCanvas.getContext('2d');
+        await page.render({
+            canvasContext: context,
+            viewport: viewport
+        }).promise;
+        
+        // Setup drawing on overlay canvas
+        setupDrawingCanvas(drawCanvas, pageNum);
+        
+        pageWrapper.appendChild(pdfCanvas);
+        pageWrapper.appendChild(drawCanvas);
+        container.appendChild(pageWrapper);
+        
+    } catch (error) {
+        console.error(`[Jobcard] Error rendering page ${pageNum}:`, error);
+    }
+}
+
+function setupDrawingCanvas(canvas, pageNum) {
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = currentTool === 'pen' ? '#000000' : (currentTool === 'eraser' ? '#FFFFFF' : '#000000');
+    ctx.lineWidth = currentTool === 'pen' ? 2 : (currentTool === 'eraser' ? 20 : 2);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    let lastX = 0;
+    let lastY = 0;
+    
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+    
+    function startDrawing(e) {
+        isDrawing = true;
+        const pos = getMousePos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+        
+        if (currentTool === 'signature' && signatureImage) {
+            ctx.drawImage(signatureImage, pos.x - 100, pos.y - 50, 200, 100);
+            isDrawing = false;
+        }
+    }
+    
+    function draw(e) {
+        if (!isDrawing || currentTool === 'signature') return;
+        
+        const pos = getMousePos(e);
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        
+        lastX = pos.x;
+        lastY = pos.y;
+    }
+    
+    function stopDrawing() {
+        isDrawing = false;
+    }
+    
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+    
+    // Touch support
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+    });
+    
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+    });
+    
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        const mouseEvent = new MouseEvent('mouseup', {});
+        canvas.dispatchEvent(mouseEvent);
+    });
+}
+
+function clearAllDrawings() {
+    if (!confirm('Hapus semua gambar/tulisan yang sudah dibuat?')) return;
+    
+    Object.values(drawingCanvases).forEach(canvas => {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
 }
 
 function closePdfEditor(force = false) {
@@ -560,7 +792,131 @@ function closePdfEditor(force = false) {
     }
     document.getElementById('pdfEditorModal').classList.add('hidden');
     document.body.style.overflow = '';
+    currentPdfDoc = null;
+    drawingCanvases = {};
+    pdfPages = [];
 }
+
+// Signature Modal Functions
+function openSignatureModal() {
+    document.getElementById('signatureModal').classList.remove('hidden');
+    const canvas = document.getElementById('signature-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+    
+    canvas.onmousedown = (e) => {
+        isDrawing = true;
+        const pos = getPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+    };
+    
+    canvas.onmousemove = (e) => {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        lastX = pos.x;
+        lastY = pos.y;
+    };
+    
+    canvas.onmouseup = () => { isDrawing = false; };
+    canvas.onmouseleave = () => { isDrawing = false; };
+}
+
+function clearSignature() {
+    const canvas = document.getElementById('signature-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function saveSignature() {
+    const canvas = document.getElementById('signature-canvas');
+    signatureImage = new Image();
+    signatureImage.src = canvas.toDataURL();
+    closeSignatureModal();
+    currentTool = 'signature';
+    document.getElementById('toolSignature').classList.add('active-tool');
+    document.getElementById('toolPen').classList.remove('active-tool');
+    document.getElementById('toolEraser').classList.remove('active-tool');
+}
+
+function closeSignatureModal() {
+    document.getElementById('signatureModal').classList.add('hidden');
+}
+
+// Update tool button to open signature modal
+document.addEventListener('DOMContentLoaded', function() {
+    const sigBtn = document.getElementById('toolSignature');
+    if (sigBtn) {
+        sigBtn.addEventListener('click', function() {
+            if (!signatureImage) {
+                openSignatureModal();
+            } else {
+                currentTool = 'signature';
+            }
+        });
+    }
+});
+
+// Save PDF with drawings
+document.getElementById('savePdfBtn').addEventListener('click', async function() {
+    if (!currentPdfDoc) {
+        alert('PDF tidak dimuat');
+        return;
+    }
+    
+    try {
+        // Convert all drawing canvases to images
+        const drawingImages = {};
+        Object.keys(drawingCanvases).forEach(pageNum => {
+            const canvas = drawingCanvases[pageNum];
+            if (canvas) {
+                drawingImages[pageNum] = canvas.toDataURL('image/png');
+            }
+        });
+        
+        // Send to server to merge PDF + drawings
+        const formData = new FormData();
+        formData.append('path', currentPdfPath);
+        formData.append('drawings', JSON.stringify(drawingImages));
+        formData.append('_token', '{{ csrf_token() }}');
+        
+        const response = await fetch("{{ route('admin.maximo.jobcard.update') }}", {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            pdfSaved = true;
+            alert('Jobcard berhasil diupdate di server!');
+            closePdfEditor(true);
+        } else {
+            alert('Gagal update jobcard: ' + (data.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('[Jobcard] Error saving PDF:', error);
+        alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+    }
+});
 
 // Cegah klik di luar modal menutup modal tanpa konfirmasi
 const pdfEditorModal = document.getElementById('pdfEditorModal');
@@ -577,57 +933,6 @@ window.addEventListener('keydown', function(e) {
     if (pdfEditorModal && !pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
         closePdfEditor();
     }
-});
-
-function saveEditedPdf(blob) {
-    const formData = new FormData();
-    formData.append('document', blob, currentPdfPath.split('/').pop());
-    formData.append('path', currentPdfPath);
-    formData.append('_token', '{{ csrf_token() }}');
-    
-    fetch("{{ route('admin.maximo.jobcard.update') }}", {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            pdfSaved = true;
-            alert('Jobcard berhasil diupdate di server!');
-            closePdfEditor(true);
-        } else {
-            alert('Gagal upload PDF ke server: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch((err) => {
-        console.error('Upload error:', err);
-        alert('Gagal upload PDF ke server. Silakan cek koneksi atau ulangi.');
-    });
-}
-
-window.addEventListener('message', function(event) {
-    console.log('[Jobcard] window message event', event);
-    if (event.data && event.data.type === 'save-pdf' && event.data.data) {
-        let blob = null;
-        if (event.data.data instanceof ArrayBuffer) {
-            blob = new Blob([event.data.data], { type: 'application/pdf' });
-        } else if (event.data.data instanceof Object) {
-            const arr = new Uint8Array(Object.values(event.data.data));
-            blob = new Blob([arr], { type: 'application/pdf' });
-        }
-        if (blob) {
-            console.log('[Jobcard] menerima blob dari viewer, ukuran (bytes):', blob.size);
-            saveEditedPdf(blob);
-        } else {
-            console.error('[Jobcard] gagal membentuk Blob dari data yang diterima');
-            alert('Gagal membaca data PDF hasil edit.');
-        }
-    }
-});
-
-document.getElementById('savePdfBtn').addEventListener('click', function() {
-    const iframe = document.getElementById('pdfjs-viewer').contentWindow;
-    iframe.postMessage({ type: 'request-save-pdf' }, '*');
 });
 
 function toggleDropdown() {

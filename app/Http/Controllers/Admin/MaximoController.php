@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Barryvdh\DomPDF\Facade\Pdf;
+use setasign\Fpdi\Fpdi;
 
 class MaximoController extends Controller
 {
@@ -471,27 +472,88 @@ class MaximoController extends Controller
         try {
             $filePath = $request->input('path');
             
-            if (!$filePath) {
-                return response()->json(['success' => false, 'message' => 'Path tidak valid.']);
+            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+                return response()->json(['success' => false, 'message' => 'Path tidak valid atau file tidak ditemukan.']);
             }
 
-            if (!$request->hasFile('document')) {
-                return response()->json(['success' => false, 'message' => 'File tidak ditemukan.']);
-            }
-
-            $file = $request->file('document');
+            $drawingsJson = $request->input('drawings');
+            $drawings = json_decode($drawingsJson, true);
             
-            // Validasi file PDF
-            if ($file->getClientOriginalExtension() !== 'pdf') {
-                return response()->json(['success' => false, 'message' => 'File harus berformat PDF.']);
+            if (!$drawings || empty($drawings)) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada gambar drawing yang dikirim.']);
             }
 
-            // Simpan file yang sudah di-edit
-            Storage::disk('public')->put($filePath, file_get_contents($file));
+            // Path file PDF asli
+            $originalPdfPath = Storage::disk('public')->path($filePath);
+            
+            if (!file_exists($originalPdfPath)) {
+                return response()->json(['success' => false, 'message' => 'File PDF asli tidak ditemukan.']);
+            }
+            
+            // Buat temporary directory jika belum ada
+            $tempDir = storage_path('app/temp');
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0777, true);
+            }
+            
+            // Buat PDF baru dengan FPDI
+            $pdf = new Fpdi();
+            
+            // Import halaman dari PDF asli
+            $pageCount = $pdf->setSourceFile($originalPdfPath);
+            
+            // Loop setiap halaman dan tambahkan gambar drawing jika ada
+            for ($pageNum = 1; $pageNum <= $pageCount; $pageNum++) {
+                // Import halaman dari PDF asli
+                $templateId = $pdf->importPage($pageNum);
+                $size = $pdf->getTemplateSize($templateId);
+                
+                // Tambahkan halaman baru dengan orientasi yang sama
+                $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
+                $pdf->AddPage($orientation, [$size['width'], $size['height']]);
+                
+                // Render halaman PDF asli
+                $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height']);
+                
+                // Tambahkan gambar drawing jika ada untuk halaman ini
+                if (isset($drawings[$pageNum])) {
+                    $drawingBase64 = $drawings[$pageNum];
+                    
+                    // Decode base64 image
+                    if (preg_match('/data:image\/(\w+);base64,(.+)/', $drawingBase64, $matches)) {
+                        $imageType = strtolower($matches[1]);
+                        $imageData = base64_decode($matches[2]);
+                        
+                        // Simpan temporary image
+                        $tempImagePath = $tempDir . '/drawing_' . $pageNum . '_' . time() . '.' . $imageType;
+                        file_put_contents($tempImagePath, $imageData);
+                        
+                        // Validasi format gambar yang didukung
+                        $supportedFormats = ['png', 'jpg', 'jpeg'];
+                        if (in_array($imageType, $supportedFormats)) {
+                            // Tambahkan gambar ke PDF
+                            $pdf->Image($tempImagePath, 0, 0, $size['width'], $size['height'], strtoupper($imageType), '', '', false, 300);
+                        }
+                        
+                        // Hapus temporary image
+                        @unlink($tempImagePath);
+                    }
+                }
+            }
+            
+            // Simpan PDF yang sudah digabungkan
+            $outputPdf = $pdf->Output('S');
+            Storage::disk('public')->put($filePath, $outputPdf);
+            
+            // Cleanup temp directory
+            $tempFiles = glob($tempDir . '/drawing_*');
+            foreach ($tempFiles as $tempFile) {
+                @unlink($tempFile);
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Jobcard berhasil diupdate!'
+                'message' => 'Jobcard berhasil diupdate dengan gambar drawing!'
             ]);
 
         } catch (\Throwable $e) {
@@ -499,6 +561,7 @@ class MaximoController extends Controller
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['success' => false, 'message' => 'Gagal update jobcard: ' . $e->getMessage()]);
         }
