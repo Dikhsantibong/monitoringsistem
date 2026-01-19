@@ -502,9 +502,11 @@
         </div>
         
         <!-- PDF Viewer Container dengan iframe -->
-        <div id="pdfViewerContainer" class="flex-1 overflow-hidden bg-gray-200 relative" style="max-height: calc(95vh - 120px);">
-            <iframe id="pdfIframe" src="" style="width:100%;height:100%;border:none;pointer-events:none;"></iframe>
-            <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;z-index:10;pointer-events:auto;background:transparent;"></canvas>
+        <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px);">
+            <div id="pdfWrapper" style="position:relative;width:100%;">
+                <iframe id="pdfIframe" src="" style="width:100%;min-height:100%;border:none;pointer-events:auto;"></iframe>
+                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:default;z-index:10;pointer-events:none;background:transparent;"></canvas>
+            </div>
         </div>
         
         <!-- Footer dengan Actions -->
@@ -568,6 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.add('active-tool');
                 currentTool = this.dataset.tool;
                 updateDrawingCanvasTool();
+                updateCanvasCursor();
             });
         }
     });
@@ -587,42 +590,86 @@ function updateDrawingCanvasTool() {
         // Eraser: gunakan destination-out untuk menghapus hanya drawing, bukan PDF di bawahnya
         drawingCtx.globalCompositeOperation = 'destination-out';
         drawingCtx.strokeStyle = 'rgba(0,0,0,1)'; // Warna tidak penting untuk destination-out
-        drawingCtx.lineWidth = 25;
+        drawingCtx.lineWidth = 20;
     } else {
         // Pen dan Signature: gunakan source-over untuk menambahkan drawing di atas PDF
         drawingCtx.globalCompositeOperation = 'source-over';
         drawingCtx.strokeStyle = '#000000';
-        drawingCtx.lineWidth = 3;
+        // Ketebalan seperti pulpen (1.5px)
+        drawingCtx.lineWidth = 1.5;
     }
     
     drawingCtx.lineCap = 'round';
     drawingCtx.lineJoin = 'round';
 }
 
+function updateCanvasCursor() {
+    if (!drawingCanvas) return;
+    
+    // Ubah cursor berdasarkan tool yang aktif
+    // Pointer-events akan diatur dinamis saat mouse down/up
+    if (currentTool === 'pen') {
+        drawingCanvas.style.cursor = 'crosshair';
+    } else if (currentTool === 'eraser') {
+        drawingCanvas.style.cursor = 'grab';
+    } else if (currentTool === 'signature') {
+        drawingCanvas.style.cursor = 'crosshair';
+    } else {
+        // Default: biarkan scroll PDF (nonaktifkan canvas)
+        drawingCanvas.style.cursor = 'default';
+        drawingCanvas.style.pointerEvents = 'none';
+        // Aktifkan scroll container
+        const container = document.getElementById('pdfViewerContainer');
+        if (container) {
+            container.style.overflow = 'auto';
+        }
+        return;
+    }
+    
+    // Aktifkan canvas untuk tool drawing, tapi biarkan scroll bekerja
+    // Canvas akan menangkap event saat mouse down untuk drawing
+    drawingCanvas.style.pointerEvents = 'auto';
+    const container = document.getElementById('pdfViewerContainer');
+    if (container) {
+        container.style.overflow = 'auto'; // Tetap aktifkan scroll
+    }
+}
+
 function setupDrawingCanvas() {
     if (!drawingCanvas || !drawingCtx) return;
     
-    // Resize canvas to match container
+    // Resize canvas to match container dan iframe
     const container = document.getElementById('pdfViewerContainer');
-    if (container) {
+    const pdfWrapper = document.getElementById('pdfWrapper');
+    const iframe = document.getElementById('pdfIframe');
+    
+    if (container && pdfWrapper && iframe) {
         const resizeCanvas = () => {
-            const oldWidth = drawingCanvas.width;
-            const oldHeight = drawingCanvas.height;
-            drawingCanvas.width = container.clientWidth;
-            drawingCanvas.height = container.clientHeight;
+            // Canvas mengikuti ukuran wrapper (yang mengikuti iframe)
+            const wrapperRect = pdfWrapper.getBoundingClientRect();
+            drawingCanvas.width = wrapperRect.width;
+            drawingCanvas.height = Math.max(wrapperRect.height, container.clientHeight);
             
             // Set background transparan untuk canvas
             drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
             
             updateDrawingCanvasTool();
+            updateCanvasCursor();
         };
+        
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
+        
+        // Update canvas saat iframe load
+        iframe.addEventListener('load', () => {
+            setTimeout(resizeCanvas, 100); // Delay untuk memastikan iframe sudah render
+        });
     }
     
     // Pastikan canvas memiliki background transparan
     drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     updateDrawingCanvasTool();
+    updateCanvasCursor();
     
     let lastX = 0;
     let lastY = 0;
@@ -636,27 +683,46 @@ function setupDrawingCanvas() {
     }
     
     function startDrawing(e) {
-        isDrawing = true;
-        const pos = getMousePos(e);
-        lastX = pos.x;
-        lastY = pos.y;
-        
-        // Update tool settings setiap kali mulai drawing
-        updateDrawingCanvasTool();
-        
-        if (currentTool === 'signature' && signatureImage) {
-            // Untuk signature, gunakan source-over
-            drawingCtx.globalCompositeOperation = 'source-over';
-            drawingCtx.drawImage(signatureImage, pos.x - 100, pos.y - 50, 200, 100);
-            isDrawing = false;
-        } else {
-            drawingCtx.beginPath();
-            drawingCtx.moveTo(lastX, lastY);
+        // Hanya aktif jika tool drawing dipilih
+        if (currentTool === 'pen' || currentTool === 'eraser' || currentTool === 'signature') {
+            e.preventDefault(); // Prevent default untuk memungkinkan drawing
+            e.stopPropagation(); // Stop propagation agar tidak trigger scroll
+            isDrawing = true;
+            
+            // Nonaktifkan scroll saat mulai drawing
+            const container = document.getElementById('pdfViewerContainer');
+            if (container) {
+                container.style.overflow = 'hidden';
+            }
+            
+            const pos = getMousePos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+            
+            // Update tool settings setiap kali mulai drawing
+            updateDrawingCanvasTool();
+            
+            if (currentTool === 'signature' && signatureImage) {
+                // Untuk signature, gunakan source-over
+                drawingCtx.globalCompositeOperation = 'source-over';
+                drawingCtx.drawImage(signatureImage, pos.x - 100, pos.y - 50, 200, 100);
+                isDrawing = false;
+                // Aktifkan kembali scroll setelah signature
+                if (container) {
+                    container.style.overflow = 'auto';
+                }
+            } else {
+                drawingCtx.beginPath();
+                drawingCtx.moveTo(lastX, lastY);
+            }
         }
     }
     
     function draw(e) {
         if (!isDrawing || currentTool === 'signature') return;
+        
+        e.preventDefault(); // Prevent default untuk memungkinkan drawing
+        e.stopPropagation(); // Stop propagation agar tidak trigger scroll
         
         const pos = getMousePos(e);
         drawingCtx.lineTo(pos.x, pos.y);
@@ -665,11 +731,21 @@ function setupDrawingCanvas() {
         lastY = pos.y;
     }
     
-    function stopDrawing() {
+    function stopDrawing(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         if (isDrawing) {
             drawingCtx.stroke();
         }
         isDrawing = false;
+        
+        // Aktifkan kembali scroll setelah selesai drawing
+        const container = document.getElementById('pdfViewerContainer');
+        if (container) {
+            container.style.overflow = 'auto';
+        }
     }
     
     drawingCanvas.addEventListener('mousedown', startDrawing);
@@ -730,13 +806,23 @@ function openPdfEditor(pdfUrl, pdfPath) {
         drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     }
     
-    // Resize canvas to match container
+    // Resize canvas saat PDF editor dibuka
     const container = document.getElementById('pdfViewerContainer');
-    if (container && drawingCanvas) {
-        drawingCanvas.width = container.clientWidth;
-        drawingCanvas.height = container.clientHeight;
-        updateDrawingCanvasTool();
+    const pdfWrapper = document.getElementById('pdfWrapper');
+    const iframe = document.getElementById('pdfIframe');
+    
+    if (container && pdfWrapper && iframe && drawingCanvas) {
+        // Tunggu iframe load dulu
+        setTimeout(() => {
+            const wrapperRect = pdfWrapper.getBoundingClientRect();
+            drawingCanvas.width = wrapperRect.width;
+            drawingCanvas.height = Math.max(wrapperRect.height, container.clientHeight);
+            updateDrawingCanvasTool();
+            updateCanvasCursor();
+        }, 200);
     }
+    
+    updateCanvasCursor();
 }
 
 function clearAllDrawings() {
