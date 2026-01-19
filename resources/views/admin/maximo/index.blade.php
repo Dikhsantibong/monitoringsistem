@@ -211,7 +211,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <div class="flex items-center justify-center gap-2 flex-wrap">
+                                            <div class="flex items-center justify-center gap-2">
                                                 <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
                                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                     Detail
@@ -224,21 +224,6 @@
                                                                 class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
                                                                 onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
                                                             Generate Jobcard
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                                @if(isset($wo['jobcard_exists']) && $wo['jobcard_exists'] && isset($wo['jobcard_path']) && isset($wo['jobcard_url']))
-                                                    <button onclick="openPdfEditor('{{ $wo['jobcard_url'] }}', '{{ $wo['jobcard_path'] }}')" 
-                                                            class="inline-flex items-center px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs"
-                                                            title="Preview & Edit Jobcard">
-                                                        Preview
-                                                    </button>
-                                                    <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" class="inline">
-                                                        <input type="hidden" name="path" value="{{ $wo['jobcard_path'] }}">
-                                                        <button type="submit" 
-                                                                class="inline-flex items-center px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs"
-                                                                title="Download Jobcard">
-                                                            Download
                                                         </button>
                                                     </form>
                                                 @endif
@@ -479,952 +464,110 @@
         white-space: normal;
         word-break: break-word;
     }
-    .active-tool {
-        opacity: 0.8;
-        transform: scale(0.95);
-    }
-    #pdfViewerContainer {
-        scroll-behavior: smooth;
-    }
-    #pdfPagesContainer canvas {
-        display: block;
-        margin-bottom: 8px;
-    }
-    #pdfWrapper {
-        width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        position: relative !important;
-        overflow: visible !important;
-    }
-    #pdfViewerContainer {
-        padding: 0 !important;
-        margin: 0 !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-    }
-    /* Canvas mengisi penuh wrapper agar coretan ikut scroll dengan dokumen PDF */
-    #pdfWrapper #drawingCanvas {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-    }
 </style>
 
-<!-- Modal PDF Editor Custom -->
+<!-- Modal PDF Editor -->
 <div id="pdfEditorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg w-[95vw] h-[95vh] flex flex-col">
-        <!-- Header dengan Tools -->
-        <div class="flex justify-between items-center p-3 border-b bg-gray-50">
-            <div class="flex items-center gap-3">
-                <span class="font-bold text-lg">Edit Jobcard PDF</span>
-                <div class="flex items-center gap-2 border-l pl-3 ml-3">
-                    <button id="toolPen" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 active-tool" data-tool="pen">
-                        ✏️ Menulis
-                    </button>
-                    <button id="toolEraser" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700" data-tool="eraser">
-                        🧹 Hapus
-                    </button>
-                    <button id="toolSignature" class="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700" data-tool="signature">
-                        ✍️ Tanda Tangan
-                    </button>
-                    <button id="toolClear" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700" onclick="clearAllDrawings()">
-                        🗑️ Hapus Semua
-                    </button>
-                </div>
-            </div>
-            <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-2xl font-bold">&times;</button>
+    <div class="bg-white rounded-lg shadow-lg w-[90vw] h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center p-2 border-b">
+            <span class="font-bold">Edit Jobcard PDF</span>
+            <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
         </div>
-        
-        <!-- PDF Viewer: render dengan PDF.js agar seluruh dokumen (semua halaman) terlihat saat scroll -->
-        <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px); padding:0; margin:0; width:100%;">
-            <div id="pdfWrapper" style="position:relative;width:100%;padding:0;margin:0;display:block;">
-                <div id="pdfPagesContainer" style="width:100%;display:block;position:relative;"></div>
-                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
-            </div>
+        <div class="flex-1 w-full h-full overflow-auto flex items-center justify-center">
+            <iframe id="pdfjs-viewer" src="" style="width:100%;height:100%;border:none;"></iframe>
         </div>
-        
-        <!-- Footer dengan Actions -->
-        <div class="flex justify-between items-center p-3 border-t bg-gray-50">
-            <div class="text-sm text-gray-600">
-                <span id="pageInfo">PDF Editor</span>
-            </div>
-            <div class="flex gap-2">
-                <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" id="downloadForm" class="inline">
-                    <input type="hidden" name="path" id="downloadPath" value="">
-                    <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">
-                        Download
-                    </button>
-                </form>
-                <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-                    Simpan Perubahan
+        <div class="flex justify-end gap-2 p-4 border-t">
+            <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" id="downloadForm" class="inline">
+                <input type="hidden" name="path" id="downloadPath" value="">
+                <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    Download
                 </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Signature -->
-<div id="signatureModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
-        <span class="font-bold mb-3 text-lg">Gambar Tanda Tangan</span>
-        <canvas id="signature-canvas" width="600" height="200" class="border-2 border-gray-300 mb-3 cursor-crosshair"></canvas>
-        <div class="flex gap-2">
-            <button onclick="clearSignature()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">Bersihkan</button>
-            <button onclick="saveSignature()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Gunakan</button>
-            <button onclick="closeSignatureModal()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Batal</button>
+            </form>
+            <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
         </div>
     </div>
 </div>
 
 <script>
-// Deklarasi variabel global
 let pdfSaved = false;
 let currentPdfPath = '';
-let currentPdfUrl = '';
-let currentTool = 'pen';
-let isDrawing = false;
-let drawingCanvas = null;
-let drawingCtx = null;
-let signatureImage = null;
-let canvasOffset = { x: 0, y: 0 };
-let canvasScale = { x: 1, y: 1 };
-let isResizingCanvas = false; // Flag untuk mencegah resize bersamaan
 
-// Deklarasi fungsi global di awal (sebelum DOMContentLoaded)
-// Pastikan fungsi tersedia untuk dipanggil dari inline onclick
-window.openPdfEditor = function(pdfUrl, pdfPath) {
+function openPdfEditor(pdfUrl, pdfPath) {
+    console.log('[Jobcard] openPdfEditor called', { pdfUrl, pdfPath });
     pdfSaved = false;
     currentPdfPath = pdfPath;
-    currentPdfUrl = pdfUrl;
 
     const modal = document.getElementById('pdfEditorModal');
-    const container = document.getElementById('pdfViewerContainer');
-    const pdfWrapper = document.getElementById('pdfWrapper');
-    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
+    const iframe = document.getElementById('pdfjs-viewer');
 
-    if (!modal || !container || !pdfWrapper || !pdfPagesContainer || !drawingCanvas) {
-        console.error('[Jobcard] Modal atau elemen PDF tidak ditemukan');
+    if (!modal || !iframe) {
+        console.error('[Jobcard] Modal atau iframe PDF.js tidak ditemukan di DOM');
         return;
     }
 
+    // Cek apakah file PDF bisa diakses
+    fetch(pdfUrl, { method: 'HEAD' })
+        .then(res => {
+            console.log('[Jobcard] HEAD request jobcard', { status: res.status, ok: res.ok, url: pdfUrl });
+            if (!res.ok) {
+                console.error('[Jobcard] PDF tidak bisa diakses, status:', res.status);
+            }
+        })
+        .catch(err => {
+            console.error('[Jobcard] Gagal melakukan HEAD request ke PDF', err);
+        });
+
     modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('downloadPath').value = pdfPath;
-    
-    // Clear previous drawings
-    if (drawingCtx && drawingCanvas) {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    }
-    
-    if (container) { container.style.padding = '0'; container.style.margin = '0'; }
-    if (pdfWrapper) { pdfWrapper.style.padding = '0'; pdfWrapper.style.margin = '0'; }
-    
-    pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Memuat PDF...</div>';
-    pdfWrapper.style.height = '200px';
-    
-    // ============================================================
-    // RENDER PDF DENGAN PDF.JS (public/pdf.js)
-    // ============================================================
-    // Render seluruh dokumen: tiap halaman jadi canvas, ditumpuk vertikal.
-    // Tinggi wrapper = jumlah semua halaman → scroll container menampilkan dokumen penuh.
-    (async function() {
+    const viewerUrl = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
+    console.log('[Jobcard] set iframe src ke viewerUrl', viewerUrl);
+
+    iframe.onload = function () {
         try {
-            // Load PDF.js dari public/pdf.js
-            const pdfjs = await import('{{ asset("pdf.js/build/pdf.mjs") }}');
-            pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdf.js/build/pdf.worker.mjs") }}';
-            
-            // Load PDF document
-            const doc = await pdfjs.getDocument({ url: pdfUrl }).promise;
-            const numPages = doc.numPages;
-            const containerWidth = Math.max(container.clientWidth || 800, 400);
-            let totalHeight = 0;
-            const gapBetweenPages = 8;
-            pdfPagesContainer.innerHTML = '';
-            
-            // Render setiap halaman ke canvas dan tumpuk vertikal
-            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-                const page = await doc.getPage(pageNum);
-                const viewport1x = page.getViewport({ scale: 1 });
-                const scale = containerWidth / viewport1x.width; // Scale untuk fit lebar container
-                const viewport = page.getViewport({ scale });
-                
-                // Buat canvas untuk halaman ini
-                const pageCanvas = document.createElement('canvas');
-                pageCanvas.width = viewport.width;
-                pageCanvas.height = viewport.height;
-                pageCanvas.style.display = 'block';
-                pageCanvas.style.marginBottom = (pageNum < numPages ? gapBetweenPages : 0) + 'px';
-                
-                // Render halaman ke canvas
-                const ctx = pageCanvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                
-                // Tambahkan ke container
-                pdfPagesContainer.appendChild(pageCanvas);
-                totalHeight += viewport.height + (pageNum < numPages ? gapBetweenPages : 0);
+            console.log('[Jobcard] iframe viewer.html onload');
+            const win = iframe.contentWindow;
+            if (!win) {
+                console.error('[Jobcard] contentWindow iframe null');
+                return;
             }
-            
-            // Set tinggi wrapper = total tinggi semua halaman
-            pdfWrapper.style.height = totalHeight + 'px';
-            pdfWrapper.style.minHeight = totalHeight + 'px';
-            pdfWrapper.style.overflow = 'visible';
-            
-            // Update drawing canvas: simpan coretan yang ada, resize, restore
-            let savedImageData = null;
-            if (drawingCanvas.width > 0 && drawingCanvas.height > 0 && drawingCtx) {
-                try {
-                    savedImageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-                } catch (e) {
-                    console.warn('[Jobcard] Tidak bisa save image data:', e);
-                }
+            const app = win.PDFViewerApplication;
+            if (!app) {
+                console.error('[Jobcard] PDFViewerApplication tidak tersedia di viewer (cek MIME type .mjs dan konfigurasi server)');
+            } else {
+                console.log('[Jobcard] PDFViewerApplication terdeteksi', {
+                    initialized: app.initialized,
+                    url: app.url
+                });
             }
-            
-            // Resize drawing canvas sesuai total tinggi dokumen
-            drawingCanvas.width = containerWidth;
-            drawingCanvas.height = totalHeight;
-            
-            // Restore coretan yang sudah ada
-            if (savedImageData && savedImageData.data && drawingCtx) {
-                try {
-                    drawingCtx.putImageData(savedImageData, 0, 0);
-                } catch (e) {
-                    console.warn('[Jobcard] Tidak bisa restore image data:', e);
-                }
-            }
-            
-            // Set style: canvas isi penuh wrapper agar coretan ikut scroll dengan dokumen
-            drawingCanvas.style.position = 'absolute';
-            drawingCanvas.style.top = '0';
-            drawingCanvas.style.left = '0';
-            drawingCanvas.style.right = '0';
-            drawingCanvas.style.bottom = '0';
-            drawingCanvas.style.width = '100%';
-            drawingCanvas.style.height = '100%';
-            
-            // Setup container scroll
-            container.style.overflow = 'auto';
-            container.style.overflowY = 'auto';
-            container.style.overflowX = 'hidden';
-            
-            // Initialize tools dan handlers
-            if (typeof setupScrollHandler === 'function') setupScrollHandler();
-            if (typeof updateDrawingCanvasTool === 'function') updateDrawingCanvasTool();
-            if (typeof updateCanvasCursor === 'function') updateCanvasCursor();
-            
-            // Set default tool ke Pen
-            currentTool = 'pen';
-            const toolPen = document.getElementById('toolPen');
-            if (toolPen) {
-                document.querySelectorAll('[data-tool]').forEach(btn => btn.classList.remove('active-tool'));
-                toolPen.classList.add('active-tool');
-            }
-            
-            console.log('[Jobcard] PDF dirender dengan PDF.js:', numPages, 'halaman, tinggi total:', totalHeight, 'px');
-        } catch (e) {
-            console.error('[Jobcard] Gagal memuat PDF dengan PDF.js:', e);
-            pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#c00;">Gagal memuat PDF. ' + (e.message || 'Unknown error') + '</div>';
+        } catch (err) {
+            console.error('[Jobcard] Error saat inspeksi iframe PDF.js', err);
         }
-    })();
-    
-    // Setup scroll handler untuk memastikan canvas mengikuti scroll
-    function setupScrollHandler() {
-        const container = document.getElementById('pdfViewerContainer');
-        const pdfWrapper = document.getElementById('pdfWrapper');
-        
-        if (!container || !pdfWrapper || !drawingCanvas) return;
-        
-        // Pastikan hanya container yang memiliki scrollbar
-        container.style.overflow = 'auto';
-        container.style.overflowY = 'auto';
-        container.style.overflowX = 'hidden';
-        
-        // Pastikan wrapper tidak memiliki scrollbar sendiri
-        pdfWrapper.style.overflow = 'visible';
-        
-        // Handler scroll: canvas sudah absolute di dalam wrapper, jadi ikut scroll otomatis
-        // Tidak perlu resize canvas saat scroll karena akan menghapus gambar
-        container.addEventListener('scroll', () => {
-            // Canvas ikut scroll otomatis karena absolute di dalam wrapper
-        }, { passive: true });
-    }
-    
-    // Default tool: Pen. Scroll pakai scrollbar kanan atau roda mouse (satu mekanisme scroll).
-    currentTool = 'pen';
-    const toolPen = document.getElementById('toolPen');
-    if (toolPen) {
-        document.querySelectorAll('[data-tool]').forEach(btn => btn.classList.remove('active-tool'));
-        toolPen.classList.add('active-tool');
-    }
-    
-    if (typeof updateCanvasCursor === 'function') {
-        updateCanvasCursor();
-    }
-};
+    };
 
-window.clearAllDrawings = function() {
-    if (!confirm('Hapus semua gambar/tulisan yang sudah dibuat?')) return;
-    
-    if (drawingCtx && drawingCanvas) {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    }
-};
+    iframe.onerror = function (e) {
+        console.error('[Jobcard] iframe viewer.html onerror', e);
+    };
 
-window.closePdfEditor = function(force = false) {
+    iframe.src = viewerUrl;
+    document.getElementById('downloadPath').value = pdfPath;
+    document.body.style.overflow = 'hidden';
+}
+
+function closePdfEditor(force = false) {
     if (!pdfSaved && !force) {
         if (!confirm('Anda belum menyimpan perubahan PDF ke server. Yakin ingin keluar tanpa menyimpan?')) {
             return;
         }
     }
-    const modal = document.getElementById('pdfEditorModal');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
+    document.getElementById('pdfEditorModal').classList.add('hidden');
     document.body.style.overflow = '';
-    
-    // Clear isi PDF (render PDF.js)
-    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
-    if (pdfPagesContainer) {
-        pdfPagesContainer.innerHTML = '';
-    }
-    
-    // Clear drawings
-    if (drawingCtx && drawingCanvas) {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    }
-};
-
-window.openSignatureModal = function() {
-    const modal = document.getElementById('signatureModal');
-    if (!modal) return;
-    
-    modal.classList.remove('hidden');
-    const canvas = document.getElementById('signature-canvas');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    
-    let isDrawing = false;
-    let lastX = 0;
-    let lastY = 0;
-    
-    function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-    }
-    
-    canvas.onmousedown = (e) => {
-        isDrawing = true;
-        const pos = getPos(e);
-        lastX = pos.x;
-        lastY = pos.y;
-    };
-    
-    canvas.onmousemove = (e) => {
-        if (!isDrawing) return;
-        const pos = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        lastX = pos.x;
-        lastY = pos.y;
-    };
-    
-    canvas.onmouseup = () => { isDrawing = false; };
-    canvas.onmouseleave = () => { isDrawing = false; };
-};
-
-window.clearSignature = function() {
-    const canvas = document.getElementById('signature-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-};
-
-window.saveSignature = function() {
-    const canvas = document.getElementById('signature-canvas');
-    if (!canvas) return;
-    
-    signatureImage = new Image();
-    signatureImage.src = canvas.toDataURL();
-    window.closeSignatureModal();
-    currentTool = 'signature';
-    
-    const toolSignature = document.getElementById('toolSignature');
-    const toolPen = document.getElementById('toolPen');
-    const toolEraser = document.getElementById('toolEraser');
-    
-    if (toolSignature) toolSignature.classList.add('active-tool');
-    if (toolPen) toolPen.classList.remove('active-tool');
-    if (toolEraser) toolEraser.classList.remove('active-tool');
-};
-
-window.closeSignatureModal = function() {
-    const modal = document.getElementById('signatureModal');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
-};
-
-// Tool selection
-document.addEventListener('DOMContentLoaded', function() {
-    const tools = ['toolPen', 'toolEraser', 'toolSignature'];
-    tools.forEach(toolId => {
-        const btn = document.getElementById(toolId);
-        if (btn) {
-            btn.addEventListener('click', function() {
-                // Remove active class from all tools
-                tools.forEach(t => {
-                    const b = document.getElementById(t);
-                    if (b) b.classList.remove('active-tool');
-                });
-                // Add active class to clicked tool
-                this.classList.add('active-tool');
-                currentTool = this.dataset.tool;
-                updateDrawingCanvasTool();
-                updateCanvasCursor();
-            });
-        }
-    });
-    
-    // Setup drawing canvas
-    drawingCanvas = document.getElementById('drawingCanvas');
-    if (drawingCanvas) {
-        drawingCtx = drawingCanvas.getContext('2d');
-        setupDrawingCanvas();
-    }
-});
-
-function updateDrawingCanvasTool() {
-    if (!drawingCtx) return;
-    
-    if (currentTool === 'eraser') {
-        // Eraser: gunakan destination-out untuk menghapus hanya drawing, bukan PDF di bawahnya
-        drawingCtx.globalCompositeOperation = 'destination-out';
-        drawingCtx.strokeStyle = 'rgba(0,0,0,1)'; // Warna tidak penting untuk destination-out
-        drawingCtx.lineWidth = 20;
-    } else {
-        // Pen dan Signature: gunakan source-over untuk menambahkan drawing di atas PDF
-        drawingCtx.globalCompositeOperation = 'source-over';
-        drawingCtx.strokeStyle = '#000000';
-        // Ketebalan seperti pulpen (1.5px)
-        drawingCtx.lineWidth = 1.5;
-    }
-    
-    drawingCtx.lineCap = 'round';
-    drawingCtx.lineJoin = 'round';
 }
-
-function updateCanvasCursor() {
-    if (!drawingCanvas) return;
-    
-    const container = document.getElementById('pdfViewerContainer');
-    
-    // Ubah cursor berdasarkan tool yang aktif
-    if (currentTool === 'pen') {
-        drawingCanvas.style.cursor = 'crosshair';
-    } else if (currentTool === 'eraser') {
-        drawingCanvas.style.cursor = 'grab';
-    } else if (currentTool === 'signature') {
-        drawingCanvas.style.cursor = 'crosshair';
-    } else {
-        drawingCanvas.style.cursor = 'default';
-        if (container) {
-            container.style.overflow = 'auto';
-            container.style.overflowY = 'auto';
-            container.style.overflowX = 'hidden';
-        }
-        drawingCanvas.style.pointerEvents = 'auto'; // untuk wheel scroll
-        return;
-    }
-    
-    // Aktifkan canvas untuk tool drawing, tapi biarkan scroll container bekerja
-    // Canvas akan menangkap event saat mouse down untuk drawing
-    drawingCanvas.style.pointerEvents = 'auto';
-    if (container) {
-        container.style.overflow = 'auto'; // Tetap aktifkan scroll container
-        container.style.overflowY = 'auto';
-        container.style.overflowX = 'hidden';
-    }
-}
-
-function setupDrawingCanvas() {
-    if (!drawingCanvas || !drawingCtx) return;
-    
-    const container = document.getElementById('pdfViewerContainer');
-    const pdfWrapper = document.getElementById('pdfWrapper');
-    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
-    
-    if (container && pdfWrapper && pdfPagesContainer) {
-        const resizeCanvas = () => {
-            try {
-                if (isResizingCanvas || isDrawing) return;
-                
-                // Tinggi dari #pdfPagesContainer (render PDF.js) atau wrapper
-                let contentHeight = Math.max(
-                    pdfPagesContainer.scrollHeight || 0,
-                    pdfPagesContainer.offsetHeight || 0,
-                    pdfWrapper.scrollHeight || 0,
-                    pdfWrapper.offsetHeight || 0,
-                    container.scrollHeight || 0
-                );
-                contentHeight = Math.max(contentHeight, container.clientHeight || 800, 1000);
-                
-                // Dapatkan lebar container yang sebenarnya (tanpa padding)
-                const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
-                
-                // Hanya resize jika perbedaannya signifikan (lebih dari 100px) untuk menghindari gambar hilang
-                const oldWidth = drawingCanvas.width;
-                const oldHeight = drawingCanvas.height;
-                
-                if (Math.abs(oldWidth - containerWidth) > 10 || Math.abs(oldHeight - contentHeight) > 100) {
-                    isResizingCanvas = true; // Set flag untuk mencegah resize bersamaan
-                    
-                    // Simpan drawing yang sudah ada sebelum resize
-                    let savedImageData = null;
-                    if (drawingCanvas.width > 0 && drawingCanvas.height > 0) {
-                        try {
-                            savedImageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-                        } catch (e) {
-                            console.log('[Jobcard] Tidak bisa save image data di resizeCanvas:', e);
-                        }
-                    }
-                    
-                    // Set canvas size sesuai konten - pastikan lebar 100%
-                    drawingCanvas.width = containerWidth;
-                    drawingCanvas.height = contentHeight;
-                    
-                    // Set canvas style: isi penuh wrapper agar coretan ikut scroll dengan PDF
-                    drawingCanvas.style.position = 'absolute';
-                    drawingCanvas.style.top = '0';
-                    drawingCanvas.style.left = '0';
-                    drawingCanvas.style.right = '0';
-                    drawingCanvas.style.bottom = '0';
-                    drawingCanvas.style.width = '100%';
-                    drawingCanvas.style.height = '100%';
-                    
-                    // Restore drawing jika ada
-                    if (savedImageData && savedImageData.data) {
-                        try {
-                            drawingCtx.putImageData(savedImageData, 0, 0);
-                            console.log('[Jobcard] Drawing restored di resizeCanvas');
-                        } catch (e) {
-                            console.log('[Jobcard] Tidak bisa restore image data di resizeCanvas:', e);
-                        }
-                    }
-                    
-                    isResizingCanvas = false; // Reset flag setelah selesai resize
-                }
-                
-                if (pdfWrapper) {
-                    pdfWrapper.style.width = '100%';
-                    pdfWrapper.style.height = contentHeight + 'px';
-                    pdfWrapper.style.minHeight = contentHeight + 'px';
-                    pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
-                }
-                
-                // Pastikan container bisa scroll seluruh konten
-                if (container) {
-                    container.style.overflow = 'auto';
-                    container.style.overflowY = 'auto';
-                    container.style.overflowX = 'hidden';
-                }
-                
-                // JANGAN clear canvas di sini karena akan menghapus gambar yang sudah digambar
-                // Canvas sudah transparan secara default, tidak perlu clearRect
-                
-                updateDrawingCanvasTool();
-                updateCanvasCursor();
-                
-                console.log('[Jobcard] Canvas resized:', containerWidth, 'x', contentHeight);
-            } catch (error) {
-                console.error('[Jobcard] Error in resizeCanvas:', error);
-                isResizingCanvas = false; // Reset flag jika error
-            }
-        };
-        
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        
-        // Setup monitor untuk update canvas height saat scroll (isi dari pdfPagesContainer)
-        let heightCheckInterval = null;
-        function setupCanvasHeightMonitor() {
-            // Clear interval yang sudah ada
-            if (heightCheckInterval) {
-                clearInterval(heightCheckInterval);
-            }
-            
-            const updateCanvasHeight = () => {
-                try {
-                    // Tinggi dari pdfPagesContainer (render PDF.js) atau wrapper
-                    let contentHeight = Math.max(
-                        pdfPagesContainer.scrollHeight || 0,
-                        pdfPagesContainer.offsetHeight || 0,
-                        pdfWrapper.scrollHeight || 0,
-                        pdfWrapper.offsetHeight || 0,
-                        container.scrollHeight || 0
-                    );
-                    contentHeight = Math.max(contentHeight, container.clientHeight || 800, 1000);
-                    
-                    // Update canvas height jika berbeda (threshold lebih besar untuk menghindari resize terlalu sering)
-                    const oldHeight = drawingCanvas.height;
-                    
-                    // Hanya resize jika perbedaannya signifikan (lebih dari 100px) untuk menghindari gambar hilang
-                    // Threshold lebih besar untuk menghindari resize terlalu sering yang menyebabkan gambar hilang
-                    // Jangan resize jika sedang dalam proses resize atau sedang drawing
-                    if (!isResizingCanvas && !isDrawing && Math.abs(oldHeight - contentHeight) > 100) {
-                        isResizingCanvas = true; // Set flag untuk mencegah resize bersamaan
-                        
-                        // Simpan drawing yang sudah ada sebelum resize
-                        let savedImageData = null;
-                        if (drawingCanvas.width > 0 && drawingCanvas.height > 0) {
-                            try {
-                                // Simpan seluruh gambar yang ada
-                                savedImageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-                            } catch (e) {
-                                console.log('[Jobcard] Tidak bisa save image data:', e);
-                            }
-                        }
-                        
-                        // Dapatkan lebar container yang sebenarnya
-                        const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
-                        
-                        // Update canvas width dan height (atribut untuk koordinat gambar)
-                        drawingCanvas.width = containerWidth;
-                        drawingCanvas.height = contentHeight;
-                        // Style: isi penuh wrapper agar coretan ikut scroll dengan dokumen
-                        drawingCanvas.style.position = 'absolute';
-                        drawingCanvas.style.top = '0';
-                        drawingCanvas.style.left = '0';
-                        drawingCanvas.style.right = '0';
-                        drawingCanvas.style.bottom = '0';
-                        drawingCanvas.style.width = '100%';
-                        drawingCanvas.style.height = '100%';
-                        
-                        if (pdfWrapper) {
-                            pdfWrapper.style.width = '100%';
-                            pdfWrapper.style.height = contentHeight + 'px';
-                            pdfWrapper.style.minHeight = contentHeight + 'px';
-                            pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
-                        }
-                        
-                        // Pastikan container bisa scroll seluruh konten
-                        if (container) {
-                            container.style.overflow = 'auto';
-                            container.style.overflowY = 'auto';
-                            container.style.overflowX = 'hidden';
-                        }
-                        
-                        // Restore drawing jika ada - PASTIKAN restore setelah resize
-                        if (savedImageData && savedImageData.data) {
-                            try {
-                                // Restore gambar ke canvas yang baru di-resize
-                                // Gunakan putImageData dengan offset 0,0 untuk memastikan gambar kembali ke posisi awal
-                                drawingCtx.putImageData(savedImageData, 0, 0);
-                                console.log('[Jobcard] Drawing restored setelah resize');
-                            } catch (e) {
-                                console.log('[Jobcard] Tidak bisa restore image data:', e);
-                            }
-                        }
-                        
-                        isResizingCanvas = false; // Reset flag setelah selesai resize
-                        console.log('[Jobcard] Canvas size updated:', containerWidth, 'x', contentHeight);
-                    } else {
-                        // Pastikan style selalu sinkron meskipun tidak resize.
-                        // PENTING: Mengubah drawingCanvas.width MERESET isi canvas.
-                        // Hanya ubah width jika benar-benar beda, dan simpan/restore coretan.
-                        const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
-                        if (drawingCanvas.width !== containerWidth) {
-                            let saved = null;
-                            if (drawingCanvas.width > 0 && drawingCanvas.height > 0 && drawingCtx) {
-                                try { saved = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height); } catch (e) {}
-                            }
-                            drawingCanvas.width = containerWidth;
-                            drawingCanvas.style.width = '100%';
-                            drawingCanvas.style.right = '0';
-                            drawingCanvas.style.bottom = '0';
-                            if (saved && saved.data && drawingCtx) {
-                                try { drawingCtx.putImageData(saved, 0, 0); } catch (e) {}
-                            }
-                        }
-                        drawingCanvas.style.height = '100%';
-                        if (pdfWrapper) {
-                            pdfWrapper.style.width = '100%';
-                            pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
-                        }
-                    }
-                } catch (error) {
-                    console.error('[Jobcard] Error updating canvas height:', error);
-                }
-            };
-            
-            // Update canvas height hanya saat scroll (debounce). JANGAN pakai setInterval:
-            // periodic resize berisiko mengubah canvas width/height dan mereset coretan.
-            let scrollTimeout = null;
-            container.addEventListener('scroll', () => {
-                if (scrollTimeout) clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(updateCanvasHeight, 300);
-            }, { passive: true });
-            
-            // TIDAK pakai setInterval(updateCanvasHeight): panggilan berkala bisa
-            // mengubah drawingCanvas.width/height dan menghapus coretan user.
-            // heightCheckInterval = setInterval(updateCanvasHeight, 2000); // dinonaktifkan
-            
-            // Clear interval saat modal ditutup
-            const modal = document.getElementById('pdfEditorModal');
-            if (modal) {
-                const observer = new MutationObserver(() => {
-                    if (modal.classList.contains('hidden')) {
-                        if (heightCheckInterval) {
-                            clearInterval(heightCheckInterval);
-                            heightCheckInterval = null;
-                        }
-                        observer.disconnect();
-                    }
-                });
-                observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-            }
-        }
-        
-        // Initial setup monitor
-        setupCanvasHeightMonitor();
-    }
-    
-    // JANGAN clear canvas di sini karena akan menghapus gambar yang sudah digambar
-    // Canvas sudah transparan secara default
-    updateDrawingCanvasTool();
-    updateCanvasCursor();
-    
-    let lastX = 0;
-    let lastY = 0;
-    
-    function getMousePos(e) {
-        const container = document.getElementById('pdfViewerContainer');
-        const rect = drawingCanvas.getBoundingClientRect();
-        
-        // Canvas sudah absolute di dalam wrapper yang di-scroll oleh container
-        // getBoundingClientRect() sudah memberikan posisi relatif terhadap viewport
-        // yang sudah memperhitungkan scroll, jadi langsung gunakan saja
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-    }
-    
-    function startDrawing(e) {
-        // Hanya aktif jika tool drawing dipilih
-        if (currentTool === 'pen' || currentTool === 'eraser' || currentTool === 'signature') {
-            e.preventDefault(); // Prevent default untuk memungkinkan drawing
-            e.stopPropagation(); // Stop propagation agar tidak trigger scroll
-            isDrawing = true;
-            
-            // Nonaktifkan scroll saat mulai drawing
-            const container = document.getElementById('pdfViewerContainer');
-            if (container) {
-                container.style.overflow = 'hidden';
-            }
-            
-            const pos = getMousePos(e);
-            lastX = pos.x;
-            lastY = pos.y;
-            
-            // Update tool settings setiap kali mulai drawing
-            updateDrawingCanvasTool();
-            
-            if (currentTool === 'signature' && signatureImage) {
-                // Untuk signature, gunakan source-over
-                drawingCtx.globalCompositeOperation = 'source-over';
-                drawingCtx.drawImage(signatureImage, pos.x - 100, pos.y - 50, 200, 100);
-                isDrawing = false;
-                // Aktifkan kembali scroll setelah signature
-                if (container) {
-                    container.style.overflow = 'auto';
-                }
-            } else {
-                drawingCtx.beginPath();
-                drawingCtx.moveTo(lastX, lastY);
-            }
-        }
-    }
-    
-    function draw(e) {
-        if (!isDrawing || currentTool === 'signature') return;
-        
-        e.preventDefault(); // Prevent default untuk memungkinkan drawing
-        e.stopPropagation(); // Stop propagation agar tidak trigger scroll
-        
-        const pos = getMousePos(e);
-        drawingCtx.lineTo(pos.x, pos.y);
-        drawingCtx.stroke();
-        lastX = pos.x;
-        lastY = pos.y;
-    }
-    
-    function stopDrawing(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        if (isDrawing) {
-            drawingCtx.stroke();
-        }
-        isDrawing = false;
-        
-        // Aktifkan kembali scroll setelah selesai drawing
-        const container = document.getElementById('pdfViewerContainer');
-        if (container) {
-            container.style.overflow = 'auto';
-        }
-    }
-    
-    // Event listeners untuk drawing
-    drawingCanvas.addEventListener('mousedown', function(e) {
-        startDrawing(e);
-    });
-    drawingCanvas.addEventListener('mousemove', draw);
-    drawingCanvas.addEventListener('mouseup', stopDrawing);
-    drawingCanvas.addEventListener('mouseleave', stopDrawing);
-    
-    // Wheel: selalu scroll #pdfViewerContainer (sumber yang sama dengan scrollbar)
-    // agar coretan ikut—satu mekanisme scroll: scrollbar dan roda mouse
-    drawingCanvas.addEventListener('wheel', function(e) {
-        const container = document.getElementById('pdfViewerContainer');
-        if (!container) return;
-        e.preventDefault();
-        e.stopPropagation();
-        container.scrollTop += e.deltaY;
-        container.scrollLeft += (e.deltaX || 0);
-    }, { passive: false });
-    
-    // Touch support
-    drawingCanvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const mouseEvent = new MouseEvent('mousedown', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        });
-        drawingCanvas.dispatchEvent(mouseEvent);
-    });
-    
-    drawingCanvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const mouseEvent = new MouseEvent('mousemove', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        });
-        drawingCanvas.dispatchEvent(mouseEvent);
-    });
-    
-    drawingCanvas.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        const mouseEvent = new MouseEvent('mouseup', {});
-        drawingCanvas.dispatchEvent(mouseEvent);
-    });
-}
-
-// Update tool button to open signature modal
-document.addEventListener('DOMContentLoaded', function() {
-    const sigBtn = document.getElementById('toolSignature');
-    if (sigBtn) {
-        sigBtn.addEventListener('click', function() {
-            if (!signatureImage) {
-                window.openSignatureModal();
-            } else {
-                currentTool = 'signature';
-            }
-        });
-    }
-});
-
-// Save PDF with drawings — coretan/tulisan digabung ke PDF dan menjadi bagian dokumen yang tercatat
-document.getElementById('savePdfBtn').addEventListener('click', async function() {
-    if (!drawingCanvas || !currentPdfPath) {
-        alert('PDF tidak dimuat');
-        return;
-    }
-    
-    // Disable button untuk prevent double click
-    const saveBtn = document.getElementById('savePdfBtn');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Menyimpan...';
-    
-    try {
-        // Seluruh layer coretan (seluruh halaman) dijadikan gambar dan digabung ke PDF di server
-        const drawingImage = drawingCanvas.toDataURL('image/png');
-        
-        // Validasi apakah ada drawing yang dibuat (cek apakah ada pixel yang tidak transparan)
-        const imageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-        let hasDrawing = false;
-        for (let i = 0; i < imageData.data.length; i += 4) {
-            // Cek alpha channel (index 3 dari setiap 4 byte: R, G, B, A)
-            const alpha = imageData.data[i + 3];
-            if (alpha > 0) {
-                // Cek apakah ini bukan hanya background putih/transparan
-                const r = imageData.data[i];
-                const g = imageData.data[i + 1];
-                const b = imageData.data[i + 2];
-                // Jika ada warna atau alpha > 0, berarti ada drawing
-                if (alpha > 10 || (r > 0 || g > 0 || b > 0)) {
-                    hasDrawing = true;
-                    break;
-                }
-            }
-        }
-        
-        if (!hasDrawing) {
-            // Biarkan user tetap bisa save meskipun tidak ada drawing (untuk clear drawing)
-            console.log('[Jobcard] Tidak ada drawing yang dibuat, tetap lanjutkan save');
-        }
-        
-        // Send to server to merge PDF + drawing
-        const formData = new FormData();
-        formData.append('path', currentPdfPath);
-        formData.append('drawing', drawingImage);
-        formData.append('_token', '{{ csrf_token() }}');
-        
-        const response = await fetch("{{ route('admin.maximo.jobcard.update') }}", {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            pdfSaved = true;
-            alert('Jobcard berhasil diupdate di server!');
-            window.closePdfEditor(true);
-        } else {
-            alert('Gagal update jobcard: ' + (data.message || 'Unknown error'));
-            saveBtn.disabled = false;
-            saveBtn.textContent = 'Simpan Perubahan';
-        }
-    } catch (error) {
-        console.error('[Jobcard] Error saving PDF:', error);
-        alert('Gagal menyimpan perubahan. Silakan coba lagi.');
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Simpan Perubahan';
-    }
-});
 
 // Cegah klik di luar modal menutup modal tanpa konfirmasi
 const pdfEditorModal = document.getElementById('pdfEditorModal');
 if (pdfEditorModal) {
     pdfEditorModal.addEventListener('mousedown', function(e) {
         if (e.target === pdfEditorModal) {
-            window.closePdfEditor();
+            closePdfEditor();
         }
     });
 }
@@ -1432,8 +575,59 @@ if (pdfEditorModal) {
 // Cegah ESC menutup modal tanpa konfirmasi
 window.addEventListener('keydown', function(e) {
     if (pdfEditorModal && !pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
-        window.closePdfEditor();
+        closePdfEditor();
     }
+});
+
+function saveEditedPdf(blob) {
+    const formData = new FormData();
+    formData.append('document', blob, currentPdfPath.split('/').pop());
+    formData.append('path', currentPdfPath);
+    formData.append('_token', '{{ csrf_token() }}');
+    
+    fetch("{{ route('admin.maximo.jobcard.update') }}", {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            pdfSaved = true;
+            alert('Jobcard berhasil diupdate di server!');
+            closePdfEditor(true);
+        } else {
+            alert('Gagal upload PDF ke server: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch((err) => {
+        console.error('Upload error:', err);
+        alert('Gagal upload PDF ke server. Silakan cek koneksi atau ulangi.');
+    });
+}
+
+window.addEventListener('message', function(event) {
+    console.log('[Jobcard] window message event', event);
+    if (event.data && event.data.type === 'save-pdf' && event.data.data) {
+        let blob = null;
+        if (event.data.data instanceof ArrayBuffer) {
+            blob = new Blob([event.data.data], { type: 'application/pdf' });
+        } else if (event.data.data instanceof Object) {
+            const arr = new Uint8Array(Object.values(event.data.data));
+            blob = new Blob([arr], { type: 'application/pdf' });
+        }
+        if (blob) {
+            console.log('[Jobcard] menerima blob dari viewer, ukuran (bytes):', blob.size);
+            saveEditedPdf(blob);
+        } else {
+            console.error('[Jobcard] gagal membentuk Blob dari data yang diterima');
+            alert('Gagal membaca data PDF hasil edit.');
+        }
+    }
+});
+
+document.getElementById('savePdfBtn').addEventListener('click', function() {
+    const iframe = document.getElementById('pdfjs-viewer').contentWindow;
+    iframe.postMessage({ type: 'request-save-pdf' }, '*');
 });
 
 function toggleDropdown() {

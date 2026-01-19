@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Barryvdh\DomPDF\Facade\Pdf;
-use setasign\Fpdi\Fpdi;
 
 class MaximoController extends Controller
 {
@@ -297,31 +296,8 @@ class MaximoController extends Controller
     private function formatWorkOrders($workOrders)
     {
         return collect($workOrders)->map(function ($wo) {
-            // Pastikan WONUM di-trim untuk menghilangkan spasi
-            $wonum = isset($wo->wonum) ? trim($wo->wonum) : null;
-            
-            // Cek apakah file jobcard ada di storage
-            $jobcardExists = false;
-            $jobcardPath = null;
-            $jobcardUrl = null;
-            
-            // Pastikan WONUM valid dan tidak kosong
-            if ($wonum && $wonum !== '' && $wonum !== '-') {
-                // Format file path sama persis dengan saat generate
-                $directory = 'jobcards';
-                $filename = 'JOBCARD_' . $wonum . '.pdf';
-                $filePath = $directory . '/' . $filename;
-                
-                // Cek apakah file ada di storage
-                if (Storage::disk('public')->exists($filePath)) {
-                    $jobcardExists = true;
-                    $jobcardPath = $filePath;
-                    $jobcardUrl = asset('storage/' . $filePath);
-                }
-            }
-            
             return [
-                'wonum'       => $wonum ?? '-',
+                'wonum'       => $wo->wonum ?? '-',
                 'parent'      => $wo->parent ?? '-',
                 'status'      => $wo->status ?? '-',
                 'statusdate'  => isset($wo->statusdate) && $wo->statusdate
@@ -343,9 +319,6 @@ class MaximoController extends Controller
                 'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish
                     ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i')
                     : '-',
-                'jobcard_exists' => $jobcardExists,
-                'jobcard_path' => $jobcardPath,
-                'jobcard_url' => $jobcardUrl,
             ];
         });
     }
@@ -377,10 +350,9 @@ class MaximoController extends Controller
     public function generateJobcard(Request $request)
     {
         try {
-            // Pastikan WONUM di-trim untuk konsistensi
-            $wonum = trim($request->input('wonum'));
+            $wonum = $request->input('wonum');
             
-            if (!$wonum || $wonum === '') {
+            if (!$wonum) {
                 return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
             }
 
@@ -499,205 +471,27 @@ class MaximoController extends Controller
         try {
             $filePath = $request->input('path');
             
-            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
-                return response()->json(['success' => false, 'message' => 'Path tidak valid atau file tidak ditemukan.']);
+            if (!$filePath) {
+                return response()->json(['success' => false, 'message' => 'Path tidak valid.']);
             }
 
-            $drawingBase64 = $request->input('drawing');
-            
-            if (!$drawingBase64) {
-                return response()->json(['success' => false, 'message' => 'Tidak ada gambar drawing yang dikirim.']);
+            if (!$request->hasFile('document')) {
+                return response()->json(['success' => false, 'message' => 'File tidak ditemukan.']);
             }
 
-            // Path file PDF asli
-            $originalPdfPath = Storage::disk('public')->path($filePath);
+            $file = $request->file('document');
             
-            if (!file_exists($originalPdfPath)) {
-                return response()->json(['success' => false, 'message' => 'File PDF asli tidak ditemukan.']);
+            // Validasi file PDF
+            if ($file->getClientOriginalExtension() !== 'pdf') {
+                return response()->json(['success' => false, 'message' => 'File harus berformat PDF.']);
             }
-            
-            // Buat temporary directory jika belum ada
-            $tempDir = storage_path('app/temp');
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0777, true);
-            }
-            
-            // Decode base64 drawing image
-            $tempImagePath = null;
-            if (preg_match('/data:image\/(\w+);base64,(.+)/', $drawingBase64, $matches)) {
-                $imageType = strtolower($matches[1]);
-                $imageData = base64_decode($matches[2]);
-                
-                // Simpan temporary image
-                $tempImagePath = $tempDir . '/drawing_' . time() . '.' . $imageType;
-                file_put_contents($tempImagePath, $imageData);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Format gambar drawing tidak valid.']);
-            }
-            
-            // Buat PDF baru dengan FPDI
-            $pdf = new Fpdi();
-            
-            // Import halaman dari PDF asli
-            $pageCount = $pdf->setSourceFile($originalPdfPath);
-            
-            // Dapatkan informasi gambar drawing untuk scaling
-            $drawingImageInfo = null;
-            $firstPageSize = null;
-            $croppedImagePath = null; // Deklarasi di scope yang benar untuk cleanup
-            
-            if (file_exists($tempImagePath) && in_array($imageType, ['png', 'jpg', 'jpeg'])) {
-                // Dapatkan dimensi gambar drawing
-                $drawingImageInfo = @getimagesize($tempImagePath);
-            }
-            
-            // Loop setiap halaman dan tambahkan gambar drawing overlay HANYA di halaman pertama
-            for ($pageNum = 1; $pageNum <= $pageCount; $pageNum++) {
-                // Import halaman dari PDF asli
-                $templateId = $pdf->importPage($pageNum);
-                $size = $pdf->getTemplateSize($templateId);
-                
-                // Simpan ukuran halaman pertama untuk referensi
-                if ($pageNum === 1) {
-                    $firstPageSize = $size;
-                }
-                
-                // Tambahkan halaman baru dengan orientasi yang sama
-                $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
-                $pdf->AddPage($orientation, [$size['width'], $size['height']]);
-                
-                // Render halaman PDF asli TERLEBIH DAHULU (PDF tetap utuh)
-                $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height']);
-                
-                // HANYA tambahkan gambar drawing overlay pada HALAMAN PERTAMA saja
-                // Halaman lainnya hanya render PDF asli tanpa overlay
-                if ($pageNum === 1 && $drawingImageInfo && file_exists($tempImagePath) && $firstPageSize) {
-                    // Dapatkan dimensi gambar drawing
-                    $drawingWidth = $drawingImageInfo[0];
-                    $drawingHeight = $drawingImageInfo[1];
-                    
-                    // Potong gambar drawing hanya untuk area halaman pertama
-                    // Buat gambar baru yang hanya berisi area halaman pertama
-                    $pageHeight = $firstPageSize['height'];
-                    $pageWidth = $firstPageSize['width'];
-                    
-                    // Hitung rasio scaling antara canvas drawing dan halaman PDF
-                    // Canvas drawing biasanya lebih tinggi karena mencakup semua halaman
-                    // Kita perlu memotong hanya bagian halaman pertama
-                    $scaleRatio = $pageWidth / $drawingWidth;
-                    $scaledPageHeight = $drawingHeight * $scaleRatio;
-                    
-                    // SELALU potong gambar hanya untuk tinggi halaman pertama
-                    // Hitung tinggi gambar yang perlu diambil (dalam pixel gambar asli)
-                    $imageHeightToUse = ($pageHeight / $scaleRatio);
-                    
-                    // Pastikan tidak melebihi tinggi gambar asli
-                    $imageHeightToUse = min((int)$imageHeightToUse, $drawingHeight);
-                    
-                    // Buat gambar baru yang dipotong hanya untuk halaman pertama
-                    $croppedImagePath = $tempDir . '/drawing_cropped_' . time() . '.' . $imageType;
-                    
-                    if ($imageType === 'png') {
-                        $sourceImage = imagecreatefrompng($tempImagePath);
-                    } else {
-                        $sourceImage = imagecreatefromjpeg($tempImagePath);
-                    }
-                    
-                    if ($sourceImage) {
-                        // Buat gambar baru dengan ukuran lebar penuh, tinggi hanya halaman pertama
-                        $croppedImage = imagecreatetruecolor($drawingWidth, $imageHeightToUse);
-                        
-                        // Enable alpha blending untuk PNG (transparansi)
-                        if ($imageType === 'png') {
-                            imagealphablending($croppedImage, false);
-                            imagesavealpha($croppedImage, true);
-                            $transparent = imagecolorallocatealpha($croppedImage, 0, 0, 0, 127);
-                            imagefill($croppedImage, 0, 0, $transparent);
-                        }
-                        
-                        // Copy hanya bagian atas gambar (halaman pertama) dari gambar asli
-                        imagecopyresampled(
-                            $croppedImage, 
-                            $sourceImage, 
-                            0, 0,  // Destination x, y
-                            0, 0,  // Source x, y (mulai dari atas kiri)
-                            $drawingWidth, 
-                            $imageHeightToUse, 
-                            $drawingWidth, 
-                            $imageHeightToUse
-                        );
-                        
-                        // Simpan gambar yang sudah dipotong
-                        if ($imageType === 'png') {
-                            imagepng($croppedImage, $croppedImagePath, 9);
-                        } else {
-                            imagejpeg($croppedImage, $croppedImagePath, 100);
-                        }
-                        
-                        imagedestroy($sourceImage);
-                        imagedestroy($croppedImage);
-                        
-                        // Gunakan gambar yang sudah dipotong
-                        $tempImagePath = $croppedImagePath;
-                    }
-                    
-                    // Overlay gambar drawing ke halaman pertama dengan ukuran yang sesuai
-                    $pdf->Image(
-                        $tempImagePath, 
-                        0, 0, 
-                        $pageWidth, $pageHeight, 
-                        strtoupper($imageType), 
-                        '', '', 
-                        false, // link
-                        300, // dpi
-                        '', // align
-                        false, // resize
-                        false, // palign
-                        false, // ismask
-                        false // imgmask
-                    );
-                }
-            }
-            
-            // Simpan PDF yang sudah digabungkan
-            $outputPdf = $pdf->Output('S');
-            
-            // Validasi output PDF tidak kosong
-            if (empty($outputPdf)) {
-                throw new \Exception('PDF output kosong setelah proses merge.');
-            }
-            
-            // Simpan PDF ke storage
-            $saved = Storage::disk('public')->put($filePath, $outputPdf);
-            
-            if (!$saved) {
-                throw new \Exception('Gagal menyimpan PDF ke storage.');
-            }
-            
-            // Verifikasi file tersimpan dengan benar
-            if (!Storage::disk('public')->exists($filePath)) {
-                throw new \Exception('File PDF tidak ditemukan setelah disimpan.');
-            }
-            
-            // Hapus temporary images
-            if ($tempImagePath && file_exists($tempImagePath)) {
-                @unlink($tempImagePath);
-            }
-            
-            // Hapus gambar yang sudah dipotong jika ada
-            if ($croppedImagePath && file_exists($croppedImagePath)) {
-                @unlink($croppedImagePath);
-            }
-            
-            // Cleanup temp directory
-            $tempFiles = glob($tempDir . '/drawing_*');
-            foreach ($tempFiles as $tempFile) {
-                @unlink($tempFile);
-            }
+
+            // Simpan file yang sudah di-edit
+            Storage::disk('public')->put($filePath, file_get_contents($file));
 
             return response()->json([
                 'success' => true,
-                'message' => 'Jobcard berhasil diupdate dengan gambar drawing!'
+                'message' => 'Jobcard berhasil diupdate!'
             ]);
 
         } catch (\Throwable $e) {
@@ -705,7 +499,6 @@ class MaximoController extends Controller
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['success' => false, 'message' => 'Gagal update jobcard: ' . $e->getMessage()]);
         }
