@@ -543,6 +543,7 @@
 </div>
 
 <script>
+// Deklarasi variabel global
 let pdfSaved = false;
 let currentPdfPath = '';
 let currentPdfUrl = '';
@@ -553,6 +554,168 @@ let drawingCtx = null;
 let signatureImage = null;
 let canvasOffset = { x: 0, y: 0 };
 let canvasScale = { x: 1, y: 1 };
+
+// Deklarasi fungsi global di awal (sebelum DOMContentLoaded)
+// Pastikan fungsi tersedia untuk dipanggil dari inline onclick
+window.openPdfEditor = function(pdfUrl, pdfPath) {
+    pdfSaved = false;
+    currentPdfPath = pdfPath;
+    currentPdfUrl = pdfUrl;
+
+    const modal = document.getElementById('pdfEditorModal');
+    const iframe = document.getElementById('pdfIframe');
+
+    if (!modal || !iframe) {
+        console.error('[Jobcard] Modal atau iframe tidak ditemukan');
+        return;
+    }
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('downloadPath').value = pdfPath;
+    
+    // Load PDF in iframe (browser native viewer)
+    iframe.src = pdfUrl;
+    
+    // Clear previous drawings
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
+    
+    // Resize canvas saat PDF editor dibuka
+    const container = document.getElementById('pdfViewerContainer');
+    const pdfWrapper = document.getElementById('pdfWrapper');
+    
+    if (container && pdfWrapper && iframe && drawingCanvas) {
+        // Tunggu iframe load dulu
+        setTimeout(() => {
+            const wrapperRect = pdfWrapper.getBoundingClientRect();
+            drawingCanvas.width = wrapperRect.width;
+            drawingCanvas.height = Math.max(wrapperRect.height, container.clientHeight);
+            if (typeof updateDrawingCanvasTool === 'function') {
+                updateDrawingCanvasTool();
+            }
+            if (typeof updateCanvasCursor === 'function') {
+                updateCanvasCursor();
+            }
+        }, 200);
+    }
+    
+    if (typeof updateCanvasCursor === 'function') {
+        updateCanvasCursor();
+    }
+};
+
+window.clearAllDrawings = function() {
+    if (!confirm('Hapus semua gambar/tulisan yang sudah dibuat?')) return;
+    
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
+};
+
+window.closePdfEditor = function(force = false) {
+    if (!pdfSaved && !force) {
+        if (!confirm('Anda belum menyimpan perubahan PDF ke server. Yakin ingin keluar tanpa menyimpan?')) {
+            return;
+        }
+    }
+    const modal = document.getElementById('pdfEditorModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    document.body.style.overflow = '';
+    
+    // Clear iframe
+    const iframe = document.getElementById('pdfIframe');
+    if (iframe) {
+        iframe.src = '';
+    }
+    
+    // Clear drawings
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
+};
+
+window.openSignatureModal = function() {
+    const modal = document.getElementById('signatureModal');
+    if (!modal) return;
+    
+    modal.classList.remove('hidden');
+    const canvas = document.getElementById('signature-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+    
+    canvas.onmousedown = (e) => {
+        isDrawing = true;
+        const pos = getPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+    };
+    
+    canvas.onmousemove = (e) => {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        lastX = pos.x;
+        lastY = pos.y;
+    };
+    
+    canvas.onmouseup = () => { isDrawing = false; };
+    canvas.onmouseleave = () => { isDrawing = false; };
+};
+
+window.clearSignature = function() {
+    const canvas = document.getElementById('signature-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
+
+window.saveSignature = function() {
+    const canvas = document.getElementById('signature-canvas');
+    if (!canvas) return;
+    
+    signatureImage = new Image();
+    signatureImage.src = canvas.toDataURL();
+    window.closeSignatureModal();
+    currentTool = 'signature';
+    
+    const toolSignature = document.getElementById('toolSignature');
+    const toolPen = document.getElementById('toolPen');
+    const toolEraser = document.getElementById('toolEraser');
+    
+    if (toolSignature) toolSignature.classList.add('active-tool');
+    if (toolPen) toolPen.classList.remove('active-tool');
+    if (toolEraser) toolEraser.classList.remove('active-tool');
+};
+
+window.closeSignatureModal = function() {
+    const modal = document.getElementById('signatureModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+};
 
 // Tool selection
 document.addEventListener('DOMContentLoaded', function() {
@@ -781,150 +944,13 @@ function setupDrawingCanvas() {
     });
 }
 
-function openPdfEditor(pdfUrl, pdfPath) {
-    pdfSaved = false;
-    currentPdfPath = pdfPath;
-    currentPdfUrl = pdfUrl;
-
-    const modal = document.getElementById('pdfEditorModal');
-    const iframe = document.getElementById('pdfIframe');
-
-    if (!modal || !iframe) {
-        console.error('[Jobcard] Modal atau iframe tidak ditemukan');
-        return;
-    }
-
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('downloadPath').value = pdfPath;
-    
-    // Load PDF in iframe (browser native viewer)
-    iframe.src = pdfUrl;
-    
-    // Clear previous drawings
-    if (drawingCtx) {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    }
-    
-    // Resize canvas saat PDF editor dibuka
-    const container = document.getElementById('pdfViewerContainer');
-    const pdfWrapper = document.getElementById('pdfWrapper');
-    const iframe = document.getElementById('pdfIframe');
-    
-    if (container && pdfWrapper && iframe && drawingCanvas) {
-        // Tunggu iframe load dulu
-        setTimeout(() => {
-            const wrapperRect = pdfWrapper.getBoundingClientRect();
-            drawingCanvas.width = wrapperRect.width;
-            drawingCanvas.height = Math.max(wrapperRect.height, container.clientHeight);
-            updateDrawingCanvasTool();
-            updateCanvasCursor();
-        }, 200);
-    }
-    
-    updateCanvasCursor();
-}
-
-function clearAllDrawings() {
-    if (!confirm('Hapus semua gambar/tulisan yang sudah dibuat?')) return;
-    
-    if (drawingCtx && drawingCanvas) {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    }
-}
-
-function closePdfEditor(force = false) {
-    if (!pdfSaved && !force) {
-        if (!confirm('Anda belum menyimpan perubahan PDF ke server. Yakin ingin keluar tanpa menyimpan?')) {
-            return;
-        }
-    }
-    document.getElementById('pdfEditorModal').classList.add('hidden');
-    document.body.style.overflow = '';
-    
-    // Clear iframe
-    const iframe = document.getElementById('pdfIframe');
-    if (iframe) {
-        iframe.src = '';
-    }
-    
-    // Clear drawings
-    if (drawingCtx && drawingCanvas) {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    }
-}
-
-// Signature Modal Functions
-function openSignatureModal() {
-    document.getElementById('signatureModal').classList.remove('hidden');
-    const canvas = document.getElementById('signature-canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    
-    let isDrawing = false;
-    let lastX = 0;
-    let lastY = 0;
-    
-    function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-    }
-    
-    canvas.onmousedown = (e) => {
-        isDrawing = true;
-        const pos = getPos(e);
-        lastX = pos.x;
-        lastY = pos.y;
-    };
-    
-    canvas.onmousemove = (e) => {
-        if (!isDrawing) return;
-        const pos = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        lastX = pos.x;
-        lastY = pos.y;
-    };
-    
-    canvas.onmouseup = () => { isDrawing = false; };
-    canvas.onmouseleave = () => { isDrawing = false; };
-}
-
-function clearSignature() {
-    const canvas = document.getElementById('signature-canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function saveSignature() {
-    const canvas = document.getElementById('signature-canvas');
-    signatureImage = new Image();
-    signatureImage.src = canvas.toDataURL();
-    closeSignatureModal();
-    currentTool = 'signature';
-    document.getElementById('toolSignature').classList.add('active-tool');
-    document.getElementById('toolPen').classList.remove('active-tool');
-    document.getElementById('toolEraser').classList.remove('active-tool');
-}
-
-function closeSignatureModal() {
-    document.getElementById('signatureModal').classList.add('hidden');
-}
-
 // Update tool button to open signature modal
 document.addEventListener('DOMContentLoaded', function() {
     const sigBtn = document.getElementById('toolSignature');
     if (sigBtn) {
         sigBtn.addEventListener('click', function() {
             if (!signatureImage) {
-                openSignatureModal();
+                window.openSignatureModal();
             } else {
                 currentTool = 'signature';
             }
@@ -989,7 +1015,7 @@ document.getElementById('savePdfBtn').addEventListener('click', async function()
         if (data.success) {
             pdfSaved = true;
             alert('Jobcard berhasil diupdate di server!');
-            closePdfEditor(true);
+            window.closePdfEditor(true);
         } else {
             alert('Gagal update jobcard: ' + (data.message || 'Unknown error'));
             saveBtn.disabled = false;
@@ -1008,7 +1034,7 @@ const pdfEditorModal = document.getElementById('pdfEditorModal');
 if (pdfEditorModal) {
     pdfEditorModal.addEventListener('mousedown', function(e) {
         if (e.target === pdfEditorModal) {
-            closePdfEditor();
+            window.closePdfEditor();
         }
     });
 }
@@ -1016,7 +1042,7 @@ if (pdfEditorModal) {
 // Cegah ESC menutup modal tanpa konfirmasi
 window.addEventListener('keydown', function(e) {
     if (pdfEditorModal && !pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
-        closePdfEditor();
+        window.closePdfEditor();
     }
 });
 
