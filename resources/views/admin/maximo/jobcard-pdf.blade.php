@@ -2,226 +2,383 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JOB CARD & JSA - PLN Nusantara Power</title>
-
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #eaeaea;
+    <style type="text/css">
+        /* Reset & Base Styles */
+        * {
             margin: 0;
-            padding: 20px;
-        }
-
-        .page {
-            background: #ffffff;
-            width: 210mm;
-            min-height: 297mm;
-            margin: 20px auto;
-            padding: 20mm;
-            box-shadow: 0 0 6px rgba(0,0,0,0.25);
+            padding: 0;
             box-sizing: border-box;
         }
 
+        body {
+            font-family: Arial, Helvetica, sans-serif !important;
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            color: #000000 !important;
+            font-size: 12px !important;
+        }
+
+        /* Page Container - A4 Portrait */
+        .page {
+            background: #ffffff !important;
+            width: 210mm !important;
+            min-height: 297mm !important;
+            margin: 0 auto !important;
+            padding: 20mm !important;
+            page-break-after: always;
+            position: relative;
+        }
+
+        /* Header Section */
         .header {
-            text-align: center;
-            border-bottom: 3px solid #000;
-            padding-bottom: 10px;
+            position: relative;
             margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #000000 !important;
+        }
+
+        .header-container {
+            display: table;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .header-logo {
+            position: absolute;
+            left: 0;
+            top: 0;
         }
 
         .header-logo img {
-            height: 60px;
-            margin-bottom: 8px;
+            height: 58px !important;
+            width: auto !important;
+            max-width: 120px;
         }
 
-        .header h1 {
-            margin: 4px 0;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .header h2 {
-            margin: 2px 0;
-            font-size: 15px;
-        }
-
-        .header h3 {
-            margin: 2px 0;
-            font-size: 13px;
-        }
-
-        h3 {
-            font-size: 14px;
-            margin-top: 16px;
-            margin-bottom: 6px;
-            border-bottom: 1px solid #000;
-        }
-
-        h4 {
-            font-size: 13px;
-            margin-top: 10px;
-            margin-bottom: 5px;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px 15px;
-            font-size: 12px;
-            margin-bottom: 12px;
-        }
-
-        ol, ul {
-            font-size: 12px;
-            margin-left: 18px;
-        }
-
-        table {
+        .header-title {
+            text-align: center;
             width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-top: 8px;
+            padding-left: 0;
         }
 
-        table th, table td {
-            border: 1px solid #000;
-            padding: 5px;
+        .header-title h2 {
+            font-size: 15px !important;
+            font-weight: bold !important;
+            margin: 0 0 2px 0 !important;
+            color: #000000 !important;
+        }
+
+        .header-title h3 {
+            font-size: 13px !important;
+            font-weight: normal !important;
+            margin: 0 !important;
+            color: #000000 !important;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 20px !important;
+            font-weight: bold !important;
+            margin: 10px 0 0 0 !important;
+            color: #000000 !important;
+            text-transform: uppercase;
+        }
+
+        /* Section Titles */
+        h3.section-title {
+            font-size: 14px !important;
+            font-weight: bold !important;
+            margin-top: 16px !important;
+            margin-bottom: 8px !important;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #000000 !important;
+            color: #000000 !important;
+        }
+
+        h4.subsection-title {
+            font-size: 13px !important;
+            font-weight: bold !important;
+            margin-top: 12px !important;
+            margin-bottom: 6px !important;
+            color: #000000 !important;
+            text-transform: uppercase;
+        }
+
+        /* Info Grid - 2 Columns */
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 12px;
+            font-size: 12px !important;
+        }
+
+        .info-grid-row {
+            display: table-row;
+        }
+
+        .info-grid-cell {
+            display: table-cell;
+            width: 50%;
+            padding: 3px 8px 3px 0;
+            vertical-align: top;
+            font-size: 12px !important;
+        }
+
+        .info-grid-cell b {
+            font-weight: bold !important;
+        }
+
+        /* Task Title */
+        .task-title {
+            font-size: 13px !important;
+            font-weight: bold !important;
+            margin: 12px 0 8px 0 !important;
+            color: #000000 !important;
+        }
+
+        /* Lists */
+        ol, ul {
+            font-size: 12px !important;
+            margin-left: 20px !important;
+            margin-top: 5px !important;
+            margin-bottom: 8px !important;
+            color: #000000 !important;
+        }
+
+        ol li, ul li {
+            margin-bottom: 4px !important;
+            line-height: 1.4 !important;
+        }
+
+        ul {
+            list-style-type: disc !important;
+        }
+
+        ol {
+            list-style-type: decimal !important;
+        }
+
+        /* Tables */
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin-top: 8px !important;
+            margin-bottom: 12px !important;
+            font-size: 12px !important;
         }
 
         table th {
-            background: #f2f2f2;
-            text-align: center;
+            border: 1px solid #000000 !important;
+            padding: 6px 5px !important;
+            background-color: #f2f2f2 !important;
+            text-align: center !important;
+            font-weight: bold !important;
+            color: #000000 !important;
         }
 
+        table td {
+            border: 1px solid #000000 !important;
+            padding: 5px !important;
+            text-align: left !important;
+            color: #000000 !important;
+        }
+
+        table td:first-child {
+            text-align: center !important;
+        }
+
+        /* Signature Section */
         .signature {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            text-align: center;
+            margin-top: 30px !important;
+            display: table;
+            width: 100%;
+            font-size: 12px !important;
         }
 
-        .signature div {
-            width: 30%;
+        .signature-row {
+            display: table-row;
         }
 
-        .note {
-            font-size: 11px;
-            margin-top: 10px;
+        .signature-cell {
+            display: table-cell;
+            width: 33.33%;
+            text-align: center !important;
+            vertical-align: top;
+            padding: 0 10px;
         }
 
+        .signature-cell div {
+            margin-bottom: 50px;
+            color: #000000 !important;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000000 !important;
+            margin-top: 50px;
+            padding-top: 5px;
+        }
+
+        /* Print Styles */
         @media print {
             body {
-                background: none;
-                padding: 0;
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             .page {
-                margin: 0;
-                box-shadow: none;
+                margin: 0 !important;
+                padding: 20mm !important;
+                box-shadow: none !important;
+                page-break-after: always;
             }
+            .page:last-child {
+                page-break-after: auto;
+            }
+        }
+
+        /* Ensure all text is black */
+        p, div, span, td, th, li, h1, h2, h3, h4 {
+            color: #000000 !important;
         }
     </style>
 </head>
-
 <body>
 
 <!-- ===================================================== -->
 <!-- PAGE 1 : JOB CARD                                     -->
 <!-- ===================================================== -->
-<div class="page">
+<div class="page" style="background: #ffffff !important; width: 210mm !important; min-height: 297mm !important; padding: 20mm !important; margin: 0 auto !important;">
 
-    <div class="header">
-        <div class="header-logo">
-            <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo">
+    <!-- Header -->
+    <div class="header" style="border-bottom: 3px solid #000000 !important; padding-bottom: 10px !important; margin-bottom: 15px !important;">
+        <div class="header-logo" style="position: absolute !important; left: 0 !important; top: 0 !important;">
+            <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="height: 58px !important; width: auto !important; max-width: 120px !important;">
         </div>
-        <h2>PLN NUSANTARA POWER</h2>
-        <h3>Unit Pembangkitan Kendari</h3>
-        <h1>JOB CARD</h1>
+        <div class="header-title" style="text-align: center !important; width: 100% !important;">
+            <h2 style="font-size: 15px !important; font-weight: bold !important; margin: 0 0 2px 0 !important; color: #000000 !important;">PLN NUSANTARA POWER</h2>
+            <h3 style="font-size: 13px !important; font-weight: normal !important; margin: 0 !important; color: #000000 !important;">Unit Pembangkitan Kendari</h3>
+        </div>
+        <div class="doc-title" style="text-align: center !important; font-size: 20px !important; font-weight: bold !important; margin: 10px 0 0 0 !important; color: #000000 !important; text-transform: uppercase !important;">
+            JOB CARD
+        </div>
     </div>
 
-    <h3>Service Request Information</h3>
-    <div class="info-grid">
-        <div><b>No. Work Order</b> : {{ $wo['wonum'] ?? 'WO0938' }}</div>
-        <div><b>Status</b> : {{ $wo['status'] ?? 'APPR' }}</div>
-        <div><b>Job Plan</b> : {{ $wo['parent'] ?? 'RAHA-TD-JP-PMM' }}</div>
-        <div><b>Priority</b> : {{ $wo['wopriority'] ?? 'Medium' }}</div>
-        <div><b>Task</b> : {{ $wo['parent'] ?? 'WT13454' }}</div>
-        <div><b>Work Type</b> : {{ $wo['worktype'] ?? 'PM' }}</div>
-        <div><b>Site</b> : {{ $wo['siteid'] ?? 'KD' }}</div>
-        <div><b>Location</b> : {{ $wo['location'] ?? 'PLTD RAHA UNIT 4' }}</div>
-        <div><b>Asset</b> : {{ $wo['assetnum'] ?? 'RAHATD004MJV' }}</div>
-        <div><b>Report Date</b> : {{ $wo['reportdate'] ?? '2026-01-14' }}</div>
-        <div><b>Schedule Start</b> : {{ $wo['schedstart'] ?? '14:00' }}</div>
-        <div><b>Schedule Finish</b> : {{ $wo['schedfinish'] ?? '15:00' }}</div>
+    <!-- Service Request Information -->
+    <h3 class="section-title" style="font-size: 14px !important; font-weight: bold !important; margin-top: 16px !important; margin-bottom: 8px !important; padding-bottom: 4px !important; border-bottom: 1px solid #000000 !important; color: #000000 !important;">Service Request Information</h3>
+    
+    <div class="info-grid" style="display: table !important; width: 100% !important; margin-bottom: 12px !important; font-size: 12px !important;">
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>No. Work Order</b> : {{ $wo['wonum'] ?? '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Status</b> : {{ $wo['status'] ?? '-' }}</div>
+        </div>
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Job Plan</b> : {{ $wo['parent'] ?? '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Priority</b> : {{ $wo['wopriority'] ?? '-' }}</div>
+        </div>
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Task</b> : {{ $wo['parent'] ?? '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Site</b> : {{ $wo['siteid'] ?? '-' }}</div>
+        </div>
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Work Type</b> : {{ $wo['worktype'] ?? '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Report Date</b> : {{ $wo['reportdate'] ?? '-' }}</div>
+        </div>
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Asset</b> : {{ $wo['assetnum'] ?? '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Schedule Start</b> : {{ $wo['schedstart'] ?? '-' }}</div>
+        </div>
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Location</b> : {{ $wo['location'] ?? '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Schedule Finish</b> : {{ $wo['schedfinish'] ?? '-' }}</div>
+        </div>
     </div>
 
-    <h3>Task : Pemeriksaan Lub Oil System</h3>
+    <!-- Task Title -->
+    <div class="task-title" style="font-size: 13px !important; font-weight: bold !important; margin: 12px 0 8px 0 !important; color: #000000 !important;">
+        Task : {{ $wo['description'] ? (strlen($wo['description']) > 60 ? substr($wo['description'], 0, 60) . '...' : $wo['description']) : '-' }}
+    </div>
 
-    <h4>A. Safety Induction</h4>
-    <ol>
-        <li>Pastikan penggunaan APD lengkap:
-            <ul>
-                <li>Safety Helmet</li>
-                <li>Safety Shoes</li>
-                <li>Sarung Tangan</li>
+    <!-- A. SAFETY INDUCTION -->
+    <h4 class="subsection-title" style="font-size: 13px !important; font-weight: bold !important; margin-top: 12px !important; margin-bottom: 6px !important; color: #000000 !important; text-transform: uppercase !important;">A. SAFETY INDUCTION</h4>
+    <ol style="font-size: 12px !important; margin-left: 20px !important; margin-top: 5px !important; margin-bottom: 8px !important; color: #000000 !important;">
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Pastikan seluruh personel menggunakan APD lengkap
+            <ul style="font-size: 12px !important; margin-left: 20px !important; margin-top: 4px !important; list-style-type: disc !important; color: #000000 !important;">
+                <li style="margin-bottom: 3px !important; color: #000000 !important;">Safety Helmet</li>
+                <li style="margin-bottom: 3px !important; color: #000000 !important;">Safety Shoes</li>
+                <li style="margin-bottom: 3px !important; color: #000000 !important;">Sarung Tangan</li>
             </ul>
         </li>
-        <li>Siapkan tools dan material kerja</li>
-        <li>Lakukan Lock Out Tag Out (LOTO)</li>
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Siapkan tools dan material kerja</li>
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Lakukan Lock Out & Tag Out (LOTO)</li>
     </ol>
 
-    <h4>B. Langkah Kerja</h4>
-    <ol>
-        <li>Inspeksi sistem pelumasan</li>
-        <li>Periksa kebocoran pada pipa dan sambungan</li>
-        <li>Bersihkan valve dan komponen terkait</li>
-        <li>Pastikan sistem berfungsi normal</li>
+    <!-- B. LANGKAH KERJA -->
+    <h4 class="subsection-title" style="font-size: 13px !important; font-weight: bold !important; margin-top: 12px !important; margin-bottom: 6px !important; color: #000000 !important; text-transform: uppercase !important;">B. LANGKAH KERJA</h4>
+    <ol style="font-size: 12px !important; margin-left: 20px !important; margin-top: 5px !important; margin-bottom: 8px !important; color: #000000 !important;">
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Inspeksi visual saluran pelumasan</li>
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Periksa kebocoran pada pipa dan sambungan</li>
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Membersihkan area sekitar valve</li>
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Pastikan level oli sesuai standar</li>
     </ol>
 
-    <h4>C. Post Maintenance Test</h4>
-    <ol>
-        <li>Pastikan peralatan terpasang kembali</li>
-        <li>Area kerja bersih dan aman</li>
+    <!-- C. POST MAINTENANCE TEST -->
+    <h4 class="subsection-title" style="font-size: 13px !important; font-weight: bold !important; margin-top: 12px !important; margin-bottom: 6px !important; color: #000000 !important; text-transform: uppercase !important;">C. POST MAINTENANCE TEST</h4>
+    <ol style="font-size: 12px !important; margin-left: 20px !important; margin-top: 5px !important; margin-bottom: 8px !important; color: #000000 !important;">
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Pastikan seluruh peralatan terpasang kembali</li>
+        <li style="margin-bottom: 4px !important; line-height: 1.4 !important; color: #000000 !important;">Area kerja dalam kondisi bersih dan aman</li>
     </ol>
 
-    <h3>Planned & Actual Labor</h3>
-    <table>
+    <!-- Planned & Actual Labor Table -->
+    <h3 class="section-title" style="font-size: 14px !important; font-weight: bold !important; margin-top: 16px !important; margin-bottom: 8px !important; padding-bottom: 4px !important; border-bottom: 1px solid #000000 !important; color: #000000 !important;">Planned & Actual Labor</h3>
+    <table style="width: 100% !important; border-collapse: collapse !important; margin-top: 8px !important; margin-bottom: 12px !important; font-size: 12px !important;">
         <thead>
             <tr>
-                <th>Task ID</th>
-                <th>Craft</th>
-                <th>Skill Level</th>
-                <th>Planned Qty</th>
-                <th>Planned Hours</th>
-                <th>Actual Qty</th>
-                <th>Actual Hours</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Task ID</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Craft</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Skill Level</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Planned Quantity</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Planned Hours</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Actual Quantity</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Actual Hours</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>WT13454</td>
-                <td>MECH</td>
-                <td>Junior</td>
-                <td>1</td>
-                <td>1</td>
-                <td>-</td>
-                <td>-</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: center !important; color: #000000 !important;">{{ $wo['parent'] ?? '-' }}</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">-</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">-</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">-</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">-</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">-</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">-</td>
             </tr>
         </tbody>
     </table>
 
-    <div class="signature">
-        <div>
-            Diminta Oleh<br><br><br>
-            Supervisor Pemeliharaan
-        </div>
-        <div>
-            Verifikasi<br><br><br>
-            Supervisor Operasi
-        </div>
-        <div>
-            Pelepasan Sistem<br><br><br>
-            Supervisor KLK3
+    <!-- Signature Area -->
+    <div class="signature" style="margin-top: 30px !important; display: table !important; width: 100% !important; font-size: 12px !important;">
+        <div class="signature-row" style="display: table-row !important;">
+            <div class="signature-cell" style="display: table-cell !important; width: 33.33% !important; text-align: center !important; vertical-align: top !important; padding: 0 10px !important;">
+                <div style="margin-bottom: 50px !important; color: #000000 !important;">
+                    Diminta Oleh<br><br><br>
+                    <div class="signature-line" style="border-top: 1px solid #000000 !important; margin-top: 50px !important; padding-top: 5px !important; color: #000000 !important;">Supervisor Pemeliharaan</div>
+                </div>
+            </div>
+            <div class="signature-cell" style="display: table-cell !important; width: 33.33% !important; text-align: center !important; vertical-align: top !important; padding: 0 10px !important;">
+                <div style="margin-bottom: 50px !important; color: #000000 !important;">
+                    Verifikasi<br><br><br>
+                    <div class="signature-line" style="border-top: 1px solid #000000 !important; margin-top: 50px !important; padding-top: 5px !important; color: #000000 !important;">Supervisor Operasi</div>
+                </div>
+            </div>
+            <div class="signature-cell" style="display: table-cell !important; width: 33.33% !important; text-align: center !important; vertical-align: top !important; padding: 0 10px !important;">
+                <div style="margin-bottom: 50px !important; color: #000000 !important;">
+                    Pelepasan Sistem<br><br><br>
+                    <div class="signature-line" style="border-top: 1px solid #000000 !important; margin-top: 50px !important; padding-top: 5px !important; color: #000000 !important;">Supervisor KLK3</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -230,71 +387,91 @@
 <!-- ===================================================== -->
 <!-- PAGE 2 : JOB SAFETY ANALYSIS                           -->
 <!-- ===================================================== -->
-<div class="page">
+<div class="page" style="background: #ffffff !important; width: 210mm !important; min-height: 297mm !important; padding: 20mm !important; margin: 0 auto !important;">
 
-    <div class="header">
-        <div class="header-logo">
-            <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo">
+    <!-- Header -->
+    <div class="header" style="border-bottom: 3px solid #000000 !important; padding-bottom: 10px !important; margin-bottom: 15px !important;">
+        <div class="header-logo" style="position: absolute !important; left: 0 !important; top: 0 !important;">
+            <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="height: 58px !important; width: auto !important; max-width: 120px !important;">
         </div>
-        <h2>PT PLN NUSANTARA POWER</h2>
-        <h3>INTEGRATED MANAGEMENT SYSTEM</h3>
-        <h1>FORM JOB SAFETY ANALYSIS</h1>
+        <div class="header-title" style="text-align: center !important; width: 100% !important;">
+            <h2 style="font-size: 15px !important; font-weight: bold !important; margin: 0 0 2px 0 !important; color: #000000 !important;">PT PLN NUSANTARA POWER</h2>
+            <h3 style="font-size: 13px !important; font-weight: normal !important; margin: 0 !important; color: #000000 !important;">INTEGRATED MANAGEMENT SYSTEM</h3>
+        </div>
+        <div class="doc-title" style="text-align: center !important; font-size: 20px !important; font-weight: bold !important; margin: 10px 0 0 0 !important; color: #000000 !important; text-transform: uppercase !important;">
+            FORM JOB SAFETY ANALYSIS
+        </div>
     </div>
 
-    <div class="info-grid">
-        <div><b>Nama Pekerjaan</b> : Pemeriksaan Lub Oil System</div>
-        <div><b>Lokasi</b> : PLTD RAHA UNIT 4</div>
-        <div><b>WO / Task</b> : WO0938 / WT13454</div>
-        <div><b>Pelaksana</b> : MECHD</div>
+    <!-- Informasi Umum JSA -->
+    <div class="info-grid" style="display: table !important; width: 100% !important; margin-bottom: 12px !important; font-size: 12px !important;">
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Nama Pekerjaan</b> : {{ $wo['description'] ? (strlen($wo['description']) > 50 ? substr($wo['description'], 0, 50) . '...' : $wo['description']) : '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Lokasi</b> : {{ $wo['location'] ?? '-' }}</div>
+        </div>
+        <div class="info-grid-row" style="display: table-row !important;">
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>No. WO / Task</b> : {{ $wo['wonum'] ?? '-' }} / {{ $wo['parent'] ?? '-' }}</div>
+            <div class="info-grid-cell" style="display: table-cell !important; width: 50% !important; padding: 3px 8px 3px 0 !important; vertical-align: top !important; font-size: 12px !important; color: #000000 !important;"><b>Pelaksana</b> : -</div>
+        </div>
     </div>
 
-    <table>
+    <!-- Tabel Analisis Keselamatan -->
+    <table style="width: 100% !important; border-collapse: collapse !important; margin-top: 8px !important; margin-bottom: 12px !important; font-size: 12px !important;">
         <thead>
             <tr>
-                <th>No</th>
-                <th>Tahapan Kerja</th>
-                <th>Potensi Bahaya</th>
-                <th>Pengendalian Risiko</th>
-                <th>PIC</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">No</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Tahapan Kerja</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Potensi Bahaya</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">Pengendalian Risiko</th>
+                <th style="border: 1px solid #000000 !important; padding: 6px 5px !important; background-color: #f2f2f2 !important; text-align: center !important; font-weight: bold !important; color: #000000 !important;">PIC</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>1</td>
-                <td>Safety Induction</td>
-                <td>Cedera ringan</td>
-                <td>Briefing K3 & APD lengkap</td>
-                <td>Supervisor</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: center !important; color: #000000 !important;">1</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Safety Induction</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Cedera ringan</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Penggunaan APD lengkap</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Supervisor</td>
             </tr>
             <tr>
-                <td>2</td>
-                <td>Pekerjaan Pemeliharaan</td>
-                <td>Listrik, terpeleset</td>
-                <td>LOTO, SOP, APD</td>
-                <td>Teknisi</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: center !important; color: #000000 !important;">2</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Pemeriksaan & Pemeliharaan</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Tersengat listrik, terjatuh</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Lakukan LOTO, gunakan APD lengkap</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Teknisi</td>
             </tr>
             <tr>
-                <td>3</td>
-                <td>Post Maintenance Test</td>
-                <td>Salah operasi</td>
-                <td>Uji sesuai prosedur</td>
-                <td>Teknisi</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: center !important; color: #000000 !important;">3</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Post Maintenance Test</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Kerusakan peralatan</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Lakukan test sesuai prosedur</td>
+                <td style="border: 1px solid #000000 !important; padding: 5px !important; text-align: left !important; color: #000000 !important;">Teknisi</td>
             </tr>
         </tbody>
     </table>
 
-    <div class="signature">
-        <div>
-            Disusun Oleh<br><br><br>
-            Supervisor Pemeliharaan
-        </div>
-        <div>
-            Diverifikasi Oleh<br><br><br>
-            Supervisor Operasi
-        </div>
-        <div>
-            Disetujui Oleh<br><br><br>
-            Supervisor KLK3
+    <!-- Signature Area JSA -->
+    <div class="signature" style="margin-top: 30px !important; display: table !important; width: 100% !important; font-size: 12px !important;">
+        <div class="signature-row" style="display: table-row !important;">
+            <div class="signature-cell" style="display: table-cell !important; width: 33.33% !important; text-align: center !important; vertical-align: top !important; padding: 0 10px !important;">
+                <div style="margin-bottom: 50px !important; color: #000000 !important;">
+                    Disusun Oleh<br><br><br>
+                    <div class="signature-line" style="border-top: 1px solid #000000 !important; margin-top: 50px !important; padding-top: 5px !important; color: #000000 !important;">Supervisor Pemeliharaan</div>
+                </div>
+            </div>
+            <div class="signature-cell" style="display: table-cell !important; width: 33.33% !important; text-align: center !important; vertical-align: top !important; padding: 0 10px !important;">
+                <div style="margin-bottom: 50px !important; color: #000000 !important;">
+                    Diverifikasi Oleh<br><br><br>
+                    <div class="signature-line" style="border-top: 1px solid #000000 !important; margin-top: 50px !important; padding-top: 5px !important; color: #000000 !important;">Supervisor Operasi</div>
+                </div>
+            </div>
+            <div class="signature-cell" style="display: table-cell !important; width: 33.33% !important; text-align: center !important; vertical-align: top !important; padding: 0 10px !important;">
+                <div style="margin-bottom: 50px !important; color: #000000 !important;">
+                    Disetujui Oleh<br><br><br>
+                    <div class="signature-line" style="border-top: 1px solid #000000 !important; margin-top: 50px !important; padding-top: 5px !important; color: #000000 !important;">Supervisor KLK3</div>
+                </div>
+            </div>
         </div>
     </div>
 
