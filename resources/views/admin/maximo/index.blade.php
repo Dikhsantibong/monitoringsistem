@@ -486,33 +486,9 @@
     #pdfViewerContainer {
         scroll-behavior: smooth;
     }
-    #pdfPages canvas {
+    #pdfPagesContainer canvas {
         display: block;
-    }
-    #pdfIframe {
-        width: 100% !important;
-        height: auto !important;
-        min-height: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        display: block !important;
-        overflow: hidden !important;
-        overflow-x: hidden !important;
-        overflow-y: hidden !important;
-        scrolling: no !important;
-    }
-    
-    /* Force hide scrollbar di iframe dengan CSS */
-    #pdfIframe::-webkit-scrollbar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
-    }
-    
-    #pdfIframe {
-        -ms-overflow-style: none !important;
-        scrollbar-width: none !important;
+        margin-bottom: 8px;
     }
     #pdfWrapper {
         width: 100% !important;
@@ -651,69 +627,77 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
     pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Memuat PDF...</div>';
     pdfWrapper.style.height = '200px';
     
-    // Render seluruh dokumen dengan pdfjs-dist: tiap halaman jadi canvas, ditumpuk vertikal.
+    // ============================================================
+    // RENDER PDF DENGAN PDF.JS (public/pdf.js)
+    // ============================================================
+    // Render seluruh dokumen: tiap halaman jadi canvas, ditumpuk vertikal.
     // Tinggi wrapper = jumlah semua halaman → scroll container menampilkan dokumen penuh.
     (async function() {
         try {
-            // Gunakan pdfjs-dist yang sudah terinstall (dari node_modules, copy ke public/pdfjs-dist)
-            // Pastikan file sudah di-copy: node_modules/pdfjs-dist/build/* → public/pdfjs-dist/build/*
-            let pdfjs;
-            try {
-                pdfjs = await import('{{ asset("pdfjs-dist/build/pdf.mjs") }}');
-            } catch (e1) {
-                // Fallback: coba path alternatif jika belum di-copy
-                console.warn('[Jobcard] Path pdfjs-dist tidak ditemukan, coba fallback...');
-                try {
-                    pdfjs = await import('/pdfjs-dist/build/pdf.mjs');
-                } catch (e2) {
-                    // Fallback ke pdf.js yang ada di public jika pdfjs-dist belum tersedia
-                    pdfjs = await import('{{ asset("pdf.js/build/pdf.mjs") }}');
-                }
-            }
+            // Load PDF.js dari public/pdf.js
+            const pdfjs = await import('{{ asset("pdf.js/build/pdf.mjs") }}');
+            pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdf.js/build/pdf.worker.mjs") }}';
             
-            // Set worker path
-            try {
-                pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdfjs-dist/build/pdf.worker.mjs") }}';
-            } catch (e) {
-                pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdf.js/build/pdf.worker.mjs") }}';
-            }
-            
+            // Load PDF document
             const doc = await pdfjs.getDocument({ url: pdfUrl }).promise;
             const numPages = doc.numPages;
-            const cw = Math.max(container.clientWidth || 800, 400);
+            const containerWidth = Math.max(container.clientWidth || 800, 400);
             let totalHeight = 0;
-            const gap = 8;
+            const gapBetweenPages = 8;
             pdfPagesContainer.innerHTML = '';
             
-            for (let i = 1; i <= numPages; i++) {
-                const page = await doc.getPage(i);
-                const vp1 = page.getViewport({ scale: 1 });
-                const scale = cw / vp1.width;
-                const vp = page.getViewport({ scale });
-                const can = document.createElement('canvas');
-                can.width = vp.width;
-                can.height = vp.height;
-                can.style.display = 'block';
-                can.style.marginBottom = (i < numPages ? gap : 0) + 'px';
-                const ctx = can.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport: vp }).promise;
-                pdfPagesContainer.appendChild(can);
-                totalHeight += vp.height + (i < numPages ? gap : 0);
+            // Render setiap halaman ke canvas dan tumpuk vertikal
+            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                const page = await doc.getPage(pageNum);
+                const viewport1x = page.getViewport({ scale: 1 });
+                const scale = containerWidth / viewport1x.width; // Scale untuk fit lebar container
+                const viewport = page.getViewport({ scale });
+                
+                // Buat canvas untuk halaman ini
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = viewport.width;
+                pageCanvas.height = viewport.height;
+                pageCanvas.style.display = 'block';
+                pageCanvas.style.marginBottom = (pageNum < numPages ? gapBetweenPages : 0) + 'px';
+                
+                // Render halaman ke canvas
+                const ctx = pageCanvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                
+                // Tambahkan ke container
+                pdfPagesContainer.appendChild(pageCanvas);
+                totalHeight += viewport.height + (pageNum < numPages ? gapBetweenPages : 0);
             }
             
+            // Set tinggi wrapper = total tinggi semua halaman
             pdfWrapper.style.height = totalHeight + 'px';
             pdfWrapper.style.minHeight = totalHeight + 'px';
             pdfWrapper.style.overflow = 'visible';
             
-            var savedImg = null;
+            // Update drawing canvas: simpan coretan yang ada, resize, restore
+            let savedImageData = null;
             if (drawingCanvas.width > 0 && drawingCanvas.height > 0 && drawingCtx) {
-                try { savedImg = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height); } catch (e) {}
+                try {
+                    savedImageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+                } catch (e) {
+                    console.warn('[Jobcard] Tidak bisa save image data:', e);
+                }
             }
-            drawingCanvas.width = cw;
+            
+            // Resize drawing canvas sesuai total tinggi dokumen
+            drawingCanvas.width = containerWidth;
             drawingCanvas.height = totalHeight;
-            if (savedImg && savedImg.data && drawingCtx) {
-                try { drawingCtx.putImageData(savedImg, 0, 0); } catch (e) {}
+            
+            // Restore coretan yang sudah ada
+            if (savedImageData && savedImageData.data && drawingCtx) {
+                try {
+                    drawingCtx.putImageData(savedImageData, 0, 0);
+                } catch (e) {
+                    console.warn('[Jobcard] Tidak bisa restore image data:', e);
+                }
             }
+            
+            // Set style: canvas isi penuh wrapper agar coretan ikut scroll dengan dokumen
             drawingCanvas.style.position = 'absolute';
             drawingCanvas.style.top = '0';
             drawingCanvas.style.left = '0';
@@ -722,24 +706,28 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
             drawingCanvas.style.width = '100%';
             drawingCanvas.style.height = '100%';
             
+            // Setup container scroll
             container.style.overflow = 'auto';
             container.style.overflowY = 'auto';
             container.style.overflowX = 'hidden';
             
+            // Initialize tools dan handlers
             if (typeof setupScrollHandler === 'function') setupScrollHandler();
             if (typeof updateDrawingCanvasTool === 'function') updateDrawingCanvasTool();
             if (typeof updateCanvasCursor === 'function') updateCanvasCursor();
             
+            // Set default tool ke Pen
             currentTool = 'pen';
-            var toolPen = document.getElementById('toolPen');
+            const toolPen = document.getElementById('toolPen');
             if (toolPen) {
-                document.querySelectorAll('[data-tool]').forEach(function(btn) { btn.classList.remove('active-tool'); });
+                document.querySelectorAll('[data-tool]').forEach(btn => btn.classList.remove('active-tool'));
                 toolPen.classList.add('active-tool');
             }
-            console.log('[Jobcard] PDF dirender:', numPages, 'hlm, tinggi', totalHeight);
+            
+            console.log('[Jobcard] PDF dirender dengan PDF.js:', numPages, 'halaman, tinggi total:', totalHeight, 'px');
         } catch (e) {
-            console.error('[Jobcard] Gagal memuat PDF:', e);
-            pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#c00;">Gagal memuat PDF. ' + (e.message || '') + '</div>';
+            console.error('[Jobcard] Gagal memuat PDF dengan PDF.js:', e);
+            pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#c00;">Gagal memuat PDF. ' + (e.message || 'Unknown error') + '</div>';
         }
     })();
     
@@ -755,37 +743,13 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
         container.style.overflowY = 'auto';
         container.style.overflowX = 'hidden';
         
-        // Pastikan iframe tidak memiliki scrollbar - gunakan berbagai cara
-        const iframe = document.getElementById('pdfIframe');
-        if (iframe) {
-            iframe.style.overflow = 'hidden';
-            iframe.style.overflowX = 'hidden';
-            iframe.style.overflowY = 'hidden';
-            iframe.scrolling = 'no';
-            iframe.setAttribute('scrolling', 'no');
-            // Force dengan CSS
-            iframe.style.setProperty('overflow', 'hidden', 'important');
-            iframe.style.setProperty('overflow-x', 'hidden', 'important');
-            iframe.style.setProperty('overflow-y', 'hidden', 'important');
-        }
-        
         // Pastikan wrapper tidak memiliki scrollbar sendiri
         pdfWrapper.style.overflow = 'visible';
         
-        // Handler untuk update canvas saat scroll
-        // Canvas sudah absolute di dalam wrapper, jadi akan ikut scroll otomatis
-        // Tidak perlu melakukan transform manual karena canvas sudah di dalam wrapper yang di-scroll
+        // Handler scroll: canvas sudah absolute di dalam wrapper, jadi ikut scroll otomatis
+        // Tidak perlu resize canvas saat scroll karena akan menghapus gambar
         container.addEventListener('scroll', () => {
-            // Jangan resize canvas saat scroll karena akan menghapus gambar
-            // Canvas sudah absolute di dalam wrapper, jadi akan ikut scroll otomatis
-            // Tidak perlu resize canvas saat scroll
-            // Hanya pastikan scrollbar iframe tidak muncul
-            const iframe = document.getElementById('pdfIframe');
-            if (iframe) {
-                iframe.style.setProperty('overflow', 'hidden', 'important');
-                iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                iframe.style.setProperty('overflow-y', 'hidden', 'important');
-            }
+            // Canvas ikut scroll otomatis karena absolute di dalam wrapper
         }, { passive: true });
     }
     
@@ -966,20 +930,6 @@ function updateCanvasCursor() {
     if (!drawingCanvas) return;
     
     const container = document.getElementById('pdfViewerContainer');
-    
-    // Pastikan hanya container yang memiliki scrollbar, bukan iframe
-    const iframe = document.getElementById('pdfIframe');
-    if (iframe) {
-        iframe.style.overflow = 'hidden';
-        iframe.style.overflowX = 'hidden';
-        iframe.style.overflowY = 'hidden';
-        iframe.scrolling = 'no';
-        iframe.setAttribute('scrolling', 'no');
-        // Force dengan CSS
-        iframe.style.setProperty('overflow', 'hidden', 'important');
-        iframe.style.setProperty('overflow-x', 'hidden', 'important');
-        iframe.style.setProperty('overflow-y', 'hidden', 'important');
-    }
     
     // Ubah cursor berdasarkan tool yang aktif
     if (currentTool === 'pen') {
