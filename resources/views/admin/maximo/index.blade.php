@@ -493,6 +493,9 @@
                     <button id="toolSignature" class="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700" data-tool="signature">
                         ✍️ Tanda Tangan
                     </button>
+                    <button id="toolScroll" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700" data-tool="scroll">
+                        📜 Scroll
+                    </button>
                     <button id="toolClear" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700" onclick="clearAllDrawings()">
                         🗑️ Hapus Semua
                     </button>
@@ -599,6 +602,17 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
                 updateCanvasCursor();
             }
         }, 200);
+    }
+    
+    // Set default tool ke scroll saat pertama kali buka
+    currentTool = 'scroll';
+    const toolScroll = document.getElementById('toolScroll');
+    if (toolScroll) {
+        // Remove active dari semua tool
+        document.querySelectorAll('[data-tool]').forEach(btn => {
+            btn.classList.remove('active-tool');
+        });
+        toolScroll.classList.add('active-tool');
     }
     
     if (typeof updateCanvasCursor === 'function') {
@@ -719,7 +733,7 @@ window.closeSignatureModal = function() {
 
 // Tool selection
 document.addEventListener('DOMContentLoaded', function() {
-    const tools = ['toolPen', 'toolEraser', 'toolSignature'];
+    const tools = ['toolPen', 'toolEraser', 'toolSignature', 'toolScroll'];
     tools.forEach(toolId => {
         const btn = document.getElementById(toolId);
         if (btn) {
@@ -769,9 +783,19 @@ function updateDrawingCanvasTool() {
 function updateCanvasCursor() {
     if (!drawingCanvas) return;
     
+    const container = document.getElementById('pdfViewerContainer');
+    
     // Ubah cursor berdasarkan tool yang aktif
-    // Pointer-events akan diatur dinamis saat mouse down/up
-    if (currentTool === 'pen') {
+    if (currentTool === 'scroll') {
+        // Mode Scroll: nonaktifkan canvas, aktifkan scroll
+        drawingCanvas.style.cursor = 'default';
+        drawingCanvas.style.pointerEvents = 'none';
+        if (container) {
+            container.style.overflow = 'auto';
+            container.style.cursor = 'default';
+        }
+        return;
+    } else if (currentTool === 'pen') {
         drawingCanvas.style.cursor = 'crosshair';
     } else if (currentTool === 'eraser') {
         drawingCanvas.style.cursor = 'grab';
@@ -781,8 +805,6 @@ function updateCanvasCursor() {
         // Default: biarkan scroll PDF (nonaktifkan canvas)
         drawingCanvas.style.cursor = 'default';
         drawingCanvas.style.pointerEvents = 'none';
-        // Aktifkan scroll container
-        const container = document.getElementById('pdfViewerContainer');
         if (container) {
             container.style.overflow = 'auto';
         }
@@ -792,7 +814,6 @@ function updateCanvasCursor() {
     // Aktifkan canvas untuk tool drawing, tapi biarkan scroll bekerja
     // Canvas akan menangkap event saat mouse down untuk drawing
     drawingCanvas.style.pointerEvents = 'auto';
-    const container = document.getElementById('pdfViewerContainer');
     if (container) {
         container.style.overflow = 'auto'; // Tetap aktifkan scroll
     }
@@ -846,6 +867,11 @@ function setupDrawingCanvas() {
     }
     
     function startDrawing(e) {
+        // Mode scroll: jangan aktifkan drawing, biarkan scroll
+        if (currentTool === 'scroll') {
+            return; // Biarkan event pass through untuk scroll
+        }
+        
         // Hanya aktif jika tool drawing dipilih
         if (currentTool === 'pen' || currentTool === 'eraser' || currentTool === 'signature') {
             e.preventDefault(); // Prevent default untuk memungkinkan drawing
@@ -911,10 +937,23 @@ function setupDrawingCanvas() {
         }
     }
     
-    drawingCanvas.addEventListener('mousedown', startDrawing);
+    // Event listeners untuk drawing
+    drawingCanvas.addEventListener('mousedown', function(e) {
+        if (currentTool !== 'scroll') {
+            startDrawing(e);
+        }
+    });
     drawingCanvas.addEventListener('mousemove', draw);
     drawingCanvas.addEventListener('mouseup', stopDrawing);
     drawingCanvas.addEventListener('mouseleave', stopDrawing);
+    
+    // Saat mode scroll, pastikan event tidak di-block
+    drawingCanvas.addEventListener('wheel', function(e) {
+        if (currentTool === 'scroll') {
+            // Biarkan wheel event pass through untuk scroll
+            return true;
+        }
+    });
     
     // Touch support
     drawingCanvas.addEventListener('touchstart', (e) => {
