@@ -63,7 +63,7 @@
                                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-semibold">
                             Buka & Edit Jobcard di PDF.js Viewer
                         </button>
-                        <form method="GET" action="{{ route('maximo.jobcard.download') }}" class="inline">
+                        <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" class="inline">
                             <input type="hidden" name="path" value="{{ session('jobcard_path') }}">
                             <button type="submit" 
                                     class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold">
@@ -98,7 +98,7 @@
                 {{-- SEARCH --}}
                 <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div class="w-full md:w-1/3">
-                        <form method="GET" action="{{ route('maximo.index') }}">
+                        <form method="GET" action="{{ route('admin.maximo.index') }}">
                             <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
                             <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
                             <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
@@ -212,12 +212,12 @@
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="{{ route('maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
+                                                <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
                                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                     Detail
                                                 </a>
                                                 @if(strtoupper($wo['status']) === 'APPR')
-                                                    <form method="POST" action="{{ route('maximo.jobcard.generate') }}" class="inline">
+                                                    <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
                                                         @csrf
                                                         <input type="hidden" name="wonum" value="{{ $wo['wonum'] }}">
                                                         <button type="submit" 
@@ -359,7 +359,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200 whitespace-nowrap">
-                                            <a href="{{ route('maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
+                                            <a href="{{ route('admin.maximo.service-request.show', ['ticketid' => $sr['ticketid']]) }}"
                                                class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                 Detail
                                             </a>
@@ -477,7 +477,7 @@
             <iframe id="pdfjs-viewer" src="" style="width:100%;height:100%;border:none;"></iframe>
         </div>
         <div class="flex justify-end gap-2 p-4 border-t">
-            <form method="GET" action="{{ route('maximo.jobcard.download') }}" id="downloadForm" class="inline">
+            <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" id="downloadForm" class="inline">
                 <input type="hidden" name="path" id="downloadPath" value="">
                 <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
                     Download
@@ -534,7 +534,7 @@ function saveEditedPdf(blob) {
     formData.append('path', currentPdfPath);
     formData.append('_token', '{{ csrf_token() }}');
     
-    fetch("{{ route('maximo.jobcard.update') }}", {
+    fetch("{{ route('admin.maximo.jobcard.update') }}", {
         method: 'POST',
         body: formData
     })
