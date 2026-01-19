@@ -651,12 +651,33 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
     pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Memuat PDF...</div>';
     pdfWrapper.style.height = '200px';
     
-    // Render seluruh dokumen dengan PDF.js: tiap halaman jadi canvas, ditumpuk vertikal.
+    // Render seluruh dokumen dengan pdfjs-dist: tiap halaman jadi canvas, ditumpuk vertikal.
     // Tinggi wrapper = jumlah semua halaman → scroll container menampilkan dokumen penuh.
     (async function() {
         try {
-            const pdfjs = await import('{{ asset("pdf.js/build/pdf.mjs") }}');
-            pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdf.js/build/pdf.worker.mjs") }}';
+            // Gunakan pdfjs-dist yang sudah terinstall (dari node_modules, copy ke public/pdfjs-dist)
+            // Pastikan file sudah di-copy: node_modules/pdfjs-dist/build/* → public/pdfjs-dist/build/*
+            let pdfjs;
+            try {
+                pdfjs = await import('{{ asset("pdfjs-dist/build/pdf.mjs") }}');
+            } catch (e1) {
+                // Fallback: coba path alternatif jika belum di-copy
+                console.warn('[Jobcard] Path pdfjs-dist tidak ditemukan, coba fallback...');
+                try {
+                    pdfjs = await import('/pdfjs-dist/build/pdf.mjs');
+                } catch (e2) {
+                    // Fallback ke pdf.js yang ada di public jika pdfjs-dist belum tersedia
+                    pdfjs = await import('{{ asset("pdf.js/build/pdf.mjs") }}');
+                }
+            }
+            
+            // Set worker path
+            try {
+                pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdfjs-dist/build/pdf.worker.mjs") }}';
+            } catch (e) {
+                pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdf.js/build/pdf.worker.mjs") }}';
+            }
+            
             const doc = await pdfjs.getDocument({ url: pdfUrl }).promise;
             const numPages = doc.numPages;
             const cw = Math.max(container.clientWidth || 800, 400);
