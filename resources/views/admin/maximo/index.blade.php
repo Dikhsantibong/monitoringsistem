@@ -474,6 +474,25 @@
     #pdfPages canvas {
         display: block;
     }
+    #pdfIframe {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        display: block !important;
+    }
+    #pdfWrapper {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        position: relative !important;
+    }
+    #pdfViewerContainer {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
 </style>
 
 <!-- Modal PDF Editor Custom -->
@@ -505,10 +524,10 @@
         </div>
         
         <!-- PDF Viewer Container dengan iframe -->
-        <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px);">
-            <div id="pdfWrapper" style="position:relative;width:100%;">
-                <iframe id="pdfIframe" src="" style="width:100%;border:none;pointer-events:auto;display:block;"></iframe>
-                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100%;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
+        <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px); padding:0; margin:0; width:100%;">
+            <div id="pdfWrapper" style="position:relative;width:100%;height:100%;padding:0;margin:0;min-height:100%;display:block;">
+                <iframe id="pdfIframe" src="" style="width:100% !important;height:auto !important;min-height:100vh !important;border:none !important;pointer-events:auto !important;display:block !important;padding:0 !important;margin:0 !important;"></iframe>
+                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100% !important;height:100% !important;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
             </div>
         </div>
         
@@ -578,7 +597,25 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
     document.getElementById('downloadPath').value = pdfPath;
     
     // Load PDF in iframe (browser native viewer)
-    iframe.src = pdfUrl;
+    // Pastikan iframe mengisi lebar penuh tanpa padding
+    iframe.style.width = '100%';
+    iframe.style.height = 'auto';
+    iframe.style.minHeight = '100%';
+    iframe.style.padding = '0';
+    iframe.style.margin = '0';
+    iframe.style.display = 'block';
+    
+    // Tambahkan parameter zoom untuk memaksa PDF mengisi lebar penuh
+    // #zoom=page-width akan membuat PDF mengisi lebar penuh
+    // #zoom=fit akan membuat PDF fit ke viewport
+    let finalPdfUrl = pdfUrl;
+    if (!pdfUrl.includes('#')) {
+        finalPdfUrl = pdfUrl + '#zoom=page-width';
+    } else if (!pdfUrl.includes('zoom=')) {
+        finalPdfUrl = pdfUrl + '&zoom=page-width';
+    }
+    
+    iframe.src = finalPdfUrl;
     
     // Clear previous drawings
     if (drawingCtx && drawingCanvas) {
@@ -589,10 +626,23 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
     const container = document.getElementById('pdfViewerContainer');
     const pdfWrapper = document.getElementById('pdfWrapper');
     
+    // Pastikan container dan wrapper tidak ada padding/margin
+    if (container) {
+        container.style.padding = '0';
+        container.style.margin = '0';
+    }
+    if (pdfWrapper) {
+        pdfWrapper.style.padding = '0';
+        pdfWrapper.style.margin = '0';
+    }
+    
     if (container && pdfWrapper && iframe && drawingCanvas) {
         // Fungsi untuk update canvas size dan position
         const updateCanvasSize = () => {
             try {
+                // Dapatkan lebar container yang sebenarnya (tanpa padding)
+                const containerWidth = container.clientWidth || container.offsetWidth;
+                
                 // Dapatkan tinggi konten iframe yang sebenarnya
                 let iframeHeight = 0;
                 try {
@@ -613,16 +663,26 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
                 }
                 
                 // Gunakan tinggi wrapper atau iframe, ambil yang terbesar
-                const wrapperHeight = pdfWrapper.scrollHeight || pdfWrapper.offsetHeight;
-                const finalHeight = Math.max(iframeHeight, wrapperHeight, container.clientHeight);
+                const wrapperHeight = pdfWrapper.scrollHeight || pdfWrapper.offsetHeight || iframeHeight;
+                const finalHeight = Math.max(iframeHeight, wrapperHeight, container.scrollHeight || 1000);
                 
-                // Set canvas size sesuai konten PDF
-                drawingCanvas.width = pdfWrapper.offsetWidth || container.clientWidth;
+                // Set iframe height untuk memastikan PDF mengisi penuh
+                iframe.style.height = finalHeight + 'px';
+                iframe.style.minHeight = finalHeight + 'px';
+                
+                // Set wrapper height
+                pdfWrapper.style.height = finalHeight + 'px';
+                pdfWrapper.style.minHeight = finalHeight + 'px';
+                
+                // Set canvas size sesuai konten PDF - pastikan lebar 100%
+                drawingCanvas.width = containerWidth;
                 drawingCanvas.height = finalHeight;
                 
-                // Set canvas style untuk mengikuti wrapper
+                // Set canvas style untuk mengikuti wrapper - lebar 100%
                 drawingCanvas.style.width = '100%';
                 drawingCanvas.style.height = finalHeight + 'px';
+                drawingCanvas.style.left = '0';
+                drawingCanvas.style.top = '0';
                 
                 if (typeof updateDrawingCanvasTool === 'function') {
                     updateDrawingCanvasTool();
@@ -630,6 +690,8 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
                 if (typeof updateCanvasCursor === 'function') {
                     updateCanvasCursor();
                 }
+                
+                console.log('[Jobcard] Canvas size updated:', containerWidth, 'x', finalHeight);
             } catch (error) {
                 console.error('[Jobcard] Error updating canvas size:', error);
             }
@@ -641,7 +703,7 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
                 updateCanvasSize();
                 // Setup scroll handler untuk update canvas position
                 setupScrollHandler();
-            }, 500); // Delay lebih lama untuk memastikan PDF sudah render
+            }, 800); // Delay lebih lama untuk memastikan PDF sudah render sepenuhnya
         });
         
         // Update canvas saat resize
@@ -649,8 +711,8 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
             setTimeout(updateCanvasSize, 100);
         });
         
-        // Initial update
-        setTimeout(updateCanvasSize, 300);
+        // Initial update dengan delay lebih lama
+        setTimeout(updateCanvasSize, 500);
     }
     
     // Setup scroll handler untuk memastikan canvas mengikuti scroll
@@ -926,14 +988,32 @@ function setupDrawingCanvas() {
                 // Pastikan contentHeight minimal sama dengan container height atau tinggi yang wajar
                 contentHeight = Math.max(contentHeight, container.clientHeight || 800, 1000);
                 
-                // Set canvas size sesuai konten
-                const wrapperWidth = pdfWrapper.offsetWidth || container.clientWidth;
-                drawingCanvas.width = wrapperWidth;
+                // Dapatkan lebar container yang sebenarnya (tanpa padding)
+                const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
+                
+                // Set canvas size sesuai konten - pastikan lebar 100%
+                drawingCanvas.width = containerWidth;
                 drawingCanvas.height = contentHeight;
                 
-                // Set canvas style - penting: height harus sesuai dengan konten PDF
+                // Set canvas style - penting: lebar 100%, height sesuai konten PDF
                 drawingCanvas.style.width = '100%';
                 drawingCanvas.style.height = contentHeight + 'px';
+                drawingCanvas.style.left = '0';
+                drawingCanvas.style.top = '0';
+                
+                // Pastikan iframe juga mengisi lebar penuh
+                if (iframe) {
+                    iframe.style.width = '100%';
+                    iframe.style.height = contentHeight + 'px';
+                    iframe.style.minHeight = contentHeight + 'px';
+                }
+                
+                // Pastikan wrapper juga mengisi lebar penuh
+                if (pdfWrapper) {
+                    pdfWrapper.style.width = '100%';
+                    pdfWrapper.style.height = contentHeight + 'px';
+                    pdfWrapper.style.minHeight = contentHeight + 'px';
+                }
                 
                 // Set background transparan untuk canvas
                 drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
@@ -1012,9 +1092,28 @@ function setupDrawingCanvas() {
                             }
                         }
                         
-                        // Update canvas height dan style
+                        // Dapatkan lebar container yang sebenarnya
+                        const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
+                        
+                        // Update canvas width dan height
+                        drawingCanvas.width = containerWidth;
                         drawingCanvas.height = contentHeight;
+                        drawingCanvas.style.width = '100%';
                         drawingCanvas.style.height = contentHeight + 'px';
+                        drawingCanvas.style.left = '0';
+                        drawingCanvas.style.top = '0';
+                        
+                        // Update iframe dan wrapper juga
+                        if (iframe) {
+                            iframe.style.width = '100%';
+                            iframe.style.height = contentHeight + 'px';
+                            iframe.style.minHeight = contentHeight + 'px';
+                        }
+                        if (pdfWrapper) {
+                            pdfWrapper.style.width = '100%';
+                            pdfWrapper.style.height = contentHeight + 'px';
+                            pdfWrapper.style.minHeight = contentHeight + 'px';
+                        }
                         
                         // Restore drawing jika ada
                         if (savedImageData && savedImageData.data) {
@@ -1025,11 +1124,22 @@ function setupDrawingCanvas() {
                             }
                         }
                         
-                        console.log('[Jobcard] Canvas height updated:', oldHeight, '->', contentHeight);
+                        console.log('[Jobcard] Canvas size updated:', containerWidth, 'x', contentHeight);
                     } else {
-                        // Pastikan style height selalu sinkron meskipun tidak resize
+                        // Pastikan style selalu sinkron meskipun tidak resize
+                        const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
+                        if (drawingCanvas.width !== containerWidth) {
+                            drawingCanvas.width = containerWidth;
+                            drawingCanvas.style.width = '100%';
+                        }
                         if (drawingCanvas.style.height !== contentHeight + 'px') {
                             drawingCanvas.style.height = contentHeight + 'px';
+                        }
+                        if (iframe) {
+                            iframe.style.width = '100%';
+                        }
+                        if (pdfWrapper) {
+                            pdfWrapper.style.width = '100%';
                         }
                     }
                 } catch (error) {
