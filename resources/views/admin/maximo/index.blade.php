@@ -729,10 +729,26 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
                 pdfWrapper.style.minHeight = finalHeight + 'px';
                 pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
                 
+                // PENTING: Mengubah drawingCanvas.width/height akan MERESET isi canvas.
+                // Selalu simpan imageData dulu, ubah size, lalu restore.
+                let savedImageData = null;
+                if (drawingCanvas.width > 0 && drawingCanvas.height > 0 && drawingCtx) {
+                    try {
+                        savedImageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+                    } catch (e) { /* cross-origin atau kosong */ }
+                }
+                
                 // Set canvas size sesuai konten PDF - pastikan lebar 100%
                 // Canvas harus mengikuti tinggi wrapper agar ikut scroll
                 drawingCanvas.width = containerWidth;
                 drawingCanvas.height = finalHeight;
+                
+                // Restore coretan setelah resize
+                if (savedImageData && savedImageData.data && drawingCtx) {
+                    try {
+                        drawingCtx.putImageData(savedImageData, 0, 0);
+                    } catch (e) { /* ignore */ }
+                }
                 
                 // Set canvas style untuk mengikuti wrapper - lebar 100%
                 // Canvas absolute di dalam wrapper, jadi akan ikut scroll otomatis
@@ -812,18 +828,9 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
             updateCanvasSize();
         }, 500);
         
-        // Update berkala untuk memastikan tinggi selalu sesuai (kurangi frekuensi untuk menghindari gambar hilang)
-        const sizeCheckInterval = setInterval(() => {
-            if (modal && !modal.classList.contains('hidden')) {
-                // Pastikan scrollbar iframe tidak muncul setiap kali check
-                iframe.style.setProperty('overflow', 'hidden', 'important');
-                iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                updateCanvasSize();
-            } else {
-                clearInterval(sizeCheckInterval);
-            }
-        }, 5000); // Kurangi frekuensi menjadi 5 detik untuk menghindari gambar hilang
+        // JANGAN pakai setInterval updateCanvasSize: mengubah canvas width/height
+        // akan reset isi canvas. Ukuran PDF tidak berubah setelah load, jadi
+        // cukup update di iframe load (500/1500/3000ms) dan resize window.
     }
     
     // Setup scroll handler untuk memastikan canvas mengikuti scroll
@@ -1371,11 +1378,20 @@ function setupDrawingCanvas() {
                         isResizingCanvas = false; // Reset flag setelah selesai resize
                         console.log('[Jobcard] Canvas size updated:', containerWidth, 'x', contentHeight);
                     } else {
-                        // Pastikan style selalu sinkron meskipun tidak resize
+                        // Pastikan style selalu sinkron meskipun tidak resize.
+                        // PENTING: Mengubah drawingCanvas.width MERESET isi canvas.
+                        // Hanya ubah width jika benar-benar beda, dan simpan/restore coretan.
                         const containerWidth = container.clientWidth || container.offsetWidth || pdfWrapper.offsetWidth;
                         if (drawingCanvas.width !== containerWidth) {
+                            let saved = null;
+                            if (drawingCanvas.width > 0 && drawingCanvas.height > 0 && drawingCtx) {
+                                try { saved = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height); } catch (e) {}
+                            }
                             drawingCanvas.width = containerWidth;
                             drawingCanvas.style.width = '100%';
+                            if (saved && saved.data && drawingCtx) {
+                                try { drawingCtx.putImageData(saved, 0, 0); } catch (e) {}
+                            }
                         }
                         if (drawingCanvas.style.height !== contentHeight + 'px') {
                             drawingCanvas.style.height = contentHeight + 'px';
@@ -1402,17 +1418,17 @@ function setupDrawingCanvas() {
                 }
             };
             
-            // Update canvas height saat scroll (lebih responsif)
+            // Update canvas height hanya saat scroll (debounce). JANGAN pakai setInterval:
+            // periodic resize berisiko mengubah canvas width/height dan mereset coretan.
             let scrollTimeout = null;
             container.addEventListener('scroll', () => {
-                // Debounce untuk performa - tidak perlu update terlalu sering
                 if (scrollTimeout) clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(updateCanvasHeight, 300);
             }, { passive: true });
             
-            // Periodic check untuk update canvas height (setiap 2 detik untuk menghindari terlalu sering resize)
-            // Resize terlalu sering akan menghapus gambar
-            heightCheckInterval = setInterval(updateCanvasHeight, 2000);
+            // TIDAK pakai setInterval(updateCanvasHeight): panggilan berkala bisa
+            // mengubah drawingCanvas.width/height dan menghapus coretan user.
+            // heightCheckInterval = setInterval(updateCanvasHeight, 2000); // dinonaktifkan
             
             // Clear interval saat modal ditutup
             const modal = document.getElementById('pdfEditorModal');
