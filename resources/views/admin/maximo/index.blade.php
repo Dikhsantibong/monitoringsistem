@@ -564,10 +564,10 @@
             <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-2xl font-bold">&times;</button>
         </div>
         
-        <!-- PDF Viewer Container dengan iframe -->
+        <!-- PDF Viewer: render dengan PDF.js agar seluruh dokumen (semua halaman) terlihat saat scroll -->
         <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px); padding:0; margin:0; width:100%;">
             <div id="pdfWrapper" style="position:relative;width:100%;padding:0;margin:0;display:block;">
-                <iframe id="pdfIframe" src="" scrolling="no" style="width:100% !important;height:auto !important;min-height:100vh !important;border:none !important;pointer-events:auto !important;display:block !important;padding:0 !important;margin:0 !important;overflow:hidden !important;"></iframe>
+                <div id="pdfPagesContainer" style="width:100%;display:block;position:relative;"></div>
                 <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;cursor:default;z-index:10;pointer-events:none;background:transparent;display:block;"></canvas>
             </div>
         </div>
@@ -627,10 +627,12 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
     currentPdfUrl = pdfUrl;
 
     const modal = document.getElementById('pdfEditorModal');
-    const iframe = document.getElementById('pdfIframe');
+    const container = document.getElementById('pdfViewerContainer');
+    const pdfWrapper = document.getElementById('pdfWrapper');
+    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
 
-    if (!modal || !iframe) {
-        console.error('[Jobcard] Modal atau iframe tidak ditemukan');
+    if (!modal || !container || !pdfWrapper || !pdfPagesContainer || !drawingCanvas) {
+        console.error('[Jobcard] Modal atau elemen PDF tidak ditemukan');
         return;
     }
 
@@ -638,209 +640,87 @@ window.openPdfEditor = function(pdfUrl, pdfPath) {
     document.body.style.overflow = 'hidden';
     document.getElementById('downloadPath').value = pdfPath;
     
-    // Load PDF in iframe (browser native viewer)
-    // Pastikan iframe mengisi lebar penuh tanpa padding dan TIDAK memiliki scrollbar sendiri
-    iframe.style.width = '100%';
-    iframe.style.height = 'auto';
-    iframe.style.minHeight = '100%';
-    iframe.style.padding = '0';
-    iframe.style.margin = '0';
-    iframe.style.display = 'block';
-    iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
-    iframe.style.overflowX = 'hidden'; // Nonaktifkan scrollbar horizontal iframe
-    iframe.style.overflowY = 'hidden'; // Nonaktifkan scrollbar vertical iframe
-    iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
-    iframe.setAttribute('scrolling', 'no'); // Force disable scrolling
-    
-    // Tambahkan parameter zoom untuk memaksa PDF mengisi lebar penuh
-    // #zoom=page-width akan membuat PDF mengisi lebar penuh
-    // #zoom=fit akan membuat PDF fit ke viewport
-    let finalPdfUrl = pdfUrl;
-    if (!pdfUrl.includes('#')) {
-        finalPdfUrl = pdfUrl + '#zoom=page-width';
-    } else if (!pdfUrl.includes('zoom=')) {
-        finalPdfUrl = pdfUrl + '&zoom=page-width';
-    }
-    
-    iframe.src = finalPdfUrl;
-    
     // Clear previous drawings
     if (drawingCtx && drawingCanvas) {
         drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     }
     
-    // Setup canvas dan scroll handler saat PDF editor dibuka
-    const container = document.getElementById('pdfViewerContainer');
-    const pdfWrapper = document.getElementById('pdfWrapper');
+    if (container) { container.style.padding = '0'; container.style.margin = '0'; }
+    if (pdfWrapper) { pdfWrapper.style.padding = '0'; pdfWrapper.style.margin = '0'; }
     
-    // Pastikan container dan wrapper tidak ada padding/margin
-    if (container) {
-        container.style.padding = '0';
-        container.style.margin = '0';
-    }
-    if (pdfWrapper) {
-        pdfWrapper.style.padding = '0';
-        pdfWrapper.style.margin = '0';
-    }
+    pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Memuat PDF...</div>';
+    pdfWrapper.style.height = '200px';
     
-    if (container && pdfWrapper && iframe && drawingCanvas) {
-        // Fungsi untuk update canvas size dan position
-        const updateCanvasSize = () => {
-            try {
-                // Dapatkan lebar container yang sebenarnya (tanpa padding)
-                const containerWidth = container.clientWidth || container.offsetWidth;
-                
-                // Dapatkan tinggi konten iframe yang sebenarnya
-                let iframeHeight = 0;
-                try {
-                    // Coba akses iframe content untuk mendapatkan tinggi sebenarnya
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (iframeDoc && iframeDoc.body) {
-                        iframeHeight = Math.max(
-                            iframeDoc.body.scrollHeight,
-                            iframeDoc.body.offsetHeight,
-                            iframeDoc.documentElement.clientHeight,
-                            iframeDoc.documentElement.scrollHeight,
-                            iframeDoc.documentElement.offsetHeight
-                        );
-                    }
-                } catch (e) {
-                    // Cross-origin atau error, gunakan tinggi wrapper
-                    console.log('[Jobcard] Tidak bisa akses iframe content, gunakan fallback');
-                }
-                
-                // Gunakan tinggi wrapper atau iframe, ambil yang terbesar
-                // Pastikan mendapatkan tinggi konten PDF yang sebenarnya (bukan hanya viewport)
-                const wrapperHeight = pdfWrapper.scrollHeight || pdfWrapper.offsetHeight || iframeHeight;
-                let finalHeight = Math.max(iframeHeight, wrapperHeight, container.scrollHeight || 1000);
-                
-                // Jika masih belum mendapatkan tinggi yang benar, coba lagi setelah delay
-                // Tinggi PDF biasanya lebih besar dari viewport
-                if (finalHeight < 2000) {
-                    // Mungkin PDF multi-halaman, estimasi tinggi minimal
-                    finalHeight = Math.max(finalHeight, 2000);
-                }
-                
-                // Set iframe height untuk memastikan PDF mengisi penuh
-                // Pastikan iframe tidak memiliki scrollbar sendiri
-                iframe.style.height = finalHeight + 'px';
-                iframe.style.minHeight = finalHeight + 'px';
-                iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
-                iframe.style.overflowX = 'hidden'; // Nonaktifkan scrollbar horizontal
-                iframe.style.overflowY = 'hidden'; // Nonaktifkan scrollbar vertical
-                iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
-                iframe.setAttribute('scrolling', 'no'); // Force disable scrolling
-                
-                // Set wrapper height - wrapper akan di-scroll oleh container
-                pdfWrapper.style.height = finalHeight + 'px';
-                pdfWrapper.style.minHeight = finalHeight + 'px';
-                pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
-                
-                // PENTING: Mengubah drawingCanvas.width/height akan MERESET isi canvas.
-                // Selalu simpan imageData dulu, ubah size, lalu restore.
-                let savedImageData = null;
-                if (drawingCanvas.width > 0 && drawingCanvas.height > 0 && drawingCtx) {
-                    try {
-                        savedImageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-                    } catch (e) { /* cross-origin atau kosong */ }
-                }
-                
-                // Set canvas size sesuai konten PDF - pastikan lebar 100%
-                // Canvas harus mengikuti tinggi wrapper agar ikut scroll
-                drawingCanvas.width = containerWidth;
-                drawingCanvas.height = finalHeight;
-                
-                // Restore coretan setelah resize
-                if (savedImageData && savedImageData.data && drawingCtx) {
-                    try {
-                        drawingCtx.putImageData(savedImageData, 0, 0);
-                    } catch (e) { /* ignore */ }
-                }
-                
-                // Set canvas style: isi penuh wrapper (top/left/right/bottom) agar coretan
-                // ikut scroll dengan dokumen PDF dan menjadi bagian dokumen
-                drawingCanvas.style.position = 'absolute';
-                drawingCanvas.style.top = '0';
-                drawingCanvas.style.left = '0';
-                drawingCanvas.style.right = '0';
-                drawingCanvas.style.bottom = '0';
-                drawingCanvas.style.width = '100%';
-                drawingCanvas.style.height = '100%';
-                
-                // Pastikan container bisa scroll seluruh konten
-                container.style.overflow = 'auto';
-                container.style.overflowY = 'auto';
-                container.style.overflowX = 'hidden';
-                
-                if (typeof updateDrawingCanvasTool === 'function') {
-                    updateDrawingCanvasTool();
-                }
-                if (typeof updateCanvasCursor === 'function') {
-                    updateCanvasCursor();
-                }
-                
-                console.log('[Jobcard] Canvas size updated:', containerWidth, 'x', finalHeight);
-            } catch (error) {
-                console.error('[Jobcard] Error updating canvas size:', error);
+    // Render seluruh dokumen dengan PDF.js: tiap halaman jadi canvas, ditumpuk vertikal.
+    // Tinggi wrapper = jumlah semua halaman → scroll container menampilkan dokumen penuh.
+    (async function() {
+        try {
+            const pdfjs = await import('{{ asset("pdf.js/build/pdf.mjs") }}');
+            pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdf.js/build/pdf.worker.mjs") }}';
+            const doc = await pdfjs.getDocument({ url: pdfUrl }).promise;
+            const numPages = doc.numPages;
+            const cw = Math.max(container.clientWidth || 800, 400);
+            let totalHeight = 0;
+            const gap = 8;
+            pdfPagesContainer.innerHTML = '';
+            
+            for (let i = 1; i <= numPages; i++) {
+                const page = await doc.getPage(i);
+                const vp1 = page.getViewport({ scale: 1 });
+                const scale = cw / vp1.width;
+                const vp = page.getViewport({ scale });
+                const can = document.createElement('canvas');
+                can.width = vp.width;
+                can.height = vp.height;
+                can.style.display = 'block';
+                can.style.marginBottom = (i < numPages ? gap : 0) + 'px';
+                const ctx = can.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                pdfPagesContainer.appendChild(can);
+                totalHeight += vp.height + (i < numPages ? gap : 0);
             }
-        };
-        
-        // Update canvas saat iframe load
-        iframe.addEventListener('load', () => {
-            // Pastikan iframe tidak memiliki scrollbar segera setelah load
-            iframe.style.overflow = 'hidden';
-            iframe.style.overflowX = 'hidden';
-            iframe.style.overflowY = 'hidden';
-            iframe.scrolling = 'no';
-            iframe.setAttribute('scrolling', 'no');
             
-            // Tunggu beberapa kali untuk memastikan PDF fully loaded
-            setTimeout(() => {
-                // Pastikan lagi scrollbar iframe tidak muncul
-                iframe.style.setProperty('overflow', 'hidden', 'important');
-                iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                updateCanvasSize();
-                setupScrollHandler();
-            }, 500);
+            pdfWrapper.style.height = totalHeight + 'px';
+            pdfWrapper.style.minHeight = totalHeight + 'px';
+            pdfWrapper.style.overflow = 'visible';
             
-            // Update lagi setelah delay lebih lama untuk memastikan tinggi PDF terdeteksi
-            setTimeout(() => {
-                // Pastikan lagi scrollbar iframe tidak muncul
-                iframe.style.setProperty('overflow', 'hidden', 'important');
-                iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                updateCanvasSize();
-            }, 1500);
+            var savedImg = null;
+            if (drawingCanvas.width > 0 && drawingCanvas.height > 0 && drawingCtx) {
+                try { savedImg = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height); } catch (e) {}
+            }
+            drawingCanvas.width = cw;
+            drawingCanvas.height = totalHeight;
+            if (savedImg && savedImg.data && drawingCtx) {
+                try { drawingCtx.putImageData(savedImg, 0, 0); } catch (e) {}
+            }
+            drawingCanvas.style.position = 'absolute';
+            drawingCanvas.style.top = '0';
+            drawingCanvas.style.left = '0';
+            drawingCanvas.style.right = '0';
+            drawingCanvas.style.bottom = '0';
+            drawingCanvas.style.width = '100%';
+            drawingCanvas.style.height = '100%';
             
-            // Update sekali lagi untuk memastikan
-            setTimeout(() => {
-                // Pastikan lagi scrollbar iframe tidak muncul
-                iframe.style.setProperty('overflow', 'hidden', 'important');
-                iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                updateCanvasSize();
-            }, 3000);
-        });
-        
-        // Update canvas saat resize
-        window.addEventListener('resize', () => {
-            setTimeout(updateCanvasSize, 100);
-        });
-        
-        // Initial update dengan delay lebih lama
-        setTimeout(() => {
-            // Pastikan scrollbar iframe tidak muncul
-            iframe.style.setProperty('overflow', 'hidden', 'important');
-            iframe.style.setProperty('overflow-x', 'hidden', 'important');
-            iframe.style.setProperty('overflow-y', 'hidden', 'important');
-            updateCanvasSize();
-        }, 500);
-        
-        // JANGAN pakai setInterval updateCanvasSize: mengubah canvas width/height
-        // akan reset isi canvas. Ukuran PDF tidak berubah setelah load, jadi
-        // cukup update di iframe load (500/1500/3000ms) dan resize window.
-    }
+            container.style.overflow = 'auto';
+            container.style.overflowY = 'auto';
+            container.style.overflowX = 'hidden';
+            
+            if (typeof setupScrollHandler === 'function') setupScrollHandler();
+            if (typeof updateDrawingCanvasTool === 'function') updateDrawingCanvasTool();
+            if (typeof updateCanvasCursor === 'function') updateCanvasCursor();
+            
+            currentTool = 'pen';
+            var toolPen = document.getElementById('toolPen');
+            if (toolPen) {
+                document.querySelectorAll('[data-tool]').forEach(function(btn) { btn.classList.remove('active-tool'); });
+                toolPen.classList.add('active-tool');
+            }
+            console.log('[Jobcard] PDF dirender:', numPages, 'hlm, tinggi', totalHeight);
+        } catch (e) {
+            console.error('[Jobcard] Gagal memuat PDF:', e);
+            pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#c00;">Gagal memuat PDF. ' + (e.message || '') + '</div>';
+        }
+    })();
     
     // Setup scroll handler untuk memastikan canvas mengikuti scroll
     function setupScrollHandler() {
@@ -921,10 +801,10 @@ window.closePdfEditor = function(force = false) {
     }
     document.body.style.overflow = '';
     
-    // Clear iframe
-    const iframe = document.getElementById('pdfIframe');
-    if (iframe) {
-        iframe.src = '';
+    // Clear isi PDF (render PDF.js)
+    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
+    if (pdfPagesContainer) {
+        pdfPagesContainer.innerHTML = '';
     }
     
     // Clear drawings
@@ -1111,45 +991,23 @@ function updateCanvasCursor() {
 function setupDrawingCanvas() {
     if (!drawingCanvas || !drawingCtx) return;
     
-    // Resize canvas to match container dan iframe
     const container = document.getElementById('pdfViewerContainer');
     const pdfWrapper = document.getElementById('pdfWrapper');
-    const iframe = document.getElementById('pdfIframe');
+    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
     
-    if (container && pdfWrapper && iframe) {
+    if (container && pdfWrapper && pdfPagesContainer) {
         const resizeCanvas = () => {
             try {
-                // Jangan resize jika sedang dalam proses resize atau sedang drawing
-                if (isResizingCanvas || isDrawing) {
-                    return;
-                }
+                if (isResizingCanvas || isDrawing) return;
                 
-                // Dapatkan tinggi konten yang sebenarnya dari berbagai sumber
+                // Tinggi dari #pdfPagesContainer (render PDF.js) atau wrapper
                 let contentHeight = Math.max(
+                    pdfPagesContainer.scrollHeight || 0,
+                    pdfPagesContainer.offsetHeight || 0,
                     pdfWrapper.scrollHeight || 0,
                     pdfWrapper.offsetHeight || 0,
-                    iframe.scrollHeight || 0,
-                    iframe.offsetHeight || 0
+                    container.scrollHeight || 0
                 );
-                
-                // Coba dapatkan tinggi dari iframe content jika memungkinkan
-                try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (iframeDoc && iframeDoc.body) {
-                        const iframeHeight = Math.max(
-                            iframeDoc.body.scrollHeight || 0,
-                            iframeDoc.body.offsetHeight || 0,
-                            iframeDoc.documentElement.scrollHeight || 0,
-                            iframeDoc.documentElement.offsetHeight || 0,
-                            iframeDoc.documentElement.clientHeight || 0
-                        );
-                        contentHeight = Math.max(contentHeight, iframeHeight);
-                    }
-                } catch (e) {
-                    // Cross-origin, gunakan wrapper/iframe height
-                }
-                
-                // Pastikan contentHeight minimal sama dengan container height atau tinggi yang wajar
                 contentHeight = Math.max(contentHeight, container.clientHeight || 800, 1000);
                 
                 // Dapatkan lebar container yang sebenarnya (tanpa padding)
@@ -1198,23 +1056,6 @@ function setupDrawingCanvas() {
                     isResizingCanvas = false; // Reset flag setelah selesai resize
                 }
                 
-                // Pastikan iframe juga mengisi lebar penuh dan TIDAK memiliki scrollbar
-                if (iframe) {
-                    iframe.style.width = '100%';
-                    iframe.style.height = contentHeight + 'px';
-                    iframe.style.minHeight = contentHeight + 'px';
-                    iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
-                    iframe.style.overflowX = 'hidden';
-                    iframe.style.overflowY = 'hidden';
-                    iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
-                    iframe.setAttribute('scrolling', 'no'); // Force disable scrolling
-                    // Force dengan CSS
-                    iframe.style.setProperty('overflow', 'hidden', 'important');
-                    iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                    iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                }
-                
-                // Pastikan wrapper juga mengisi lebar penuh dan tidak memiliki scrollbar sendiri
                 if (pdfWrapper) {
                     pdfWrapper.style.width = '100%';
                     pdfWrapper.style.height = contentHeight + 'px';
@@ -1245,15 +1086,7 @@ function setupDrawingCanvas() {
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
-        // Update canvas saat iframe load
-        iframe.addEventListener('load', () => {
-            setTimeout(() => {
-                resizeCanvas();
-                setupCanvasHeightMonitor();
-            }, 1000); // Delay lebih lama untuk memastikan PDF render sepenuhnya
-        });
-        
-        // Setup monitor untuk update canvas height secara berkala dan saat scroll
+        // Setup monitor untuk update canvas height saat scroll (isi dari pdfPagesContainer)
         let heightCheckInterval = null;
         function setupCanvasHeightMonitor() {
             // Clear interval yang sudah ada
@@ -1263,41 +1096,14 @@ function setupDrawingCanvas() {
             
             const updateCanvasHeight = () => {
                 try {
-                    // Pastikan scrollbar iframe tidak muncul setiap kali check
-                    if (iframe) {
-                        iframe.style.setProperty('overflow', 'hidden', 'important');
-                        iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                        iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                        iframe.setAttribute('scrolling', 'no');
-                    }
-                    
-                    // Dapatkan tinggi konten yang sebenarnya dari berbagai sumber
+                    // Tinggi dari pdfPagesContainer (render PDF.js) atau wrapper
                     let contentHeight = Math.max(
+                        pdfPagesContainer.scrollHeight || 0,
+                        pdfPagesContainer.offsetHeight || 0,
                         pdfWrapper.scrollHeight || 0,
                         pdfWrapper.offsetHeight || 0,
-                        iframe.scrollHeight || 0,
-                        iframe.offsetHeight || 0,
                         container.scrollHeight || 0
                     );
-                    
-                    // Coba dapatkan tinggi dari iframe content jika memungkinkan
-                    try {
-                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                        if (iframeDoc && iframeDoc.body) {
-                            const iframeHeight = Math.max(
-                                iframeDoc.body.scrollHeight || 0,
-                                iframeDoc.body.offsetHeight || 0,
-                                iframeDoc.documentElement.scrollHeight || 0,
-                                iframeDoc.documentElement.offsetHeight || 0,
-                                iframeDoc.documentElement.clientHeight || 0
-                            );
-                            contentHeight = Math.max(contentHeight, iframeHeight);
-                        }
-                    } catch (e) {
-                        // Cross-origin, gunakan wrapper/iframe height
-                    }
-                    
-                    // Pastikan contentHeight minimal sama dengan container height atau tinggi yang wajar
                     contentHeight = Math.max(contentHeight, container.clientHeight || 800, 1000);
                     
                     // Update canvas height jika berbeda (threshold lebih besar untuk menghindari resize terlalu sering)
@@ -1335,21 +1141,6 @@ function setupDrawingCanvas() {
                         drawingCanvas.style.width = '100%';
                         drawingCanvas.style.height = '100%';
                         
-                        // Update iframe dan wrapper juga
-                        if (iframe) {
-                            iframe.style.width = '100%';
-                            iframe.style.height = contentHeight + 'px';
-                            iframe.style.minHeight = contentHeight + 'px';
-                            iframe.style.overflow = 'hidden'; // Nonaktifkan scrollbar iframe
-                            iframe.style.overflowX = 'hidden';
-                            iframe.style.overflowY = 'hidden';
-                            iframe.scrolling = 'no'; // Nonaktifkan scrollbar iframe (legacy)
-                            iframe.setAttribute('scrolling', 'no'); // Force disable scrolling
-                            // Force dengan CSS
-                            iframe.style.setProperty('overflow', 'hidden', 'important');
-                            iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                            iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                        }
                         if (pdfWrapper) {
                             pdfWrapper.style.width = '100%';
                             pdfWrapper.style.height = contentHeight + 'px';
@@ -1396,20 +1187,7 @@ function setupDrawingCanvas() {
                                 try { drawingCtx.putImageData(saved, 0, 0); } catch (e) {}
                             }
                         }
-                        // Pastikan canvas tetap isi penuh wrapper (height: 100%) agar ikut scroll
                         drawingCanvas.style.height = '100%';
-                        if (iframe) {
-                            iframe.style.width = '100%';
-                            iframe.style.overflow = 'hidden'; // Pastikan tidak ada scrollbar iframe
-                            iframe.style.overflowX = 'hidden';
-                            iframe.style.overflowY = 'hidden';
-                            iframe.scrolling = 'no';
-                            iframe.setAttribute('scrolling', 'no');
-                            // Force dengan CSS
-                            iframe.style.setProperty('overflow', 'hidden', 'important');
-                            iframe.style.setProperty('overflow-x', 'hidden', 'important');
-                            iframe.style.setProperty('overflow-y', 'hidden', 'important');
-                        }
                         if (pdfWrapper) {
                             pdfWrapper.style.width = '100%';
                             pdfWrapper.style.overflow = 'visible'; // Biarkan container yang handle scroll
