@@ -504,7 +504,7 @@
         <!-- PDF Viewer Container dengan iframe -->
         <div id="pdfViewerContainer" class="flex-1 overflow-hidden bg-gray-200 relative" style="max-height: calc(95vh - 120px);">
             <iframe id="pdfIframe" src="" style="width:100%;height:100%;border:none;pointer-events:none;"></iframe>
-            <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;z-index:10;pointer-events:auto;"></canvas>
+            <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;z-index:10;pointer-events:auto;background:transparent;"></canvas>
         </div>
         
         <!-- Footer dengan Actions -->
@@ -582,8 +582,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function updateDrawingCanvasTool() {
     if (!drawingCtx) return;
-    drawingCtx.strokeStyle = currentTool === 'pen' ? '#000000' : (currentTool === 'eraser' ? '#FFFFFF' : '#000000');
-    drawingCtx.lineWidth = currentTool === 'pen' ? 3 : (currentTool === 'eraser' ? 25 : 3);
+    
+    if (currentTool === 'eraser') {
+        // Eraser: gunakan destination-out untuk menghapus hanya drawing, bukan PDF di bawahnya
+        drawingCtx.globalCompositeOperation = 'destination-out';
+        drawingCtx.strokeStyle = 'rgba(0,0,0,1)'; // Warna tidak penting untuk destination-out
+        drawingCtx.lineWidth = 25;
+    } else {
+        // Pen dan Signature: gunakan source-over untuk menambahkan drawing di atas PDF
+        drawingCtx.globalCompositeOperation = 'source-over';
+        drawingCtx.strokeStyle = '#000000';
+        drawingCtx.lineWidth = 3;
+    }
+    
     drawingCtx.lineCap = 'round';
     drawingCtx.lineJoin = 'round';
 }
@@ -595,14 +606,22 @@ function setupDrawingCanvas() {
     const container = document.getElementById('pdfViewerContainer');
     if (container) {
         const resizeCanvas = () => {
+            const oldWidth = drawingCanvas.width;
+            const oldHeight = drawingCanvas.height;
             drawingCanvas.width = container.clientWidth;
             drawingCanvas.height = container.clientHeight;
+            
+            // Set background transparan untuk canvas
+            drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            
             updateDrawingCanvasTool();
         };
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
     }
     
+    // Pastikan canvas memiliki background transparan
+    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     updateDrawingCanvasTool();
     
     let lastX = 0;
@@ -622,7 +641,12 @@ function setupDrawingCanvas() {
         lastX = pos.x;
         lastY = pos.y;
         
+        // Update tool settings setiap kali mulai drawing
+        updateDrawingCanvasTool();
+        
         if (currentTool === 'signature' && signatureImage) {
+            // Untuk signature, gunakan source-over
+            drawingCtx.globalCompositeOperation = 'source-over';
             drawingCtx.drawImage(signatureImage, pos.x - 100, pos.y - 50, 200, 100);
             isDrawing = false;
         } else {
@@ -829,14 +853,44 @@ document.getElementById('savePdfBtn').addEventListener('click', async function()
         return;
     }
     
+    // Disable button untuk prevent double click
+    const saveBtn = document.getElementById('savePdfBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Menyimpan...';
+    
     try {
-        // Convert drawing canvas to image
+        // Convert drawing canvas to image dengan alpha channel (PNG)
+        // Pastikan hanya drawing yang diambil, bukan PDF di bawahnya
         const drawingImage = drawingCanvas.toDataURL('image/png');
+        
+        // Validasi apakah ada drawing yang dibuat (cek apakah ada pixel yang tidak transparan)
+        const imageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+        let hasDrawing = false;
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            // Cek alpha channel (index 3 dari setiap 4 byte: R, G, B, A)
+            const alpha = imageData.data[i + 3];
+            if (alpha > 0) {
+                // Cek apakah ini bukan hanya background putih/transparan
+                const r = imageData.data[i];
+                const g = imageData.data[i + 1];
+                const b = imageData.data[i + 2];
+                // Jika ada warna atau alpha > 0, berarti ada drawing
+                if (alpha > 10 || (r > 0 || g > 0 || b > 0)) {
+                    hasDrawing = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!hasDrawing) {
+            // Biarkan user tetap bisa save meskipun tidak ada drawing (untuk clear drawing)
+            console.log('[Jobcard] Tidak ada drawing yang dibuat, tetap lanjutkan save');
+        }
         
         // Send to server to merge PDF + drawing
         const formData = new FormData();
         formData.append('path', currentPdfPath);
-        formData.append('drawing', drawingImage); // Single drawing overlay for all pages
+        formData.append('drawing', drawingImage);
         formData.append('_token', '{{ csrf_token() }}');
         
         const response = await fetch("{{ route('admin.maximo.jobcard.update') }}", {
@@ -852,10 +906,14 @@ document.getElementById('savePdfBtn').addEventListener('click', async function()
             closePdfEditor(true);
         } else {
             alert('Gagal update jobcard: ' + (data.message || 'Unknown error'));
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Simpan Perubahan';
         }
     } catch (error) {
         console.error('[Jobcard] Error saving PDF:', error);
         alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan Perubahan';
     }
 });
 

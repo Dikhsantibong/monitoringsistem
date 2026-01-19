@@ -476,10 +476,9 @@ class MaximoController extends Controller
                 return response()->json(['success' => false, 'message' => 'Path tidak valid atau file tidak ditemukan.']);
             }
 
-            $drawingsJson = $request->input('drawings');
-            $drawings = json_decode($drawingsJson, true);
+            $drawingBase64 = $request->input('drawing');
             
-            if (!$drawings || empty($drawings)) {
+            if (!$drawingBase64) {
                 return response()->json(['success' => false, 'message' => 'Tidak ada gambar drawing yang dikirim.']);
             }
 
@@ -496,13 +495,37 @@ class MaximoController extends Controller
                 mkdir($tempDir, 0777, true);
             }
             
+            // Decode base64 drawing image
+            $tempImagePath = null;
+            if (preg_match('/data:image\/(\w+);base64,(.+)/', $drawingBase64, $matches)) {
+                $imageType = strtolower($matches[1]);
+                $imageData = base64_decode($matches[2]);
+                
+                // Simpan temporary image
+                $tempImagePath = $tempDir . '/drawing_' . time() . '.' . $imageType;
+                file_put_contents($tempImagePath, $imageData);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Format gambar drawing tidak valid.']);
+            }
+            
             // Buat PDF baru dengan FPDI
             $pdf = new Fpdi();
             
             // Import halaman dari PDF asli
             $pageCount = $pdf->setSourceFile($originalPdfPath);
             
-            // Loop setiap halaman dan tambahkan gambar drawing jika ada
+            // Dapatkan informasi gambar drawing untuk scaling
+            $drawingImageInfo = null;
+            if (file_exists($tempImagePath) && in_array($imageType, ['png', 'jpg', 'jpeg'])) {
+                // Dapatkan dimensi gambar drawing
+                if ($imageType === 'png') {
+                    $drawingImageInfo = @getimagesize($tempImagePath);
+                } else {
+                    $drawingImageInfo = @getimagesize($tempImagePath);
+                }
+            }
+            
+            // Loop setiap halaman dan tambahkan gambar drawing overlay
             for ($pageNum = 1; $pageNum <= $pageCount; $pageNum++) {
                 // Import halaman dari PDF asli
                 $templateId = $pdf->importPage($pageNum);
@@ -512,38 +535,60 @@ class MaximoController extends Controller
                 $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
                 $pdf->AddPage($orientation, [$size['width'], $size['height']]);
                 
-                // Render halaman PDF asli
+                // Render halaman PDF asli TERLEBIH DAHULU (PDF tetap utuh)
                 $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height']);
                 
-                // Tambahkan gambar drawing jika ada untuk halaman ini
-                if (isset($drawings[$pageNum])) {
-                    $drawingBase64 = $drawings[$pageNum];
+                // Tambahkan gambar drawing overlay di ATAS PDF (tidak mengganti PDF)
+                // Drawing hanya overlay, PDF asli tetap utuh
+                if ($drawingImageInfo && file_exists($tempImagePath)) {
+                    // Hitung scaling untuk drawing agar sesuai dengan ukuran halaman PDF
+                    // Drawing canvas biasanya lebih besar dari PDF page
+                    $drawingWidth = $drawingImageInfo[0];
+                    $drawingHeight = $drawingImageInfo[1];
                     
-                    // Decode base64 image
-                    if (preg_match('/data:image\/(\w+);base64,(.+)/', $drawingBase64, $matches)) {
-                        $imageType = strtolower($matches[1]);
-                        $imageData = base64_decode($matches[2]);
-                        
-                        // Simpan temporary image
-                        $tempImagePath = $tempDir . '/drawing_' . $pageNum . '_' . time() . '.' . $imageType;
-                        file_put_contents($tempImagePath, $imageData);
-                        
-                        // Validasi format gambar yang didukung
-                        $supportedFormats = ['png', 'jpg', 'jpeg'];
-                        if (in_array($imageType, $supportedFormats)) {
-                            // Tambahkan gambar ke PDF
-                            $pdf->Image($tempImagePath, 0, 0, $size['width'], $size['height'], strtoupper($imageType), '', '', false, 300);
-                        }
-                        
-                        // Hapus temporary image
-                        @unlink($tempImagePath);
-                    }
+                    // Scale drawing ke ukuran halaman PDF
+                    // Gunakan mode overlay dengan alpha channel untuk transparansi
+                    $pdf->Image(
+                        $tempImagePath, 
+                        0, 0, 
+                        $size['width'], $size['height'], 
+                        strtoupper($imageType), 
+                        '', '', 
+                        false, // link
+                        300, // dpi
+                        '', // align
+                        false, // resize
+                        false, // palign
+                        false, // ismask
+                        false // imgmask
+                    );
                 }
             }
             
             // Simpan PDF yang sudah digabungkan
             $outputPdf = $pdf->Output('S');
-            Storage::disk('public')->put($filePath, $outputPdf);
+            
+            // Validasi output PDF tidak kosong
+            if (empty($outputPdf)) {
+                throw new \Exception('PDF output kosong setelah proses merge.');
+            }
+            
+            // Simpan PDF ke storage
+            $saved = Storage::disk('public')->put($filePath, $outputPdf);
+            
+            if (!$saved) {
+                throw new \Exception('Gagal menyimpan PDF ke storage.');
+            }
+            
+            // Verifikasi file tersimpan dengan benar
+            if (!Storage::disk('public')->exists($filePath)) {
+                throw new \Exception('File PDF tidak ditemukan setelah disimpan.');
+            }
+            
+            // Hapus temporary image
+            if ($tempImagePath && file_exists($tempImagePath)) {
+                @unlink($tempImagePath);
+            }
             
             // Cleanup temp directory
             $tempFiles = glob($tempDir . '/drawing_*');
