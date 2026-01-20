@@ -118,41 +118,42 @@
                                 <textarea name="tindak_lanjut" id="tindak_lanjut" class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 h-24">{{ old('tindak_lanjut', $workOrder->tindak_lanjut) }}</textarea>
                             </div>
                             <div class="mb-4">
-                                <label for="document" class="block text-gray-700 font-medium mb-2">Upload Dokumen</label>
+                                <label class="block text-gray-700 font-medium mb-2">Dokumen Jobcard</label>
                                 <div class="flex flex-col space-y-4">
-                                    <div class="relative">
-                                        <input type="file" name="document" id="document" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx">
-                                        <label for="document" class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer group">
-                                            <div class="flex flex-col items-center">
-                                                <i class="fas fa-cloud-upload-alt text-3xl mb-2 text-gray-400 group-hover:text-blue-500"></i>
-                                                <span class="text-gray-600 group-hover:text-blue-500">Klik atau seret file ke sini</span>
-                                                <span class="text-sm text-gray-500 mt-1">Format: PDF, DOC, DOCX, XLS, XLSX (Maks. 5MB)</span>
-                                            </div>
-                                        </label>
-                                        <!-- File Preview -->
-                                        <div id="filePreview" class="hidden mt-3 p-3 bg-gray-50 rounded-lg">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-file-alt text-blue-500 mr-2"></i>
-                                                    <span id="fileName" class="text-sm text-gray-600"></span>
+                                    @if(!empty($workOrder->jobcard_exists) && $workOrder->jobcard_exists === true)
+                                        {{-- Jobcard sudah di-generate --}}
+                                        <div class="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg">
+                                            <div class="flex-1">
+                                                <div class="flex items-center mb-2">
+                                                    <i class="fas fa-file-pdf text-green-600 text-2xl mr-3"></i>
+                                                    <div>
+                                                        <p class="font-medium text-green-800">Jobcard tersedia</p>
+                                                        <p class="text-sm text-green-600">JOBCARD_{{ $workOrder->wonum }}.pdf</p>
+                                                    </div>
                                                 </div>
-                                                <button type="button" id="removeFile" class="text-red-500 hover:text-red-700">
-                                                    <i class="fas fa-times"></i>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ route('pemeliharaan.jobcard.download', ['path' => $workOrder->jobcard_path]) }}" 
+                                                   class="inline-flex items-center px-3 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors">
+                                                    <i class="fas fa-download mr-2"></i>
+                                                    Download
+                                                </a>
+                                                <button type="button" onclick="openPdfEditor('{{ $workOrder->jobcard_url }}', '{{ $workOrder->jobcard_path }}')" 
+                                                   class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+                                                    <i class="fas fa-edit mr-2"></i>
+                                                    Edit Dokumen
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                    @if($workOrder->document_path)
-                                    <div class="flex items-center p-3 bg-blue-50 rounded-lg">
-                                        <div class="flex-1 flex items-center">
-                                            <i class="fas fa-file-alt text-blue-500 mr-2"></i>
-                                            <span class="text-sm text-gray-600">Dokumen saat ini</span>
+                                    @else
+                                        {{-- Jobcard belum di-generate --}}
+                                        <div class="flex items-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl mr-3"></i>
+                                            <div>
+                                                <p class="font-medium text-yellow-800">Jobcard belum tersedia</p>
+                                                <p class="text-sm text-yellow-600">Silakan generate jobcard terlebih dahulu melalui halaman Admin Maximo.</p>
+                                            </div>
                                         </div>
-                                        <a href="#" onclick="openPdfEditor('{{ url('storage/' . $workOrder->document_path) }}')" class="ml-4 inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-sm rounded-lg hover:bg-yellow-600 transition-colors">
-                                            <i class="fas fa-edit mr-2"></i>
-                                            Lihat Dokumen
-                                        </a>
-                                    </div>
                                     @endif
                                 </div>
                             </div>
@@ -283,20 +284,34 @@
     </div>
 </div>
 <!-- Modal PDF Editor -->
+@if(!empty($workOrder->jobcard_exists) && $workOrder->jobcard_exists === true)
 <div id="pdfEditorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg w-[90vw] h-[90vh] flex flex-col">
-        <div class="flex justify-between items-center p-2 border-b">
-            <span class="font-bold">Lihat Dokumen PDF</span>
-            <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
+    <div class="bg-white rounded-lg shadow-lg w-[95vw] h-[95vh] flex flex-col">
+        <div class="flex justify-between items-center p-3 border-b bg-gray-50">
+            <span class="font-bold text-lg">Edit Jobcard - {{ $workOrder->wonum }}</span>
+            <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-2xl font-bold">&times;</button>
         </div>
-        <div class="flex-1 w-full h-full overflow-auto flex items-center justify-center">
-            <iframe id="pdfjs-viewer" src="{{ asset('pdf.js/web/viewer.html') }}?file={{ asset('storage/' . $workOrder->document_path) }}&hideSaveBtn=1" style="width:100%;height:100%;border:none;"></iframe>
+        <div class="flex-1 w-full overflow-hidden">
+            <iframe id="pdfjs-viewer" src="" style="width:100%;height:100%;border:none;"></iframe>
         </div>
-        <div class="flex justify-end p-4 border-t">
-            <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
+        <div class="flex justify-between items-center p-3 border-t bg-gray-50">
+            <div class="text-sm text-gray-600">
+                Dokumen: JOBCARD_{{ $workOrder->wonum }}.pdf
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('pemeliharaan.jobcard.download', ['path' => $workOrder->jobcard_path]) }}" 
+                   class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    <i class="fas fa-download mr-2"></i>Download
+                </a>
+                <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                </button>
+            </div>
         </div>
     </div>
 </div>
+@endif
+
 <!-- Modal Signature -->
 <div id="signatureModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col items-center">
@@ -311,62 +326,80 @@
 </div>
 @push('scripts')
 <script>
+// ==========================================
+// PDF Editor Modal Functions
+// ==========================================
 let pdfSaved = false;
-function openPdfEditor(pdfUrl) {
+let currentPdfPath = '';
+
+function openPdfEditor(pdfUrl, pdfPath) {
+    console.log('[Jobcard] openPdfEditor called', { pdfUrl, pdfPath });
     pdfSaved = false;
-    document.getElementById('pdfEditorModal').classList.remove('hidden');
-    document.getElementById('pdfjs-viewer').src = '{{ asset('pdf.js/web/viewer.html') }}?file=' + encodeURIComponent(pdfUrl);
-    // Prevent closing with ESC
+    currentPdfPath = pdfPath;
+
+    const modal = document.getElementById('pdfEditorModal');
+    const iframe = document.getElementById('pdfjs-viewer');
+
+    if (!modal || !iframe) {
+        console.error('[Jobcard] Modal atau iframe tidak ditemukan');
+        alert('Modal editor tidak tersedia.');
+        return;
+    }
+
+    modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+
+    // Load PDF.js viewer dengan file
+    const viewerUrl = '{{ asset("pdf.js/web/viewer.html") }}?file=' + encodeURIComponent(pdfUrl);
+    console.log('[Jobcard] Loading viewer:', viewerUrl);
+    iframe.src = viewerUrl;
 }
+
 function closePdfEditor(force = false) {
     if (!pdfSaved && !force) {
-        if (!confirm('Anda belum menyimpan perubahan PDF ke server. Yakin ingin keluar tanpa menyimpan?')) {
+        if (!confirm('Anda belum menyimpan perubahan. Yakin ingin keluar?')) {
             return;
         }
     }
-    document.getElementById('pdfEditorModal').classList.add('hidden');
+    const modal = document.getElementById('pdfEditorModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
     document.body.style.overflow = '';
 }
-// Cegah klik di luar modal menutup modal tanpa konfirmasi
-const pdfEditorModal = document.getElementById('pdfEditorModal');
-pdfEditorModal.addEventListener('mousedown', function(e) {
-    if (e.target === pdfEditorModal) {
-        closePdfEditor();
-    }
-});
-// Cegah ESC menutup modal tanpa konfirmasi
-window.addEventListener('keydown', function(e) {
-    if (!pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
-        closePdfEditor();
-    }
-});
+
 function saveEditedPdf(blob) {
-    // Upload ke server
-    console.log('saveEditedPdf called, uploading...');
+    console.log('[Jobcard] Uploading edited PDF to server...');
+    
     const formData = new FormData();
-    formData.append('document', blob, '{{ basename($workOrder->document_path) }}');
+    formData.append('document', blob, currentPdfPath.split('/').pop());
+    formData.append('path', currentPdfPath);
     formData.append('_token', '{{ csrf_token() }}');
-    fetch("{{ route('pemeliharaan.labor-saya.update', $workOrder->id) }}", {
+    
+    fetch("{{ route('pemeliharaan.jobcard.update') }}", {
         method: 'POST',
         body: formData
     })
     .then(res => res.json())
     .then(data => {
-        console.log('Server response:', data);
+        console.log('[Jobcard] Server response:', data);
         if (data.success) {
             pdfSaved = true;
-            alert('PDF berhasil diupdate di server!');
+            alert('Jobcard berhasil disimpan!');
             closePdfEditor(true);
-            window.location.reload();
         } else {
-            alert('Gagal upload PDF ke server.');
+            alert('Gagal menyimpan jobcard: ' + (data.message || 'Unknown error'));
         }
     })
-    .catch((err) => { console.error('Upload error:', err); alert('Gagal upload PDF ke server. Silakan cek koneksi atau ulangi.'); });
+    .catch((err) => {
+        console.error('[Jobcard] Upload error:', err);
+        alert('Gagal menyimpan jobcard. Silakan coba lagi.');
+    });
 }
+
+// Listen untuk message dari PDF.js viewer
 window.addEventListener('message', function(event) {
-    console.log('Received postMessage:', event);
+    console.log('[Jobcard] Received postMessage:', event.data);
     if (event.data && event.data.type === 'save-pdf' && event.data.data) {
         let blob = null;
         if (event.data.data instanceof ArrayBuffer) {
@@ -376,13 +409,50 @@ window.addEventListener('message', function(event) {
             blob = new Blob([arr], { type: 'application/pdf' });
         }
         if (blob) {
-            console.log('Uploading blob to server:', blob);
+            console.log('[Jobcard] Got blob from viewer, size:', blob.size);
             saveEditedPdf(blob);
         } else {
+            console.error('[Jobcard] Failed to create blob from viewer data');
             alert('Gagal membaca data PDF hasil edit.');
         }
     }
 });
+
+// Event listener untuk modal
+const pdfEditorModal = document.getElementById('pdfEditorModal');
+if (pdfEditorModal) {
+    // Klik di luar modal untuk tutup
+    pdfEditorModal.addEventListener('mousedown', function(e) {
+        if (e.target === pdfEditorModal) {
+            closePdfEditor();
+        }
+    });
+}
+
+// ESC untuk tutup modal
+window.addEventListener('keydown', function(e) {
+    if (pdfEditorModal && !pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
+        closePdfEditor();
+    }
+});
+
+// Tombol Simpan Perubahan
+const savePdfBtn = document.getElementById('savePdfBtn');
+if (savePdfBtn) {
+    savePdfBtn.addEventListener('click', function() {
+        const iframe = document.getElementById('pdfjs-viewer');
+        if (iframe && iframe.contentWindow) {
+            console.log('[Jobcard] Requesting PDF save from viewer...');
+            iframe.contentWindow.postMessage({ type: 'request-save-pdf' }, '*');
+        } else {
+            alert('PDF viewer tidak tersedia.');
+        }
+    });
+}
+
+// ==========================================
+// Materials Functions
+// ==========================================
 // Toggle materials section when status == WMATL
 function toggleMaterials() {
   const status = document.getElementById('status').value;
@@ -433,10 +503,6 @@ document.querySelectorAll('.add-material').forEach(btn => {
 });
 document.querySelectorAll('#selectedMaterials .remove-material').forEach(btn => {
   btn.addEventListener('click', function() { this.closest('div').remove(); });
-});
-document.getElementById('savePdfBtn').addEventListener('click', function() {
-    const iframe = document.getElementById('pdfjs-viewer').contentWindow;
-    iframe.postMessage({ type: 'request-save-pdf' }, '*');
 });
 </script>
 @endpush
