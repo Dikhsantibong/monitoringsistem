@@ -6,252 +6,256 @@
     <title>JOB CARD & JSA - PLN Nusantara Power</title>
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #ffffff;
-            color: #000000;
-            font-size: 11pt;
+            font-family: Arial, sans-serif !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-size: 10pt !important;
+            line-height: 1.3 !important;
         }
 
         .page {
-            background: #ffffff;
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
-            padding: 15mm 20mm;
-            page-break-after: always;
-            position: relative;
+            background: #ffffff !important;
+            width: 210mm !important;
+            min-height: 297mm !important;
+            margin: 0 auto !important;
+            padding: 15mm 20mm !important;
+            page-break-after: always !important;
+            position: relative !important;
         }
 
         .page:last-child {
-            page-break-after: auto;
+            page-break-after: auto !important;
         }
 
         /* Header */
         .header {
-            position: relative;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #000;
-            min-height: 70px;
+            position: relative !important;
+            margin-bottom: 15px !important;
+            padding-bottom: 10px !important;
+            border-bottom: 2px solid #000 !important;
+            min-height: 70px !important;
         }
 
         .header-logo {
-            position: absolute;
-            left: 0;
-            top: 0;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
         }
 
         .logo-placeholder {
-            width: 120px;
-            height: 58px;
-            background: #FFD700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            color: #000;
+            width: 120px !important;
+            height: 58px !important;
+            background: #FFD700 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: bold !important;
+            font-size: 18px !important;
+            color: #000 !important;
         }
 
         .header-title {
-            text-align: center;
-            padding-top: 5px;
+            text-align: center !important;
+            padding-top: 5px !important;
         }
 
         .header-title h2 {
-            font-size: 14pt;
-            font-weight: bold;
-            margin-bottom: 3px;
+            font-size: 14pt !important;
+            font-weight: bold !important;
+            margin-bottom: 3px !important;
         }
 
         .header-title h3 {
-            font-size: 11pt;
-            font-weight: normal;
+            font-size: 11pt !important;
+            font-weight: normal !important;
         }
 
         .doc-title {
-            text-align: left;
-            font-size: 18pt;
-            font-weight: bold;
-            margin-top: 10px;
-            text-transform: uppercase;
+            text-align: left !important;
+            font-size: 18pt !important;
+            font-weight: bold !important;
+            margin-top: 10px !important;
+            text-transform: uppercase !important;
         }
 
         .doc-title.center {
-            text-align: center;
+            text-align: center !important;
         }
 
         /* Info Grid */
         .info-grid {
-            margin-bottom: 12px;
-            font-size: 10pt;
+            margin-bottom: 12px !important;
+            font-size: 10pt !important;
         }
 
         .info-row {
-            display: flex;
-            margin-bottom: 4px;
+            display: block !important;
+            margin-bottom: 4px !important;
         }
 
         .info-cell {
-            flex: 1;
-            padding-right: 15px;
+            display: inline-block !important;
+            width: 48% !important;
+            padding-right: 10px !important;
+            vertical-align: top !important;
         }
 
         .info-cell b {
-            font-weight: bold;
+            font-weight: bold !important;
         }
 
         /* Section Title */
         h3.section-title {
-            font-size: 12pt;
-            font-weight: bold;
-            margin-top: 15px;
-            margin-bottom: 8px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #000;
+            font-size: 12pt !important;
+            font-weight: bold !important;
+            margin-top: 15px !important;
+            margin-bottom: 8px !important;
+            padding-bottom: 4px !important;
+            border-bottom: 1px solid #000 !important;
         }
 
         h4.subsection-title {
-            font-size: 11pt;
-            font-weight: bold;
-            margin-top: 12px;
-            margin-bottom: 6px;
-            text-transform: uppercase;
+            font-size: 11pt !important;
+            font-weight: bold !important;
+            margin-top: 12px !important;
+            margin-bottom: 6px !important;
+            text-transform: uppercase !important;
         }
 
         /* Task Title */
         .task-title {
-            font-size: 11pt;
-            font-weight: bold;
-            margin: 10px 0;
+            font-size: 11pt !important;
+            font-weight: bold !important;
+            margin: 10px 0 !important;
         }
 
         /* Lists */
         ol, ul {
-            margin-left: 20px;
-            margin-top: 5px;
-            margin-bottom: 8px;
-            font-size: 10pt;
+            margin-left: 20px !important;
+            margin-top: 5px !important;
+            margin-bottom: 8px !important;
+            font-size: 10pt !important;
         }
 
         ol li, ul li {
-            margin-bottom: 4px;
-            line-height: 1.4;
+            margin-bottom: 4px !important;
+            line-height: 1.4 !important;
         }
 
         ul ul {
-            margin-top: 3px;
+            margin-top: 3px !important;
         }
 
         /* Tables */
         table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 9pt;
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin: 10px 0 !important;
+            font-size: 9pt !important;
         }
 
         table th {
-            border: 1px solid #000;
-            padding: 6px 4px;
-            background-color: #e8e8e8;
-            text-align: center;
-            font-weight: bold;
+            border: 1px solid #000 !important;
+            padding: 6px 4px !important;
+            background-color: #e8e8e8 !important;
+            text-align: center !important;
+            font-weight: bold !important;
         }
 
         table td {
-            border: 1px solid #000;
-            padding: 5px;
-            vertical-align: top;
+            border: 1px solid #000 !important;
+            padding: 5px !important;
+            vertical-align: top !important;
         }
 
         table td:first-child {
-            text-align: center;
+            text-align: center !important;
         }
 
         /* Signature Area */
         .signature {
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
+            margin-top: 40px !important;
+            display: block !important;
+            width: 100% !important;
         }
 
         .signature-cell {
-            flex: 1;
-            text-align: center;
+            display: inline-block !important;
+            width: 32% !important;
+            text-align: center !important;
+            vertical-align: top !important;
         }
 
         .signature-line {
-            border-top: 1px solid #000;
-            margin-top: 60px;
-            padding-top: 5px;
+            border-top: 1px solid #000 !important;
+            margin-top: 60px !important;
+            padding-top: 5px !important;
         }
 
         /* Page 2 specific */
         .failure-section {
-            margin-top: 30px;
+            margin-top: 30px !important;
         }
 
         .failure-section h4 {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: bold !important;
+            margin-bottom: 5px !important;
         }
 
         .failure-field {
-            margin-left: 20px;
-            margin-bottom: 3px;
+            margin-left: 20px !important;
+            margin-bottom: 3px !important;
         }
 
         /* Page 3 specific */
         .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin-bottom: 15px !important;
         }
 
         .info-table td {
-            border: 1px solid #000;
-            padding: 8px;
+            border: 1px solid #000 !important;
+            padding: 8px !important;
         }
 
         .info-table .label-cell {
-            background-color: #e8e8e8;
-            font-weight: bold;
-            width: 30%;
+            background-color: #e8e8e8 !important;
+            font-weight: bold !important;
+            width: 30% !important;
         }
 
         .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 10px;
+            display: block !important;
+            margin-top: 10px !important;
         }
 
         .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            display: inline-block !important;
+            margin-right: 15px !important;
+            margin-bottom: 5px !important;
         }
 
         .checkbox {
-            width: 15px;
-            height: 15px;
-            border: 1px solid #000;
-            display: inline-block;
+            width: 15px !important;
+            height: 15px !important;
+            border: 1px solid #000 !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+            margin-right: 5px !important;
         }
 
         .checkbox.checked::after {
-            content: '✓';
-            display: block;
-            text-align: center;
-            line-height: 15px;
+            content: '✓' !important;
+            display: block !important;
+            text-align: center !important;
+            line-height: 15px !important;
         }
 
         /* Print Styles */
