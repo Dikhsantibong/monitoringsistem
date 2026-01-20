@@ -132,6 +132,10 @@ window.addEventListener('message', function(event) {
         try {
             if (event.data.data instanceof ArrayBuffer) {
                 blob = new Blob([event.data.data], { type: 'application/pdf' });
+            } else if (event.data.data?.data) {
+                // Jika dikirim sebagai { data: Uint8Array }
+                const arr = new Uint8Array(event.data.data.data);
+                blob = new Blob([arr], { type: 'application/pdf' });
             } else if (event.data.data instanceof Uint8Array) {
                 blob = new Blob([event.data.data], { type: 'application/pdf' });
             } else if (event.data.data instanceof Object) {

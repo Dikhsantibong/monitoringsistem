@@ -385,12 +385,20 @@ window.addEventListener('message', function(event) {
 });
 // Toggle materials section when status == WMATL
 function toggleMaterials() {
-  const status = document.getElementById('status').value;
+  const statusEl = document.getElementById('status');
   const section = document.getElementById('materialsSection');
+  if (!statusEl || !section) {
+    console.warn('[Materials] status or materialsSection not found');
+    return;
+  }
+  const status = statusEl.value;
   section.style.display = status === 'WMATL' ? 'block' : 'none';
 }
-document.getElementById('status').addEventListener('change', toggleMaterials);
-toggleMaterials();
+const statusElInit = document.getElementById('status');
+if (statusElInit) {
+  statusElInit.addEventListener('change', toggleMaterials);
+  toggleMaterials();
+}
 
 // Simple client-side filter for material list
 const materialSearch = document.getElementById('materialSearch');
