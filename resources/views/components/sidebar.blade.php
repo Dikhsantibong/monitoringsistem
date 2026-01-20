@@ -95,17 +95,17 @@
                 <span class="ml-3 text-sm">Monitor Mesin</span>
             </a>
             @endif
-{{-- 
+
             <a href="{{ route('admin.daftar_hadir.index') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.daftar_hadir.index') || request()->routeIs('admin.daftar_hadir.rekapitulasi') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-list w-6 h-6"></i>
                 <span class="ml-3 text-sm">Daftar Hadir</span>
-            </a> --}}
+            </a>
 
-            <a href="{{ route('admin.daftar_hadir.index') }}"
+            <a href="{{ route('admin.attendance.qr.index') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.attendance.qr') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-qrcode w-6 h-6"></i>
-                <span class="ml-3 text-sm">Daftar Hadir</span>
+                <span class="ml-3 text-sm">QR Code</span>
             </a>
 
             <a href="{{ route('admin.score-card.index') }}"
