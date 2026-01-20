@@ -163,6 +163,24 @@ class LaborSayaController extends Controller
                     ->with('error', 'Work Order tidak ditemukan di Maximo.');
             }
 
+            // Cek apakah jobcard sudah di-generate (ada di storage)
+            $wonum = trim($workOrderRaw->wonum ?? '');
+            $jobcardExists = false;
+            $jobcardPath = null;
+            $jobcardUrl = null;
+            
+            if ($wonum && $wonum !== '' && $wonum !== '-') {
+                $directory = 'jobcards';
+                $filename = 'JOBCARD_' . $wonum . '.pdf';
+                $filePath = $directory . '/' . $filename;
+                
+                if (Storage::disk('public')->exists($filePath)) {
+                    $jobcardExists = true;
+                    $jobcardPath = $filePath;
+                    $jobcardUrl = asset('storage/' . $filePath);
+                }
+            }
+
             // Format data untuk view
             $workOrder = (object) [
                 'id' => $workOrderRaw->wonum ?? '-',
@@ -197,9 +215,14 @@ class LaborSayaController extends Controller
                 'tindak_lanjut' => null,
                 'labor' => null,
                 'labors' => [],
-                'document_path' => null,
+                'document_path' => $jobcardPath, // Gunakan path jobcard jika ada
                 'power_plant_id' => null,
                 'power_plant_name' => $workOrderRaw->location ?? ($workOrderRaw->siteid ?? 'KD'),
+                'materials' => [],
+                // Tambahkan info jobcard
+                'jobcard_exists' => $jobcardExists,
+                'jobcard_path' => $jobcardPath,
+                'jobcard_url' => $jobcardUrl,
             ];
 
         } catch (\Exception $e) {
@@ -410,5 +433,91 @@ class LaborSayaController extends Controller
         }
         $backlog->update($data);
         return redirect()->route('pemeliharaan.labor-saya')->with('success', 'WO Backlog berhasil diupdate');
+    }
+
+    /**
+     * Halaman Edit PDF Jobcard (halaman penuh, bukan modal)
+     */
+    public function editJobcard($wonum)
+    {
+        // Cek apakah jobcard ada di storage
+        $wonum = trim($wonum);
+        $directory = 'jobcards';
+        $filename = 'JOBCARD_' . $wonum . '.pdf';
+        $filePath = $directory . '/' . $filename;
+        
+        if (!Storage::disk('public')->exists($filePath)) {
+            return redirect()->route('pemeliharaan.labor-saya')
+                ->with('error', 'Jobcard untuk WO ' . $wonum . ' belum di-generate. Silakan generate terlebih dahulu di halaman Admin Maximo.');
+        }
+        
+        $jobcardUrl = asset('storage/' . $filePath);
+        $jobcardPath = $filePath;
+        
+        return view('pemeliharaan.jobcard-edit', compact('wonum', 'jobcardUrl', 'jobcardPath'));
+    }
+
+    /**
+     * Update PDF Jobcard dari hasil edit
+     */
+    public function updateJobcard(Request $request)
+    {
+        try {
+            $filePath = $request->input('path');
+            
+            if (!$filePath) {
+                return response()->json(['success' => false, 'message' => 'Path tidak valid.']);
+            }
+
+            if (!$request->hasFile('document')) {
+                return response()->json(['success' => false, 'message' => 'File tidak ditemukan.']);
+            }
+
+            $file = $request->file('document');
+            
+            // Validasi file PDF
+            if ($file->getClientOriginalExtension() !== 'pdf') {
+                return response()->json(['success' => false, 'message' => 'File harus berformat PDF.']);
+            }
+
+            // Simpan file yang sudah di-edit (overwrite)
+            Storage::disk('public')->put($filePath, file_get_contents($file));
+
+            Log::info('Jobcard updated successfully', ['path' => $filePath]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jobcard berhasil diupdate!'
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('ERROR UPDATE JOBCARD (LaborSaya)', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Gagal update jobcard: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Download Jobcard PDF
+     */
+    public function downloadJobcard(Request $request)
+    {
+        try {
+            $filePath = $request->input('path');
+            
+            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+                return redirect()->route('pemeliharaan.labor-saya')->with('error', 'File jobcard tidak ditemukan.');
+            }
+
+            return Storage::disk('public')->download($filePath);
+        } catch (\Throwable $e) {
+            Log::error('ERROR DOWNLOAD JOBCARD (LaborSaya)', [
+                'message' => $e->getMessage(),
+            ]);
+            return redirect()->route('pemeliharaan.labor-saya')->with('error', 'Gagal download jobcard.');
+        }
     }
 }

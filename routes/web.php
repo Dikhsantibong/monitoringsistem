@@ -844,6 +844,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
     Route::get('/pemeliharaan/jobcard', [JobcardController::class, 'index'])->name('pemeliharaan.jobcard');
     Route::get('/pemeliharaan/support', [SupportController::class, 'index'])->name('pemeliharaan.support');
+    
+    // Edit dan Update Jobcard PDF
+    Route::get('/pemeliharaan/jobcard/{wonum}/edit', [LaborSayaController::class, 'editJobcard'])->name('pemeliharaan.jobcard.edit');
+    Route::post('/pemeliharaan/jobcard/update', [LaborSayaController::class, 'updateJobcard'])->name('pemeliharaan.jobcard.update');
+    Route::get('/pemeliharaan/jobcard/download', [LaborSayaController::class, 'downloadJobcard'])->name('pemeliharaan.jobcard.download');
 });
 
 Route::get('pemeliharaan/labor-saya/backlog/{id}/edit', [App\Http\Controllers\LaborSayaController::class, 'editBacklog'])->name('pemeliharaan.labor-saya.edit-backlog');
