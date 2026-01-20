@@ -96,12 +96,28 @@ class AttendanceQRController extends Controller
 
             $data = $response->json();
             
+            Log::info('API Response received', [
+                'data_type' => gettype($data),
+                'data_count' => is_array($data) ? count($data) : 0,
+                'sample_data' => is_array($data) && count($data) > 0 ? $data[0] : null
+            ]);
+
             if (!is_array($data)) {
                 Log::error('Invalid API response format', ['data' => $data]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Format data dari API tidak valid'
                 ], 500);
+            }
+
+            if (empty($data)) {
+                Log::warning('API returned empty array');
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tidak ada data baru untuk diimport',
+                    'attendance_imported' => 0,
+                    'token_imported' => 0
+                ]);
             }
 
             $connection = session('unit', 'mysql');
@@ -112,67 +128,88 @@ class AttendanceQRController extends Controller
             DB::beginTransaction();
 
             try {
-                foreach ($data as $item) {
+                foreach ($data as $index => $item) {
                     try {
+                        Log::info("Processing item {$index}", ['item' => $item]);
+
+                        // Deteksi struktur data
+                        $isAttendanceData = isset($item['name']) || isset($item['position']) || isset($item['division']);
+                        $isTokenData = isset($item['token']) && !$isAttendanceData;
+
                         // Handle Attendance data
-                        if (isset($item['name']) || isset($item['attendance'])) {
-                            $attendanceData = $item['attendance'] ?? $item;
-                            
-                            // Cek apakah data sudah ada (berdasarkan kombinasi name, time, token)
+                        if ($isAttendanceData) {
+                            // Cek apakah data sudah ada
                             $existingAttendance = DB::connection($connection)
                                 ->table('attendance')
-                                ->where('name', $attendanceData['name'] ?? null)
-                                ->where('time', $attendanceData['time'] ?? null)
-                                ->where('token', $attendanceData['token'] ?? null)
+                                ->where('name', $item['name'] ?? '')
+                                ->where('time', $item['time'] ?? null)
                                 ->first();
 
                             if (!$existingAttendance) {
-                                DB::connection($connection)->table('attendance')->insert([
-                                    'name' => $attendanceData['name'] ?? null,
-                                    'position' => $attendanceData['position'] ?? null,
-                                    'division' => $attendanceData['division'] ?? null,
-                                    'token' => $attendanceData['token'] ?? null,
-                                    'time' => isset($attendanceData['time']) 
-                                        ? Carbon::parse($attendanceData['time'])->setTimezone('Asia/Makassar')
+                                $insertData = [
+                                    'name' => $item['name'] ?? null,
+                                    'position' => $item['position'] ?? null,
+                                    'division' => $item['division'] ?? null,
+                                    'token' => $item['token'] ?? null,
+                                    'time' => isset($item['time']) 
+                                        ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
                                         : now(),
-                                    'signature' => $attendanceData['signature'] ?? null,
+                                    'signature' => $item['signature'] ?? null,
                                     'unit_source' => $connection,
                                     'created_at' => now(),
                                     'updated_at' => now()
-                                ]);
+                                ];
+
+                                Log::info("Inserting attendance data", ['data' => $insertData]);
+
+                                DB::connection($connection)->table('attendance')->insert($insertData);
                                 $importedCount++;
+                                
+                                Log::info("Attendance inserted successfully", ['count' => $importedCount]);
+                            } else {
+                                Log::info("Attendance already exists, skipping", ['name' => $item['name']]);
                             }
                         }
 
-                        // Handle AttendanceToken data
-                        if (isset($item['token']) || isset($item['attendance_token'])) {
-                            $tokenData = $item['attendance_token'] ?? $item;
-                            
+                        // Handle Token data
+                        if ($isTokenData) {
                             // Cek apakah token sudah ada
                             $existingToken = DB::connection($connection)
                                 ->table('attendance_tokens')
-                                ->where('token', $tokenData['token'] ?? null)
+                                ->where('token', $item['token'])
                                 ->first();
 
-                            if (!$existingToken && isset($tokenData['token'])) {
-                                DB::connection($connection)->table('attendance_tokens')->insert([
-                                    'token' => $tokenData['token'],
-                                    'user_id' => $tokenData['user_id'] ?? auth()->id(),
-                                    'expires_at' => isset($tokenData['expires_at']) 
-                                        ? Carbon::parse($tokenData['expires_at'])
+                            if (!$existingToken) {
+                                $tokenInsertData = [
+                                    'token' => $item['token'],
+                                    'user_id' => $item['user_id'] ?? auth()->id(),
+                                    'expires_at' => isset($item['expires_at']) 
+                                        ? Carbon::parse($item['expires_at'])
                                         : now()->addMinutes(15),
                                     'unit_source' => $connection,
                                     'created_at' => now(),
                                     'updated_at' => now()
-                                ]);
+                                ];
+
+                                Log::info("Inserting token data", ['data' => $tokenInsertData]);
+
+                                DB::connection($connection)->table('attendance_tokens')->insert($tokenInsertData);
                                 $tokenImportedCount++;
+                                
+                                Log::info("Token inserted successfully", ['count' => $tokenImportedCount]);
+                            } else {
+                                Log::info("Token already exists, skipping", ['token' => $item['token']]);
                             }
                         }
+
                     } catch (\Exception $e) {
-                        $errors[] = 'Error processing item: ' . $e->getMessage();
-                        Log::warning('Error processing attendance item', [
+                        $errorMsg = "Error processing item {$index}: " . $e->getMessage();
+                        $errors[] = $errorMsg;
+                        Log::warning('Error processing item', [
+                            'index' => $index,
                             'item' => $item,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
                         ]);
                     }
                 }
@@ -182,7 +219,8 @@ class AttendanceQRController extends Controller
                 Log::info('Attendance data pulled successfully', [
                     'attendance_imported' => $importedCount,
                     'token_imported' => $tokenImportedCount,
-                    'errors' => count($errors)
+                    'errors' => count($errors),
+                    'error_details' => $errors
                 ]);
 
                 return response()->json([
@@ -195,6 +233,10 @@ class AttendanceQRController extends Controller
 
             } catch (\Exception $e) {
                 DB::rollBack();
+                Log::error('Transaction rolled back', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
                 throw $e;
             }
 

@@ -268,21 +268,39 @@
                         'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Response data:', data);
+                    
                     if (data.success) {
-                        alert('Berhasil! ' + data.message + 
-                            (data.attendance_imported ? '\nAttendance: ' + data.attendance_imported : '') +
-                            (data.token_imported ? '\nToken: ' + data.token_imported : ''));
-                        // Reload halaman untuk menampilkan data baru
-                        window.location.reload();
+                        let message = data.message;
+                        
+                        // Tambahkan detail jika ada errors
+                        if (data.errors && data.errors.length > 0) {
+                            message += '\n\nErrors:\n' + data.errors.join('\n');
+                        }
+                        
+                        alert(message);
+                        
+                        // Reload hanya jika ada data yang diimport
+                        if (data.attendance_imported > 0 || data.token_imported > 0) {
+                            console.log('Reloading page due to new imports...');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            console.log('No new data imported, not reloading');
+                        }
                     } else {
                         alert('Gagal menarik data: ' + (data.message || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Pull Data Error:', error);
-                    alert('Gagal menarik data. Silakan coba lagi.');
+                    alert('Gagal menarik data. Silakan coba lagi.\nError: ' + error.message);
                 })
                 .finally(() => {
                     // Restore button
