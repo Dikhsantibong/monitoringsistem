@@ -74,6 +74,12 @@
                                 Generate QR Code
                             </button>
 
+                            <!-- Tombol Tarik Data -->
+                            <button id="pullDataBtn" onclick="pullData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
+                                <i class="fas fa-download mr-2"></i>
+                                Tarik Data
+                            </button>
+
                             <!-- Tombol Manage Kehadiran -->
                             <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700">
                                 <i class="fas fa-tasks mr-2"></i>
@@ -244,6 +250,45 @@
 
             function closeQRModal() {
                 document.getElementById('qrModal').classList.add('hidden');
+            }
+
+            function pullData() {
+                const btn = document.getElementById('pullDataBtn');
+                const originalText = btn.innerHTML;
+                
+                // Disable button dan show loading
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menarik Data...';
+                
+                fetch('{{ route("admin.attendance.qr.pull-data") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Berhasil! ' + data.message + 
+                            (data.attendance_imported ? '\nAttendance: ' + data.attendance_imported : '') +
+                            (data.token_imported ? '\nToken: ' + data.token_imported : ''));
+                        // Reload halaman untuk menampilkan data baru
+                        window.location.reload();
+                    } else {
+                        alert('Gagal menarik data: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Pull Data Error:', error);
+                    alert('Gagal menarik data. Silakan coba lagi.');
+                })
+                .finally(() => {
+                    // Restore button
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
             }
 
             // Fungsi untuk menampilkan modal tanda tangan

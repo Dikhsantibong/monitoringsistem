@@ -92,6 +92,10 @@ Route::middleware(['auth'])->group(function () {
         [AttendanceQRController::class, 'generate']
     )->name('admin.attendance.qr.generate');
 
+    Route::post('/admin/attendance/qr/pull-data',
+        [AttendanceQRController::class, 'pullData']
+    )->name('admin.attendance.qr.pull-data');
+
 });
 
 
