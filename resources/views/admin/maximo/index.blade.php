@@ -214,6 +214,7 @@
                                             <div class="flex items-center justify-center gap-2">
                                                 <a href="{{ route('admin.maximo.workorder.show', ['wonum' => $wo['wonum']]) }}"
                                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
+                                                    <i class="fas fa-info-circle mr-1"></i>
                                                     Detail
                                                 </a>
                                                 @if(!empty($wo['jobcard_exists']) && $wo['jobcard_exists'] === true && !empty($wo['jobcard_path']))
@@ -221,6 +222,7 @@
                                                         <input type="hidden" name="path" value="{{ $wo['jobcard_path'] }}">
                                                         <button type="submit"
                                                                 class="inline-flex items-center px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs">
+                                                            <i class="fas fa-download mr-1"></i>
                                                             Download
                                                         </button>
                                                     </form>
@@ -232,6 +234,7 @@
                                                         <button type="submit" 
                                                                 class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
                                                                 onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
+                                                            <i class="fas fa-file-alt mr-1"></i>
                                                             Generate Jobcard
                                                         </button>
                                                     </form>
