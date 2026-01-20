@@ -25,7 +25,8 @@
             width: 210mm !important;
             min-height: 297mm !important;
             margin: 0 auto !important;
-            padding: 15mm 20mm !important;
+            /* top, right, bottom, left (kanan lebih tebal 25mm, kiri lebih tipis 10mm) */
+            padding: 15mm 25mm 15mm 10mm !important;
             page-break-after: always !important;
             position: relative !important;
         }
@@ -267,17 +268,17 @@
                 margin: 15mm 25mm 15mm 10mm;
             }
             body {
-                background: #ffffff;
-                margin: 0;
-                padding: 0;
-            }
-            .page {
-                /* Saat render PDF, margin ditangani oleh @page agar pasti ter-apply */
+                background: #ffffff !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                width: auto !important;
-                min-height: auto !important;
-                box-shadow: none;
+            }
+            .page {
+                /* Pastikan padding asimetris tetap ter-apply saat print */
+                margin: 0 !important;
+                padding: 15mm 25mm 15mm 10mm !important;
+                width: 210mm !important;
+                min-height: 297mm !important;
+                box-shadow: none !important;
             }
         }
     </style>
