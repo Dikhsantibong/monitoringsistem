@@ -17,6 +17,7 @@
             color: #000000 !important;
             font-size: 10pt !important;
             line-height: 1.3 !important;
+            margin-right: 20px !important;
         }
 
         .page {
