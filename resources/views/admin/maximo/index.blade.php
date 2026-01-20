@@ -54,25 +54,8 @@
         </header>
 
         <main class="px-6 mt-4">
-            {{-- Success Message dengan Link ke PDF.js Viewer --}}
-            @if(session('success') && session('jobcard_url'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
-                    <div class="mt-2 flex gap-2">
-                        <button onclick="openPdfEditor('{{ session('jobcard_url') }}', '{{ session('jobcard_path') }}')" 
-                                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-semibold">
-                            Buka & Edit Jobcard di PDF.js Viewer
-                        </button>
-                        <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" class="inline">
-                            <input type="hidden" name="path" value="{{ session('jobcard_path') }}">
-                            <button type="submit" 
-                                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold">
-                                Download Jobcard
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @elseif(session('success'))
+            {{-- Success Message (generate hanya simpan ke server, tidak auto buka editor) --}}
+            @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
                     {{ session('success') }}
                 </div>

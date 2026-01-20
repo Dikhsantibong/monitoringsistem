@@ -55,9 +55,6 @@
                    class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
                     <i class="fas fa-download mr-2"></i> Download
                 </a>
-                <button id="savePdfBtn" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
-                    <i class="fas fa-save mr-2"></i> Simpan Perubahan
-                </button>
             </div>
         </div>
 
@@ -154,17 +151,6 @@ window.addEventListener('message', function(event) {
             console.error('[Jobcard] Failed to create blob from viewer data or blob is empty');
             alert('Gagal membaca data PDF hasil edit. Pastikan PDF sudah dimuat dengan benar.');
         }
-    }
-});
-
-// Tombol Simpan Perubahan
-document.getElementById('savePdfBtn').addEventListener('click', function() {
-    const iframe = document.getElementById('pdfjs-viewer');
-    if (iframe && iframe.contentWindow) {
-        console.log('[Jobcard] Requesting PDF save from viewer...');
-        iframe.contentWindow.postMessage({ type: 'request-save-pdf' }, '*');
-    } else {
-        alert('PDF viewer tidak tersedia.');
     }
 });
 

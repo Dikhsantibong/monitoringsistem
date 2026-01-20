@@ -451,11 +451,10 @@ class MaximoController extends Controller
             // Redirect dengan success message dan link untuk membuka PDF di PDF.js viewer
             $pdfUrl = asset('storage/' . $filePath);
 
+            // Sesuai requirement: setelah generate hanya tampilkan notifikasi sukses,
+            // tidak membuka halaman edit otomatis. File sudah tersedia di server.
             return redirect()->route('admin.maximo.index')
-                ->with('success', 'Jobcard berhasil di-generate!')
-                ->with('jobcard_url', $pdfUrl)
-                ->with('jobcard_path', $filePath)
-                ->with('jobcard_wonum', $wonum);
+                ->with('success', 'Jobcard berhasil di-generate! (Tersimpan di server: ' . $filename . ')');
 
         } catch (QueryException $e) {
             Log::error('ORACLE QUERY ERROR (GENERATE JOBCARD)', [

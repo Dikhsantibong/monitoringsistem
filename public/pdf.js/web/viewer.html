@@ -789,6 +789,44 @@ See https://github.com/adobe-type-tools/cmap-resources
           }
         });
       }
+
+      // Requirement: gunakan tombol bawaan viewer untuk menyimpan & update ke server.
+      // Kita hijack tombol download bawaan PDF.js sebagai trigger save-to-server.
+      async function saveToServerFromViewer(e) {
+        try {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+
+          if (!window.PDFViewerApplication || !window.PDFViewerApplication.pdfDocument) {
+            console.error('[PDF.js Viewer] PDFViewerApplication/pdfDocument tidak tersedia');
+            window.parent.postMessage({ type: 'save-pdf-error', message: 'PDF viewer tidak siap' }, '*');
+            return;
+          }
+
+          console.log('[PDF.js Viewer] Trigger save-to-server from download button...');
+          const pdfData = await window.PDFViewerApplication.pdfDocument.saveDocument();
+          window.parent.postMessage({ type: 'save-pdf', data: pdfData }, '*');
+
+          // Tetap lakukan download seperti biasa (opsional)
+          if (window.PDFViewerApplication.download) {
+            window.PDFViewerApplication.download();
+          }
+        } catch (err) {
+          console.error('[PDF.js Viewer] Error save-to-server:', err);
+          window.parent.postMessage({ type: 'save-pdf-error', message: err?.message || 'Unknown error' }, '*');
+        }
+      }
+
+      const downloadButton = document.getElementById('downloadButton');
+      if (downloadButton) {
+        downloadButton.addEventListener('click', saveToServerFromViewer, true);
+      }
+      const secondaryDownload = document.getElementById('secondaryDownload');
+      if (secondaryDownload) {
+        secondaryDownload.addEventListener('click', saveToServerFromViewer, true);
+      }
       // Listen for postMessage from parent to trigger save
       window.addEventListener('message', async function(event) {
         if (event.data && event.data.type === 'request-save-pdf') {
