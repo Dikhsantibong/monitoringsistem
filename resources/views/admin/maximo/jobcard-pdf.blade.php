@@ -17,7 +17,7 @@
             color: #000000 !important;
             font-size: 10pt !important;
             line-height: 1.3 !important;
-            margin-right: 20px !important;
+            margin: 0 !important;
         }
 
         .page {
@@ -268,7 +268,8 @@
             }
             .page {
                 margin: 0;
-                padding: 15mm 20mm;
+                /* top, right, bottom, left (kanan lebih tebal, kiri lebih tipis) */
+                padding: 15mm 25mm 15mm 10mm;
                 box-shadow: none;
             }
         }
@@ -283,7 +284,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-logo">
-            <div class="logo-placeholder">PLN</div>
+            <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo" style="width: 120px; height: auto;">
         </div>
         <div class="header-title">
             <h2>PLN Nusantara Power</h2>
@@ -432,7 +433,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-logo">
-            <div class="logo-placeholder">PLN</div>
+            <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo" style="width: 120px; height: auto;">
         </div>
         <div class="header-title">
             <h2>PLN Nusantara Power</h2>
@@ -498,7 +499,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-logo">
-            <div class="logo-placeholder">PLN</div>
+            <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo" style="width: 120px; height: auto;">
         </div>
         <div class="header-title">
             <h2>PLN Nusantara Power</h2>
@@ -523,7 +524,7 @@
         </tr>
         <tr>
             <td colspan="2" rowspan="2" style="text-align: center;">
-                <div class="logo-placeholder" style="width: 80px; height: 40px; margin: 5px auto; font-size: 14px;">PLN</div>
+                <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo" style="width: 80px; height: auto; margin: 5px auto; display: block;">
             </td>
             <td class="label-cell">Revisi :</td>
             <td>1</td>
