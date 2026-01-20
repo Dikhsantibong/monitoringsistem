@@ -201,14 +201,11 @@
                                                     Detail
                                                 </a>
                                                 @if(!empty($wo['jobcard_exists']) && $wo['jobcard_exists'] === true && !empty($wo['jobcard_path']))
-                                                    <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" class="inline">
-                                                        <input type="hidden" name="path" value="{{ $wo['jobcard_path'] }}">
-                                                        <button type="submit"
-                                                                class="inline-flex items-center px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs">
-                                                            <i class="fas fa-download mr-1"></i>
-                                                            Download
-                                                        </button>
-                                                    </form>
+                                                    <a href="{{ route('admin.maximo.jobcard.download', ['path' => $wo['jobcard_path']]) }}"
+                                                       class="inline-flex items-center px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs">
+                                                        <i class="fas fa-download mr-1"></i>
+                                                        Download
+                                                    </a>
                                                 @endif
                                                 @if(strtoupper($wo['status']) === 'APPR')
                                                     <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
@@ -472,12 +469,11 @@
             <iframe id="pdfjs-viewer" src="" style="width:100%;height:100%;border:none;"></iframe>
         </div>
         <div class="flex justify-end gap-2 p-4 border-t">
-            <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" id="downloadForm" class="inline">
-                <input type="hidden" name="path" id="downloadPath" value="">
-                <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                    Download
-                </button>
-            </form>
+            <a id="downloadLink"
+               href="#"
+               class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 inline-flex items-center">
+                Download
+            </a>
             <button id="savePdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Perubahan</button>
         </div>
     </div>
@@ -491,6 +487,10 @@ function openPdfEditor(pdfUrl, pdfPath) {
     console.log('[Jobcard] openPdfEditor called', { pdfUrl, pdfPath });
     pdfSaved = false;
     currentPdfPath = pdfPath;
+    const downloadLink = document.getElementById('downloadLink');
+    if (downloadLink) {
+        downloadLink.href = "{{ route('admin.maximo.jobcard.download') }}" + "?path=" + encodeURIComponent(pdfPath || '');
+    }
 
     const modal = document.getElementById('pdfEditorModal');
     const iframe = document.getElementById('pdfjs-viewer');
