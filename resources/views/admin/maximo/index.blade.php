@@ -216,6 +216,15 @@
                                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
                                                     Detail
                                                 </a>
+                                                @if(!empty($wo['jobcard_exists']) && $wo['jobcard_exists'] === true && !empty($wo['jobcard_path']))
+                                                    <form method="GET" action="{{ route('admin.maximo.jobcard.download') }}" class="inline">
+                                                        <input type="hidden" name="path" value="{{ $wo['jobcard_path'] }}">
+                                                        <button type="submit"
+                                                                class="inline-flex items-center px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs">
+                                                            Download
+                                                        </button>
+                                                    </form>
+                                                @endif
                                                 @if(strtoupper($wo['status']) === 'APPR')
                                                     <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
                                                         @csrf
