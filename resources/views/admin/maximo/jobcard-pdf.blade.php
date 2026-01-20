@@ -22,13 +22,14 @@
 
         .page {
             background: #ffffff !important;
-            width: 210mm !important;
-            min-height: 297mm !important;
-            margin: 0 auto !important;
-            /* top, right, bottom, left (kanan lebih tebal 25mm, kiri lebih tipis 10mm) */
-            padding: 15mm 25mm 15mm 10mm !important;
+            /* Width dikurangi padding: 210mm - 10mm (kiri) - 25mm (kanan) = 175mm untuk konten */
+            width: 175mm !important;
+            min-height: 267mm !important; /* 297mm - 15mm (atas) - 15mm (bawah) */
+            margin: 15mm 25mm 15mm 10mm !important; /* top, right, bottom, left (kanan lebih tebal, kiri lebih tipis) */
+            padding: 0 !important;
             page-break-after: always !important;
             position: relative !important;
+            box-sizing: border-box !important;
         }
 
         .page:last-child {
@@ -264,8 +265,7 @@
         @media print {
             @page {
                 size: A4;
-                /* top, right, bottom, left (kanan lebih tebal, kiri lebih tipis) */
-                margin: 15mm 25mm 15mm 10mm;
+                margin: 0 !important; /* Margin dikontrol oleh .page */
             }
             body {
                 background: #ffffff !important;
@@ -273,12 +273,13 @@
                 padding: 0 !important;
             }
             .page {
-                /* Pastikan padding asimetris tetap ter-apply saat print */
-                margin: 0 !important;
-                padding: 15mm 25mm 15mm 10mm !important;
-                width: 210mm !important;
-                min-height: 297mm !important;
+                /* Margin asimetris: kanan lebih tebal (25mm), kiri lebih tipis (10mm) */
+                margin: 15mm 25mm 15mm 10mm !important;
+                padding: 0 !important;
+                width: 175mm !important; /* 210mm - 10mm - 25mm */
+                min-height: 267mm !important; /* 297mm - 15mm - 15mm */
                 box-shadow: none !important;
+                box-sizing: border-box !important;
             }
         }
     </style>
