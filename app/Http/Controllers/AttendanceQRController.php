@@ -28,7 +28,7 @@ class AttendanceQRController extends Controller
         return view('admin.attendance.qr', compact('attendances'));
     }
 
-    public function generate()
+        public function generate()
     {
         try {
             // Generate token
@@ -47,12 +47,12 @@ class AttendanceQRController extends Controller
                 'updated_at' => now()
             ]);
 
-            // URL untuk QR
+            // URL untuk QR - **TAMBAHKAN UNIT_SOURCE KE URL**
             $externalUrl = config('services.attendance_external.url');
             if ($externalUrl) {
-                $qrUrl = rtrim($externalUrl, '/') . '/scan/' . $token;
+                $qrUrl = rtrim($externalUrl, '/') . '/scan/' . $token . '?unit=' . $connection;
             } else {
-                $qrUrl = url("/attendance/scan/{$token}");
+                $qrUrl = url("/attendance/scan/{$token}?unit={$connection}");
             }
 
             Log::info('QR Code generated', [
