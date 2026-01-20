@@ -69,6 +69,9 @@ Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notu
 Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
 Route::get('/notulen/{notulen}/download-zip', [NotulenController::class, 'downloadZip'])->name('notulen.download-zip');
 
+Route::get('/admin/attendance/sync',[AttendanceSyncController::class,'sync']);
+
+
 
 // Remove incorrect draft routes
 // Route::get('/notulen/drafts', [NotulenDraftController::class, 'save'])->name('notulen.drafts');
