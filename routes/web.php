@@ -55,6 +55,7 @@ use App\Http\Controllers\Admin\ScoreCardQuarterlyController;
 use App\Http\Controllers\Admin\ScoreCardWeeklyController;
 use App\Http\Controllers\AttendanceQRController;
 use App\Http\Controllers\Admin\MaximoController;
+use App\Http\Controllers\Admin\AttendanceSyncController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -88,7 +89,7 @@ Route::prefix('api')->group(function () {
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/attendance/qr',
-        [AttendanceQRController::class, 'index']
+        [AttendanceQRController::class, 'generate']
     )->name('admin.attendance.qr');
 
     Route::post('/admin/attendance/qr/generate',

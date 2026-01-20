@@ -7,6 +7,10 @@ use Illuminate\Support\Str;
 
 class AttendanceQRController extends Controller
 {
+    public function index()
+    {
+        return view('admin.attendance.qr');
+    }
     public function generate()
     {
         $token = 'ATT-'.Str::random(8);
