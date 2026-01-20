@@ -81,7 +81,7 @@ class AttendanceQRController extends Controller
         }
     }
 
-    public function pullData(Request $request)
+        public function pullData(Request $request)
     {
         try {
             // Ambil session unit yang aktif
@@ -132,6 +132,43 @@ class AttendanceQRController extends Controller
                 ]);
             }
 
+            // **FILTER DATA BERDASARKAN UNIT_SOURCE DAN TANGGAL HARI INI**
+            $today = Carbon::today()->toDateString();
+            $filteredData = array_filter($data, function($item) use ($connection, $today) {
+                // Cek apakah unit_source sesuai
+                $unitMatch = isset($item['unit_source']) && $item['unit_source'] === $connection;
+                
+                // Cek apakah data adalah data hari ini
+                $isToday = true;
+                if (isset($item['time']) && !empty($item['time'])) {
+                    try {
+                        $itemDate = Carbon::parse($item['time'])->toDateString();
+                        $isToday = $itemDate === $today;
+                    } catch (\Exception $e) {
+                        Log::warning('Invalid date format', ['time' => $item['time']]);
+                        $isToday = false;
+                    }
+                }
+                
+                return $unitMatch && $isToday;
+            });
+
+            Log::info('Data filtered by unit_source and date', [
+                'unit_source' => $connection,
+                'date' => $today,
+                'total_data' => count($data),
+                'filtered_data' => count($filteredData)
+            ]);
+
+            if (empty($filteredData)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Tidak ada data untuk unit {$connection} pada hari ini",
+                    'attendance_imported' => 0,
+                    'token_imported' => 0
+                ]);
+            }
+
             $importedCount = 0;
             $tokenImportedCount = 0;
             $skippedCount = 0;
@@ -139,7 +176,7 @@ class AttendanceQRController extends Controller
             DB::connection($connection)->beginTransaction();
 
             try {
-                foreach ($data as $index => $item) {
+                foreach ($filteredData as $index => $item) {
                     try {
                         if (!is_array($item)) {
                             Log::warning("Item #{$index} is not array, skipping");
@@ -153,11 +190,12 @@ class AttendanceQRController extends Controller
                                 ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
                                 : now();
 
-                            // Cek duplikat
+                            // Cek duplikat dengan filter unit_source
                             $exists = DB::connection($connection)
                                 ->table('attendance')
                                 ->where('name', $item['name'])
                                 ->where('time', $timeValue)
+                                ->where('unit_source', $connection) // **FILTER BY UNIT_SOURCE**
                                 ->exists();
 
                             if (!$exists) {
@@ -187,9 +225,11 @@ class AttendanceQRController extends Controller
                         // Import Token jika ada field 'token' tapi tidak ada 'name'
                         if (isset($item['token']) && !empty($item['token']) && !isset($item['name'])) {
                             
+                            // Cek duplikat dengan filter unit_source
                             $exists = DB::connection($connection)
                                 ->table('attendance_tokens')
                                 ->where('token', $item['token'])
+                                ->where('unit_source', $connection) // **FILTER BY UNIT_SOURCE**
                                 ->exists();
 
                             if (!$exists) {
@@ -227,13 +267,14 @@ class AttendanceQRController extends Controller
 
                 Log::info('=== PULL DATA COMPLETED ===', [
                     'unit_source' => $connection,
+                    'date' => $today,
                     'attendance_imported' => $importedCount,
                     'token_imported' => $tokenImportedCount,
                     'skipped' => $skippedCount,
-                    'total_items' => count($data)
+                    'total_items' => count($filteredData)
                 ]);
 
-                $message = "Data berhasil diimport ke {$connection}!\n";
+                $message = "Data berhasil diimport ke {$connection} untuk hari ini!\n";
                 $message .= "• Attendance: {$importedCount}\n";
                 $message .= "• Token: {$tokenImportedCount}\n";
                 $message .= "• Dilewati (duplikat): {$skippedCount}";
@@ -244,8 +285,9 @@ class AttendanceQRController extends Controller
                     'attendance_imported' => $importedCount,
                     'token_imported' => $tokenImportedCount,
                     'skipped' => $skippedCount,
-                    'total_processed' => count($data),
-                    'unit_source' => $connection
+                    'total_processed' => count($filteredData),
+                    'unit_source' => $connection,
+                    'date' => $today
                 ]);
 
             } catch (\Exception $e) {
