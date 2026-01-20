@@ -55,7 +55,6 @@ use App\Http\Controllers\Admin\ScoreCardQuarterlyController;
 use App\Http\Controllers\Admin\ScoreCardWeeklyController;
 use App\Http\Controllers\AttendanceQRController;
 use App\Http\Controllers\Admin\MaximoController;
-use App\Http\Controllers\Admin\AttendanceSyncController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -69,9 +68,6 @@ Route::post('/notulen', [NotulenController::class, 'store'])->name('notulen.stor
 Route::get('/notulen/{notulen}', [NotulenController::class, 'show'])->name('notulen.show');
 Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'])->name('notulen.print-pdf');
 Route::get('/notulen/{notulen}/download-zip', [NotulenController::class, 'downloadZip'])->name('notulen.download-zip');
-
-Route::get('/admin/attendance/sync',[AttendanceSyncController::class,'sync']);
-
 
 
 // Remove incorrect draft routes
@@ -89,7 +85,7 @@ Route::prefix('api')->group(function () {
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/attendance/qr',
-        [AttendanceQRController::class, 'generate']
+        [AttendanceQRController::class, 'index']
     )->name('admin.attendance.qr');
 
     Route::post('/admin/attendance/qr/generate',
