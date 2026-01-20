@@ -465,25 +465,55 @@ class LaborSayaController extends Controller
         try {
             $filePath = $request->input('path');
             
+            Log::info('updateJobcard called', [
+                'path' => $filePath,
+                'hasFile' => $request->hasFile('document'),
+                'allInputs' => $request->except(['document', '_token']),
+            ]);
+            
             if (!$filePath) {
                 return response()->json(['success' => false, 'message' => 'Path tidak valid.']);
             }
 
             if (!$request->hasFile('document')) {
-                return response()->json(['success' => false, 'message' => 'File tidak ditemukan.']);
+                return response()->json(['success' => false, 'message' => 'File tidak ditemukan dalam request.']);
             }
 
             $file = $request->file('document');
             
-            // Validasi file PDF
-            if ($file->getClientOriginalExtension() !== 'pdf') {
-                return response()->json(['success' => false, 'message' => 'File harus berformat PDF.']);
+            Log::info('File received', [
+                'originalName' => $file->getClientOriginalName(),
+                'extension' => $file->getClientOriginalExtension(),
+                'mimeType' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+            
+            // Validasi file PDF (lebih fleksibel)
+            $ext = strtolower($file->getClientOriginalExtension());
+            $mime = $file->getMimeType();
+            if ($ext !== 'pdf' && $mime !== 'application/pdf') {
+                return response()->json(['success' => false, 'message' => 'File harus berformat PDF. Received: ' . $ext . ' / ' . $mime]);
             }
 
             // Simpan file yang sudah di-edit (overwrite)
-            Storage::disk('public')->put($filePath, file_get_contents($file));
+            $content = file_get_contents($file->getRealPath());
+            
+            if (empty($content)) {
+                return response()->json(['success' => false, 'message' => 'File content kosong.']);
+            }
+            
+            Log::info('Saving file', [
+                'path' => $filePath,
+                'contentSize' => strlen($content),
+            ]);
+            
+            $saved = Storage::disk('public')->put($filePath, $content);
+            
+            if (!$saved) {
+                return response()->json(['success' => false, 'message' => 'Gagal menyimpan file ke storage.']);
+            }
 
-            Log::info('Jobcard updated successfully', ['path' => $filePath]);
+            Log::info('Jobcard updated successfully', ['path' => $filePath, 'size' => strlen($content)]);
 
             return response()->json([
                 'success' => true,
@@ -495,6 +525,7 @@ class LaborSayaController extends Controller
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['success' => false, 'message' => 'Gagal update jobcard: ' . $e->getMessage()]);
         }

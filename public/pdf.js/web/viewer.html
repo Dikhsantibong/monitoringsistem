@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
 Copyright 2012 Mozilla Foundation
 
@@ -792,11 +792,29 @@ See https://github.com/adobe-type-tools/cmap-resources
       // Listen for postMessage from parent to trigger save
       window.addEventListener('message', async function(event) {
         if (event.data && event.data.type === 'request-save-pdf') {
-          if (window.PDFViewerApplication && PDFViewerApplication.pdfDocument) {
-            const pdfData = await window.PDFViewerApplication.pdfDocument.saveDocument();
+          console.log('[PDF.js Viewer] request-save-pdf received');
+          try {
+            if (window.PDFViewerApplication && PDFViewerApplication.pdfDocument) {
+              console.log('[PDF.js Viewer] Saving document with annotations...');
+              // Gunakan getData() untuk mendapatkan PDF dengan annotations
+              const pdfData = await window.PDFViewerApplication.pdfDocument.saveDocument();
+              console.log('[PDF.js Viewer] Document saved, data size:', pdfData ? pdfData.byteLength || pdfData.length : 0);
+              window.parent.postMessage({
+                type: 'save-pdf',
+                data: pdfData
+              }, '*');
+            } else {
+              console.error('[PDF.js Viewer] PDFViewerApplication atau pdfDocument tidak tersedia');
+              window.parent.postMessage({
+                type: 'save-pdf-error',
+                message: 'PDF viewer tidak siap'
+              }, '*');
+            }
+          } catch (err) {
+            console.error('[PDF.js Viewer] Error saving document:', err);
             window.parent.postMessage({
-              type: 'save-pdf',
-              data: pdfData
+              type: 'save-pdf-error',
+              message: err.message || 'Unknown error'
             }, '*');
           }
         }

@@ -120,20 +120,35 @@ function saveEditedPdf(blob) {
 // Listen untuk message dari PDF.js viewer
 window.addEventListener('message', function(event) {
     console.log('[Jobcard] Received postMessage:', event.data);
+    
+    // Handle error dari viewer
+    if (event.data && event.data.type === 'save-pdf-error') {
+        alert('Error dari PDF viewer: ' + (event.data.message || 'Unknown error'));
+        return;
+    }
+    
     if (event.data && event.data.type === 'save-pdf' && event.data.data) {
         let blob = null;
-        if (event.data.data instanceof ArrayBuffer) {
-            blob = new Blob([event.data.data], { type: 'application/pdf' });
-        } else if (event.data.data instanceof Object) {
-            const arr = new Uint8Array(Object.values(event.data.data));
-            blob = new Blob([arr], { type: 'application/pdf' });
+        try {
+            if (event.data.data instanceof ArrayBuffer) {
+                blob = new Blob([event.data.data], { type: 'application/pdf' });
+            } else if (event.data.data instanceof Uint8Array) {
+                blob = new Blob([event.data.data], { type: 'application/pdf' });
+            } else if (event.data.data instanceof Object) {
+                // Convert object to Uint8Array
+                const arr = new Uint8Array(Object.values(event.data.data));
+                blob = new Blob([arr], { type: 'application/pdf' });
+            }
+        } catch (err) {
+            console.error('[Jobcard] Error creating blob:', err);
         }
-        if (blob) {
+        
+        if (blob && blob.size > 0) {
             console.log('[Jobcard] Got blob from viewer, size:', blob.size);
             saveEditedPdf(blob);
         } else {
-            console.error('[Jobcard] Failed to create blob from viewer data');
-            alert('Gagal membaca data PDF hasil edit.');
+            console.error('[Jobcard] Failed to create blob from viewer data or blob is empty');
+            alert('Gagal membaca data PDF hasil edit. Pastikan PDF sudah dimuat dengan benar.');
         }
     }
 });
