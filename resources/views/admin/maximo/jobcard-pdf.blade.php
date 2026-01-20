@@ -261,15 +261,22 @@
 
         /* Print Styles */
         @media print {
+            @page {
+                size: A4;
+                /* top, right, bottom, left (kanan lebih tebal, kiri lebih tipis) */
+                margin: 15mm 25mm 15mm 10mm;
+            }
             body {
                 background: #ffffff;
                 margin: 0;
                 padding: 0;
             }
             .page {
-                margin: 0;
-                /* top, right, bottom, left (kanan lebih tebal, kiri lebih tipis) */
-                padding: 15mm 25mm 15mm 10mm;
+                /* Saat render PDF, margin ditangani oleh @page agar pasti ter-apply */
+                margin: 0 !important;
+                padding: 0 !important;
+                width: auto !important;
+                min-height: auto !important;
                 box-shadow: none;
             }
         }
