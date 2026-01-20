@@ -193,6 +193,21 @@
             </div>
         </div>
 
+        <!-- Modal Error Detail -->
+        <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Error Details
+                    </h3>
+                    <button onclick="closeErrorModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="errorContent" class="bg-gray-100 p-4 rounded text-sm font-mono whitespace-pre-wrap"></div>
+            </div>
+        </div>
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
         <script>
@@ -252,9 +267,21 @@
                 document.getElementById('qrModal').classList.add('hidden');
             }
 
+            function showErrorModal(title, content) {
+                document.getElementById('errorContent').textContent = content;
+                document.getElementById('errorModal').classList.remove('hidden');
+            }
+
+            function closeErrorModal() {
+                document.getElementById('errorModal').classList.add('hidden');
+            }
+
             function pullData() {
                 const btn = document.getElementById('pullDataBtn');
                 const originalText = btn.innerHTML;
+                
+                console.log('=== PULL DATA STARTED ===');
+                console.log('Time:', new Date().toISOString());
                 
                 // Disable button dan show loading
                 btn.disabled = true;
@@ -269,43 +296,75 @@
                     }
                 })
                 .then(response => {
-                    console.log('Response status:', response.status);
-                    return response.json();
+                    console.log('Response Status:', response.status);
+                    console.log('Response OK:', response.ok);
+                    return response.json().then(data => {
+                        console.log('Response Data:', data);
+                        return { status: response.status, ok: response.ok, data: data };
+                    });
                 })
-                .then(data => {
-                    console.log('Response data:', data);
+                .then(({ status, ok, data }) => {
+                    if (!ok) {
+                        // Show error modal with details
+                        let errorContent = 'Status: ' + status + '\n\n';
+                        errorContent += 'Message: ' + (data.message || 'Unknown error') + '\n\n';
+                        
+                        if (data.details) {
+                            errorContent += 'Details:\n' + JSON.stringify(data.details, null, 2);
+                        }
+                        
+                        showErrorModal('Error', errorContent);
+                        console.error('API Error:', data);
+                        return;
+                    }
                     
                     if (data.success) {
+                        console.log('Success! Data imported:', data);
+                        
                         let message = data.message;
                         
                         // Tambahkan detail jika ada errors
                         if (data.errors && data.errors.length > 0) {
-                            message += '\n\nErrors:\n' + data.errors.join('\n');
+                            console.warn('Errors during import:', data.errors);
+                            message += '\n\n⚠️ Warnings/Errors:\n' + data.errors.slice(0, 5).join('\n');
+                            if (data.errors.length > 5) {
+                                message += '\n... dan ' + (data.errors.length - 5) + ' error lainnya';
+                            }
                         }
                         
                         alert(message);
                         
-                        // Reload hanya jika ada data yang diimport
+                        // Reload jika ada data yang diimport
                         if (data.attendance_imported > 0 || data.token_imported > 0) {
-                            console.log('Reloading page due to new imports...');
+                            console.log('Reloading page...');
                             setTimeout(() => {
                                 window.location.reload();
                             }, 1000);
-                        } else {
-                            console.log('No new data imported, not reloading');
                         }
                     } else {
-                        alert('Gagal menarik data: ' + (data.message || 'Unknown error'));
+                        let errorMsg = 'Gagal menarik data: ' + (data.message || 'Unknown error');
+                        
+                        if (data.details) {
+                            showErrorModal('Error', JSON.stringify(data.details, null, 2));
+                        }
+                        
+                        alert(errorMsg);
+                        console.error('Pull data failed:', data);
                     }
                 })
                 .catch(error => {
-                    console.error('Pull Data Error:', error);
-                    alert('Gagal menarik data. Silakan coba lagi.\nError: ' + error.message);
+                    console.error('=== PULL DATA ERROR ===');
+                    console.error('Error:', error);
+                    console.error('Stack:', error.stack);
+                    
+                    showErrorModal('Network Error', error.toString() + '\n\n' + error.stack);
+                    alert('Gagal menarik data. Silakan cek console untuk detail error.');
                 })
                 .finally(() => {
                     // Restore button
                     btn.disabled = false;
                     btn.innerHTML = originalText;
+                    console.log('=== PULL DATA ENDED ===');
                 });
             }
 
@@ -325,6 +384,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const signatureModal = document.getElementById('signatureModal');
                 const qrModal = document.getElementById('qrModal');
+                const errorModal = document.getElementById('errorModal');
                 
                 if (signatureModal) {
                     signatureModal.addEventListener('click', function(e) {
@@ -338,6 +398,14 @@
                     qrModal.addEventListener('click', function(e) {
                         if (e.target === this) {
                             closeQRModal();
+                        }
+                    });
+                }
+
+                if (errorModal) {
+                    errorModal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeErrorModal();
                         }
                     });
                 }
