@@ -345,7 +345,10 @@ function saveEditedPdf(blob) {
     // Upload ke server
     console.log('saveEditedPdf called, uploading...');
     const formData = new FormData();
-    formData.append('document', blob, '{{ basename($workOrder->document_path) }}');
+    formData.append('document', blob, '{{ $workOrder->document_path ? basename($workOrder->document_path) : ("JOBCARD_" . $workOrder->wonum . ".pdf") }}');
+    if ('{{ $workOrder->document_path }}') {
+        formData.append('path', '{{ $workOrder->document_path }}');
+    }
     formData.append('_token', '{{ csrf_token() }}');
     fetch("{{ route('pemeliharaan.labor-saya.update', $workOrder->id) }}", {
         method: 'POST',

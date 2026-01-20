@@ -245,14 +245,34 @@ class LaborSayaController extends Controller
         // Jika hanya upload dokumen (AJAX PDF), tidak perlu validasi field lain
         if ($request->hasFile('document') && $request->file('document')->isValid()) {
             $file = $request->file('document');
-            $fileName = basename($workOrder->document_path);
-            if ($workOrder->document_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($workOrder->document_path)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($workOrder->document_path);
+            // Jika dikirim path (misal jobcard), gunakan overwrite ke path tersebut
+            $targetPath = $request->input('path');
+
+            // Tentukan nama file
+            $fileName = $targetPath ? basename($targetPath) : ($workOrder->document_path ? basename($workOrder->document_path) : (time() . '_' . str_replace(' ', '_', $file->getClientOriginalName())));
+
+            try {
+                if ($targetPath) {
+                    // Overwrite ke path yang diminta
+                    \Illuminate\Support\Facades\Storage::disk('public')->put($targetPath, file_get_contents($file->getRealPath()));
+                    $path = $targetPath;
+                } else {
+                    // Simpan ke storage publik
+                    $path = $file->storeAs('work-orders', $fileName, 'public');
+                }
+
+                // Update path di database jika ada
+                $workOrder->document_path = $path;
+                $workOrder->save();
+
+                return response()->json(['success' => true, 'path' => $path]);
+            } catch (\Throwable $e) {
+                Log::error('LaborSayaController@update file upload error', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                return response()->json(['success' => false, 'message' => 'Gagal menyimpan dokumen: ' . $e->getMessage()], 500);
             }
-            $path = $file->storeAs('work-orders', $fileName, 'public');
-            $workOrder->document_path = $path;
-            $workOrder->save();
-            return response()->json(['success' => true]);
         }
 
         DB::beginTransaction();
