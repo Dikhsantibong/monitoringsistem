@@ -283,17 +283,38 @@
         </main>
     </div>
 </div>
-<!-- Modal PDF Editor -->
+<!-- Modal PDF Editor dengan Canvas Overlay -->
 @if(!empty($workOrder->jobcard_exists) && $workOrder->jobcard_exists === true)
 <div id="pdfEditorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg shadow-lg w-[95vw] h-[95vh] flex flex-col">
+        <!-- Header dengan Tools -->
         <div class="flex justify-between items-center p-3 border-b bg-gray-50">
-            <span class="font-bold text-lg">Edit Jobcard - {{ $workOrder->wonum }}</span>
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-lg">Edit Jobcard - {{ $workOrder->wonum }}</span>
+                <div class="flex items-center gap-2 border-l pl-3 ml-3">
+                    <button id="toolPen" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 active-tool" data-tool="pen">
+                        ✏️ Menulis
+                    </button>
+                    <button id="toolEraser" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700" data-tool="eraser">
+                        🧹 Hapus
+                    </button>
+                    <button id="toolClear" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700" onclick="clearAllDrawings()">
+                        🗑️ Hapus Semua
+                    </button>
+                </div>
+            </div>
             <button onclick="closePdfEditor()" class="text-gray-500 hover:text-red-600 text-2xl font-bold">&times;</button>
         </div>
-        <div class="flex-1 w-full overflow-hidden">
-            <iframe id="pdfjs-viewer" src="" style="width:100%;height:100%;border:none;"></iframe>
+        
+        <!-- PDF Viewer dengan Canvas Overlay -->
+        <div id="pdfViewerContainer" class="flex-1 overflow-auto bg-gray-200 relative" style="max-height: calc(95vh - 120px);">
+            <div id="pdfWrapper" style="position:relative;width:100%;">
+                <div id="pdfPagesContainer" style="width:100%;display:block;position:relative;"></div>
+                <canvas id="drawingCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;z-index:10;pointer-events:auto;background:transparent;"></canvas>
+            </div>
         </div>
+        
+        <!-- Footer dengan Actions -->
         <div class="flex justify-between items-center p-3 border-t bg-gray-50">
             <div class="text-sm text-gray-600">
                 Dokumen: JOBCARD_{{ $workOrder->wonum }}.pdf
@@ -310,6 +331,12 @@
         </div>
     </div>
 </div>
+<style>
+    .active-tool { opacity: 0.8; transform: scale(0.95); }
+    #pdfPagesContainer canvas { display: block; margin-bottom: 8px; }
+    #pdfWrapper { overflow: visible !important; }
+    #pdfViewerContainer { overflow-y: auto !important; overflow-x: hidden !important; }
+</style>
 @endif
 
 <!-- Modal Signature -->
@@ -327,32 +354,177 @@
 @push('scripts')
 <script>
 // ==========================================
-// PDF Editor Modal Functions
+// PDF Editor dengan Canvas Overlay
 // ==========================================
 let pdfSaved = false;
 let currentPdfPath = '';
+let currentPdfUrl = '';
+let currentTool = 'pen';
+let isDrawing = false;
+let drawingCanvas = null;
+let drawingCtx = null;
 
 function openPdfEditor(pdfUrl, pdfPath) {
     console.log('[Jobcard] openPdfEditor called', { pdfUrl, pdfPath });
     pdfSaved = false;
     currentPdfPath = pdfPath;
+    currentPdfUrl = pdfUrl;
 
     const modal = document.getElementById('pdfEditorModal');
-    const iframe = document.getElementById('pdfjs-viewer');
+    const container = document.getElementById('pdfViewerContainer');
+    const pdfWrapper = document.getElementById('pdfWrapper');
+    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
+    drawingCanvas = document.getElementById('drawingCanvas');
 
-    if (!modal || !iframe) {
-        console.error('[Jobcard] Modal atau iframe tidak ditemukan');
+    if (!modal || !container || !pdfWrapper || !pdfPagesContainer || !drawingCanvas) {
+        console.error('[Jobcard] Elemen modal tidak ditemukan');
         alert('Modal editor tidak tersedia.');
         return;
     }
 
+    drawingCtx = drawingCanvas.getContext('2d');
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    // Load PDF.js viewer dengan file
-    const viewerUrl = '{{ asset("pdf.js/web/viewer.html") }}?file=' + encodeURIComponent(pdfUrl);
-    console.log('[Jobcard] Loading viewer:', viewerUrl);
-    iframe.src = viewerUrl;
+    // Clear previous
+    pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Memuat PDF...</div>';
+    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+
+    // Render PDF dengan PDF.js
+    (async function() {
+        try {
+            const pdfjs = await import('{{ asset("pdf.js/build/pdf.mjs") }}');
+            pdfjs.GlobalWorkerOptions.workerSrc = '{{ asset("pdf.js/build/pdf.worker.mjs") }}';
+            
+            const doc = await pdfjs.getDocument({ url: pdfUrl }).promise;
+            const numPages = doc.numPages;
+            const containerWidth = Math.max(container.clientWidth || 800, 400);
+            let totalHeight = 0;
+            const gap = 8;
+            pdfPagesContainer.innerHTML = '';
+            
+            for (let i = 1; i <= numPages; i++) {
+                const page = await doc.getPage(i);
+                const vp1 = page.getViewport({ scale: 1 });
+                const scale = containerWidth / vp1.width;
+                const vp = page.getViewport({ scale });
+                const can = document.createElement('canvas');
+                can.width = vp.width;
+                can.height = vp.height;
+                can.style.display = 'block';
+                can.style.marginBottom = (i < numPages ? gap : 0) + 'px';
+                const ctx = can.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                pdfPagesContainer.appendChild(can);
+                totalHeight += vp.height + (i < numPages ? gap : 0);
+            }
+            
+            pdfWrapper.style.height = totalHeight + 'px';
+            pdfWrapper.style.minHeight = totalHeight + 'px';
+            
+            drawingCanvas.width = containerWidth;
+            drawingCanvas.height = totalHeight;
+            drawingCanvas.style.position = 'absolute';
+            drawingCanvas.style.top = '0';
+            drawingCanvas.style.left = '0';
+            drawingCanvas.style.width = '100%';
+            drawingCanvas.style.height = '100%';
+            
+            setupDrawingTools();
+            console.log('[Jobcard] PDF dirender:', numPages, 'halaman, tinggi:', totalHeight);
+        } catch (e) {
+            console.error('[Jobcard] Gagal memuat PDF:', e);
+            pdfPagesContainer.innerHTML = '<div style="padding:2rem;text-align:center;color:#c00;">Gagal memuat PDF. ' + (e.message || '') + '</div>';
+        }
+    })();
+}
+
+function setupDrawingTools() {
+    if (!drawingCanvas || !drawingCtx) return;
+    
+    let lastX = 0, lastY = 0;
+    
+    function getMousePos(e) {
+        const rect = drawingCanvas.getBoundingClientRect();
+        return {
+            x: (e.clientX - rect.left) * (drawingCanvas.width / rect.width),
+            y: (e.clientY - rect.top) * (drawingCanvas.height / rect.height)
+        };
+    }
+    
+    function updateTool() {
+        if (currentTool === 'pen') {
+            drawingCtx.globalCompositeOperation = 'source-over';
+            drawingCtx.strokeStyle = '#000000';
+            drawingCtx.lineWidth = 1.5;
+            drawingCanvas.style.cursor = 'crosshair';
+        } else if (currentTool === 'eraser') {
+            drawingCtx.globalCompositeOperation = 'destination-out';
+            drawingCtx.lineWidth = 20;
+            drawingCanvas.style.cursor = 'grab';
+        }
+        drawingCtx.lineCap = 'round';
+        drawingCtx.lineJoin = 'round';
+    }
+    
+    drawingCanvas.addEventListener('mousedown', function(e) {
+        if (currentTool === 'pen' || currentTool === 'eraser') {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+            updateTool();
+            drawingCtx.beginPath();
+            drawingCtx.moveTo(lastX, lastY);
+        }
+    });
+    
+    drawingCanvas.addEventListener('mousemove', function(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        drawingCtx.lineTo(pos.x, pos.y);
+        drawingCtx.stroke();
+        lastX = pos.x;
+        lastY = pos.y;
+    });
+    
+    drawingCanvas.addEventListener('mouseup', function() {
+        if (isDrawing) drawingCtx.stroke();
+        isDrawing = false;
+    });
+    
+    drawingCanvas.addEventListener('mouseleave', function() {
+        if (isDrawing) drawingCtx.stroke();
+        isDrawing = false;
+    });
+    
+    // Wheel scroll
+    drawingCanvas.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const container = document.getElementById('pdfViewerContainer');
+        if (container) {
+            container.scrollTop += e.deltaY;
+        }
+    }, { passive: false });
+    
+    // Tool buttons
+    document.querySelectorAll('[data-tool]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentTool = this.dataset.tool;
+            document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active-tool'));
+            this.classList.add('active-tool');
+            updateTool();
+        });
+    });
+    
+    updateTool();
+}
+
+function clearAllDrawings() {
+    if (!confirm('Hapus semua coretan?')) return;
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
 }
 
 function closePdfEditor(force = false) {
@@ -362,93 +534,73 @@ function closePdfEditor(force = false) {
         }
     }
     const modal = document.getElementById('pdfEditorModal');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
+    if (modal) modal.classList.add('hidden');
     document.body.style.overflow = '';
-}
-
-function saveEditedPdf(blob) {
-    console.log('[Jobcard] Uploading edited PDF to server...');
     
-    const formData = new FormData();
-    formData.append('document', blob, currentPdfPath.split('/').pop());
-    formData.append('path', currentPdfPath);
-    formData.append('_token', '{{ csrf_token() }}');
-    
-    fetch("{{ route('pemeliharaan.jobcard.update') }}", {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log('[Jobcard] Server response:', data);
-        if (data.success) {
-            pdfSaved = true;
-            alert('Jobcard berhasil disimpan!');
-            closePdfEditor(true);
-        } else {
-            alert('Gagal menyimpan jobcard: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch((err) => {
-        console.error('[Jobcard] Upload error:', err);
-        alert('Gagal menyimpan jobcard. Silakan coba lagi.');
-    });
-}
-
-// Listen untuk message dari PDF.js viewer
-window.addEventListener('message', function(event) {
-    console.log('[Jobcard] Received postMessage:', event.data);
-    if (event.data && event.data.type === 'save-pdf' && event.data.data) {
-        let blob = null;
-        if (event.data.data instanceof ArrayBuffer) {
-            blob = new Blob([event.data.data], { type: 'application/pdf' });
-        } else if (event.data.data instanceof Object) {
-            const arr = new Uint8Array(Object.values(event.data.data));
-            blob = new Blob([arr], { type: 'application/pdf' });
-        }
-        if (blob) {
-            console.log('[Jobcard] Got blob from viewer, size:', blob.size);
-            saveEditedPdf(blob);
-        } else {
-            console.error('[Jobcard] Failed to create blob from viewer data');
-            alert('Gagal membaca data PDF hasil edit.');
-        }
+    // Clear
+    const pdfPagesContainer = document.getElementById('pdfPagesContainer');
+    if (pdfPagesContainer) pdfPagesContainer.innerHTML = '';
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     }
-});
+}
 
-// Event listener untuk modal
-const pdfEditorModal = document.getElementById('pdfEditorModal');
-if (pdfEditorModal) {
-    // Klik di luar modal untuk tutup
-    pdfEditorModal.addEventListener('mousedown', function(e) {
-        if (e.target === pdfEditorModal) {
+// Simpan PDF dengan drawing overlay ke server
+document.addEventListener('DOMContentLoaded', function() {
+    const savePdfBtn = document.getElementById('savePdfBtn');
+    if (savePdfBtn) {
+        savePdfBtn.addEventListener('click', async function() {
+            if (!drawingCanvas || !currentPdfPath) {
+                alert('PDF belum dimuat.');
+                return;
+            }
+            
+            // Ambil drawing sebagai base64 PNG
+            const drawingDataUrl = drawingCanvas.toDataURL('image/png');
+            
+            console.log('[Jobcard] Uploading drawing to server...');
+            
+            const formData = new FormData();
+            formData.append('drawing', drawingDataUrl);
+            formData.append('path', currentPdfPath);
+            formData.append('_token', '{{ csrf_token() }}');
+            
+            try {
+                const res = await fetch("{{ route('pemeliharaan.jobcard.update') }}", {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                console.log('[Jobcard] Server response:', data);
+                
+                if (data.success) {
+                    pdfSaved = true;
+                    alert('Jobcard berhasil disimpan!');
+                    closePdfEditor(true);
+                } else {
+                    alert('Gagal menyimpan: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('[Jobcard] Upload error:', err);
+                alert('Gagal menyimpan jobcard.');
+            }
+        });
+    }
+    
+    // Modal event listeners
+    const pdfEditorModal = document.getElementById('pdfEditorModal');
+    if (pdfEditorModal) {
+        pdfEditorModal.addEventListener('mousedown', function(e) {
+            if (e.target === pdfEditorModal) closePdfEditor();
+        });
+    }
+    
+    window.addEventListener('keydown', function(e) {
+        if (pdfEditorModal && !pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
             closePdfEditor();
         }
     });
-}
-
-// ESC untuk tutup modal
-window.addEventListener('keydown', function(e) {
-    if (pdfEditorModal && !pdfEditorModal.classList.contains('hidden') && e.key === 'Escape') {
-        closePdfEditor();
-    }
 });
-
-// Tombol Simpan Perubahan
-const savePdfBtn = document.getElementById('savePdfBtn');
-if (savePdfBtn) {
-    savePdfBtn.addEventListener('click', function() {
-        const iframe = document.getElementById('pdfjs-viewer');
-        if (iframe && iframe.contentWindow) {
-            console.log('[Jobcard] Requesting PDF save from viewer...');
-            iframe.contentWindow.postMessage({ type: 'request-save-pdf' }, '*');
-        } else {
-            alert('PDF viewer tidak tersedia.');
-        }
-    });
-}
 
 // ==========================================
 // Materials Functions
