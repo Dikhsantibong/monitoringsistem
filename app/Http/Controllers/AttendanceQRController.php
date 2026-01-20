@@ -79,96 +79,47 @@ class AttendanceQRController extends Controller
     {
         try {
             Log::info('=== START PULL DATA ===');
-            Log::info('API URL: https://absen-monday.online/api/attendance');
             
             // Panggil API
             $response = Http::timeout(30)->get('https://absen-monday.online/api/attendance');
             
-            Log::info('API Response Status: ' . $response->status());
-            
             if (!$response->successful()) {
-                $errorMsg = 'API request failed with status: ' . $response->status();
-                Log::error($errorMsg, [
+                Log::error('API request failed', [
                     'status' => $response->status(),
-                    'body' => $response->body(),
-                    'headers' => $response->headers()
+                    'body' => $response->body()
                 ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal mengambil data dari API. Status: ' . $response->status(),
-                    'details' => [
-                        'status_code' => $response->status(),
-                        'response_body' => $response->body()
-                    ]
+                    'message' => 'Gagal mengambil data dari API. Status: ' . $response->status()
                 ], 500);
             }
 
-            // Get raw response body
-            $rawBody = $response->body();
-            Log::info('Raw API Response Body', ['body' => $rawBody]);
+            $responseData = $response->json();
+            Log::info('API Response', ['response' => $responseData]);
 
-            // Parse JSON
-            try {
-                $data = $response->json();
-            } catch (\Exception $e) {
-                Log::error('JSON Parse Error', [
-                    'error' => $e->getMessage(),
-                    'raw_body' => $rawBody
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal parsing JSON dari API',
-                    'details' => [
-                        'error' => $e->getMessage(),
-                        'raw_response' => substr($rawBody, 0, 500) // First 500 chars
-                    ]
-                ], 500);
+            // Extract data array dari response
+            // API bisa return format: {"success": true, "data": [...]} atau langsung [...]
+            $data = [];
+            
+            if (is_array($responseData)) {
+                // Cek apakah ada key 'data'
+                if (isset($responseData['data']) && is_array($responseData['data'])) {
+                    $data = $responseData['data'];
+                    Log::info('Data extracted from response.data', ['count' => count($data)]);
+                } else {
+                    // Response langsung array
+                    $data = $responseData;
+                    Log::info('Using response as data array', ['count' => count($data)]);
+                }
             }
 
-            // Log data structure
-            Log::info('Parsed JSON Data', [
-                'data_type' => gettype($data),
-                'is_array' => is_array($data),
-                'count' => is_array($data) ? count($data) : 'N/A',
-                'data_structure' => json_encode($data, JSON_PRETTY_PRINT)
-            ]);
-
-            // Validate data type
-            if (!is_array($data)) {
-                Log::error('Invalid data type from API', [
-                    'expected' => 'array',
-                    'received' => gettype($data),
-                    'data' => $data
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Format data dari API tidak valid. Expected: array, Got: ' . gettype($data),
-                    'details' => [
-                        'data_type' => gettype($data),
-                        'data_preview' => is_string($data) ? substr($data, 0, 200) : json_encode($data)
-                    ]
-                ], 500);
-            }
-
-            // Check if empty
             if (empty($data)) {
-                Log::warning('API returned empty array');
+                Log::warning('No data to import');
                 return response()->json([
                     'success' => true,
-                    'message' => 'Tidak ada data baru untuk diimport dari API',
+                    'message' => 'Tidak ada data untuk diimport',
                     'attendance_imported' => 0,
-                    'token_imported' => 0,
-                    'details' => [
-                        'api_response' => 'Empty array'
-                    ]
-                ]);
-            }
-
-            // Log first item structure
-            if (isset($data[0])) {
-                Log::info('First item structure', [
-                    'keys' => array_keys($data[0]),
-                    'sample' => $data[0]
+                    'token_imported' => 0
                 ]);
             }
 
@@ -176,119 +127,92 @@ class AttendanceQRController extends Controller
             $importedCount = 0;
             $tokenImportedCount = 0;
             $skippedCount = 0;
-            $errors = [];
-
-            Log::info('Using database connection: ' . $connection);
 
             DB::beginTransaction();
 
             try {
                 foreach ($data as $index => $item) {
                     try {
-                        Log::info("=== Processing item #{$index} ===", ['item' => $item]);
-
-                        // Validate item is array
                         if (!is_array($item)) {
-                            $errors[] = "Item #{$index} is not an array: " . gettype($item);
-                            Log::warning("Item #{$index} is not an array", ['type' => gettype($item)]);
+                            Log::warning("Item #{$index} is not array, skipping");
                             continue;
                         }
 
-                        // Check if this is attendance data (has name field)
+                        // Import Attendance jika ada field 'name'
                         if (isset($item['name']) && !empty($item['name'])) {
-                            Log::info("Item #{$index} detected as ATTENDANCE data");
                             
-                            // Prepare attendance data
-                            $attendanceData = [
-                                'name' => $item['name'],
-                                'position' => $item['position'] ?? null,
-                                'division' => $item['division'] ?? null,
-                                'token' => $item['token'] ?? null,
-                                'time' => isset($item['time']) && !empty($item['time'])
-                                    ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
-                                    : now(),
-                                'signature' => $item['signature'] ?? null,
-                                'unit_source' => $connection,
-                                'created_at' => now(),
-                                'updated_at' => now()
-                            ];
+                            // Cek duplikat berdasarkan name dan time
+                            $timeValue = isset($item['time']) && !empty($item['time'])
+                                ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
+                                : now();
 
-                            Log::info("Prepared attendance data", $attendanceData);
-
-                            // Check for existing record
-                            $existingCheck = DB::connection($connection)
+                            $exists = DB::connection($connection)
                                 ->table('attendance')
-                                ->where('name', $attendanceData['name'])
-                                ->where('time', $attendanceData['time'])
+                                ->where('name', $item['name'])
+                                ->where('time', $timeValue)
                                 ->exists();
 
-                            if ($existingCheck) {
-                                Log::info("Attendance already exists, skipping", [
-                                    'name' => $attendanceData['name'],
-                                    'time' => $attendanceData['time']
+                            if (!$exists) {
+                                // Insert data
+                                DB::connection($connection)->table('attendance')->insert([
+                                    'name' => $item['name'],
+                                    'position' => $item['position'] ?? '',
+                                    'division' => $item['division'] ?? '',
+                                    'token' => $item['token'] ?? '',
+                                    'time' => $timeValue,
+                                    'signature' => $item['signature'] ?? null,
+                                    'unit_source' => $connection,
+                                    'is_backdate' => $item['is_backdate'] ?? 0,
+                                    'backdate_reason' => $item['backdate_reason'] ?? null,
+                                    'created_at' => now(),
+                                    'updated_at' => now()
                                 ]);
+                                
+                                $importedCount++;
+                                Log::info("✓ Attendance imported: {$item['name']}");
+                            } else {
                                 $skippedCount++;
-                                continue;
+                                Log::info("⊘ Attendance skipped (duplicate): {$item['name']}");
                             }
-
-                            // Insert attendance
-                            DB::connection($connection)->table('attendance')->insert($attendanceData);
-                            $importedCount++;
-                            Log::info("✓ Attendance inserted successfully", ['total' => $importedCount]);
                         }
-                        // Check if this is token data (has token field but no name)
-                        elseif (isset($item['token']) && !empty($item['token']) && !isset($item['name'])) {
-                            Log::info("Item #{$index} detected as TOKEN data");
+                        
+                        // Import Token jika ada field 'token' tapi tidak ada 'name'
+                        if (isset($item['token']) && !empty($item['token']) && !isset($item['name'])) {
                             
-                            // Prepare token data
-                            $tokenData = [
-                                'token' => $item['token'],
-                                'user_id' => $item['user_id'] ?? auth()->id(),
-                                'expires_at' => isset($item['expires_at']) && !empty($item['expires_at'])
-                                    ? Carbon::parse($item['expires_at'])
-                                    : now()->addMinutes(15),
-                                'unit_source' => $connection,
-                                'created_at' => now(),
-                                'updated_at' => now()
-                            ];
-
-                            Log::info("Prepared token data", $tokenData);
-
-                            // Check for existing token
-                            $existingToken = DB::connection($connection)
+                            $exists = DB::connection($connection)
                                 ->table('attendance_tokens')
-                                ->where('token', $tokenData['token'])
+                                ->where('token', $item['token'])
                                 ->exists();
 
-                            if ($existingToken) {
-                                Log::info("Token already exists, skipping", ['token' => $tokenData['token']]);
+                            if (!$exists) {
+                                DB::connection($connection)->table('attendance_tokens')->insert([
+                                    'token' => $item['token'],
+                                    'user_id' => $item['user_id'] ?? auth()->id(),
+                                    'expires_at' => isset($item['expires_at']) && !empty($item['expires_at'])
+                                        ? Carbon::parse($item['expires_at'])
+                                        : now()->addMinutes(15),
+                                    'unit_source' => $connection,
+                                    'is_backdate' => $item['is_backdate'] ?? 0,
+                                    'backdate_data' => $item['backdate_data'] ?? null,
+                                    'created_at' => now(),
+                                    'updated_at' => now()
+                                ]);
+                                
+                                $tokenImportedCount++;
+                                Log::info("✓ Token imported: {$item['token']}");
+                            } else {
                                 $skippedCount++;
-                                continue;
+                                Log::info("⊘ Token skipped (duplicate): {$item['token']}");
                             }
-
-                            // Insert token
-                            DB::connection($connection)->table('attendance_tokens')->insert($tokenData);
-                            $tokenImportedCount++;
-                            Log::info("✓ Token inserted successfully", ['total' => $tokenImportedCount]);
-                        }
-                        else {
-                            $warning = "Item #{$index} has no 'name' or 'token' field, skipping";
-                            Log::warning($warning, ['item' => $item]);
-                            $errors[] = $warning;
-                            $skippedCount++;
                         }
 
                     } catch (\Exception $e) {
-                        $errorMsg = "Error processing item #{$index}: " . $e->getMessage();
-                        $errors[] = $errorMsg;
-                        Log::error('Error processing item', [
-                            'index' => $index,
-                            'item' => $item,
+                        Log::error("Error importing item #{$index}", [
                             'error' => $e->getMessage(),
-                            'file' => $e->getFile(),
-                            'line' => $e->getLine(),
-                            'trace' => $e->getTraceAsString()
+                            'item' => $item
                         ]);
+                        // Continue dengan item berikutnya
+                        continue;
                     }
                 }
 
@@ -298,17 +222,13 @@ class AttendanceQRController extends Controller
                     'attendance_imported' => $importedCount,
                     'token_imported' => $tokenImportedCount,
                     'skipped' => $skippedCount,
-                    'errors_count' => count($errors),
                     'total_items' => count($data)
                 ]);
 
-                $message = "Data berhasil diproses!";
-                $message .= "\n• Attendance baru: {$importedCount}";
-                $message .= "\n• Token baru: {$tokenImportedCount}";
-                $message .= "\n• Dilewati (duplikat): {$skippedCount}";
-                if (count($errors) > 0) {
-                    $message .= "\n• Error: " . count($errors);
-                }
+                $message = "Data berhasil diimport!\n";
+                $message .= "• Attendance: {$importedCount}\n";
+                $message .= "• Token: {$tokenImportedCount}\n";
+                $message .= "• Dilewati (duplikat): {$skippedCount}";
 
                 return response()->json([
                     'success' => true,
@@ -316,16 +236,13 @@ class AttendanceQRController extends Controller
                     'attendance_imported' => $importedCount,
                     'token_imported' => $tokenImportedCount,
                     'skipped' => $skippedCount,
-                    'errors' => $errors,
                     'total_processed' => count($data)
                 ]);
 
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Transaction failed and rolled back', [
+                Log::error('Transaction rolled back', [
                     'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString()
                 ]);
                 throw $e;
@@ -333,20 +250,13 @@ class AttendanceQRController extends Controller
 
         } catch (\Exception $e) {
             Log::error('=== PULL DATA FAILED ===', [
-                'error_message' => $e->getMessage(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine(),
-                'error_trace' => $e->getTraceAsString()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data: ' . $e->getMessage(),
-                'details' => [
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ]
+                'message' => 'Gagal mengambil data: ' . $e->getMessage()
             ], 500);
         }
     }
