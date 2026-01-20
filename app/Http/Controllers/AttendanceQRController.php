@@ -15,8 +15,13 @@ class AttendanceQRController extends Controller
 {
     public function index()
     {
-        // Ambil data absensi hari ini
-        $attendances = Attendance::whereDate('time', Carbon::today())
+        // Ambil session unit yang aktif
+        $connection = session('unit', 'mysql');
+        
+        // Ambil data absensi hari ini dari database sesuai session
+        $attendances = DB::connection($connection)
+            ->table('attendance')
+            ->whereDate('time', Carbon::today())
             ->orderBy('time', 'desc')
             ->get();
             
@@ -26,23 +31,23 @@ class AttendanceQRController extends Controller
     public function generate()
     {
         try {
-            // Generate token sederhana seperti controller lain
+            // Generate token
             $token = 'ATT-' . strtoupper(Str::random(8));
             
-            // Gunakan koneksi yang sesuai dengan session atau default
+            // Gunakan koneksi sesuai session unit yang aktif
             $connection = session('unit', 'mysql');
             
-            // Insert token ke database
+            // Insert token ke database sesuai session
             DB::connection($connection)->table('attendance_tokens')->insert([
                 'token' => $token,
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addMinutes(15),
-                'unit_source' => $connection,
+                'unit_source' => $connection, // Simpan session unit
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
 
-            // URL untuk QR - gunakan app.url atau external url jika ada
+            // URL untuk QR
             $externalUrl = config('services.attendance_external.url');
             if ($externalUrl) {
                 $qrUrl = rtrim($externalUrl, '/') . '/scan/' . $token;
@@ -53,7 +58,8 @@ class AttendanceQRController extends Controller
             Log::info('QR Code generated', [
                 'token' => $token,
                 'url' => $qrUrl,
-                'user_id' => auth()->id()
+                'user_id' => auth()->id(),
+                'unit_source' => $connection
             ]);
 
             return response()->json([
@@ -78,7 +84,13 @@ class AttendanceQRController extends Controller
     public function pullData(Request $request)
     {
         try {
-            Log::info('=== START PULL DATA ===');
+            // Ambil session unit yang aktif
+            $connection = session('unit', 'mysql');
+            
+            Log::info('=== START PULL DATA ===', [
+                'unit_source' => $connection,
+                'user_id' => auth()->id()
+            ]);
             
             // Panggil API
             $response = Http::timeout(30)->get('https://absen-monday.online/api/attendance');
@@ -98,16 +110,13 @@ class AttendanceQRController extends Controller
             Log::info('API Response', ['response' => $responseData]);
 
             // Extract data array dari response
-            // API bisa return format: {"success": true, "data": [...]} atau langsung [...]
             $data = [];
             
             if (is_array($responseData)) {
-                // Cek apakah ada key 'data'
                 if (isset($responseData['data']) && is_array($responseData['data'])) {
                     $data = $responseData['data'];
                     Log::info('Data extracted from response.data', ['count' => count($data)]);
                 } else {
-                    // Response langsung array
                     $data = $responseData;
                     Log::info('Using response as data array', ['count' => count($data)]);
                 }
@@ -123,12 +132,11 @@ class AttendanceQRController extends Controller
                 ]);
             }
 
-            $connection = session('unit', 'mysql');
             $importedCount = 0;
             $tokenImportedCount = 0;
             $skippedCount = 0;
 
-            DB::beginTransaction();
+            DB::connection($connection)->beginTransaction();
 
             try {
                 foreach ($data as $index => $item) {
@@ -141,11 +149,11 @@ class AttendanceQRController extends Controller
                         // Import Attendance jika ada field 'name'
                         if (isset($item['name']) && !empty($item['name'])) {
                             
-                            // Cek duplikat berdasarkan name dan time
                             $timeValue = isset($item['time']) && !empty($item['time'])
                                 ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
                                 : now();
 
+                            // Cek duplikat
                             $exists = DB::connection($connection)
                                 ->table('attendance')
                                 ->where('name', $item['name'])
@@ -153,7 +161,7 @@ class AttendanceQRController extends Controller
                                 ->exists();
 
                             if (!$exists) {
-                                // Insert data
+                                // Insert data dengan unit_source dari session
                                 DB::connection($connection)->table('attendance')->insert([
                                     'name' => $item['name'],
                                     'position' => $item['position'] ?? '',
@@ -161,7 +169,7 @@ class AttendanceQRController extends Controller
                                     'token' => $item['token'] ?? '',
                                     'time' => $timeValue,
                                     'signature' => $item['signature'] ?? null,
-                                    'unit_source' => $connection,
+                                    'unit_source' => $connection, // Menggunakan session unit
                                     'is_backdate' => $item['is_backdate'] ?? 0,
                                     'backdate_reason' => $item['backdate_reason'] ?? null,
                                     'created_at' => now(),
@@ -169,7 +177,7 @@ class AttendanceQRController extends Controller
                                 ]);
                                 
                                 $importedCount++;
-                                Log::info("✓ Attendance imported: {$item['name']}");
+                                Log::info("✓ Attendance imported: {$item['name']} to {$connection}");
                             } else {
                                 $skippedCount++;
                                 Log::info("⊘ Attendance skipped (duplicate): {$item['name']}");
@@ -191,7 +199,7 @@ class AttendanceQRController extends Controller
                                     'expires_at' => isset($item['expires_at']) && !empty($item['expires_at'])
                                         ? Carbon::parse($item['expires_at'])
                                         : now()->addMinutes(15),
-                                    'unit_source' => $connection,
+                                    'unit_source' => $connection, // Menggunakan session unit
                                     'is_backdate' => $item['is_backdate'] ?? 0,
                                     'backdate_data' => $item['backdate_data'] ?? null,
                                     'created_at' => now(),
@@ -199,7 +207,7 @@ class AttendanceQRController extends Controller
                                 ]);
                                 
                                 $tokenImportedCount++;
-                                Log::info("✓ Token imported: {$item['token']}");
+                                Log::info("✓ Token imported: {$item['token']} to {$connection}");
                             } else {
                                 $skippedCount++;
                                 Log::info("⊘ Token skipped (duplicate): {$item['token']}");
@@ -211,21 +219,21 @@ class AttendanceQRController extends Controller
                             'error' => $e->getMessage(),
                             'item' => $item
                         ]);
-                        // Continue dengan item berikutnya
                         continue;
                     }
                 }
 
-                DB::commit();
+                DB::connection($connection)->commit();
 
                 Log::info('=== PULL DATA COMPLETED ===', [
+                    'unit_source' => $connection,
                     'attendance_imported' => $importedCount,
                     'token_imported' => $tokenImportedCount,
                     'skipped' => $skippedCount,
                     'total_items' => count($data)
                 ]);
 
-                $message = "Data berhasil diimport!\n";
+                $message = "Data berhasil diimport ke {$connection}!\n";
                 $message .= "• Attendance: {$importedCount}\n";
                 $message .= "• Token: {$tokenImportedCount}\n";
                 $message .= "• Dilewati (duplikat): {$skippedCount}";
@@ -236,12 +244,14 @@ class AttendanceQRController extends Controller
                     'attendance_imported' => $importedCount,
                     'token_imported' => $tokenImportedCount,
                     'skipped' => $skippedCount,
-                    'total_processed' => count($data)
+                    'total_processed' => count($data),
+                    'unit_source' => $connection
                 ]);
 
             } catch (\Exception $e) {
-                DB::rollBack();
+                DB::connection($connection)->rollBack();
                 Log::error('Transaction rolled back', [
+                    'unit_source' => $connection,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
