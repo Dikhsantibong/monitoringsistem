@@ -458,129 +458,32 @@ class LaborSayaController extends Controller
     }
 
     /**
-     * Update PDF Jobcard dari hasil edit (dengan drawing overlay)
+     * Update PDF Jobcard dari hasil edit
      */
     public function updateJobcard(Request $request)
     {
         try {
             $filePath = $request->input('path');
             
-            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
-                return response()->json(['success' => false, 'message' => 'Path tidak valid atau file tidak ditemukan.']);
+            if (!$filePath) {
+                return response()->json(['success' => false, 'message' => 'Path tidak valid.']);
             }
 
-            $drawingBase64 = $request->input('drawing');
-            
-            if (!$drawingBase64) {
-                return response()->json(['success' => false, 'message' => 'Tidak ada gambar drawing yang dikirim.']);
+            if (!$request->hasFile('document')) {
+                return response()->json(['success' => false, 'message' => 'File tidak ditemukan.']);
             }
 
-            // Path file PDF asli
-            $originalPdfPath = Storage::disk('public')->path($filePath);
+            $file = $request->file('document');
             
-            if (!file_exists($originalPdfPath)) {
-                return response()->json(['success' => false, 'message' => 'File PDF asli tidak ditemukan.']);
+            // Validasi file PDF
+            if ($file->getClientOriginalExtension() !== 'pdf') {
+                return response()->json(['success' => false, 'message' => 'File harus berformat PDF.']);
             }
-            
-            // Buat temporary directory
-            $tempDir = storage_path('app/temp');
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0777, true);
-            }
-            
-            // Decode base64 drawing image
-            $tempImagePath = null;
-            $imageType = 'png';
-            if (preg_match('/data:image\/(\w+);base64,(.+)/', $drawingBase64, $matches)) {
-                $imageType = strtolower($matches[1]);
-                $imageData = base64_decode($matches[2]);
-                $tempImagePath = $tempDir . '/drawing_' . time() . '.' . $imageType;
-                file_put_contents($tempImagePath, $imageData);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Format gambar drawing tidak valid.']);
-            }
-            
-            // Buat PDF baru dengan FPDI
-            $pdf = new \setasign\Fpdi\Fpdi();
-            $pageCount = $pdf->setSourceFile($originalPdfPath);
-            
-            // Dapatkan dimensi gambar drawing untuk scaling
-            $drawingImageInfo = @getimagesize($tempImagePath);
-            $firstPageSize = null;
-            $croppedImagePath = null;
-            
-            // Loop setiap halaman
-            for ($pageNum = 1; $pageNum <= $pageCount; $pageNum++) {
-                $templateId = $pdf->importPage($pageNum);
-                $size = $pdf->getTemplateSize($templateId);
-                
-                if ($pageNum === 1) {
-                    $firstPageSize = $size;
-                }
-                
-                $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
-                $pdf->AddPage($orientation, [$size['width'], $size['height']]);
-                $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height']);
-                
-                // HANYA tambahkan drawing overlay pada halaman pertama
-                if ($pageNum === 1 && $drawingImageInfo && file_exists($tempImagePath) && $firstPageSize) {
-                    $drawingWidth = $drawingImageInfo[0];
-                    $drawingHeight = $drawingImageInfo[1];
-                    $pageHeight = $firstPageSize['height'];
-                    $pageWidth = $firstPageSize['width'];
-                    
-                    // Hitung rasio scaling
-                    $scaleRatio = $pageWidth / $drawingWidth;
-                    $imageHeightToUse = min((int)($pageHeight / $scaleRatio), $drawingHeight);
-                    
-                    // Crop gambar hanya untuk halaman pertama
-                    $croppedImagePath = $tempDir . '/drawing_cropped_' . time() . '.' . $imageType;
-                    
-                    $sourceImage = ($imageType === 'png') 
-                        ? imagecreatefrompng($tempImagePath) 
-                        : imagecreatefromjpeg($tempImagePath);
-                    
-                    if ($sourceImage) {
-                        $croppedImage = imagecreatetruecolor($drawingWidth, $imageHeightToUse);
-                        
-                        if ($imageType === 'png') {
-                            imagealphablending($croppedImage, false);
-                            imagesavealpha($croppedImage, true);
-                            $transparent = imagecolorallocatealpha($croppedImage, 0, 0, 0, 127);
-                            imagefill($croppedImage, 0, 0, $transparent);
-                        }
-                        
-                        imagecopyresampled($croppedImage, $sourceImage, 0, 0, 0, 0, $drawingWidth, $imageHeightToUse, $drawingWidth, $imageHeightToUse);
-                        
-                        if ($imageType === 'png') {
-                            imagepng($croppedImage, $croppedImagePath, 9);
-                        } else {
-                            imagejpeg($croppedImage, $croppedImagePath, 100);
-                        }
-                        
-                        imagedestroy($sourceImage);
-                        imagedestroy($croppedImage);
-                        
-                        // Overlay gambar ke PDF
-                        $pdf->Image($croppedImagePath, 0, 0, $pageWidth, $pageHeight, strtoupper($imageType));
-                    }
-                }
-            }
-            
-            // Simpan PDF
-            $outputPdf = $pdf->Output('S');
-            
-            if (empty($outputPdf)) {
-                throw new \Exception('PDF output kosong.');
-            }
-            
-            Storage::disk('public')->put($filePath, $outputPdf);
-            
-            // Cleanup temp files
-            if ($tempImagePath && file_exists($tempImagePath)) @unlink($tempImagePath);
-            if ($croppedImagePath && file_exists($croppedImagePath)) @unlink($croppedImagePath);
 
-            Log::info('Jobcard updated with drawing overlay', ['path' => $filePath]);
+            // Simpan file yang sudah di-edit (overwrite)
+            Storage::disk('public')->put($filePath, file_get_contents($file));
+
+            Log::info('Jobcard updated successfully', ['path' => $filePath]);
 
             return response()->json([
                 'success' => true,
