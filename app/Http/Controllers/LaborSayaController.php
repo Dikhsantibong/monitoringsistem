@@ -17,7 +17,7 @@ class LaborSayaController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->input('q'));
-        $workOrderPage = $request->input('wo_page', 1);
+        $workOrderPage = $request->input('page', 1);
 
         // Get Work Orders dari Maximo (Oracle)
         $workOrders = collect();
@@ -61,7 +61,7 @@ class LaborSayaController extends Controller
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
 
             // Paginate query
-            $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
+            $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'page', $workOrderPage);
 
             // Format data untuk view
             $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) {

@@ -71,39 +71,13 @@
         <main class="px-6 pt-6">
             <form method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-4 flex items-center gap-2">
                 <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO (WONUM, Description, Status, Type, Priority, Location, Asset)" class="flex-1 border rounded px-3 py-2" />
-                <input type="hidden" name="wo_page" value="1" />
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Cari</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Cari</button>
                 @if(!empty($q))
-                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-3 py-2 rounded border">Reset</a>
+                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-3 py-2 rounded border hover:bg-gray-100">Reset</a>
                 @endif
             </form>
-            <div class="mb-4 border-b border-gray-200">
-                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
-                    <li class="mr-2">
-                        <a href="#" onclick="switchTab('wo'); return false;"
-                           class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active"
-                           data-tab="wo">
-                            Work Order
-                            <span class="ml-2 bg-green-400 text-gray-700 px-2 py-1 rounded-full text-xs">
-                                {{ $workOrdersPaginator ? $workOrdersPaginator->total() : (is_countable($workOrders) ? count($workOrders) : 0) }}
-                            </span>
-                        </a>
-                    </li>
-                    <li class="mr-2">
-                        <a href="#" onclick="switchTab('backlog'); return false;"
-                           class="inline-block p-4 border-b-2 rounded-t-lg tab-btn"
-                           data-tab="backlog">
-                            Labor Backlog
-                            <span class="ml-2 bg-blue-400 text-gray-700 px-2 py-1 rounded-full text-xs">
-                                {{ is_countable($laborBacklogs) ? count($laborBacklogs) : 0 }}
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <!-- Tab Content -->
-            <div id="wo-tab" class="tab-content active">
-                <div class="bg-white rounded shadow p-4 overflow-x-auto">
+
+            <div class="bg-white rounded shadow p-4 overflow-x-auto">
                     <table class="min-w-full table-fixed divide-y divide-gray-200 border whitespace-nowrap">
                         <thead class="bg-gray-100">
                             <tr>
@@ -229,67 +203,29 @@
                     </div>
                     <div class="flex items-center gap-1">
                         @if (!$workOrdersPaginator->onFirstPage())
-                            <a href="{{ $workOrdersPaginator->appends(array_filter(['q' => request('q')]))->previousPageUrl() }}" 
-                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
+                            <a href="{{ $workOrdersPaginator->appends(['q' => request('q')])->previousPageUrl() }}" 
+                               class="px-3 py-1 bg-[#0A749B] text-white rounded hover:bg-[#085a75]">Sebelumnya</a>
                         @endif
 
                         @foreach ($workOrdersPaginator->getUrlRange(1, min($workOrdersPaginator->lastPage(), 10)) as $page => $url)
                             @if ($page == $workOrdersPaginator->currentPage())
                                 <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                             @else
-                                <a href="{{ $workOrdersPaginator->appends(array_filter(['q' => request('q')]))->url($page) }}" 
-                                   class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
+                                <a href="{{ $workOrdersPaginator->appends(['q' => request('q')])->url($page) }}" 
+                                   class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B] hover:bg-[#0A749B] hover:text-white">
                                     {{ $page }}
                                 </a>
                             @endif
                         @endforeach
 
                         @if ($workOrdersPaginator->hasMorePages())
-                            <a href="{{ $workOrdersPaginator->appends(array_filter(['q' => request('q')]))->nextPageUrl() }}" 
-                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
+                            <a href="{{ $workOrdersPaginator->appends(['q' => request('q')])->nextPageUrl() }}" 
+                               class="px-3 py-1 bg-[#0A749B] text-white rounded hover:bg-[#085a75]">Selanjutnya</a>
                         @endif
                     </div>
                 </div>
                 @endif
-            </div>
-
-            <div id="backlog-tab" class="tab-content hidden">
-                <div class="bg-white rounded shadow p-4">
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-info-circle text-4xl mb-3"></i>
-                        <p>Fitur Labor Backlog tidak tersedia untuk data dari Maximo.</p>
-                        <p class="text-sm mt-2">Hanya Work Order dari Maximo yang dapat ditampilkan.</p>
-                    </div>
-                </div>
-            </div>
         </main>
     </div>
 </div>
-<script>
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-btn').forEach(tab => {
-            tab.classList.remove('active', 'border-blue-500');
-        });
-        const selectedTab = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-        if (selectedTab) {
-            selectedTab.classList.add('active', 'border-blue-500');
-        }
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.add('hidden');
-        });
-        const selectedContent = document.getElementById(`${tabId}-tab`);
-        if (selectedContent) {
-            selectedContent.classList.remove('hidden');
-        }
-    }
-</script>
-<style>
-.tab-btn.active {
-    border-bottom-color: #3b82f6;
-    color: #3b82f6;
-}
-.tab-content {
-    transition: all 0.3s ease-in-out;
-}
-</style>
 @endsection
