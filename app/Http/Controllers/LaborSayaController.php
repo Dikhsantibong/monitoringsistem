@@ -45,8 +45,7 @@ class LaborSayaController extends Controller
                     'SCHEDFINISH',
                     'REPORTDATE',
                 ])
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%'); // Hanya ambil WO yang dimulai dengan "WO"
+                ->where('SITEID', 'KD');
 
             // Search filter
             if ($search !== '') {
