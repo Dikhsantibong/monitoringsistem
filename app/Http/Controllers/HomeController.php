@@ -375,25 +375,118 @@ class HomeController extends Controller
                 'data' => $dates->map(fn($d) => $scoreByDate[$d] ?? 0)->toArray(),
             ];
 
-            // --- Grafik Presentasi Status SR ---
-            $srStatusData = [
-                'counts' => [
-                    \App\Models\ServiceRequest::where('status', 'Open')->count(),
-                    \App\Models\ServiceRequest::where('status', 'Closed')->count(),
-                ]
+            // --- Grafik Presentasi Status SR/WO/Backlog (Maximo - Oracle) ---
+            $srStatusData = ['counts' => [0, 0]];
+            $woStatusData = ['counts' => [0, 0]];
+            $woBacklogStatusData = [
+                'Overdue' => 0,
+                'Warning (H-5)' => 0,
+                'Normal' => 0,
+                'No Schedule' => 0,
             ];
-            // --- Grafik Presentasi Status WO ---
-            $woStatusData = [
-                'counts' => [
-                    \App\Models\WorkOrder::where('status', 'Open')->count(),
-                    \App\Models\WorkOrder::where('status', 'Closed')->count(),
-                ]
+            $maximoLastUpdate = [
+                'sr' => null,
+                'wo' => null,
+                'backlog' => null,
             ];
-            // --- Grafik WO Backlog Status ---
-            $woBacklogStatusData = \App\Models\WoBacklog::select('status', \DB::raw('COUNT(*) as total'))
-                ->groupBy('status')
-                ->pluck('total', 'status')
-                ->toArray();
+
+            try {
+                // SR Open/Closed dari Maximo
+                $srOpen = DB::connection('oracle')
+                    ->table('SR')
+                    ->where('SITEID', 'KD')
+                    ->whereIn('STATUS', ['NEW', 'WOCREATED', 'QUEVED'])
+                    ->count();
+
+                $srClosed = DB::connection('oracle')
+                    ->table('SR')
+                    ->where('SITEID', 'KD')
+                    ->whereIn('STATUS', ['RESOLVED', 'CLOSED'])
+                    ->count();
+
+                $srStatusData = ['counts' => [$srOpen, $srClosed]];
+
+                // WO Open/Closed dari Maximo (filter WONUM WO% agar tidak ikut WT)
+                $woOpen = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
+                    ->count();
+
+                $woClosed = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('STATUS', ['COMP', 'CLOSE'])
+                    ->count();
+
+                $woStatusData = ['counts' => [$woOpen, $woClosed]];
+
+                // Last update (ambil max STATUSDATE)
+                $srLast = DB::connection('oracle')
+                    ->table('SR')
+                    ->where('SITEID', 'KD')
+                    ->max('STATUSDATE');
+                $woLast = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->max('STATUSDATE');
+
+                $maximoLastUpdate['sr'] = $srLast ? Carbon::parse($srLast)->format('d/m/Y H:i') : null;
+                $maximoLastUpdate['wo'] = $woLast ? Carbon::parse($woLast)->format('d/m/Y H:i') : null;
+                $maximoLastUpdate['backlog'] = $maximoLastUpdate['wo'];
+
+                // Backlog (berdasarkan SCHEDFINISH vs hari ini, hanya WO belum selesai)
+                $warningDays = 5;
+                $overdue = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereNotIn('STATUS', ['COMP', 'CLOSE'])
+                    ->whereNotNull('SCHEDFINISH')
+                    ->whereRaw('TRUNC(SCHEDFINISH) < TRUNC(SYSDATE)')
+                    ->count();
+
+                $warning = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereNotIn('STATUS', ['COMP', 'CLOSE'])
+                    ->whereNotNull('SCHEDFINISH')
+                    ->whereRaw('TRUNC(SCHEDFINISH) >= TRUNC(SYSDATE)')
+                    ->whereRaw('TRUNC(SCHEDFINISH) <= TRUNC(SYSDATE) + ?', [$warningDays])
+                    ->count();
+
+                $normal = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereNotIn('STATUS', ['COMP', 'CLOSE'])
+                    ->whereNotNull('SCHEDFINISH')
+                    ->whereRaw('TRUNC(SCHEDFINISH) > TRUNC(SYSDATE) + ?', [$warningDays])
+                    ->count();
+
+                $noSchedule = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereNotIn('STATUS', ['COMP', 'CLOSE'])
+                    ->whereNull('SCHEDFINISH')
+                    ->count();
+
+                $woBacklogStatusData = [
+                    'Overdue' => $overdue,
+                    'Warning (H-5)' => $warning,
+                    'Normal' => $normal,
+                    'No Schedule' => $noSchedule,
+                ];
+            } catch (\Throwable $e) {
+                Log::warning('Failed getting Maximo SR/WO data for homepage charts', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             // Status update harian per unit (machine status, attendance, score card)
             $unitUpdateStatuses = $this->getUnitUpdateStatuses();
@@ -419,6 +512,7 @@ class HomeController extends Controller
                 'srStatusData',
                 'woStatusData',
                 'woBacklogStatusData',
+                'maximoLastUpdate',
                 'unitUpdateStatuses'
             ));
 
@@ -476,6 +570,11 @@ class HomeController extends Controller
                     'counts' => [0, 0]
                 ],
                 'woBacklogStatusData' => [],
+                'maximoLastUpdate' => [
+                    'sr' => null,
+                    'wo' => null,
+                    'backlog' => null,
+                ],
                 'unitUpdateStatuses' => []
             ]);
         }

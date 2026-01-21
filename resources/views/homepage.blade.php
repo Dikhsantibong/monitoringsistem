@@ -1558,18 +1558,21 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Presentasi Status SR</h3>
                         </div>
+                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['sr'] ?? '-' }}</p>
                         <canvas id="srStatusChart" height="180"></canvas>
                     </div>
                     <div class="bg-white rounded-lg shadow p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Presentasi Status WO</h3>
                         </div>
+                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['wo'] ?? '-' }}</p>
                         <canvas id="woStatusChart" height="180"></canvas>
                     </div>
                     <div class="bg-white rounded-lg shadow p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">WO Backlog Status</h3>
                         </div>
+                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['backlog'] ?? '-' }}</p>
                         <canvas id="woBacklogStatusChart" height="180"></canvas>
                     </div>
                 </div>
