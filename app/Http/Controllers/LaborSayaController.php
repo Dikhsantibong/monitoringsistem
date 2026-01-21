@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\MaterialMaster;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\QueryException;
 
 class LaborSayaController extends Controller
 {
@@ -568,6 +570,108 @@ class LaborSayaController extends Controller
                 'message' => $e->getMessage(),
             ]);
             return redirect()->route('pemeliharaan.labor-saya')->with('error', 'Gagal download jobcard.');
+        }
+    }
+
+    /**
+     * Generate Jobcard PDF (mirip MaximoController)
+     */
+    public function generateJobcard(Request $request)
+    {
+        try {
+            $wonum = $request->input('wonum');
+            
+            if (!$wonum) {
+                return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $wonum])
+                    ->with('error', 'WONUM tidak valid.');
+            }
+
+            // Ambil data Work Order dari Maximo
+            $wo = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'PARENT',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'WOPRIORITY',
+                    'DESCRIPTION',
+                    'ASSETNUM',
+                    'LOCATION',
+                    'SITEID',
+                    'DOWNTIME',
+                    'SCHEDSTART',
+                    'SCHEDFINISH',
+                    'REPORTDATE',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('WONUM', $wonum)
+                ->first();
+
+            if (!$wo) {
+                return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $wonum])
+                    ->with('error', 'Work Order tidak ditemukan.');
+            }
+
+            // Cek apakah status adalah APPR
+            if (strtoupper($wo->status ?? '') !== 'APPR') {
+                return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $wonum])
+                    ->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
+            }
+
+            // Format data untuk PDF
+            $woData = [
+                'wonum' => $wo->wonum ?? '-',
+                'parent' => $wo->parent ?? '-',
+                'status' => $wo->status ?? '-',
+                'statusdate' => isset($wo->statusdate) && $wo->statusdate ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i') : '-',
+                'worktype' => $wo->worktype ?? '-',
+                'wopriority' => $wo->wopriority ?? '-',
+                'reportdate' => isset($wo->reportdate) && $wo->reportdate ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i') : '-',
+                'assetnum' => $wo->assetnum ?? '-',
+                'location' => $wo->location ?? '-',
+                'siteid' => $wo->siteid ?? '-',
+                'downtime' => $wo->downtime ?? '-',
+                'schedstart' => isset($wo->schedstart) && $wo->schedstart ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i') : '-',
+                'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i') : '-',
+                'description' => $wo->description ?? '-',
+            ];
+
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', ['wo' => $woData]);
+
+            // Simpan PDF ke storage public dengan nama deterministik
+            $directory = 'jobcards';
+            $filename = 'JOBCARD_' . $wonum . '.pdf';
+            $filePath = $directory . '/' . $filename;
+            
+            // Pastikan directory ada
+            Storage::disk('public')->makeDirectory($directory);
+            
+            // Simpan / overwrite PDF
+            Storage::disk('public')->put($filePath, $pdf->output());
+
+            return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $wonum])
+                ->with('success', 'Jobcard berhasil di-generate! (Tersimpan di server: ' . $filename . ')');
+
+        } catch (QueryException $e) {
+            Log::error('ORACLE QUERY ERROR (GENERATE JOBCARD - LaborSaya)', [
+                'oracle_code' => $e->errorInfo[1] ?? null,
+                'message' => $e->getMessage(),
+                'sql' => $e->getSql(),
+                'bindings' => $e->getBindings(),
+            ]);
+            return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $request->input('wonum')])
+                ->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
+        } catch (\Throwable $e) {
+            Log::error('ERROR GENERATE JOBCARD (LaborSaya)', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $request->input('wonum')])
+                ->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
         }
     }
 }

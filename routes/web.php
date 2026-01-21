@@ -854,6 +854,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/jobcard/{wonum}/edit', [LaborSayaController::class, 'editJobcard'])->name('pemeliharaan.jobcard.edit');
     Route::post('/pemeliharaan/jobcard/update', [LaborSayaController::class, 'updateJobcard'])->name('pemeliharaan.jobcard.update');
     Route::get('/pemeliharaan/jobcard/download', [LaborSayaController::class, 'downloadJobcard'])->name('pemeliharaan.jobcard.download');
+    Route::post('/pemeliharaan/jobcard/generate', [LaborSayaController::class, 'generateJobcard'])->name('pemeliharaan.jobcard.generate');
 });
 
 Route::get('pemeliharaan/labor-saya/backlog/{id}/edit', [App\Http\Controllers\LaborSayaController::class, 'editBacklog'])->name('pemeliharaan.labor-saya.edit-backlog');
