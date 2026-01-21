@@ -10,6 +10,8 @@ use App\Models\Notulen;
 use App\Models\PowerPlant;
 use App\Models\MachineOperation;
 use App\Models\MachineStatusLog;
+use App\Models\Attendance;
+use App\Models\ScoreCardDaily;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -393,6 +395,9 @@ class HomeController extends Controller
                 ->pluck('total', 'status')
                 ->toArray();
 
+            // Status update harian per unit (machine status, attendance, score card)
+            $unitUpdateStatuses = $this->getUnitUpdateStatuses();
+
             return view('homepage', compact(
                 'statusLogs',
                 'powerPlants',
@@ -413,7 +418,8 @@ class HomeController extends Controller
                 'scoreChartData',
                 'srStatusData',
                 'woStatusData',
-                'woBacklogStatusData'
+                'woBacklogStatusData',
+                'unitUpdateStatuses'
             ));
 
         } catch (\Exception $e) {
@@ -469,11 +475,59 @@ class HomeController extends Controller
                 'woStatusData' => [
                     'counts' => [0, 0]
                 ],
-                'woBacklogStatusData' => []
+                'woBacklogStatusData' => [],
+                'unitUpdateStatuses' => []
             ]);
         }
     }
 
+    /**
+     * Menghitung status update harian (hari ini) untuk setiap unit/koneksi.
+     * Mengecek keberadaan data di tiga tabel: machine_status_logs, attendance, score_card_daily.
+     */
+    private function getUnitUpdateStatuses(): array
+    {
+        $today = Carbon::today();
+        $connections = [
+            'mysql',
+            'mysql_poasia',
+            'mysql_kolaka',
+            'mysql_wua_wua',
+            'mysql_bau_bau',
+        ];
+
+        $statuses = [];
+
+        foreach ($connections as $connection) {
+            $statuses[$connection] = [
+                'machine_status_logs' => $this->hasTodayData($connection, 'machine_status_logs', 'tanggal', $today),
+                'attendance' => $this->hasTodayData($connection, 'attendance', 'time', $today),
+                'score_card_daily' => $this->hasTodayData($connection, 'score_card_daily', 'tanggal', $today),
+            ];
+        }
+
+        return $statuses;
+    }
+
+    /**
+     * Mengecek apakah tabel memiliki data pada tanggal hari ini.
+     */
+    private function hasTodayData(string $connection, string $table, string $dateColumn, Carbon $today): bool
+    {
+        try {
+            return DB::connection($connection)
+                ->table($table)
+                ->whereDate($dateColumn, $today)
+                ->exists();
+        } catch (\Throwable $th) {
+            Log::warning('Failed checking daily update status', [
+                'connection' => $connection,
+                'table' => $table,
+                'error' => $th->getMessage(),
+            ]);
+            return false;
+        }
+    }
     public function getAccumulationData($markerId)
     {
         try {

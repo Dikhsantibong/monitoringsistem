@@ -73,6 +73,38 @@
             }
         }
 
+        /* Status indicators inside hexagon */
+        .status-indicators {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            align-items: center;
+        }
+
+        .status-indicators .indicator-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .status-indicators {
+                gap: 0.25rem;
+            }
+
+            .status-indicators .indicator-dot {
+                width: 14px;
+                height: 14px;
+                font-size: 9px;
+            }
+        }
+
         /* Navbar container styles */
         .nav-background .container {
             max-width: 1200px; /* Sesuaikan dengan kebutuhan */
@@ -1209,6 +1241,18 @@
         <div class="w-full">
            @include('components.navbar')
             <div class="h-[80px]"></div>
+            @php
+                $statusLabels = [
+                    'machine_status_logs' => 'Status Mesin',
+                    'attendance' => 'Absensi',
+                    'score_card_daily' => 'Score Card',
+                ];
+                $defaultUnitStatus = [
+                    'machine_status_logs' => false,
+                    'attendance' => false,
+                    'score_card_daily' => false,
+                ];
+            @endphp
             <div class="w-full">
                 {{-- Hero section --}}
                 <div class="min-h-screen flex flex-col justify-center items-center hexagon-background">
@@ -1227,11 +1271,31 @@
                                 <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
                                     <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
                                         <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> WUA-WUA</h5>
+                                        @php $status = $unitUpdateStatuses['mysql_wua_wua'] ?? $defaultUnitStatus; @endphp
+                                        <div class="status-indicators text-white text-[10px] md:text-xs">
+                                            @foreach ($statusLabels as $key => $label)
+                                                @php $ok = $status[$key] ?? false; @endphp
+                                                <div class="flex items-center gap-1">
+                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </a>
                                 <a href="{{ route('login', ['unit' => 'mysql_poasia']) }}" class="block">
                                     <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
                                         <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> POASIA</h5>
+                                        @php $status = $unitUpdateStatuses['mysql_poasia'] ?? $defaultUnitStatus; @endphp
+                                        <div class="status-indicators text-white text-[10px] md:text-xs">
+                                            @foreach ($statusLabels as $key => $label)
+                                                @php $ok = $status[$key] ?? false; @endphp
+                                                <div class="flex items-center gap-1">
+                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -1240,6 +1304,16 @@
                                     <a href="{{ route('login', ['unit' => 'mysql']) }}" class="block">
                                         <div class="hexagon bg-[#0A749B] flex flex-col items-center justify-center h-36 w-40 md:w-56 md:h-44">
                                             <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
+                                            @php $status = $unitUpdateStatuses['mysql'] ?? $defaultUnitStatus; @endphp
+                                            <div class="status-indicators text-white text-[10px] md:text-xs">
+                                                @foreach ($statusLabels as $key => $label)
+                                                    @php $ok = $status[$key] ?? false; @endphp
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                        <span class="font-semibold leading-tight">{{ $label }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </a>
                                 </div>
@@ -1248,11 +1322,31 @@
                                 <a href="{{ route('login', ['unit' => 'mysql_kolaka']) }}" class="block">
                                     <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
                                         <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> KOLAKA</h5>
+                                        @php $status = $unitUpdateStatuses['mysql_kolaka'] ?? $defaultUnitStatus; @endphp
+                                        <div class="status-indicators text-white text-[10px] md:text-xs">
+                                            @foreach ($statusLabels as $key => $label)
+                                                @php $ok = $status[$key] ?? false; @endphp
+                                                <div class="flex items-center gap-1">
+                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </a>
                                 <a href="{{ route('login', ['unit' => 'mysql_bau_bau']) }}" class="block">
                                     <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
                                         <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> BAU-BAU</h5>
+                                        @php $status = $unitUpdateStatuses['mysql_bau_bau'] ?? $defaultUnitStatus; @endphp
+                                        <div class="status-indicators text-white text-[10px] md:text-xs">
+                                            @foreach ($statusLabels as $key => $label)
+                                                @php $ok = $status[$key] ?? false; @endphp
+                                                <div class="flex items-center gap-1">
+                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </a>
                             </div>
