@@ -183,6 +183,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/maximo/service-request/{ticketid}', [MaximoController::class, 'showServiceRequest'])->name('maximo.service-request.show');
     Route::post('/maximo/jobcard/generate', [MaximoController::class, 'generateJobcard'])->name('maximo.jobcard.generate');
     Route::get('/maximo/jobcard/download', [MaximoController::class, 'downloadJobcard'])->name('maximo.jobcard.download');
+    Route::get('/maximo/jobcard/preview', [MaximoController::class, 'previewJobcard'])->name('maximo.jobcard.preview');
     Route::post('/maximo/jobcard/update', [MaximoController::class, 'updateJobcard'])->name('maximo.jobcard.update');
 
 

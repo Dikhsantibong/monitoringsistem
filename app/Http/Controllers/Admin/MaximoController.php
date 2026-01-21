@@ -378,9 +378,16 @@ class MaximoController extends Controller
     {
         try {
             $wonum = $request->input('wonum');
+            $returnQuery = [
+                'wo_page' => $request->input('wo_page', 1),
+                'sr_page' => $request->input('sr_page', 1),
+                'search' => $request->input('search'),
+                'wo_status' => $request->input('wo_status'),
+                'wo_worktype' => $request->input('wo_worktype'),
+            ];
             
             if (!$wonum) {
-                return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
+                return redirect()->route('admin.maximo.index', $returnQuery)->with('error', 'WONUM tidak valid.');
             }
 
             // Ambil data Work Order dari Maximo
@@ -407,12 +414,12 @@ class MaximoController extends Controller
                 ->first();
 
             if (!$wo) {
-                return redirect()->route('maximo.index')->with('error', 'Work Order tidak ditemukan.');
+                return redirect()->route('admin.maximo.index', $returnQuery)->with('error', 'Work Order tidak ditemukan.');
             }
 
             // Cek apakah status adalah APPR
             if (strtoupper($wo->status ?? '') !== 'APPR') {
-                return redirect()->route('maximo.index')->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
+                return redirect()->route('admin.maximo.index', $returnQuery)->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
             }
 
             // Format data untuk PDF
@@ -453,7 +460,7 @@ class MaximoController extends Controller
 
             // Sesuai requirement: setelah generate hanya tampilkan notifikasi sukses,
             // tidak membuka halaman edit otomatis. File sudah tersedia di server.
-            return redirect()->route('admin.maximo.index')
+            return redirect()->route('admin.maximo.index', $returnQuery)
                 ->with('success', 'Jobcard berhasil di-generate! (Tersimpan di server: ' . $filename . ')');
 
         } catch (QueryException $e) {
@@ -463,14 +470,14 @@ class MaximoController extends Controller
                 'sql' => $e->getSql(),
                 'bindings' => $e->getBindings(),
             ]);
-            return redirect()->route('admin.maximo.index')->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
+            return redirect()->route('admin.maximo.index', $returnQuery)->with('error', 'Gagal mengambil data Work Order untuk generate jobcard.');
         } catch (\Throwable $e) {
             Log::error('ERROR GENERATE JOBCARD', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            return redirect()->route('admin.maximo.index')->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
+            return redirect()->route('admin.maximo.index', $returnQuery ?? [])->with('error', 'Gagal generate jobcard: ' . $e->getMessage());
         }
     }
 
@@ -489,6 +496,28 @@ class MaximoController extends Controller
                 'message' => $e->getMessage(),
             ]);
             return redirect()->route('admin.maximo.index')->with('error', 'Gagal download jobcard.');
+        }
+    }
+
+    public function previewJobcard(Request $request)
+    {
+        try {
+            $filePath = $request->input('path');
+
+            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+                return redirect()->route('admin.maximo.index')->with('error', 'File jobcard tidak ditemukan.');
+            }
+
+            $filename = basename($filePath);
+            return Storage::disk('public')->response($filePath, $filename, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('ERROR PREVIEW JOBCARD', [
+                'message' => $e->getMessage(),
+            ]);
+            return redirect()->route('admin.maximo.index')->with('error', 'Gagal preview jobcard.');
         }
     }
 

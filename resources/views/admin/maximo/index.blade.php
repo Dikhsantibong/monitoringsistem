@@ -201,6 +201,13 @@
                                                     Detail
                                                 </a>
                                                 @if(!empty($wo['jobcard_exists']) && $wo['jobcard_exists'] === true && !empty($wo['jobcard_path']))
+                                                    <a href="{{ route('admin.maximo.jobcard.preview', ['path' => $wo['jobcard_path']]) }}"
+                                                       target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs">
+                                                        <i class="fas fa-eye mr-1"></i>
+                                                        Preview
+                                                    </a>
                                                     <a href="{{ route('admin.maximo.jobcard.download', ['path' => $wo['jobcard_path']]) }}"
                                                        class="inline-flex items-center px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs">
                                                         <i class="fas fa-download mr-1"></i>
@@ -211,6 +218,11 @@
                                                     <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
                                                         @csrf
                                                         <input type="hidden" name="wonum" value="{{ $wo['wonum'] }}">
+                                                        <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
+                                                        <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
+                                                        <input type="hidden" name="search" value="{{ request('search') }}">
+                                                        <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
+                                                        <input type="hidden" name="wo_worktype" value="{{ request('wo_worktype') }}">
                                                         <button type="submit" 
                                                                 class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
                                                                 onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
