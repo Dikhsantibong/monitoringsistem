@@ -10,45 +10,34 @@
             gap: 2rem;
         }
 
-        /* Logo Animation */
+        /* Logo Image Wrapper */
         .logo-wrapper {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 150px;
+            height: 150px;
             display: flex;
             align-items: center;
             justify-content: center;
             animation: logoFadeInOut 3s ease-in-out infinite;
         }
 
-        .logo-circle {
-            position: absolute;
+        .logo-image {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #009BB9 0%, #007A94 100%);
-            box-shadow: 0 10px 40px rgba(0, 155, 185, 0.3);
-            animation: pulse 3s ease-in-out infinite;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0, 155, 185, 0.3));
+            animation: logoFloat 3s ease-in-out infinite;
         }
 
-        .logo-text {
-            position: relative;
-            z-index: 10;
-            font-size: 3rem;
-            font-weight: 900;
-            color: white;
-            letter-spacing: -2px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .logo-cog {
+        /* Background Circle (optional, bisa dihapus jika tidak perlu) */
+        .logo-bg-circle {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2.5rem;
-            color: rgba(255, 255, 255, 0.9);
-            animation: rotateCog 4s linear infinite;
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0, 155, 185, 0.1) 0%, rgba(0, 122, 148, 0.1) 100%);
+            animation: pulse 3s ease-in-out infinite;
+            z-index: -1;
         }
 
         /* Brand Name */
@@ -70,8 +59,12 @@
             font-size: 1rem;
             color: #666;
             font-weight: 500;
-            animation: dots 1.5s steps(4, end) infinite;
             white-space: nowrap;
+        }
+
+        .loading-text::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
         }
 
         /* Decorative Rings */
@@ -83,20 +76,20 @@
         }
 
         .ring-1 {
-            width: 140px;
-            height: 140px;
+            width: 180px;
+            height: 180px;
             animation: ripple 3s ease-out infinite;
         }
 
         .ring-2 {
-            width: 160px;
-            height: 160px;
+            width: 220px;
+            height: 220px;
             animation: ripple 3s ease-out 0.5s infinite;
         }
 
         .ring-3 {
-            width: 180px;
-            height: 180px;
+            width: 260px;
+            height: 260px;
             animation: ripple 3s ease-out 1s infinite;
         }
 
@@ -109,6 +102,15 @@
             50% {
                 opacity: 1;
                 transform: scale(1);
+            }
+        }
+
+        @keyframes logoFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
             }
         }
 
@@ -126,17 +128,11 @@
         @keyframes pulse {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 10px 40px rgba(0, 155, 185, 0.3);
+                opacity: 0.5;
             }
             50% {
-                transform: scale(1.05);
-                box-shadow: 0 15px 50px rgba(0, 155, 185, 0.5);
-            }
-        }
-
-        @keyframes rotateCog {
-            100% {
-                transform: translate(-50%, -50%) rotate(360deg);
+                transform: scale(1.1);
+                opacity: 0.8;
             }
         }
 
@@ -146,7 +142,7 @@
                 transform: scale(1);
             }
             50% {
-                opacity: 0.4;
+                opacity: 0.3;
             }
             100% {
                 opacity: 0;
@@ -156,32 +152,24 @@
 
         @keyframes dots {
             0%, 20% {
-                content: 'Memuat';
+                content: '';
             }
             40% {
-                content: 'Memuat.';
+                content: '.';
             }
             60% {
-                content: 'Memuat..';
+                content: '..';
             }
             80%, 100% {
-                content: 'Memuat...';
+                content: '...';
             }
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .logo-wrapper {
-                width: 100px;
-                height: 100px;
-            }
-
-            .logo-text {
-                font-size: 2.5rem;
-            }
-
-            .logo-cog {
-                font-size: 2rem;
+                width: 120px;
+                height: 120px;
             }
 
             .brand-name {
@@ -190,33 +178,25 @@
             }
 
             .ring-1 {
-                width: 120px;
-                height: 120px;
+                width: 150px;
+                height: 150px;
             }
 
             .ring-2 {
-                width: 140px;
-                height: 140px;
+                width: 180px;
+                height: 180px;
             }
 
             .ring-3 {
-                width: 160px;
-                height: 160px;
+                width: 210px;
+                height: 210px;
             }
         }
 
         @media (max-width: 320px) {
             .logo-wrapper {
-                width: 80px;
-                height: 80px;
-            }
-
-            .logo-text {
-                font-size: 2rem;
-            }
-
-            .logo-cog {
-                font-size: 1.5rem;
+                width: 100px;
+                height: 100px;
             }
 
             .brand-name {
@@ -226,6 +206,22 @@
 
             .loading-text {
                 font-size: 0.875rem;
+                bottom: 2rem;
+            }
+
+            .ring-1 {
+                width: 120px;
+                height: 120px;
+            }
+
+            .ring-2 {
+                width: 150px;
+                height: 150px;
+            }
+
+            .ring-3 {
+                width: 180px;
+                height: 180px;
             }
         }
     </style>
@@ -238,17 +234,17 @@
 
         <!-- Logo -->
         <div class="logo-wrapper">
-            <div class="logo-circle"></div>
-            <div class="logo-text">M</div>
-            <i class="fas fa-cog logo-cog"></i>
+            <div class="logo-bg-circle"></div>
+            <!-- GANTI dengan path logo Anda -->
+            <img src="{{ asset('logo/monday.png') }}" alt="Logo" class="logo-image">
         </div>
 
-        <!-- Brand Name -->
+        <!-- Brand Name (optional, bisa dihapus jika tidak perlu) -->
         <div class="brand-name">MONDAY</div>
     </div>
 
     <!-- Loading Text -->
-    <div class="loading-text">Memuat...</div>
+    <div class="loading-text">Memuat</div>
 </div>
 
 <script>
@@ -258,10 +254,11 @@
         if (loader) {
             setTimeout(() => {
                 loader.style.opacity = '0';
+                loader.style.transition = 'opacity 0.5s ease-out';
                 setTimeout(() => {
                     loader.style.display = 'none';
-                }, 300);
-            }, 500); // Delay sedikit untuk memastikan konten siap
+                }, 500);
+            }, 300);
         }
     });
 
@@ -270,9 +267,10 @@
         const loader = document.getElementById('loader');
         if (loader && loader.style.display !== 'none') {
             loader.style.opacity = '0';
+            loader.style.transition = 'opacity 0.5s ease-out';
             setTimeout(() => {
                 loader.style.display = 'none';
-            }, 300);
+            }, 500);
         }
     }, 5000);
 </script>
