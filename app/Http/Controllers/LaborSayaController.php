@@ -212,7 +212,7 @@ class LaborSayaController extends Controller
                 ->with('error', 'Gagal mengambil data Work Order dari Maximo.');
         }
 
-        return view('pemeliharaan.labor-view', compact('workOrder'));
+        return view('pemeliharaan.labor-edit', compact('workOrder'));
     }
 
     /**
