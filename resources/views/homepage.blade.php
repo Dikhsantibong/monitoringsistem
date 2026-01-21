@@ -1475,7 +1475,7 @@
                                     <th class="text-center issue-column" style="display: none;">Progres Pembahasan</th>
                                     <!-- Kolom untuk Data Gangguan View -->
 
-                                    <th class="text-center disruption-column">Progres</th>
+                                    <th class="text-center disruption-column">Catatan Issue</th>
                                     <th class="text-center">Waktu Update</th>
                                 </tr>
                             </thead>
@@ -1649,7 +1649,7 @@
 
                                             <td class="text-center text-sm text-gray-500 disruption-column">
                                                 <div class="max-w-[400px] mx-auto break-words">
-                                                    {{ $latestStatus->progres }}
+                                                    {{ $latestStatus->equipment }}
                                                 </div>
                                             </td>
                                             <td class="text-center text-sm text-gray-500">
