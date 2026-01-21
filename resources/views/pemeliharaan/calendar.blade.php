@@ -154,7 +154,7 @@
                 <div class="calendar-sticky-presentation">
                 <div class="calendar-header mb-0">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
-                        <h2 class="text-2xl font-bold text-gray-800">Calendar SR/WO</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">Kalender Pemeliharaan</h2>
                         
                         {{-- Presentasi Work Type - Satu Baris Kecil --}}
                         @if(isset($workTypeStats) && count($workTypeStats) > 0)
