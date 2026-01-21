@@ -1438,7 +1438,7 @@
             </div>
             <!-- Live Data Unit Operasional -->
             <div class="flex justify-center items-center mt-10 mb-4 gap-4">
-                <h3 class="text-xl font-semibold">Live Data Unit Operasional</h3>
+                <h3 class="text-xl font-semibold">Kinerja Pemeliharaan</h3>
                 <div class="flex items-center text-gray-600">
                     <i class="far fa-clock mr-2"></i>
                     <span id="liveTime"></span>

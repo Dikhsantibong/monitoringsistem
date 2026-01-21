@@ -14,13 +14,13 @@
                 <div class="hidden md:flex items-center ">
                     <ul class="flex space-x-8">
                         <li><a href="{{ route('homepage') }}" class="nav-link">Home</a></li>
-                        <li><a href="#map" class="nav-link">Peta Pembangkit</a></li>
-                        <li><a href="#live-data" class="nav-link">Live Data</a></li>
-                        <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link">Dashboard Pemantauan</a></li>
+                        <li><a href="{{ route('weekly-meeting.index') }}" class="nav-link">Weekly Meeting</a></li>
+                        <li><a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link">Kinerja Pemeliharaan</a></li>
+                        <li><a href="{{ route('calendar.index') }}" class="nav-link">Kalender Pemeliharaan</a></li>
                         <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link" target="_blank">Bid. Pemeliharaan</a></li>
                         <li><a href="{{ route('notulen.form') }}" class="nav-link">Notulen</a></li>
                         <!-- Dropdown Menu Lainnya -->
-                        <li class="relative group">
+                        {{-- <li class="relative group">
                             <button class="nav-link flex items-center focus:outline-none" id="menu-lainnya-btn">
                                 Menu Lainnya
                                 <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -30,7 +30,7 @@
                                 <a href="{{ route('kinerja.pemeliharaan') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-100"><i class="fas fa-chart-line mr-1"></i> Kinerja Pemeliharaan</a>
                                 <a href="{{ route('weekly-meeting.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-100">Weekly Meeting</a>
                             </div>
-                        </li>
+                        </li> --}}
                         <!-- Login button -->
                         <li>
                             <a href="{{ route('login') }}" class="login-button">
