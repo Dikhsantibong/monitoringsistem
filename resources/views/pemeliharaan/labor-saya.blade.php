@@ -70,57 +70,87 @@
         <!-- Tab Navigation -->
         <main class="px-6 pt-6">
             <form method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-4 flex items-center gap-2">
-                <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO (WONUM, Description, Status, Type, Priority, Location, Asset)" class="flex-1 border rounded px-3 py-2" />
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Cari</button>
+                <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO/Backlog (id, deskripsi, status, type, priority, kendala, tindak lanjut)" class="flex-1 border rounded px-3 py-2" />
+                <input type="hidden" name="wo_page" value="1" />
+                <input type="hidden" name="backlog_page" value="{{ request('backlog_page', 1) }}" />
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Cari</button>
                 @if(!empty($q))
-                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-3 py-2 rounded border hover:bg-gray-100">Reset</a>
+                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-3 py-2 rounded border">Reset</a>
                 @endif
             </form>
-
-            <div class="bg-white rounded shadow p-4 overflow-x-auto">
+            <div class="mb-4 border-b border-gray-200">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+                    <li class="mr-2">
+                        <a href="#" onclick="switchTab('wo'); return false;"
+                           class="inline-block p-4 border-b-2 rounded-t-lg tab-btn active"
+                           data-tab="wo">
+                            Work Order
+                            <span class="ml-2 bg-green-400 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                {{ $workOrdersPaginator ? $workOrdersPaginator->total() : count($workOrders) }}
+                            </span>
+                        </a>
+                    </li>
+                    <li class="mr-2">
+                        <a href="#" onclick="switchTab('backlog'); return false;"
+                           class="inline-block p-4 border-b-2 rounded-t-lg tab-btn"
+                           data-tab="backlog">
+                            Labor Backlog
+                            <span class="ml-2 bg-blue-400 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                {{ count($laborBacklogs) }}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- Tab Content -->
+            <div id="wo-tab" class="tab-content active">
+                <div class="bg-white rounded shadow p-4 overflow-x-auto">
                     <table class="min-w-full table-fixed divide-y divide-gray-200 border whitespace-nowrap">
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-2 text-center">No</th>
                                 <th class="px-4 py-2 text-center">Aksi</th>
-                                <th class="px-4 py-2 text-center">WO Number</th>
-                                <th class="px-4 py-2 text-center">Parent</th>
-                                <th class="px-4 py-2 text-center">Description</th>
+                                <th class="px-4 py-2 text-center">ID</th>
+                                <th class="px-4 py-2 text-center">Deskripsi</th>
+                                <th class="px-4 py-2 text-center">Kendala</th>
+                                <th class="px-4 py-2 text-center">Tindak Lanjut</th>
+                                <th class="px-4 py-2 text-center">Document</th>
                                 <th class="px-4 py-2 text-center">Type</th>
                                 <th class="px-4 py-2 text-center">Status</th>
                                 <th class="px-4 py-2 text-center">Priority</th>
-                                <th class="px-4 py-2 text-center">Location</th>
-                                <th class="px-4 py-2 text-center">Asset</th>
-                                <th class="px-4 py-2 text-center">Schedule Start</th>
-                                <th class="px-4 py-2 text-center">Schedule Finish</th>
-                                <th class="px-4 py-2 text-center">Report Date</th>
+                                <th class="px-4 py-2 text-center">Jadwal Mulai</th>
+                                <th class="px-4 py-2 text-center">Jadwal Selesai</th>
+                                <th class="px-4 py-2 text-center">Labor</th>
+                                <th class="px-4 py-2 text-center">nama labor</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($workOrders as $wo)
                             @php
                                 $woStatus = strtoupper($wo['status'] ?? '');
-                                $isClosed = in_array($woStatus, ['COMP', 'CLOSE', 'CLOSED']);
+                                $isClosed = in_array($woStatus, ['COMP', 'CLOSE']);
                             @endphp
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-2 text-center border border-gray-200">
-                                    {{ ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() + $loop->iteration }}
-                                </td>
+                                <td class="px-4 py-2 text-center border border-gray-200">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     @if($isClosed)
                                         <span class="inline-block px-3 py-1 bg-gray-400 text-white rounded text-xs cursor-not-allowed">
                                             <i class="fas fa-lock mr-1"></i> Closed
                                         </span>
                                     @else
-                                        <a href="{{ route('pemeliharaan.labor-saya.edit', $wo['wonum']) }}" class="inline-block px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs">
-                                            <i class="fas fa-eye"></i> Detail
-                                        </a>
+                                        <a href="{{ route('pemeliharaan.labor-saya.edit', $wo['wonum']) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo['wonum'] }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['parent'] ?? '-' }}</td>
-                                <td class="px-4 py-2 border border-gray-200 max-w-[250px] overflow-hidden text-ellipsis">
-                                    {{ $wo['description'] ?? '-' }}
+                                <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo['description'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['tindak_lanjut'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    @if(isset($wo['document_path']) && $wo['document_path'])
+                                        <a href="{{ url('storage/' . $wo['document_path']) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     <span class="px-2 py-1 rounded-full {{ ($wo['worktype'] ?? '') == 'PM' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-600' }}">
@@ -130,7 +160,7 @@
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     @php
                                         $statusClass = 'bg-gray-100 text-gray-800';
-                                        if (in_array($woStatus, ['COMP', 'CLOSE', 'CLOSED'])) {
+                                        if (in_array($woStatus, ['COMP', 'CLOSE'])) {
                                             $statusClass = 'bg-green-100 text-green-800';
                                         } elseif (in_array($woStatus, ['WAPPR', 'APPR'])) {
                                             $statusClass = 'bg-blue-100 text-blue-800';
@@ -143,46 +173,39 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    @php
-                                        $priorityLower = strtolower($wo['wopriority'] ?? '');
-                                        $priorityClass = 'bg-gray-100 text-gray-600';
-                                        if (in_array($priorityLower, ['low', '3'])) {
-                                            $priorityClass = 'bg-green-100 text-green-600';
-                                        } elseif (in_array($priorityLower, ['high', 'urgent', '1', '2'])) {
-                                            $priorityClass = 'bg-red-100 text-red-600';
-                                        }
-                                    @endphp
-                                    <span class="px-2 py-1 rounded-full {{ $priorityClass }}">
+                                    <span class="px-2 py-1 rounded-full {{ ($wo['wopriority'] ?? '') == 'Low' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                         {{ $wo['wopriority'] ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['location'] ?? '-' }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['assetnum'] ?? '-' }}</td>
                                 <td class="px-4 py-2 border border-gray-200">
-                                    @if(isset($wo['schedstart']) && $wo['schedstart'])
-                                        {{ \Carbon\Carbon::parse($wo['schedstart'])->format('d-m-Y H:i') }}
+                                    @if(isset($wo['schedule_start']) && $wo['schedule_start'])
+                                        {{ \Carbon\Carbon::parse($wo['schedule_start'])->format('d-m-Y H:i') }}
                                     @else
                                         -
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200">
-                                    @if(isset($wo['schedfinish']) && $wo['schedfinish'])
-                                        {{ \Carbon\Carbon::parse($wo['schedfinish'])->format('d-m-Y H:i') }}
+                                    @if(isset($wo['schedule_finish']) && $wo['schedule_finish'])
+                                        {{ \Carbon\Carbon::parse($wo['schedule_finish'])->format('d-m-Y H:i') }}
                                     @else
                                         -
                                     @endif
                                 </td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['labor'] ?? '-' }}</td>
                                 <td class="px-4 py-2 border border-gray-200">
-                                    @if(isset($wo['reportdate']) && $wo['reportdate'])
-                                        {{ \Carbon\Carbon::parse($wo['reportdate'])->format('d-m-Y H:i') }}
+                                    @if(isset($wo['labors']) && is_array($wo['labors']))
+                                        {{ implode(', ', $wo['labors']) }}
+                                    @elseif(isset($wo['labors']) && is_string($wo['labors']))
+                                        {{ $wo['labors'] }}
                                     @else
                                         -
                                     @endif
                                 </td>
+                               
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="13" class="text-center py-4">Tidak ada data work order.</td>
+                                <td colspan="14" class="text-center py-4">Tidak ada data work order untuk labor Anda.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -203,29 +226,143 @@
                     </div>
                     <div class="flex items-center gap-1">
                         @if (!$workOrdersPaginator->onFirstPage())
-                            <a href="{{ $workOrdersPaginator->appends(['q' => request('q')])->previousPageUrl() }}" 
-                               class="px-3 py-1 bg-[#0A749B] text-white rounded hover:bg-[#085a75]">Sebelumnya</a>
+                            <a href="{{ $workOrdersPaginator->appends(array_filter([
+                                'backlog_page' => request('backlog_page', 1), 
+                                'q' => request('q')
+                            ]))->previousPageUrl() }}" 
+                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                         @endif
 
                         @foreach ($workOrdersPaginator->getUrlRange(1, min($workOrdersPaginator->lastPage(), 10)) as $page => $url)
                             @if ($page == $workOrdersPaginator->currentPage())
                                 <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                             @else
-                                <a href="{{ $workOrdersPaginator->appends(['q' => request('q')])->url($page) }}" 
-                                   class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B] hover:bg-[#0A749B] hover:text-white">
+                                <a href="{{ $workOrdersPaginator->appends(array_filter([
+                                    'backlog_page' => request('backlog_page', 1), 
+                                    'q' => request('q')
+                                ]))->url($page) }}" 
+                                   class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
                                     {{ $page }}
                                 </a>
                             @endif
                         @endforeach
 
                         @if ($workOrdersPaginator->hasMorePages())
-                            <a href="{{ $workOrdersPaginator->appends(['q' => request('q')])->nextPageUrl() }}" 
-                               class="px-3 py-1 bg-[#0A749B] text-white rounded hover:bg-[#085a75]">Selanjutnya</a>
+                            <a href="{{ $workOrdersPaginator->appends(array_filter([
+                                'backlog_page' => request('backlog_page', 1), 
+                                'q' => request('q')
+                            ]))->nextPageUrl() }}" 
+                               class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                         @endif
                     </div>
                 </div>
                 @endif
+            </div>
+            <div id="backlog-tab" class="tab-content hidden">
+                <div class="bg-white rounded shadow p-4 overflow-x-auto">
+                    <table class="min-w-full table-fixed divide-y divide-gray-200 border whitespace-nowrap">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-center">No</th>
+                                <th class="px-4 py-2 text-center">Aksi</th>
+                                <th class="px-4 py-2 text-center">No WO</th>
+                                <th class="px-4 py-2 text-center">Deskripsi</th>
+                                <th class="px-4 py-2 text-center">Kendala</th>
+                                <th class="px-4 py-2 text-center">Tindak Lanjut</th>
+                                <th class="px-4 py-2 text-center">Type</th>
+                                <th class="px-4 py-2 text-center">Status</th>
+                                <th class="px-4 py-2 text-center">Priority</th>
+                                <th class="px-4 py-2 text-center">Document</th>
+                                <th class="px-4 py-2 text-center">Jadwal Mulai</th>
+                                <th class="px-4 py-2 text-center">Jadwal Selesai</th>
+                                <th class="px-4 py-2 text-center">Labor</th>
+                                <th class="px-4 py-2 text-center">Nama Labor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($laborBacklogs as $backlog)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 text-center border border-gray-200">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    @if($backlog->status == 'Closed')
+                                        <span class="inline-block px-3 py-1 bg-gray-400 text-white rounded text-xs cursor-not-allowed">Closed</span>
+                                    @else
+                                        <a href="{{ route('pemeliharaan.labor-saya.edit-backlog', $backlog->id) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->no_wo }}</td>
+                                <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $backlog->deskripsi }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->kendala }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->tindak_lanjut }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->type_wo }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    <span class="px-2 py-1 rounded-full {{ $backlog->status == 'Open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
+                                        {{ $backlog->status }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    <span class="px-2 py-1 rounded-full {{ $backlog->priority == 'Low' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                        {{ $backlog->priority }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    @if($backlog->document_path)
+                                        <a href="{{ url('storage/' . $backlog->document_path) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->schedule_start }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->schedule_finish }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $backlog->labor }}</td>
+                                <td class="px-4 py-2 border border-gray-200">
+                                    @if(is_array($backlog->labors))
+                                        {{ implode(', ', $backlog->labors) }}
+                                    @elseif(is_string($backlog->labors))
+                                        {{ $backlog->labors }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                               
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="13" class="text-center py-4">Tidak ada data backlog untuk labor Anda.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
 </div>
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+            tab.classList.remove('active', 'border-blue-500');
+        });
+        const selectedTab = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+        if (selectedTab) {
+            selectedTab.classList.add('active', 'border-blue-500');
+        }
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        const selectedContent = document.getElementById(`${tabId}-tab`);
+        if (selectedContent) {
+            selectedContent.classList.remove('hidden');
+        }
+    }
+</script>
+<style>
+.tab-btn.active {
+    border-bottom-color: #3b82f6;
+    color: #3b82f6;
+}
+.tab-content {
+    transition: all 0.3s ease-in-out;
+}
+</style>
 @endsection
