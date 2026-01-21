@@ -93,6 +93,39 @@
             color: #fff;
         }
 
+        /* Digital clock in hero */
+        .hero-digital-clock {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 22px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.40);
+            border: 1px solid rgba(255, 204, 0, 0.55);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        .hero-digital-clock .time {
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #FFCC00;
+            text-shadow: 0 2px 10px rgba(255, 204, 0, 0.35);
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            font-size: clamp(2.2rem, 4vw, 3.8rem);
+        }
+
+        .hero-digital-clock .date {
+            margin-top: 6px;
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+        }
+
         @media (max-width: 768px) {
             .status-indicators {
                 gap: 0.25rem;
@@ -102,6 +135,11 @@
                 width: 14px;
                 height: 14px;
                 font-size: 9px;
+            }
+
+            .hero-digital-clock {
+                padding: 12px 16px;
+                border-radius: 14px;
             }
         }
 
@@ -1266,6 +1304,12 @@
                                 <span class="block text-3xl mt-1" style="color: #FFFFFF; letter-spacing: 1px;">UP KENDARI</span>
                             </span>
                         </h2>
+                        <div class="w-full flex justify-center mb-6">
+                            <div class="hero-digital-clock" aria-label="Jam digital">
+                                <div id="digitalClockTime" class="time">--:--:--</div>
+                                <div id="digitalClockDate" class="date">---</div>
+                            </div>
+                        </div>
                         <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
                             <div>
                                 <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
@@ -3099,6 +3143,33 @@
     document.addEventListener('DOMContentLoaded', function() {
         const loader = document.getElementById('loader');
         const pageContent = document.getElementById('page-content');
+
+        // Digital clock (Asia/Makassar)
+        const timeEl = document.getElementById('digitalClockTime');
+        const dateEl = document.getElementById('digitalClockDate');
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function updateDigitalClock() {
+            if (!timeEl || !dateEl) return;
+            const now = new Date();
+            const timeStr = new Intl.DateTimeFormat('id-ID', {
+                timeZone: 'Asia/Makassar',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).format(now);
+            const dateStr = new Intl.DateTimeFormat('id-ID', {
+                timeZone: 'Asia/Makassar',
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: '2-digit'
+            }).format(now);
+            timeEl.textContent = timeStr;
+            dateEl.textContent = dateStr;
+        }
+        updateDigitalClock();
+        setInterval(updateDigitalClock, 1000);
 
         // Show loader initially
         loader.classList.remove('loader-hidden');
