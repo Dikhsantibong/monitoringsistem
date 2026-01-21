@@ -52,41 +52,63 @@
 
             <!-- Mobile Menu -->
             <div id="mobile-menu" class="hidden md:hidden pb-4">
-                <ul class="space-y-4">
-                    <li><a href="#" class="nav-link-mobile">Home</a></li>
-                    <li><a href="#map" class="nav-link-mobile">Peta Pembangkit</a></li>
-                    <li><a href="#live-data" class="nav-link-mobile">Live Data Unit Operasional</a></li>
-                    <li><a href="{{ route('dashboard.pemantauan') }}" class="nav-link-mobile">Dashboard Pemantauan</a></li>
-                    <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link-mobile" target="_blank">Bid. Pemeliharaan</a></li>
-                    <li><a href="{{ route('notulen.form') }}" class="nav-link-mobile">Notulen</a></li>
-                    <li><a href="{{ route('calendar.index') }}" class="nav-link-mobile">
-                        <i class="fas fa-calendar-alt mr-1"></i> Calendar
-                    </a></li>
+                <ul class="space-y-4 pt-4">
                     <li>
-                        <a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link-mobile">
-                            <i class="fas fa-chart-line mr-1"></i> Kinerja Pemeliharaan
+                        <a href="{{ route('homepage') }}" class="nav-link-mobile">Home</a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('weekly-meeting.index') }}" class="nav-link-mobile">
+                            Weekly Meeting
                         </a>
                     </li>
-                    <li><a href="{{ route('weekly-meeting.index') }}" class="nav-link-mobile">Weekly Meeting</a></li>
-                    <!-- Login button in mobile -->
+
                     <li>
+                        <a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link-mobile">
+                            Kinerja Pemeliharaan
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('calendar.index') }}" class="nav-link-mobile">
+                            Kalender Pemeliharaan
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="https://sites.google.com/view/pemeliharaan-upkendari"
+                        target="_blank"
+                        class="nav-link-mobile">
+                            Bid. Pemeliharaan
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('notulen.form') }}" class="nav-link-mobile">
+                            Notulen
+                        </a>
+                    </li>
+
+                    <!-- Login -->
+                    <li class="pt-2 border-t border-gray-200">
                         <a href="{{ route('login') }}" class="nav-link-mobile login-mobile">
                             <i class="fas fa-user mr-2"></i> Login
                         </a>
                     </li>
                 </ul>
             </div>
+
         </div>
     </div>
 </nav>
 <script>
-    // Dropdown show/hide for accessibility (optional, fallback for keyboard)
-    document.addEventListener('DOMContentLoaded', function() {
-        const btn = document.getElementById('menu-lainnya-btn');
-        const dropdown = document.getElementById('menu-lainnya-dropdown');
-        if(btn && dropdown) {
-            btn.addEventListener('focus', () => dropdown.classList.remove('hidden'));
-            btn.addEventListener('blur', () => setTimeout(() => dropdown.classList.add('hidden'), 200));
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+        const mobileBtn = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+    
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
     });
 </script>
+    
