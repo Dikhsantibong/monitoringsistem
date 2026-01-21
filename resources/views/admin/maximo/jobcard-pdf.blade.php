@@ -623,7 +623,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-logo">
-            <div class="logo-placeholder">PLN</div>
+            <img src="{{ public_path('logo/navlogo.png') }}" alt="PLN Logo" style="width: 120px; height: auto;">
         </div>
         <div class="header-title">
             <h2>PLN Nusantara Power</h2>
