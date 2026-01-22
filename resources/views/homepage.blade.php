@@ -1365,7 +1365,7 @@
                             <div>
                                 <a href="{{ route('login', ['unit' => 'mysql_kolaka']) }}" class="block">
                                     <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> KOLAKA</h5>
+                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD/G <br> KOLAKA</h5>
                                         @php $status = $unitUpdateStatuses['mysql_kolaka'] ?? $defaultUnitStatus; @endphp
                                         <div class="status-indicators text-white text-[10px] md:text-xs">
                                             @foreach ($statusLabels as $key => $label)
