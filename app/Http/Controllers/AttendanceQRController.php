@@ -80,20 +80,44 @@ class AttendanceQRController extends Controller
             ], 500);
         }
     }
-
-        public function pullData(Request $request)
+    public function pullData(Request $request)
     {
         try {
-            // Ambil session unit yang aktif
+            // Ambil session unit yang aktif - HARUS EXACT MATCH
             $connection = session('unit', 'mysql');
             
+            // PENTING: Mapping unit session ke unit_source yang benar
+            // Sesuaikan dengan data di database Anda
+            $unitSourceMap = [
+                'mysql' => 'mysql_wua_wua',           // Contoh: session mysql -> unit_source mysql_wua_wua
+                'mysql2' => 'mysql_bau_bau',          // Contoh: session mysql2 -> unit_source mysql_bau_bau
+                'pgsql' => 'pgsql_kendari',           // dst...
+                // Tambahkan mapping lainnya sesuai kebutuhan
+            ];
+            
+            // Dapatkan unit_source yang sesuai
+            $unitSource = $unitSourceMap[$connection] ?? $connection;
+            
             Log::info('=== START PULL DATA ===', [
-                'unit_source' => $connection,
+                'session_connection' => $connection,
+                'unit_source' => $unitSource,
                 'user_id' => auth()->id()
             ]);
             
-            // Panggil API
-            $response = Http::timeout(30)->get('https://absen-monday.online/api/attendance');
+            // Panggil API dengan filter unit_source
+            $response = Http::timeout(90)
+                ->connectTimeout(30)
+                ->retry(3, 200)
+                ->withOptions([
+                    'verify' => false,
+                    'http_errors' => false,
+                ])
+                ->withHeaders([
+                    'Accept' => 'application/json'
+                ])
+                ->get('https://absen-monday.online/api/attendance', [
+                    'unit_source' => $unitSource // Filter di API
+                ]);
             
             if (!$response->successful()) {
                 Log::error('API request failed', [
@@ -105,38 +129,51 @@ class AttendanceQRController extends Controller
                     'message' => 'Gagal mengambil data dari API. Status: ' . $response->status()
                 ], 500);
             }
-
+    
             $responseData = $response->json();
-            Log::info('API Response', ['response' => $responseData]);
-
+            Log::info('API Response received', [
+                'has_success' => isset($responseData['success']),
+                'has_data' => isset($responseData['data'])
+            ]);
+    
             // Extract data array dari response
             $data = [];
             
-            if (is_array($responseData)) {
+            if (isset($responseData['success']) && $responseData['success'] === true) {
                 if (isset($responseData['data']) && is_array($responseData['data'])) {
                     $data = $responseData['data'];
-                    Log::info('Data extracted from response.data', ['count' => count($data)]);
-                } else {
+                }
+            } elseif (is_array($responseData)) {
+                if (isset($responseData['data']) && is_array($responseData['data'])) {
+                    $data = $responseData['data'];
+                } elseif (isset($responseData[0])) {
                     $data = $responseData;
-                    Log::info('Using response as data array', ['count' => count($data)]);
                 }
             }
-
+    
+            Log::info('Data extracted', ['count' => count($data)]);
+    
             if (empty($data)) {
-                Log::warning('No data to import');
                 return response()->json([
                     'success' => true,
                     'message' => 'Tidak ada data untuk diimport',
                     'attendance_imported' => 0,
-                    'token_imported' => 0
+                    'token_imported' => 0,
+                    'unit_source' => $unitSource
                 ]);
             }
-
-            // **FILTER DATA BERDASARKAN UNIT_SOURCE DAN TANGGAL HARI INI**
+    
+            // **FILTER DATA - EXACT MATCH UNIT_SOURCE & HARI INI**
             $today = Carbon::today()->toDateString();
-            $filteredData = array_filter($data, function($item) use ($connection, $today) {
-                // Cek apakah unit_source sesuai
-                $unitMatch = isset($item['unit_source']) && $item['unit_source'] === $connection;
+            
+            $filteredData = array_filter($data, function($item) use ($unitSource, $today) {
+                if (!is_array($item)) {
+                    return false;
+                }
+                
+                // EXACT MATCH - unit_source harus sama persis
+                $unitMatch = isset($item['unit_source']) && 
+                            $item['unit_source'] === $unitSource;
                 
                 // Cek apakah data adalah data hari ini
                 $isToday = true;
@@ -152,108 +189,129 @@ class AttendanceQRController extends Controller
                 
                 return $unitMatch && $isToday;
             });
-
-            Log::info('Data filtered by unit_source and date', [
-                'unit_source' => $connection,
+    
+            Log::info('Data filtered', [
+                'unit_source' => $unitSource,
                 'date' => $today,
-                'total_data' => count($data),
-                'filtered_data' => count($filteredData)
+                'total_from_api' => count($data),
+                'filtered_count' => count($filteredData)
             ]);
-
+    
             if (empty($filteredData)) {
+                // Debug: tampilkan unit_source yang ada di data
+                $availableUnits = array_values(array_unique(array_filter(array_column($data, 'unit_source'))));
+                
                 return response()->json([
                     'success' => true,
-                    'message' => "Tidak ada data untuk unit {$connection} pada hari ini",
+                    'message' => "Tidak ada data untuk unit {$unitSource} pada hari ini",
                     'attendance_imported' => 0,
-                    'token_imported' => 0
+                    'token_imported' => 0,
+                    'debug_info' => [
+                        'your_session' => $connection,
+                        'your_unit_source' => $unitSource,
+                        'total_data_from_api' => count($data),
+                        'available_units_in_api' => $availableUnits,
+                        'suggestion' => 'Pastikan mapping unit_source sudah benar di controller'
+                    ]
                 ]);
             }
-
+    
             $importedCount = 0;
             $tokenImportedCount = 0;
             $skippedCount = 0;
-
+    
             DB::connection($connection)->beginTransaction();
-
+    
             try {
+                // Batch insert untuk performa
+                $attendanceRecords = [];
+                $tokenRecords = [];
+                
                 foreach ($filteredData as $index => $item) {
                     try {
                         if (!is_array($item)) {
-                            Log::warning("Item #{$index} is not array, skipping");
                             continue;
                         }
-
-                        // Import Attendance jika ada field 'name'
+    
+                        // Import Attendance
                         if (isset($item['name']) && !empty($item['name'])) {
                             
                             $timeValue = isset($item['time']) && !empty($item['time'])
                                 ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
                                 : now();
-
-                            // Cek duplikat dengan filter unit_source
+    
+                            // Cek duplikat - EXACT MATCH unit_source
                             $exists = DB::connection($connection)
                                 ->table('attendance')
                                 ->where('name', $item['name'])
                                 ->where('time', $timeValue)
-                                ->where('unit_source', $connection) // **FILTER BY UNIT_SOURCE**
+                                ->where('unit_source', $unitSource) // EXACT MATCH
                                 ->exists();
-
+    
                             if (!$exists) {
-                                // Insert data dengan unit_source dari session
-                                DB::connection($connection)->table('attendance')->insert([
+                                $attendanceRecords[] = [
                                     'name' => $item['name'],
                                     'position' => $item['position'] ?? '',
                                     'division' => $item['division'] ?? '',
                                     'token' => $item['token'] ?? '',
                                     'time' => $timeValue,
                                     'signature' => $item['signature'] ?? null,
-                                    'unit_source' => $connection, // Menggunakan session unit
+                                    'unit_source' => $unitSource, // Simpan unit_source yang konsisten
                                     'is_backdate' => $item['is_backdate'] ?? 0,
                                     'backdate_reason' => $item['backdate_reason'] ?? null,
                                     'created_at' => now(),
                                     'updated_at' => now()
-                                ]);
+                                ];
                                 
                                 $importedCount++;
-                                Log::info("✓ Attendance imported: {$item['name']} to {$connection}");
                             } else {
                                 $skippedCount++;
-                                Log::info("⊘ Attendance skipped (duplicate): {$item['name']}");
+                            }
+                            
+                            // Batch insert per 100 record
+                            if (count($attendanceRecords) >= 100) {
+                                DB::connection($connection)->table('attendance')->insert($attendanceRecords);
+                                Log::info("✓ Batch inserted " . count($attendanceRecords) . " attendance records");
+                                $attendanceRecords = [];
                             }
                         }
                         
-                        // Import Token jika ada field 'token' tapi tidak ada 'name'
+                        // Import Token
                         if (isset($item['token']) && !empty($item['token']) && !isset($item['name'])) {
                             
-                            // Cek duplikat dengan filter unit_source
                             $exists = DB::connection($connection)
                                 ->table('attendance_tokens')
                                 ->where('token', $item['token'])
-                                ->where('unit_source', $connection) // **FILTER BY UNIT_SOURCE**
+                                ->where('unit_source', $unitSource) // EXACT MATCH
                                 ->exists();
-
+    
                             if (!$exists) {
-                                DB::connection($connection)->table('attendance_tokens')->insert([
+                                $tokenRecords[] = [
                                     'token' => $item['token'],
                                     'user_id' => $item['user_id'] ?? auth()->id(),
                                     'expires_at' => isset($item['expires_at']) && !empty($item['expires_at'])
                                         ? Carbon::parse($item['expires_at'])
                                         : now()->addMinutes(15),
-                                    'unit_source' => $connection, // Menggunakan session unit
+                                    'unit_source' => $unitSource,
                                     'is_backdate' => $item['is_backdate'] ?? 0,
                                     'backdate_data' => $item['backdate_data'] ?? null,
                                     'created_at' => now(),
                                     'updated_at' => now()
-                                ]);
+                                ];
                                 
                                 $tokenImportedCount++;
-                                Log::info("✓ Token imported: {$item['token']} to {$connection}");
                             } else {
                                 $skippedCount++;
-                                Log::info("⊘ Token skipped (duplicate): {$item['token']}");
+                            }
+                            
+                            // Batch insert per 100 record
+                            if (count($tokenRecords) >= 100) {
+                                DB::connection($connection)->table('attendance_tokens')->insert($tokenRecords);
+                                Log::info("✓ Batch inserted " . count($tokenRecords) . " token records");
+                                $tokenRecords = [];
                             }
                         }
-
+    
                     } catch (\Exception $e) {
                         Log::error("Error importing item #{$index}", [
                             'error' => $e->getMessage(),
@@ -262,23 +320,34 @@ class AttendanceQRController extends Controller
                         continue;
                     }
                 }
-
+    
+                // Insert sisa records
+                if (!empty($attendanceRecords)) {
+                    DB::connection($connection)->table('attendance')->insert($attendanceRecords);
+                    Log::info("✓ Final batch inserted " . count($attendanceRecords) . " attendance records");
+                }
+                
+                if (!empty($tokenRecords)) {
+                    DB::connection($connection)->table('attendance_tokens')->insert($tokenRecords);
+                    Log::info("✓ Final batch inserted " . count($tokenRecords) . " token records");
+                }
+    
                 DB::connection($connection)->commit();
-
+    
                 Log::info('=== PULL DATA COMPLETED ===', [
-                    'unit_source' => $connection,
+                    'session' => $connection,
+                    'unit_source' => $unitSource,
                     'date' => $today,
-                    'attendance_imported' => $importedCount,
-                    'token_imported' => $tokenImportedCount,
-                    'skipped' => $skippedCount,
-                    'total_items' => count($filteredData)
+                    'imported' => $importedCount,
+                    'tokens' => $tokenImportedCount,
+                    'skipped' => $skippedCount
                 ]);
-
-                $message = "Data berhasil diimport ke {$connection} untuk hari ini!\n";
+    
+                $message = "Data berhasil diimport ke {$unitSource} untuk hari ini!\n";
                 $message .= "• Attendance: {$importedCount}\n";
                 $message .= "• Token: {$tokenImportedCount}\n";
                 $message .= "• Dilewati (duplikat): {$skippedCount}";
-
+    
                 return response()->json([
                     'success' => true,
                     'message' => $message,
@@ -286,26 +355,24 @@ class AttendanceQRController extends Controller
                     'token_imported' => $tokenImportedCount,
                     'skipped' => $skippedCount,
                     'total_processed' => count($filteredData),
-                    'unit_source' => $connection,
+                    'unit_source' => $unitSource,
                     'date' => $today
                 ]);
-
+    
             } catch (\Exception $e) {
                 DB::connection($connection)->rollBack();
                 Log::error('Transaction rolled back', [
-                    'unit_source' => $connection,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'error' => $e->getMessage()
                 ]);
                 throw $e;
             }
-
+    
         } catch (\Exception $e) {
             Log::error('=== PULL DATA FAILED ===', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-
+    
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
