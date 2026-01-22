@@ -57,21 +57,17 @@
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'QR Code Daftar Hadir', 'url' => null]]" />
             </div>
             <main class="px-6">
-                <!-- Notification Banner -->
-                <div id="notificationBanner" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg shadow-lg mb-4 hidden animate-bounce-slow">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-white rounded-full p-2 animate-pulse">
-                                <i class="fas fa-exclamation-circle text-purple-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-lg">Pengingat Penting!</p>
-                                <p class="text-sm">Setelah selesai absensi, jangan lupa tekan tombol <strong>"Tarik Data"</strong> untuk memperbarui data kehadiran</p>
-                            </div>
+                <!-- Static Warning Banner -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
                         </div>
-                        <button onclick="closeNotification()" class="text-white hover:text-gray-200 ml-4">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <span class="font-semibold">Pengingat:</span> Setelah selesai melakukan absensi, pastikan untuk menekan tombol <span class="font-bold">"Tarik Data"</span> untuk memperbarui data kehadiran.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -87,31 +83,19 @@
                     <div class="mb-4 flex flex-col lg:flex-row gap-x-4 gap-y-3 justify-between items-center">
                         <div class="flex items-center gap-x-4">
                             <!-- Tombol Generate QR Code -->
-                            <button id="generateQrBtn" onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700 transition-all">
+                            <button id="generateQrBtn" onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700">
                                 <i class="fas fa-qrcode mr-2"></i>
                                 Generate QR Code
                             </button>
 
-                            <!-- Tombol Tarik Data dengan Animasi -->
-                            <div class="relative">
-                                <button id="pullDataBtn" onclick="pullData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700 transition-all relative overflow-hidden">
-                                    <i class="fas fa-download mr-2"></i>
-                                    Tarik Data
-                                    <!-- Ping Animation -->
-                                    <span id="pullDataPing" class="absolute top-0 right-0 -mt-1 -mr-1 flex h-3 w-3 hidden">
-                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                                        <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
-                                    </span>
-                                </button>
-                                <!-- Tooltip -->
-                                <div id="pullDataTooltip" class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap hidden">
-                                    Klik untuk memperbarui data!
-                                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800"></div>
-                                </div>
-                            </div>
+                            <!-- Tombol Tarik Data -->
+                            <button id="pullDataBtn" onclick="pullData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
+                                <i class="fas fa-download mr-2"></i>
+                                Tarik Data
+                            </button>
 
                             <!-- Tombol Manage Kehadiran -->
-                            <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-all">
+                            <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700">
                                 <i class="fas fa-tasks mr-2"></i>
                                 Manage Kehadiran
                             </a>
@@ -131,9 +115,12 @@
                                 <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
                                 <div id="qr-error" class="mt-4 text-red-600 text-center hidden"></div>
                                 <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
-                                <p class="mt-2 text-sm text-purple-600 font-semibold text-center animate-pulse">
-                                    ⚠️ Jangan lupa tekan "Tarik Data" setelah absensi selesai!
-                                </p>
+                                <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded p-3">
+                                    <p class="text-sm text-yellow-800 text-center">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <span class="font-semibold">Jangan lupa:</span> Tekan tombol "Tarik Data" setelah absensi selesai
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -243,60 +230,7 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-        <style>
-            @keyframes bounce-slow {
-                0%, 100% {
-                    transform: translateY(-5%);
-                    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-                }
-                50% {
-                    transform: translateY(0);
-                    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-                }
-            }
-            .animate-bounce-slow {
-                animation: bounce-slow 2s infinite;
-            }
-        </style>
-
         <script>
-            // Show notification banner on page load
-            window.addEventListener('DOMContentLoaded', function() {
-                setTimeout(() => {
-                    showNotification();
-                    activatePullDataAnimation();
-                }, 1000);
-            });
-
-            function showNotification() {
-                const banner = document.getElementById('notificationBanner');
-                banner.classList.remove('hidden');
-                
-                // Auto hide after 10 seconds
-                setTimeout(() => {
-                    closeNotification();
-                }, 10000);
-            }
-
-            function closeNotification() {
-                const banner = document.getElementById('notificationBanner');
-                banner.classList.add('hidden');
-            }
-
-            function activatePullDataAnimation() {
-                const ping = document.getElementById('pullDataPing');
-                const tooltip = document.getElementById('pullDataTooltip');
-                
-                ping.classList.remove('hidden');
-                tooltip.classList.remove('hidden');
-                
-                // Hide after 15 seconds
-                setTimeout(() => {
-                    ping.classList.add('hidden');
-                    tooltip.classList.add('hidden');
-                }, 15000);
-            }
-
             function generateQR() {
                 const container = document.getElementById('qrcode-container');
                 const errorContainer = document.getElementById('qr-error');
@@ -308,12 +242,6 @@
                 
                 // Tampilkan modal
                 document.getElementById('qrModal').classList.remove('hidden');
-                
-                // Show notification and animation after QR is generated
-                setTimeout(() => {
-                    showNotification();
-                    activatePullDataAnimation();
-                }, 2000);
                 
                 fetch('{{ route("admin.attendance.qr.generate") }}', {
                     method: 'POST',
@@ -371,13 +299,6 @@
             function pullData() {
                 const btn = document.getElementById('pullDataBtn');
                 const originalText = btn.innerHTML;
-                const ping = document.getElementById('pullDataPing');
-                const tooltip = document.getElementById('pullDataTooltip');
-                
-                // Hide animations
-                ping.classList.add('hidden');
-                tooltip.classList.add('hidden');
-                closeNotification();
                 
                 console.log('=== PULL DATA STARTED ===');
                 console.log('Time:', new Date().toISOString());
