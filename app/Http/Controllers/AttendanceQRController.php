@@ -81,7 +81,7 @@ class AttendanceQRController extends Controller
         }
     }
 
-        public function pullData(Request $request)
+    public function pullData(Request $request)
     {
         try {
             // Ambil session unit yang aktif
@@ -92,23 +92,48 @@ class AttendanceQRController extends Controller
                 'user_id' => auth()->id()
             ]);
             
-            // Panggil API
-            $response = Http::timeout(30)->get('https://absen-monday.online/api/attendance');
+            // Panggil API dengan timeout yang lebih panjang dan retry logic
+            try {
+                $response = Http::timeout(90) // Naikkan timeout ke 90 detik
+                    ->connectTimeout(30) // Timeout khusus untuk koneksi
+                    ->retry(3, 200) // Retry 3 kali dengan delay 200ms
+                    ->withOptions([
+                        'verify' => false, // Disable SSL verification (gunakan dengan hati-hati)
+                        'http_errors' => false,
+                        'allow_redirects' => true,
+                    ])
+                    ->get('https://absen-monday.online/api/attendance');
+                    
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                Log::error('Connection failed to API', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Koneksi ke server API timeout. Server mungkin sedang sibuk atau jaringan lambat. Silakan coba lagi dalam beberapa saat.',
+                    'error_type' => 'connection_timeout'
+                ], 504); // 504 Gateway Timeout
+            }
             
             if (!$response->successful()) {
                 Log::error('API request failed', [
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $response->body(),
+                    'headers' => $response->headers()
                 ]);
+                
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal mengambil data dari API. Status: ' . $response->status()
+                    'message' => 'Gagal mengambil data dari API. Status: ' . $response->status() . '. Silakan coba lagi.',
+                    'status_code' => $response->status()
                 ], 500);
             }
-
+    
             $responseData = $response->json();
             Log::info('API Response', ['response' => $responseData]);
-
+    
             // Extract data array dari response
             $data = [];
             
@@ -121,7 +146,7 @@ class AttendanceQRController extends Controller
                     Log::info('Using response as data array', ['count' => count($data)]);
                 }
             }
-
+    
             if (empty($data)) {
                 Log::warning('No data to import');
                 return response()->json([
@@ -131,7 +156,7 @@ class AttendanceQRController extends Controller
                     'token_imported' => 0
                 ]);
             }
-
+    
             // **FILTER DATA BERDASARKAN UNIT_SOURCE DAN TANGGAL HARI INI**
             $today = Carbon::today()->toDateString();
             $filteredData = array_filter($data, function($item) use ($connection, $today) {
@@ -152,14 +177,14 @@ class AttendanceQRController extends Controller
                 
                 return $unitMatch && $isToday;
             });
-
+    
             Log::info('Data filtered by unit_source and date', [
                 'unit_source' => $connection,
                 'date' => $today,
                 'total_data' => count($data),
                 'filtered_data' => count($filteredData)
             ]);
-
+    
             if (empty($filteredData)) {
                 return response()->json([
                     'success' => true,
@@ -168,13 +193,13 @@ class AttendanceQRController extends Controller
                     'token_imported' => 0
                 ]);
             }
-
+    
             $importedCount = 0;
             $tokenImportedCount = 0;
             $skippedCount = 0;
-
+    
             DB::connection($connection)->beginTransaction();
-
+    
             try {
                 foreach ($filteredData as $index => $item) {
                     try {
@@ -182,14 +207,14 @@ class AttendanceQRController extends Controller
                             Log::warning("Item #{$index} is not array, skipping");
                             continue;
                         }
-
+    
                         // Import Attendance jika ada field 'name'
                         if (isset($item['name']) && !empty($item['name'])) {
                             
                             $timeValue = isset($item['time']) && !empty($item['time'])
                                 ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
                                 : now();
-
+    
                             // Cek duplikat dengan filter unit_source
                             $exists = DB::connection($connection)
                                 ->table('attendance')
@@ -197,7 +222,7 @@ class AttendanceQRController extends Controller
                                 ->where('time', $timeValue)
                                 ->where('unit_source', $connection) // **FILTER BY UNIT_SOURCE**
                                 ->exists();
-
+    
                             if (!$exists) {
                                 // Insert data dengan unit_source dari session
                                 DB::connection($connection)->table('attendance')->insert([
@@ -231,7 +256,7 @@ class AttendanceQRController extends Controller
                                 ->where('token', $item['token'])
                                 ->where('unit_source', $connection) // **FILTER BY UNIT_SOURCE**
                                 ->exists();
-
+    
                             if (!$exists) {
                                 DB::connection($connection)->table('attendance_tokens')->insert([
                                     'token' => $item['token'],
@@ -253,7 +278,7 @@ class AttendanceQRController extends Controller
                                 Log::info("⊘ Token skipped (duplicate): {$item['token']}");
                             }
                         }
-
+    
                     } catch (\Exception $e) {
                         Log::error("Error importing item #{$index}", [
                             'error' => $e->getMessage(),
@@ -262,9 +287,9 @@ class AttendanceQRController extends Controller
                         continue;
                     }
                 }
-
+    
                 DB::connection($connection)->commit();
-
+    
                 Log::info('=== PULL DATA COMPLETED ===', [
                     'unit_source' => $connection,
                     'date' => $today,
@@ -273,12 +298,12 @@ class AttendanceQRController extends Controller
                     'skipped' => $skippedCount,
                     'total_items' => count($filteredData)
                 ]);
-
+    
                 $message = "Data berhasil diimport ke {$connection} untuk hari ini!\n";
                 $message .= "• Attendance: {$importedCount}\n";
                 $message .= "• Token: {$tokenImportedCount}\n";
                 $message .= "• Dilewati (duplikat): {$skippedCount}";
-
+    
                 return response()->json([
                     'success' => true,
                     'message' => $message,
@@ -289,7 +314,7 @@ class AttendanceQRController extends Controller
                     'unit_source' => $connection,
                     'date' => $today
                 ]);
-
+    
             } catch (\Exception $e) {
                 DB::connection($connection)->rollBack();
                 Log::error('Transaction rolled back', [
@@ -299,16 +324,31 @@ class AttendanceQRController extends Controller
                 ]);
                 throw $e;
             }
-
+    
         } catch (\Exception $e) {
             Log::error('=== PULL DATA FAILED ===', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-
+    
+            // Pesan error yang lebih user-friendly
+            $errorMessage = 'Gagal mengambil data: ';
+            
+            if (str_contains($e->getMessage(), 'cURL error 28') || str_contains($e->getMessage(), 'timeout')) {
+                $errorMessage = 'Koneksi ke server API timeout. Server mungkin sedang sibuk atau jaringan lambat. Silakan coba lagi dalam beberapa saat.';
+            } elseif (str_contains($e->getMessage(), 'SSL')) {
+                $errorMessage = 'Terjadi masalah dengan koneksi SSL ke server API. Silakan hubungi administrator.';
+            } elseif (str_contains($e->getMessage(), 'Connection')) {
+                $errorMessage = 'Tidak dapat terhubung ke server API. Periksa koneksi internet Anda atau coba lagi nanti.';
+            } else {
+                $errorMessage .= $e->getMessage();
+            }
+    
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data: ' . $e->getMessage()
+                'message' => $errorMessage,
+                'error_details' => config('app.debug') ? $e->getMessage() : null,
+                'suggestion' => 'Silakan coba lagi dalam beberapa saat atau hubungi administrator jika masalah berlanjut.'
             ], 500);
         }
     }
