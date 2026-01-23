@@ -3,126 +3,160 @@
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8f9fa;
             min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: #2c3e50;
+            line-height: 1.6;
         }
         
         .dashboard-overlay {
-            background: rgba(255, 255, 255, 0.95);
             min-height: 100vh;
             padding-bottom: 2rem;
         }
         
         .dashboard-container {
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
-        /* Header Stats */
-        .header-stats {
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .page-title i {
+            color: #1976d2;
+            font-size: 1.5rem;
+        }
+        
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: #6c757d;
+            font-weight: 400;
+        }
+        
+        /* Stat Cards */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
             margin-bottom: 2rem;
         }
         
         .stat-card {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            color: white;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: box-shadow 0.2s ease;
         }
         
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: rotate(45deg);
-        }
-        
-        .stat-card.blue {
-            --gradient-start: #4facfe;
-            --gradient-end: #00f2fe;
-        }
-        
-        .stat-card.purple {
-            --gradient-start: #667eea;
-            --gradient-end: #764ba2;
-        }
-        
-        .stat-card.red {
-            --gradient-start: #f093fb;
-            --gradient-end: #f5576c;
-        }
-        
-        .stat-card.green {
-            --gradient-start: #4ade80;
-            --gradient-end: #22c55e;
-        }
-        
-        .stat-card.orange {
-            --gradient-start: #fa709a;
-            --gradient-end: #fee140;
-        }
-        
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.75rem;
-            opacity: 0.9;
+        .stat-content {
+            flex: 1;
         }
         
         .stat-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            margin-bottom: 0.5rem;
+            font-size: 0.8125rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         
         .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1a202c;
             margin-bottom: 0.25rem;
+            line-height: 1;
         }
         
         .stat-subtext {
             font-size: 0.75rem;
-            opacity: 0.8;
+            color: #868e96;
+        }
+        
+        .stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon-wrapper i {
+            font-size: 1.25rem;
+        }
+        
+        .stat-card.blue .stat-icon-wrapper {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .stat-card.purple .stat-icon-wrapper {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .stat-card.red .stat-icon-wrapper {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .stat-card.green .stat-icon-wrapper {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .stat-card.orange .stat-icon-wrapper {
+            background: #fff3e0;
+            color: #f57c00;
         }
         
         /* Charts Grid */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
         
         .chart-card {
             background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 1.25rem;
+            transition: box-shadow 0.2s ease;
         }
         
         .chart-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         
         .chart-large {
@@ -138,37 +172,36 @@
         }
         
         .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             padding-bottom: 1rem;
-            border-bottom: 2px solid #f1f5f9;
+            border-bottom: 1px solid #e1e4e8;
         }
         
         .chart-title {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: #1e293b;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a202c;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin-bottom: 0.25rem;
         }
         
         .chart-title i {
-            color: #667eea;
+            color: #1976d2;
+            font-size: 0.875rem;
         }
         
         .chart-subtitle {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-top: 0.25rem;
+            font-size: 0.8125rem;
+            color: #6c757d;
+            font-weight: 400;
         }
         
         .chart-wrapper {
             position: relative;
             width: 100%;
-            height: 320px;
+            height: 300px;
         }
         
         .chart-wrapper.small {
@@ -176,60 +209,52 @@
         }
         
         /* Data Table */
-        .data-table-card {
+        .table-card {
             background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 1.25rem;
         }
         
         .table-wrapper {
             overflow-x: auto;
-            border-radius: 0.5rem;
-            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            border: 1px solid #e1e4e8;
         }
         
         .data-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
+            font-size: 0.875rem;
         }
         
         .data-table thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8f9fa;
         }
         
         .data-table th {
-            padding: 1rem;
+            padding: 0.875rem 1rem;
             text-align: left;
             font-weight: 600;
-            color: white;
-            font-size: 0.875rem;
+            color: #495057;
+            font-size: 0.8125rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .data-table th:first-child {
-            border-top-left-radius: 0.5rem;
-        }
-        
-        .data-table th:last-child {
-            border-top-right-radius: 0.5rem;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e1e4e8;
         }
         
         .data-table td {
-            padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-            color: #334155;
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid #f1f3f5;
+            color: #495057;
         }
         
         .data-table tbody tr {
-            transition: background-color 0.2s ease;
+            transition: background-color 0.15s ease;
         }
         
         .data-table tbody tr:hover {
-            background: #f8fafc;
+            background: #f8f9fa;
         }
         
         .data-table tbody tr:last-child td {
@@ -237,13 +262,14 @@
         }
         
         .data-table tfoot tr {
-            background: #f8fafc;
-            font-weight: 700;
+            background: #f8f9fa;
+            font-weight: 600;
         }
         
         .data-table tfoot td {
-            border-top: 2px solid #667eea;
+            border-top: 2px solid #e1e4e8;
             border-bottom: none;
+            padding: 1rem;
         }
         
         /* Badges */
@@ -251,96 +277,137 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.375rem 0.875rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            min-width: 60px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            min-width: 50px;
         }
         
         .badge-pm {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            background: #e3f2fd;
+            color: #1976d2;
         }
         
         .badge-cm {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
+            background: #ffebee;
+            color: #d32f2f;
         }
         
         .badge-total {
-            background: linear-gradient(135deg, #4ade80, #22c55e);
-            color: white;
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .best-badge {
+            background: #fff3e0;
+            color: #f57c00;
+            padding: 0.25rem 0.625rem;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-left: 0.5rem;
+        }
+        
+        .best-badge i {
+            font-size: 0.75rem;
         }
         
         /* Progress Bars */
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .progress-label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #495057;
+            min-width: 38px;
+        }
+        
         .progress-bar-container {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 9999px;
+            flex: 1;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
             overflow: hidden;
-            margin-top: 0.5rem;
         }
         
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 9999px;
-            transition: width 0.6s ease;
+            border-radius: 3px;
+            transition: width 0.4s ease;
         }
         
         .progress-bar.pm {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: #1976d2;
         }
         
         .progress-bar.cm {
-            background: linear-gradient(90deg, #f093fb, #f5576c);
+            background: #d32f2f;
         }
         
-        /* Best Performance Badge */
-        .best-unit-badge {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        /* Status Indicator */
+        .status-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-indicator.success {
+            color: #388e3c;
+        }
+        
+        .status-indicator.warning {
+            color: #f57c00;
+        }
+        
+        .status-indicator i {
+            font-size: 0.875rem;
         }
         
         /* Responsive */
-        @media (max-width: 1400px) {
-            .header-stats {
-                grid-template-columns: repeat(3, 1fr);
-            }
+        @media (max-width: 1200px) {
             .chart-large, .chart-medium, .chart-small {
                 grid-column: span 12;
             }
         }
         
         @media (max-width: 768px) {
-            .header-stats {
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
-            .stat-card {
-                padding: 1.25rem;
+            
+            .page-title {
+                font-size: 1.5rem;
             }
+            
             .stat-value {
-                font-size: 1.75rem;
+                font-size: 1.5rem;
             }
-            .chart-wrapper {
-                height: 280px;
+            
+            .data-table {
+                font-size: 0.8125rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem 0.875rem;
             }
         }
         
         /* Animation */
-        @keyframes fadeInUp {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(10px);
             }
             to {
                 opacity: 1;
@@ -348,8 +415,8 @@
             }
         }
         
-        .animate-fade-in {
-            animation: fadeInUp 0.6s ease forwards;
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
         }
     </style>
 @endsection
@@ -360,70 +427,86 @@
 <div class="dashboard-overlay">
     <div class="dashboard-container py-8 mt-10 px-4">
         <!-- Page Header -->
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                <i class="fas fa-chart-line mr-3 text-purple-600"></i>
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-chart-line"></i>
                 Dashboard Kinerja Pemeliharaan
             </h1>
-            <p class="text-gray-600">Monitoring dan analisis work order pemeliharaan secara real-time</p>
+            <p class="page-subtitle">Monitoring dan analisis work order pemeliharaan secara real-time</p>
         </div>
         
-        <!-- Header Stats -->
-        <div class="header-stats animate-fade-in">
+        <!-- Stats Grid -->
+        <div class="stats-grid fade-in">
             <div class="stat-card blue">
-                <div class="stat-icon">
+                <div class="stat-content">
+                    <div class="stat-label">Total Work Order</div>
+                    <div class="stat-value">{{ number_format($totalWO) }}</div>
+                    <div class="stat-subtext">WO Completed & Closed</div>
+                </div>
+                <div class="stat-icon-wrapper">
                     <i class="fas fa-clipboard-list"></i>
                 </div>
-                <div class="stat-label">Total Work Order</div>
-                <div class="stat-value">{{ number_format($totalWO) }}</div>
-                <div class="stat-subtext">WO Completed & Closed</div>
             </div>
             
             <div class="stat-card purple">
-                <div class="stat-icon">
+                <div class="stat-content">
+                    <div class="stat-label">PM Closed</div>
+                    <div class="stat-value">{{ number_format($pmCount) }}</div>
+                    <div class="stat-subtext">{{ $pmPercentage }}% dari total WO</div>
+                </div>
+                <div class="stat-icon-wrapper">
                     <i class="fas fa-tools"></i>
                 </div>
-                <div class="stat-label">PM Closed</div>
-                <div class="stat-value">{{ number_format($pmCount) }}</div>
-                <div class="stat-subtext">{{ $pmPercentage }}% dari total WO</div>
             </div>
             
             <div class="stat-card red">
-                <div class="stat-icon">
+                <div class="stat-content">
+                    <div class="stat-label">CM Closed</div>
+                    <div class="stat-value">{{ number_format($cmCount) }}</div>
+                    <div class="stat-subtext">{{ $cmPercentage }}% dari total WO</div>
+                </div>
+                <div class="stat-icon-wrapper">
                     <i class="fas fa-wrench"></i>
                 </div>
-                <div class="stat-label">CM Closed</div>
-                <div class="stat-value">{{ number_format($cmCount) }}</div>
-                <div class="stat-subtext">{{ $cmPercentage }}% dari total WO</div>
             </div>
             
             <div class="stat-card green">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-pie"></i>
+                <div class="stat-content">
+                    <div class="stat-label">Rasio PM/CM</div>
+                    <div class="stat-value">{{ $pmCmRatio }}</div>
+                    <div class="stat-subtext">
+                        @if($pmCmRatio >= 3)
+                            <span class="status-indicator success">
+                                <i class="fas fa-check-circle"></i>
+                                Target Tercapai
+                            </span>
+                        @else
+                            <span class="status-indicator warning">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Perlu Ditingkatkan
+                            </span>
+                        @endif
+                    </div>
                 </div>
-                <div class="stat-label">Rasio PM/CM</div>
-                <div class="stat-value">{{ $pmCmRatio }}</div>
-                <div class="stat-subtext">
-                    @if($pmCmRatio >= 3)
-                        <i class="fas fa-check-circle mr-1"></i>Target Tercapai
-                    @else
-                        <i class="fas fa-exclamation-circle mr-1"></i>Perlu Ditingkatkan
-                    @endif
+                <div class="stat-icon-wrapper">
+                    <i class="fas fa-chart-pie"></i>
                 </div>
             </div>
             
             <div class="stat-card orange">
-                <div class="stat-icon">
-                    <i class="fas fa-trophy"></i>
+                <div class="stat-content">
+                    <div class="stat-label">Best Performance</div>
+                    <div class="stat-value" style="font-size: 1rem; margin-top: 0.25rem;">{{ $bestPerformingUnit ?: 'N/A' }}</div>
+                    <div class="stat-subtext">
+                        @if($maxRatio > 0)
+                            Rasio: {{ number_format($maxRatio, 2) }}
+                        @else
+                            -
+                        @endif
+                    </div>
                 </div>
-                <div class="stat-label">Best Performance</div>
-                <div class="stat-value" style="font-size: 1rem;">{{ $bestPerformingUnit ?: 'N/A' }}</div>
-                <div class="stat-subtext">
-                    @if($maxRatio > 0)
-                        Rasio: {{ number_format($maxRatio, 2) }}
-                    @else
-                        -
-                    @endif
+                <div class="stat-icon-wrapper">
+                    <i class="fas fa-trophy"></i>
                 </div>
             </div>
         </div>
@@ -433,13 +516,11 @@
             <!-- Trend Line Chart -->
             <div class="chart-card chart-large">
                 <div class="chart-header">
-                    <div>
-                        <div class="chart-title">
-                            <i class="fas fa-chart-area"></i>
-                            Tren Pemeliharaan 6 Bulan Terakhir
-                        </div>
-                        <div class="chart-subtitle">Perbandingan PM dan CM per bulan</div>
+                    <div class="chart-title">
+                        <i class="fas fa-chart-area"></i>
+                        Tren Pemeliharaan 6 Bulan Terakhir
                     </div>
+                    <div class="chart-subtitle">Perbandingan PM dan CM per bulan</div>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="trendChart"></canvas>
@@ -449,13 +530,11 @@
             <!-- Donut Chart -->
             <div class="chart-card chart-small">
                 <div class="chart-header">
-                    <div>
-                        <div class="chart-title">
-                            <i class="fas fa-chart-pie"></i>
-                            Distribusi PM vs CM
-                        </div>
-                        <div class="chart-subtitle">Total WO: {{ $totalWO }}</div>
+                    <div class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Distribusi PM vs CM
                     </div>
+                    <div class="chart-subtitle">Total WO: {{ $totalWO }}</div>
                 </div>
                 <div class="chart-wrapper small">
                     <canvas id="donutChart"></canvas>
@@ -465,13 +544,11 @@
             <!-- Horizontal Bar Chart -->
             <div class="chart-card chart-medium">
                 <div class="chart-header">
-                    <div>
-                        <div class="chart-title">
-                            <i class="fas fa-building"></i>
-                            Performa per Unit Layanan
-                        </div>
-                        <div class="chart-subtitle">Total WO per unit</div>
+                    <div class="chart-title">
+                        <i class="fas fa-building"></i>
+                        Performa per Unit Layanan
                     </div>
+                    <div class="chart-subtitle">Total WO per unit</div>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="horizontalBarChart"></canvas>
@@ -481,13 +558,11 @@
             <!-- Stacked Bar Chart -->
             <div class="chart-card chart-medium">
                 <div class="chart-header">
-                    <div>
-                        <div class="chart-title">
-                            <i class="fas fa-layer-group"></i>
-                            Komposisi PM & CM per Unit
-                        </div>
-                        <div class="chart-subtitle">Breakdown detail</div>
+                    <div class="chart-title">
+                        <i class="fas fa-layer-group"></i>
+                        Komposisi PM & CM per Unit
                     </div>
+                    <div class="chart-subtitle">Breakdown detail</div>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="stackedBarChart"></canvas>
@@ -496,15 +571,13 @@
         </div>
         
         <!-- Data Table -->
-        <div class="data-table-card">
+        <div class="table-card">
             <div class="chart-header">
-                <div>
-                    <div class="chart-title">
-                        <i class="fas fa-table"></i>
-                        Detail Kinerja per Unit Layanan
-                    </div>
-                    <div class="chart-subtitle">Ringkasan lengkap dengan persentase dan progress</div>
+                <div class="chart-title">
+                    <i class="fas fa-table"></i>
+                    Detail Kinerja per Unit Layanan
                 </div>
+                <div class="chart-subtitle">Ringkasan lengkap dengan persentase dan progress</div>
             </div>
             
             <div class="table-wrapper">
@@ -516,8 +589,8 @@
                             <th class="text-center">CM Closed</th>
                             <th class="text-center">Total WO</th>
                             <th class="text-center">PM/CM Ratio</th>
-                            <th style="min-width: 200px;">Progress PM</th>
-                            <th style="min-width: 200px;">Progress CM</th>
+                            <th style="min-width: 180px;">Progress PM</th>
+                            <th style="min-width: 180px;">Progress CM</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -532,10 +605,10 @@
                             $isBest = $unit === $bestPerformingUnit;
                         @endphp
                         <tr>
-                            <td class="font-semibold">
+                            <td style="font-weight: 600;">
                                 {{ $unit }}
                                 @if($isBest)
-                                    <span class="best-unit-badge ml-2">
+                                    <span class="best-badge">
                                         <i class="fas fa-crown"></i>
                                         Best
                                     </span>
@@ -550,21 +623,21 @@
                             <td class="text-center">
                                 <span class="badge badge-total">{{ $totalUnit }}</span>
                             </td>
-                            <td class="text-center font-bold text-lg">
+                            <td class="text-center" style="font-weight: 600; font-size: 0.9375rem;">
                                 {{ $ratio }}
                             </td>
                             <td>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium w-12">{{ $pmPercent }}%</span>
-                                    <div class="progress-bar-container flex-1">
+                                <div class="progress-wrapper">
+                                    <span class="progress-label">{{ $pmPercent }}%</span>
+                                    <div class="progress-bar-container">
                                         <div class="progress-bar pm" style="width: {{ $pmPercent }}%"></div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium w-12">{{ $cmPercent }}%</span>
-                                    <div class="progress-bar-container flex-1">
+                                <div class="progress-wrapper">
+                                    <span class="progress-label">{{ $cmPercent }}%</span>
+                                    <div class="progress-bar-container">
                                         <div class="progress-bar cm" style="width: {{ $cmPercent }}%"></div>
                                     </div>
                                 </div>
@@ -574,7 +647,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td class="font-bold">TOTAL</td>
+                            <td style="font-weight: 700;">TOTAL</td>
                             <td class="text-center">
                                 <span class="badge badge-pm">{{ $pmCount }}</span>
                             </td>
@@ -584,21 +657,21 @@
                             <td class="text-center">
                                 <span class="badge badge-total">{{ $totalWO }}</span>
                             </td>
-                            <td class="text-center font-bold text-lg">
+                            <td class="text-center" style="font-weight: 700; font-size: 0.9375rem;">
                                 {{ $pmCmRatio }}
                             </td>
                             <td>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-bold w-12">{{ $pmPercentage }}%</span>
-                                    <div class="progress-bar-container flex-1">
+                                <div class="progress-wrapper">
+                                    <span class="progress-label" style="font-weight: 600;">{{ $pmPercentage }}%</span>
+                                    <div class="progress-bar-container">
                                         <div class="progress-bar pm" style="width: {{ $pmPercentage }}%"></div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-bold w-12">{{ $cmPercentage }}%</span>
-                                    <div class="progress-bar-container flex-1">
+                                <div class="progress-wrapper">
+                                    <span class="progress-label" style="font-weight: 600;">{{ $cmPercentage }}%</span>
+                                    <div class="progress-bar-container">
                                         <div class="progress-bar cm" style="width: {{ $cmPercentage }}%"></div>
                                     </div>
                                 </div>
@@ -628,8 +701,14 @@ document.addEventListener('DOMContentLoaded', function () {
         plugins: {
             legend: {
                 labels: {
-                    font: { size: 12, family: 'Inter, sans-serif' },
-                    padding: 15
+                    font: { 
+                        size: 11,
+                        family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        weight: '500'
+                    },
+                    padding: 12,
+                    usePointStyle: true,
+                    pointStyle: 'circle'
                 }
             }
         }
@@ -644,24 +723,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     label: 'PM Closed',
                     data: monthlyTrend.map(m => m.pm),
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    borderWidth: 3,
+                    borderColor: '#1976d2',
+                    backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.4,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#1976d2',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
                 },
                 {
                     label: 'CM Closed',
                     data: monthlyTrend.map(m => m.cm),
-                    borderColor: '#f5576c',
-                    backgroundColor: 'rgba(245, 87, 108, 0.1)',
-                    borderWidth: 3,
+                    borderColor: '#d32f2f',
+                    backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.4,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#d32f2f',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
                 }
             ]
         },
@@ -670,12 +755,23 @@ document.addEventListener('DOMContentLoaded', function () {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { font: { size: 11 } }
+                    grid: { 
+                        color: '#f1f3f5',
+                        drawBorder: false
+                    },
+                    ticks: { 
+                        font: { size: 11 },
+                        color: '#6c757d',
+                        padding: 8
+                    }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { size: 11 } }
+                    ticks: { 
+                        font: { size: 11 },
+                        color: '#6c757d',
+                        padding: 8
+                    }
                 }
             }
         }
@@ -688,25 +784,28 @@ document.addEventListener('DOMContentLoaded', function () {
             labels: ['PM Closed', 'CM Closed'],
             datasets: [{
                 data: [pmCount, cmCount],
-                backgroundColor: [
-                    'rgba(102, 126, 234, 0.9)',
-                    'rgba(245, 87, 108, 0.9)'
-                ],
+                backgroundColor: ['#1976d2', '#d32f2f'],
                 borderWidth: 0,
-                hoverOffset: 10
+                hoverOffset: 8
             }]
         },
         options: {
             ...chartDefaults,
-            cutout: '65%',
+            cutout: '70%',
             plugins: {
-                legend: { position: 'bottom' },
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        padding: 16,
+                        font: { size: 11, weight: '500' }
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = ((context.raw / total) * 100).toFixed(1);
-                            return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                            return context.label + ': ' + context.raw.toLocaleString() + ' (' + percentage + '%)';
                         }
                     }
                 }
@@ -722,14 +821,10 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Total WO',
                 data: totalData,
-                backgroundColor: [
-                    'rgba(102, 126, 234, 0.8)',
-                    'rgba(74, 222, 128, 0.8)',
-                    'rgba(251, 191, 36, 0.8)',
-                    'rgba(245, 87, 108, 0.8)'
-                ],
+                backgroundColor: ['#1976d2', '#388e3c', '#f57c00', '#d32f2f'],
                 borderWidth: 0,
-                borderRadius: 8
+                borderRadius: 4,
+                barThickness: 32
             }]
         },
         options: {
@@ -738,10 +833,23 @@ document.addEventListener('DOMContentLoaded', function () {
             scales: {
                 x: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' }
+                    grid: { 
+                        color: '#f1f3f5',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#6c757d',
+                        padding: 8
+                    }
                 },
                 y: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#495057',
+                        padding: 8
+                    }
                 }
             }
         }
@@ -756,14 +864,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     label: 'PM Closed',
                     data: pmData,
-                    backgroundColor: 'rgba(102, 126, 234, 0.9)',
-                    borderRadius: 6
+                    backgroundColor: '#1976d2',
+                    borderRadius: 4,
+                    barThickness: 40
                 },
                 {
                     label: 'CM Closed',
                     data: cmData,
-                    backgroundColor: 'rgba(245, 87, 108, 0.9)',
-                    borderRadius: 6
+                    backgroundColor: '#d32f2f',
+                    borderRadius: 4,
+                    barThickness: 40
                 }
             ]
         },
@@ -772,12 +882,25 @@ document.addEventListener('DOMContentLoaded', function () {
             scales: {
                 x: { 
                     stacked: true,
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#495057',
+                        padding: 8
+                    }
                 },
                 y: { 
                     stacked: true,
                     beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' }
+                    grid: { 
+                        color: '#f1f3f5',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#6c757d',
+                        padding: 8
+                    }
                 }
             }
         }
