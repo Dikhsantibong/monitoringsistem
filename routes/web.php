@@ -70,6 +70,16 @@ Route::get('/notulen/{notulen}/print-pdf', [NotulenController::class, 'printPdf'
 Route::get('/notulen/{notulen}/download-zip', [NotulenController::class, 'downloadZip'])->name('notulen.download-zip');
 
 
+// Route untuk Kinerja/WPC
+Route::prefix('kinerja')->name('kinerja.')->group(function () {
+    // WPC Dashboard (existing)
+    Route::get('/dashboard', [KinerjaDashboardController::class, 'index'])
+        ->name('dashboard');
+    
+    // WPC KPI Dashboard (new)
+    Route::get('/kpi-dashboard', [KpiDashboardController::class, 'index'])
+        ->name('kpi-dashboard');
+});
 // Remove incorrect draft routes
 // Route::get('/notulen/drafts', [NotulenDraftController::class, 'save'])->name('notulen.drafts');
 // Route::get('/notulen/drafts/list', [NotulenDraftController::class, 'list'])->name('notulen.drafts.list');
@@ -840,7 +850,7 @@ Route::post('/api/notulen/{notulen}/file', [App\Http\Controllers\Api\NotulenFile
 Route::post('/api/notulen-paste-image', [NotulenController::class, 'uploadPastedImage'])
     ->name('notulen.paste-image');
 
-Route::get('/kinerja-pemeliharaan', [KinerjaPemeliharaanController::class, 'index'])->name('kinerja.pemeliharaan');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/dashboard', [\App\Http\Controllers\PemeliharaanDashboardController::class, 'index'])->name('pemeliharaan.dashboard');

@@ -425,6 +425,14 @@
 @include('components.navbar')
 
 <div class="dashboard-overlay">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-chart-line"></i>
+            Dashboard Kinerja Pemeliharaan
+        </h1>
+        <p class="page-subtitle">Monitoring dan analisis work order pemeliharaan secara real-time</p>
+    </div>
     @include('kinerja.kinerja-dashboard')
 </div>
 

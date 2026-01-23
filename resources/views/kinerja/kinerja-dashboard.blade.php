@@ -1,13 +1,4 @@
-<div class="dashboard-container py-10 mt-10 px-[5px]">
-    {{-- <!-- Page Header -->
-    <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-chart-line"></i>
-            Dashboard Kinerja Pemeliharaan
-        </h1>
-        <p class="page-subtitle">Monitoring dan analisis work order pemeliharaan secara real-time</p>
-    </div> --}}
-    
+<div class="dashboard-container py-10 mt-10 px-[5px]">    
     <!-- Stats Grid -->
     <div class="stats-grid fade-in">
         <div class="stat-card blue">
