@@ -1,4 +1,4 @@
-<div class="dashboard-container py-10 mt-10 px-[5px]">    
+<div class="dashboard-container py-5 mt-5 px-[5px]">    
     <!-- Stats Grid -->
     <div class="stats-grid fade-in">
         <div class="stat-card blue">
