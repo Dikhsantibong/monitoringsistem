@@ -89,7 +89,7 @@ class MaximoController extends Controller
                     'REPORTEDBY',
                     'REPORTDATE',
                     'FAULTPRIORITY',
-                    'FAULTYPE',
+                    'FAULTTYPE',
                 ])
                 ->where('SITEID', 'KD');
 
