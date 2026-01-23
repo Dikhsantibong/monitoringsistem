@@ -426,14 +426,14 @@
 
 <div class="dashboard-overlay">
     <div class="dashboard-container py-8 mt-10 px-4">
-        <!-- Page Header -->
+        {{-- <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">
                 <i class="fas fa-chart-line"></i>
                 Dashboard Kinerja Pemeliharaan
             </h1>
             <p class="page-subtitle">Monitoring dan analisis work order pemeliharaan secara real-time</p>
-        </div>
+        </div> --}}
         
         <!-- Stats Grid -->
         <div class="stats-grid fade-in">
