@@ -149,7 +149,7 @@
     .w-full { grid-column: span 2; }
 </style>
 
-<div class="dashboard-container py-5 mt-5 px-4 fade-in">
+<div class="mt-5 px-4 fade-in">
     <div class="kpi-grid">
         
         <!-- I6.6 PM Compliance -->
