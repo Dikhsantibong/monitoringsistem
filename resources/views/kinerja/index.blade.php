@@ -425,7 +425,7 @@
 @include('components.navbar')
 
 <div class="dashboard-overlay">
-    <div class="dashboard-container py-8 mt-10 px-2">
+    <div class="dashboard-container py-10 mt-10 px-[5px]">
         {{-- <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">
