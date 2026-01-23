@@ -4,7 +4,7 @@
         <div class="stat-card blue">
             <div class="stat-content">
                 <div class="stat-label">Total Work Order</div>
-                <div class="stat-value">{{ number_format($totalWO) }}</div>
+                <div class="stat-value">{{ number_format($totalClosed) }}</div>
                 <div class="stat-subtext">WO Completed & Closed</div>
             </div>
             <div class="stat-icon-wrapper">
@@ -15,8 +15,8 @@
         <div class="stat-card purple">
             <div class="stat-content">
                 <div class="stat-label">PM Closed</div>
-                <div class="stat-value">{{ number_format($pmCount) }}</div>
-                <div class="stat-subtext">{{ $pmPercentage }}% dari total WO</div>
+                <div class="stat-value">{{ number_format($pmClosed) }}</div>
+                <div class="stat-subtext">{{ $pmPercentage }}% Completion Rate</div>
             </div>
             <div class="stat-icon-wrapper">
                 <i class="fas fa-tools"></i>
@@ -26,8 +26,8 @@
         <div class="stat-card red">
             <div class="stat-content">
                 <div class="stat-label">CM Closed</div>
-                <div class="stat-value">{{ number_format($cmCount) }}</div>
-                <div class="stat-subtext">{{ $cmPercentage }}% dari total WO</div>
+                <div class="stat-value">{{ number_format($cmClosed) }}</div>
+                <div class="stat-subtext">{{ $cmPercentage }}% Completion Rate</div>
             </div>
             <div class="stat-icon-wrapper">
                 <i class="fas fa-wrench"></i>
@@ -36,24 +36,14 @@
         
         <div class="stat-card green">
             <div class="stat-content">
-                <div class="stat-label">Rasio PM/CM</div>
-                <div class="stat-value">{{ $pmCmRatio }}</div>
+                <div class="stat-label">Total Open WO</div>
+                <div class="stat-value">{{ number_format($totalOpen) }}</div>
                 <div class="stat-subtext">
-                    @if($pmCmRatio >= 3)
-                        <span class="status-indicator success">
-                            <i class="fas fa-check-circle"></i>
-                            Target Tercapai
-                        </span>
-                    @else
-                        <span class="status-indicator warning">
-                            <i class="fas fa-exclamation-circle"></i>
-                            Perlu Ditingkatkan
-                        </span>
-                    @endif
+                    PM: {{ number_format($pmOpen) }} | CM: {{ number_format($cmOpen) }}
                 </div>
             </div>
             <div class="stat-icon-wrapper">
-                <i class="fas fa-chart-pie"></i>
+                <i class="fas fa-box-open"></i>
             </div>
         </div>
         
@@ -62,8 +52,8 @@
                 <div class="stat-label">Best Performance</div>
                 <div class="stat-value" style="font-size: 1rem; margin-top: 0.25rem;">{{ $bestPerformingUnit ?: 'N/A' }}</div>
                 <div class="stat-subtext">
-                    @if($maxRatio > 0)
-                        Rasio: {{ number_format($maxRatio, 2) }}
+                    @if($maxRate >= 0)
+                        Completion: {{ number_format($maxRate, 1) }}%
                     @else
                         -
                     @endif
@@ -84,7 +74,7 @@
                     <i class="fas fa-chart-area"></i>
                     Tren Pemeliharaan 6 Bulan Terakhir
                 </div>
-                <div class="chart-subtitle">Perbandingan PM dan CM per bulan</div>
+                <div class="chart-subtitle">History PM dan CM (Closed) per bulan</div>
             </div>
             <div class="chart-wrapper">
                 <canvas id="trendChart"></canvas>
@@ -96,9 +86,9 @@
             <div class="chart-header">
                 <div class="chart-title">
                     <i class="fas fa-chart-pie"></i>
-                    Distribusi PM vs CM
+                    Komposisi Closed WO
                 </div>
-                <div class="chart-subtitle">Total WO: {{ $totalWO }}</div>
+                <div class="chart-subtitle">Total WO Closed: {{ $totalClosed }}</div>
             </div>
             <div class="chart-wrapper small">
                 <canvas id="donutChart"></canvas>
@@ -112,7 +102,7 @@
                     <i class="fas fa-building"></i>
                     Performa per Unit Layanan
                 </div>
-                <div class="chart-subtitle">Total WO per unit</div>
+                <div class="chart-subtitle">Total WO Closed per unit</div>
             </div>
             <div class="chart-wrapper">
                 <canvas id="horizontalBarChart"></canvas>
@@ -126,7 +116,7 @@
                     <i class="fas fa-layer-group"></i>
                     Komposisi PM & CM per Unit
                 </div>
-                <div class="chart-subtitle">Breakdown detail</div>
+                <div class="chart-subtitle">Breakdown Closed WO</div>
             </div>
             <div class="chart-wrapper">
                 <canvas id="stackedBarChart"></canvas>
@@ -141,31 +131,39 @@
                 <i class="fas fa-table"></i>
                 Detail Kinerja per Unit Layanan
             </div>
-            <div class="chart-subtitle">Ringkasan lengkap dengan persentase dan progress</div>
+            <div class="chart-subtitle">Ringkasan progress maintenance (Open vs Closed)</div>
         </div>
         
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Unit Layanan</th>
-                        <th class="text-center">PM Closed</th>
-                        <th class="text-center">CM Closed</th>
-                        <th class="text-center">Total WO</th>
-                        <th class="text-center">PM/CM Ratio</th>
-                        <th style="min-width: 180px;">Progress PM</th>
-                        <th style="min-width: 180px;">Progress CM</th>
+                        <th rowspan="2" class="align-middle">Unit Layanan</th>
+                        <th colspan="3" class="text-center border-b">Preventive Maintenance (PM)</th>
+                        <th colspan="3" class="text-center border-b">Corrective Maintenance (CM)</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center text-xs">Closed</th>
+                        <th class="text-center text-xs">Open</th>
+                        <th class="text-center text-xs" style="min-width: 120px;">Progress</th>
+                        <th class="text-center text-xs">Closed</th>
+                        <th class="text-center text-xs">Open</th>
+                        <th class="text-center text-xs" style="min-width: 120px;">Progress</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($unitNames as $i => $unit)
                     @php
-                        $pmCountUnit = $pmPerUnit[$i] ?? 0;
-                        $cmCountUnit = $cmPerUnit[$i] ?? 0;
-                        $totalUnit = $totalPerUnit[$i] ?? 0;
-                        $pmPercent = $totalUnit > 0 ? round(($pmCountUnit / $totalUnit) * 100, 1) : 0;
-                        $cmPercent = $totalUnit > 0 ? round(($cmCountUnit / $totalUnit) * 100, 1) : 0;
-                        $ratio = $cmCountUnit > 0 ? round($pmCountUnit / $cmCountUnit, 2) : 0;
+                        $pmC = $pmClosedPerUnit[$i] ?? 0;
+                        $pmO = $pmOpenPerUnit[$i] ?? 0;
+                        $pmT = $pmC + $pmO;
+                        $pmProg = $pmT > 0 ? round(($pmC / $pmT) * 100, 1) : 0;
+                        
+                        $cmC = $cmClosedPerUnit[$i] ?? 0;
+                        $cmO = $cmOpenPerUnit[$i] ?? 0;
+                        $cmT = $cmC + $cmO;
+                        $cmProg = $cmT > 0 ? round(($cmC / $cmT) * 100, 1) : 0;
+                        
                         $isBest = $unit === $bestPerformingUnit;
                     @endphp
                     <tr>
@@ -178,31 +176,35 @@
                                 </span>
                             @endif
                         </td>
+                        
+                        <!-- PM Columns -->
                         <td class="text-center">
-                            <span class="badge badge-pm">{{ $pmCountUnit }}</span>
+                            <span class="badge badge-pm">{{ $pmC }}</span>
                         </td>
                         <td class="text-center">
-                            <span class="badge badge-cm">{{ $cmCountUnit }}</span>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge badge-total">{{ $totalUnit }}</span>
-                        </td>
-                        <td class="text-center" style="font-weight: 600; font-size: 0.9375rem;">
-                            {{ $ratio }}
+                            <span class="text-gray-500 font-medium">{{ $pmO }}</span>
                         </td>
                         <td>
                             <div class="progress-wrapper">
-                                <span class="progress-label">{{ $pmPercent }}%</span>
+                                <span class="progress-label">{{ $pmProg }}%</span>
                                 <div class="progress-bar-container">
-                                    <div class="progress-bar pm" style="width: {{ $pmPercent }}%"></div>
+                                    <div class="progress-bar pm" style="width: {{ $pmProg }}%"></div>
                                 </div>
                             </div>
                         </td>
+                        
+                        <!-- CM Columns -->
+                        <td class="text-center">
+                            <span class="badge badge-cm">{{ $cmC }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-gray-500 font-medium">{{ $cmO }}</span>
+                        </td>
                         <td>
                             <div class="progress-wrapper">
-                                <span class="progress-label">{{ $cmPercent }}%</span>
+                                <span class="progress-label">{{ $cmProg }}%</span>
                                 <div class="progress-bar-container">
-                                    <div class="progress-bar cm" style="width: {{ $cmPercent }}%"></div>
+                                    <div class="progress-bar cm" style="width: {{ $cmProg }}%"></div>
                                 </div>
                             </div>
                         </td>
@@ -212,17 +214,13 @@
                 <tfoot>
                     <tr>
                         <td style="font-weight: 700;">TOTAL</td>
+                        
+                        <!-- PM Total -->
                         <td class="text-center">
-                            <span class="badge badge-pm">{{ $pmCount }}</span>
+                            <span class="badge badge-pm">{{ $pmClosed }}</span>
                         </td>
                         <td class="text-center">
-                            <span class="badge badge-cm">{{ $cmCount }}</span>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge badge-total">{{ $totalWO }}</span>
-                        </td>
-                        <td class="text-center" style="font-weight: 700; font-size: 0.9375rem;">
-                            {{ $pmCmRatio }}
+                            <span class="text-gray-600 font-bold">{{ $pmOpen }}</span>
                         </td>
                         <td>
                             <div class="progress-wrapper">
@@ -231,6 +229,14 @@
                                     <div class="progress-bar pm" style="width: {{ $pmPercentage }}%"></div>
                                 </div>
                             </div>
+                        </td>
+                        
+                        <!-- CM Total -->
+                        <td class="text-center">
+                            <span class="badge badge-cm">{{ $cmClosed }}</span>
+                        </td>
+                         <td class="text-center">
+                            <span class="text-gray-600 font-bold">{{ $cmOpen }}</span>
                         </td>
                         <td>
                             <div class="progress-wrapper">

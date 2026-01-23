@@ -31,59 +31,82 @@ class KinerjaPemeliharaanController extends Controller
         $woQuery = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD');
 
-        // Get PM and CM counts (Closed)
-        // Assuming 'COMP' and 'CLOSE' are closed statuses in Maximo
+        // Define status groups
         $closedStatuses = ['COMP', 'CLOSE'];
+        $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
         
-        $pmCount = (clone $woQuery)
+        // PM Calculations
+        $pmClosed = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', $closedStatuses)
             ->where('STATUSDATE', '>=', $startDate)
             ->count();
+
+        $pmOpen = (clone $woQuery)
+            ->where('WORKTYPE', 'PM')
+            ->whereIn('STATUS', $openStatuses)
+            ->where('REPORTDATE', '>=', $startDate) // Use ReportDate for open items
+            ->count();
+            
+        $pmTotal = $pmClosed + $pmOpen;
+        $pmPercentage = $pmTotal > 0 ? round(($pmClosed / $pmTotal) * 100, 1) : 0;
         
-        $cmCount = (clone $woQuery)
+        // CM Calculations
+        $cmClosed = (clone $woQuery)
             ->where('WORKTYPE', 'CM')
             ->whereIn('STATUS', $closedStatuses)
             ->where('STATUSDATE', '>=', $startDate)
             ->count();
+            
+        $cmOpen = (clone $woQuery)
+            ->where('WORKTYPE', 'CM')
+            ->whereIn('STATUS', $openStatuses)
+            ->where('REPORTDATE', '>=', $startDate)
+            ->count();
+            
+        $cmTotal = $cmClosed + $cmOpen;
+        $cmPercentage = $cmTotal > 0 ? round(($cmClosed / $cmTotal) * 100, 1) : 0;
         
-        $totalWO = $pmCount + $cmCount;
-        
-        // Calculate percentages
-        $pmPercentage = $totalWO > 0 ? round(($pmCount / $totalWO) * 100, 1) : 0;
-        $cmPercentage = $totalWO > 0 ? round(($cmCount / $totalWO) * 100, 1) : 0;
-        
-        // Calculate PM/CM Ratio
-        $pmCmRatio = $cmCount > 0 ? round($pmCount / $cmCount, 2) : 0;
+        // Total stats
+        $totalWOCount = $pmTotal + $cmTotal;
+        $totalClosed = $pmClosed + $cmClosed;
+        $totalOpen = $pmOpen + $cmOpen;
         
         // Get data per Location (using as Unit)
-        // Clean location (take first part if needed) or just raw location
-        // Using raw query for grouping as it's more reliable across DB drivers for aggregates
         $unitData = (clone $woQuery)
             ->select('LOCATION', 
-                DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' THEN 1 ELSE 0 END) as pm_count"),
-                DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' THEN 1 ELSE 0 END) as cm_count"),
-                DB::raw("COUNT(*) as total_count"))
-            ->whereIn('STATUS', $closedStatuses)
-            ->where('STATUSDATE', '>=', $startDate)
+                DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' AND STATUS IN ('" . implode("','", $closedStatuses) . "') THEN 1 ELSE 0 END) as pm_closed"),
+                DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' AND STATUS IN ('" . implode("','", $openStatuses) . "') THEN 1 ELSE 0 END) as pm_open"),
+                DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' AND STATUS IN ('" . implode("','", $closedStatuses) . "') THEN 1 ELSE 0 END) as cm_closed"),
+                DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' AND STATUS IN ('" . implode("','", $openStatuses) . "') THEN 1 ELSE 0 END) as cm_open"))
+            ->where(function($q) use ($startDate) {
+                $q->where('STATUSDATE', '>=', $startDate) // For closed items
+                  ->orWhere('REPORTDATE', '>=', $startDate); // For open items
+            })
             ->whereNotNull('LOCATION')
             ->groupBy('LOCATION')
-            ->orderBy('total_count', 'desc')
-            ->limit(10) // Limit to top 10 locations to avoid clutter
+            ->orderBy(DB::raw("SUM(CASE WHEN STATUS IN ('" . implode("','", $closedStatuses) . "') THEN 1 ELSE 0 END)"), 'desc')
+            ->limit(10)
             ->get();
         
         $unitNames = $unitData->pluck('location')->toArray();
-        $pmPerUnit = $unitData->pluck('pm_count')->toArray();
-        $cmPerUnit = $unitData->pluck('cm_count')->toArray();
-        $totalPerUnit = $unitData->pluck('total_count')->toArray();
+        $pmClosedPerUnit = $unitData->pluck('pm_closed')->toArray();
+        $pmOpenPerUnit = $unitData->pluck('pm_open')->toArray();
+        $cmClosedPerUnit = $unitData->pluck('cm_closed')->toArray();
+        $cmOpenPerUnit = $unitData->pluck('cm_open')->toArray();
         
-        // Find best performing unit (Highest PM/CM Ratio)
+        // Find best performing unit (Highest Overall Completion Rate)
         $bestPerformingUnit = '-';
-        $maxRatio = 0;
+        $maxRate = -1;
+        
         foreach ($unitData as $unit) {
-            $ratio = $unit->cm_count > 0 ? $unit->pm_count / $unit->cm_count : 0;
-            if ($ratio > $maxRatio) {
-                $maxRatio = $ratio;
+            $uTotal = $unit->pm_closed + $unit->pm_open + $unit->cm_closed + $unit->cm_open;
+            $uClosed = $unit->pm_closed + $unit->cm_closed;
+            
+            $rate = $uTotal > 0 ? ($uClosed / $uTotal) * 100 : 0;
+            
+            if ($rate > $maxRate && $uTotal > 5) { // Minimum threshold to be considered "Best"
+                $maxRate = $rate;
                 $bestPerformingUnit = $unit->location;
             }
         }
@@ -109,15 +132,17 @@ class KinerjaPemeliharaanController extends Controller
             
             $monthlyTrend[] = [
                 'label' => $month->format('M Y'),
-                'pm' => $pmMonthly,
+                'pm' => $pmMonthly, // Still keeping count for trend as it's useful
                 'cm' => $cmMonthly
             ];
         }
         
         return compact(
-            'totalWO', 'pmCount', 'cmCount', 'pmPercentage', 'cmPercentage', 
-            'pmCmRatio', 'unitNames', 'pmPerUnit', 'cmPerUnit', 'totalPerUnit',
-            'bestPerformingUnit', 'maxRatio', 'monthlyTrend'
+            'totalWOCount', 'totalClosed', 'totalOpen',
+            'pmClosed', 'pmOpen', 'pmTotal', 'pmPercentage',
+            'cmClosed', 'cmOpen', 'cmTotal', 'cmPercentage',
+            'unitNames', 'pmClosedPerUnit', 'pmOpenPerUnit', 'cmClosedPerUnit', 'cmOpenPerUnit',
+            'bestPerformingUnit', 'maxRate', 'monthlyTrend'
         );
     }
     

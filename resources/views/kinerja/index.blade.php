@@ -545,11 +545,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const unitLabels = @json($unitNames);
-    const pmData = @json($pmPerUnit);
-    const cmData = @json($cmPerUnit);
-    const totalData = @json($totalPerUnit);
-    const pmCount = {{ $pmCount }};
-    const cmCount = {{ $cmCount }};
+    const pmData = @json($pmClosedPerUnit);
+    const cmData = @json($cmClosedPerUnit);
+    const totalData = @json($pmClosedPerUnit).map((num, idx) => num + @json($cmClosedPerUnit)[idx]);
+    const pmCount = {{ $pmClosed }};
+    const cmCount = {{ $cmClosed }};
     const monthlyTrend = @json($monthlyTrend);
     
     const chartDefaults = {
