@@ -89,9 +89,12 @@ class AttendanceQRController extends Controller
             // PENTING: Mapping unit session ke unit_source yang benar
             // Sesuaikan dengan data di database Anda
             $unitSourceMap = [
-                'mysql' => 'mysql_wua_wua',           // Contoh: session mysql -> unit_source mysql_wua_wua
-                'mysql2' => 'mysql_bau_bau',          // Contoh: session mysql2 -> unit_source mysql_bau_bau
-                'pgsql' => 'pgsql_kendari',           // dst...
+                'mysql' => 'mysql',           // Contoh: session mysql -> unit_source mysql_wua_wua
+                'mysql_wua_wua' => 'mysql_wua_wua',           // Contoh: session mysql -> unit_source mysql_wua_wua
+                'mysql_bau_bau' => 'mysql_bau_bau',           // Contoh: session mysql -> unit_source mysql_wua_wua
+                'mysql_kolaka' => 'mysql_kolaka',           // Contoh: session mysql -> unit_source mysql_wua_wua
+                'mysql_poasia' => 'mysql_poasia',           // Contoh: session mysql -> unit_source mysql_wua_wua
+                         // dst...
                 // Tambahkan mapping lainnya sesuai kebutuhan
             ];
             
