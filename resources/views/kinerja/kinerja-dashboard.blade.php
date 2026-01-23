@@ -1,4 +1,4 @@
-<div class="mt-5 px-[5px]">    
+<div class="mt-5 px-4 fade-in">   
     <!-- Stats Grid -->
     <div class="stats-grid fade-in">
         <div class="stat-card blue">
