@@ -1,7 +1,7 @@
 <div class="mt-5 px-4 fade-in">   
     <!-- Filter Section -->
     <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <form action="{{ route('kinerja.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+        <form action="{{ route('kinerja.pemeliharaan') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
             <input type="hidden" name="tab" value="kinerja-tab"> <!-- Try to keep tab if possible via JS, or just default -->
             
             <div class="flex flex-col gap-1 w-full md:w-auto">
@@ -23,7 +23,7 @@
             </button>
             
             @if(request('start_date') || request('end_date'))
-                <a href="{{ route('kinerja.index') }}" class="text-gray-500 text-sm hover:text-gray-700 underline mb-2">Reset</a>
+                <a href="{{ route('kinerja.pemeliharaan') }}" class="text-gray-500 text-sm hover:text-gray-700 underline mb-2">Reset</a>
             @endif
         </form>
     </div>
