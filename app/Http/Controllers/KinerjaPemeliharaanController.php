@@ -6,9 +6,110 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class KpiDashboardController extends Controller
+class KinerjaPemeliharaanController extends Controller
 {
     public function index()
+    {
+        // Get data for Kinerja Dashboard (existing data)
+        $kinerjaDashboardData = $this->getKinerjaDashboardData();
+        
+        // Get data for KPI Dashboard
+        $kpiDashboardData = $this->getKpiDashboardData();
+        
+        // Merge all data
+        $data = array_merge($kinerjaDashboardData, $kpiDashboardData);
+        
+        return view('kinerja.index', $data);
+    }
+    
+    private function getKinerjaDashboardData()
+    {
+        // Get data for 6 months
+        $startDate = Carbon::now()->subMonths(6);
+        
+        // Get PM and CM counts
+        $pmCount = DB::table('work_orders')
+            ->where('maintenance_type', 'PM')
+            ->where('status', 'CLOSED')
+            ->where('created_at', '>=', $startDate)
+            ->count();
+        
+        $cmCount = DB::table('work_orders')
+            ->where('maintenance_type', 'CM')
+            ->where('status', 'CLOSED')
+            ->where('created_at', '>=', $startDate)
+            ->count();
+        
+        $totalWO = $pmCount + $cmCount;
+        
+        // Calculate percentages
+        $pmPercentage = $totalWO > 0 ? round(($pmCount / $totalWO) * 100, 1) : 0;
+        $cmPercentage = $totalWO > 0 ? round(($cmCount / $totalWO) * 100, 1) : 0;
+        
+        // Calculate PM/CM Ratio
+        $pmCmRatio = $cmCount > 0 ? round($pmCount / $cmCount, 2) : 0;
+        
+        // Get data per unit
+        $unitData = DB::table('work_orders')
+            ->select('unit_layanan', 
+                DB::raw('SUM(CASE WHEN maintenance_type = "PM" THEN 1 ELSE 0 END) as pm_count'),
+                DB::raw('SUM(CASE WHEN maintenance_type = "CM" THEN 1 ELSE 0 END) as cm_count'),
+                DB::raw('COUNT(*) as total_count'))
+            ->where('status', 'CLOSED')
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('unit_layanan')
+            ->get();
+        
+        $unitNames = $unitData->pluck('unit_layanan')->toArray();
+        $pmPerUnit = $unitData->pluck('pm_count')->toArray();
+        $cmPerUnit = $unitData->pluck('cm_count')->toArray();
+        $totalPerUnit = $unitData->pluck('total_count')->toArray();
+        
+        // Find best performing unit
+        $bestPerformingUnit = '';
+        $maxRatio = 0;
+        foreach ($unitData as $unit) {
+            $ratio = $unit->cm_count > 0 ? round($unit->pm_count / $unit->cm_count, 2) : 0;
+            if ($ratio > $maxRatio) {
+                $maxRatio = $ratio;
+                $bestPerformingUnit = $unit->unit_layanan;
+            }
+        }
+        
+        // Get monthly trend
+        $monthlyTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+            
+            $pmMonthly = DB::table('work_orders')
+                ->where('maintenance_type', 'PM')
+                ->where('status', 'CLOSED')
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->count();
+            
+            $cmMonthly = DB::table('work_orders')
+                ->where('maintenance_type', 'CM')
+                ->where('status', 'CLOSED')
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->count();
+            
+            $monthlyTrend[] = [
+                'label' => $month->format('M Y'),
+                'pm' => $pmMonthly,
+                'cm' => $cmMonthly
+            ];
+        }
+        
+        return compact(
+            'totalWO', 'pmCount', 'cmCount', 'pmPercentage', 'cmPercentage', 
+            'pmCmRatio', 'unitNames', 'pmPerUnit', 'cmPerUnit', 'totalPerUnit',
+            'bestPerformingUnit', 'maxRatio', 'monthlyTrend'
+        );
+    }
+    
+    private function getKpiDashboardData()
     {
         // I6.6 - PM Compliance
         $pmCompliance = $this->calculatePmCompliance();
@@ -34,7 +135,7 @@ class KpiDashboardController extends Controller
         // I6.10.4 - Post Implementation Review
         $postImplReview = $this->calculatePostImplReview();
         
-        return view('kinerja.kpi-dashboard', compact(
+        return compact(
             'pmCompliance',
             'plannedBacklog',
             'scheduleCompliance',
@@ -43,7 +144,7 @@ class KpiDashboardController extends Controller
             'wrSrOpen',
             'woAgeing',
             'postImplReview'
-        ));
+        );
     }
     
     // I6.6 - PM Compliance

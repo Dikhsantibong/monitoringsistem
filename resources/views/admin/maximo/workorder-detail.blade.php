@@ -29,7 +29,7 @@
                                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
-                    <h1 class="text-xl font-semibold text-gray-800">Dashboard</h1>
+                    <h1 class="text-xl font-semibold text-gray-800">Work Order Detail</h1>
                 </div>
                 <div class="flex items-center gap-x-4 relative">
                     <!-- User Dropdown -->

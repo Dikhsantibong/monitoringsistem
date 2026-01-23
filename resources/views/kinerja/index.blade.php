@@ -418,6 +418,85 @@
         .fade-in {
             animation: fadeIn 0.4s ease forwards;
         }
+
+        /* Tabs Styling */
+        .tabs-container {
+            margin-bottom: 2rem;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 0;
+        }
+
+        .tab-button {
+            background: transparent;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            bottom: -2px;
+        }
+
+        .tab-button i {
+            font-size: 1rem;
+        }
+
+        .tab-button:hover {
+            color: #1976d2;
+            background: rgba(25, 118, 210, 0.05);
+        }
+
+        .tab-button.active {
+            color: #1976d2;
+            border-bottom-color: #1976d2;
+            font-weight: 600;
+        }
+
+        .tabs-content {
+            position: relative;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Responsive tabs */
+        @media (max-width: 768px) {
+            .tabs-nav {
+                flex-direction: column;
+                gap: 0;
+                border-bottom: none;
+            }
+
+            .tab-button {
+                border-bottom: 1px solid #e1e4e8;
+                border-left: 3px solid transparent;
+                bottom: 0;
+                padding: 1rem 1.25rem;
+            }
+
+            .tab-button.active {
+                border-bottom-color: #e1e4e8;
+                border-left-color: #1976d2;
+            }
+        }
     </style>
 @endsection
 
@@ -433,7 +512,33 @@
         </h1>
         <p class="page-subtitle">Monitoring dan analisis work order pemeliharaan secara real-time</p>
     </div>
-    @include('kinerja.kinerja-dashboard')
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+        <div class="tabs-nav">
+            <button class="tab-button active" data-tab="kinerja-tab">
+                <i class="fas fa-chart-bar"></i>
+                Kinerja Dashboard
+            </button>
+            <button class="tab-button" data-tab="kpi-tab">
+                <i class="fas fa-tachometer-alt"></i>
+                KPI Dashboard
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tabs-content">
+            <!-- Kinerja Dashboard Tab -->
+            <div id="kinerja-tab" class="tab-pane active">
+                @include('kinerja.kinerja-dashboard')
+            </div>
+
+            <!-- KPI Dashboard Tab -->
+            <div id="kpi-tab" class="tab-pane">
+                @include('kinerja.kpi-dashboard')
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
