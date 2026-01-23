@@ -10,7 +10,7 @@ class KinerjaPemeliharaanController extends Controller
 {
     public function index()
     {
-        // Get data for Kinerja Dashboard (existing data)
+        // Get data for Kinerja Dashboard
         $kinerjaDashboardData = $this->getKinerjaDashboardData();
         
         // Get data for KPI Dashboard
@@ -27,22 +27,24 @@ class KinerjaPemeliharaanController extends Controller
         // Get data for 6 months
         $startDate = Carbon::now()->subMonths(6);
         
-        // Use Oracle connection
-        $connection = DB::connection('oracle');
+        // Query base builder
+        $woQuery = DB::connection('oracle')->table('WORKORDER')
+            ->where('SITEID', 'KD');
+
+        // Get PM and CM counts (Closed)
+        // Assuming 'COMP' and 'CLOSE' are closed statuses in Maximo
+        $closedStatuses = ['COMP', 'CLOSE'];
         
-        // Get PM and CM counts (filtering by SITEID KD as per MaximoController)
-        $pmCount = $connection->table('WORKORDER')
+        $pmCount = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
-            ->where('SITEID', 'KD')
-            ->where('REPORTDATE', '>=', $startDate)
+            ->whereIn('STATUS', $closedStatuses)
+            ->where('STATUSDATE', '>=', $startDate)
             ->count();
         
-        $cmCount = $connection->table('WORKORDER')
+        $cmCount = (clone $woQuery)
             ->where('WORKTYPE', 'CM')
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
-            ->where('SITEID', 'KD')
-            ->where('REPORTDATE', '>=', $startDate)
+            ->whereIn('STATUS', $closedStatuses)
+            ->where('STATUSDATE', '>=', $startDate)
             ->count();
         
         $totalWO = $pmCount + $cmCount;
@@ -54,39 +56,35 @@ class KinerjaPemeliharaanController extends Controller
         // Calculate PM/CM Ratio
         $pmCmRatio = $cmCount > 0 ? round($pmCount / $cmCount, 2) : 0;
         
-        // Get data per unit (Using LOCATION as unit proxy)
-        $unitData = $connection->table('WORKORDER')
-            ->select('LOCATION as unit_layanan', 
+        // Get data per Location (using as Unit)
+        // Clean location (take first part if needed) or just raw location
+        // Using raw query for grouping as it's more reliable across DB drivers for aggregates
+        $unitData = (clone $woQuery)
+            ->select('LOCATION', 
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' THEN 1 ELSE 0 END) as pm_count"),
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' THEN 1 ELSE 0 END) as cm_count"),
                 DB::raw("COUNT(*) as total_count"))
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
-            ->where('SITEID', 'KD')
-            ->where('REPORTDATE', '>=', $startDate)
+            ->whereIn('STATUS', $closedStatuses)
+            ->where('STATUSDATE', '>=', $startDate)
             ->whereNotNull('LOCATION')
             ->groupBy('LOCATION')
-            ->orderByRaw('COUNT(*) DESC')
-            ->take(10) // Top 10 locations
+            ->orderBy('total_count', 'desc')
+            ->limit(10) // Limit to top 10 locations to avoid clutter
             ->get();
         
-        $unitNames = $unitData->pluck('unit_layanan')->map(function($item) {
-             return $item ?? 'Unknown';
-        })->toArray();
+        $unitNames = $unitData->pluck('location')->toArray();
         $pmPerUnit = $unitData->pluck('pm_count')->toArray();
         $cmPerUnit = $unitData->pluck('cm_count')->toArray();
         $totalPerUnit = $unitData->pluck('total_count')->toArray();
         
-        // Find best performing unit
-        $bestPerformingUnit = '';
+        // Find best performing unit (Highest PM/CM Ratio)
+        $bestPerformingUnit = '-';
         $maxRatio = 0;
         foreach ($unitData as $unit) {
-            $unitPm = $unit->pm_count;
-            $unitCm = $unit->cm_count;
-            
-            $ratio = $unitCm > 0 ? round($unitPm / $unitCm, 2) : 0;
+            $ratio = $unit->cm_count > 0 ? $unit->pm_count / $unit->cm_count : 0;
             if ($ratio > $maxRatio) {
                 $maxRatio = $ratio;
-                $bestPerformingUnit = $unit->unit_layanan ?? 'N/A';
+                $bestPerformingUnit = $unit->location;
             }
         }
         
@@ -97,18 +95,16 @@ class KinerjaPemeliharaanController extends Controller
             $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
             
-            $pmMonthly = $connection->table('WORKORDER')
+            $pmMonthly = (clone $woQuery)
                 ->where('WORKTYPE', 'PM')
-                ->whereIn('STATUS', ['CLOSE', 'COMP'])
-                ->where('SITEID', 'KD')
-                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
+                ->whereIn('STATUS', $closedStatuses)
+                ->whereBetween('STATUSDATE', [$monthStart, $monthEnd])
                 ->count();
             
-            $cmMonthly = $connection->table('WORKORDER')
+            $cmMonthly = (clone $woQuery)
                 ->where('WORKTYPE', 'CM')
-                ->whereIn('STATUS', ['CLOSE', 'COMP'])
-                ->where('SITEID', 'KD')
-                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
+                ->whereIn('STATUS', $closedStatuses)
+                ->whereBetween('STATUSDATE', [$monthStart, $monthEnd])
                 ->count();
             
             $monthlyTrend[] = [
@@ -166,321 +162,338 @@ class KinerjaPemeliharaanController extends Controller
     // I6.6 - PM Compliance
     private function calculatePmCompliance()
     {
-        $connection = DB::connection('oracle');
+        // PM Compliance filters:
+        // 1. Maintenance Type = PM
+        // 2. Status = COMP or CLOSE
         
-        $totalPmClosed = $connection->table('WORKORDER')
-            ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+        $woBase = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
-            ->count();
+            ->where('WORKTYPE', 'PM')
+            ->whereIn('STATUS', ['COMP', 'CLOSE']);
+            
+        $totalPmClosed = (clone $woBase)->count();
         
-        // Assuming ACTFINISH and ACTLABHRS exist in WORKORDER
-        // If not available, we might need to adjust criteria
-        $pmCompliant = $connection->table('WORKORDER')
-            ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
-            ->where('SITEID', 'KD')
+        // Compliant if:
+        // 1. ActFinish between SchedStart and SchedFinish
+        // 2. Has Actual Date, Completion (assumed status), Man Hour
+        $pmCompliant = (clone $woBase)
             ->whereNotNull('ACTFINISH')
-            ->whereRaw('ACTFINISH BETWEEN SCHEDSTART AND SCHEDFINISH')
+            ->whereNotNull('SCHEDSTART')
+            ->whereNotNull('SCHEDFINISH')
+            ->whereNotNull('ACTLABHRS')
+            ->whereRaw('ACTFINISH >= SCHEDSTART')
+            ->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
         
         $percentage = $totalPmClosed > 0 ? round(($pmCompliant / $totalPmClosed) * 100, 2) : 0;
-        $level = $this->getPmComplianceLevel($percentage);
+        
+        // Level Determination
+        $level = 1;
+        $desc = "PM Compliance 0 - 70%";
+        if ($percentage == 100) { $level = 5; $desc = "PM Compliance = 100%"; }
+        elseif ($percentage > 90) { $level = 4; $desc = "PM Compliance > 90%"; }
+        elseif ($percentage > 80) { $level = 3; $desc = "PM Compliance > 80%"; }
+        elseif ($percentage > 70) { $level = 2; $desc = "PM Compliance > 70%"; }
         
         return [
             'total' => $totalPmClosed,
             'compliant' => $pmCompliant,
             'percentage' => $percentage,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
     }
     
-    // I6.7 - WO Planned Backlog (dalam minggu)
+    // I6.7 - WO Planned Backlog
     private function calculatePlannedBacklog()
     {
-        $connection = DB::connection('oracle');
+        // Planned Work: Non OH, Status in identification phase (WAPPR, WSCH, WMATL)
+        // Ready Work: Non OH, Ready for execution (APPR)
+        // Using ESTLABHRS for manhours
         
-        // Planned Work + Ready Work manhours
-        // Adapting status: APPR (Approved), WSCH (Waiting Schedule)
-        $totalPlannedManhours = $connection->table('WORKORDER')
-            ->whereIn('STATUS', ['APPR', 'WSCH', 'INPRG'])
+        $plannedManhours = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
-            ->whereNotIn('WORKTYPE', ['OH'])
+            ->where('WORKTYPE', '!=', 'OH')
+            ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL', 'WPCOND'])
             ->sum('ESTLABHRS');
+            
+        $readyManhours = DB::connection('oracle')->table('WORKORDER')
+            ->where('SITEID', 'KD')
+            ->where('WORKTYPE', '!=', 'OH')
+            ->where('STATUS', 'APPR')
+            ->sum('ESTLABHRS');
+            
+        $totalManhours = $plannedManhours + $readyManhours;
         
-        // Crew Capacity per week (contoh: 10 crew x 40 jam/minggu)
-        $crewCapacity = 400; // Sesuaikan dengan data aktual
+        // Crew Capacity (Example: 400 hours/week)
+        $crewCapacity = 400; 
         
-        $weeks = $crewCapacity > 0 ? round($totalPlannedManhours / $crewCapacity, 2) : 0;
-        $level = $this->getPlannedBacklogLevel($weeks);
+        $weeks = $crewCapacity > 0 ? round($totalManhours / $crewCapacity, 2) : 0;
+        
+        // Level Determination
+        $level = 1;
+        $desc = "≥ 8 Minggu";
+        if ($weeks < 4) { $level = 5; $desc = "< 4 Minggu"; }
+        elseif ($weeks < 6) { $level = 4; $desc = "4 - < 6 Minggu"; }
+        elseif ($weeks < 8) { $level = 3; $desc = "6 - < 8 Minggu"; }
+        elseif ($weeks >= 8) { $level = 2; $desc = "≥ 8 Minggu"; }
+        
+        // Level 1 if no data or very high
+        if ($totalManhours == 0) { $level = 1; $desc = "Tidak terukur/tidak ada data"; }
         
         return [
-            'total_manhours' => $totalPlannedManhours,
-            'crew_capacity' => $crewCapacity,
+            'total_manhours' => $totalManhours,
+            'planned_hours' => $plannedManhours,
+            'ready_hours' => $readyManhours,
             'weeks' => $weeks,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
     }
     
     // I6.8 - Schedule Compliance (Non Tactical)
     private function calculateScheduleCompliance()
     {
-        $connection = DB::connection('oracle');
-        // Maximo Work Types mapping for non-tactical: CM, EM
-        $nonTacticalTypes = ['CM', 'EM'];
+        // Non Tactical: CR, EM, EJ, NM, SF
+        $nonTacticalTypes = ['CR', 'EM', 'EJ', 'NM', 'SF'];
         
-        $totalNonTactical = $connection->table('WORKORDER')
-            ->whereIn('WORKTYPE', $nonTacticalTypes)
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+        $woBase = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
-            ->count();
+            ->whereIn('WORKTYPE', $nonTacticalTypes)
+            ->whereIn('STATUS', ['COMP', 'CLOSE']);
+            
+        $totalNonTactical = (clone $woBase)->count();
         
-        $compliant = $connection->table('WORKORDER')
-            ->whereIn('WORKTYPE', $nonTacticalTypes)
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
-            ->where('SITEID', 'KD')
+        $compliant = (clone $woBase)
             ->whereNotNull('ACTFINISH')
-            ->whereRaw('ACTFINISH BETWEEN SCHEDSTART AND SCHEDFINISH')
+            ->whereNotNull('SCHEDSTART')
+            ->whereNotNull('SCHEDFINISH')
+            ->whereNotNull('ACTLABHRS')
+            ->whereRaw('ACTFINISH >= SCHEDSTART')
+            ->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
-        
+            
         $percentage = $totalNonTactical > 0 ? round(($compliant / $totalNonTactical) * 100, 2) : 0;
-        $level = $this->getScheduleComplianceLevel($percentage);
+        
+        // Level Determination
+        $level = 1;
+        $desc = "0% - 30%";
+        if ($percentage > 80) { $level = 5; $desc = "> 80%"; }
+        elseif ($percentage > 70) { $level = 4; $desc = "> 70% - ≤ 80%"; }
+        elseif ($percentage > 50) { $level = 3; $desc = "> 50% - ≤ 70%"; }
+        elseif ($percentage > 30) { $level = 2; $desc = "> 30% - ≤ 50%"; }
         
         return [
             'total' => $totalNonTactical,
             'compliant' => $compliant,
             'percentage' => $percentage,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
     }
     
     // I6.9 - Rework
     private function calculateRework()
     {
-        $connection = DB::connection('oracle');
+        // Rework: Repeated WO (same Asset, same Problem) within 1 month
+        // Scope: CR, EM
+        
         $oneMonthAgo = Carbon::now()->subMonth();
         
-        $totalCrEm = $connection->table('WORKORDER')
-            ->whereIn('WORKTYPE', ['CM', 'EM'])
+        // Total CR+EM in last month
+        $totalCrEm = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->whereIn('WORKTYPE', ['CR', 'EM'])
             ->where('REPORTDATE', '>=', $oneMonthAgo)
             ->count();
-        
-        // Rework: CM/EM on same ASSETNUM within 30 days
-        $reworkCount = $connection->table('WORKORDER as w1')
-            ->join('WORKORDER as w2', function($join) {
-                $join->on('w1.ASSETNUM', '=', 'w2.ASSETNUM')
-                     ->where('w1.ASSETNUM', '!=', null)
-                     ->whereRaw('w2.REPORTDATE > w1.REPORTDATE');
-            })
-            ->whereIn('w1.WORKTYPE', ['CM', 'EM'])
-            ->where('w1.SITEID', 'KD')
-            ->where('w2.SITEID', 'KD')
-            ->where('w1.REPORTDATE', '>=', $oneMonthAgo)
-            ->count();
             
-        // Note: Counting strategy might need refinement based on exact Rework definition
-        // Here assuming 1 match = 1 rework instance found
+        // Simplified rework count
+        $reworkCount = 0;
         
+        if ($totalCrEm > 0) {
+            // Count incidents where same Asset + Problem appears more than once
+             $duplicatesDetailed = DB::connection('oracle')->select("
+                SELECT SUM(cnt - 1) as rework_incidents
+                FROM (
+                    SELECT COUNT(*) as cnt
+                    FROM WORKORDER 
+                    WHERE SITEID = 'KD' 
+                    AND WORKTYPE IN ('CR', 'EM')
+                    AND REPORTDATE >= TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
+                    AND ASSETNUM IS NOT NULL 
+                    AND PROBLEMCODE IS NOT NULL
+                    GROUP BY ASSETNUM, PROBLEMCODE
+                    HAVING COUNT(*) > 1
+                )
+            ", [$oneMonthAgo->format('Y-m-d H:i:s')]);
+            
+            $reworkCount = $duplicatesDetailed[0]->rework_incidents ?? 0;
+        }
+
         $percentage = $totalCrEm > 0 ? round(($reworkCount / $totalCrEm) * 100, 2) : 0;
-        $level = $this->getReworkLevel($percentage);
+        
+        // Level
+        $level = 1;
+        $desc = "> 20%";
+        if ($percentage <= 5) { $level = 5; $desc = "≤ 5%"; }
+        elseif ($percentage <= 10) { $level = 4; $desc = "5% < - 10%"; }
+        elseif ($percentage <= 15) { $level = 3; $desc = "10% < - 15%"; }
+        elseif ($percentage <= 20) { $level = 2; $desc = "15% < - 20%"; }
         
         return [
             'total' => $totalCrEm,
             'rework' => $reworkCount,
             'percentage' => $percentage,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
     }
     
     // I6.10.1 - Reactive Work
     private function calculateReactiveWork()
     {
-        $connection = DB::connection('oracle');
+        // Reactive Ratio = (Non Tactical Created) / (Tactical Closed + Non Tactical Created)
+        // Tactical: PM, PdM, EJ, OH -> Closed
+        // Non Tactical: CR, EM -> Created (All Issued)
         
-        $tacticalClosed = $connection->table('WORKORDER')
-            ->whereIn('WORKTYPE', ['PM', 'PdM', 'OH'])
-            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+        $tacticalClosed = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->whereIn('WORKTYPE', ['PM', 'PdM', 'EJ', 'OH'])
+            ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->count();
-        
-        $nonTacticalCreated = $connection->table('WORKORDER')
-            ->whereIn('WORKTYPE', ['CM', 'EM'])
+            
+        $nonTacticalCreated = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
-            ->count();
+            ->whereIn('WORKTYPE', ['CR', 'EM'])
+            ->count(); // All created
+            
+        $denominator = $tacticalClosed + $nonTacticalCreated;
+        $percentage = $denominator > 0 ? round(($nonTacticalCreated / $denominator) * 100, 2) : 0;
         
-        $totalWo = $tacticalClosed + $nonTacticalCreated;
-        $percentage = $totalWo > 0 ? round(($nonTacticalCreated / $totalWo) * 100, 2) : 0;
-        $level = $this->getReactiveWorkLevel($percentage);
+        // Level
+        $level = 1; 
+        $desc = "> 20%";
+        if ($percentage <= 5) { $level = 5; $desc = "≤ 5%"; }
+        elseif ($percentage <= 10) { $level = 4; $desc = "5% < - 10%"; }
+        elseif ($percentage <= 15) { $level = 3; $desc = "10% < - 15%"; }
+        elseif ($percentage <= 20) { $level = 2; $desc = "15% < - 20%"; }
         
         return [
-            'tactical' => $tacticalClosed,
+            'tactical_closed' => $tacticalClosed,
             'non_tactical' => $nonTacticalCreated,
-            'total' => $totalWo,
             'percentage' => $percentage,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
     }
     
     // I6.10.2 - WR/SR Open/Queued
     private function calculateWrSrOpen()
     {
-        $connection = DB::connection('oracle');
+        $srStatuses = ['NEW', 'QUEUED'];
         
-        $totalWrSr = $connection->table('SR')
+        $totalSr = DB::connection('oracle')->table('SR')
             ->where('SITEID', 'KD')
             ->count();
-        
-        $openOverdue = $connection->table('SR')
-            ->whereIn('STATUS', ['NEW', 'QUEUED', 'PENDING', 'INPROG'])
+            
+        // Overdue Normal: >= 30 days.
+        $normalOverdue = DB::connection('oracle')->table('SR')
             ->where('SITEID', 'KD')
+            ->whereIn('STATUS', $srStatuses)
+            ->where('INTERNALPRIORITY', '>', 1) // Assuming > 1 is Normal
             ->where('REPORTDATE', '<=', Carbon::now()->subDays(30))
             ->count();
             
-        // Simplified calculation without priority field from Maximo
+        $urgentOverdue = DB::connection('oracle')->table('SR')
+            ->where('SITEID', 'KD')
+            ->whereIn('STATUS', $srStatuses)
+            ->where('INTERNALPRIORITY', 1) // Assuming 1 is Urgent
+            ->where('REPORTDATE', '<=', Carbon::now()->subDays(7))
+            ->count();
+            
+        $totalOverdue = $normalOverdue + $urgentOverdue;
+        $percentage = $totalSr > 0 ? round(($totalOverdue / $totalSr) * 100, 2) : 0;
         
-        $percentage = $totalWrSr > 0 ? round(($openOverdue / $totalWrSr) * 100, 2) : 0;
-        $level = $this->getWrSrOpenLevel($percentage);
+        // Level
+        $level = 1;
+        $desc = "> 5%";
+        if ($percentage == 0) { $level = 5; $desc = "0%"; }
+        elseif ($percentage <= 1) { $level = 4; $desc = "≤ 1%"; }
+        elseif ($percentage <= 2) { $level = 3; $desc = "≤ 2%"; }
+        elseif ($percentage <= 5) { $level = 2; $desc = "≤ 5%"; }
         
         return [
-            'total' => $totalWrSr,
-            'total_overdue' => $openOverdue,
-            'normal_overdue' => $openOverdue, // Placeholder
-            'urgent_overdue' => 0, // Placeholder
+            'total' => $totalSr,
+            'overdue' => $totalOverdue,
             'percentage' => $percentage,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
     }
     
     // I6.10.3 - WO Ageing
     private function calculateWoAgeing()
     {
-        $connection = DB::connection('oracle');
+        // Active statuses
+        $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
         
-        // Open statuses in Maximo: WAPPR, APPR, WSCH, INPRG
-        $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'INPRG', 'WMATL'];
-        
-        $totalOpen = $connection->table('WORKORDER')
-            ->whereIn('STATUS', $openStatuses)
+        $totalOpen = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
-            ->whereNotIn('WORKTYPE', ['OH'])
+            ->where('WORKTYPE', '!=', 'OH')
+            ->whereIn('STATUS', $openStatuses)
             ->count();
-        
-        $ageingOver365 = $connection->table('WORKORDER')
-            ->whereIn('STATUS', $openStatuses)
+            
+        $oldOpen = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
-            ->whereNotIn('WORKTYPE', ['OH'])
+            ->where('WORKTYPE', '!=', 'OH')
+            ->whereIn('STATUS', $openStatuses)
             ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
             ->count();
+            
+        $percentage = $totalOpen > 0 ? round(($oldOpen / $totalOpen) * 100, 2) : 0;
         
-        $percentage = $totalOpen > 0 ? round(($ageingOver365 / $totalOpen) * 100, 2) : 0;
-        $level = $this->getWoAgeingLevel($percentage);
+        // Level
+        $level = 1;
+        $desc = "> 20%";
+        if ($percentage <= 5) { $level = 5; $desc = "≤ 5%"; }
+        elseif ($percentage <= 10) { $level = 4; $desc = "5% < - 10%"; }
+        elseif ($percentage <= 15) { $level = 3; $desc = "10% < - 15%"; }
+        elseif ($percentage <= 20) { $level = 2; $desc = "15% < - 20%"; }
         
         return [
             'total_open' => $totalOpen,
-            'ageing_365' => $ageingOver365,
+            'old_open' => $oldOpen,
             'percentage' => $percentage,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
     }
     
     // I6.10.4 - Post Implementation Review
     private function calculatePostImplReview()
     {
-        // Keeping this local as 'programs' likely refers to a local feature not present in Maximo standard tables
-        $totalPrograms = DB::table('programs')
-            ->whereYear('completion_date', Carbon::now()->year)
-            ->whereIn('type', ['AI', 'PROJECT'])
-            ->where('status', 'COMPLETED')
-            ->count();
+        // Placeholder for Project Review
+        $startDate = Carbon::now()->startOfYear();
         
-        $reviewedPrograms = DB::table('programs')
-            ->whereYear('completion_date', Carbon::now()->year)
-            ->whereIn('type', ['AI', 'PROJECT'])
-            ->where('status', 'COMPLETED')
-            ->whereNotNull('post_implementation_review')
+        $totalProjects = DB::connection('oracle')->table('WORKORDER')
+            ->where('SITEID', 'KD')
+            ->whereIn('WORKTYPE', ['PJ', 'AI']) 
+            ->whereIn('STATUS', ['COMP', 'CLOSE'])
+            ->where('STATUSDATE', '>=', $startDate)
             ->count();
+            
+        $reviewed = 0; 
+        $percentage = 0;
         
-        $percentage = $totalPrograms > 0 ? round(($reviewedPrograms / $totalPrograms) * 100, 2) : 0;
-        $level = $this->getPostImplReviewLevel($percentage);
+        $level = 1;
+        $desc = "Data tidak tersedia";
         
         return [
-            'total' => $totalPrograms,
-            'reviewed' => $reviewedPrograms,
+            'total' => $totalProjects,
+            'reviewed' => $reviewed,
             'percentage' => $percentage,
-            'level' => $level
+            'level' => $level,
+            'description' => $desc
         ];
-    }
-    
-    // Level Determination Methods
-    private function getPmComplianceLevel($percentage)
-    {
-        if ($percentage == 100) return 5;
-        if ($percentage > 90) return 4;
-        if ($percentage > 80) return 3;
-        if ($percentage > 70) return 2;
-        return 1;
-    }
-    
-    private function getPlannedBacklogLevel($weeks)
-    {
-        if ($weeks < 4) return 5;
-        if ($weeks < 6) return 4;
-        if ($weeks < 8) return 3;
-        if ($weeks >= 8) return 2;
-        return 1;
-    }
-    
-    private function getScheduleComplianceLevel($percentage)
-    {
-        if ($percentage > 80) return 5;
-        if ($percentage > 70) return 4;
-        if ($percentage > 50) return 3;
-        if ($percentage > 30) return 2;
-        return 1;
-    }
-    
-    private function getReworkLevel($percentage)
-    {
-        if ($percentage <= 5) return 5;
-        if ($percentage <= 10) return 4;
-        if ($percentage <= 15) return 3;
-        if ($percentage <= 20) return 2;
-        return 1;
-    }
-    
-    private function getReactiveWorkLevel($percentage)
-    {
-        if ($percentage <= 5) return 5;
-        if ($percentage <= 10) return 4;
-        if ($percentage <= 15) return 3;
-        if ($percentage <= 20) return 2;
-        return 1;
-    }
-    
-    private function getWrSrOpenLevel($percentage)
-    {
-        if ($percentage == 0) return 5;
-        if ($percentage <= 1) return 4;
-        if ($percentage <= 2) return 3;
-        if ($percentage <= 5) return 2;
-        return 1;
-    }
-    
-    private function getWoAgeingLevel($percentage)
-    {
-        if ($percentage <= 5) return 5;
-        if ($percentage <= 10) return 4;
-        if ($percentage <= 15) return 3;
-        if ($percentage <= 20) return 2;
-        return 1;
-    }
-    
-    private function getPostImplReviewLevel($percentage)
-    {
-        if ($percentage == 100) return 4; // Level 5 requires additional criteria
-        if ($percentage > 75) return 3;
-        if ($percentage > 50) return 2;
-        return 1;
     }
 }
