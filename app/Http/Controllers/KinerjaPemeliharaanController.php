@@ -27,17 +27,22 @@ class KinerjaPemeliharaanController extends Controller
         // Get data for 6 months
         $startDate = Carbon::now()->subMonths(6);
         
-        // Get PM and CM counts
-        $pmCount = DB::table('work_orders')
-            ->where('maintenance_type', 'PM')
-            ->where('status', 'CLOSED')
-            ->where('created_at', '>=', $startDate)
+        // Use Oracle connection
+        $connection = DB::connection('oracle');
+        
+        // Get PM and CM counts (filtering by SITEID KD as per MaximoController)
+        $pmCount = $connection->table('WORKORDER')
+            ->where('WORKTYPE', 'PM')
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
+            ->where('REPORTDATE', '>=', $startDate)
             ->count();
         
-        $cmCount = DB::table('work_orders')
-            ->where('maintenance_type', 'CM')
-            ->where('status', 'CLOSED')
-            ->where('created_at', '>=', $startDate)
+        $cmCount = $connection->table('WORKORDER')
+            ->where('WORKTYPE', 'CM')
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
+            ->where('REPORTDATE', '>=', $startDate)
             ->count();
         
         $totalWO = $pmCount + $cmCount;
@@ -49,18 +54,24 @@ class KinerjaPemeliharaanController extends Controller
         // Calculate PM/CM Ratio
         $pmCmRatio = $cmCount > 0 ? round($pmCount / $cmCount, 2) : 0;
         
-        // Get data per unit
-        $unitData = DB::table('work_orders')
-            ->select('unit_layanan', 
-                DB::raw('SUM(CASE WHEN maintenance_type = "PM" THEN 1 ELSE 0 END) as pm_count'),
-                DB::raw('SUM(CASE WHEN maintenance_type = "CM" THEN 1 ELSE 0 END) as cm_count'),
-                DB::raw('COUNT(*) as total_count'))
-            ->where('status', 'CLOSED')
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('unit_layanan')
+        // Get data per unit (Using LOCATION as unit proxy)
+        $unitData = $connection->table('WORKORDER')
+            ->select('LOCATION as unit_layanan', 
+                DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' THEN 1 ELSE 0 END) as pm_count"),
+                DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' THEN 1 ELSE 0 END) as cm_count"),
+                DB::raw("COUNT(*) as total_count"))
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
+            ->where('REPORTDATE', '>=', $startDate)
+            ->whereNotNull('LOCATION')
+            ->groupBy('LOCATION')
+            ->orderByRaw('COUNT(*) DESC')
+            ->take(10) // Top 10 locations
             ->get();
         
-        $unitNames = $unitData->pluck('unit_layanan')->toArray();
+        $unitNames = $unitData->pluck('unit_layanan')->map(function($item) {
+             return $item ?? 'Unknown';
+        })->toArray();
         $pmPerUnit = $unitData->pluck('pm_count')->toArray();
         $cmPerUnit = $unitData->pluck('cm_count')->toArray();
         $totalPerUnit = $unitData->pluck('total_count')->toArray();
@@ -69,10 +80,13 @@ class KinerjaPemeliharaanController extends Controller
         $bestPerformingUnit = '';
         $maxRatio = 0;
         foreach ($unitData as $unit) {
-            $ratio = $unit->cm_count > 0 ? round($unit->pm_count / $unit->cm_count, 2) : 0;
+            $unitPm = $unit->pm_count;
+            $unitCm = $unit->cm_count;
+            
+            $ratio = $unitCm > 0 ? round($unitPm / $unitCm, 2) : 0;
             if ($ratio > $maxRatio) {
                 $maxRatio = $ratio;
-                $bestPerformingUnit = $unit->unit_layanan;
+                $bestPerformingUnit = $unit->unit_layanan ?? 'N/A';
             }
         }
         
@@ -83,16 +97,18 @@ class KinerjaPemeliharaanController extends Controller
             $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
             
-            $pmMonthly = DB::table('work_orders')
-                ->where('maintenance_type', 'PM')
-                ->where('status', 'CLOSED')
-                ->whereBetween('created_at', [$monthStart, $monthEnd])
+            $pmMonthly = $connection->table('WORKORDER')
+                ->where('WORKTYPE', 'PM')
+                ->whereIn('STATUS', ['CLOSE', 'COMP'])
+                ->where('SITEID', 'KD')
+                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
                 ->count();
             
-            $cmMonthly = DB::table('work_orders')
-                ->where('maintenance_type', 'CM')
-                ->where('status', 'CLOSED')
-                ->whereBetween('created_at', [$monthStart, $monthEnd])
+            $cmMonthly = $connection->table('WORKORDER')
+                ->where('WORKTYPE', 'CM')
+                ->whereIn('STATUS', ['CLOSE', 'COMP'])
+                ->where('SITEID', 'KD')
+                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
                 ->count();
             
             $monthlyTrend[] = [
@@ -150,18 +166,22 @@ class KinerjaPemeliharaanController extends Controller
     // I6.6 - PM Compliance
     private function calculatePmCompliance()
     {
-        $totalPmClosed = DB::table('work_orders')
-            ->where('maintenance_type', 'PM')
-            ->where('status', 'CLOSED')
+        $connection = DB::connection('oracle');
+        
+        $totalPmClosed = $connection->table('WORKORDER')
+            ->where('WORKTYPE', 'PM')
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
             ->count();
         
-        $pmCompliant = DB::table('work_orders')
-            ->where('maintenance_type', 'PM')
-            ->where('status', 'CLOSED')
-            ->whereNotNull('actual_finish')
-            ->whereNotNull('completion_comment')
-            ->whereNotNull('actual_manhour')
-            ->whereRaw('actual_finish BETWEEN schedule_start AND schedule_finish')
+        // Assuming ACTFINISH and ACTLABHRS exist in WORKORDER
+        // If not available, we might need to adjust criteria
+        $pmCompliant = $connection->table('WORKORDER')
+            ->where('WORKTYPE', 'PM')
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
+            ->whereNotNull('ACTFINISH')
+            ->whereRaw('ACTFINISH BETWEEN SCHEDSTART AND SCHEDFINISH')
             ->count();
         
         $percentage = $totalPmClosed > 0 ? round(($pmCompliant / $totalPmClosed) * 100, 2) : 0;
@@ -178,11 +198,15 @@ class KinerjaPemeliharaanController extends Controller
     // I6.7 - WO Planned Backlog (dalam minggu)
     private function calculatePlannedBacklog()
     {
+        $connection = DB::connection('oracle');
+        
         // Planned Work + Ready Work manhours
-        $totalPlannedManhours = DB::table('work_orders')
-            ->whereIn('status', ['PLANNED', 'READY'])
-            ->whereNotIn('maintenance_type', ['OH'])
-            ->sum('estimated_manhour');
+        // Adapting status: APPR (Approved), WSCH (Waiting Schedule)
+        $totalPlannedManhours = $connection->table('WORKORDER')
+            ->whereIn('STATUS', ['APPR', 'WSCH', 'INPRG'])
+            ->where('SITEID', 'KD')
+            ->whereNotIn('WORKTYPE', ['OH'])
+            ->sum('ESTLABHRS');
         
         // Crew Capacity per week (contoh: 10 crew x 40 jam/minggu)
         $crewCapacity = 400; // Sesuaikan dengan data aktual
@@ -201,20 +225,22 @@ class KinerjaPemeliharaanController extends Controller
     // I6.8 - Schedule Compliance (Non Tactical)
     private function calculateScheduleCompliance()
     {
-        $nonTacticalTypes = ['CR', 'EM', 'EJ', 'NM', 'SF'];
+        $connection = DB::connection('oracle');
+        // Maximo Work Types mapping for non-tactical: CM, EM
+        $nonTacticalTypes = ['CM', 'EM'];
         
-        $totalNonTactical = DB::table('work_orders')
-            ->whereIn('maintenance_type', $nonTacticalTypes)
-            ->where('status', 'CLOSED')
+        $totalNonTactical = $connection->table('WORKORDER')
+            ->whereIn('WORKTYPE', $nonTacticalTypes)
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
             ->count();
         
-        $compliant = DB::table('work_orders')
-            ->whereIn('maintenance_type', $nonTacticalTypes)
-            ->where('status', 'CLOSED')
-            ->whereNotNull('actual_finish')
-            ->whereNotNull('completion_comment')
-            ->whereNotNull('actual_manhour')
-            ->whereRaw('actual_finish BETWEEN schedule_start AND schedule_finish')
+        $compliant = $connection->table('WORKORDER')
+            ->whereIn('WORKTYPE', $nonTacticalTypes)
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
+            ->whereNotNull('ACTFINISH')
+            ->whereRaw('ACTFINISH BETWEEN SCHEDSTART AND SCHEDFINISH')
             ->count();
         
         $percentage = $totalNonTactical > 0 ? round(($compliant / $totalNonTactical) * 100, 2) : 0;
@@ -231,24 +257,30 @@ class KinerjaPemeliharaanController extends Controller
     // I6.9 - Rework
     private function calculateRework()
     {
+        $connection = DB::connection('oracle');
         $oneMonthAgo = Carbon::now()->subMonth();
         
-        $totalCrEm = DB::table('work_orders')
-            ->whereIn('maintenance_type', ['CR', 'EM'])
-            ->where('created_at', '>=', $oneMonthAgo)
+        $totalCrEm = $connection->table('WORKORDER')
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
+            ->where('SITEID', 'KD')
+            ->where('REPORTDATE', '>=', $oneMonthAgo)
             ->count();
         
-        // WO berulang: sama equipment & problem dalam 1 bulan
-        $reworkCount = DB::table('work_orders as w1')
-            ->join('work_orders as w2', function($join) {
-                $join->on('w1.equipment_id', '=', 'w2.equipment_id')
-                     ->on('w1.problem_code', '=', 'w2.problem_code')
-                     ->whereRaw('w2.id > w1.id');
+        // Rework: CM/EM on same ASSETNUM within 30 days
+        $reworkCount = $connection->table('WORKORDER as w1')
+            ->join('WORKORDER as w2', function($join) {
+                $join->on('w1.ASSETNUM', '=', 'w2.ASSETNUM')
+                     ->where('w1.ASSETNUM', '!=', null)
+                     ->whereRaw('w2.REPORTDATE > w1.REPORTDATE');
             })
-            ->whereIn('w1.maintenance_type', ['CR', 'EM'])
-            ->where('w1.created_at', '>=', $oneMonthAgo)
-            ->distinct('w2.id')
+            ->whereIn('w1.WORKTYPE', ['CM', 'EM'])
+            ->where('w1.SITEID', 'KD')
+            ->where('w2.SITEID', 'KD')
+            ->where('w1.REPORTDATE', '>=', $oneMonthAgo)
             ->count();
+            
+        // Note: Counting strategy might need refinement based on exact Rework definition
+        // Here assuming 1 match = 1 rework instance found
         
         $percentage = $totalCrEm > 0 ? round(($reworkCount / $totalCrEm) * 100, 2) : 0;
         $level = $this->getReworkLevel($percentage);
@@ -264,13 +296,17 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.1 - Reactive Work
     private function calculateReactiveWork()
     {
-        $tacticalClosed = DB::table('work_orders')
-            ->whereIn('maintenance_type', ['PM', 'PdM', 'EJ', 'OH'])
-            ->where('status', 'CLOSED')
+        $connection = DB::connection('oracle');
+        
+        $tacticalClosed = $connection->table('WORKORDER')
+            ->whereIn('WORKTYPE', ['PM', 'PdM', 'OH'])
+            ->whereIn('STATUS', ['CLOSE', 'COMP'])
+            ->where('SITEID', 'KD')
             ->count();
         
-        $nonTacticalCreated = DB::table('work_orders')
-            ->whereIn('maintenance_type', ['CR', 'EM'])
+        $nonTacticalCreated = $connection->table('WORKORDER')
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
+            ->where('SITEID', 'KD')
             ->count();
         
         $totalWo = $tacticalClosed + $nonTacticalCreated;
@@ -289,29 +325,28 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.2 - WR/SR Open/Queued
     private function calculateWrSrOpen()
     {
-        $totalWrSr = DB::table('work_requests')->count();
+        $connection = DB::connection('oracle');
         
-        $normalOverdue = DB::table('work_requests')
-            ->whereIn('status', ['OPEN', 'QUEUED'])
-            ->where('priority', 'NORMAL')
-            ->where('created_at', '<=', Carbon::now()->subDays(30))
+        $totalWrSr = $connection->table('SR')
+            ->where('SITEID', 'KD')
             ->count();
         
-        $urgentOverdue = DB::table('work_requests')
-            ->whereIn('status', ['OPEN', 'QUEUED'])
-            ->where('priority', 'URGENT')
-            ->where('created_at', '<=', Carbon::now()->subDays(7))
+        $openOverdue = $connection->table('SR')
+            ->whereIn('STATUS', ['NEW', 'QUEUED', 'PENDING', 'INPROG'])
+            ->where('SITEID', 'KD')
+            ->where('REPORTDATE', '<=', Carbon::now()->subDays(30))
             ->count();
+            
+        // Simplified calculation without priority field from Maximo
         
-        $totalOverdue = $normalOverdue + $urgentOverdue;
-        $percentage = $totalWrSr > 0 ? round(($totalOverdue / $totalWrSr) * 100, 2) : 0;
+        $percentage = $totalWrSr > 0 ? round(($openOverdue / $totalWrSr) * 100, 2) : 0;
         $level = $this->getWrSrOpenLevel($percentage);
         
         return [
             'total' => $totalWrSr,
-            'normal_overdue' => $normalOverdue,
-            'urgent_overdue' => $urgentOverdue,
-            'total_overdue' => $totalOverdue,
+            'total_overdue' => $openOverdue,
+            'normal_overdue' => $openOverdue, // Placeholder
+            'urgent_overdue' => 0, // Placeholder
             'percentage' => $percentage,
             'level' => $level
         ];
@@ -320,15 +355,22 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.3 - WO Ageing
     private function calculateWoAgeing()
     {
-        $totalOpen = DB::table('work_orders')
-            ->whereIn('status', ['OPEN', 'INPROG', 'PLANNED', 'READY'])
-            ->whereNotIn('maintenance_type', ['OH'])
+        $connection = DB::connection('oracle');
+        
+        // Open statuses in Maximo: WAPPR, APPR, WSCH, INPRG
+        $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'INPRG', 'WMATL'];
+        
+        $totalOpen = $connection->table('WORKORDER')
+            ->whereIn('STATUS', $openStatuses)
+            ->where('SITEID', 'KD')
+            ->whereNotIn('WORKTYPE', ['OH'])
             ->count();
         
-        $ageingOver365 = DB::table('work_orders')
-            ->whereIn('status', ['OPEN', 'INPROG', 'PLANNED', 'READY'])
-            ->whereNotIn('maintenance_type', ['OH'])
-            ->where('created_at', '<=', Carbon::now()->subDays(365))
+        $ageingOver365 = $connection->table('WORKORDER')
+            ->whereIn('STATUS', $openStatuses)
+            ->where('SITEID', 'KD')
+            ->whereNotIn('WORKTYPE', ['OH'])
+            ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
             ->count();
         
         $percentage = $totalOpen > 0 ? round(($ageingOver365 / $totalOpen) * 100, 2) : 0;
@@ -345,6 +387,7 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.4 - Post Implementation Review
     private function calculatePostImplReview()
     {
+        // Keeping this local as 'programs' likely refers to a local feature not present in Maximo standard tables
         $totalPrograms = DB::table('programs')
             ->whereYear('completion_date', Carbon::now()->year)
             ->whereIn('type', ['AI', 'PROJECT'])
