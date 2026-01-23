@@ -348,6 +348,8 @@
                                         <th class="px-4 py-2 text-center">Description</th>
                                         <th class="px-4 py-2 text-center">Asset</th>
                                         <th class="px-4 py-2 text-center">Location</th>
+                                        <th class="px-4 py-2 text-center">Fault Priority</th>
+                                        <th class="px-4 py-2 text-center">Fault Type</th>
                                         <th class="px-4 py-2 text-center">Reported By</th>
                                         <th class="px-4 py-2 text-center">Report Date</th>
                                     </tr>
@@ -397,6 +399,8 @@
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['assetnum'] }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['location'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['faultpriority'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['faultype'] }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $sr['reportedby'] }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">
                                             @if(isset($sr['reportdate']) && $sr['reportdate'] !== '-')
@@ -410,7 +414,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center py-4 text-gray-500">
+                                        <td colspan="12" class="text-center py-4 text-gray-500">
                                             Tidak ada data Service Request
                                         </td>
                                     </tr>

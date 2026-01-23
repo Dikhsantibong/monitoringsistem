@@ -88,6 +88,8 @@ class MaximoController extends Controller
                     'ASSETNUM',
                     'REPORTEDBY',
                     'REPORTDATE',
+                    'FAULTPRIORITY',
+                    'FAULTYPE',
                 ])
                 ->where('SITEID', 'KD');
 
@@ -346,6 +348,8 @@ class MaximoController extends Controller
                 'jobcard_exists' => $jobcardExists,
                 'jobcard_path' => $jobcardPath,
                 'jobcard_url' => $jobcardUrl,
+                'faultpriority' => $sr->faultpriority ?? '-',
+                'faultype'    => $sr->faultype ?? '-',
             ];
         });
     }
@@ -370,6 +374,8 @@ class MaximoController extends Controller
                 'reportdate'  => isset($sr->reportdate) && $sr->reportdate
                     ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i')
                     : '-',
+                'faultpriority' => $sr->faultpriority ?? '-',
+                'faultype'    => $sr->faultype ?? '-',
             ];
         });
     }
