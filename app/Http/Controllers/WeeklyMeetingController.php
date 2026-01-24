@@ -34,7 +34,7 @@ class WeeklyMeetingController extends Controller
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->whereBetween('STATUSDATE', [$lastWeekStart, $lastWeekEnd])
             ->orderBy('STATUSDATE', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'review_completed_page');
 
         // B. SR/WO Terbit (Created) di Minggu Lalu
         $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
@@ -42,7 +42,7 @@ class WeeklyMeetingController extends Controller
             ->where('SITEID', 'KD')
             ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
             ->orderBy('REPORTDATE', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'review_created_page');
 
         // --- 2. PLANNING PHASE (MINGGU DEPAN) ---
 
@@ -58,13 +58,9 @@ class WeeklyMeetingController extends Controller
                   ->orWhereBetween('SCHEDFINISH', [$nextWeekStart, $nextWeekEnd]);
             })
             ->orderBy('SCHEDSTART', 'asc')
-            ->get();
+            ->paginate(10, ['*'], 'plan_pm_page');
 
         // B. Daftar WO Backlog
-        // Definisi: WO Open (WAPPR, WSCH, WMATL, INPRG, APPR) yang Created Date-nya < Next Week Start?
-        // User: "daftar WO backlog... dan WO/SR yang terbit pada minggu sebelumnya dengan prioritas normal"
-        // Kita ambil semua Open WO Non-PM (Non-Routine) sebagai pool backlog.
-        // Limit to reasonable number or filter slightly? Let's take Open Statuses.
         $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
         
         $planBacklog = DB::connection('oracle')->table('WORKORDER')
@@ -72,26 +68,20 @@ class WeeklyMeetingController extends Controller
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'PM') // Exclude routine PM
             ->whereIn('STATUS', $openStatuses)
-            // Filter backlog: Created before "Next Week" (which is true for any existing record now)
-            // Maybe filter "Created at least 1 week ago" for true backlog? 
-            // User says "WO/SR terbit minggu sebelumnya". Let's just Include ALL Open Non-PM.
-            ->orderBy('WOPRIORITY', 'asc') // High priority first? Or Oldest first?
+            ->orderBy('WOPRIORITY', 'asc')
             ->orderBy('REPORTDATE', 'asc')
-            ->limit(200) // Safety limit
-            ->get();
+            ->paginate(10, ['*'], 'plan_backlog_page');
 
         // C. Urgent / Daily Focus
-        // WR/SR Priority Urgent (1) yang masih Open
-        // Atau WO dengan Priority 1
         $urgentWork = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM')
             ->where('SITEID', 'KD')
             ->whereIn('STATUS', $openStatuses)
             ->where(function($q) {
                 $q->where('WOPRIORITY', 1)
-                  ->orWhere('WOPRIORITY', '1'); // Just in case string
+                  ->orWhere('WOPRIORITY', '1');
             })
-            ->get();
+            ->paginate(10, ['*'], 'plan_urgent_page');
 
         return view('weekly-meeting.index', compact(
             'lastWeekStart', 'lastWeekEnd', 'nextWeekStart', 'nextWeekEnd',

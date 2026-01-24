@@ -1,11 +1,14 @@
 @extends('layouts.app')
 
 @section('styles')
- <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .stat-card { transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
     </style>
 @endsection
 
@@ -13,303 +16,321 @@
 
 @include('components.navbar')
 
-<div class="container mx-auto py-8 mt-24 fade-in">
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Daily and Weekly Scheduling</h1>
-        <p class="text-gray-600 mt-1">Maintenance Planning & Scheduling (Rendalhar)</p>
+<div class="container mx-auto py-8 mt-24 fade-in px-4">
+    <!-- Header & Period Info -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Operational Scheduling</h1>
+            <p class="text-gray-600 mt-1">Maintenance Planning & Review (Rendalhar)</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Blue: Review Completed -->
+        <div class="bg-white rounded-lg shadow-sm border-l-4 border-blue-500 p-4 stat-card">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-xs font-bold text-blue-500 uppercase tracking-widest">Completed (Last Week)</div>
+                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $reviewCompletedWOs->total() }}</div>
+                    <div class="text-xs text-gray-500 mt-1">{{ $lastWeekStart->format('d M') }} - {{ $lastWeekEnd->format('d M') }}</div>
+                </div>
+                <div class="p-2 bg-blue-50 rounded-full text-blue-500">
+                    <i class="fas fa-check-double"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indigo: New SRs -->
+        <div class="bg-white rounded-lg shadow-sm border-l-4 border-indigo-500 p-4 stat-card">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest">New Generated (Last Week)</div>
+                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $reviewCreatedWOs->total() }}</div>
+                    <div class="text-xs text-gray-500 mt-1">SR/WO Created</div>
+                </div>
+                <div class="p-2 bg-indigo-50 rounded-full text-indigo-500">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Green: Plan PM -->
+        <div class="bg-white rounded-lg shadow-sm border-l-4 border-green-500 p-4 stat-card">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-xs font-bold text-green-500 uppercase tracking-widest">Routine PM (Next Week)</div>
+                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $planPMs->total() }}</div>
+                    <div class="text-xs text-gray-500 mt-1">{{ $nextWeekStart->format('d M') }} - {{ $nextWeekEnd->format('d M') }}</div>
+                </div>
+                <div class="p-2 bg-green-50 rounded-full text-green-500">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Red: Urgent -->
+        <div class="bg-white rounded-lg shadow-sm border-l-4 border-red-500 p-4 stat-card">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-xs font-bold text-red-500 uppercase tracking-widest">Urgent / Priority 1</div>
+                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $urgentWork->total() }}</div>
+                    <div class="text-xs text-gray-500 mt-1">Need Immediate Action</div>
+                </div>
+                <div class="p-2 bg-red-50 rounded-full text-red-500">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        <div class="mt-4 flex flex-col md:flex-row gap-4">
-            <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded shadow-sm flex-1">
-                <div class="text-xs font-bold text-blue-600 uppercase">Review Period (Minggu Lalu)</div>
-                <div class="text-lg font-bold text-gray-800">{{ $lastWeekStart->format('d M Y') }} - {{ $lastWeekEnd->format('d M Y') }}</div>
-            </div>
-             <div class="bg-green-50 border-l-4 border-green-600 p-4 rounded shadow-sm flex-1">
-                <div class="text-xs font-bold text-green-600 uppercase">Planning Period (Minggu Depan)</div>
-                <div class="text-lg font-bold text-gray-800">{{ $nextWeekStart->format('d M Y') }} - {{ $nextWeekEnd->format('d M Y') }}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Review Section -->
-    <div class="mb-10">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-history text-blue-600 mr-2"></i> Evaluasi Minggu Lalu
-        </h2>
-        
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="bg-gray-50 border-b border-gray-200 px-6 py-3 flex gap-4">
-                <button class="tab-review active font-semibold text-blue-700 border-b-2 border-blue-600 pb-2" data-target="review-completed">
-                    Completed WOs ({{ count($reviewCompletedWOs) }})
-                </button>
-                <button class="tab-review font-semibold text-gray-500 hover:text-gray-700 pb-2" data-target="review-created">
-                    New Generated WOs/SRs ({{ count($reviewCreatedWOs) }})
-                </button>
-            </div>
-            
-            <div class="p-6">
-                <!-- Competed WOs Table -->
-                <div id="review-completed" class="tab-content-review">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-600 uppercase font-bold text-xs">
-                                <tr>
-                                    <th class="px-4 py-3">WONUM</th>
-                                    <th class="px-4 py-3">Deskripsi</th>
-                                    <th class="px-4 py-3">Tipe</th>
-                                    <th class="px-4 py-3">Unit/Lokasi</th>
-                                    <th class="px-4 py-3">Status</th>
-                                    <th class="px-4 py-3">Tgl Selesai</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @forelse($reviewCompletedWOs as $wo)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 font-medium text-blue-600">{{ $wo->wonum }}</td>
-                                    <td class="px-4 py-3">{{ $wo->description }}</td>
-                                    <td class="px-4 py-3">
-                                        <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold">{{ $wo->worktype }}</span>
-                                    </td>
-                                    <td class="px-4 py-3">{{ $wo->location ?? $wo->assetnum }}</td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-green-600 font-bold text-xs border border-green-200 bg-green-50 px-2 py-1 rounded">{{ $wo->status }}</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-500">{{ \Carbon\Carbon::parse($wo->statusdate)->format('d/m/Y H:i') }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-gray-400 italic">Tidak ada pekerjaan selesai di periode ini.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+        <!-- Left Column: Review Phase -->
+        <div class="flex flex-col gap-6">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="bg-blue-600 text-white p-2 rounded shadow-sm">
+                    <i class="fas fa-history"></i>
                 </div>
+                <h2 class="text-xl font-bold text-gray-800">Evaluasi Minggu Lalu</h2>
+            </div>
 
-                <!-- Created WOs Table -->
-                <div id="review-created" class="tab-content-review hidden">
-                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-600 uppercase font-bold text-xs">
-                                <tr>
-                                    <th class="px-4 py-3">WONUM</th>
-                                    <th class="px-4 py-3">Deskripsi</th>
-                                    <th class="px-4 py-3">Tipe</th>
-                                    <th class="px-4 py-3">Prioritas</th>
-                                    <th class="px-4 py-3">Status</th>
-                                    <th class="px-4 py-3">Tgl Terbit</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @forelse($reviewCreatedWOs as $wo)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 font-medium text-blue-600">{{ $wo->wonum }}</td>
-                                    <td class="px-4 py-3">{{ $wo->description }}</td>
-                                    <td class="px-4 py-3">{{ $wo->worktype }}</td>
-                                    <td class="px-4 py-3 text-center">{{ $wo->wopriority }}</td>
-                                    <td class="px-4 py-3">{{ $wo->status }}</td>
-                                    <td class="px-4 py-3 text-gray-500">{{ \Carbon\Carbon::parse($wo->reportdate)->format('d/m/Y') }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-gray-400 italic">Tidak ada WO/SR terbit di periode ini.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- Card: Completed WOs -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">Completed Work Orders</h3>
+                    <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{{ $reviewCompletedWOs->total() }} Items</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-white text-gray-500 font-bold border-b">
+                            <tr>
+                                <th class="px-6 py-3">WONUM</th>
+                                <th class="px-6 py-3">Deskripsi</th>
+                                <th class="px-6 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($reviewCompletedWOs as $wo)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3 font-medium text-blue-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
+                                    <div class="text-xs text-gray-500">{{ $wo->location ?? $wo->assetnum }}</div>
+                                </td>
+                                <td class="px-6 py-3">
+                                    <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">{{ $wo->status }}</span>
+                                    <div class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($wo->statusdate)->format('d/m') }}</div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
+                                    <i class="fas fa-clipboard-check text-4xl mb-2 text-gray-300"></i>
+                                    <p>Tidak ada data completed.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                    {{ $reviewCompletedWOs->appends(['review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                </div>
+            </div>
+
+            <!-- Card: New Generated -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">New Generated SR/WO</h3>
+                    <span class="text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">{{ $reviewCreatedWOs->total() }} Items</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-white text-gray-500 font-bold border-b">
+                            <tr>
+                                <th class="px-6 py-3">WONUM</th>
+                                <th class="px-6 py-3">Deskripsi</th>
+                                <th class="px-6 py-3">Prioritas</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($reviewCreatedWOs as $wo)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3 font-medium text-indigo-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
+                                    <div class="text-xs text-gray-500">{{ $wo->worktype }}</div>
+                                </td>
+                                <td class="px-6 py-3 text-center">
+                                    <div class="text-sm font-bold text-gray-700">{{ $wo->wopriority }}</div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
+                                    <i class="fas fa-inbox text-4xl mb-2 text-gray-300"></i>
+                                    <p>Tidak ada WO/SR baru.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                    {{ $reviewCreatedWOs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Planning Section -->
-    <div class="mb-10">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-calendar-alt text-green-600 mr-2"></i> Rencana Minggu Depan
-        </h2>
-
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-             <div class="bg-gray-50 border-b border-gray-200 px-6 py-3 flex gap-4 overflow-x-auto">
-                <button class="tab-plan active font-semibold text-green-700 border-b-2 border-green-600 pb-2 whitespace-nowrap" data-target="plan-pm">
-                    <i class="fas fa-sync-alt mr-1"></i> Routine PM ({{ count($planPMs) }})
-                </button>
-                <button class="tab-plan font-semibold text-gray-500 hover:text-gray-700 pb-2 whitespace-nowrap" data-target="plan-backlog">
-                    <i class="fas fa-clock mr-1"></i> Backlog / Carry Over ({{ count($planBacklog) }})
-                </button>
-                <button class="tab-plan font-semibold text-gray-500 hover:text-gray-700 pb-2 whitespace-nowrap" data-target="plan-urgent">
-                    <i class="fas fa-exclamation-circle mr-1 text-red-500"></i> Urgent / Daily ({{ count($urgentWork) }})
-                </button>
+        <!-- Right Column: Planning Phase -->
+        <div class="flex flex-col gap-6">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="bg-green-600 text-white p-2 rounded shadow-sm">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800">Rencana Minggu Depan</h2>
             </div>
-            
-             <div class="p-6">
-                <!-- PM Routine -->
-                <div id="plan-pm" class="tab-content-plan">
-                    <div class="mb-2 text-sm text-gray-500 italic">*Pekerjaan rutin yang otomatis ditampilkan EAM (Worktype PM)</div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm text-left">
-                            <thead class="bg-green-50 text-gray-700 uppercase font-bold text-xs">
-                                <tr>
-                                    <th class="px-4 py-3">WONUM</th>
-                                    <th class="px-4 py-3">Deskripsi Pekerjaan</th>
-                                    <th class="px-4 py-3">Unit</th>
-                                    <th class="px-4 py-3">Jadwal Mulai</th>
-                                    <th class="px-4 py-3">Status</th>
-                                </tr>
-                            </thead>
-                             <tbody class="divide-y divide-gray-100">
-                                @forelse($planPMs as $wo)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 font-medium text-blue-600">{{ $wo->wonum }}</td>
-                                    <td class="px-4 py-3">{{ $wo->description }}</td>
-                                    <td class="px-4 py-3">{{ $wo->location ?? $wo->assetnum }}</td>
-                                    <td class="px-4 py-3 font-semibold text-green-700">{{ \Carbon\Carbon::parse($wo->schedstart)->format('D, d M Y') }}</td>
-                                    <td class="px-4 py-3">
-                                         <span class="text-xs font-bold border border-gray-300 bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $wo->status }}</span>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="px-4 py-8 text-center text-gray-400 italic">Tidak ada jadwal PM minggu depan.</td>
-                                </tr>
-                                @endforelse
-                             </tbody>
-                        </table>
-                    </div>
-                </div>
 
-                 <!-- Backlog -->
-                <div id="plan-backlog" class="tab-content-plan hidden">
-                    <div class="mb-2 text-sm text-gray-500 italic">*Daftar WO Backlog & Non-Routine (Carry Over)</div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm text-left">
-                            <thead class="bg-yellow-50 text-gray-700 uppercase font-bold text-xs">
-                                <tr>
-                                    <th class="px-4 py-3">WONUM</th>
-                                    <th class="px-4 py-3">Deskripsi</th>
-                                    <th class="px-4 py-3">Tipe</th>
-                                    <th class="px-4 py-3">Priority</th>
-                                    <th class="px-4 py-3">Age (Days)</th>
-                                    <th class="px-4 py-3">Status</th>
-                                </tr>
-                            </thead>
-                             <tbody class="divide-y divide-gray-100">
-                                @forelse($planBacklog as $wo)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 font-medium text-blue-600">{{ $wo->wonum }}</td>
-                                    <td class="px-4 py-3">{{ $wo->description }}</td>
-                                    <td class="px-4 py-3">{{ $wo->worktype }}</td>
-                                    <td class="px-4 py-3 text-center">{{ $wo->wopriority }}</td>
-                                    <td class="px-4 py-3 text-center text-gray-500">
-                                        @if(isset($wo->reportdate))
-                                            {{ \Carbon\Carbon::parse($wo->reportdate)->diffInDays(now()) }}
-                                        @else - @endif
-                                    </td>
-                                    <td class="px-4 py-3">
-                                         <span class="text-xs font-bold border border-yellow-200 bg-yellow-50 px-2 py-1 rounded text-yellow-700">{{ $wo->status }}</span>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-gray-400 italic">Tidak ada backlog.</td>
-                                </tr>
-                                @endforelse
-                             </tbody>
-                        </table>
-                    </div>
+            <!-- Card: Routine PM -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">Routine PM</h3>
+                    <span class="text-xs font-medium bg-green-100 text-green-700 px-2 py-1 rounded-full">{{ $planPMs->total() }} Items</span>
                 </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-white text-gray-500 font-bold border-b">
+                            <tr>
+                                <th class="px-6 py-3">WONUM</th>
+                                <th class="px-6 py-3">Deskripsi</th>
+                                <th class="px-6 py-3">Jadwal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($planPMs as $wo)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3 font-medium text-green-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
+                                    <div class="text-xs text-gray-500">{{ $wo->location ?? $wo->assetnum }}</div>
+                                </td>
+                                <td class="px-6 py-3">
+                                    <div class="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded text-center">
+                                        {{ \Carbon\Carbon::parse($wo->schedstart)->format('d M') }}
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
+                                    <i class="fas fa-calendar-check text-4xl mb-2 text-gray-300"></i>
+                                    <p>Tidak ada jadwal PM.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                    {{ $planPMs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                </div>
+            </div>
 
-                 <!-- Urgent -->
-                <div id="plan-urgent" class="tab-content-plan hidden">
-                    <div class="mb-2 text-sm text-gray-500 italic">*Pekerjaan Urgent / Daily Planning (Priority 1)</div>
-                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm text-left">
-                            <thead class="bg-red-50 text-gray-700 uppercase font-bold text-xs">
-                                <tr>
-                                    <th class="px-4 py-3">WONUM</th>
-                                    <th class="px-4 py-3">Deskripsi</th>
-                                    <th class="px-4 py-3">Tipe</th>
-                                    <th class="px-4 py-3">Created</th>
-                                    <th class="px-4 py-3">Status</th>
-                                    <th class="px-4 py-3 text-center">Action</th>
-                                </tr>
-                            </thead>
-                             <tbody class="divide-y divide-gray-100">
-                                @forelse($urgentWork as $wo)
-                                <tr class="hover:bg-gray-50 bg-red-50">
-                                    <td class="px-4 py-3 font-bold text-red-600">{{ $wo->wonum }}</td>
-                                    <td class="px-4 py-3 font-medium">{{ $wo->description }}</td>
-                                    <td class="px-4 py-3">{{ $wo->worktype }}</td>
-                                    <td class="px-4 py-3">{{ \Carbon\Carbon::parse($wo->reportdate)->format('d/m/Y') }}</td>
-                                    <td class="px-4 py-3">
-                                         <span class="text-xs font-bold bg-white border border-red-300 px-2 py-1 rounded text-red-600">{{ $wo->status }}</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <button class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">Detail</button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-gray-400 italic">Tidak ada pekerjaan urgent saat ini.</td>
-                                </tr>
-                                @endforelse
-                             </tbody>
-                        </table>
-                    </div>
+            <!-- Card: Urgent Work -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-red-50 px-6 py-4 border-b border-red-100 flex justify-between items-center">
+                    <h3 class="font-bold text-red-700"><i class="fas fa-exclamation-circle mr-1"></i> Urgent / Daily Focus</h3>
+                    <span class="text-xs font-medium bg-red-200 text-red-800 px-2 py-1 rounded-full">{{ $urgentWork->total() }} Items</span>
                 </div>
-             </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-white text-gray-500 font-bold border-b">
+                            <tr>
+                                <th class="px-6 py-3">WONUM</th>
+                                <th class="px-6 py-3">Deskripsi</th>
+                                <th class="px-6 py-3">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($urgentWork as $wo)
+                            <tr class="hover:bg-red-50 bg-white">
+                                <td class="px-6 py-3 font-bold text-red-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-gray-800">{{ $wo->description }}</div>
+                                    <div class="text-xs text-red-400 font-semibold">{{ $wo->status }}</div>
+                                </td>
+                                <td class="px-6 py-3 text-gray-500 text-xs">
+                                    {{ \Carbon\Carbon::parse($wo->reportdate)->format('d/m/Y') }}
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
+                                    <i class="fas fa-check-circle text-4xl mb-2 text-gray-300"></i>
+                                    <p>Aman! Tidak ada pekerjaan urgent.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                    {{ $urgentWork->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage()])->links() }}
+                </div>
+            </div>
+
+            <!-- Card: Backlog -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">Backlog / Carry Over</h3>
+                    <span class="text-xs font-medium bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">{{ $planBacklog->total() }} Items</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-white text-gray-500 font-bold border-b">
+                            <tr>
+                                <th class="px-6 py-3">WONUM</th>
+                                <th class="px-6 py-3">Deskripsi</th>
+                                <th class="px-6 py-3">Age</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($planBacklog as $wo)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3 font-medium text-gray-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
+                                    <div class="text-xs text-gray-500">
+                                        <span class="bg-gray-100 px-1 rounded">{{ $wo->worktype }}</span> 
+                                        {{ $wo->status }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3 text-gray-500 text-xs">
+                                    @if(isset($wo->reportdate))
+                                        {{ \Carbon\Carbon::parse($wo->reportdate)->diffInDays(now()) }} Days
+                                    @else - @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
+                                    <i class="fas fa-clipboard-check text-4xl mb-2 text-gray-300"></i>
+                                    <p>Tidak ada backlog.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                    {{ $planBacklog->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                </div>
+            </div>
+
         </div>
-
     </div>
-
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Review Tabs
-        const btnReview = document.querySelectorAll('.tab-review');
-        const contentReview = document.querySelectorAll('.tab-content-review');
-
-        btnReview.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active classes
-                btnReview.forEach(b => {
-                    b.classList.remove('active', 'text-blue-700', 'border-b-2', 'border-blue-600');
-                    b.classList.add('text-gray-500');
-                });
-                contentReview.forEach(c => c.classList.add('hidden'));
-
-                // Add active to clicked
-                btn.classList.add('active', 'text-blue-700', 'border-b-2', 'border-blue-600');
-                btn.classList.remove('text-gray-500');
-                
-                // Show content
-                document.getElementById(btn.dataset.target).classList.remove('hidden');
-            });
-        });
-
-        // Planning Tabs
-        const btnPlan = document.querySelectorAll('.tab-plan');
-        const contentPlan = document.querySelectorAll('.tab-content-plan');
-
-        btnPlan.forEach(btn => {
-            btn.addEventListener('click', () => {
-                 // Remove active classes
-                btnPlan.forEach(b => {
-                    b.classList.remove('active', 'text-green-700', 'border-b-2', 'border-green-600');
-                    b.classList.add('text-gray-500');
-                });
-                 contentPlan.forEach(c => c.classList.add('hidden'));
-
-                  // Add active to clicked
-                btn.classList.add('active', 'text-green-700', 'border-b-2', 'border-green-600');
-                btn.classList.remove('text-gray-500');
-
-                 // Show content
-                document.getElementById(btn.dataset.target).classList.remove('hidden');
-            });
-        });
-    });
-</script>
 @endsection
 
