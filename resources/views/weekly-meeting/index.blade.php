@@ -6,9 +6,65 @@
     <style>
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Stats Grid Layout */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        /* Stat Card Common */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #f3f4f6;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Color Variants - Border Left & Icon Background */
+        .stat-card.blue { border-left: 4px solid #3b82f6; }
+        .stat-card.blue .stat-icon-wrapper { background-color: #eff6ff; color: #3b82f6; }
         
-        .stat-card { transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card.green { border-left: 4px solid #10b981; }
+        .stat-card.green .stat-icon-wrapper { background-color: #ecfdf5; color: #10b981; }
+        
+        .stat-card.purple { border-left: 4px solid #8b5cf6; }
+        .stat-card.purple .stat-icon-wrapper { background-color: #f5f3ff; color: #8b5cf6; }
+        
+        .stat-card.red { border-left: 4px solid #ef4444; }
+        .stat-card.red .stat-icon-wrapper { background-color: #fef2f2; color: #ef4444; }
+        
+        .stat-card.orange { border-left: 4px solid #f97316; }
+        .stat-card.orange .stat-icon-wrapper { background-color: #fff7ed; color: #f97316; }
+
+        /* Content Styling */
+        .stat-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 0.25rem; }
+        .stat-value { font-size: 1.875rem; font-weight: 800; color: #111827; line-height: 1; }
+        .stat-subtext { font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem; font-weight: 500; }
+        
+        .stat-icon-wrapper {
+            padding: 0.75rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
     </style>
 @endsection
 
@@ -17,61 +73,53 @@
 @include('components.navbar')
 
 <div class="container mx-auto py-8 mt-24 fade-in px-4">
-    <!-- Quick Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Blue: Review Completed -->
-        <div class="bg-white rounded-lg shadow-sm border-l-4 border-blue-500 p-4 stat-card">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-xs font-bold text-blue-500 uppercase tracking-widest">Completed (Last Week)</div>
-                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $reviewCompletedWOs->total() }}</div>
-                    <div class="text-xs text-gray-500 mt-1">{{ $lastWeekStart->format('d M') }} - {{ $lastWeekEnd->format('d M') }}</div>
-                </div>
-                <div class="p-2 bg-blue-50 rounded-full text-blue-500">
-                    <i class="fas fa-check-double"></i>
-                </div>
+    <!-- Stats Grid -->
+    <div class="stats-grid fade-in mb-8">
+        <!-- Review: Completed -->
+        <div class="stat-card blue">
+            <div class="stat-content">
+                <div class="stat-label">Review Completed</div>
+                <div class="stat-value">{{ $reviewCompletedWOs->total() }}</div>
+                <div class="stat-subtext">{{ $lastWeekStart->format('d M') }} - {{ $lastWeekEnd->format('d M') }}</div>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-check-double"></i>
             </div>
         </div>
-
-        <!-- Indigo: New SRs -->
-        <div class="bg-white rounded-lg shadow-sm border-l-4 border-indigo-500 p-4 stat-card">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest">New Generated (Last Week)</div>
-                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $reviewCreatedWOs->total() }}</div>
-                    <div class="text-xs text-gray-500 mt-1">SR/WO Created</div>
-                </div>
-                <div class="p-2 bg-indigo-50 rounded-full text-indigo-500">
-                    <i class="fas fa-plus-circle"></i>
-                </div>
+        
+        <!-- Review: New Generated -->
+        <div class="stat-card purple">
+            <div class="stat-content">
+                <div class="stat-label">New SR/WO</div>
+                <div class="stat-value">{{ $reviewCreatedWOs->total() }}</div>
+                <div class="stat-subtext">Generated Last Week</div>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-plus-circle"></i>
             </div>
         </div>
-
-        <!-- Green: Plan PM -->
-        <div class="bg-white rounded-lg shadow-sm border-l-4 border-green-500 p-4 stat-card">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-xs font-bold text-green-500 uppercase tracking-widest">Routine PM (Next Week)</div>
-                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $planPMs->total() }}</div>
-                    <div class="text-xs text-gray-500 mt-1">{{ $nextWeekStart->format('d M') }} - {{ $nextWeekEnd->format('d M') }}</div>
-                </div>
-                <div class="p-2 bg-green-50 rounded-full text-green-500">
-                    <i class="fas fa-sync-alt"></i>
-                </div>
+        
+        <!-- Plan: Routine PM -->
+        <div class="stat-card green">
+            <div class="stat-content">
+                <div class="stat-label">Next Week PM</div>
+                <div class="stat-value">{{ $planPMs->total() }}</div>
+                <div class="stat-subtext">{{ $nextWeekStart->format('d M') }} - {{ $nextWeekEnd->format('d M') }}</div>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-sync-alt"></i>
             </div>
         </div>
-
-        <!-- Red: Urgent -->
-        <div class="bg-white rounded-lg shadow-sm border-l-4 border-red-500 p-4 stat-card">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-xs font-bold text-red-500 uppercase tracking-widest">Urgent / Priority 1</div>
-                    <div class="text-2xl font-bold text-gray-800 mt-1">{{ $urgentWork->total() }}</div>
-                    <div class="text-xs text-gray-500 mt-1">Need Immediate Action</div>
-                </div>
-                <div class="p-2 bg-red-50 rounded-full text-red-500">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
+        
+        <!-- Plan: Urgent -->
+        <div class="stat-card red">
+            <div class="stat-content">
+                <div class="stat-label">Urgent Priority 1</div>
+                <div class="stat-value">{{ $urgentWork->total() }}</div>
+                <div class="stat-subtext">Need Immediate Action</div>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-exclamation-triangle"></i>
             </div>
         </div>
     </div>
