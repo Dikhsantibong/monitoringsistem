@@ -85,7 +85,8 @@ class KinerjaPemeliharaanController extends Controller
         $totalOpen = $pmOpen + $cmOpen;
         
         // Get data per Location (using as Unit)
-        $unitData = (clone $woQuery)
+        // We need all locations to group them via PHP, so removing limit(10) and grouping in application layer
+        $rawUnitData = (clone $woQuery)
             ->select('LOCATION', 
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' AND STATUS IN ('" . implode("','", $closedStatuses) . "') THEN 1 ELSE 0 END) as pm_closed"),
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' AND STATUS IN ('" . implode("','", $openStatuses) . "') THEN 1 ELSE 0 END) as pm_open"),
@@ -97,37 +98,77 @@ class KinerjaPemeliharaanController extends Controller
             })
             ->whereNotNull('LOCATION')
             ->groupBy('LOCATION')
-            ->orderBy(DB::raw("SUM(CASE WHEN STATUS IN ('" . implode("','", $closedStatuses) . "') THEN 1 ELSE 0 END)"), 'desc')
-            ->limit(10)
             ->get();
         
-        $unitNames = $unitData->pluck('location')->toArray();
-        $pmClosedPerUnit = $unitData->pluck('pm_closed')->toArray();
-        $pmOpenPerUnit = $unitData->pluck('pm_open')->toArray();
-        $cmClosedPerUnit = $unitData->pluck('cm_closed')->toArray();
-        $cmOpenPerUnit = $unitData->pluck('cm_open')->toArray();
-        
-        // Find best performing unit
+        // Define groupings
+        $groupDefinitions = [
+            'ULPLTD KOLAKA' => ['KLKA', 'LANI', 'SABI', 'MIKU'],
+            'ULPLTD BAU-BAU' => ['BBAU', 'RAHA', 'WANG', 'EREK', 'RONG', 'WINN'],
+            'ULPLTD POASIA' => ['POAS'],
+            'ULPLTD WUA-WUA' => ['WUAW', 'LANG']
+        ];
+
+        $groupedStats = [];
+        // Initialize groups
+        foreach ($groupDefinitions as $groupName => $codes) {
+            $groupedStats[$groupName] = [
+                'pm_closed' => 0, 'pm_open' => 0,
+                'cm_closed' => 0, 'cm_open' => 0,
+                'total_closed' => 0
+            ];
+        }
+
+        // Process aggregation
+        foreach ($rawUnitData as $row) {
+            $loc = strtoupper($row->location);
+            foreach ($groupDefinitions as $groupName => $codes) {
+                foreach ($codes as $code) {
+                    if (str_contains($loc, $code)) {
+                        $groupedStats[$groupName]['pm_closed'] += $row->pm_closed;
+                        $groupedStats[$groupName]['pm_open'] += $row->pm_open;
+                        $groupedStats[$groupName]['cm_closed'] += $row->cm_closed;
+                        $groupedStats[$groupName]['cm_open'] += $row->cm_open;
+                        $groupedStats[$groupName]['total_closed'] += ($row->pm_closed + $row->cm_closed);
+                        break 2; // Match found, move to next row
+                    }
+                }
+            }
+        }
+
+        // Sort by Total Closed Descending
+        uasort($groupedStats, function($a, $b) {
+            return $b['total_closed'] <=> $a['total_closed'];
+        });
+
+        // Prepare arrays for view
+        $unitNames = array_keys($groupedStats);
+        $pmClosedPerUnit = [];
+        $pmOpenPerUnit = [];
+        $cmClosedPerUnit = [];
+        $cmOpenPerUnit = [];
+
+        // Find best performing group
         $bestPerformingUnit = '-';
         $maxRate = -1;
-        
-        foreach ($unitData as $unit) {
-            $uTotal = $unit->pm_closed + $unit->pm_open + $unit->cm_closed + $unit->cm_open;
-            $uClosed = $unit->pm_closed + $unit->cm_closed;
+
+        foreach ($groupedStats as $name => $stats) {
+            $pmClosedPerUnit[] = $stats['pm_closed'];
+            $pmOpenPerUnit[] = $stats['pm_open'];
+            $cmClosedPerUnit[] = $stats['cm_closed'];
+            $cmOpenPerUnit[] = $stats['cm_open'];
+
+            $uTotal = $stats['pm_closed'] + $stats['pm_open'] + $stats['cm_closed'] + $stats['cm_open'];
+            $uClosed = $stats['pm_closed'] + $stats['cm_closed'];
             
             $rate = $uTotal > 0 ? ($uClosed / $uTotal) * 100 : 0;
             
-            if ($rate > $maxRate && $uTotal > 5) {
+            if ($rate > $maxRate && $uTotal > 0) {
                 $maxRate = $rate;
-                $bestPerformingUnit = $unit->location;
+                $bestPerformingUnit = $name;
             }
         }
         
-        // Get monthly trend (Dynamically based on period or fixed last 6 months? 
-        // User asked to filter dashboard based on time. Let's make trend utilize the period if large enough, else default logic.
-        // For simplicity and resilience, let's keep the trend logic but ensure it covers the requested range if possible, or just the requested range.)
-        
-        // We will generate monthly buckets between start and end date
+        // Get monthly trend
         $monthlyTrend = [];
         $periodIterator = $startDate->copy()->startOfMonth();
         $endPeriod = $endDate->copy()->endOfMonth();
