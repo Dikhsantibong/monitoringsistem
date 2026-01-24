@@ -283,7 +283,7 @@
     </div>
 
     <!-- Detailed Metrics Section (Tables based on Image) -->
-    <div class="mt-8 grid grid-cols-1 gap-8 fade-in">
+    <div class="px-4 py-4 mt-8 grid grid-cols-1 gap-8 fade-in">
         
         <!-- WO Terbit & Complete Table -->
         <div class="table-card">
