@@ -7,66 +7,94 @@
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Stats Grid Layout */
+        /* Stats Grid Layout - Exact copy from Kinerja */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
             margin-bottom: 2rem;
         }
-        @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 1280px) { .stats-grid { grid-template-columns: repeat(5, 1fr); } }
-
-        /* Stat Card Common */
+        
         .stat-card {
             background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 1.25rem;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: flex-start;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #f3f4f6;
-            transition: transform 0.2s, box-shadow 0.2s;
-            height: 100%; /* Ensure equal height */
+            transition: box-shadow 0.2s ease;
+            height: 100%;
         }
+        
         .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
-
-        /* Color Variants - Border Left & Icon Background */
-        .stat-card.blue { border-left: 4px solid #3b82f6; }
-        .stat-card.blue .stat-icon-wrapper { background-color: #eff6ff; color: #3b82f6; }
         
-        .stat-card.green { border-left: 4px solid #10b981; }
-        .stat-card.green .stat-icon-wrapper { background-color: #ecfdf5; color: #10b981; }
+        .stat-content {
+            flex: 1;
+        }
         
-        .stat-card.purple { border-left: 4px solid #8b5cf6; }
-        .stat-card.purple .stat-icon-wrapper { background-color: #f5f3ff; color: #8b5cf6; }
+        .stat-label {
+            font-size: 0.8125rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
         
-        .stat-card.red { border-left: 4px solid #ef4444; }
-        .stat-card.red .stat-icon-wrapper { background-color: #fef2f2; color: #ef4444; }
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+            line-height: 1;
+        }
         
-        .stat-card.orange { border-left: 4px solid #f97316; }
-        .stat-card.orange .stat-icon-wrapper { background-color: #fff7ed; color: #f97316; }
-
-        /* Content Styling */
-        .stat-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 0.25rem; }
-        .stat-value { font-size: 1.875rem; font-weight: 800; color: #111827; line-height: 1; }
-        .stat-subtext { font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem; font-weight: 500; }
+        .stat-subtext {
+            font-size: 0.75rem;
+            color: #868e96;
+        }
         
         .stat-icon-wrapper {
-            padding: 0.75rem;
-            border-radius: 12px;
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon-wrapper i {
             font-size: 1.25rem;
-            flex-shrink: 0; /* Prevent icon squish */
+        }
+        
+        /* Color Variants - Hex Codes from Kinerja */
+        .stat-card.blue .stat-icon-wrapper {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .stat-card.purple .stat-icon-wrapper {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .stat-card.red .stat-icon-wrapper {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .stat-card.green .stat-icon-wrapper {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .stat-card.orange .stat-icon-wrapper {
+            background: #fff3e0;
+            color: #f57c00;
         }
     </style>
 @endsection
@@ -238,49 +266,6 @@
                 </div>
             </div>
 
-            <!-- Card: New Service Requests -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="font-bold text-gray-700">New Service Requests</h3>
-                    <span class="text-xs font-medium bg-orange-100 text-orange-700 px-2 py-1 rounded-full">{{ $reviewCreatedSRs->total() }} Items</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm text-left">
-                        <thead class="bg-white text-gray-500 font-bold border-b">
-                            <tr>
-                                <th class="px-6 py-3">Ticket ID</th>
-                                <th class="px-6 py-3">Deskripsi</th>
-                                <th class="px-6 py-3">Reported By</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @forelse($reviewCreatedSRs as $sr)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-orange-600">{{ $sr->ticketid }}</td>
-                                <td class="px-6 py-3">
-                                    <div class="font-medium text-gray-800 truncate w-48" title="{{ $sr->description }}">{{ $sr->description }}</div>
-                                    <div class="text-xs text-gray-500">{{ $sr->status }}</div>
-                                </td>
-                                <td class="px-6 py-3 text-sm text-gray-600">
-                                    {{ $sr->reportedby }}
-                                    <div class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($sr->reportdate)->format('d/m/Y') }}</div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
-                                    <i class="fas fa-envelope-open-text text-4xl mb-2 text-gray-300"></i>
-                                    <p>Tidak ada Service Request baru.</p>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                     {{ $reviewCreatedSRs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
-                </div>
-            </div>
         </div>
 
         <!-- Right Column: Planning Phase -->
@@ -429,6 +414,51 @@
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
                     {{ $planBacklog->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                </div>
+                </div>
+            </div>
+
+            <!-- Card: New Service Requests -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">New Service Requests</h3>
+                    <span class="text-xs font-medium bg-orange-100 text-orange-700 px-2 py-1 rounded-full">{{ $reviewCreatedSRs->total() }} Items</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-white text-gray-500 font-bold border-b">
+                            <tr>
+                                <th class="px-6 py-3">Ticket ID</th>
+                                <th class="px-6 py-3">Deskripsi</th>
+                                <th class="px-6 py-3">Reported By</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($reviewCreatedSRs as $sr)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3 font-medium text-orange-600">{{ $sr->ticketid }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-gray-800 truncate w-48" title="{{ $sr->description }}">{{ $sr->description }}</div>
+                                    <div class="text-xs text-gray-500">{{ $sr->status }}</div>
+                                </td>
+                                <td class="px-6 py-3 text-sm text-gray-600">
+                                    {{ $sr->reportedby }}
+                                    <div class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($sr->reportdate)->format('d/m/Y') }}</div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
+                                    <i class="fas fa-envelope-open-text text-4xl mb-2 text-gray-300"></i>
+                                    <p>Tidak ada Service Request baru.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                     {{ $reviewCreatedSRs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
 
