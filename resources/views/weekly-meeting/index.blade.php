@@ -87,12 +87,24 @@
             </div>
         </div>
         
-        <!-- Review: New Generated -->
+        <!-- Review: New Work Orders -->
         <div class="stat-card purple">
             <div class="stat-content">
-                <div class="stat-label">New SR/WO</div>
+                <div class="stat-label">New Work Orders</div>
                 <div class="stat-value">{{ $reviewCreatedWOs->total() }}</div>
                 <div class="stat-subtext">Generated Last Week</div>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-hammer"></i>
+            </div>
+        </div>
+        
+        <!-- Review: New Service Requests -->
+        <div class="stat-card orange">
+            <div class="stat-content">
+                <div class="stat-label">New Service Requests</div>
+                <div class="stat-value">{{ $reviewCreatedSRs->total() }}</div>
+                <div class="stat-subtext">Reported Last Week</div>
             </div>
             <div class="stat-icon-wrapper">
                 <i class="fas fa-plus-circle"></i>
@@ -176,15 +188,15 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                    {{ $reviewCompletedWOs->appends(['review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                    {{ $reviewCompletedWOs->appends(['review_created_page' => $reviewCreatedWOs->currentPage(), 'review_created_sr_page' => $reviewCreatedSRs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
 
-            <!-- Card: New Generated -->
+            <!-- Card: New Work Orders -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="font-bold text-gray-700">New Generated SR/WO</h3>
-                    <span class="text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">{{ $reviewCreatedWOs->total() }} Items</span>
+                    <h3 class="font-bold text-gray-700">New Work Orders</h3>
+                    <span class="text-xs font-medium bg-purple-100 text-purple-700 px-2 py-1 rounded-full">{{ $reviewCreatedWOs->total() }} Items</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm text-left">
@@ -198,7 +210,7 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse($reviewCreatedWOs as $wo)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-indigo-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3 font-medium text-purple-600">{{ $wo->wonum }}</td>
                                 <td class="px-6 py-3">
                                     <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
                                     <div class="text-xs text-gray-500">{{ $wo->worktype }}</div>
@@ -210,8 +222,8 @@
                             @empty
                             <tr>
                                 <td colspan="3" class="px-6 py-8 text-center text-gray-400">
-                                    <i class="fas fa-inbox text-4xl mb-2 text-gray-300"></i>
-                                    <p>Tidak ada WO/SR baru.</p>
+                                    <i class="fas fa-hammer text-4xl mb-2 text-gray-300"></i>
+                                    <p>Tidak ada Work Order baru.</p>
                                 </td>
                             </tr>
                             @endforelse
@@ -219,7 +231,51 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                    {{ $reviewCreatedWOs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                    {{ $reviewCreatedWOs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_sr_page' => $reviewCreatedSRs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                </div>
+            </div>
+
+            <!-- Card: New Service Requests -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">New Service Requests</h3>
+                    <span class="text-xs font-medium bg-orange-100 text-orange-700 px-2 py-1 rounded-full">{{ $reviewCreatedSRs->total() }} Items</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-white text-gray-500 font-bold border-b">
+                            <tr>
+                                <th class="px-6 py-3">Ticket ID</th>
+                                <th class="px-6 py-3">Deskripsi</th>
+                                <th class="px-6 py-3">Reported By</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($reviewCreatedSRs as $sr)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3 font-medium text-orange-600">{{ $sr->ticketid }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-gray-800 truncate w-48" title="{{ $sr->description }}">{{ $sr->description }}</div>
+                                    <div class="text-xs text-gray-500">{{ $sr->status }}</div>
+                                </td>
+                                <td class="px-6 py-3 text-sm text-gray-600">
+                                    {{ $sr->reportedby }}
+                                    <div class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($sr->reportdate)->format('d/m/Y') }}</div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">
+                                    <i class="fas fa-envelope-open-text text-4xl mb-2 text-gray-300"></i>
+                                    <p>Tidak ada Service Request baru.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                     {{ $reviewCreatedSRs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
         </div>

@@ -36,13 +36,21 @@ class WeeklyMeetingController extends Controller
             ->orderBy('STATUSDATE', 'desc')
             ->paginate(10, ['*'], 'review_completed_page');
 
-        // B. SR/WO Terbit (Created) di Minggu Lalu
+        // B. WO Terbit (Created) di Minggu Lalu
         $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY')
             ->where('SITEID', 'KD')
             ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
             ->orderBy('REPORTDATE', 'desc')
             ->paginate(10, ['*'], 'review_created_page');
+
+        // B.2. SR Terbit (Created) di Minggu Lalu
+        $reviewCreatedSRs = DB::connection('oracle')->table('SR')
+            ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY')
+            ->where('SITEID', 'KD')
+            ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
+            ->orderBy('REPORTDATE', 'desc')
+            ->paginate(10, ['*'], 'review_created_sr_page');
 
         // --- 2. PLANNING PHASE (MINGGU DEPAN) ---
 
@@ -85,7 +93,7 @@ class WeeklyMeetingController extends Controller
 
         return view('weekly-meeting.index', compact(
             'lastWeekStart', 'lastWeekEnd', 'nextWeekStart', 'nextWeekEnd',
-            'reviewCompletedWOs', 'reviewCreatedWOs',
+            'reviewCompletedWOs', 'reviewCreatedWOs', 'reviewCreatedSRs',
             'planPMs', 'planBacklog', 'urgentWork'
         ));
     }
