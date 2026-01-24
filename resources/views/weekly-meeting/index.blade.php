@@ -17,14 +17,6 @@
 @include('components.navbar')
 
 <div class="container mx-auto py-8 mt-24 fade-in px-4">
-    <!-- Header & Period Info -->
-    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Operational Scheduling</h1>
-            <p class="text-gray-600 mt-1">Maintenance Planning & Review (Rendalhar)</p>
-        </div>
-    </div>
-
     <!-- Quick Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Blue: Review Completed -->
