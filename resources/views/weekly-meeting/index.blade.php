@@ -246,6 +246,7 @@
                                 <th class="px-6 py-3">WONUM</th>
                                 <th class="px-6 py-3">Deskripsi</th>
                                 <th class="px-6 py-3">Jadwal</th>
+                                <th class="px-6 py-3">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -260,6 +261,9 @@
                                     <div class="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded text-center">
                                         {{ \Carbon\Carbon::parse($wo->schedstart)->format('d M') }}
                                     </div>
+                                </td>
+                                <td class="px-6 py-3">
+                                    <span class="text-xs font-bold text-gray-600 border border-gray-200 bg-gray-50 px-2 py-1 rounded">{{ $wo->status }}</span>
                                 </td>
                             </tr>
                             @empty
@@ -349,7 +353,7 @@
                                 </td>
                                 <td class="px-6 py-3 text-gray-500 text-xs">
                                     @if(isset($wo->reportdate))
-                                        {{ \Carbon\Carbon::parse($wo->reportdate)->diffInDays(now()) }} Days
+                                        {{ round(\Carbon\Carbon::parse($wo->reportdate)->diffInDays(now())) }} Hari
                                     @else - @endif
                                 </td>
                             </tr>
