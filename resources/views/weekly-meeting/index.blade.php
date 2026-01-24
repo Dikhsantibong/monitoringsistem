@@ -31,6 +31,7 @@
             overflow: hidden;
             border: 1px solid #f3f4f6;
             transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%; /* Ensure equal height */
         }
         .stat-card:hover {
             transform: translateY(-2px);
@@ -65,6 +66,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
+            flex-shrink: 0; /* Prevent icon squish */
         }
     </style>
 @endsection
@@ -75,7 +77,7 @@
 
 <div class="container mx-auto py-8 mt-24 fade-in px-4">
     <!-- Stats Grid -->
-    <div class="stats-grid fade-in mb-8">
+    <div class="stats-grid fade-in">
         <!-- Review: Completed -->
         <div class="stat-card blue">
             <div class="stat-content">
