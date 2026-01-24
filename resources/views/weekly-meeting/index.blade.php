@@ -14,8 +14,9 @@
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
-        @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1280px) { .stats-grid { grid-template-columns: repeat(5, 1fr); } }
 
         /* Stat Card Common */
         .stat-card {
