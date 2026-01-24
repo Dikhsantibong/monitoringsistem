@@ -335,21 +335,21 @@
                     <tbody>
                         @foreach($statusBreakdown as $row)
                         <tr class="hover:bg-gray-50">
-                            <td class="text-left font-semibold">{{ $row['status'] }}</td>
-                            <td>{{ $row['CM'] }}</td>
-                            <td>{{ $row['EM'] }}</td>
-                            <td>{{ $row['WR'] }}</td>
-                            <td>{{ $row['RTF'] }}</td>
-                            <td>{{ $row['PM'] }}</td>
-                            <td>{{ $row['PDM'] }}</td>
-                            <td>{{ $row['EJ'] }}</td>
-                            <td>{{ $row['PAM'] }}</td>
-                            <td>{{ $row['CP'] }}</td>
-                            <td>{{ $row['OH'] }}</td>
-                            <td>{{ $row['ADM'] }}</td>
-                            <td>{{ $row['OP'] }}</td>
-                            <td>{{ $row['KOSONG'] }}</td>
-                            <td class="font-bold text-blue-700">{{ $row['total'] }}</td>
+                            <td class="border-r border-gray-300 text-left font-semibold">{{ $row['status'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['CM'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['EM'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['WR'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['RTF'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['PM'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['PDM'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['EJ'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['PAM'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['CP'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['OH'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['ADM'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['OP'] }}</td>
+                            <td class="border-r border-gray-300 text-center">{{ $row['KOSONG'] }}</td>
+                            <td class="border-r border-gray-300 text-center font-bold text-blue-700">{{ $row['total'] }}</td>
                         </tr>
                         @endforeach
                     </tbody>
