@@ -500,7 +500,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL', 'WPCOND'])
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->sum('ESTLABHRS');
             
         $readyManhours = DB::connection('oracle')->table('WORKORDER')
@@ -590,7 +590,7 @@ class KinerjaPemeliharaanController extends Controller
         $totalCrEm = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->whereIn('WORKTYPE', ['CR', 'EM'])
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->count();
             
         // Simplified rework count
@@ -605,7 +605,7 @@ class KinerjaPemeliharaanController extends Controller
                     FROM WORKORDER 
                     WHERE SITEID = 'KD' 
                     AND WORKTYPE IN ('CR', 'EM')
-                    AND REPORTDATE BETWEEN TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
+                    AND SCHEDSTART BETWEEN TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
                     AND ASSETNUM IS NOT NULL 
                     AND PROBLEMCODE IS NOT NULL
                     GROUP BY ASSETNUM, PROBLEMCODE
@@ -652,7 +652,7 @@ class KinerjaPemeliharaanController extends Controller
         $nonTacticalCreated = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->whereIn('WORKTYPE', ['CM', 'EM'])
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->count(); // All created
             
         $denominator = $tacticalClosed + $nonTacticalCreated;
@@ -730,14 +730,14 @@ class KinerjaPemeliharaanController extends Controller
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->count();
             
         $oldOpen = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
             ->count();
             

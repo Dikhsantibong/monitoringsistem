@@ -156,14 +156,14 @@
             <input type="hidden" name="tab" value="kpi-tab"> 
             
             <div class="flex flex-col gap-1 w-full md:w-auto">
-                <label for="start_date" class="text-xs font-semibold text-gray-600">Start Date</label>
+                <label for="start_date" class="text-xs font-semibold text-gray-600">Start Schedule</label>
                 <input type="date" id="start_date" name="start_date" 
                        value="{{ $filterStartDate ?? date('Y-m-d', strtotime('-6 months')) }}"
                        class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             
             <div class="flex flex-col gap-1 w-full md:w-auto">
-                <label for="end_date" class="text-xs font-semibold text-gray-600">End Date</label>
+                <label for="end_date" class="text-xs font-semibold text-gray-600">End Schedule</label>
                 <input type="date" id="end_date" name="end_date" 
                        value="{{ $filterEndDate ?? date('Y-m-d') }}"
                        class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
