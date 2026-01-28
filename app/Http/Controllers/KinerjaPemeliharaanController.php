@@ -648,7 +648,7 @@ class KinerjaPemeliharaanController extends Controller
             
         $nonTacticalCreated = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
-            ->whereIn('WORKTYPE', ['CR', 'EM'])
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
             ->count(); // All created
             
         $denominator = $tacticalClosed + $nonTacticalCreated;
