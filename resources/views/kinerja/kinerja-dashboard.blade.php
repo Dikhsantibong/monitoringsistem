@@ -23,7 +23,7 @@
             </button>
             
             @if(request('start_date') || request('end_date'))
-                <a href="{{ route('kinerja.pemeliharaan') }}" class="text-gray-500 text-sm hover:text-gray-700 underline mb-2">Reset</a>
+                <a href="{{ route('kinerja.pemeliharaan') }}?tab=kinerja-tab" class="text-gray-500 text-sm hover:text-gray-700 underline mb-2">Reset</a>
             @endif
         </form>
     </div>

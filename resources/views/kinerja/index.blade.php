@@ -516,25 +516,25 @@
     <!-- Tabs Navigation -->
     <div class="tabs-container">
         <div class="tabs-nav">
-            <button class="tab-button active" data-tab="kinerja-tab">
+            <button class="tab-button {{ request('tab') !== 'kpi-tab' ? 'active' : '' }}" data-tab="kinerja-tab">
                 <i class="fas fa-chart-bar"></i>
                 Kinerja Dashboard
             </button>
-            <button class="tab-button" data-tab="kpi-tab">
+            <button class="tab-button {{ request('tab') === 'kpi-tab' ? 'active' : '' }}" data-tab="kpi-tab">
                 <i class="fas fa-tachometer-alt"></i>
                 KPI Dashboard
             </button>
         </div>
-
+ 
         <!-- Tab Content -->
         <div class="tabs-content">
             <!-- Kinerja Dashboard Tab -->
-            <div id="kinerja-tab" class="tab-pane active">
+            <div id="kinerja-tab" class="tab-pane {{ request('tab') !== 'kpi-tab' ? 'active' : '' }}">
                 @include('kinerja.kinerja-dashboard')
             </div>
-
+ 
             <!-- KPI Dashboard Tab -->
-            <div id="kpi-tab" class="tab-pane">
+            <div id="kpi-tab" class="tab-pane {{ request('tab') === 'kpi-tab' ? 'active' : '' }}">
                 @include('kinerja.kpi-dashboard')
             </div>
         </div>

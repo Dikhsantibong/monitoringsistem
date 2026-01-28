@@ -23,7 +23,7 @@ class KinerjaPemeliharaanController extends Controller
         $kinerjaDashboardData = $this->getKinerjaDashboardData($startDate, $endDate);
         
         // Get data for KPI Dashboard
-        $kpiDashboardData = $this->getKpiDashboardData();
+        $kpiDashboardData = $this->getKpiDashboardData($startDate, $endDate);
         
         // Merge all data
         $data = array_merge($kinerjaDashboardData, $kpiDashboardData);
@@ -405,31 +405,31 @@ class KinerjaPemeliharaanController extends Controller
         ];
     }
     
-    private function getKpiDashboardData()
+    private function getKpiDashboardData($startDate, $endDate)
     {
         // I6.6 - PM Compliance
-        $pmCompliance = $this->calculatePmCompliance();
+        $pmCompliance = $this->calculatePmCompliance($startDate, $endDate);
         
         // I6.7 - WO Planned Backlog
-        $plannedBacklog = $this->calculatePlannedBacklog();
+        $plannedBacklog = $this->calculatePlannedBacklog($startDate, $endDate);
         
         // I6.8 - Schedule Compliance (Non Tactical)
-        $scheduleCompliance = $this->calculateScheduleCompliance();
+        $scheduleCompliance = $this->calculateScheduleCompliance($startDate, $endDate);
         
         // I6.9 - Rework (Jaminan Kualitas)
-        $rework = $this->calculateRework();
+        $rework = $this->calculateRework($startDate, $endDate);
         
         // I6.10.1 - Reactive Work
-        $reactiveWork = $this->calculateReactiveWork();
+        $reactiveWork = $this->calculateReactiveWork($startDate, $endDate);
         
         // I6.10.2 - WR/SR Open/Queued
-        $wrSrOpen = $this->calculateWrSrOpen();
+        $wrSrOpen = $this->calculateWrSrOpen($startDate, $endDate);
         
         // I6.10.3 - WO Ageing
-        $woAgeing = $this->calculateWoAgeing();
+        $woAgeing = $this->calculateWoAgeing($startDate, $endDate);
         
         // I6.10.4 - Post Implementation Review
-        $postImplReview = $this->calculatePostImplReview();
+        $postImplReview = $this->calculatePostImplReview($startDate, $endDate);
         
         return compact(
             'pmCompliance',
@@ -444,7 +444,7 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.6 - PM Compliance
-    private function calculatePmCompliance()
+    private function calculatePmCompliance($startDate, $endDate)
     {
         // PM Compliance filters:
         // 1. Maintenance Type = PM
@@ -453,7 +453,8 @@ class KinerjaPemeliharaanController extends Controller
         $woBase = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', ['COMP', 'CLOSE']);
+            ->whereIn('STATUS', ['COMP', 'CLOSE'])
+            ->whereBetween('STATUSDATE', [$startDate, $endDate]);
             
         $totalPmClosed = (clone $woBase)->count();
         
@@ -489,7 +490,7 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.7 - WO Planned Backlog
-    private function calculatePlannedBacklog()
+    private function calculatePlannedBacklog($startDate, $endDate)
     {
         // Planned Work: Non OH, Status in identification phase (WAPPR, WSCH, WMATL)
         // Ready Work: Non OH, Ready for execution (APPR)
@@ -499,12 +500,14 @@ class KinerjaPemeliharaanController extends Controller
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL', 'WPCOND'])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->sum('ESTLABHRS');
             
         $readyManhours = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'OH')
             ->where('STATUS', 'APPR')
+            ->whereBetween('STATUSDATE', [$startDate, $endDate])
             ->sum('ESTLABHRS');
             
         $totalManhours = $plannedManhours + $readyManhours;
@@ -536,7 +539,7 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.8 - Schedule Compliance (Non Tactical)
-    private function calculateScheduleCompliance()
+    private function calculateScheduleCompliance($startDate, $endDate)
     {
         // Non Tactical: CR, EM, EJ, NM, SF
         $nonTacticalTypes = ['CR', 'EM', 'EJ', 'NM', 'SF'];
@@ -544,7 +547,8 @@ class KinerjaPemeliharaanController extends Controller
         $woBase = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->whereIn('WORKTYPE', $nonTacticalTypes)
-            ->whereIn('STATUS', ['COMP', 'CLOSE']);
+            ->whereIn('STATUS', ['COMP', 'CLOSE'])
+            ->whereBetween('STATUSDATE', [$startDate, $endDate]);
             
         $totalNonTactical = (clone $woBase)->count();
         
@@ -577,18 +581,16 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.9 - Rework
-    private function calculateRework()
+    private function calculateRework($startDate, $endDate)
     {
-        // Rework: Repeated WO (same Asset, same Problem) within 1 month
+        // Rework: Repeated WO (same Asset, same Problem) within period
         // Scope: CR, EM
         
-        $oneMonthAgo = Carbon::now()->subMonth();
-        
-        // Total CR+EM in last month
+        // Total CR+EM in period
         $totalCrEm = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->whereIn('WORKTYPE', ['CR', 'EM'])
-            ->where('REPORTDATE', '>=', $oneMonthAgo)
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         // Simplified rework count
@@ -603,13 +605,13 @@ class KinerjaPemeliharaanController extends Controller
                     FROM WORKORDER 
                     WHERE SITEID = 'KD' 
                     AND WORKTYPE IN ('CR', 'EM')
-                    AND REPORTDATE >= TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
+                    AND REPORTDATE BETWEEN TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
                     AND ASSETNUM IS NOT NULL 
                     AND PROBLEMCODE IS NOT NULL
                     GROUP BY ASSETNUM, PROBLEMCODE
                     HAVING COUNT(*) > 1
                 )
-            ", [$oneMonthAgo->format('Y-m-d H:i:s')]);
+            ", [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
             
             $reworkCount = $duplicatesDetailed[0]->rework_incidents ?? 0;
         }
@@ -634,7 +636,7 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.10.1 - Reactive Work
-    private function calculateReactiveWork()
+    private function calculateReactiveWork($startDate, $endDate)
     {
         // Reactive Ratio = (Non Tactical Created) / (Tactical Closed + Non Tactical Created)
         // Tactical: PM, PdM, EJ, OH -> Closed
@@ -644,11 +646,13 @@ class KinerjaPemeliharaanController extends Controller
             ->where('SITEID', 'KD')
             ->whereIn('WORKTYPE', ['PM', 'PdM', 'EJ', 'OH'])
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
+            ->whereBetween('STATUSDATE', [$startDate, $endDate])
             ->count();
             
         $nonTacticalCreated = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->whereIn('WORKTYPE', ['CM', 'EM'])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count(); // All created
             
         $denominator = $tacticalClosed + $nonTacticalCreated;
@@ -672,12 +676,13 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.10.2 - WR/SR Open/Queued
-    private function calculateWrSrOpen()
+    private function calculateWrSrOpen($startDate, $endDate)
     {
         $srStatuses = ['NEW', 'QUEUED'];
         
         $totalSr = DB::connection('oracle')->table('SR')
             ->where('SITEID', 'KD')
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         // Overdue Normal: >= 30 days.
@@ -716,7 +721,7 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.10.3 - WO Ageing
-    private function calculateWoAgeing()
+    private function calculateWoAgeing($startDate, $endDate)
     {
         // Active statuses
         $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
@@ -725,12 +730,14 @@ class KinerjaPemeliharaanController extends Controller
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         $oldOpen = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
             ->count();
             
@@ -754,16 +761,15 @@ class KinerjaPemeliharaanController extends Controller
     }
     
     // I6.10.4 - Post Implementation Review
-    private function calculatePostImplReview()
+    private function calculatePostImplReview($startDate, $endDate)
     {
         // Placeholder for Project Review
-        $startDate = Carbon::now()->startOfYear();
         
         $totalProjects = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->whereIn('WORKTYPE', ['PJ', 'AI']) 
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->where('STATUSDATE', '>=', $startDate)
+            ->whereBetween('STATUSDATE', [$startDate, $endDate])
             ->count();
             
         $reviewed = 0; 

@@ -150,6 +150,35 @@
 </style>
 
 <div class="mt-5 px-4 fade-in">
+    <!-- Filter Section -->
+    <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <form action="{{ route('kinerja.pemeliharaan') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+            <input type="hidden" name="tab" value="kpi-tab"> 
+            
+            <div class="flex flex-col gap-1 w-full md:w-auto">
+                <label for="start_date" class="text-xs font-semibold text-gray-600">Start Date</label>
+                <input type="date" id="start_date" name="start_date" 
+                       value="{{ $filterStartDate ?? date('Y-m-d', strtotime('-6 months')) }}"
+                       class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="flex flex-col gap-1 w-full md:w-auto">
+                <label for="end_date" class="text-xs font-semibold text-gray-600">End Date</label>
+                <input type="date" id="end_date" name="end_date" 
+                       value="{{ $filterEndDate ?? date('Y-m-d') }}"
+                       class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700 transition h-[38px]">
+                <i class="fas fa-filter mr-2"></i> Filter Date
+            </button>
+            
+            @if(request('start_date') || request('end_date'))
+                <a href="{{ route('kinerja.pemeliharaan') }}?tab=kpi-tab" class="text-gray-500 text-sm hover:text-gray-700 underline mb-2">Reset</a>
+            @endif
+        </form>
+    </div>
+
     <div class="kpi-grid">
         
         <!-- I6.6 PM Compliance -->
