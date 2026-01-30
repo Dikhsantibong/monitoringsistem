@@ -205,7 +205,7 @@ class KinerjaPemeliharaanController extends Controller
         }
         
         // Monthly Trend Detailed (Create vs Complete)
-        $monthlyTrendDetailed = $this->getMonthlyTrendDetailed($woQuery, $closedStatuses); // This function still uses fixed 12 months in valid logic, maybe update it? Let's leave it as is or separate update.
+        $monthlyTrendDetailed = $this->getMonthlyTrendDetailed($woQuery, $closedStatuses, $startDate, $endDate); 
 
         // Status Breakdown (Respect date range)
         $statusBreakdown = $this->getStatusBreakdown($woQuery, $startDate, $endDate);
@@ -223,14 +223,21 @@ class KinerjaPemeliharaanController extends Controller
         );
     }
 
-    private function getMonthlyTrendDetailed($woQuery, $closedStatuses)
+    private function getMonthlyTrendDetailed($woQuery, $closedStatuses, $startDate, $endDate)
     {
         $months = [];
-        $currentMonth = Carbon::now(); // E.g., Jan 2026
-        // Go back 12 months including current
-        for ($i = 11; $i >= 0; $i--) {
-            $date = $currentMonth->copy()->subMonths($i);
-            $months[] = $date;
+        $periodIterator = $startDate->copy()->startOfMonth();
+        $endPeriod = $endDate->copy()->endOfMonth();
+        
+        // Protect against too long periods, limit to 18 months for this detailed table
+        $monthsDiff = $periodIterator->diffInMonths($endPeriod);
+        if ($monthsDiff > 18) {
+            $periodIterator = $endPeriod->copy()->subMonths(18)->startOfMonth();
+        }
+
+        while ($periodIterator <= $endPeriod) {
+            $months[] = $periodIterator->copy();
+            $periodIterator->addMonth();
         }
 
         $trendData = [];
@@ -356,7 +363,7 @@ class KinerjaPemeliharaanController extends Controller
         $nonPmFastApprRate = $nonPmApproved > 0 ? round(($nonPmFastAppr / $nonPmApproved) * 100, 2) : 0;
 
         // 4. Planned Backlog (Manhours)
-        $backlogHrs = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])->sum('ESTLABHRS'); // Snapshot, no date filter usually, or created in range? Backlog is usually "Right Now". Let's keep it total current backlog.
+        $backlogHrs = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->sum('ESTLABHRS');
         $availableHrs = 2660; // From image example
         $backlogWeeks = $availableHrs > 0 ? round($backlogHrs / $availableHrs, 2) : 0;
 
@@ -373,20 +380,22 @@ class KinerjaPemeliharaanController extends Controller
         // 7. WO Ageing Site (> 365 days open) -- Snapshot
         $ageingSite = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
             ->where('SCHEDSTART', '<=', Carbon::now()->subDays(365))
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->count();
-        $totalOpen = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->count();
+        $totalOpen = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
         $ageingSiteRate = $totalOpen > 0 ? round(($ageingSite / $totalOpen) * 100, 2) : 0;
 
         // 8. WO Ageing OH (Overhaul) -- Snapshot
         $ageingOh = (clone $woQuery)->where('WORKTYPE', 'OH')->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
             ->where('SCHEDSTART', '<=', Carbon::now()->subDays(365))
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->count();
-        $totalOhOpen = (clone $woQuery)->where('WORKTYPE', 'OH')->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->count();
+        $totalOhOpen = (clone $woQuery)->where('WORKTYPE', 'OH')->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
         $ageingOhRate = $totalOhOpen > 0 ? round(($ageingOh / $totalOhOpen) * 100, 2) : 0;
         
-        // 9. SR Open -- Snapshot
-        $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['NEW', 'QUEUED'])->count();
-        $srTotal = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->count();
+        // 9. SR Open -- Snapshot within range
+        $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['NEW', 'QUEUED'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+        $srTotal = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $srOpenRate = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
 
         return [
