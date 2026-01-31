@@ -58,7 +58,7 @@ class KinerjaPemeliharaanController extends Controller
         $pmOpen = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', $openStatuses)
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         $pmTotal = $pmClosed + $pmOpen;
@@ -74,7 +74,7 @@ class KinerjaPemeliharaanController extends Controller
         $cmOpen = (clone $woQuery)
             ->where('WORKTYPE', 'CM')
             ->whereIn('STATUS', $openStatuses)
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         $cmTotal = $cmClosed + $cmOpen;
@@ -95,7 +95,7 @@ class KinerjaPemeliharaanController extends Controller
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' AND STATUS IN ('" . implode("','", $openStatuses) . "') THEN 1 ELSE 0 END) as cm_open"))
             ->where(function($q) use ($startDate, $endDate) {
                 $q->whereBetween('STATUSDATE', [$startDate, $endDate]) // For closed
-                  ->orWhereBetween('SCHEDSTART', [$startDate, $endDate]); // For open
+                  ->orWhereBetween('REPORTDATE', [$startDate, $endDate]); // For open
             })
             ->whereNotNull('LOCATION')
             ->groupBy('LOCATION')
@@ -249,7 +249,7 @@ class KinerjaPemeliharaanController extends Controller
             
             // WO Terbit (Created)
             $created = (clone $woQuery)
-                ->whereBetween('SCHEDSTART', [$monthStart, $monthEnd])
+                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
                 ->count();
 
             // WO Complete (Closed)
@@ -261,7 +261,7 @@ class KinerjaPemeliharaanController extends Controller
             // Open (Accumulated until end of this month - simplified)
             // Real logic would be: Created before end of month AND (Not Closed OR Closed after end of month)
             $open = (clone $woQuery)
-                ->where('SCHEDSTART', '<=', $monthEnd)
+                ->where('REPORTDATE', '<=', $monthEnd)
                 ->where(function($q) use ($monthEnd, $closedStatuses) {
                     $q->whereNotIn('STATUS', $closedStatuses)
                       ->orWhere('STATUSDATE', '>', $monthEnd);
@@ -310,7 +310,7 @@ class KinerjaPemeliharaanController extends Controller
             ->whereIn('STATUS', $statuses)
             ->where(function($q) use ($startDate, $endDate) {
                  $q->whereBetween('STATUSDATE', [$startDate, $endDate])
-                   ->orWhereBetween('SCHEDSTART', [$startDate, $endDate]);
+                   ->orWhereBetween('REPORTDATE', [$startDate, $endDate]);
             })
             ->groupBy('STATUS', 'WORKTYPE')
             ->get();
@@ -338,33 +338,33 @@ class KinerjaPemeliharaanController extends Controller
         $pmCompliant = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', $closedStatuses)
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate]) // Changed from STATUSDATE
             ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDSTART')->whereNotNull('SCHEDFINISH')->whereNotNull('ACTLABHRS')
             ->whereRaw('ACTFINISH >= SCHEDSTART')->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
         $pmTotal = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', $closedStatuses)
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate]) // Changed from STATUSDATE
             ->count();
         $pmComplianceRate = $pmTotal > 0 ? round(($pmCompliant / $pmTotal) * 100, 2) : 0;
 
         // 2. Non PM Compliance (Example logic: CM/EM done within target time?)
         // Placeholder logic: CM/EM closed
-        $nonPmBase = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', $closedStatuses)->whereBetween('STATUSDATE', [$startDate, $endDate]);
+        $nonPmBase = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', $closedStatuses)->whereBetween('REPORTDATE', [$startDate, $endDate]);
         $nonPmTotal = (clone $nonPmBase)->count();
         $nonPmCompliant = $nonPmTotal > 0 ? floor($nonPmTotal * 0.35) : 0; // Fake for demo matching (~35%)
         $nonPmComplianceRate = $nonPmTotal > 0 ? round(($nonPmCompliant / $nonPmTotal) * 100, 2) : 0;
 
         // 3. Non PM Approval <= 7 Days
         // Logic: Created to Approved <= 7 days
-        // Let's use SCHEDSTART in range for this one as it relates to Creation flow
-        $nonPmApproved = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', ['APPR', 'COMP', 'CLOSE'])->whereBetween('STATUSDATE', [$startDate, $endDate])->count();
+        // Let's use REPORTDATE in range for this one as it relates to Creation flow
+        $nonPmApproved = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', ['APPR', 'COMP', 'CLOSE'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $nonPmFastAppr = $nonPmApproved > 0 ? floor($nonPmApproved * 0.94) : 0; // Fake for demo (~94%)
         $nonPmFastApprRate = $nonPmApproved > 0 ? round(($nonPmFastAppr / $nonPmApproved) * 100, 2) : 0;
 
         // 4. Planned Backlog (Manhours)
-        $backlogHrs = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->sum('ESTLABHRS');
+        $backlogHrs = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])->whereBetween('REPORTDATE', [$startDate, $endDate])->sum('ESTLABHRS');
         $availableHrs = 2660; // From image example
         $backlogWeeks = $availableHrs > 0 ? round($backlogHrs / $availableHrs, 2) : 0;
 
@@ -374,24 +374,24 @@ class KinerjaPemeliharaanController extends Controller
         // 6. Reactive Work
         // Logic: Non-Tactical / Total WO in Period
         // Non-Tactical: EM, CR
-        $nonTactical = (clone $woQuery)->whereIn('WORKTYPE', ['EM', 'CR'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
-        $allWo = (clone $woQuery)->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
+        $nonTactical = (clone $woQuery)->whereIn('WORKTYPE', ['EM', 'CR'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+        $allWo = (clone $woQuery)->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $reactiveRate = $allWo > 0 ? round(($nonTactical / $allWo) * 100, 2) : 0;
 
         // 7. WO Ageing Site (> 365 days open) -- Snapshot
         $ageingSite = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
-            ->where('SCHEDSTART', '<=', Carbon::now()->subDays(365))
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
-        $totalOpen = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
+        $totalOpen = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $ageingSiteRate = $totalOpen > 0 ? round(($ageingSite / $totalOpen) * 100, 2) : 0;
 
         // 8. WO Ageing OH (Overhaul) -- Snapshot
         $ageingOh = (clone $woQuery)->where('WORKTYPE', 'OH')->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
-            ->where('SCHEDSTART', '<=', Carbon::now()->subDays(365))
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
-        $totalOhOpen = (clone $woQuery)->where('WORKTYPE', 'OH')->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
+        $totalOhOpen = (clone $woQuery)->where('WORKTYPE', 'OH')->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $ageingOhRate = $totalOhOpen > 0 ? round(($ageingOh / $totalOhOpen) * 100, 2) : 0;
         
         // 9. SR Open -- Snapshot within range
@@ -512,7 +512,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL', 'WPCOND'])
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->sum('ESTLABHRS');
             
         $readyManhours = DB::connection('oracle')->table('WORKORDER')
@@ -520,7 +520,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->where('STATUS', 'APPR')
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->sum('ESTLABHRS');
             
         $totalManhours = $plannedManhours + $readyManhours;
@@ -605,7 +605,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['CR', 'EM'])
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         // Simplified rework count
@@ -621,7 +621,7 @@ class KinerjaPemeliharaanController extends Controller
                     WHERE SITEID = 'KD' 
                     AND WONUM LIKE 'WO%'
                     AND WORKTYPE IN ('CR', 'EM')
-                    AND SCHEDSTART BETWEEN TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
+                    AND REPORTDATE BETWEEN TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
                     AND ASSETNUM IS NOT NULL 
                     AND PROBLEMCODE IS NOT NULL
                     GROUP BY ASSETNUM, PROBLEMCODE
@@ -670,7 +670,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['CM', 'EM'])
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count(); // All created
             
         $denominator = $tacticalClosed + $nonTacticalCreated;
@@ -749,7 +749,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         $oldOpen = DB::connection('oracle')->table('WORKORDER')
@@ -757,7 +757,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
             ->count();
             
