@@ -34,6 +34,104 @@ class KinerjaPemeliharaanController extends Controller
         
         return view('kinerja.index', $data);
     }
+
+    public function detail(Request $request)
+    {
+        $type = $request->input('type');
+        $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->startOfMonth();
+        $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now()->endOfMonth();
+
+        $query = null;
+        $title = "Detail Data";
+
+        switch ($type) {
+            case 'pm_compliance_total':
+                $title = "Detail Jumlah WO PM";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->where('WORKTYPE', 'PM')
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'pm_compliance_val':
+                $title = "Detail WO PM Compliant (Tepat/MH/Log)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->where('WORKTYPE', 'PM')
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate])
+                    ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDSTART')->whereNotNull('SCHEDFINISH')->whereNotNull('ACTLABHRS')
+                    ->whereRaw('ACTFINISH >= SCHEDSTART')->whereRaw('ACTFINISH <= SCHEDFINISH');
+                break;
+            case 'non_pm_compliance_total':
+                $title = "Detail Jumlah WO Non PM (CM/EM)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('WORKTYPE', ['CM', 'EM'])
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'non_pm_approval_total':
+                $title = "Detail Jumlah WO Approved (Approved/Comp/Close)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('WORKTYPE', ['CM', 'EM'])
+                    ->whereIn('STATUS', ['APPR', 'COMP', 'CLOSE'])
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'reactive_work_total':
+                $title = "Detail Jumlah Semua WO (Reactive Basis)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'reactive_work_val':
+                $title = "Detail WO Non Taktikal (EM/CR)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('WORKTYPE', ['EM', 'CR'])
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'ageing_site_total':
+                $title = "Detail Total WO Open (Ageing Basis)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'ageing_site_val':
+                $title = "Detail WO Ageing (> 365 Hari)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
+                    ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'sr_open_total':
+                $title = "Detail Total SR";
+                $query = DB::connection('oracle')->table('SR')
+                    ->where('SITEID', 'KD')
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'sr_open_val':
+                $title = "Detail SR Open (NEW/QUEUED)";
+                $query = DB::connection('oracle')->table('SR')
+                    ->where('SITEID', 'KD')
+                    ->whereIn('STATUS', ['QUEUED', 'NEW'])
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+        }
+
+        $results = $query ? $query->get() : collect();
+        $isSR = str_contains($type, 'sr');
+
+        return view('kinerja.detail', compact('results', 'title', 'isSR', 'startDate', 'endDate'));
+    }
     
     private function getKinerjaDashboardData($startDate, $endDate)
     {

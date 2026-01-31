@@ -366,8 +366,16 @@
                 <table class="w-full text-xs border">
                     <tr class="bg-gray-100 font-semibold"><td>WO PM Compliance</td><td>Jumlah WO PM</td><td>%</td></tr>
                     <tr>
-                        <td class="text-purple-600 font-bold p-1">{{ $metrics['pm_compliance']['val'] }}</td>
-                        <td class="p-1">{{ $metrics['pm_compliance']['total'] }}</td>
+                        <td class="text-purple-600 font-bold p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'pm_compliance_val', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['pm_compliance']['val'] }}
+                            </a>
+                        </td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'pm_compliance_total', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['pm_compliance']['total'] }}
+                            </a>
+                        </td>
                         <td class="p-1">{{ $metrics['pm_compliance']['rate'] }}%</td>
                     </tr>
                 </table>
@@ -379,8 +387,16 @@
                 <table class="w-full text-xs border">
                     <tr class="bg-gray-100 font-semibold"><td>WO Non PM Compliance</td><td>Jumlah WO Non PM</td><td>%</td></tr>
                     <tr>
-                        <td class="text-blue-600 font-bold p-1">{{ $metrics['non_pm_compliance']['val'] }}</td>
-                        <td class="p-1">{{ $metrics['non_pm_compliance']['total'] }}</td>
+                        <td class="text-blue-600 font-bold p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'non_pm_compliance_val', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['non_pm_compliance']['val'] }}
+                            </a>
+                        </td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'non_pm_compliance_total', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['non_pm_compliance']['total'] }}
+                            </a>
+                        </td>
                         <td class="p-1">{{ $metrics['non_pm_compliance']['rate'] }}%</td>
                     </tr>
                 </table>
@@ -392,8 +408,16 @@
                 <table class="w-full text-xs border">
                     <tr class="bg-gray-100 font-semibold"><td>WO Inplanning</td><td>Jumlah WO</td><td>%</td></tr>
                     <tr>
-                        <td class="text-purple-600 font-bold p-1">{{ $metrics['non_pm_approval']['val'] }}</td>
-                        <td class="p-1">{{ $metrics['non_pm_approval']['total'] }}</td>
+                        <td class="text-purple-600 font-bold p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'non_pm_approval_val', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['non_pm_approval']['val'] }}
+                            </a>
+                        </td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'non_pm_approval_total', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['non_pm_approval']['total'] }}
+                            </a>
+                        </td>
                         <td class="p-1">{{ $metrics['non_pm_approval']['rate'] }}%</td>
                     </tr>
                 </table>
@@ -418,8 +442,16 @@
                 <table class="w-full text-xs border">
                     <tr class="bg-gray-100 font-semibold"><td>WO Non Taktikal</td><td>Jumlah Semua WO</td><td>%</td></tr>
                     <tr>
-                        <td class="p-1">{{ $metrics['reactive_work']['val'] }}</td>
-                        <td class="p-1">{{ $metrics['reactive_work']['total'] }}</td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'reactive_work_val', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['reactive_work']['val'] }}
+                            </a>
+                        </td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'reactive_work_total', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['reactive_work']['total'] }}
+                            </a>
+                        </td>
                         <td class="text-blue-600 font-bold p-1">{{ $metrics['reactive_work']['rate'] }}%</td>
                     </tr>
                 </table>
@@ -431,8 +463,16 @@
                 <table class="w-full text-xs border">
                     <tr class="bg-gray-100 font-semibold"><td>WO Ageing</td><td>Total WO Open</td><td>%</td></tr>
                     <tr>
-                        <td class="p-1">{{ $metrics['ageing_site']['val'] }}</td>
-                        <td class="p-1">{{ $metrics['ageing_site']['total'] }}</td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'ageing_site_val', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline text-red-600 font-bold">
+                                {{ $metrics['ageing_site']['val'] }}
+                            </a>
+                        </td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'ageing_site_total', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['ageing_site']['total'] }}
+                            </a>
+                        </td>
                         <td class="text-blue-600 font-bold p-1">{{ $metrics['ageing_site']['rate'] }}%</td>
                     </tr>
                 </table>
@@ -444,8 +484,16 @@
                 <table class="w-full text-xs border">
                     <tr class="bg-gray-100 font-semibold"><td>SR Open</td><td>Total SR</td><td>%</td></tr>
                     <tr>
-                        <td class="p-1">{{ $metrics['sr_open']['val'] }}</td>
-                        <td class="p-1">{{ $metrics['sr_open']['total'] }}</td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'sr_open_val', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline text-blue-600 font-bold">
+                                {{ $metrics['sr_open']['val'] }}
+                            </a>
+                        </td>
+                        <td class="p-1">
+                            <a href="{{ route('kinerja.detail', ['type' => 'sr_open_total', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">
+                                {{ $metrics['sr_open']['total'] }}
+                            </a>
+                        </td>
                         <td class="text-blue-600 font-bold p-1">{{ $metrics['sr_open']['rate'] }}%</td>
                     </tr>
                 </table>

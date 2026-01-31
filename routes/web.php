@@ -841,6 +841,7 @@ Route::post('/api/notulen-paste-image', [NotulenController::class, 'uploadPasted
     ->name('notulen.paste-image');
 
 Route::get('/kinerja-pemeliharaan', [KinerjaPemeliharaanController::class, 'index'])->name('kinerja.pemeliharaan');
+Route::get('/kinerja-pemeliharaan/detail', [KinerjaPemeliharaanController::class, 'detail'])->name('kinerja.detail');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/dashboard', [\App\Http\Controllers\PemeliharaanDashboardController::class, 'index'])->name('pemeliharaan.dashboard');
