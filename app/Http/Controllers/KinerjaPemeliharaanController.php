@@ -337,7 +337,7 @@ class KinerjaPemeliharaanController extends Controller
         // Formula: Tepat (ACTFINISH <= SCHEDFINISH) AND Complete MH (ACTLABHRS > 0) AND Complete Log (ACTSTART/ACTFINISH not null)
         $pmBaseQuery = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
-            ->whereBetween('SCHEDSTART', [$startDate, $endDate]);
+            ->whereBetween('REPORTDATE', [$startDate, $endDate]);
 
         $pmTotal = (clone $pmBaseQuery)->count();
 
