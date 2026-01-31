@@ -211,7 +211,7 @@ class KinerjaPemeliharaanController extends Controller
         $statusBreakdown = $this->getStatusBreakdown($woQuery, $startDate, $endDate);
 
         // Additional Metrics (Respect date range)
-        $metrics = $this->getAdditionalMetrics($woQuery, $closedStatuses, $startDate, $endDate);
+        $metrics = $this->getAdditionalMetrics($woQuery, $closedStatuses, $openStatuses, $startDate, $endDate);
 
         return compact(
             'totalWOCount', 'totalClosed', 'totalOpen',
@@ -331,13 +331,14 @@ class KinerjaPemeliharaanController extends Controller
         return array_values($matrix);
     }
 
-    private function getAdditionalMetrics($woQuery, $openStatuses, $startDate, $endDate)
+    private function getAdditionalMetrics($woQuery, $closedStatuses, $openStatuses, $startDate, $endDate)
     {
         // 1. PM Compliance
         // Formula: Tepat (ACTFINISH <= SCHEDFINISH) AND Complete MH (ACTLABHRS > 0) AND Complete Log (ACTSTART/ACTFINISH not null)
         $pmBaseQuery = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
-            ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+            ->whereIn('STATUS', $openStatuses)
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate]);
 
         $pmTotal = (clone $pmBaseQuery)->count();
 
@@ -352,16 +353,17 @@ class KinerjaPemeliharaanController extends Controller
         $pmComplianceRate = $pmTotal > 0 ? round(($pmCompliant / $pmTotal) * 100, 2) : 0;
 
         // 2. Non PM Compliance (Example logic: CM/EM done within target time?)
-        // Placeholder logic: CM/EM closed
-        $nonPmBase = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', $closedStatuses)->whereBetween('STATUSDATE', [$startDate, $endDate]);
+        // Use Open Statuses
+        $nonPmBase = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', $openStatuses)->whereBetween('SCHEDSTART', [$startDate, $endDate]);
         $nonPmTotal = (clone $nonPmBase)->count();
         $nonPmCompliant = $nonPmTotal > 0 ? floor($nonPmTotal * 0.35) : 0; // Fake for demo matching (~35%)
         $nonPmComplianceRate = $nonPmTotal > 0 ? round(($nonPmCompliant / $nonPmTotal) * 100, 2) : 0;
 
         // 3. Non PM Approval <= 7 Days
+
+        
         // Logic: Created to Approved <= 7 days
-        // Let's use SCHEDSTART in range for this one as it relates to Creation flow
-        $nonPmApproved = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', ['APPR', 'COMP', 'CLOSE'])->whereBetween('STATUSDATE', [$startDate, $endDate])->count();
+        $nonPmApproved = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', $openStatuses)->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
         $nonPmFastAppr = $nonPmApproved > 0 ? floor($nonPmApproved * 0.94) : 0; // Fake for demo (~94%)
         $nonPmFastApprRate = $nonPmApproved > 0 ? round(($nonPmFastAppr / $nonPmApproved) * 100, 2) : 0;
 
@@ -376,8 +378,8 @@ class KinerjaPemeliharaanController extends Controller
         // 6. Reactive Work
         // Logic: Non-Tactical / Total WO in Period
         // Non-Tactical: EM, CR
-        $nonTactical = (clone $woQuery)->whereIn('WORKTYPE', ['EM', 'CR'])->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
-        $allWo = (clone $woQuery)->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
+        $nonTactical = (clone $woQuery)->whereIn('WORKTYPE', ['EM', 'CR'])->whereIn('STATUS', $openStatuses)->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
+        $allWo = (clone $woQuery)->whereIn('STATUS', $openStatuses)->whereBetween('SCHEDSTART', [$startDate, $endDate])->count();
         $reactiveRate = $allWo > 0 ? round(($nonTactical / $allWo) * 100, 2) : 0;
 
         // 7. WO Ageing Site (> 365 days open) -- Snapshot
