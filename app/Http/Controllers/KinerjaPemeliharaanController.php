@@ -28,8 +28,10 @@ class KinerjaPemeliharaanController extends Controller
         // Merge all data
         $data = array_merge($kinerjaDashboardData, $kpiDashboardData);
         
-        // Add date params for view
-        $data['filterStartDate'] = $startDate->format('Y-m-d');
+        // Add date params for view as objects for format() calls in blade
+        $data['startDate'] = $startDate;
+        $data['endDate'] = $endDate;
+        $data['filterStartDate'] = $startDate->format('Y-m-d'); // Keep for backward compatibility if needed
         $data['filterEndDate'] = $endDate->format('Y-m-d');
         
         return view('kinerja.index', $data);
