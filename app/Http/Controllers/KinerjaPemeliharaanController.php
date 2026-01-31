@@ -259,7 +259,7 @@ class KinerjaPemeliharaanController extends Controller
             // Real logic would be: Created before end of month AND (Not Closed OR Closed after end of month)
             $open = (clone $woQuery)
                 ->where('REPORTDATE', '<=', $monthEnd)
-                ->where(function($q) use ($monthEnd, $closedStatuses) {
+                ->where(function($q) use ($monthEnd, $closedStatuses, $monthStart) {
                     $q->whereNotIn('STATUS', $closedStatuses)
                       ->orWhere('REPORTDATE', '>', $monthStart); // Simplified for trend
                 })
