@@ -331,7 +331,7 @@ class KinerjaPemeliharaanController extends Controller
         return array_values($matrix);
     }
 
-    private function getAdditionalMetrics($woQuery, $closedStatuses, $startDate, $endDate)
+    private function getAdditionalMetrics($woQuery, $openStatuses, $startDate, $endDate)
     {
         // 1. PM Compliance
         // Formula: Tepat (ACTFINISH <= SCHEDFINISH) AND Complete MH (ACTLABHRS > 0) AND Complete Log (ACTSTART/ACTFINISH not null)
