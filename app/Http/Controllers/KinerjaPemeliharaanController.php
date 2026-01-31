@@ -337,7 +337,7 @@ class KinerjaPemeliharaanController extends Controller
         $statusBreakdown = $this->getStatusBreakdown($woQuery, $startDate, $endDate);
 
         // Additional Metrics (Respect date range)
-        $metrics = $this->getAdditionalMetrics($woQuery, $closedStatuses, $startDate, $endDate);
+        $metrics = $this->getAdditionalMetrics($woQuery, $closedStatuses, $openStatuses, $startDate, $endDate);
 
         return compact(
             'totalWOCount', 'totalClosed', 'totalOpen',
@@ -457,12 +457,15 @@ class KinerjaPemeliharaanController extends Controller
     private function getAdditionalMetrics($woQuery, $closedStatuses, $openStatuses, $startDate, $endDate)
     {
         // 1. PM Compliance
+        // Numerator: Compliant & Closed (Only closed/comp can have actuals)
         $pmCompliant = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', $closedStatuses , $openStatuses)
+            ->whereIn('STATUS', $closedStatuses)
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDSTART')->whereNotNull('SCHEDFINISH')->whereNotNull('ACTLABHRS')
             ->whereRaw('ACTFINISH >= SCHEDSTART')->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
+        // Denominator: Total PM Issued in Period (Open + Closed), excluding CAN/WSCH
         $pmTotal = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
             ->whereNotIn('STATUS', ['CAN', 'WSCH'])
