@@ -29,6 +29,10 @@
                             <th class="px-6 py-3">Description</th>
                             <th class="px-6 py-3">Work Type</th>
                             <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Schedule start</th>
+                            <th class="px-6 py-3">Actual start</th>
+                            <th class="px-6 py-3">Schedule finish</th>
+                            <th class="px-6 py-3">Actual finish</th>
                             <th class="px-6 py-3">Location</th>
                             <th class="px-6 py-3">Report Date</th>
                         @endif
@@ -61,13 +65,17 @@
                                         {{ $row->status }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 text-gray-500">{{ $row->schedstart ? date('d/m/Y', strtotime($row->schedstart)) : '-' }}</td>
+                                <td class="px-6 py-4 text-gray-500">{{ $row->actstart ? date('d/m/Y', strtotime($row->actstart)) : '-' }}</td>
+                                <td class="px-6 py-4 text-gray-500">{{ $row->schedfinish ? date('d/m/Y', strtotime($row->schedfinish)) : '-' }}</td>
+                                <td class="px-6 py-4 text-gray-500">{{ $row->actfinish ? date('d/m/Y', strtotime($row->actfinish)) : '-' }}</td>
                                 <td class="px-6 py-4 text-gray-500">{{ $row->location }}</td>
                                 <td class="px-6 py-4">{{ date('d/m/Y', strtotime($row->reportdate)) }}</td>
                             @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-10 text-center text-gray-500 italic">Data tidak ditemukan untuk periode ini.</td>
+                            <td colspan="11" class="px-6 py-10 text-center text-gray-500 italic">Data tidak ditemukan untuk periode ini.</td>
                         </tr>
                     @endforelse
                 </tbody>
