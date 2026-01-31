@@ -334,17 +334,20 @@ class KinerjaPemeliharaanController extends Controller
     private function getAdditionalMetrics($woQuery, $closedStatuses, $startDate, $endDate)
     {
         // 1. PM Compliance
-        $pmCompliant = (clone $woQuery)
+        // Formula: Tepat (ACTFINISH <= SCHEDFINISH) AND Complete MH (ACTLABHRS > 0) AND Complete Log (ACTSTART/ACTFINISH not null)
+        $pmBaseQuery = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', $closedStatuses)
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
-            ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDSTART')->whereNotNull('SCHEDFINISH')->whereNotNull('ACTLABHRS')
-            ->whereRaw('ACTFINISH >= SCHEDSTART')->whereRaw('ACTFINISH <= SCHEDFINISH')
-            ->count();
-        $pmTotal = (clone $woQuery)
-            ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', $closedStatuses)
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate]);
+
+        $pmTotal = (clone $pmBaseQuery)->count();
+
+        $pmCompliant = (clone $pmBaseQuery)
+            ->whereNotNull('ACTSTART')
+            ->whereNotNull('ACTFINISH')
+            ->whereNotNull('SCHEDSTART')
+            ->whereNotNull('SCHEDFINISH')
+            ->where('ACTLABHRS', '>', 0)
+            ->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
         $pmComplianceRate = $pmTotal > 0 ? round(($pmCompliant / $pmTotal) * 100, 2) : 0;
 
@@ -457,29 +460,29 @@ class KinerjaPemeliharaanController extends Controller
     {
         // PM Compliance filters:
         // 1. Maintenance Type = PM
-        // 2. Status = COMP or CLOSE
+        // 2. All statuses included for denominator (Jumlah WO PM)
         
         $woBase = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->whereBetween('STATUSDATE', [$startDate, $endDate]);
+            ->whereBetween('SCHEDSTART', [$startDate, $endDate]);
             
-        $totalPmClosed = (clone $woBase)->count();
+        $totalPmCount = (clone $woBase)->count();
         
         // Compliant if:
-        // 1. ActFinish between SchedStart and SchedFinish
-        // 2. Has Actual Date, Completion (assumed status), Man Hour
+        // 1. Tepat: ActFinish <= SchedFinish
+        // 2. Complete MH: ACTLABHRS > 0
+        // 3. Complete Log: ACTSTART and ACTFINISH not null
         $pmCompliant = (clone $woBase)
+            ->whereNotNull('ACTSTART')
             ->whereNotNull('ACTFINISH')
             ->whereNotNull('SCHEDSTART')
             ->whereNotNull('SCHEDFINISH')
-            ->whereNotNull('ACTLABHRS')
-            ->whereRaw('ACTFINISH >= SCHEDSTART')
+            ->where('ACTLABHRS', '>', 0)
             ->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
         
-        $percentage = $totalPmClosed > 0 ? round(($pmCompliant / $totalPmClosed) * 100, 2) : 0;
+        $percentage = $totalPmCount > 0 ? round(($pmCompliant / $totalPmCount) * 100, 2) : 0;
         
         // Level Determination
         $level = 1;
@@ -490,7 +493,7 @@ class KinerjaPemeliharaanController extends Controller
         elseif ($percentage > 70) { $level = 2; $desc = "PM Compliance > 70%"; }
         
         return [
-            'total' => $totalPmClosed,
+            'total' => $totalPmCount,
             'compliant' => $pmCompliant,
             'percentage' => $percentage,
             'level' => $level,
