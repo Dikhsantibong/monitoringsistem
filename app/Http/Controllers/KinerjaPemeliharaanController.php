@@ -454,14 +454,13 @@ class KinerjaPemeliharaanController extends Controller
         return array_values($matrix);
     }
 
-    private function getAdditionalMetrics($woQuery, $closedStatuses, $startDate, $endDate)
+    private function getAdditionalMetrics($woQuery, $closedStatuses, $openStatuses, $startDate, $endDate)
     {
         // 1. PM Compliance
         $pmCompliant = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
-            ->whereIn('STATUS', $closedStatuses)
+            ->whereIn('STATUS', $closedStatuses , $openStatuses)
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
-            ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDSTART')->whereNotNull('SCHEDFINISH')->whereNotNull('ACTLABHRS')
             ->whereRaw('ACTFINISH >= SCHEDSTART')->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
         $pmTotal = (clone $woQuery)
