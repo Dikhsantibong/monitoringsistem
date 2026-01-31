@@ -59,6 +59,7 @@ class KinerjaPemeliharaanController extends Controller
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
                     ->where('WORKTYPE', 'PM')
+                    ->whereNotIn('STATUS', ['CAN', 'WSCH'])
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
             case 'pm_compliance_val':
@@ -78,6 +79,7 @@ class KinerjaPemeliharaanController extends Controller
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
                     ->whereIn('WORKTYPE', ['CM', 'EM'])
+                    ->whereNotIn('STATUS', ['CAN', 'WSCH'])
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
             case 'non_pm_compliance_val':
@@ -464,6 +466,7 @@ class KinerjaPemeliharaanController extends Controller
             ->count();
         $pmTotal = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
+            ->whereNotIn('STATUS', ['CAN', 'WSCH'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
         $pmComplianceRate = $pmTotal > 0 ? round(($pmCompliant / $pmTotal) * 100, 2) : 0;
@@ -471,6 +474,7 @@ class KinerjaPemeliharaanController extends Controller
         // 2. Non PM Compliance
         $nonPmTotal = (clone $woQuery)
             ->whereIn('WORKTYPE', ['CM', 'EM'])
+            ->whereNotIn('STATUS', ['CAN', 'WSCH'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
         $nonPmCompliant = (clone $woQuery)
