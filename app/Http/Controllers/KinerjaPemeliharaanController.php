@@ -50,7 +50,7 @@ class KinerjaPemeliharaanController extends Controller
         $pmClosed = (clone $woQuery)
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', $closedStatuses)
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
 
         // PM Open (Created within period AND still open OR open status at end of period? 
@@ -68,7 +68,7 @@ class KinerjaPemeliharaanController extends Controller
         $cmClosed = (clone $woQuery)
             ->where('WORKTYPE', 'CM')
             ->whereIn('STATUS', $closedStatuses)
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         $cmOpen = (clone $woQuery)
@@ -93,10 +93,7 @@ class KinerjaPemeliharaanController extends Controller
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'PM' AND STATUS IN ('" . implode("','", $openStatuses) . "') THEN 1 ELSE 0 END) as pm_open"),
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' AND STATUS IN ('" . implode("','", $closedStatuses) . "') THEN 1 ELSE 0 END) as cm_closed"),
                 DB::raw("SUM(CASE WHEN WORKTYPE = 'CM' AND STATUS IN ('" . implode("','", $openStatuses) . "') THEN 1 ELSE 0 END) as cm_open"))
-            ->where(function($q) use ($startDate, $endDate) {
-                $q->whereBetween('STATUSDATE', [$startDate, $endDate]) // For closed
-                  ->orWhereBetween('REPORTDATE', [$startDate, $endDate]); // For open
-            })
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->whereNotNull('LOCATION')
             ->groupBy('LOCATION')
             ->get();
@@ -187,13 +184,13 @@ class KinerjaPemeliharaanController extends Controller
             $pmMonthly = (clone $woQuery)
                 ->where('WORKTYPE', 'PM')
                 ->whereIn('STATUS', $closedStatuses)
-                ->whereBetween('STATUSDATE', [$mStart, $mEnd])
+                ->whereBetween('REPORTDATE', [$mStart, $mEnd])
                 ->count();
             
             $cmMonthly = (clone $woQuery)
                 ->where('WORKTYPE', 'CM')
                 ->whereIn('STATUS', $closedStatuses)
-                ->whereBetween('STATUSDATE', [$mStart, $mEnd])
+                ->whereBetween('REPORTDATE', [$mStart, $mEnd])
                 ->count();
                 
             $monthlyTrend[] = [
@@ -255,7 +252,7 @@ class KinerjaPemeliharaanController extends Controller
             // WO Complete (Closed)
             $completed = (clone $woQuery)
                 ->whereIn('STATUS', $closedStatuses)
-                ->whereBetween('STATUSDATE', [$monthStart, $monthEnd])
+                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
                 ->count();
             
             // Open (Accumulated until end of this month - simplified)
@@ -264,7 +261,7 @@ class KinerjaPemeliharaanController extends Controller
                 ->where('REPORTDATE', '<=', $monthEnd)
                 ->where(function($q) use ($monthEnd, $closedStatuses) {
                     $q->whereNotIn('STATUS', $closedStatuses)
-                      ->orWhere('STATUSDATE', '>', $monthEnd);
+                      ->orWhere('REPORTDATE', '>', $monthStart); // Simplified for trend
                 })
                 ->count();
 
@@ -308,10 +305,7 @@ class KinerjaPemeliharaanController extends Controller
         $data = (clone $woQuery)
             ->select('STATUS', 'WORKTYPE', DB::raw('COUNT(*) as count'))
             ->whereIn('STATUS', $statuses)
-            ->where(function($q) use ($startDate, $endDate) {
-                 $q->whereBetween('STATUSDATE', [$startDate, $endDate])
-                   ->orWhereBetween('REPORTDATE', [$startDate, $endDate]);
-            })
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->groupBy('STATUS', 'WORKTYPE')
             ->get();
 
@@ -395,7 +389,7 @@ class KinerjaPemeliharaanController extends Controller
         $ageingOhRate = $totalOhOpen > 0 ? round(($ageingOh / $totalOhOpen) * 100, 2) : 0;
         
         // 9. SR Open -- Snapshot within range
-        $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['CLOSED'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+        $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['QUEUED', 'NEW'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $srTotal = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $srOpenRate = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
 
@@ -465,7 +459,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->whereBetween('STATUSDATE', [$startDate, $endDate]);
+            ->whereBetween('REPORTDATE', [$startDate, $endDate]);
             
         $totalPmClosed = (clone $woBase)->count();
         
@@ -562,7 +556,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', $nonTacticalTypes)
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->whereBetween('STATUSDATE', [$startDate, $endDate]);
+            ->whereBetween('REPORTDATE', [$startDate, $endDate]);
             
         $totalNonTactical = (clone $woBase)->count();
         
@@ -663,7 +657,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['PM', 'PdM', 'EJ', 'OH'])
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         $nonTacticalCreated = DB::connection('oracle')->table('WORKORDER')
@@ -790,7 +784,7 @@ class KinerjaPemeliharaanController extends Controller
             ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['PJ', 'AI']) 
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->whereBetween('STATUSDATE', [$startDate, $endDate])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
         $reviewed = 0; 
