@@ -39,7 +39,8 @@ class KinerjaPemeliharaanController extends Controller
     {
         // Query base builder
         $woQuery = DB::connection('oracle')->table('WORKORDER')
-            ->where('SITEID', 'KD');
+            ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%');
 
         // Define status groups
         $closedStatuses = ['COMP', 'CLOSE'];
@@ -461,6 +462,7 @@ class KinerjaPemeliharaanController extends Controller
         
         $woBase = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->whereBetween('STATUSDATE', [$startDate, $endDate]);
@@ -507,6 +509,7 @@ class KinerjaPemeliharaanController extends Controller
         
         $plannedManhours = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL', 'WPCOND'])
             ->whereBetween('SCHEDSTART', [$startDate, $endDate])
@@ -514,6 +517,7 @@ class KinerjaPemeliharaanController extends Controller
             
         $readyManhours = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->where('STATUS', 'APPR')
             ->whereBetween('STATUSDATE', [$startDate, $endDate])
@@ -555,6 +559,7 @@ class KinerjaPemeliharaanController extends Controller
         
         $woBase = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', $nonTacticalTypes)
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->whereBetween('STATUSDATE', [$startDate, $endDate]);
@@ -598,6 +603,7 @@ class KinerjaPemeliharaanController extends Controller
         // Total CR+EM in period
         $totalCrEm = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['CR', 'EM'])
             ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->count();
@@ -613,6 +619,7 @@ class KinerjaPemeliharaanController extends Controller
                     SELECT COUNT(*) as cnt
                     FROM WORKORDER 
                     WHERE SITEID = 'KD' 
+                    AND WONUM LIKE 'WO%'
                     AND WORKTYPE IN ('CR', 'EM')
                     AND SCHEDSTART BETWEEN TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
                     AND ASSETNUM IS NOT NULL 
@@ -653,6 +660,7 @@ class KinerjaPemeliharaanController extends Controller
         
         $tacticalClosed = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['PM', 'PdM', 'EJ', 'OH'])
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->whereBetween('STATUSDATE', [$startDate, $endDate])
@@ -660,6 +668,7 @@ class KinerjaPemeliharaanController extends Controller
             
         $nonTacticalCreated = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['CM', 'EM'])
             ->whereBetween('SCHEDSTART', [$startDate, $endDate])
             ->count(); // All created
@@ -737,6 +746,7 @@ class KinerjaPemeliharaanController extends Controller
         
         $totalOpen = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
             ->whereBetween('SCHEDSTART', [$startDate, $endDate])
@@ -744,6 +754,7 @@ class KinerjaPemeliharaanController extends Controller
             
         $oldOpen = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', '!=', 'OH')
             ->whereIn('STATUS', $openStatuses)
             ->whereBetween('SCHEDSTART', [$startDate, $endDate])
@@ -776,6 +787,7 @@ class KinerjaPemeliharaanController extends Controller
         
         $totalProjects = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->whereIn('WORKTYPE', ['PJ', 'AI']) 
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->whereBetween('STATUSDATE', [$startDate, $endDate])
