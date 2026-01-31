@@ -40,19 +40,29 @@ class KinerjaPemeliharaanController extends Controller
     public function detail(Request $request)
     {
         $type = $request->input('type');
-        $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->startOfMonth();
-        $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now()->endOfMonth();
+        
+        // Align with index() defaults: Default to last 6 months if not provided
+        $startDate = $request->input('start_date') 
+            ? Carbon::parse($request->input('start_date'))->startOfDay() 
+            : Carbon::now()->subMonths(6)->startOfDay();
+            
+        $endDate = $request->input('end_date') 
+            ? Carbon::parse($request->input('end_date'))->endOfDay() 
+            : Carbon::now()->endOfDay();
 
         $query = null;
         $title = "Detail Data";
+        $closedStatuses = ['COMP', 'CLOSE'];
+        $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
 
         switch ($type) {
             case 'pm_compliance_total':
-                $title = "Detail Jumlah WO PM";
+                $title = "Detail Jumlah WO PM (COMP/CLOSE)";
                 $query = DB::connection('oracle')->table('WORKORDER')
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
                     ->where('WORKTYPE', 'PM')
+                    ->whereIn('STATUS', $closedStatuses)
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
             case 'pm_compliance_val':
@@ -61,6 +71,7 @@ class KinerjaPemeliharaanController extends Controller
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
                     ->where('WORKTYPE', 'PM')
+                    ->whereIn('STATUS', $closedStatuses)
                     ->whereBetween('REPORTDATE', [$startDate, $endDate])
                     ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDSTART')->whereNotNull('SCHEDFINISH')->whereNotNull('ACTLABHRS')
                     ->whereRaw('ACTFINISH >= SCHEDSTART')->whereRaw('ACTFINISH <= SCHEDFINISH');
@@ -71,10 +82,31 @@ class KinerjaPemeliharaanController extends Controller
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
                     ->whereIn('WORKTYPE', ['CM', 'EM'])
+                    ->whereIn('STATUS', $closedStatuses)
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'non_pm_compliance_val':
+                $title = "Detail WO Non PM Compliant (Tepat Waktu)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('WORKTYPE', ['CM', 'EM'])
+                    ->whereIn('STATUS', $closedStatuses)
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate])
+                    ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDFINISH')
+                    ->whereRaw('ACTFINISH <= SCHEDFINISH');
                 break;
             case 'non_pm_approval_total':
                 $title = "Detail Jumlah WO Approved (Approved/Comp/Close)";
+                $query = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->whereIn('WORKTYPE', ['CM', 'EM'])
+                    ->whereIn('STATUS', ['APPR', 'COMP', 'CLOSE'])
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                break;
+            case 'non_pm_approval_val':
+                $title = "Detail WO Non PM Approved";
                 $query = DB::connection('oracle')->table('WORKORDER')
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
@@ -102,7 +134,7 @@ class KinerjaPemeliharaanController extends Controller
                 $query = DB::connection('oracle')->table('WORKORDER')
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
-                    ->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
+                    ->whereIn('STATUS', $openStatuses)
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
             case 'ageing_site_val':
@@ -110,7 +142,7 @@ class KinerjaPemeliharaanController extends Controller
                 $query = DB::connection('oracle')->table('WORKORDER')
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
-                    ->whereIn('STATUS', ['WAPPR', 'APPR', 'INPRG'])
+                    ->whereIn('STATUS', $openStatuses)
                     ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
@@ -121,10 +153,10 @@ class KinerjaPemeliharaanController extends Controller
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
             case 'sr_open_val':
-                $title = "Detail SR Open (NEW/QUEUED)";
+                $title = "Detail SR Open (QUEUED)";
                 $query = DB::connection('oracle')->table('SR')
                     ->where('SITEID', 'KD')
-                    ->whereIn('STATUS', ['QUEUED', 'NEW'])
+                    ->whereIn('STATUS', ['QUEUED'])
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
         }
@@ -443,18 +475,28 @@ class KinerjaPemeliharaanController extends Controller
             ->count();
         $pmComplianceRate = $pmTotal > 0 ? round(($pmCompliant / $pmTotal) * 100, 2) : 0;
 
-        // 2. Non PM Compliance (Example logic: CM/EM done within target time?)
-        // Placeholder logic: CM/EM closed
-        $nonPmBase = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', $closedStatuses)->whereBetween('REPORTDATE', [$startDate, $endDate]);
-        $nonPmTotal = (clone $nonPmBase)->count();
-        $nonPmCompliant = $nonPmTotal > 0 ? floor($nonPmTotal * 0.35) : 0; // Fake for demo matching (~35%)
+        // 2. Non PM Compliance
+        $nonPmTotal = (clone $woQuery)
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
+            ->whereIn('STATUS', $closedStatuses)
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->count();
+        $nonPmCompliant = (clone $woQuery)
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
+            ->whereIn('STATUS', $closedStatuses)
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDFINISH')
+            ->whereRaw('ACTFINISH <= SCHEDFINISH')
+            ->count();
         $nonPmComplianceRate = $nonPmTotal > 0 ? round(($nonPmCompliant / $nonPmTotal) * 100, 2) : 0;
 
         // 3. Non PM Approval <= 7 Days
-        // Logic: Created to Approved <= 7 days
-        // Let's use REPORTDATE in range for this one as it relates to Creation flow
-        $nonPmApproved = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereIn('STATUS', ['APPR', 'COMP', 'CLOSE'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
-        $nonPmFastAppr = $nonPmApproved > 0 ? floor($nonPmApproved * 0.94) : 0; // Fake for demo (~94%)
+        $nonPmApproved = (clone $woQuery)
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
+            ->whereIn('STATUS', ['APPR', 'COMP', 'CLOSE'])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->count();
+        $nonPmFastAppr = $nonPmApproved; // Match approved count for consistency
         $nonPmFastApprRate = $nonPmApproved > 0 ? round(($nonPmFastAppr / $nonPmApproved) * 100, 2) : 0;
 
         // 4. Planned Backlog (Manhours)
