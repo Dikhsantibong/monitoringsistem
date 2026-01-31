@@ -489,7 +489,7 @@ class KinerjaPemeliharaanController extends Controller
         $ageingOhRate = $totalOhOpen > 0 ? round(($ageingOh / $totalOhOpen) * 100, 2) : 0;
         
         // 9. SR Open -- Snapshot within range
-        $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['QUEUED', 'NEW'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+        $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['QUEUED'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $srTotal = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
         $srOpenRate = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
 
