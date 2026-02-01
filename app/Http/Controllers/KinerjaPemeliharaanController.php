@@ -593,32 +593,27 @@ class KinerjaPemeliharaanController extends Controller
     // I6.6 - PM Compliance
     private function calculatePmCompliance($startDate, $endDate)
     {
-        // PM Compliance filters:
-        // 1. Maintenance Type = PM
-        // 2. Status = COMP or CLOSE
-        
-        $woBase = DB::connection('oracle')->table('WORKORDER')
+        // Numerator: Compliant & Closed (Only closed/comp can have actuals)
+        $pmCompliant = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
             ->where('WORKTYPE', 'PM')
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->whereBetween('REPORTDATE', [$startDate, $endDate]);
-            
-        $totalPmClosed = (clone $woBase)->count();
-        
-        // Compliant if:
-        // 1. ActFinish between SchedStart and SchedFinish
-        // 2. Has Actual Date, Completion (assumed status), Man Hour
-        $pmCompliant = (clone $woBase)
-            ->whereNotNull('ACTFINISH')
-            ->whereNotNull('SCHEDSTART')
-            ->whereNotNull('SCHEDFINISH')
-            ->whereNotNull('ACTLABHRS')
-            ->whereRaw('ACTFINISH >= SCHEDSTART')
-            ->whereRaw('ACTFINISH <= SCHEDFINISH')
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereNotNull('ACTFINISH')->whereNotNull('SCHEDSTART')->whereNotNull('SCHEDFINISH')->whereNotNull('ACTLABHRS')
+            ->whereRaw('ACTFINISH >= SCHEDSTART')->whereRaw('ACTFINISH <= SCHEDFINISH')
             ->count();
-        
-        $percentage = $totalPmClosed > 0 ? round(($pmCompliant / $totalPmClosed) * 100, 2) : 0;
+            
+        // Denominator: Total PM Issued in Period (Open + Closed), excluding CAN/WSCH
+        $pmTotal = DB::connection('oracle')->table('WORKORDER')
+            ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
+            ->where('WORKTYPE', 'PM')
+            ->whereNotIn('STATUS', ['CAN', 'WSCH'])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->count();
+            
+        $percentage = $pmTotal > 0 ? round(($pmCompliant / $pmTotal) * 100, 2) : 0;
         
         // Level Determination
         $level = 1;
@@ -629,7 +624,7 @@ class KinerjaPemeliharaanController extends Controller
         elseif ($percentage > 70) { $level = 2; $desc = "PM Compliance > 70%"; }
         
         return [
-            'total' => $totalPmClosed,
+            'total' => $pmTotal,
             'compliant' => $pmCompliant,
             'percentage' => $percentage,
             'level' => $level,
@@ -640,32 +635,16 @@ class KinerjaPemeliharaanController extends Controller
     // I6.7 - WO Planned Backlog
     private function calculatePlannedBacklog($startDate, $endDate)
     {
-        // Planned Work: Non OH, Status in identification phase (WAPPR, WSCH, WMATL)
-        // Ready Work: Non OH, Ready for execution (APPR)
-        // Using ESTLABHRS for manhours
-        
-        $plannedManhours = DB::connection('oracle')->table('WORKORDER')
+        // Planned Backlog (Manhours)
+        $backlogHrs = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->where('WORKTYPE', '!=', 'OH')
-            ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL', 'WPCOND'])
+            ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->sum('ESTLABHRS');
             
-        $readyManhours = DB::connection('oracle')->table('WORKORDER')
-            ->where('SITEID', 'KD')
-            ->where('WONUM', 'LIKE', 'WO%')
-            ->where('WORKTYPE', '!=', 'OH')
-            ->where('STATUS', 'APPR')
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
-            ->sum('ESTLABHRS');
-            
-        $totalManhours = $plannedManhours + $readyManhours;
-        
-        // Crew Capacity (Example: 400 hours/week)
-        $crewCapacity = 400; 
-        
-        $weeks = $crewCapacity > 0 ? round($totalManhours / $crewCapacity, 2) : 0;
+        $availableHrs = 2660; // From image example
+        $weeks = $availableHrs > 0 ? round($backlogHrs / $availableHrs, 2) : 0;
         
         // Level Determination
         $level = 1;
@@ -676,12 +655,12 @@ class KinerjaPemeliharaanController extends Controller
         elseif ($weeks >= 8) { $level = 2; $desc = "≥ 8 Minggu"; }
         
         // Level 1 if no data or very high
-        if ($totalManhours == 0) { $level = 1; $desc = "Tidak terukur/tidak ada data"; }
+        if ($backlogHrs == 0) { $level = 1; $desc = "Tidak terukur/tidak ada data"; }
         
         return [
-            'total_manhours' => $totalManhours,
-            'planned_hours' => $plannedManhours,
-            'ready_hours' => $readyManhours,
+            'total_manhours' => $backlogHrs,
+            'planned_hours' => $backlogHrs,
+            'ready_hours' => 0,
             'weeks' => $weeks,
             'level' => $level,
             'description' => $desc
@@ -791,27 +770,23 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.1 - Reactive Work
     private function calculateReactiveWork($startDate, $endDate)
     {
-        // Reactive Ratio = (Non Tactical Created) / (Tactical Closed + Non Tactical Created)
-        // Tactical: PM, PdM, EJ, OH -> Closed
-        // Non Tactical: CR, EM -> Created (All Issued)
-        
-        $tacticalClosed = DB::connection('oracle')->table('WORKORDER')
+        // 6. Reactive Work
+        // Logic: Non-Tactical / Total WO in Period
+        // Non-Tactical: EM, CR
+        $nonTactical = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->whereIn('WORKTYPE', ['PM', 'PdM', 'EJ', 'OH'])
-            ->whereIn('STATUS', ['COMP', 'CLOSE'])
+            ->whereIn('WORKTYPE', ['EM', 'CR'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
-        $nonTacticalCreated = DB::connection('oracle')->table('WORKORDER')
+        $allWo = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->whereIn('WORKTYPE', ['CM', 'EM'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
-            ->count(); // All created
+            ->count();
             
-        $denominator = $tacticalClosed + $nonTacticalCreated;
-        $percentage = $denominator > 0 ? round(($nonTacticalCreated / $denominator) * 100, 2) : 0;
+        $percentage = $allWo > 0 ? round(($nonTactical / $allWo) * 100, 2) : 0;
         
         // Level
         $level = 1; 
@@ -822,8 +797,8 @@ class KinerjaPemeliharaanController extends Controller
         elseif ($percentage <= 20) { $level = 2; $desc = "15% < - 20%"; }
         
         return [
-            'tactical_closed' => $tacticalClosed,
-            'non_tactical' => $nonTacticalCreated,
+            'tactical_closed' => 0, // Unused in new logic
+            'non_tactical' => $nonTactical,
             'percentage' => $percentage,
             'level' => $level,
             'description' => $desc
@@ -833,30 +808,19 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.2 - WR/SR Open/Queued
     private function calculateWrSrOpen($startDate, $endDate)
     {
-        $srStatuses = ['NEW', 'QUEUED'];
-        
-        $totalSr = DB::connection('oracle')->table('SR')
+        // 9. SR Open -- Snapshot within range
+        $srOpen = DB::connection('oracle')->table('SR')
+            ->where('SITEID', 'KD')
+            ->whereIn('STATUS', ['QUEUED'])
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->count();
+            
+        $srTotal = DB::connection('oracle')->table('SR')
             ->where('SITEID', 'KD')
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
-        // Overdue Normal: >= 30 days.
-        $normalOverdue = DB::connection('oracle')->table('SR')
-            ->where('SITEID', 'KD')
-            ->whereIn('STATUS', $srStatuses)
-            ->where('INTERNALPRIORITY', '>', 1) // Assuming > 1 is Normal
-            ->where('REPORTDATE', '<=', Carbon::now()->subDays(30))
-            ->count();
-            
-        $urgentOverdue = DB::connection('oracle')->table('SR')
-            ->where('SITEID', 'KD')
-            ->whereIn('STATUS', $srStatuses)
-            ->where('INTERNALPRIORITY', 1) // Assuming 1 is Urgent
-            ->where('REPORTDATE', '<=', Carbon::now()->subDays(7))
-            ->count();
-            
-        $totalOverdue = $normalOverdue + $urgentOverdue;
-        $percentage = $totalSr > 0 ? round(($totalOverdue / $totalSr) * 100, 2) : 0;
+        $percentage = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
         
         // Level
         $level = 1;
@@ -867,8 +831,8 @@ class KinerjaPemeliharaanController extends Controller
         elseif ($percentage <= 5) { $level = 2; $desc = "≤ 5%"; }
         
         return [
-            'total' => $totalSr,
-            'overdue' => $totalOverdue,
+            'total' => $srTotal,
+            'overdue' => $srOpen,
             'percentage' => $percentage,
             'level' => $level,
             'description' => $desc
@@ -878,27 +842,27 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.3 - WO Ageing
     private function calculateWoAgeing($startDate, $endDate)
     {
-        // Active statuses
-        $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
+        // 7. WO Ageing Site (> 365 days open) -- Snapshot
+        // Statuses: WAPPR, APPR, INPRG
+        
+        $statuses = ['WAPPR', 'APPR', 'INPRG'];
         
         $totalOpen = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->where('WORKTYPE', '!=', 'OH')
-            ->whereIn('STATUS', $openStatuses)
+            ->whereIn('STATUS', $statuses)
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
-            
-        $oldOpen = DB::connection('oracle')->table('WORKORDER')
+
+        $ageingSite = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->where('WORKTYPE', '!=', 'OH')
-            ->whereIn('STATUS', $openStatuses)
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->whereIn('STATUS', $statuses)
             ->where('REPORTDATE', '<=', Carbon::now()->subDays(365))
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
-        $percentage = $totalOpen > 0 ? round(($oldOpen / $totalOpen) * 100, 2) : 0;
+        $percentage = $totalOpen > 0 ? round(($ageingSite / $totalOpen) * 100, 2) : 0;
         
         // Level
         $level = 1;
@@ -910,7 +874,7 @@ class KinerjaPemeliharaanController extends Controller
         
         return [
             'total_open' => $totalOpen,
-            'old_open' => $oldOpen,
+            'old_open' => $ageingSite,
             'percentage' => $percentage,
             'level' => $level,
             'description' => $desc
