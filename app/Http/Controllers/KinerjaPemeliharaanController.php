@@ -713,42 +713,42 @@ class KinerjaPemeliharaanController extends Controller
     // I6.9 - Rework
     private function calculateRework($startDate, $endDate)
     {
-        // Rework: Repeated WO (same Asset, same Problem) within period
-        // Scope: CR, EM
+        // Rework: Repeated WO (same Asset, same Problem) within 30 days
+        // Scope: CM, EM (User requested CM and EM, previously code used CR and EM, assuming CM/EM based on request)
+        // Note: Code usually treats CM similar to CR (Corrective). User said "CM dan EM". 
+        // Checking previous code: 'non_pm_compliance' uses CM, EM. 'reactive_work' uses EM, CR.
+        // Let's stick to CM, EM as requested.
         
-        // Total CR+EM in period
-        $totalCrEm = DB::connection('oracle')->table('WORKORDER')
+        // Denominator: Total WO (CM and EM)
+        $totalCmEm = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->whereIn('WORKTYPE', ['CR', 'EM'])
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
-        // Simplified rework count
-        $reworkCount = 0;
-        
-        if ($totalCrEm > 0) {
-            // Count incidents where same Asset + Problem appears more than once
-             $duplicatesDetailed = DB::connection('oracle')->select("
-                SELECT SUM(cnt - 1) as rework_incidents
-                FROM (
-                    SELECT COUNT(*) as cnt
-                    FROM WORKORDER 
-                    WHERE SITEID = 'KD' 
-                    AND WONUM LIKE 'WO%'
-                    AND WORKTYPE IN ('CR', 'EM')
-                    AND REPORTDATE BETWEEN TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS')
-                    AND ASSETNUM IS NOT NULL 
-                    AND PROBLEMCODE IS NOT NULL
-                    GROUP BY ASSETNUM, PROBLEMCODE
-                    HAVING COUNT(*) > 1
-                )
-            ", [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
-            
-            $reworkCount = $duplicatesDetailed[0]->rework_incidents ?? 0;
-        }
+        // Numerator: WO that has a predecessor within 30 days
+        $reworkCount = DB::connection('oracle')->table('WORKORDER as W1')
+            ->where('W1.SITEID', 'KD')
+            ->where('W1.WONUM', 'LIKE', 'WO%')
+            ->whereIn('W1.WORKTYPE', ['CM', 'EM'])
+            ->whereBetween('W1.REPORTDATE', [$startDate, $endDate])
+            ->whereNotNull('W1.ASSETNUM')
+            ->whereNotNull('W1.PROBLEMCODE')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('WORKORDER as W2')
+                    ->whereColumn('W2.ASSETNUM', 'W1.ASSETNUM')
+                    ->whereColumn('W2.PROBLEMCODE', 'W1.PROBLEMCODE')
+                    ->where('W2.SITEID', 'KD')
+                    ->where('W2.WONUM', 'LIKE', 'WO%')
+                    ->whereIn('W2.WORKTYPE', ['CM', 'EM'])
+                    ->whereColumn('W2.REPORTDATE', '<', 'W1.REPORTDATE')
+                    ->whereRaw('W2.REPORTDATE >= W1.REPORTDATE - 30');
+            })
+            ->count();
 
-        $percentage = $totalCrEm > 0 ? round(($reworkCount / $totalCrEm) * 100, 2) : 0;
+        $percentage = $totalCmEm > 0 ? round(($reworkCount / $totalCmEm) * 100, 2) : 0;
         
         // Level
         $level = 1;
@@ -759,7 +759,7 @@ class KinerjaPemeliharaanController extends Controller
         elseif ($percentage <= 20) { $level = 2; $desc = "15% < - 20%"; }
         
         return [
-            'total' => $totalCrEm,
+            'total' => $totalCmEm,
             'rework' => $reworkCount,
             'percentage' => $percentage,
             'level' => $level,
