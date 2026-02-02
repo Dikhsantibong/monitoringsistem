@@ -776,7 +776,7 @@ class KinerjaPemeliharaanController extends Controller
         $nonTactical = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->whereIn('WORKTYPE', ['EM', 'CR'])
+            ->whereIn('WORKTYPE', ['EM', 'CM'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
