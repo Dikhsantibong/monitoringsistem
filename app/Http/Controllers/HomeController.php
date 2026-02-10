@@ -315,11 +315,19 @@ class HomeController extends Controller
                 $dates->push($date->format('Y-m-d'));
             }
 
-            // Dummy Data Kehadiran harian (Min 20), Kosong saat weekend
+            // Dummy Data Kehadiran harian (Sum of 5 units), Kosong saat weekend
             $attendanceCounts = collect();
+            $unitsCount = 5; // Kendari, BauBau, Kolaka, Poasia, WuaWua
             foreach ($dates as $dateStr) {
                 $isWeekend = \Carbon\Carbon::parse($dateStr)->isWeekend();
-                $attendanceCounts->push($isWeekend ? 0 : rand(20, 30));
+                $dailyTotal = 0;
+                if (!$isWeekend) {
+                    // Sum randoms for 5 units (5-8 each)
+                    for ($i = 0; $i < $unitsCount; $i++) {
+                        $dailyTotal += rand(5, 8);
+                    }
+                }
+                $attendanceCounts->push($dailyTotal);
             }
             $attendanceChartData = [
                 'labels' => $dates->toArray(),

@@ -158,13 +158,44 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) - DUMMY DATA (Min 20), Kosong saat weekend
+        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) - DUMMY DATA per Unit
+        // Unit: mysql (Kendari), mysql_bau_bau, mysql_kolaka, mysql_poasia, mysql_wua_wua
+        // Range per unit: 5-8 orang. Total Admin: Sum of all units.
         $attendanceCounts = collect();
+        $currentUnit = session('unit') ?? 'mysql';
+        
+        // Define units and their dummy ranges (min, max)
+        $units = [
+             'mysql' => [5, 8],          // UP KENDARI
+             'mysql_bau_bau' => [5, 8],  // ULPLTD BAU-BAU
+             'mysql_kolaka' => [5, 8],   // ULPLTD KOLAKA
+             'mysql_poasia' => [5, 8],   // ULPLTD POASIA
+             'mysql_wua_wua' => [5, 8]   // ULPLTD WUA-WUA
+        ];
+
         foreach ($dates as $dateStr) {
              $isWeekend = \Carbon\Carbon::parse($dateStr)->isWeekend();
+             $count = 0;
+
+             if (!$isWeekend) {
+                 if ($currentUnit === 'mysql') {
+                     // Admin: Sum of all units
+                     foreach ($units as $range) {
+                         $count += rand($range[0], $range[1]);
+                     }
+                 } elseif (isset($units[$currentUnit])) {
+                     // Specific Unit
+                     $range = $units[$currentUnit];
+                     $count = rand($range[0], $range[1]);
+                 } else {
+                     // Fallback
+                     $count = rand(5, 8);
+                 }
+             }
+
              $attendanceCounts->push([
                 'date' => $dateStr,
-                'count' => $isWeekend ? 0 : rand(20, 30)
+                'count' => $count
             ]);
         }
 
