@@ -315,64 +315,20 @@ class HomeController extends Controller
                 $dates->push($date->format('Y-m-d'));
             }
 
-            // Kehadiran harian (akumulasi semua unit)
-            $unitConnections = [
-                'mysql',
-                'mysql_bau_bau',
-                'mysql_kolaka',
-                'mysql_poasia',
-                'mysql_wua_wua',
-            ];
+            // Dummy Data Kehadiran harian (Min 20)
             $attendanceCounts = collect();
             foreach ($dates as $dateStr) {
-                $totalCount = 0;
-                foreach ($unitConnections as $conn) {
-                    try {
-                        $totalCount += \App\Models\Attendance::on($conn)
-                            ->whereDate('time', $dateStr)
-                            ->count();
-                    } catch (\Exception $e) {}
-                }
-                $attendanceCounts->push($totalCount);
+                $attendanceCounts->push(rand(20, 30));
             }
             $attendanceChartData = [
                 'labels' => $dates->toArray(),
                 'data' => $attendanceCounts->toArray(),
             ];
 
-            // Score Daily Meeting (rata-rata score per hari, semua unit)
-            $scoreCards = \App\Models\ScoreCardDaily::whereBetween('tanggal', [$startDate, $endDate])->get();
-            $scoreByDate = $scoreCards->groupBy(function($item) {
-                return \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d');
-            })->map(function($group) {
-                $total = 0;
-                foreach ($group as $scoreCard) {
-                    // Hitung total score (mirip DashboardController)
-                    $pesertaScore = 0;
-                    if ($scoreCard->peserta) {
-                        $peserta = json_decode($scoreCard->peserta, true) ?? [];
-                        $pesertaScore = collect($peserta)->sum('skor');
-                    }
-                    $ketentuanScore =
-                        ($scoreCard->kesiapan_panitia ?? 100) +
-                        ($scoreCard->kesiapan_bahan ?? 100) +
-                        ($scoreCard->aktivitas_luar ?? 100) +
-                        ($scoreCard->gangguan_diskusi ?? 100) +
-                        ($scoreCard->gangguan_keluar_masuk ?? 100) +
-                        ($scoreCard->gangguan_interupsi ?? 100) +
-                        ($scoreCard->ketegasan_moderator ?? 100) +
-                        ($scoreCard->skor_waktu_mulai ?? 100) +
-                        ($scoreCard->skor_waktu_selesai ?? 100) +
-                        ($scoreCard->kelengkapan_sr ?? 100);
-                    $totalScore = $pesertaScore + $ketentuanScore;
-                    $percentageScore = min(($totalScore / 2000) * 100, 100);
-                    $total += $percentageScore;
-                }
-                return round($total / max(count($group),1), 2);
-            });
+            // Dummy Data Score Daily Meeting (85-95)
             $scoreChartData = [
                 'labels' => $dates->toArray(),
-                'data' => $dates->map(fn($d) => $scoreByDate[$d] ?? 0)->toArray(),
+                'data' => $dates->map(fn($d) => rand(85, 95))->toArray(),
             ];
 
             // --- Grafik Presentasi Status SR/WO/Backlog (Maximo - Oracle) ---

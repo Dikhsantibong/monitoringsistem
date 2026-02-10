@@ -73,21 +73,26 @@ class DashboardController extends Controller
                 return round($group->avg('total_score'), 2);
             });
 
-        // Siapkan data untuk chart ketepatan waktu
-        $formattedScoreCard = $dates->mapWithKeys(function($date) use ($scoreCardData) {
+        // Dummy Data ScoreCardDaily untuk ketepatan waktu (Scorecard: 85-95)
+        $formattedScoreCard = $dates->mapWithKeys(function($date) {
             return [
-                $date => isset($scoreCardData[$date]) 
-                    ? round($scoreCardData[$date]->avg('skor'), 2) 
-                    : 0
+                $date => rand(85, 95)
             ];
         })->sortKeys();
 
-        // Siapkan data untuk chart total score peserta
-        $formattedAttendance = $dates->mapWithKeys(function($date) use ($attendanceData) {
+        // Dummy Data Attendance untuk total score peserta (Scorecard: 85-95)
+        $formattedAttendance = $dates->mapWithKeys(function($date) {
             return [
-                $date => $attendanceData[$date] ?? 0
+                $date => rand(85, 95)
             ];
         })->sortKeys();
+
+        // Ambil data untuk ScoreCard / Ketepatan Waktu (unused in chartData but defined)
+        $formattedScoreCard = $dates->mapWithKeys(function($date) {
+             return [
+                 $date => rand(85, 95)
+             ];
+         })->sortKeys();
 
         // Debug: Tampilkan data di log
         \Log::info('Dates:', ['dates' => $dates->toArray()]);
@@ -151,53 +156,13 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari)
+        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) - DUMMY DATA (Min 20)
         $attendanceCounts = collect();
-        $currentUnit = session('unit') ?? 'mysql';
-        if ($currentUnit === 'mysql') {
-            // Admin: akumulasi seluruh unit
-            $unitConnections = [
-                'mysql',
-                'mysql_bau_bau',
-                'mysql_kolaka',
-                'mysql_poasia',
-                'mysql_wua_wua',
-                // tambahkan koneksi lain jika ada
-            ];
-            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
-                $dateStr = $date->format('Y-m-d');
-                $totalCount = 0;
-                foreach ($unitConnections as $conn) {
-                    try {
-                        $totalCount += \App\Models\Attendance::on($conn)
-                            ->whereDate('time', $dateStr)
-                            ->count();
-                    } catch (\Exception $e) {
-                        \Log::warning("Gagal mengambil data attendance dari $conn: " . $e->getMessage());
-                    }
-                }
-                $attendanceCounts->push([
-                    'date' => $dateStr,
-                    'count' => $totalCount
-                ]);
-            }
-        } else {
-            // User unit: hanya data unit sendiri
-            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
-                $dateStr = $date->format('Y-m-d');
-                $count = 0;
-                try {
-                    $count = \App\Models\Attendance::on($currentUnit)
-                        ->whereDate('time', $dateStr)
-                        ->count();
-                } catch (\Exception $e) {
-                    \Log::warning("Gagal mengambil data attendance dari $currentUnit: " . $e->getMessage());
-                }
-                $attendanceCounts->push([
-                    'date' => $dateStr,
-                    'count' => $count
-                ]);
-            }
+        foreach ($dates as $dateStr) {
+             $attendanceCounts->push([
+                'date' => $dateStr,
+                'count' => rand(20, 30)
+            ]);
         }
 
         // Format data untuk chart
