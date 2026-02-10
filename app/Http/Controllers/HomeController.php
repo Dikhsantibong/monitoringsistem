@@ -315,20 +315,24 @@ class HomeController extends Controller
                 $dates->push($date->format('Y-m-d'));
             }
 
-            // Dummy Data Kehadiran harian (Min 20)
+            // Dummy Data Kehadiran harian (Min 20), Kosong saat weekend
             $attendanceCounts = collect();
             foreach ($dates as $dateStr) {
-                $attendanceCounts->push(rand(20, 30));
+                $isWeekend = \Carbon\Carbon::parse($dateStr)->isWeekend();
+                $attendanceCounts->push($isWeekend ? 0 : rand(20, 30));
             }
             $attendanceChartData = [
                 'labels' => $dates->toArray(),
                 'data' => $attendanceCounts->toArray(),
             ];
 
-            // Dummy Data Score Daily Meeting (85-95)
+            // Dummy Data Score Daily Meeting (85-95), Kosong saat weekend
             $scoreChartData = [
                 'labels' => $dates->toArray(),
-                'data' => $dates->map(fn($d) => rand(85, 95))->toArray(),
+                'data' => $dates->map(function($d) {
+                    $isWeekend = \Carbon\Carbon::parse($d)->isWeekend();
+                    return $isWeekend ? 0 : rand(85, 95);
+                })->toArray(),
             ];
 
             // --- Grafik Presentasi Status SR/WO/Backlog (Maximo - Oracle) ---

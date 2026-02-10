@@ -80,17 +80,19 @@ class DashboardController extends Controller
             ];
         })->sortKeys();
 
-        // Dummy Data Attendance untuk total score peserta (Scorecard: 85-95)
+        // Dummy Data Attendance untuk total score peserta (Scorecard: 85-95), Kosong saat weekend
         $formattedAttendance = $dates->mapWithKeys(function($date) {
+            $isWeekend = \Carbon\Carbon::parse($date)->isWeekend();
             return [
-                $date => rand(85, 95)
+                $date => $isWeekend ? 0 : rand(85, 95)
             ];
         })->sortKeys();
 
         // Ambil data untuk ScoreCard / Ketepatan Waktu (unused in chartData but defined)
         $formattedScoreCard = $dates->mapWithKeys(function($date) {
+            $isWeekend = \Carbon\Carbon::parse($date)->isWeekend();
              return [
-                 $date => rand(85, 95)
+                 $date => $isWeekend ? 0 : rand(85, 95)
              ];
          })->sortKeys();
 
@@ -156,12 +158,13 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) - DUMMY DATA (Min 20)
+        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) - DUMMY DATA (Min 20), Kosong saat weekend
         $attendanceCounts = collect();
         foreach ($dates as $dateStr) {
+             $isWeekend = \Carbon\Carbon::parse($dateStr)->isWeekend();
              $attendanceCounts->push([
                 'date' => $dateStr,
-                'count' => rand(20, 30)
+                'count' => $isWeekend ? 0 : rand(20, 30)
             ]);
         }
 
