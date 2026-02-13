@@ -108,7 +108,7 @@
                 <div class="md:col-span-2 bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">Work Order Terbaru (Maximo)</h3>
-                        <a href="{{ route('labor-saya.index') }}" class="text-xs font-bold text-blue-600 hover:underline">LIHAT SEMUA</a>
+                        <a href="{{ route('pemeliharaan.labor-saya') }}" class="text-xs font-bold text-blue-600 hover:underline">LIHAT SEMUA</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
