@@ -21,9 +21,57 @@ class LaborSayaController extends Controller
         $search = trim((string) $request->input('q'));
         $workOrderPage = $request->input('wo_page', 1);
         $backlogPage = $request->input('backlog_page', 1);
+        
+        // Filter inputs
+        $statusFilter = $request->input('status');
+        $unitFilter = $request->input('unit');
+
         $normalizedName = Str::of(Auth::user()->name)
             ->lower()
             ->replace(['-', ' '], '');
+
+        // Get Power Plants for filtering
+        $powerPlants = PowerPlant::orderBy('name')->get();
+
+        // Summary Statistics from Oracle
+        $stats = [
+            'total' => 0,
+            'appr' => 0,
+            'wmatl' => 0,
+            'inprg' => 0,
+            'closed' => 0,
+            'new_today' => 0,
+        ];
+
+        try {
+            $baseStatsQuery = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD');
+
+            $stats['total'] = (clone $baseStatsQuery)->count();
+            
+            // Status counts
+            $statusCounts = (clone $baseStatsQuery)
+                ->select('STATUS', DB::raw('count(*) as total'))
+                ->groupBy('STATUS')
+                ->get();
+
+            foreach ($statusCounts as $sc) {
+                $status = strtoupper(trim($sc->status));
+                if ($status === 'APPR') $stats['appr'] += $sc->total;
+                elseif ($status === 'WMATL') $stats['wmatl'] += $sc->total;
+                elseif (in_array($status, ['INPRG', 'IN PROGRESS'])) $stats['inprg'] += $sc->total;
+                elseif (in_array($status, ['CLOSE', 'CLOSED', 'COMP'])) $stats['closed'] += $sc->total;
+            }
+
+            // New Today (REPORTDATE is today)
+            $stats['new_today'] = (clone $baseStatsQuery)
+                ->whereRaw("TRUNC(REPORTDATE) = TRUNC(SYSDATE)")
+                ->count();
+
+        } catch (\Exception $e) {
+            Log::error('Error getting Stats from Maximo in LaborSayaController: ' . $e->getMessage());
+        }
 
         // Get Work Orders dari Maximo (Oracle)
         $workOrders = collect();
@@ -61,6 +109,16 @@ class LaborSayaController extends Controller
                       ->orWhere('LOCATION', 'LIKE', $like)
                       ->orWhere('ASSETNUM', 'LIKE', $like);
                 });
+            }
+
+            // Status filter
+            if ($statusFilter) {
+                $workOrdersQuery->where('STATUS', $statusFilter);
+            }
+
+            // Unit/Location filter
+            if ($unitFilter) {
+                $workOrdersQuery->where('LOCATION', $unitFilter);
             }
 
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
@@ -129,7 +187,11 @@ class LaborSayaController extends Controller
             'workOrdersPaginator' => $workOrdersPaginator,
             'laborBacklogs' => $laborBacklogs,
             'laborBacklogsPaginator' => $laborBacklogsPaginator,
+            'powerPlants' => $powerPlants,
+            'stats' => $stats,
             'q' => $search,
+            'statusFilter' => $statusFilter,
+            'unitFilter' => $unitFilter,
         ]);
     }
 

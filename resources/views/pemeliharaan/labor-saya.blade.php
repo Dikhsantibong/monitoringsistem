@@ -67,17 +67,85 @@
                 }
             });
         </script>
-        <!-- Tab Navigation -->
+        <!-- Summary Cards -->
         <main class="px-6 pt-6">
-            <form method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-4 flex items-center gap-2">
-                <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO/Backlog (id, deskripsi, status, type, priority, kendala, tindak lanjut)" class="flex-1 border rounded px-3 py-2" />
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <!-- Total WO -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-clipboard-list text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total WO</p>
+                        <h3 class="text-lg font-bold text-gray-800">{{ $stats['total'] }}</h3>
+                    </div>
+                </div>
+                <!-- APPR -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">APPR</p>
+                        <h3 class="text-lg font-bold text-gray-800">{{ $stats['appr'] }}</h3>
+                    </div>
+                </div>
+                <!-- WMATL -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-yellow-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-box text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">WMATL</p>
+                        <h3 class="text-lg font-bold text-gray-800">{{ $stats['wmatl'] }}</h3>
+                    </div>
+                </div>
+                <!-- INPRG -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-purple-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-spinner text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">INPRG</p>
+                        <h3 class="text-lg font-bold text-gray-800">{{ $stats['inprg'] }}</h3>
+                    </div>
+                </div>
+                <!-- CLOSED -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-gray-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-lock text-gray-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">CLOSED</p>
+                        <h3 class="text-lg font-bold text-gray-800">{{ $stats['closed'] }}</h3>
+                    </div>
+                </div>
+                <!-- New Today -->
+                <div class="bg-white rounded-xl shadow-sm border border-blue-100 p-4 flex items-center hover:shadow-md transition-shadow bg-blue-50/30">
+                    <div class="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-calendar-day text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-blue-600 uppercase tracking-wider">New Today</p>
+                        <h3 class="text-lg font-bold text-gray-800">{{ $stats['new_today'] }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <form id="filterForm" method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-4 flex items-center gap-2">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO/Backlog (id, deskripsi, status, type, priority...)" class="w-full pl-10 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                </div>
                 <input type="hidden" name="wo_page" value="1" />
-                <input type="hidden" name="backlog_page" value="{{ request('backlog_page', 1) }}" />
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Cari</button>
-                @if(!empty($q))
-                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-3 py-2 rounded border">Reset</a>
+                <input type="hidden" name="status" id="formStatus" value="{{ $statusFilter }}" />
+                <input type="hidden" name="unit" id="formUnit" value="{{ $unitFilter }}" />
+                <button type="submit" class="bg-[#0A749B] text-white px-6 py-2 rounded text-sm font-semibold hover:bg-[#009BB9] transition-colors">Cari</button>
+                @if(!empty($q) || !empty($statusFilter) || !empty($unitFilter))
+                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-4 py-2 rounded border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition-colors">Reset</a>
                 @endif
             </form>
+
             <div class="mb-4 border-b border-gray-200">
                 <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
                     <li class="mr-2">
@@ -108,20 +176,54 @@
                     <table class="min-w-full table-fixed divide-y divide-gray-200 border whitespace-nowrap">
                         <thead class="bg-gray-100">
                             <tr>
-                                <th class="px-4 py-2 text-center">No</th>
-                                <th class="px-4 py-2 text-center">Aksi</th>
-                                <th class="px-4 py-2 text-center">ID</th>
-                                <th class="px-4 py-2 text-center">Deskripsi</th>
-                                <th class="px-4 py-2 text-center">Kendala</th>
-                                <th class="px-4 py-2 text-center">Tindak Lanjut</th>
-                                <th class="px-4 py-2 text-center">Document</th>
-                                <th class="px-4 py-2 text-center">Type</th>
-                                <th class="px-4 py-2 text-center">Status</th>
-                                <th class="px-4 py-2 text-center">Priority</th>
-                                <th class="px-4 py-2 text-center">Jadwal Mulai</th>
-                                <th class="px-4 py-2 text-center">Jadwal Selesai</th>
-                                <th class="px-4 py-2 text-center">Labor</th>
-                                <th class="px-4 py-2 text-center">nama labor</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span>Unit</span>
+                                        <div class="relative group">
+                                            <i class="fas fa-filter cursor-pointer hover:text-blue-500 text-gray-400"></i>
+                                            <div class="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded shadow-lg z-20">
+                                                <select onchange="updateFilter('unit', this.value)" class="w-full p-2 text-xs border-none focus:ring-0">
+                                                    <option value="">Semua Unit</option>
+                                                    @foreach($powerPlants as $plant)
+                                                        <option value="{{ $plant->name }}" {{ ($unitFilter == $plant->name) ? 'selected' : '' }}>{{ $plant->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Kendala</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tindak Lanjut</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Document</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span>Status</span>
+                                        <div class="relative group">
+                                            <i class="fas fa-filter cursor-pointer hover:text-blue-500 text-gray-400"></i>
+                                            <div class="hidden group-hover:block absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded shadow-lg z-20">
+                                                <select onchange="updateFilter('status', this.value)" class="w-full p-2 text-xs border-none focus:ring-0">
+                                                    <option value="">Semua Status</option>
+                                                    <option value="APPR" {{ ($statusFilter == 'APPR') ? 'selected' : '' }}>APPR</option>
+                                                    <option value="WMATL" {{ ($statusFilter == 'WMATL') ? 'selected' : '' }}>WMATL</option>
+                                                    <option value="INPRG" {{ ($statusFilter == 'INPRG') ? 'selected' : '' }}>INPRG</option>
+                                                    <option value="COMP" {{ ($statusFilter == 'COMP') ? 'selected' : '' }}>COMP</option>
+                                                    <option value="CLOSE" {{ ($statusFilter == 'CLOSE') ? 'selected' : '' }}>CLOSE</option>
+                                                    <option value="WAPPR" {{ ($statusFilter == 'WAPPR') ? 'selected' : '' }}>WAPPR</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal Mulai</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal Selesai</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Labor</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Labor</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -141,7 +243,17 @@
                                         <a href="{{ route('pemeliharaan.labor-saya.edit', $wo['wonum']) }}" class="inline-block px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs"><i class="fas fa-edit"></i> Edit</a>
                                     @endif
                                 </td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['wonum'] }}</td>
+                                <td class="px-4 py-2 border border-gray-200">
+                                    <div class="flex items-center gap-2">
+                                        {{ $wo['wonum'] }}
+                                        @if(isset($wo['reportdate']) && \Carbon\Carbon::parse($wo['reportdate'])->diffInHours(now()) < 24)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                <span class="w-1 h-1 rounded-full bg-blue-500 mr-1 animate-pulse"></span>
+                                                New
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo['description'] ?? '-' }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo['tindak_lanjut'] ?? '-' }}</td>
@@ -355,6 +467,15 @@
             selectedContent.classList.remove('hidden');
         }
     }
+
+    function updateFilter(type, value) {
+        if (type === 'status') {
+            document.getElementById('formStatus').value = value;
+        } else if (type === 'unit') {
+            document.getElementById('formUnit').value = value;
+        }
+        document.getElementById('filterForm').submit();
+    }
 </script>
 <style>
 .tab-btn.active {
@@ -363,6 +484,9 @@
 }
 .tab-content {
     transition: all 0.3s ease-in-out;
+}
+th .group:hover .hidden {
+    display: block !important;
 }
 </style>
 @endsection
