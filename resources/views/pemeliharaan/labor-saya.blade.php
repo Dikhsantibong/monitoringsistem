@@ -173,13 +173,15 @@
                                         <span>Unit</span>
                                         <div class="relative group">
                                             <i class="fas fa-filter cursor-pointer hover:text-blue-500 text-gray-400"></i>
-                                            <div class="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded shadow-lg z-20">
-                                                <select onchange="updateFilter('unit', this.value)" class="w-full p-2 text-xs border-none focus:ring-0">
-                                                    <option value="">Semua Unit</option>
-                                                    @foreach($powerPlants as $plant)
-                                                        <option value="{{ $plant->id }}" {{ ($unitFilter == $plant->id) ? 'selected' : '' }}>{{ $plant->name }}</option>
-                                                    @endforeach
-                                                </select>
+                                            <div class="hidden group-hover:block absolute right-0 top-full w-48 pt-2 z-20">
+                                                <div class="bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
+                                                    <select onchange="updateFilter('unit', this.value)" class="w-full p-2 text-xs border-none focus:ring-0">
+                                                        <option value="">Semua Unit</option>
+                                                        @foreach($powerPlants as $plant)
+                                                            <option value="{{ $plant->id }}" {{ ($unitFilter == $plant->id) ? 'selected' : '' }}>{{ $plant->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -193,19 +195,21 @@
                                         <span>Status</span>
                                         <div class="relative group">
                                             <i class="fas fa-filter cursor-pointer hover:text-blue-500 text-gray-400"></i>
-                                            <div class="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded shadow-lg z-20">
-                                                <select onchange="updateFilter('status', this.value)" class="w-full p-2 text-xs border-none focus:ring-0">
-                                                    <option value="">Semua Status</option>
-                                                    <option value="OPEN_GROUP" {{ ($statusFilter == 'OPEN_GROUP') ? 'selected' : '' }}>Open (Group)</option>
-                                                    <option value="CLOSED_GROUP" {{ ($statusFilter == 'CLOSED_GROUP') ? 'selected' : '' }}>Closed (Group)</option>
-                                                    <option disabled>──────────</option>
-                                                    <option value="APPR" {{ ($statusFilter == 'APPR') ? 'selected' : '' }}>APPR</option>
-                                                    <option value="WMATL" {{ ($statusFilter == 'WMATL') ? 'selected' : '' }}>WMATL</option>
-                                                    <option value="INPRG" {{ ($statusFilter == 'INPRG') ? 'selected' : '' }}>INPRG</option>
-                                                    <option value="COMP" {{ ($statusFilter == 'COMP') ? 'selected' : '' }}>COMP</option>
-                                                    <option value="CLOSE" {{ ($statusFilter == 'CLOSE') ? 'selected' : '' }}>CLOSE</option>
-                                                    <option value="WAPPR" {{ ($statusFilter == 'WAPPR') ? 'selected' : '' }}>WAPPR</option>
-                                                </select>
+                                            <div class="hidden group-hover:block absolute right-0 top-full w-48 pt-2 z-20">
+                                                <div class="bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
+                                                    <select onchange="updateFilter('status', this.value)" class="w-full p-2 text-xs border-none focus:ring-0">
+                                                        <option value="">Semua Status</option>
+                                                        <option value="OPEN_GROUP" {{ ($statusFilter == 'OPEN_GROUP') ? 'selected' : '' }}>Open (Group)</option>
+                                                        <option value="CLOSED_GROUP" {{ ($statusFilter == 'CLOSED_GROUP') ? 'selected' : '' }}>Closed (Group)</option>
+                                                        <option disabled>──────────</option>
+                                                        <option value="APPR" {{ ($statusFilter == 'APPR') ? 'selected' : '' }}>APPR</option>
+                                                        <option value="WMATL" {{ ($statusFilter == 'WMATL') ? 'selected' : '' }}>WMATL</option>
+                                                        <option value="INPRG" {{ ($statusFilter == 'INPRG') ? 'selected' : '' }}>INPRG</option>
+                                                        <option value="COMP" {{ ($statusFilter == 'COMP') ? 'selected' : '' }}>COMP</option>
+                                                        <option value="CLOSE" {{ ($statusFilter == 'CLOSE') ? 'selected' : '' }}>CLOSE</option>
+                                                        <option value="WAPPR" {{ ($statusFilter == 'WAPPR') ? 'selected' : '' }}>WAPPR</option>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
