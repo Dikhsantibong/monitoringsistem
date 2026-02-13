@@ -3,85 +3,101 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Machine;
-use App\Models\Meeting;
 use Illuminate\Support\Facades\Auth;
-use App\Models\MachineStatusLog;
-use App\Models\PowerPlant;
-use App\Models\Notification;
-use App\Models\WorkOrder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PemeliharaanDashboardController extends Controller
 {
     public function index()
     {
-        // Mengambil data untuk overview cards
-        $totalMachines = MachineStatusLog::whereDate('created_at', today())
-            ->distinct('machine_id')
-            ->count('machine_id');
-        $operatingMachines = MachineStatusLog::where('status', 'Operasi')
-            ->whereDate('created_at', today())
-            ->distinct('machine_id')
-            ->count('machine_id');
-        $troubleMachines = MachineStatusLog::where('status', 'Gangguan')
-            ->whereDate('created_at', today())
-            ->distinct('machine_id')
-            ->count('machine_id');
-        $maintenanceMachines = MachineStatusLog::where('status', 'Pemeliharaan')
-            ->whereDate('created_at', today())
-            ->distinct('machine_id')
-            ->count('machine_id');
+        try {
+            $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
+            $closedStatuses = ['COMP', 'CLOSE'];
 
-        // Mengambil data kinerja pembangkit dengan pengecekan pembagi nol
-        $powerPlantPerformance = PowerPlant::select('name')
-            ->withCount(['machines as total_machines'])
-            ->withCount(['machines as operating_machines' => function($query) {
-                $query->whereHas('statusLogs', function($q) {
-                    $q->where('status', 'Operasi')
-                        ->whereDate('created_at', today());
-                });
-            }])
-            ->get()
-            ->map(function($plant) {
-                // Hindari pembagian dengan nol
-                $plant->efficiency = $plant->total_machines > 0 
-                    ? ($plant->operating_machines / $plant->total_machines) * 100 
-                    : 0;
-                return $plant;
-            });
+            // Work Order Stats
+            $totalWO = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->count();
 
-        // Mengambil aktivitas pemeliharaan terbaru
-        $recentMaintenances = MachineStatusLog::with('machine')
-            ->where('status', 'Pemeliharaan')
-            ->whereDate('created_at', today())
-            ->latest()
-            ->take(5)
-            ->get();
+            $openWO = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->whereIn('STATUS', $openStatuses)
+                ->count();
 
-        // Mengambil meeting hari ini
-        $todayMeetings = Meeting::whereDate('scheduled_at', today())
-            ->orderBy('scheduled_at')
-            ->get();
+            $closedWO = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->whereIn('STATUS', $closedStatuses)
+                ->count();
 
-        $normalizedName = Str::of(Auth::user()->name)
-            ->lower()
-            ->replace(['-', ' '], ''); // hilangkan strip dan spasi
-        
-        $myWorkOrders = WorkOrder::whereRaw(
-            "LOWER(REPLACE(REPLACE(labor, '-', ''), ' ', '')) LIKE ? AND status != 'Closed'",
-            ['%' . $normalizedName . '%']
-        )->get();
+            // Service Request Stats
+            $totalSR = DB::connection('oracle')
+                ->table('SR')
+                ->where('SITEID', 'KD')
+                ->count();
 
-        return view('pemeliharaan.dashboard', compact(
-            'totalMachines',
-            'operatingMachines',
-            'troubleMachines',
-            'maintenanceMachines',
-            'powerPlantPerformance',
-            'recentMaintenances',
-            'todayMeetings',
-            'myWorkOrders'
-        ));
+            $openSR = DB::connection('oracle')
+                ->table('SR')
+                ->where('SITEID', 'KD')
+                ->where('STATUS', 'QUEUED')
+                ->count();
+
+            // Recent Work Orders
+            $recentWorkOrders = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'DESCRIPTION',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'SCHEDFINISH',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->orderBy('STATUSDATE', 'desc')
+                ->take(10)
+                ->get();
+
+            // Format data for chart
+            $woStatusData = [
+                'labels' => ['Open', 'Closed', 'Others'],
+                'counts' => [
+                    $openWO,
+                    $closedWO,
+                    max(0, $totalWO - ($openWO + $closedWO))
+                ]
+            ];
+
+            return view('pemeliharaan.dashboard', compact(
+                'totalWO',
+                'openWO',
+                'closedWO',
+                'totalSR',
+                'openSR',
+                'recentWorkOrders',
+                'woStatusData'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Dashboard Oracle Error: ' . $e->getMessage());
+            return view('pemeliharaan.dashboard', [
+                'totalWO' => 0,
+                'openWO' => 0,
+                'closedWO' => 0,
+                'totalSR' => 0,
+                'openSR' => 0,
+                'recentWorkOrders' => collect([]),
+                'woStatusData' => ['labels' => [], 'counts' => []],
+                'error' => 'Gagal mengambil data dari Oracle'
+            ]);
+        }
     }
 }
