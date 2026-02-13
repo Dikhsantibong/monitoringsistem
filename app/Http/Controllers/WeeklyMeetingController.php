@@ -10,6 +10,66 @@ class WeeklyMeetingController extends Controller
 {
     public function index(Request $request)
     {
+        // View Mode
+        $mode = $request->input('mode', 'list');
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
+
+        if ($mode === 'calendar') {
+            $firstDay = Carbon::create($year, $month, 1);
+            $lastDay = $firstDay->copy()->endOfMonth();
+
+            // Fetch Work Orders for the month
+            $workOrders = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where(function($q) use ($firstDay, $lastDay) {
+                    $q->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                      ->orWhereBetween('SCHEDSTART', [$firstDay, $lastDay])
+                      ->orWhereBetween('STATUSDATE', [$firstDay, $lastDay]);
+                })
+                ->get();
+
+            // Fetch Service Requests for the month
+            $serviceRequests = DB::connection('oracle')->table('SR')
+                ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY')
+                ->where('SITEID', 'KD')
+                ->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                ->get();
+
+            // Group data by date for the calendar
+            $events = collect();
+            
+            foreach ($workOrders as $wo) {
+                $date = Carbon::parse($wo->schedstart ?? $wo->reportdate)->format('Y-m-d');
+                if (!$events->has($date)) $events->put($date, collect());
+                $events->get($date)->push([
+                    'id' => $wo->wonum,
+                    'title' => $wo->wonum . ': ' . $wo->description,
+                    'type' => 'WO',
+                    'worktype' => $wo->worktype,
+                    'status' => $wo->status,
+                    'full_data' => $wo
+                ]);
+            }
+
+            foreach ($serviceRequests as $sr) {
+                $date = Carbon::parse($sr->reportdate)->format('Y-m-d');
+                if (!$events->has($date)) $events->put($date, collect());
+                $events->get($date)->push([
+                    'id' => $sr->ticketid,
+                    'title' => $sr->ticketid . ': ' . $sr->description,
+                    'type' => 'SR',
+                    'status' => $sr,
+                    'full_data' => $sr
+                ]);
+            }
+
+            return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay'));
+        }
+
+        // --- EXISTING LIST LOGIC ---
+        
         // Timing Logic        
         $now = Carbon::now();
         
@@ -92,7 +152,7 @@ class WeeklyMeetingController extends Controller
             ->paginate(10, ['*'], 'plan_urgent_page');
 
         return view('weekly-meeting.index', compact(
-            'lastWeekStart', 'lastWeekEnd', 'nextWeekStart', 'nextWeekEnd',
+            'mode', 'lastWeekStart', 'lastWeekEnd', 'nextWeekStart', 'nextWeekEnd',
             'reviewCompletedWOs', 'reviewCreatedWOs', 'reviewCreatedSRs',
             'planPMs', 'planBacklog', 'urgentWork'
         ));

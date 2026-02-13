@@ -96,6 +96,54 @@
             background: #fff3e0;
             color: #f57c00;
         }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border-top: 1px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+        }
+        .calendar-day {
+            min-height: 120px;
+            padding: 0.5rem;
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+        .calendar-day.other-month {
+            background: #f9fafb;
+            color: #9ca3af;
+        }
+        .calendar-day.today {
+            background: #eff6ff;
+        }
+        .event-item {
+            font-size: 0.7rem;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            border-radius: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .event-wo { background: #dbeafe; color: #1e40af; border-left: 3px solid #3b82f6; }
+        .event-sr { background: #ffedd5; color: #9a3412; border-left: 3px solid #f97316; }
+        .calendar-nav-btn {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.2s;
+        }
+        .calendar-nav-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
     </style>
 @endsection
 
@@ -104,8 +152,93 @@
 @include('components.navbar')
 
 <div class="container mx-auto py-8 mt-24 fade-in px-4">
-    <!-- Stats Grid -->
-    <div class="stats-grid fade-in">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Weekly Meeting Dashboard</h1>
+        <div class="flex bg-gray-100 p-1 rounded-lg">
+            <a href="{{ route('weekly-meeting.index', ['mode' => 'list']) }}" 
+               class="px-4 py-2 text-sm font-medium rounded-md transition-all {{ $mode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                <i class="fas fa-list mr-2"></i>List View
+            </a>
+            <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar']) }}" 
+               class="px-4 py-2 text-sm font-medium rounded-md transition-all {{ $mode === 'calendar' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
+                <i class="fas fa-calendar mr-2"></i>Calendar View
+            </a>
+        </div>
+    </div>
+
+    @if($mode === 'calendar')
+        <!-- Calendar Mode View -->
+        <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-200 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar', 'month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year]) }}" class="calendar-nav-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <span class="text-lg font-bold text-gray-700 mx-4">
+                        {{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}
+                    </span>
+                    <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar', 'month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year]) }}" class="calendar-nav-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+                
+                <form action="{{ route('weekly-meeting.index') }}" method="GET" class="flex gap-2">
+                    <input type="hidden" name="mode" value="calendar">
+                    <select name="month" class="border rounded px-3 py-1.5 text-sm">
+                        @foreach(range(1, 12) as $m)
+                            <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create($year, $m, 1)->translatedFormat('F') }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <select name="year" class="border rounded px-3 py-1.5 text-sm">
+                        @foreach(range(now()->year - 2, now()->year + 2) as $y)
+                            <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-700 transition-colors">Go</button>
+                </form>
+            </div>
+
+            <div class="calendar-grid">
+                @php
+                    $startOfGrid = $firstDay->copy()->startOfWeek(Carbon\Carbon::MONDAY);
+                    $endOfGrid = $lastDay->copy()->endOfWeek(Carbon::Carbon::SUNDAY);
+                    $currentDay = $startOfGrid->copy();
+                @endphp
+
+                @foreach(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $dayName)
+                    <div class="bg-gray-50 py-2 text-center text-xs font-bold text-gray-500 border-r border-gray-200 last:border-r-0 uppercase letter-spacing-wide">
+                        {{ $dayName }}
+                    </div>
+                @endforeach
+
+                @while($currentDay <= $endOfGrid)
+                    <div class="calendar-day {{ $currentDay->month != $month ? 'other-month' : '' }} {{ $currentDay->isToday() ? 'today' : '' }} last:border-r-0">
+                        <div class="text-right text-xs {{ $currentDay->month != $month ? 'text-gray-400' : 'font-bold text-gray-600' }} mb-1">
+                            {{ $currentDay->day }}
+                        </div>
+                        <div class="calendar-events overflow-y-auto max-h-[80px]">
+                            @php $dayEvents = $events->get($currentDay->format('Y-m-d'), collect()); @endphp
+                            @foreach($dayEvents as $event)
+                                <div class="event-item {{ $event['type'] == 'WO' ? 'event-wo' : 'event-sr' }}" title="{{ $event['title'] }}">
+                                    @if($event['type'] == 'WO')
+                                        <i class="fas fa-hammer mr-1"></i>
+                                    @else
+                                        <i class="fas fa-plus-circle mr-1"></i>
+                                    @endif
+                                    {{ $event['title'] }}
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @php $currentDay->addDay(); @endphp
+                @endwhile
+            </div>
+        </div>
+    @else
+        <!-- Original List View -->
+        <div class="stats-grid fade-in">
         <!-- Review: Completed -->
         <div class="stat-card blue">
             <div class="stat-content">
@@ -464,6 +597,8 @@
 
         </div>
     </div>
+        </div>
+    @endif
 </div>
 @endsection
 
