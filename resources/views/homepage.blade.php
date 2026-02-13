@@ -1780,7 +1780,7 @@
                                                             'machine_id' => $machine->id,
                                                             'machine_name' => $machine->name,
                                                             'issue_active' => 1
-                                                        ]) }}" class="text-blue-600 hover:text-blue-800">
+                                                        ]) }}" class="create-discussion-link text-blue-600 hover:text-blue-800">
                                                             + Buat Pembahasan
                                                         </a>
                                                     @endif
