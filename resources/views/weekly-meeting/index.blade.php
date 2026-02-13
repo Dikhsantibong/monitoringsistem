@@ -101,48 +101,122 @@
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            border-top: 1px solid #e5e7eb;
-            border-left: 1px solid #e5e7eb;
+            border: 1px solid #e5e7eb;
+            background-color: #f3f4f6;
+            gap: 1px;
+        }
+        .calendar-header {
+            background: #f8fafc;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e2e8f0;
         }
         .calendar-day {
-            min-height: 120px;
+            min-height: 150px;
             padding: 0.5rem;
-            border-right: 1px solid #e5e7eb;
-            border-bottom: 1px solid #e5e7eb;
             background: white;
+            transition: background-color 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .calendar-day:hover {
+            background-color: #f8fafc;
         }
         .calendar-day.other-month {
-            background: #f9fafb;
-            color: #9ca3af;
+            background: #fdfdfd;
+            color: #cbd5e1;
         }
         .calendar-day.today {
-            background: #eff6ff;
+            background: #f0f7ff;
+        }
+        .calendar-day.today .day-number {
+            background: #3b82f6;
+            color: white;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .day-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .calendar-events {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
         }
         .event-item {
-            font-size: 0.7rem;
-            padding: 2px 4px;
-            margin-bottom: 2px;
-            border-radius: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            line-height: 1.25;
+            font-weight: 500;
+            border: 1px solid transparent;
+            transition: transform 0.1s;
         }
-        .event-wo { background: #dbeafe; color: #1e40af; border-left: 3px solid #3b82f6; }
-        .event-sr { background: #ffedd5; color: #9a3412; border-left: 3px solid #f97316; }
+        .event-item:hover {
+            transform: translateY(-1px);
+            filter: brightness(0.95);
+        }
+        .event-wo { 
+            background: #eff6ff; 
+            color: #1e40af; 
+            border-color: #bfdbfe;
+            border-left: 3px solid #3b82f6; 
+        }
+        .event-sr { 
+            background: #fff7ed; 
+            color: #9a3412; 
+            border-color: #ffedd5;
+            border-left: 3px solid #f97316; 
+        }
         .calendar-nav-btn {
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.75rem;
             background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
             font-size: 0.875rem;
             font-weight: 500;
             color: #374151;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .calendar-nav-btn:hover {
-            background: #f9fafb;
-            border-color: #d1d5db;
+            background: #f3f4f6;
+            border-color: #9ca3af;
+            color: #111827;
+        }
+        .view-toggle-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .view-toggle-active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .view-toggle-inactive {
+            color: #64748b;
+        }
+        .view-toggle-inactive:hover {
+            background: #f1f5f9;
+            color: #334155;
         }
     </style>
 @endsection
@@ -152,51 +226,58 @@
 @include('components.navbar')
 
 <div class="container mx-auto py-8 mt-24 fade-in px-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Weekly Meeting Dashboard</h1>
-        <div class="flex bg-gray-100 p-1 rounded-lg">
+    <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Weekly Meeting</h1>
+            <p class="text-sm text-gray-500">Dashboard Evaluasi & Perencanaan Mingguan</p>
+        </div>
+        <div class="flex bg-slate-100 p-1 rounded-xl">
             <a href="{{ route('weekly-meeting.index', ['mode' => 'list']) }}" 
-               class="px-4 py-2 text-sm font-medium rounded-md transition-all {{ $mode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
-                <i class="fas fa-list mr-2"></i>List View
+               class="view-toggle-btn flex items-center {{ $mode === 'list' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
+                <i class="fas fa-list-ul mr-2"></i> List View
             </a>
             <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar']) }}" 
-               class="px-4 py-2 text-sm font-medium rounded-md transition-all {{ $mode === 'calendar' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700' }}">
-                <i class="fas fa-calendar mr-2"></i>Calendar View
+               class="view-toggle-btn flex items-center {{ $mode === 'calendar' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
+                <i class="fas fa-calendar-alt mr-2"></i> Calendar View
             </a>
         </div>
     </div>
 
     @if($mode === 'calendar')
         <!-- Calendar Mode View -->
-        <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-            <div class="p-4 border-b border-gray-200 flex flex-wrap justify-between items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar', 'month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year]) }}" class="calendar-nav-btn">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden fade-in">
+            <div class="p-4 bg-white border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center">
+                    <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar', 'month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year]) }}" 
+                       class="calendar-nav-btn" title="Bulan Sebelumnya">
                         <i class="fas fa-chevron-left"></i>
                     </a>
-                    <span class="text-lg font-bold text-gray-700 mx-4">
+                    <div class="text-xl font-bold text-gray-800 min-w-[180px] text-center">
                         {{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}
-                    </span>
-                    <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar', 'month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year]) }}" class="calendar-nav-btn">
+                    </div>
+                    <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar', 'month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year]) }}" 
+                       class="calendar-nav-btn" title="Bulan Berikutnya">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </div>
                 
-                <form action="{{ route('weekly-meeting.index') }}" method="GET" class="flex gap-2">
+                <form action="{{ route('weekly-meeting.index') }}" method="GET" class="flex items-center gap-2">
                     <input type="hidden" name="mode" value="calendar">
-                    <select name="month" class="border rounded px-3 py-1.5 text-sm">
+                    <select name="month" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         @foreach(range(1, 12) as $m)
                             <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::create($year, $m, 1)->translatedFormat('F') }}
                             </option>
                         @endforeach
                     </select>
-                    <select name="year" class="border rounded px-3 py-1.5 text-sm">
-                        @foreach(range(now()->year - 2, now()->year + 2) as $y)
+                    <select name="year" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                        @foreach(range(now()->year - 5, now()->year + 5) as $y)
                             <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-700 transition-colors">Go</button>
+                    <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm">
+                        FILTER
+                    </button>
                 </form>
             </div>
 
@@ -207,27 +288,33 @@
                     $currentDay = $startOfGrid->copy();
                 @endphp
 
-                @foreach(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $dayName)
-                    <div class="bg-gray-50 py-2 text-center text-xs font-bold text-gray-500 border-r border-gray-200 last:border-r-0 uppercase letter-spacing-wide">
+                @foreach(['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'] as $dayName)
+                    <div class="calendar-header">
                         {{ $dayName }}
                     </div>
                 @endforeach
 
                 @while($currentDay <= $endOfGrid)
-                    <div class="calendar-day {{ $currentDay->month != $month ? 'other-month' : '' }} {{ $currentDay->isToday() ? 'today' : '' }} last:border-r-0">
-                        <div class="text-right text-xs {{ $currentDay->month != $month ? 'text-gray-400' : 'font-bold text-gray-600' }} mb-1">
-                            {{ $currentDay->day }}
+                    <div class="calendar-day {{ $currentDay->month != $month ? 'other-month' : '' }} {{ $currentDay->isToday() ? 'today' : '' }}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="day-number">
+                                {{ $currentDay->day }}
+                            </span>
+                            @if($currentDay->isToday())
+                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">HARI INI</span>
+                            @endif
                         </div>
-                        <div class="calendar-events overflow-y-auto max-h-[80px]">
+                        <div class="calendar-events">
                             @php $dayEvents = $events->get($currentDay->format('Y-m-d'), collect()); @endphp
                             @foreach($dayEvents as $event)
-                                <div class="event-item {{ $event['type'] == 'WO' ? 'event-wo' : 'event-sr' }}" title="{{ $event['title'] }}">
-                                    @if($event['type'] == 'WO')
-                                        <i class="fas fa-hammer mr-1"></i>
-                                    @else
-                                        <i class="fas fa-plus-circle mr-1"></i>
-                                    @endif
-                                    {{ $event['title'] }}
+                                <div class="event-item {{ $event['type'] == 'WO' ? 'event-wo' : 'event-sr' }}" 
+                                     title="{{ $event['title'] }}">
+                                    <div class="font-bold truncate">
+                                        {{ $event['id'] }}
+                                    </div>
+                                    <div class="text-[10px] truncate opacity-80">
+                                        {{ $event['full_data']->description }}
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
