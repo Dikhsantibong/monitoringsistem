@@ -94,14 +94,16 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 items-stretch">
                 <!-- Status Chart -->
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-white rounded-lg shadow p-6 flex flex-col h-full min-h-[350px]">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">Status Work Order</h3>
                         <div class="text-xs text-red-600 font-bold">Live Data</div>
                     </div>
-                    <canvas id="woStatusChart" height="200"></canvas>
+                    <div class="relative flex-1 flex items-center justify-center">
+                        <canvas id="woStatusChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Recent Work Orders Table -->
@@ -201,10 +203,23 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { 
+                            boxWidth: 12, 
+                            font: { size: 11 },
+                            padding: 15
+                        } 
+                    },
                     title: { display: false }
                 },
-                cutout: '70%'
+                cutout: '70%',
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10
+                    }
+                }
             }
         });
     });
