@@ -27,24 +27,32 @@ class LaborSayaController extends Controller
             ->lower()
             ->replace(['-', ' '], '');
 
-        // Fetch Units/Locations from Oracle for the filter
-        $powerPlants = collect();
-        try {
-            $locations = DB::connection('oracle')
-                ->table('WORKORDER')
-                ->where('SITEID', 'KD')
-                ->whereNotNull('LOCATION')
-                ->distinct()
-                ->pluck('LOCATION');
-            
-            $powerPlants = $locations->map(function($loc) {
-                return (object)['name' => $loc];
-            });
-        } catch (\Exception $e) {
-            Log::error('Error fetching locations from Oracle: ' . $e->getMessage());
-        }
+        // Mapping unit prefixes to labels as per USER_REQUEST
+        $unitMapping = [
+            'KLKA' => 'PLTD KOLAKA',
+            'LANI' => 'PLTD LANIPA NIPA',
+            'SABI' => 'PLTM SABILAMBO',
+            'MIKU' => 'PLTM MIKUASI',
+            'BBAU' => 'PLTD BAU BAU',
+            'WANG' => 'PLTD WANGI WANGI',
+            'RAHA' => 'PLTD RAHA',
+            'EREK' => 'PLTD EREKE',
+            'RONG' => 'PLTM RONGI',
+            'WINN' => 'PLTM WINNING',
+            'POAS' => 'PLTD POASIA',
+            'WUAW' => 'PLTD WUA WUA',
+        ];
 
-        // Summary Statistics from Oracle
+        // Prepare powerPlants for the filter dropdown
+        $powerPlants = collect($unitMapping)->map(function($name, $prefix) {
+            return (object)['id' => $prefix, 'name' => $name];
+        });
+
+        // Define status groups
+        $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
+        $closedStatuses = ['COMP', 'CLOSE'];
+
+        // Summary Statistics from Oracle (Always filter by SITEID='KD')
         $stats = [
             'total' => 0,
             'appr' => 0,
@@ -59,22 +67,23 @@ class LaborSayaController extends Controller
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD');
 
+            // Card Total WO calculated from data SITE "KD"
             $stats['total'] = (clone $baseStatsQuery)->count();
             
-            // Status counts
-            $statusCounts = (clone $baseStatsQuery)
+            // Status counts for specific cards
+            $statusCountsRaw = (clone $baseStatsQuery)
                 ->select('STATUS', DB::raw('count(*) as total'))
                 ->groupBy('STATUS')
                 ->get();
 
-            foreach ($statusCounts as $sc) {
-                // Handle Oracle property case variation
+            foreach ($statusCountsRaw as $sc) {
                 $sc = (object) array_change_key_case((array) $sc, CASE_LOWER);
                 $status = strtoupper(trim($sc->status ?? ''));
+                
                 if ($status === 'APPR') $stats['appr'] += $sc->total;
                 elseif ($status === 'WMATL') $stats['wmatl'] += $sc->total;
                 elseif (in_array($status, ['INPRG', 'IN PROGRESS'])) $stats['inprg'] += $sc->total;
-                elseif (in_array($status, ['CLOSE', 'CLOSED', 'COMP'])) $stats['closed'] += $sc->total;
+                elseif (in_array($status, $closedStatuses) || in_array($status, ['CLOSED'])) $stats['closed'] += $sc->total;
             }
 
             // New Today (REPORTDATE is today)
@@ -113,7 +122,7 @@ class LaborSayaController extends Controller
             // Search filter
             if ($search !== '') {
                 $workOrdersQuery->where(function ($q) use ($search) {
-                    $like = "%" . strtoupper($search) . "%"; // Oracle search is often case-sensitive
+                    $like = "%" . strtoupper($search) . "%";
                     $q->where('WONUM', 'LIKE', $like)
                       ->orWhere('DESCRIPTION', 'LIKE', $like)
                       ->orWhere('STATUS', 'LIKE', $like)
@@ -124,14 +133,20 @@ class LaborSayaController extends Controller
                 });
             }
 
-            // Status filter
+            // Status filter (handle groups and individual)
             if ($statusFilter) {
-                $workOrdersQuery->where('STATUS', strtoupper($statusFilter));
+                if ($statusFilter === 'OPEN_GROUP') {
+                    $workOrdersQuery->whereIn('STATUS', $openStatuses);
+                } elseif ($statusFilter === 'CLOSED_GROUP') {
+                    $workOrdersQuery->whereIn('STATUS', $closedStatuses);
+                } else {
+                    $workOrdersQuery->where('STATUS', strtoupper($statusFilter));
+                }
             }
 
-            // Unit/Location filter
+            // Unit/Location filter using prefix mapping
             if ($unitFilter) {
-                $workOrdersQuery->where('LOCATION', strtoupper($unitFilter));
+                $workOrdersQuery->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
             }
 
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
@@ -140,10 +155,20 @@ class LaborSayaController extends Controller
             $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
 
             // Format data untuk view
-            $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) {
+            $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) use ($unitMapping) {
                 // Normalize result to lowercase property names
                 $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
                 
+                // Determine readable unit name based on location prefix
+                $location = strtoupper($wo->location ?? '');
+                $readableUnit = '-';
+                foreach ($unitMapping as $prefix => $name) {
+                    if (strpos($location, $prefix) === 0) {
+                        $readableUnit = $name;
+                        break;
+                    }
+                }
+
                 return [
                     'id' => $wo->wonum ?? '-',
                     'wonum' => $wo->wonum ?? '-',
@@ -184,7 +209,7 @@ class LaborSayaController extends Controller
                     'labor' => null, // Tidak ada di Maximo
                     'labors' => [], // Tidak ada di Maximo
                     'document_path' => null, // Tidak ada di Maximo
-                    'power_plant_name' => $wo->location ?? ($wo->siteid ?? 'KD'),
+                    'power_plant_name' => $readableUnit !== '-' ? $readableUnit : ($wo->location ?? '-'),
                 ];
             });
 
