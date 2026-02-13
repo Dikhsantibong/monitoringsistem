@@ -98,12 +98,18 @@
         }
 
         /* Calendar Styles */
+        .calendar-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(7, minmax(0, 1fr));
             border: 1px solid #e5e7eb;
             background-color: #f3f4f6;
             gap: 1px;
+            min-width: 1000px; /* Ensure 7 columns stay readable on smaller screens */
         }
         .calendar-header {
             background: #f8fafc;
@@ -115,14 +121,18 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             border-bottom: 1px solid #e2e8f0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .calendar-day {
-            min-height: 150px;
+            min-height: 250px;
             padding: 0.5rem;
             background: white;
             transition: background-color 0.2s;
             display: flex;
             flex-direction: column;
+            min-width: 0; /* Important for truncation */
         }
         .calendar-day:hover {
             background-color: #f8fafc;
@@ -152,18 +162,18 @@
         }
         .calendar-events {
             flex: 1;
-            overflow-y: auto;
-            scrollbar-width: thin;
+            min-width: 0;
         }
         .event-item {
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            margin-bottom: 4px;
+            font-size: 0.7rem;
+            padding: 4px 6px;
+            margin-bottom: 3px;
             border-radius: 4px;
-            line-height: 1.25;
+            line-height: 1.2;
             font-weight: 500;
             border: 1px solid transparent;
             transition: transform 0.1s;
+            overflow: hidden;
         }
         .event-item:hover {
             transform: translateY(-1px);
@@ -181,6 +191,27 @@
             border-color: #ffedd5;
             border-left: 3px solid #f97316; 
         }
+        .calendar-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.5rem;
+            border-top: 1px solid #f1f5f9;
+            margin-top: auto;
+        }
+        .pag-btn {
+            padding: 2px 6px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #475569;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+        }
+        .pag-btn:hover { background: #e2e8f0; }
+        .pag-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pag-info { font-size: 10px; color: #64748b; font-weight: 500; }
         .calendar-nav-btn {
             padding: 0.5rem 0.75rem;
             background: white;
@@ -281,46 +312,67 @@
                 </form>
             </div>
 
-            <div class="calendar-grid">
-                @php
-                    $startOfGrid = $firstDay->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
-                    $endOfGrid = $lastDay->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
-                    $currentDay = $startOfGrid->copy();
-                @endphp
+            <div class="calendar-wrapper">
+                <div class="calendar-grid">
+                    @php
+                        $startOfGrid = $firstDay->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+                        $endOfGrid = $lastDay->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+                        $currentDay = $startOfGrid->copy();
+                    @endphp
 
-                @foreach(['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'] as $dayName)
-                    <div class="calendar-header">
-                        {{ $dayName }}
-                    </div>
-                @endforeach
+                    @foreach(['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'] as $dayName)
+                        <div class="calendar-header">
+                            {{ $dayName }}
+                        </div>
+                    @endforeach
 
-                @while($currentDay <= $endOfGrid)
-                    <div class="calendar-day {{ $currentDay->month != $month ? 'other-month' : '' }} {{ $currentDay->isToday() ? 'today' : '' }}">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="day-number">
-                                {{ $currentDay->day }}
-                            </span>
-                            @if($currentDay->isToday())
-                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">HARI INI</span>
+                    @while($currentDay <= $endOfGrid)
+                        @php 
+                            $dayKey = $currentDay->format('Y-m-d');
+                            $dayEvents = $events->get($dayKey, collect()); 
+                            $totalPages = ceil($dayEvents->count() / 10);
+                        @endphp
+                        <div class="calendar-day {{ $currentDay->month != $month ? 'other-month' : '' }} {{ $currentDay->isToday() ? 'today' : '' }}" 
+                             data-day="{{ $dayKey }}">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="day-number">
+                                    {{ $currentDay->day }}
+                                </span>
+                                @if($currentDay->isToday())
+                                    <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">HARI INI</span>
+                                @endif
+                            </div>
+                            <div class="calendar-events">
+                                @forelse($dayEvents->chunk(10) as $pageIndex => $pageEvents)
+                                    <div class="day-page {{ $pageIndex > 0 ? 'hidden' : '' }}" data-page="{{ $pageIndex }}">
+                                        @foreach($pageEvents as $event)
+                                            <div class="event-item {{ $event['type'] == 'WO' ? 'event-wo' : 'event-sr' }}" 
+                                                 title="{{ $event['title'] }}">
+                                                <div class="font-bold truncate">
+                                                    {{ $event['id'] }}
+                                                </div>
+                                                <div class="text-[9px] truncate opacity-80" title="{{ $event['full_data']->description }}">
+                                                    {{ $event['full_data']->description }}
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @empty
+                                    <!-- No events -->
+                                @endforelse
+                            </div>
+                            
+                            @if($totalPages > 1)
+                                <div class="calendar-pagination">
+                                    <button class="pag-btn prev-btn" data-dir="prev" disabled><i class="fas fa-chevron-left text-[8px]"></i></button>
+                                    <span class="pag-info">1/{{ $totalPages }}</span>
+                                    <button class="pag-btn next-btn" data-dir="next"><i class="fas fa-chevron-right text-[8px]"></i></button>
+                                </div>
                             @endif
                         </div>
-                        <div class="calendar-events">
-                            @php $dayEvents = $events->get($currentDay->format('Y-m-d'), collect()); @endphp
-                            @foreach($dayEvents as $event)
-                                <div class="event-item {{ $event['type'] == 'WO' ? 'event-wo' : 'event-sr' }}" 
-                                     title="{{ $event['title'] }}">
-                                    <div class="font-bold truncate">
-                                        {{ $event['id'] }}
-                                    </div>
-                                    <div class="text-[10px] truncate opacity-80">
-                                        {{ $event['full_data']->description }}
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @php $currentDay->addDay(); @endphp
-                @endwhile
+                        @php $currentDay->addDay(); @endphp
+                    @endwhile
+                </div>
             </div>
         </div>
     @else
@@ -687,5 +739,43 @@
         </div>
     @endif
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendar = document.querySelector('.calendar-grid');
+    if (!calendar) return;
+
+    calendar.addEventListener('click', function(e) {
+        const btn = e.target.closest('.pag-btn');
+        if (!btn) return;
+
+        const dayCell = btn.closest('.calendar-day');
+        const info = dayCell.querySelector('.pag-info');
+        const pages = dayCell.querySelectorAll('.day-page');
+        const prevBtn = dayCell.querySelector('.prev-btn');
+        const nextBtn = dayCell.querySelector('.next-btn');
+
+        let currentIndex = Array.from(pages).findIndex(p => !p.classList.contains('hidden'));
+        const total = pages.length;
+
+        if (btn.dataset.dir === 'next' && currentIndex < total - 1) {
+            pages[currentIndex].classList.add('hidden');
+            currentIndex++;
+            pages[currentIndex].classList.remove('hidden');
+        } else if (btn.dataset.dir === 'prev' && currentIndex > 0) {
+            pages[currentIndex].classList.add('hidden');
+            currentIndex--;
+            pages[currentIndex].classList.remove('hidden');
+        }
+
+        // Update info & buttons
+        info.textContent = `${currentIndex + 1}/${total}`;
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === total - 1;
+    });
+});
+</script>
 @endsection
 
