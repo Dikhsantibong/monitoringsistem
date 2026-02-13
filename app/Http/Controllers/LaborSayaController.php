@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PowerPlant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use App\Models\MaterialMaster;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
@@ -20,7 +18,6 @@ class LaborSayaController extends Controller
     {
         $search = trim((string) $request->input('q'));
         $workOrderPage = $request->input('wo_page', 1);
-        $backlogPage = $request->input('backlog_page', 1);
         
         // Filter inputs
         $statusFilter = $request->input('status');
@@ -30,8 +27,22 @@ class LaborSayaController extends Controller
             ->lower()
             ->replace(['-', ' '], '');
 
-        // Get Power Plants for filtering
-        $powerPlants = PowerPlant::orderBy('name')->get();
+        // Fetch Units/Locations from Oracle for the filter
+        $powerPlants = collect();
+        try {
+            $locations = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->whereNotNull('LOCATION')
+                ->distinct()
+                ->pluck('LOCATION');
+            
+            $powerPlants = $locations->map(function($loc) {
+                return (object)['name' => $loc];
+            });
+        } catch (\Exception $e) {
+            Log::error('Error fetching locations from Oracle: ' . $e->getMessage());
+        }
 
         // Summary Statistics from Oracle
         $stats = [
@@ -57,7 +68,9 @@ class LaborSayaController extends Controller
                 ->get();
 
             foreach ($statusCounts as $sc) {
-                $status = strtoupper(trim($sc->status));
+                // Handle Oracle property case variation
+                $sc = (object) array_change_key_case((array) $sc, CASE_LOWER);
+                $status = strtoupper(trim($sc->status ?? ''));
                 if ($status === 'APPR') $stats['appr'] += $sc->total;
                 elseif ($status === 'WMATL') $stats['wmatl'] += $sc->total;
                 elseif (in_array($status, ['INPRG', 'IN PROGRESS'])) $stats['inprg'] += $sc->total;
@@ -100,7 +113,7 @@ class LaborSayaController extends Controller
             // Search filter
             if ($search !== '') {
                 $workOrdersQuery->where(function ($q) use ($search) {
-                    $like = "%{$search}%";
+                    $like = "%" . strtoupper($search) . "%"; // Oracle search is often case-sensitive
                     $q->where('WONUM', 'LIKE', $like)
                       ->orWhere('DESCRIPTION', 'LIKE', $like)
                       ->orWhere('STATUS', 'LIKE', $like)
@@ -113,12 +126,12 @@ class LaborSayaController extends Controller
 
             // Status filter
             if ($statusFilter) {
-                $workOrdersQuery->where('STATUS', $statusFilter);
+                $workOrdersQuery->where('STATUS', strtoupper($statusFilter));
             }
 
             // Unit/Location filter
             if ($unitFilter) {
-                $workOrdersQuery->where('LOCATION', $unitFilter);
+                $workOrdersQuery->where('LOCATION', strtoupper($unitFilter));
             }
 
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
@@ -128,6 +141,9 @@ class LaborSayaController extends Controller
 
             // Format data untuk view
             $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) {
+                // Normalize result to lowercase property names
+                $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
+                
                 return [
                     'id' => $wo->wonum ?? '-',
                     'wonum' => $wo->wonum ?? '-',
@@ -178,7 +194,7 @@ class LaborSayaController extends Controller
             $workOrdersPaginator = null;
         }
 
-        // Backlog tidak ada di Maximo, set empty collection
+        // Since we are using exclusively Oracle data, local backlogs are removed.
         $laborBacklogs = collect([]);
         $laborBacklogsPaginator = null;
 
@@ -225,6 +241,9 @@ class LaborSayaController extends Controller
                 return redirect()->route('pemeliharaan.labor-saya')
                     ->with('error', 'Work Order tidak ditemukan di Maximo.');
             }
+
+            // Normalize result to lowercase property names
+            $workOrderRaw = (object) array_change_key_case((array) $workOrderRaw, CASE_LOWER);
 
             // Cek apakah jobcard sudah di-generate (ada di storage)
             $wonum = trim($workOrderRaw->wonum ?? '');
@@ -294,229 +313,34 @@ class LaborSayaController extends Controller
                 ->with('error', 'Gagal mengambil data Work Order dari Maximo.');
         }
 
-        $powerPlants = PowerPlant::all();
-        $userName = Auth::user()->name;
-        $masterLabors = DB::table('master_labors')->where('unit', $userName)->orderBy('nama')->get();
-        $materials = MaterialMaster::orderBy('description')->limit(200)->get();
+        // Fetch Units/Locations from Oracle for the select dropdown
+        $powerPlants = collect();
+        try {
+            $locations = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->whereNotNull('LOCATION')
+                ->distinct()
+                ->pluck('LOCATION');
+            
+            $powerPlants = $locations->map(function($loc) {
+                return (object)['id' => $loc, 'name' => $loc];
+            });
+        } catch (\Exception $e) {
+            Log::error('Error fetching locations from Oracle: ' . $e->getMessage());
+        }
+
+        // Local laborers and materials are removed as per Oracle-only requirement
+        $masterLabors = collect([]);
+        $materials = collect([]);
 
         return view('pemeliharaan.labor-edit', compact('workOrder', 'powerPlants', 'masterLabors', 'materials'));
     }
 
-    public function update(Request $request, $id)
-    {
-        $workOrder = WorkOrder::findOrFail($id);
-        // Jika hanya upload dokumen (AJAX PDF), tidak perlu validasi field lain
-        if ($request->hasFile('document') && $request->file('document')->isValid()) {
-            $file = $request->file('document');
-            // Jika dikirim path (misal jobcard), gunakan overwrite ke path tersebut
-            $targetPath = $request->input('path');
-
-            // Tentukan nama file
-            $fileName = $targetPath ? basename($targetPath) : ($workOrder->document_path ? basename($workOrder->document_path) : (time() . '_' . str_replace(' ', '_', $file->getClientOriginalName())));
-
-            try {
-                if ($targetPath) {
-                    // Overwrite ke path yang diminta
-                    \Illuminate\Support\Facades\Storage::disk('public')->put($targetPath, file_get_contents($file->getRealPath()));
-                    $path = $targetPath;
-                } else {
-                    // Simpan ke storage publik
-                    $path = $file->storeAs('work-orders', $fileName, 'public');
-                }
-
-                // Update path di database jika ada
-                $workOrder->document_path = $path;
-                $workOrder->save();
-
-                return response()->json(['success' => true, 'path' => $path]);
-            } catch (\Throwable $e) {
-                Log::error('LaborSayaController@update file upload error', [
-                    'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                return response()->json(['success' => false, 'message' => 'Gagal menyimpan dokumen: ' . $e->getMessage()], 500);
-            }
-        }
-
-        DB::beginTransaction();
-
-        try {
-            $workOrder = WorkOrder::findOrFail($id);
-
-            // Validasi untuk update biasa
-            $request->validate([
-                'description'    => 'nullable|string',
-                'kendala'        => 'nullable|string',
-                'tindak_lanjut'  => 'nullable|string',
-                'type'           => 'nullable|string',
-                'priority'       => 'nullable|string',
-                'schedule_start' => 'nullable|date',
-                'schedule_finish'=> 'nullable|date',
-                'unit'           => 'nullable|integer|exists:power_plants,id',
-                'labor'          => 'nullable|string',
-                'status'         => 'required|in:Open,Closed,Comp,APPR,WAPPR,WMATL',
-                'document'       => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
-                'labors'         => 'nullable|array',
-                'labors.*'       => 'string|max:100',
-                'materials'      => 'nullable|array',
-                'materials.*.code' => 'required_with:materials|string|max:100',
-                'materials.*.qty'  => 'nullable|numeric|min:0',
-                'materials.*.description' => 'required_with:materials|string|max:255',
-                'materials.*.inventory_statistic_desc' => 'required_with:materials|string|max:255',
-                'materials.*.inventory_statistic_code' => 'required_with:materials|string|max:255',
-            ]);
-
-            // Data yang akan diupdate
-            $data = [
-                'description'      => $request->description,
-                'kendala'          => $request->kendala,
-                'tindak_lanjut'    => $request->tindak_lanjut,
-                'type'             => $request->type,
-                'priority'         => $request->priority,
-                'schedule_start'   => $request->schedule_start,
-                'schedule_finish'  => $request->schedule_finish,
-                'power_plant_id'   => $request->unit,
-                'labor'            => $request->labor,
-                'status'           => $request->status,
-                'labors'           => $request->labors ?? [],
-                'materials'        => $request->materials ?? [],
-            ];
-
-            // Cek jika ada file document baru
-            if ($request->hasFile('document') && $request->file('document')->isValid()) {
-                if ($workOrder->document_path && Storage::disk('public')->exists($workOrder->document_path)) {
-                    Storage::disk('public')->delete($workOrder->document_path);
-                }
-                $file = $request->file('document');
-                $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-                $path = $file->storeAs('work-orders', $fileName, 'public');
-                $data['document_path'] = $path;
-            }
-
-            // Update di database utama (local/unit)
-            $workOrder->update($data);
-
-            // Sinkronisasi ke database utama jika unit_source !== 'mysql'
-            if ($workOrder->unit_source !== 'mysql') {
-                try {
-                    // Pastikan labors adalah JSON string
-                    $syncData = $data;
-                    if (isset($syncData['labors']) && is_array($syncData['labors'])) {
-                        $syncData['labors'] = json_encode($syncData['labors']);
-                    }
-                    if (isset($syncData['materials']) && is_array($syncData['materials'])) {
-                        $syncData['materials'] = json_encode($syncData['materials']);
-                    }
-                    DB::connection('mysql')
-                        ->table('work_orders')
-                        ->where('id', $workOrder->id)
-                        ->update($syncData);
-                } catch (\Exception $e) {
-                    Log::warning('Sync to main DB failed:', [
-                        'error' => $e->getMessage(),
-                        'wo_id' => $workOrder->id
-                    ]);
-                }
-            }
-
-            DB::commit();
-
-            return redirect()
-                ->route('pemeliharaan.labor-saya')
-                ->with('success', 'Work Order berhasil diupdate');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error updating WO:', [
-                'wo_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()
-                ->route('pemeliharaan.labor-saya')
-                ->with('error', 'Gagal mengupdate Work Order: ' . $e->getMessage());
-        }
-    }
-
-    public function editBacklog($id)
-    {
-        $backlog = WoBacklog::findOrFail($id);
-        // Pastikan hanya labor yang sesuai yang bisa edit
-        $normalizedName = Str::of(Auth::user()->name)->lower()->replace(['-', ' '], '');
-        $backlogLabor = Str::of($backlog->labor)->lower()->replace(['-', ' '], '');
-        if (strpos($backlogLabor, $normalizedName) === false) {
-            abort(403, 'Anda tidak berhak mengedit backlog ini.');
-        }
-        $materials = MaterialMaster::orderBy('description')->get();
-        $userName = Auth::user()->name;
-        $masterLabors = DB::table('master_labors')->where('unit', $userName)->orderBy('nama')->get();
-        // Ambil existing materials dari backlog (pastikan kolom materials di-cast ke array)
-        $existingMaterials = [];
-        if (!empty($backlog->materials)) {
-            $existingMaterials = is_array($backlog->materials)
-                ? $backlog->materials
-                : (is_string($backlog->materials) ? json_decode($backlog->materials, true) : []);
-        }
-        return view('pemeliharaan.labor-edit-backlog', compact('backlog', 'masterLabors', 'materials', 'existingMaterials'));
-    }
-
-    public function updateBacklog(Request $request, $id)
-    {
-        $backlog = WoBacklog::findOrFail($id);
-        $normalizedName = Str::of(Auth::user()->name)->lower()->replace(['-', ' '], '');
-        $backlogLabor = Str::of($backlog->labor)->lower()->replace(['-', ' '], '');
-        if (strpos($backlogLabor, $normalizedName) === false) {
-            abort(403, 'Anda tidak berhak mengedit backlog ini.');
-        }
-        // Jika hanya upload dokumen (AJAX PDF), tidak perlu validasi field lain
-        if ($request->hasFile('document') && $request->file('document')->isValid()) {
-            if ($backlog->document_path && Storage::disk('public')->exists($backlog->document_path)) {
-                Storage::disk('public')->delete($backlog->document_path);
-            }
-            $file = $request->file('document');
-            $fileName = basename($backlog->document_path) ?: (time() . '_' . str_replace(' ', '_', $file->getClientOriginalName()));
-            $path = $file->storeAs('wo-backlog', $fileName, 'public');
-            $backlog->document_path = $path;
-            $backlog->save();
-            return response()->json(['success' => true]);
-        }
-        $request->validate([
-            'deskripsi' => 'required|string',
-            'kendala' => 'nullable|string',
-            'tindak_lanjut' => 'nullable|string',
-            'status' => 'required|in:Open,Closed,WMATL',
-            'keterangan' => 'nullable|string',
-            'labors' => 'nullable|array',
-            'labor' => 'nullable|string',
-            'labors.*' => 'string|max:100',
-            'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
-            'materials' => 'nullable|array',
-            'materials.*.code' => 'required_with:materials|string|max:100',
-            'materials.*.qty' => 'nullable|numeric|min:0',
-        ]);
-        $data = [
-            'deskripsi' => $request->deskripsi,
-            'kendala' => $request->kendala,
-            'tindak_lanjut' => $request->tindak_lanjut,
-            'status' => $request->status,
-            'keterangan' => $request->keterangan,
-            'labors' => $request->labors ?? [],
-            'labor' => $backlog->labor,
-            'materials' => $request->materials ?? [],
-        ];
-        if ($request->hasFile('document') && $request->file('document')->isValid()) {
-            if ($backlog->document_path && Storage::disk('public')->exists($backlog->document_path)) {
-                Storage::disk('public')->delete($backlog->document_path);
-            }
-            $file = $request->file('document');
-            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-            $path = $file->storeAs('wo-backlog', $fileName, 'public');
-            $data['document_path'] = $path;
-        }
-        $backlog->update($data);
-        return redirect()->route('pemeliharaan.labor-saya')->with('success', 'WO Backlog berhasil diupdate');
-    }
+    /**
+     * UPDATE and BACKLOG methods (local DB) have been removed 
+     * to strictly use Oracle data.
+     */
 
     /**
      * Halaman Edit PDF Jobcard (halaman penuh, bukan modal)
@@ -675,6 +499,9 @@ class LaborSayaController extends Controller
                 return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $wonum])
                     ->with('error', 'Work Order tidak ditemukan.');
             }
+
+            // Normalize result to lowercase property names
+            $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
 
             // Cek apakah status adalah APPR
             if (strtoupper($wo->status ?? '') !== 'APPR') {
