@@ -202,8 +202,8 @@
 
             <div class="calendar-grid">
                 @php
-                    $startOfGrid = $firstDay->copy()->startOfWeek(Carbon\Carbon::MONDAY);
-                    $endOfGrid = $lastDay->copy()->endOfWeek(Carbon::Carbon::SUNDAY);
+                    $startOfGrid = $firstDay->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+                    $endOfGrid = $lastDay->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
                     $currentDay = $startOfGrid->copy();
                 @endphp
 
