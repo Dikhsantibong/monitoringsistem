@@ -186,9 +186,6 @@
                                         </div>
                                     </div>
                                 </th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Kendala</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tindak Lanjut</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Document</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     <div class="flex items-center justify-between gap-2">
@@ -214,6 +211,9 @@
                                         </div>
                                     </div>
                                 </th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Kendala</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tindak Lanjut</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Document</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal Mulai</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal Selesai</th>
@@ -255,15 +255,6 @@
                                         {{ $wo['power_plant_name'] ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['tindak_lanjut'] ?? '-' }}</td>
-                                <td class="px-4 py-2 border border-gray-200 text-center">
-                                    @if(isset($wo['document_path']) && $wo['document_path'])
-                                        <a href="{{ url('storage/' . $wo['document_path']) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     <span class="px-2 py-1 rounded-full {{ ($wo['worktype'] ?? '') == 'PM' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-600' }}">
                                         {{ $wo['worktype'] ?? '-' }}
@@ -283,6 +274,15 @@
                                     <span class="px-2 py-1 rounded-full {{ $statusClass }}">
                                         {{ $wo['status'] ?? '-' }}
                                     </span>
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200">{{ $wo['tindak_lanjut'] ?? '-' }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    @if(isset($wo['document_path']) && $wo['document_path'])
+                                        <a href="{{ url('storage/' . $wo['document_path']) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     <span class="px-2 py-1 rounded-full {{ ($wo['wopriority'] ?? '') == 'Low' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
