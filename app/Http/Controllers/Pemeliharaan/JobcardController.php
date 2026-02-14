@@ -51,7 +51,8 @@ class JobcardController extends Controller
                     'STATUS',
                     'STATUSDATE',
                 ])
-                ->whereIn('WONUM', $existingWonums);
+                ->whereIn('WONUM', $existingWonums)
+                ->where('STATUS', 'APPR');
 
             // Search filter
             if ($q !== '') {
