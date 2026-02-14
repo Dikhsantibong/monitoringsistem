@@ -301,7 +301,7 @@
                             </option>
                         @endforeach
                     </select>
-                    <select name="year" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <select name="year" class="py-2 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         @foreach(range(now()->year - 5, now()->year + 5) as $y)
                             <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
@@ -348,8 +348,13 @@
                                         @foreach($pageEvents as $event)
                                             <div class="event-item {{ $event['type'] == 'WO' ? 'event-wo' : 'event-sr' }}" 
                                                  title="{{ $event['title'] }}">
-                                                <div class="font-bold truncate">
-                                                    {{ $event['id'] }}
+                                                <div class="flex justify-between items-center mb-0.5">
+                                                    <div class="font-bold truncate mr-1">
+                                                        {{ $event['id'] }}
+                                                    </div>
+                                                    <div class="text-[7px] font-bold px-1 rounded bg-black bg-opacity-5 border border-black border-opacity-5 whitespace-nowrap">
+                                                        {{ $event['full_data']->status }}
+                                                    </div>
                                                 </div>
                                                 <div class="text-[9px] truncate opacity-80" title="{{ $event['full_data']->description }}">
                                                     {{ $event['full_data']->description }}

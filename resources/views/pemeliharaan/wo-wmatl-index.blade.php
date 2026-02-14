@@ -79,10 +79,12 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($workOrders as $wo)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $loop->iteration }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $loop->iteration + ($workOrdersPaginator ? ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() : 0) }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->id }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->description }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->status }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{{ $wo->status }}</span>
+                                </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->labor }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->schedule_start }} - {{ $wo->schedule_finish }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">
@@ -93,14 +95,16 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada WO Material dengan status WMATL.</td>
+                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada WO Material dengan status WMATL.</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
                 <div class="mt-4 flex justify-center">
-                    {{ $workOrders->appends(['search' => $search])->links() }}
+                    @if($workOrdersPaginator)
+                        {{ $workOrdersPaginator->appends(['search' => $search])->links() }}
+                    @endif
                 </div>
             </div>
         </main>
