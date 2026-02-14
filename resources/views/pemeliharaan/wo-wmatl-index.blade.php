@@ -88,8 +88,8 @@
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->labor }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->schedule_start }} - {{ $wo->schedule_finish }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">
-                                    <a href="{{ route('pemeliharaan.wo-wmatl.edit', $wo->id) }}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 inline-flex items-center">
-                                        <i class="fas fa-edit mr-2"></i> Edit
+                                    <a href="{{ route('pemeliharaan.wo-wmatl.edit', $wo->id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 inline-flex items-center">
+                                        <i class="fas fa-eye mr-2"></i> Detail
                                     </a>
                                 </td>
                             </tr>
@@ -101,7 +101,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-4 flex justify-center">
+                <div class="mt-4 flex justify-end">
                     @if($workOrdersPaginator)
                         {{ $workOrdersPaginator->appends(['search' => $search])->links() }}
                     @endif
