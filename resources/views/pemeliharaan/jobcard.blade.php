@@ -86,17 +86,24 @@
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Dokumen</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">WO ID</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Dokumen</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($workOrders as $wo)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-2 border border-gray-200 text-center">{{ $loop->iteration + ($workOrders->currentPage() - 1) * $workOrders->perPage() }}</td>
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <a href="{{ asset('storage/' . $wo->jobcard_path) }}" target="_blank"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition">
+                                            <i class="fas fa-eye"></i>
+                                            Preview
+                                        </a>
+                                    </td>
                                     <td class="px-4 py-2 border border-gray-200">{{ $wo->wonum }}</td>
                                     <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo->description }}</td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
@@ -107,18 +114,7 @@
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">{{ $wo->status }}</span>
                                     </td>
-                                    <td class="px-4 py-2 border border-gray-200 text-center">
-                                        <a href="{{ asset('storage/' . $wo->jobcard_path) }}" target="_blank"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                                            </svg>
-                                            Unduh
-                                        </a>
-                                    </td>
+                                    
                                 </tr>
                             @endforeach
                         </tbody>
