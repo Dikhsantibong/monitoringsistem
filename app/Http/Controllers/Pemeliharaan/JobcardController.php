@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class JobcardController extends Controller
 {
@@ -15,11 +16,27 @@ class JobcardController extends Controller
     {
         try {
             $q = trim((string) $request->input('q'));
-            $normalizedName = \Illuminate\Support\Str::of(\Auth::user()->name)
-                ->lower()
-                ->replace(['-', ' '], '');
+            
+            // 1. Get all jobcard files from storage
+            $files = Storage::disk('public')->files('jobcards');
+            
+            // 2. Extract WONUMs from filenames (JOBCARD_{wonum}.pdf)
+            $existingWonums = collect($files)->map(function ($file) {
+                // filename example: jobcards/JOBCARD_12345.pdf
+                if (preg_match('/JOBCARD_(\w+)\.pdf$/', $file, $matches)) {
+                    return $matches[1];
+                }
+                return null;
+            })->filter()->unique()->values()->toArray();
 
-            // Query Oracle for Work Orders
+            if (empty($existingWonums)) {
+                return view('pemeliharaan.jobcard', [
+                    'workOrders' => new LengthAwarePaginator([], 0, 25),
+                    'q' => $q ?? ''
+                ]);
+            }
+
+            // 3. Query Oracle for these specific WONUMs
             $query = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
@@ -34,13 +51,7 @@ class JobcardController extends Controller
                     'STATUS',
                     'STATUSDATE',
                 ])
-                ->where('SITEID', 'KD');
-
-            // Filter by labor name (case-insensitive, normalized)
-            $query->whereRaw(
-                "LOWER(REPLACE(REPLACE(LEAD, '-', ''), ' ', '')) LIKE ?",
-                ['%' . $normalizedName . '%']
-            );
+                ->whereIn('WONUM', $existingWonums);
 
             // Search filter
             if ($q !== '') {
@@ -53,14 +64,11 @@ class JobcardController extends Controller
                 });
             }
 
+            // Get all matching records
             $allWorkOrders = $query->orderByDesc('STATUSDATE')->get();
 
-            // Filter by jobcard file existence
-            $workOrdersWithJobcard = collect($allWorkOrders)->filter(function ($wo) {
-                $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
-                $filename = 'jobcards/JOBCARD_' . $wo->wonum . '.pdf';
-                return Storage::disk('public')->exists($filename);
-            })->map(function ($wo) {
+            // Map to standard format
+            $formattedWorkOrders = collect($allWorkOrders)->map(function ($wo) {
                 $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
                 return (object) [
                     'id' => $wo->wonum,
@@ -73,18 +81,18 @@ class JobcardController extends Controller
                     'location' => $wo->location ?? '-',
                     'status' => $wo->status,
                     'jobcard_path' => 'jobcards/JOBCARD_' . $wo->wonum . '.pdf',
+                    'statusdate' => $wo->statusdate
                 ];
             });
 
             // Paginate manually
             $perPage = 25;
-            $currentPage = $request->input('page', 1);
-            $offset = ($currentPage - 1) * $perPage;
-            $items = $workOrdersWithJobcard->slice($offset, $perPage)->values();
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = $formattedWorkOrders->slice(($currentPage - 1) * $perPage, $perPage)->all();
             
-            $workOrders = new \Illuminate\Pagination\LengthAwarePaginator(
-                $items,
-                $workOrdersWithJobcard->count(),
+            $workOrders = new LengthAwarePaginator(
+                $currentItems,
+                $formattedWorkOrders->count(),
                 $perPage,
                 $currentPage,
                 ['path' => $request->url(), 'query' => $request->query()]
@@ -95,7 +103,7 @@ class JobcardController extends Controller
         } catch (\Exception $e) {
             Log::error('Error fetching jobcards from Oracle: ' . $e->getMessage());
             return view('pemeliharaan.jobcard', [
-                'workOrders' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25),
+                'workOrders' => new LengthAwarePaginator([], 0, 25),
                 'q' => $q ?? ''
             ])->with('error', 'Gagal mengambil data jobcard.');
         }
