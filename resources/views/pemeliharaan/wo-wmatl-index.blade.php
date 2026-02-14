@@ -61,51 +61,48 @@
                     @endif
                 </form>
             </div>
-            <div class="bg-white rounded-lg shadow p-6 w-full">
-                <h2 class="text-lg font-semibold mb-4">Daftar WO Material (WMATL)</h2>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID WO</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Labor</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($workOrders as $wo)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $loop->iteration + ($workOrdersPaginator ? ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() : 0) }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->id }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->description }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{{ $wo->status }}</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->labor }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">{{ $wo->schedule_start }} - {{ $wo->schedule_finish }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 text-center border-r border-gray-200">
-                                    <a href="{{ route('pemeliharaan.wo-wmatl.edit', $wo->id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 inline-flex items-center">
-                                        <i class="fas fa-eye mr-2"></i> Detail
-                                    </a>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada WO Material dengan status WMATL.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-4 flex justify-end">
-                    @if($workOrdersPaginator)
-                        {{ $workOrdersPaginator->appends(['search' => $search])->links() }}
-                    @endif
-                </div>
+            <div class="bg-white rounded shadow p-4 overflow-x-auto">
+                <table class="min-w-full table-fixed divide-y divide-gray-200 border whitespace-nowrap">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">ID WO</th>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Labor</th>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($workOrders as $wo)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-center border border-gray-200">{{ $loop->iteration + ($workOrdersPaginator ? ($workOrdersPaginator->currentPage() - 1) * $workOrdersPaginator->perPage() : 0) }}</td>
+                            <td class="px-4 py-2 border border-gray-200 text-center">
+                                <a href="{{ route('pemeliharaan.wo-wmatl.edit', $wo->id) }}" class="inline-block px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs">
+                                    <i class="fas fa-eye"></i> Detail
+                                </a>
+                            </td>
+                            <td class="px-4 py-2 border border-gray-200">{{ $wo->id }}</td>
+                            <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo->description }}</td>
+                            <td class="px-4 py-2 border border-gray-200 text-center">
+                                <span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">{{ $wo->status }}</span>
+                            </td>
+                            <td class="px-4 py-2 border border-gray-200">{{ $wo->labor }}</td>
+                            <td class="px-4 py-2 border border-gray-200">{{ $wo->schedule_start }} - {{ $wo->schedule_finish }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-4">Tidak ada WO Material dengan status WMATL.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-end">
+                @if($workOrdersPaginator)
+                    {{ $workOrdersPaginator->appends(['search' => $search])->links() }}
+                @endif
             </div>
         </main>
     </div>

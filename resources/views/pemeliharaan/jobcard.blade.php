@@ -57,7 +57,7 @@
         <main class="px-6 pt-6">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
                 <div>
-                    <h1 class="text-xl font-semibold text-gray-900">Jobcard (WO Closed)</h1>
+                    <h1 class="text-xl font-semibold text-gray-900">Jobcard (Generated)</h1>
                     <div class="text-sm text-gray-500">Total:
                         <b>{{ number_format($workOrders->total()) }}</b> dokumen
                     </div>
@@ -78,56 +78,53 @@
                 </form>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-4">
+            <div class="bg-white rounded shadow p-4 overflow-x-auto">
                 @if($workOrders->isEmpty())
-                    <div class="text-gray-500 text-sm">Tidak ada dokumen.</div>
+                    <div class="text-gray-500 text-sm">Tidak ada dokumen jobcard yang sudah di-generate.</div>
                 @else
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-200 text-sm">
-                            <thead class="bg-gray-100 text-gray-700">
-                                <tr>
-									<th class="px-4 py-2 border">No</th>
-                                    <th class="px-4 py-2 border">WO ID</th>
-                                    <th class="px-4 py-2 border">Deskripsi</th>
-                                    <th class="px-4 py-2 border">Power Plant</th>
-                                    <th class="px-4 py-2 border">Status</th>
-                                    <th class="px-4 py-2 border">Dokumen</th>
+                    <table class="min-w-full table-fixed divide-y divide-gray-200 border whitespace-nowrap">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">WO ID</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Dokumen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($workOrders as $wo)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 border border-gray-200 text-center">{{ $loop->iteration + ($workOrders->currentPage() - 1) * $workOrders->perPage() }}</td>
+                                    <td class="px-4 py-2 border border-gray-200">{{ $wo->wonum }}</td>
+                                    <td class="px-4 py-2 border border-gray-200 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ $wo->description }}</td>
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-medium border border-blue-100">
+                                            {{ $wo->location }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">{{ $wo->status }}</span>
+                                    </td>
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <a href="{{ asset('storage/' . $wo->jobcard_path) }}" target="_blank"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                            </svg>
+                                            Unduh
+                                        </a>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($workOrders as $wo)
-                                    <tr class="hover:bg-gray-50">
-										<td class="px-4 py-2 border">{{ $loop->iteration }}</td>
-                                        <td class="px-4 py-2 border">WO-{{ $wo->id }}</td>
-                                        <td class="px-4 py-2 border">{{ $wo->description }}</td>
-                                        <td class="px-4 py-2 border">{{ $wo->powerPlant->name ?? '-' }}</td>
-                                        <td class="px-4 py-2 border">
-                                            <span
-                                                class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">Closed</span>
-                                        </td>
-                                        <td class="px-4 py-2 border text-center">
-                                            @if($wo->document_path)
-                                                <a href="{{ route('admin.laporan.download-document', $wo->id) }}"
-                                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                                                    </svg>
-                                                    Unduh
-                                                </a>
-                                            @else
-                                                <span class="text-gray-400">-</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
 
-                    <div class="mt-4">
+                    <div class="mt-4 flex justify-end">
                         {{ $workOrders->links() }}
                     </div>
                 @endif
