@@ -212,14 +212,7 @@
                                     </div>
                                 </th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status Unit</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Kendala</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tindak Lanjut</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Document</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal Mulai</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal Selesai</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Labor</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Labor</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -281,8 +274,6 @@
                                         {{ $wo['status_unit'] ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['tindak_lanjut'] ?? '-' }}</td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     @if(isset($wo['document_path']) && $wo['document_path'])
                                         <a href="{{ url('storage/' . $wo['document_path']) }}" target="_blank" class="text-blue-600 underline text-xs">Lihat Dokumen</a>
@@ -290,40 +281,10 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-4 py-2 border border-gray-200 text-center">
-                                    <span class="px-2 py-1 rounded-full {{ ($wo['wopriority'] ?? '') == 'Low' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
-                                        {{ $wo['wopriority'] ?? '-' }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2 border border-gray-200">
-                                    @if(isset($wo['schedule_start']) && $wo['schedule_start'])
-                                        {{ \Carbon\Carbon::parse($wo['schedule_start'])->format('d-m-Y H:i') }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2 border border-gray-200">
-                                    @if(isset($wo['schedule_finish']) && $wo['schedule_finish'])
-                                        {{ \Carbon\Carbon::parse($wo['schedule_finish'])->format('d-m-Y H:i') }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2 border border-gray-200">{{ $wo['labor'] ?? '-' }}</td>
-                                <td class="px-4 py-2 border border-gray-200">
-                                    @if(isset($wo['labors']) && is_array($wo['labors']))
-                                        {{ implode(', ', $wo['labors']) }}
-                                    @elseif(isset($wo['labors']) && is_string($wo['labors']))
-                                        {{ $wo['labors'] }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                               
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="14" class="text-center py-4">Tidak ada data work order untuk labor Anda.</td>
+                                <td colspan="8" class="text-center py-4">Tidak ada data work order untuk labor Anda.</td>
                             </tr>
                             @endforelse
                         </tbody>

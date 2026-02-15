@@ -52,5 +52,8 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\MaterialMasterUpdated::class => [
             \App\Listeners\SyncMaterialMasterToUpKendari::class,
         ],
+        UnitStatusUpdated::class => [
+            SyncUnitStatusToUpKendari::class,
+        ],
     ];
 } 

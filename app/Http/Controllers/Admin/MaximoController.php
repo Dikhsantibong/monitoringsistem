@@ -16,12 +16,9 @@ class MaximoController extends Controller
     public function index(Request $request)
     {
         try {
-            $workOrderPage = $request->input('wo_page', 1);
-            $serviceRequestPage = $request->input('sr_page', 1);
-            $search = $request->input('search');
-            
-            // Filter untuk Work Order
+            // Filter Work Order
             $woStatusFilter = $request->input('wo_status');
+            $statusUnitFilter = $request->input('status_unit');
             $woWorkTypeFilter = $request->input('wo_worktype');
 
             /* ==========================
@@ -59,9 +56,26 @@ class MaximoController extends Controller
                 });
             }
             
-            // Filter Status
+            // Filter Status Maximo
             if ($woStatusFilter) {
                 $workOrdersQuery->where('STATUS', $woStatusFilter);
+            }
+
+            // Filter Status Unit (Logic: Query MySQL for WONUMs then filter Oracle)
+            if ($statusUnitFilter) {
+                $filteredWonums = DB::connection('mysql')
+                    ->table('unit_statuses')
+                    ->where('status_unit', $statusUnitFilter)
+                    ->pluck('wonum')
+                    ->toArray();
+                
+                if (!empty($filteredWonums)) {
+                    $workOrdersQuery->whereIn('WONUM', $filteredWonums);
+                } else {
+                    // Jika filter ada tapi tidak ada wonum yang cocok di MySQL, 
+                    // buat query menghasilkan hasil kosong (WONUM null tak mungkin ada)
+                    $workOrdersQuery->whereNull('WONUM');
+                }
             }
             
             // Filter Work Type
@@ -109,8 +123,16 @@ class MaximoController extends Controller
 
             $serviceRequests = $serviceRequestsQuery->paginate(10, ['*'], 'sr_page', $serviceRequestPage);
 
+            // Ambil Status Unit dari MySQL untuk WONUM yang ada
+            $wonums = collect($workOrders->items())->pluck('wonum')->unique();
+            $unitStatuses = DB::connection('mysql')
+                ->table('unit_statuses')
+                ->whereIn('wonum', $wonums)
+                ->get()
+                ->keyBy('wonum');
+
             return view('admin.maximo.index', [
-                'workOrders'      => $this->formatWorkOrders($workOrders->items()),
+                'workOrders'      => $this->formatWorkOrders($workOrders->items(), $unitStatuses),
                 'workOrdersPaginator' => $workOrders,
                 'serviceRequests' => $this->formatServiceRequests($serviceRequests->items()),
                 'serviceRequestsPaginator' => $serviceRequests,
@@ -295,9 +317,9 @@ class MaximoController extends Controller
     /* ==========================
      * FORMAT WORK ORDER
      * ========================== */
-    private function formatWorkOrders($workOrders)
+    private function formatWorkOrders($workOrders, $unitStatuses = null)
     {
-        return collect($workOrders)->map(function ($wo) {
+        return collect($workOrders)->map(function ($wo) use ($unitStatuses) {
             // Pastikan WONUM di-trim untuk menghilangkan spasi
             $wonum = isset($wo->wonum) ? trim($wo->wonum) : null;
             
@@ -348,8 +370,7 @@ class MaximoController extends Controller
                 'jobcard_exists' => $jobcardExists,
                 'jobcard_path' => $jobcardPath,
                 'jobcard_url' => $jobcardUrl,
-                'faultpriority' => $sr->faultpriority ?? '-',
-                'faultype'    => $sr->faultype ?? '-',
+                'status_unit' => isset($unitStatuses[$wonum]) ? $unitStatuses[$wonum]->status_unit : '-',
             ];
         });
     }

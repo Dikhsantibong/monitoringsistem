@@ -144,7 +144,7 @@
                                             <th class="px-4 py-2 text-center">Asset</th>
                                             <th class="px-4 py-2 text-center">
                                                 <div class="flex items-center justify-between">
-                                                    <span>Status</span>
+                                                    <span>Status Maximo</span>
                                                     <div class="relative ml-2">
                                                         <select name="wo_status" onchange="document.getElementById('woFilterForm').submit()" 
                                                                 class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
@@ -154,6 +154,21 @@
                                                             <option value="INPRG" {{ request('wo_status') == 'INPRG' ? 'selected' : '' }}>INPRG</option>
                                                             <option value="COMP" {{ request('wo_status') == 'COMP' ? 'selected' : '' }}>COMP</option>
                                                             <option value="CLOSE" {{ request('wo_status') == 'CLOSE' ? 'selected' : '' }}>CLOSE</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th class="px-4 py-2 text-center">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Status Unit</span>
+                                                    <div class="relative ml-2">
+                                                        <select name="status_unit" onchange="document.getElementById('woFilterForm').submit()" 
+                                                                class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
+                                                            <option value="" {{ !request('status_unit') ? 'selected' : '' }}>Semua</option>
+                                                            <option value="Ready" {{ request('status_unit') == 'Ready' ? 'selected' : '' }}>Ready</option>
+                                                            <option value="Standby" {{ request('status_unit') == 'Standby' ? 'selected' : '' }}>Standby</option>
+                                                            <option value="Gangguan" {{ request('status_unit') == 'Gangguan' ? 'selected' : '' }}>Gangguan</option>
+                                                            <option value="Pemeliharaan" {{ request('status_unit') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -251,6 +266,11 @@
                                                 @elseif(in_array($woStatus, ['INPRG', 'IN PROGRESS'])) bg-yellow-100 text-yellow-800
                                                 @else bg-gray-100 text-gray-800 @endif">
                                                 {{ $wo['status'] }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">
+                                            <span class="px-2 py-1 text-xs font-medium bg-indigo-50 text-indigo-600 rounded border border-indigo-100">
+                                                {{ $wo['status_unit'] ?? '-' }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-2 text-center border border-gray-200">
