@@ -38,4 +38,24 @@ class UnitStatus extends Model
     {
         return session('unit', 'mysql');
     }
+
+    /**
+     * Boot the model to handle synchronization events.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($unitStatus) {
+            event(new \App\Events\UnitStatusUpdated($unitStatus, 'create'));
+        });
+
+        static::updated(function ($unitStatus) {
+            event(new \App\Events\UnitStatusUpdated($unitStatus, 'update'));
+        });
+
+        static::deleted(function ($unitStatus) {
+            event(new \App\Events\UnitStatusUpdated($unitStatus, 'delete'));
+        });
+    }
 }

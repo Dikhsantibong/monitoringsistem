@@ -19,6 +19,8 @@ use App\Events\PengajuanMaterialFileUpdated;
 use App\Listeners\SyncPengajuanMaterialFileToUpKendari;
 use App\Events\MaterialMasterUpdated;
 use App\Listeners\SyncMaterialMasterToUpKendari;
+use App\Events\UnitStatusUpdated;
+use App\Listeners\SyncUnitStatusToUpKendari;
 
 class EventServiceProvider extends ServiceProvider
 {
