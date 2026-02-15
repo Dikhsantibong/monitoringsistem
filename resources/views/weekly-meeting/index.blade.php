@@ -393,7 +393,7 @@
             <form action="{{ route('weekly-meeting.index') }}" method="GET" class="flex items-center gap-2">
                 <input type="hidden" name="mode" value="list">
                 <select name="unit" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none min-w-[200px]">
-                    <option value="">Semua Unit (Seluruh Sulawesi Tenggara)</option>
+                    <option value="">Semua Unit</option>
                     @foreach($powerPlants as $plant)
                         <option value="{{ $plant->id }}" {{ $unitFilter == $plant->id ? 'selected' : '' }}>{{ $plant->name }}</option>
                     @endforeach
