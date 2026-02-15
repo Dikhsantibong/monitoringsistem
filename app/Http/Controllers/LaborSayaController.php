@@ -348,8 +348,14 @@ class LaborSayaController extends Controller
                 'jobcard_exists' => $jobcardExists,
                 'jobcard_path' => $jobcardPath,
                 'jobcard_url' => $jobcardUrl,
-                // Status Unit dari MySQL
-                'status_unit' => UnitStatus::where('wonum', $wonum)->value('status_unit') ?? '-',
+                // Status Unit dari MySQL (Resilient to failure)
+                'status_unit' => (function() use ($wonum) {
+                    try {
+                        return UnitStatus::where('wonum', $wonum)->value('status_unit') ?? '-';
+                    } catch (\Exception $e) {
+                        return '-';
+                    }
+                })(),
             ];
 
         } catch (\Exception $e) {
