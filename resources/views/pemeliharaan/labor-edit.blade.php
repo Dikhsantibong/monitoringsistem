@@ -172,6 +172,23 @@
                                 @endif
                             </div>
                         </div>
+
+                        {{-- Form Update Status Unit --}}
+                        <div class="mt-6 border-t pt-4">
+                            <form action="{{ route('pemeliharaan.labor-saya.update', $workOrder->wonum) }}" method="POST">
+                                @csrf
+                                <div class="mb-4">
+                                    <label class="block text-indigo-700 font-bold mb-2">Status Unit (MySQL Comparison)</label>
+                                    <input type="text" name="status_unit" value="{{ $workOrder->status_unit ?? '' }}" 
+                                        placeholder="Contoh: Unit Ready, Gangguan, Har, etc..."
+                                        class="w-full px-3 py-2 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <p class="text-xs text-gray-500 mt-1">*Data ini disimpan di database MySQL sebagai pembanding data Oracle.</p>
+                                </div>
+                                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                                    <i class="fas fa-save mr-2"></i> Simpan Perubahan Status Unit
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 <!-- Tombol Kembali -->

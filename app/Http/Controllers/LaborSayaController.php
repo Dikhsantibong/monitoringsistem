@@ -348,6 +348,8 @@ class LaborSayaController extends Controller
                 'jobcard_exists' => $jobcardExists,
                 'jobcard_path' => $jobcardPath,
                 'jobcard_url' => $jobcardUrl,
+                // Status Unit dari MySQL
+                'status_unit' => UnitStatus::where('wonum', $wonum)->value('status_unit') ?? '-',
             ];
 
         } catch (\Exception $e) {
@@ -379,6 +381,30 @@ class LaborSayaController extends Controller
         $materials = collect([]);
 
         return view('pemeliharaan.labor-edit', compact('workOrder', 'powerPlants', 'masterLabors', 'materials'));
+    }
+
+    /**
+     * Update Work Order data (Status Unit in MySQL)
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'status_unit' => 'nullable|string|max:50',
+        ]);
+
+        try {
+            UnitStatus::updateOrCreate(
+                ['wonum' => $id],
+                ['status_unit' => $request->input('status_unit')]
+            );
+
+            return redirect()->route('pemeliharaan.labor-saya.edit', $id)
+                ->with('success', 'Status Unit berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Log::error('Error updating Unit Status in LaborSayaController: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui Status Unit.');
+        }
     }
 
     /**
