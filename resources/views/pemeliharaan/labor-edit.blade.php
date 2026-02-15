@@ -179,10 +179,16 @@
                                 @csrf
                                 <div class="mb-4">
                                     <label class="block text-indigo-700 font-bold mb-2">Status Unit (MySQL Comparison)</label>
-                                    <input type="text" name="status_unit" value="{{ $workOrder->status_unit ?? '' }}" 
-                                        placeholder="Contoh: Unit Ready, Gangguan, Har, etc..."
-                                        class="w-full px-3 py-2 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none">
-                                    <p class="text-xs text-gray-500 mt-1">*Data ini disimpan di database MySQL sebagai pembanding data Oracle.</p>
+                                    <select name="status_unit" class="w-full px-3 py-2 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                        <option value="-" {{ ($workOrder->status_unit ?? '') == '-' ? 'selected' : '' }}>- Pilih Status -</option>
+                                        <option value="APPR" {{ ($workOrder->status_unit ?? '') == 'APPR' ? 'selected' : '' }}>APPR</option>
+                                        <option value="WMATL" {{ ($workOrder->status_unit ?? '') == 'WMATL' ? 'selected' : '' }}>WMATL</option>
+                                        <option value="INPRG" {{ ($workOrder->status_unit ?? '') == 'INPRG' ? 'selected' : '' }}>INPRG</option>
+                                        <option value="COMP" {{ ($workOrder->status_unit ?? '') == 'COMP' ? 'selected' : '' }}>COMP</option>
+                                        <option value="CLOSE" {{ ($workOrder->status_unit ?? '') == 'CLOSE' ? 'selected' : '' }}>CLOSE</option>
+                                        <option value="WAPPR" {{ ($workOrder->status_unit ?? '') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">*Pilih status pembanding yang sesuai untuk acuan pembaruan database Oracle.</p>
                                 </div>
                                 <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 transition-colors flex items-center justify-center">
                                     <i class="fas fa-save mr-2"></i> Simpan Perubahan Status Unit
