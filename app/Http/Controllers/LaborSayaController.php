@@ -400,10 +400,13 @@ class LaborSayaController extends Controller
         ]);
 
         try {
+            $unitStatusModel = new UnitStatus();
+            $targetConnection = $unitStatusModel->getConnectionName();
+
             // Check if table exists first
-            if (!Schema::connection('mysql')->hasTable('unit_statuses')) {
+            if (!Schema::connection($targetConnection)->hasTable('unit_statuses')) {
                  return redirect()->back()
-                    ->with('error', 'Gagal: Tabel unit_statuses tidak ditemukan di database MySQL. Silakan jalankan SQL script yang diberikan sebelumnya.');
+                    ->with('error', "Gagal: Tabel unit_statuses tidak ditemukan di database target ({$targetConnection}). Silakan jalankan SQL script yang diberikan sebelumnya.");
             }
 
             $wonum = trim($id);

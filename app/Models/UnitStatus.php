@@ -6,12 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UnitStatus extends Model
 {
-    /**
-     * The database connection that should be used by the model.
-     *
-     * @var string
-     */
-    protected $connection = 'mysql';
+    use HasFactory;
 
     /**
      * The table associated with the model.
@@ -34,4 +29,12 @@ class UnitStatus extends Model
      * Disable auto-increment if wonum is primary, 
      * but we use an 'id' as primary key for Laravel best practices.
      */
+
+    /**
+     * Mendapatkan koneksi secara dinamis seperti model lainnya
+     */
+    public function getConnectionName()
+    {
+        return session('unit', 'mysql');
+    }
 }
