@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\UnitStatus;
 
 class MaximoController extends Controller
 {
     public function index(Request $request)
     {
+        $search = $request->input('search');
+        $workOrderPage = $request->input('wo_page', 1);
+        $serviceRequestPage = $request->input('sr_page', 1);
+
         try {
             // Filter Work Order
             $woStatusFilter = $request->input('wo_status');
@@ -63,9 +68,7 @@ class MaximoController extends Controller
 
             // Filter Status Unit (Logic: Query MySQL for WONUMs then filter Oracle)
             if ($statusUnitFilter) {
-                $filteredWonums = DB::connection('mysql')
-                    ->table('unit_statuses')
-                    ->where('status_unit', $statusUnitFilter)
+                $filteredWonums = UnitStatus::where('status_unit', $statusUnitFilter)
                     ->pluck('wonum')
                     ->toArray();
                 
@@ -125,9 +128,7 @@ class MaximoController extends Controller
 
             // Ambil Status Unit dari MySQL untuk WONUM yang ada
             $wonums = collect($workOrders->items())->pluck('wonum')->unique();
-            $unitStatuses = DB::connection('mysql')
-                ->table('unit_statuses')
-                ->whereIn('wonum', $wonums)
+            $unitStatuses = UnitStatus::whereIn('wonum', $wonums)
                 ->get()
                 ->keyBy('wonum');
 
@@ -157,9 +158,10 @@ class MaximoController extends Controller
                 'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
                 'serviceRequestsPaginator' => null,
-                'search' => $request->input('search'),
-                'statusFilter' => $request->input('wo_status'),
-                'statusUnitFilter' => $request->input('status_unit'),
+                'search' => $search,
+                'statusFilter' => $woStatusFilter,
+                'statusUnitFilter' => $statusUnitFilter,
+                'woWorkTypeFilter' => $woWorkTypeFilter,
                 'error' => 'Gagal mengambil data dari Maximo (Query Error)',
                 'errorDetail' => [
                     'oracle_code' => $e->errorInfo[1] ?? null,
@@ -180,9 +182,10 @@ class MaximoController extends Controller
                 'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
                 'serviceRequestsPaginator' => null,
-                'search' => $request->input('search'),
-                'statusFilter' => $request->input('wo_status'),
-                'statusUnitFilter' => $request->input('status_unit'),
+                'search' => $search,
+                'statusFilter' => $woStatusFilter,
+                'statusUnitFilter' => $statusUnitFilter,
+                'woWorkTypeFilter' => $woWorkTypeFilter,
                 'error' => 'Gagal mengambil data dari Maximo (General Error)',
                 'errorDetail' => [
                     'message' => $e->getMessage(),
