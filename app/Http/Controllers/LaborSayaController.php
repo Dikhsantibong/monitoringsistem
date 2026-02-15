@@ -157,15 +157,24 @@ class LaborSayaController extends Controller
             // Paginate query
             $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
 
-            // Fetch Unit Status from MySQL for comparison
-            $wonums = collect($workOrdersPaginator->items())->pluck('WONUM')->all();
-            $unitComparison = UnitStatus::whereIn('wonum', $wonums)->get()->keyBy('wonum');
+            // Normalize items first to avoid case issues (Oracle keys can be uppercase/lowercase depending on driver)
+            $normalizedItems = collect($workOrdersPaginator->items())->map(function($item) {
+                return (object) array_change_key_case((array) $item, CASE_LOWER);
+            });
+
+            // Fetch Unit Status from MySQL for comparison (Resilient to failure)
+            $unitComparison = collect();
+            try {
+                $wonums = $normalizedItems->pluck('wonum')->all();
+                if (!empty($wonums)) {
+                    $unitComparison = UnitStatus::whereIn('wonum', $wonums)->get()->keyBy('wonum');
+                }
+            } catch (\Exception $e) {
+                Log::warning('Comparison DB fetch failed in LaborSayaController: ' . $e->getMessage());
+            }
 
             // Format data untuk view
-            $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) use ($unitMapping, $unitComparison) {
-                // Normalize result to lowercase property names
-                $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
-                
+            $workOrders = $normalizedItems->map(function ($wo) use ($unitMapping, $unitComparison) {
                 // Determine readable unit name based on location prefix
                 $location = strtoupper($wo->location ?? '');
                 $readableUnit = '-';
