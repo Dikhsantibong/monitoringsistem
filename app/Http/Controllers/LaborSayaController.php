@@ -398,10 +398,27 @@ class LaborSayaController extends Controller
                 ['status_unit' => $request->input('status_unit')]
             );
 
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Status Unit berhasil diperbarui.',
+                    'wonum' => $id,
+                    'status_unit' => $request->input('status_unit')
+                ]);
+            }
+
             return redirect()->route('pemeliharaan.labor-saya.edit', $id)
                 ->with('success', 'Status Unit berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error('Error updating Unit Status in LaborSayaController: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui Status Unit.'
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('error', 'Gagal memperbarui Status Unit.');
         }

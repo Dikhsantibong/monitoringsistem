@@ -277,9 +277,17 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
-                                    <span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-xs font-medium border border-indigo-100">
-                                        {{ $wo['status_unit'] ?? '-' }}
-                                    </span>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span id="status-unit-{{ $wo['wonum'] }}" class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-xs font-medium border border-indigo-100">
+                                            {{ $wo['status_unit'] ?? '-' }}
+                                        </span>
+                                        @if(!$isClosed)
+                                        <button onclick="openStatusModal('{{ $wo['wonum'] }}', '{{ $wo['status_unit'] ?? '-' }}')" 
+                                            class="text-indigo-400 hover:text-indigo-600 transition-colors" title="Update Status Unit">
+                                            <i class="fas fa-edit text-xs"></i>
+                                        </button>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo['tindak_lanjut'] ?? '-' }}</td>
@@ -410,7 +418,113 @@
         }
         document.getElementById('filterForm').submit();
     }
+
+    // Modal Logic
+    function openStatusModal(wonum, currentStatus) {
+        document.getElementById('modalWonumDisplay').innerText = wonum;
+        document.getElementById('inputStatusWonum').value = wonum;
+        document.getElementById('inputStatusValue').value = currentStatus === '-' ? '' : currentStatus;
+        document.getElementById('statusUpdateModal').classList.remove('hidden');
+    }
+
+    function closeStatusModal() {
+        document.getElementById('statusUpdateModal').classList.add('hidden');
+        document.getElementById('statusErrorMsg').classList.add('hidden');
+    }
+
+    function submitStatusUpdate() {
+        const wonum = document.getElementById('inputStatusWonum').value;
+        const statusValue = document.getElementById('inputStatusValue').value;
+        const btn = document.getElementById('btnSubmitStatus');
+        const errorMsg = document.getElementById('statusErrorMsg');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+        errorMsg.classList.add('hidden');
+
+        fetch(`{{ url('/pemeliharaan/labor-saya') }}/${wonum}/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ status_unit: statusValue })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI visually
+                const statusSpan = document.getElementById(`status-unit-${wonum}`);
+                if (statusSpan) {
+                    statusSpan.innerText = statusValue || '-';
+                    statusSpan.classList.add('animate-pulse');
+                    setTimeout(() => statusSpan.classList.remove('animate-pulse'), 2000);
+                }
+                closeStatusModal();
+                // Optional: show a mini toast or alert
+            } else {
+                errorMsg.innerText = data.message || 'Gagal memperbarui status.';
+                errorMsg.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorMsg.innerText = 'Terjadi kesalahan sistem.';
+            errorMsg.classList.remove('hidden');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Perubahan';
+        });
+    }
 </script>
+
+<!-- Modal Update Status Unit -->
+<div id="statusUpdateModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all overflow-hidden">
+        <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white">
+            <h3 class="text-lg font-bold flex items-center">
+                <i class="fas fa-sync-alt mr-2"></i> Update Status Unit
+            </h3>
+            <button onclick="closeStatusModal()" class="text-white hover:text-indigo-200 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="mb-4">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Work Order number</span>
+                <span id="modalWonumDisplay" class="text-lg font-bold text-gray-800 tracking-tight">-</span>
+            </div>
+            
+            <div id="statusErrorMsg" class="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm hidden">
+                Error message here
+            </div>
+
+            <input type="hidden" id="inputStatusWonum">
+            <div class="mb-6">
+                <label for="inputStatusValue" class="block text-sm font-medium text-gray-700 mb-2">Status Pembanding (MySQL)</label>
+                <input type="text" id="inputStatusValue" 
+                    placeholder="Contoh: Unit Ready, Gangguan, Har, etc..."
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                <p class="mt-2 text-xs text-gray-500 italic">
+                    <i class="fas fa-info-circle mr-1"></i> Data ini akan menjadi acuan bagi akun utama untuk memperbarui database Oracle.
+                </p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button id="btnSubmitStatus" onclick="submitStatusUpdate()"
+                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 shadow-md transition-all active:scale-[0.98] flex items-center justify-center">
+                    <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                </button>
+                <button onclick="closeStatusModal()"
+                    class="w-full bg-gray-100 text-gray-600 font-semibold py-2.5 rounded-lg hover:bg-gray-200 transition-all">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <style>
 .tab-btn.active {
     border-bottom-color: #3b82f6;
