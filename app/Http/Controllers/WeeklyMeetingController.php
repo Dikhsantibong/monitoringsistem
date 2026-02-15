@@ -44,6 +44,7 @@ class WeeklyMeetingController extends Controller
             $workOrders = DB::connection('oracle')->table('WORKORDER')
                 ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
                 ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
                 ->when($unitFilter, function($q) use ($unitFilter) {
                     return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
                 })
@@ -118,6 +119,7 @@ class WeeklyMeetingController extends Controller
         $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->when($unitFilter, function($q) use ($unitFilter) {
                 return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
             })
@@ -130,6 +132,7 @@ class WeeklyMeetingController extends Controller
         $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->when($unitFilter, function($q) use ($unitFilter) {
                 return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
             })
@@ -154,6 +157,7 @@ class WeeklyMeetingController extends Controller
         $planPMs = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'ASSETNUM', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->when($unitFilter, function($q) use ($unitFilter) {
                 return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
             })
@@ -173,6 +177,7 @@ class WeeklyMeetingController extends Controller
         $planBacklog = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->when($unitFilter, function($q) use ($unitFilter) {
                 return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
             })
@@ -186,6 +191,7 @@ class WeeklyMeetingController extends Controller
         $urgentWork = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->where('WONUM', 'LIKE', 'WO%')
             ->when($unitFilter, function($q) use ($unitFilter) {
                 return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
             })
