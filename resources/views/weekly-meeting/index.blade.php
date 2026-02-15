@@ -294,6 +294,12 @@
                 
                 <form action="{{ route('weekly-meeting.index') }}" method="GET" class="flex items-center gap-2">
                     <input type="hidden" name="mode" value="calendar">
+                    <select name="unit" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                        <option value="">Semua Unit</option>
+                        @foreach($powerPlants as $plant)
+                            <option value="{{ $plant->id }}" {{ $unitFilter == $plant->id ? 'selected' : '' }}>{{ $plant->name }}</option>
+                        @endforeach
+                    </select>
                     <select name="month" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         @foreach(range(1, 12) as $m)
                             <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
@@ -382,6 +388,25 @@
         </div>
     @else
         <!-- Original List View -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex justify-between items-center fade-in">
+            <h2 class="text-lg font-bold text-gray-700">Filter Unit</h2>
+            <form action="{{ route('weekly-meeting.index') }}" method="GET" class="flex items-center gap-2">
+                <input type="hidden" name="mode" value="list">
+                <select name="unit" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none min-w-[200px]">
+                    <option value="">Semua Unit (Seluruh Sulawesi Tenggara)</option>
+                    @foreach($powerPlants as $plant)
+                        <option value="{{ $plant->id }}" {{ $unitFilter == $plant->id ? 'selected' : '' }}>{{ $plant->name }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm">
+                    TERAPKAN
+                </button>
+                @if($unitFilter)
+                    <a href="{{ route('weekly-meeting.index', ['mode' => 'list']) }}" class="text-sm text-gray-500 hover:text-red-500 ml-2">Reset</a>
+                @endif
+            </form>
+        </div>
+
         <div class="stats-grid fade-in">
         <!-- Review: Completed -->
         <div class="stat-card blue">
@@ -496,7 +521,7 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                    {{ $reviewCompletedWOs->appends(['review_created_page' => $reviewCreatedWOs->currentPage(), 'review_created_sr_page' => $reviewCreatedSRs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                    {{ $reviewCompletedWOs->appends(['unit' => $unitFilter, 'review_created_page' => $reviewCreatedWOs->currentPage(), 'review_created_sr_page' => $reviewCreatedSRs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
 
@@ -539,7 +564,7 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                    {{ $reviewCreatedWOs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_sr_page' => $reviewCreatedSRs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                    {{ $reviewCreatedWOs->appends(['unit' => $unitFilter, 'review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_sr_page' => $reviewCreatedSRs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
 
@@ -599,7 +624,7 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                    {{ $planPMs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                    {{ $planPMs->appends(['unit' => $unitFilter, 'review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
 
@@ -642,7 +667,7 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                    {{ $urgentWork->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage()])->links() }}
+                    {{ $urgentWork->appends(['unit' => $unitFilter, 'review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage()])->links() }}
                 </div>
             </div>
 
@@ -690,7 +715,7 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                    {{ $planBacklog->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                    {{ $planBacklog->appends(['unit' => $unitFilter, 'review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
                 </div>
             </div>
@@ -735,7 +760,7 @@
                     </table>
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                     {{ $reviewCreatedSRs->appends(['review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
+                     {{ $reviewCreatedSRs->appends(['unit' => $unitFilter, 'review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_backlog_page' => $planBacklog->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
                 </div>
             </div>
 

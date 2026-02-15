@@ -14,6 +14,27 @@ class WeeklyMeetingController extends Controller
         $mode = $request->input('mode', 'list');
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
+        $unitFilter = $request->input('unit');
+
+        $unitMapping = [
+            'KLKA' => 'PLTD KOLAKA',
+            'LANI' => 'PLTD LANIPA NIPA',
+            'SABI' => 'PLTM SABILAMBO',
+            'MIKU' => 'PLTM MIKUASI',
+            'BBAU' => 'PLTD BAU BAU',
+            'WANG' => 'PLTD WANGI WANGI',
+            'RAHA' => 'PLTD RAHA',
+            'EREK' => 'PLTD EREKE',
+            'RONG' => 'PLTM RONGI',
+            'WINN' => 'PLTM WINNING',
+            'POAS' => 'PLTD POASIA',
+            'WUAW' => 'PLTD WUA WUA',
+        ];
+
+        // Prepare powerPlants for the filter dropdown
+        $powerPlants = collect($unitMapping)->map(function($name, $prefix) {
+            return (object)['id' => $prefix, 'name' => $name];
+        });
 
         if ($mode === 'calendar') {
             $firstDay = Carbon::create($year, $month, 1);
@@ -23,6 +44,9 @@ class WeeklyMeetingController extends Controller
             $workOrders = DB::connection('oracle')->table('WORKORDER')
                 ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
                 ->where('SITEID', 'KD')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
                 ->where(function($q) use ($firstDay, $lastDay) {
                     $q->whereBetween('REPORTDATE', [$firstDay, $lastDay])
                       ->orWhereBetween('SCHEDSTART', [$firstDay, $lastDay])
@@ -32,8 +56,11 @@ class WeeklyMeetingController extends Controller
 
             // Fetch Service Requests for the month
             $serviceRequests = DB::connection('oracle')->table('SR')
-                ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY')
+                ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
                 ->where('SITEID', 'KD')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
                 ->whereBetween('REPORTDATE', [$firstDay, $lastDay])
                 ->get();
 
@@ -65,7 +92,7 @@ class WeeklyMeetingController extends Controller
                 ]);
             }
 
-            return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay'));
+            return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay', 'powerPlants', 'unitFilter'));
         }
 
         // --- EXISTING LIST LOGIC ---
@@ -91,6 +118,9 @@ class WeeklyMeetingController extends Controller
         $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
             ->where('SITEID', 'KD')
+            ->when($unitFilter, function($q) use ($unitFilter) {
+                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+            })
             ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->whereBetween('STATUSDATE', [$lastWeekStart, $lastWeekEnd])
             ->orderBy('STATUSDATE', 'desc')
@@ -98,16 +128,22 @@ class WeeklyMeetingController extends Controller
 
         // B. WO Terbit (Created) di Minggu Lalu
         $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY')
+            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->when($unitFilter, function($q) use ($unitFilter) {
+                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+            })
             ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
             ->orderBy('REPORTDATE', 'desc')
             ->paginate(10, ['*'], 'review_created_page');
 
         // B.2. SR Terbit (Created) di Minggu Lalu
         $reviewCreatedSRs = DB::connection('oracle')->table('SR')
-            ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY')
+            ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->when($unitFilter, function($q) use ($unitFilter) {
+                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+            })
             ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
             ->orderBy('REPORTDATE', 'desc')
             ->paginate(10, ['*'], 'review_created_sr_page');
@@ -118,6 +154,9 @@ class WeeklyMeetingController extends Controller
         $planPMs = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'ASSETNUM', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->when($unitFilter, function($q) use ($unitFilter) {
+                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+            })
             ->where('WORKTYPE', 'PM')
             ->whereNotIn('STATUS', ['COMP', 'CLOSE', 'CAN']) // Active PMs
             ->where(function($q) use ($nextWeekStart, $nextWeekEnd) {
@@ -134,6 +173,9 @@ class WeeklyMeetingController extends Controller
         $planBacklog = DB::connection('oracle')->table('WORKORDER')
             ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->when($unitFilter, function($q) use ($unitFilter) {
+                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+            })
             ->where('WORKTYPE', '!=', 'PM') // Exclude routine PM
             ->whereIn('STATUS', $openStatuses)
             ->orderBy('WOPRIORITY', 'asc')
@@ -142,8 +184,11 @@ class WeeklyMeetingController extends Controller
 
         // C. Urgent / Daily Focus
         $urgentWork = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM')
+            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
             ->where('SITEID', 'KD')
+            ->when($unitFilter, function($q) use ($unitFilter) {
+                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+            })
             ->whereIn('STATUS', $openStatuses)
             ->where(function($q) {
                 $q->where('WOPRIORITY', 1)
@@ -154,7 +199,7 @@ class WeeklyMeetingController extends Controller
         return view('weekly-meeting.index', compact(
             'mode', 'lastWeekStart', 'lastWeekEnd', 'nextWeekStart', 'nextWeekEnd',
             'reviewCompletedWOs', 'reviewCreatedWOs', 'reviewCreatedSRs',
-            'planPMs', 'planBacklog', 'urgentWork'
+            'planPMs', 'planBacklog', 'urgentWork', 'powerPlants', 'unitFilter'
         ));
     }
 }
