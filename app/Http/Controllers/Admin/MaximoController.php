@@ -47,7 +47,8 @@ class MaximoController extends Controller
                     'SCHEDFINISH',
                     'REPORTDATE',
                 ])
-                ->where('SITEID', 'KD');
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%');
 
             if ($search) {
                 $workOrdersQuery->where(function ($q) use ($search) {
