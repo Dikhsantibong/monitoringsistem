@@ -249,6 +249,23 @@
             background: #f1f5f9;
             color: #334155;
         }
+
+        /* Status Badge Colors for Calendar */
+        .badge-status {
+            font-size: 7px;
+            font-weight: 800;
+            padding: 1px 4px;
+            border-radius: 3px;
+            border-width: 1px;
+            white-space: nowrap;
+        }
+        .status-blue { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+        .status-green { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+        .status-yellow { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+        .status-orange { background: #ffedd5; color: #9a3412; border-color: #fed7aa; }
+        .status-purple { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+        .status-red { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+        .status-gray { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
     </style>
 @endsection
 
@@ -358,7 +375,16 @@
                                                     <div class="font-bold truncate mr-1">
                                                         {{ $event['id'] }}
                                                     </div>
-                                                    <div class="text-[7px] font-bold px-1 rounded bg-black bg-opacity-5 border border-black border-opacity-5 whitespace-nowrap">
+                                                    @php
+                                                        $status = strtoupper($event['full_data']->status ?? '');
+                                                        $statusClass = 'status-gray';
+                                                        if (in_array($status, ['APPR', 'WAPPR'])) $statusClass = 'status-blue';
+                                                        elseif (in_array($status, ['INPRG', 'IN PROGRESS', 'WSCH'])) $statusClass = 'status-yellow';
+                                                        elseif (in_array($status, ['COMP', 'CLOSE'])) $statusClass = 'status-green';
+                                                        elseif ($status === 'WMATL') $statusClass = 'status-purple';
+                                                        elseif ($status === 'CAN') $statusClass = 'status-red';
+                                                    @endphp
+                                                    <div class="badge-status {{ $statusClass }}">
                                                         {{ $event['full_data']->status }}
                                                     </div>
                                                 </div>

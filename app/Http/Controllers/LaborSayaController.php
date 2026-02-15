@@ -65,7 +65,8 @@ class LaborSayaController extends Controller
         try {
             $baseStatsQuery = DB::connection('oracle')
                 ->table('WORKORDER')
-                ->where('SITEID', 'KD');
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%');
 
             // Card Total WO calculated from data SITE "KD"
             $stats['total'] = (clone $baseStatsQuery)->count();
@@ -117,7 +118,8 @@ class LaborSayaController extends Controller
                     'SCHEDFINISH',
                     'REPORTDATE',
                 ])
-                ->where('SITEID', 'KD');
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%');
 
             // Search filter
             if ($search !== '') {
@@ -259,6 +261,7 @@ class LaborSayaController extends Controller
                     'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
                 ->where('WONUM', $id)
                 ->first();
 
@@ -344,6 +347,7 @@ class LaborSayaController extends Controller
             $locations = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
                 ->whereNotNull('LOCATION')
                 ->distinct()
                 ->pluck('LOCATION');
@@ -517,6 +521,7 @@ class LaborSayaController extends Controller
                     'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
                 ->where('WONUM', $wonum)
                 ->first();
 

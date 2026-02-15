@@ -18,6 +18,7 @@ class PemeliharaanWoWmatlController extends Controller
             $query = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
                 ->where('STATUS', 'WMATL');
 
             if ($search) {
@@ -59,6 +60,7 @@ class PemeliharaanWoWmatlController extends Controller
             $wo = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
                 ->where('WONUM', $id)
                 ->first();
 
