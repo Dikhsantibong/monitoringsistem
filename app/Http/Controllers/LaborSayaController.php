@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use App\Models\UnitStatus;
+use Illuminate\Support\Facades\Schema;
 
 class LaborSayaController extends Controller
 {
@@ -399,34 +400,49 @@ class LaborSayaController extends Controller
         ]);
 
         try {
-            UnitStatus::updateOrCreate(
-                ['wonum' => $id],
-                ['status_unit' => $request->input('status_unit')]
-            );
+            // Check if table exists first
+            if (!Schema::connection('mysql')->hasTable('unit_statuses')) {
+                 return redirect()->back()
+                    ->with('error', 'Gagal: Tabel unit_statuses tidak ditemukan di database MySQL. Silakan jalankan SQL script yang diberikan sebelumnya.');
+            }
+
+            $wonum = trim($id);
+            
+            // Use manual update to be more explicit
+            $unitStatus = UnitStatus::where('wonum', $wonum)->first();
+            if (!$unitStatus) {
+                $unitStatus = new UnitStatus();
+                $unitStatus->wonum = $wonum;
+            }
+            $unitStatus->status_unit = $request->input('status_unit');
+            $unitStatus->save();
 
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Status Unit berhasil diperbarui.',
-                    'wonum' => $id,
+                    'wonum' => $wonum,
                     'status_unit' => $request->input('status_unit')
                 ]);
             }
 
-            return redirect()->route('pemeliharaan.labor-saya.edit', $id)
+            return redirect()->route('pemeliharaan.labor-saya.edit', $wonum)
                 ->with('success', 'Status Unit berhasil diperbarui.');
         } catch (\Exception $e) {
-            Log::error('Error updating Unit Status in LaborSayaController: ' . $e->getMessage());
+            Log::error('Error updating Unit Status in LaborSayaController: ' . $e->getMessage(), [
+                'exception' => $e,
+                'wonum' => $id
+            ]);
             
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal memperbarui Status Unit.'
+                    'message' => 'Gagal memperbarui Status Unit: ' . $e->getMessage()
                 ], 500);
             }
 
             return redirect()->back()
-                ->with('error', 'Gagal memperbarui Status Unit.');
+                ->with('error', 'Gagal memperbarui Status Unit. Silakan pastikan tabel unit_statuses sudah ada.');
         }
     }
 
