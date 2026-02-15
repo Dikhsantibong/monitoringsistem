@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
+use App\Models\UnitStatus;
 
 class LaborSayaController extends Controller
 {
@@ -156,8 +157,12 @@ class LaborSayaController extends Controller
             // Paginate query
             $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
 
+            // Fetch Unit Status from MySQL for comparison
+            $wonums = collect($workOrdersPaginator->items())->pluck('WONUM')->all();
+            $unitComparison = UnitStatus::whereIn('wonum', $wonums)->get()->keyBy('wonum');
+
             // Format data untuk view
-            $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) use ($unitMapping) {
+            $workOrders = collect($workOrdersPaginator->items())->map(function ($wo) use ($unitMapping, $unitComparison) {
                 // Normalize result to lowercase property names
                 $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
                 
@@ -212,6 +217,7 @@ class LaborSayaController extends Controller
                     'labors' => [], // Tidak ada di Maximo
                     'document_path' => null, // Tidak ada di Maximo
                     'power_plant_name' => $readableUnit !== '-' ? $readableUnit : ($wo->location ?? '-'),
+                    'status_unit' => isset($unitComparison[$wo->wonum]) ? $unitComparison[$wo->wonum]->status_unit : '-',
                 ];
             });
 

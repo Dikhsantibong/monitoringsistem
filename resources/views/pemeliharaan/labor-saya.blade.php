@@ -68,7 +68,7 @@
             });
         </script>
         <!-- Summary Cards -->
-        <main class="px-6 pt-6">
+         <main class="px-6 pt-6">
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
                 <!-- Total WO -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
@@ -211,6 +211,7 @@
                                         </div>
                                     </div>
                                 </th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status Unit</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Kendala</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tindak Lanjut</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Document</th>
@@ -273,6 +274,11 @@
                                     @endphp
                                     <span class="px-2 py-1 rounded-full {{ $statusClass }}">
                                         {{ $wo['status'] ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    <span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-xs font-medium border border-indigo-100">
+                                        {{ $wo['status_unit'] ?? '-' }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200">{{ $wo['kendala'] ?? '-' }}</td>
