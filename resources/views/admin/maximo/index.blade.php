@@ -151,6 +151,7 @@
                                                             <option value="" {{ !request('wo_status') ? 'selected' : '' }}>Semua</option>
                                                             <option value="WAPPR" {{ request('wo_status') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
                                                             <option value="APPR" {{ request('wo_status') == 'APPR' ? 'selected' : '' }}>APPR</option>
+                                                            <option value="WMATL" {{ request('wo_status') == 'WMATL' ? 'selected' : '' }}>WMATL</option>
                                                             <option value="INPRG" {{ request('wo_status') == 'INPRG' ? 'selected' : '' }}>INPRG</option>
                                                             <option value="COMP" {{ request('wo_status') == 'COMP' ? 'selected' : '' }}>COMP</option>
                                                             <option value="CLOSE" {{ request('wo_status') == 'CLOSE' ? 'selected' : '' }}>CLOSE</option>
@@ -165,10 +166,12 @@
                                                         <select name="status_unit" onchange="document.getElementById('woFilterForm').submit()" 
                                                                 class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
                                                             <option value="" {{ !request('status_unit') ? 'selected' : '' }}>Semua</option>
-                                                            <option value="Ready" {{ request('status_unit') == 'Ready' ? 'selected' : '' }}>Ready</option>
-                                                            <option value="Standby" {{ request('status_unit') == 'Standby' ? 'selected' : '' }}>Standby</option>
-                                                            <option value="Gangguan" {{ request('status_unit') == 'Gangguan' ? 'selected' : '' }}>Gangguan</option>
-                                                            <option value="Pemeliharaan" {{ request('status_unit') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
+                                                            <option value="WAPPR" {{ request('status_unit') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
+                                                            <option value="APPR" {{ request('status_unit') == 'APPR' ? 'selected' : '' }}>APPR</option>
+                                                            <option value="WMATL" {{ request('status_unit') == 'WMATL' ? 'selected' : '' }}>WMATL</option>
+                                                            <option value="INPRG" {{ request('status_unit') == 'INPRG' ? 'selected' : '' }}>INPRG</option>
+                                                            <option value="COMP" {{ request('status_unit') == 'COMP' ? 'selected' : '' }}>COMP</option>
+                                                            <option value="CLOSE" {{ request('status_unit') == 'CLOSE' ? 'selected' : '' }}>CLOSE</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -317,6 +320,7 @@
                                         'sr_page' => request('sr_page', 1), 
                                         'search' => request('search'),
                                         'wo_status' => request('wo_status'),
+                                        'status_unit' => request('status_unit'),
                                         'wo_worktype' => request('wo_worktype')
                                     ])->previousPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
@@ -343,6 +347,7 @@
                                         'sr_page' => request('sr_page', 1), 
                                         'search' => request('search'),
                                         'wo_status' => request('wo_status'),
+                                        'status_unit' => request('status_unit'),
                                         'wo_worktype' => request('wo_worktype')
                                     ])->nextPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
@@ -457,7 +462,13 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 @if (!$serviceRequestsPaginator->onFirstPage())
-                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->previousPageUrl() }}" 
+                                    <a href="{{ $serviceRequestsPaginator->appends([
+                                        'wo_page' => request('wo_page', 1), 
+                                        'search' => request('search'),
+                                        'wo_status' => request('wo_status'),
+                                        'status_unit' => request('status_unit'),
+                                        'wo_worktype' => request('wo_worktype')
+                                    ])->previousPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                                 @endif
 
@@ -465,7 +476,13 @@
                                     @if ($page == $serviceRequestsPaginator->currentPage())
                                         <span class="px-3 py-1 bg-[#0A749B] text-white rounded">{{ $page }}</span>
                                     @else
-                                        <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->url($page) }}" 
+                                        <a href="{{ $serviceRequestsPaginator->appends([
+                                            'wo_page' => request('wo_page', 1),
+                                            'search' => request('search'),
+                                            'wo_status' => request('wo_status'),
+                                            'status_unit' => request('status_unit'),
+                                            'wo_worktype' => request('wo_worktype')
+                                        ])->url($page) }}" 
                                            class="px-3 py-1 rounded bg-white text-[#0A749B] border border-[#0A749B]">
                                             {{ $page }}
                                         </a>
@@ -473,7 +490,13 @@
                                 @endforeach
 
                                 @if ($serviceRequestsPaginator->hasMorePages())
-                                    <a href="{{ $serviceRequestsPaginator->appends(['wo_page' => request('wo_page', 1), 'search' => request('search')])->nextPageUrl() }}" 
+                                    <a href="{{ $serviceRequestsPaginator->appends([
+                                        'wo_page' => request('wo_page', 1),
+                                        'search' => request('search'),
+                                        'wo_status' => request('wo_status'),
+                                        'status_unit' => request('status_unit'),
+                                        'wo_worktype' => request('wo_worktype')
+                                    ])->nextPageUrl() }}" 
                                        class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                                 @endif
                             </div>

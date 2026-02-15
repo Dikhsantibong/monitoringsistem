@@ -136,6 +136,9 @@ class MaximoController extends Controller
                 'workOrdersPaginator' => $workOrders,
                 'serviceRequests' => $this->formatServiceRequests($serviceRequests->items()),
                 'serviceRequestsPaginator' => $serviceRequests,
+                'search'          => $search,
+                'statusFilter'    => $woStatusFilter,
+                'statusUnitFilter'=> $statusUnitFilter,
                 'error'           => null,
                 'errorDetail'     => null,
             ]);
@@ -154,6 +157,9 @@ class MaximoController extends Controller
                 'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
                 'serviceRequestsPaginator' => null,
+                'search' => $request->input('search'),
+                'statusFilter' => $request->input('wo_status'),
+                'statusUnitFilter' => $request->input('status_unit'),
                 'error' => 'Gagal mengambil data dari Maximo (Query Error)',
                 'errorDetail' => [
                     'oracle_code' => $e->errorInfo[1] ?? null,
@@ -174,6 +180,9 @@ class MaximoController extends Controller
                 'workOrdersPaginator' => null,
                 'serviceRequests' => collect([]),
                 'serviceRequestsPaginator' => null,
+                'search' => $request->input('search'),
+                'statusFilter' => $request->input('wo_status'),
+                'statusUnitFilter' => $request->input('status_unit'),
                 'error' => 'Gagal mengambil data dari Maximo (General Error)',
                 'errorDetail' => [
                     'message' => $e->getMessage(),
