@@ -449,6 +449,7 @@ class MaximoController extends Controller
                     'REPORTDATE',
                 ])
                 ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
                 ->where('WONUM', $wonum)
                 ->first();
 
