@@ -80,12 +80,11 @@
                     </p>
 
                     <!-- Input Pencarian -->
-                    <div class="mb-4 flex flex-col lg:flex-row gap-x-4 gap-y-3 justify-between items-center">
                     <!-- Tabs Navigation (Only for MySQL) -->
                     @if(session('unit') === 'mysql')
                     <div class="mb-6 border-b border-gray-200">
                         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                            <button onclick="switchTab('daily')" id="tab-daily" class="border-b-2 border-blue-500 py-4 px-1 text-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                            <button onclick="switchTab('daily')" id="tab-daily" class="border-b-2 border-blue-500 py-4 px-1 text-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 active-tab">
                                 <i class="fas fa-users mr-2"></i>Absensi Daily
                             </button>
                             <button onclick="switchTab('weekly')" id="tab-weekly" class="border-b-2 border-transparent py-4 px-1 text-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors duration-200">
@@ -117,29 +116,6 @@
                                     <i class="fas fa-tasks mr-2"></i>
                                     Manage Kehadiran
                                 </a>
-                            </div>
-
-                            <!-- Modal QR Code (Shared) -->
-                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-                                <div class="bg-white p-8 rounded-lg shadow-lg">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <h3 class="text-xl font-bold flex items-center" id="qrModalTitle">
-                                            <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
-                                        </h3>
-                                        <button onclick="closeQRModal()" class="text-gray-500 hover:text-gray-700">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
-                                    <div id="qr-error" class="mt-4 text-red-600 text-center hidden"></div>
-                                    <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
-                                    <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded p-3">
-                                        <p class="text-sm text-yellow-800 text-center">
-                                            <i class="fas fa-info-circle mr-1"></i>
-                                            <span class="font-semibold">Jangan lupa:</span> Tekan tombol "Tarik Data" setelah absensi selesai
-                                        </p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -258,6 +234,29 @@
         </div>
 
         <script src="{{ asset('js/toggle.js') }}"></script>
+
+        <!-- Shared QR Modal (Moved outside sections) -->
+        <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold flex items-center" id="qrModalTitle">
+                        <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
+                    </h3>
+                    <button onclick="closeQRModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
+                <div id="qr-error" class="mt-4 text-red-600 text-center hidden"></div>
+                <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
+                <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded p-3">
+                    <p class="text-sm text-yellow-800 text-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <span class="font-semibold">Jangan lupa:</span> Tekan tombol "Tarik Data" setelah absensi selesai
+                    </p>
+                </div>
+            </div>
+        </div>
 
         <!-- Modal untuk menampilkan tanda tangan -->
         <div id="signatureModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
