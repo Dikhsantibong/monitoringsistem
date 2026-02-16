@@ -874,7 +874,8 @@
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="hideDiscussionDetail()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full border border-gray-100 bounce-in">
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-[95%] sm:w-full border border-gray-100 bounce-in">
             <!-- Modal Header -->
             <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 flex justify-between items-center">
                 <h3 class="text-xl font-bold text-white flex items-center gap-3">
@@ -892,8 +893,8 @@
                 </div>
                 
                 <div id="modalData" class="hidden space-y-8">
-                    <!-- Section 1: Discussion Data -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Section 1 & 2: Discussion Data & PIC -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div>
                             <h4 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <span class="w-8 h-px bg-gray-200"></span>
