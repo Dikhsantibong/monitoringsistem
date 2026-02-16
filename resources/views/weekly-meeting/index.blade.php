@@ -892,7 +892,7 @@
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
                 
-                <div id="modalData" class="hidden space-y-8">
+                <div id="modalData" class="hidden space-y-4">
                     <!-- Section 1 & 2: Discussion Data & PIC -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div>
@@ -931,20 +931,17 @@
                                     <label class="text-gray-500 text-[10px] font-bold block">SASARAN</label>
                                     <p id="det_target" class="text-gray-700 text-sm italic">-</p>
                                 </div>
-                                <div>
-                                    <label class="text-gray-500 text-[10px] font-bold block">DEADLINE SASARAN</label>
-                                    <p id="det_target_deadline" class="font-bold text-red-600 text-sm">-</p>
-                                </div>
+                                <div id="det_target_deadline" class="font-bold text-red-600 text-sm">-</div>
                             </div>
                         </div>
 
-                        <!-- PIC & Classification -->
-                        <div>
-                            <h4 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <span class="w-8 h-px bg-gray-200"></span>
-                                PIC & Klasifikasi
+                        <!-- Section 2: PIC & Classification -->
+                        <div class="flex flex-col">
+                            <h4 class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <span class="w-6 h-px bg-gray-200"></span>
+                                PIC & KLASIFIKASI
                             </h4>
-                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-3">
+                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-2 flex-grow">
                                 <div>
                                     <label class="text-gray-500 text-[10px] font-bold block">DEPARTEMEN / SEKSI</label>
                                     <p class="text-gray-800 text-sm">
@@ -973,46 +970,46 @@
                                 </div>
                             </div>
 
-                        <!-- Section 2: Oracle Integration -->
-                        <div>
-                            <h4 class="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <span class="w-8 h-px bg-blue-100"></span>
-                                Data Maximo (Oracle)
+                        <!-- Section 3: Oracle Integration -->
+                        <div class="flex flex-col">
+                            <h4 class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <span class="w-6 h-px bg-blue-100"></span>
+                                DATA MAXIMO (ORACLE)
                             </h4>
-                            <div id="oracle_data_box" class="bg-blue-50/50 rounded-xl p-5 border border-blue-100 hidden">
-                                <div class="space-y-4">
+                            <div id="oracle_data_box" class="bg-blue-50/50 rounded-xl p-4 border border-blue-100 hidden flex-grow">
+                                <div class="space-y-3">
                                     <div>
-                                        <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">MAXIMO DESCRIPTION</label>
-                                        <p id="det_oracle_desc" class="text-gray-800 font-medium text-sm">-</p>
+                                        <label class="text-blue-500 text-[10px] font-bold block tracking-tighter uppercase">Maximo Description</label>
+                                        <p id="det_oracle_desc" class="text-gray-800 font-medium text-sm line-clamp-3">-</p>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">ORACLE STATUS</label>
+                                            <label class="text-blue-500 text-[10px] font-bold block tracking-tighter uppercase">Oracle Status</label>
                                             <span id="det_oracle_status" class="inline-block bg-white px-2 py-0.5 rounded border border-blue-200 text-xs font-bold text-blue-700">-</span>
                                         </div>
                                         <div>
-                                            <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">REPORT DATE</label>
+                                            <label class="text-blue-500 text-[10px] font-bold block tracking-tighter uppercase">Report Date</label>
                                             <p id="det_oracle_date" class="text-gray-700 text-xs">-</p>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">LOCATION</label>
+                                        <label class="text-blue-500 text-[10px] font-bold block tracking-tighter uppercase">Location</label>
                                         <p id="det_oracle_location" class="text-gray-700 text-xs font-medium">-</p>
                                     </div>
                                 </div>
                             </div>
-                            <div id="oracle_not_found" class="bg-gray-50 rounded-xl p-8 border border-gray-100 flex flex-col items-center justify-center text-center">
-                                <i class="fas fa-search text-2xl text-gray-300 mb-2"></i>
-                                <p class="text-gray-400 text-xs">Data Oracle tidak ditemukan untuk nomor ini</p>
+                            <div id="oracle_not_found" class="bg-gray-50 rounded-xl p-6 border border-gray-100 flex flex-col items-center justify-center text-center flex-grow">
+                                <i class="fas fa-search text-xl text-gray-300 mb-2"></i>
+                                <p class="text-gray-400 text-[10px]">Data Oracle tidak ditemukan untuk nomor ini</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Section 3: Commitments -->
+                    <!-- Section 4: Commitments -->
                     <div>
-                        <h4 class="text-green-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <span class="w-8 h-px bg-green-100"></span>
-                            Daftar Komitmen
+                        <h4 class="text-green-500 text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <span class="w-6 h-px bg-green-100"></span>
+                            DAFTAR KOMITMEN
                         </h4>
                         <div class="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
                             <table class="min-w-full text-xs">
