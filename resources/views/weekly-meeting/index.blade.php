@@ -899,25 +899,78 @@
                                 <span class="w-8 h-px bg-gray-200"></span>
                                 Informasi Pembahasan
                             </h4>
-                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-4">
-                                <div>
-                                    <label class="text-gray-500 text-[10px] font-bold block">NO PEMBAHASAN</label>
-                                    <p id="det_no_pembahasan" class="font-bold text-gray-800">-</p>
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-3">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-gray-500 text-[10px] font-bold block">NO PEMBAHASAN</label>
+                                        <p id="det_no_pembahasan" class="font-bold text-gray-800 text-sm">-</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-500 text-[10px] font-bold block">TANGGAL</label>
+                                        <p id="det_tanggal" class="font-medium text-gray-700 text-sm">-</p>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="text-gray-500 text-[10px] font-bold block">SR/WO NUMBER</label>
-                                    <p id="det_sr_number" class="font-bold text-blue-600">-</p>
+                                    <p id="det_sr_number" class="font-bold text-blue-600 text-sm">-</p>
                                 </div>
                                 <div>
                                     <label class="text-gray-500 text-[10px] font-bold block">TOPIK</label>
-                                    <p id="det_topic" class="font-semibold text-gray-800">-</p>
+                                    <p id="det_topic" class="font-semibold text-gray-800 text-sm">-</p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">UNIT & MESIN</label>
+                                    <p class="text-gray-800 text-sm">
+                                        <span id="det_unit">-</span>
+                                        <span class="text-gray-400 mx-1">|</span>
+                                        <span id="det_machine" class="font-medium text-blue-700">-</span>
+                                    </p>
                                 </div>
                                 <div>
                                     <label class="text-gray-500 text-[10px] font-bold block">SASARAN</label>
                                     <p id="det_target" class="text-gray-700 text-sm italic">-</p>
                                 </div>
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">DEADLINE SASARAN</label>
+                                    <p id="det_target_deadline" class="font-bold text-red-600 text-sm">-</p>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- PIC & Classification -->
+                        <div>
+                            <h4 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span class="w-8 h-px bg-gray-200"></span>
+                                PIC & Klasifikasi
+                            </h4>
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-3">
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">DEPARTEMEN / SEKSI</label>
+                                    <p class="text-gray-800 text-sm">
+                                        <span id="det_dept">-</span>
+                                        <span class="text-gray-400 mx-1">/</span>
+                                        <span id="det_section">-</span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">PIC</label>
+                                    <p id="det_pic" class="font-bold text-gray-800 text-sm">-</p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-gray-500 text-[10px] font-bold block">RISK LEVEL</label>
+                                        <span id="det_risk_level" class="inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-1">-</span>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-500 text-[10px] font-bold block">PRIORITY</label>
+                                        <span id="det_priority" class="inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-1">-</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">UNIT ASAL</label>
+                                    <p id="det_unit_asal" class="text-gray-700 text-sm">-</p>
+                                </div>
+                            </div>
 
                         <!-- Section 2: Oracle Integration -->
                         <div>
@@ -1063,9 +1116,36 @@ async function showDiscussionDetail(discussionId) {
 
     // Fill Basic Data
     document.getElementById('det_no_pembahasan').textContent = discussion.no_pembahasan;
+    document.getElementById('det_tanggal').textContent = discussion.tanggal ? new Date(discussion.tanggal).toLocaleDateString('id-ID') : '-';
     document.getElementById('det_sr_number').textContent = discussion.sr_number;
     document.getElementById('det_topic').textContent = discussion.topic;
+    document.getElementById('det_unit').textContent = discussion.unit || '-';
+    document.getElementById('det_machine').textContent = discussion.machine ? discussion.machine.name : '-';
     document.getElementById('det_target').textContent = discussion.target;
+    document.getElementById('det_target_deadline').textContent = discussion.target_deadline ? new Date(discussion.target_deadline).toLocaleDateString('id-ID') : '-';
+
+    // PIC & Classification
+    document.getElementById('det_dept').textContent = discussion.department ? discussion.department.name : '-';
+    document.getElementById('det_section').textContent = discussion.section ? discussion.section.name : '-';
+    document.getElementById('det_pic').textContent = discussion.pic || '-';
+    document.getElementById('det_unit_asal').textContent = discussion.unit_asal || '-';
+
+    // Risk Level Styling
+    const riskEl = document.getElementById('det_risk_level');
+    riskEl.textContent = discussion.risk_level || '-';
+    riskEl.className = 'inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-1';
+    if (discussion.risk_level === 'T' || discussion.risk_level === 'Tinggi') riskEl.classList.add('bg-red-100', 'text-red-700');
+    else if (discussion.risk_level === 'MT') riskEl.classList.add('bg-orange-100', 'text-orange-700');
+    else if (discussion.risk_level === 'MR') riskEl.classList.add('bg-yellow-100', 'text-yellow-700');
+    else riskEl.classList.add('bg-green-100', 'text-green-700');
+
+    // Priority Styling
+    const prioEl = document.getElementById('det_priority');
+    prioEl.textContent = discussion.priority_level || '-';
+    prioEl.className = 'inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-1';
+    if (discussion.priority_level === 'High') prioEl.classList.add('bg-red-100', 'text-red-700');
+    else if (discussion.priority_level === 'Medium') prioEl.classList.add('bg-yellow-100', 'text-yellow-700');
+    else prioEl.classList.add('bg-blue-100', 'text-blue-700');
 
     // Fill Commitments
     const body = document.getElementById('det_commitments_body');

@@ -203,7 +203,9 @@ class WeeklyMeetingController extends Controller
             ->paginate(10, ['*'], 'plan_urgent_page');
 
         // D. Daftar Pembahasan Weekly
-        $weeklyDiscussions = \App\Models\OtherDiscussion::with(['commitments'])
+        $weeklyDiscussions = \App\Models\OtherDiscussion::with(['commitments' => function($q) {
+                $q->with(['department', 'section']);
+            }, 'department', 'section', 'machine'])
             ->where('is_weekly', true)
             ->where('status', 'Open')
             ->orderBy('created_at', 'desc')
