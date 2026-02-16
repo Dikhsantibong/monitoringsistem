@@ -295,4 +295,14 @@ class OtherDiscussion extends Model
     {
         return $this->belongsTo(Machine::class);
     }
-} 
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+}
