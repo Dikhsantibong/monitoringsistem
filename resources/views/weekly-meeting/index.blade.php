@@ -502,6 +502,72 @@
         </div>
     </div>
 
+    <!-- Pembahasan Weekly Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 fade-in">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center">
+            <h3 class="font-bold text-white flex items-center gap-2">
+                <i class="fas fa-list-alt"></i>
+                Daftar Pembahasan Weekly
+            </h3>
+            <span class="text-xs font-bold bg-white text-blue-600 px-2.5 py-1 rounded-full shadow-sm">{{ count($weeklyDiscussions) }} Aktif</span>
+        </div>
+        <div class="overflow-x-auto text-sm">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4">NO PEMBAHASAN</th>
+                        <th class="px-6 py-4">SR/WO</th>
+                        <th class="px-6 py-4">TOPIK</th>
+                        <th class="px-6 py-4">UNIT</th>
+                        <th class="px-6 py-4">DEADLINE SASARAN</th>
+                        <th class="px-6 py-4">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($weeklyDiscussions as $discussion)
+                    <tr class="hover:bg-blue-50/50 transition-colors">
+                        <td class="px-6 py-4 font-bold text-gray-800">{{ $discussion->no_pembahasan }}</td>
+                        <td class="px-6 py-4 font-medium text-blue-600">{{ $discussion->sr_number }}</td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-800">{{ $discussion->topic }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="bg-gray-100 px-2 py-1 rounded text-xs">{{ $discussion->unit }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            @if(\Carbon\Carbon::parse($discussion->target_deadline)->isPast())
+                                <span class="text-red-600 font-bold flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle text-xs"></i>
+                                    {{ \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') }}
+                                </span>
+                            @else
+                                <span class="text-gray-600">{{ \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') }}</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <button onclick="showDiscussionDetail({{ $discussion->id }})" 
+                                    class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold hover:bg-blue-600 hover:text-white transition-all transform hover:scale-105 shadow-sm border border-blue-100 flex items-center gap-1.5">
+                                <i class="fas fa-eye text-xs"></i>
+                                Detail
+                            </button>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-comments text-5xl mb-4 text-gray-200"></i>
+                                <p class="text-gray-500 font-medium">Belum ada pembahasan weekly yang aktif.</p>
+                                <p class="text-xs mt-1">Gunakan tombol "Tambah Pembahasan Weekly" untuk memulai.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
@@ -802,6 +868,124 @@
         </div>
     @endif
 </div>
+
+<!-- Detail Modal -->
+<div id="discussionDetailModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="hideDiscussionDetail()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100 bounce-in">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                    <i class="fas fa-info-circle"></i>
+                    Detail Pembahasan Weekly
+                </h3>
+                <button onclick="hideDiscussionDetail()" class="text-white hover:bg-white/20 rounded-lg p-1 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="px-6 py-6" id="modalContent">
+                <div class="flex justify-center py-12" id="modalLoader">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+                
+                <div id="modalData" class="hidden space-y-8">
+                    <!-- Section 1: Discussion Data -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span class="w-8 h-px bg-gray-200"></span>
+                                Informasi Pembahasan
+                            </h4>
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-4">
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">NO PEMBAHASAN</label>
+                                    <p id="det_no_pembahasan" class="font-bold text-gray-800">-</p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">SR/WO NUMBER</label>
+                                    <p id="det_sr_number" class="font-bold text-blue-600">-</p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">TOPIK</label>
+                                    <p id="det_topic" class="font-semibold text-gray-800">-</p>
+                                </div>
+                                <div>
+                                    <label class="text-gray-500 text-[10px] font-bold block">SASARAN</label>
+                                    <p id="det_target" class="text-gray-700 text-sm italic">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Oracle Integration -->
+                        <div>
+                            <h4 class="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span class="w-8 h-px bg-blue-100"></span>
+                                Data Maximo (Oracle)
+                            </h4>
+                            <div id="oracle_data_box" class="bg-blue-50/50 rounded-xl p-5 border border-blue-100 hidden">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">MAXIMO DESCRIPTION</label>
+                                        <p id="det_oracle_desc" class="text-gray-800 font-medium text-sm">-</p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">ORACLE STATUS</label>
+                                            <span id="det_oracle_status" class="inline-block bg-white px-2 py-0.5 rounded border border-blue-200 text-xs font-bold text-blue-700">-</span>
+                                        </div>
+                                        <div>
+                                            <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">REPORT DATE</label>
+                                            <p id="det_oracle_date" class="text-gray-700 text-xs">-</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-blue-500 text-[10px] font-bold block tracking-tighter">LOCATION</label>
+                                        <p id="det_oracle_location" class="text-gray-700 text-xs font-medium">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="oracle_not_found" class="bg-gray-50 rounded-xl p-8 border border-gray-100 flex flex-col items-center justify-center text-center">
+                                <i class="fas fa-search text-2xl text-gray-300 mb-2"></i>
+                                <p class="text-gray-400 text-xs">Data Oracle tidak ditemukan untuk nomor ini</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Commitments -->
+                    <div>
+                        <h4 class="text-green-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <span class="w-8 h-px bg-green-100"></span>
+                            Daftar Komitmen
+                        </h4>
+                        <div class="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
+                            <table class="min-w-full text-xs">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-bold text-gray-600">KOMITMEN</th>
+                                        <th class="px-4 py-3 text-left font-bold text-gray-600">DEADLINE</th>
+                                        <th class="px-4 py-3 text-left font-bold text-gray-600">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="det_commitments_body" class="divide-y divide-gray-50">
+                                    <!-- Rows will be injected -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 px-6 py-4 flex justify-end">
+                <button onclick="hideDiscussionDetail()" class="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all shadow-sm">
+                    TUTUP
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -864,6 +1048,75 @@ document.addEventListener('DOMContentLoaded', function() {
         nextBtn.disabled = currentIndex === total - 1;
     });
 });
+
+const discussionModal = document.getElementById('discussionDetailModal');
+const weeklyDiscussions = @json($weeklyDiscussions);
+
+async function showDiscussionDetail(discussionId) {
+    const discussion = weeklyDiscussions.find(d => d.id === discussionId);
+    if (!discussion) return;
+
+    // Show modal & loader
+    discussionModal.classList.remove('hidden');
+    document.getElementById('modalLoader').classList.remove('hidden');
+    document.getElementById('modalData').classList.add('hidden');
+
+    // Fill Basic Data
+    document.getElementById('det_no_pembahasan').textContent = discussion.no_pembahasan;
+    document.getElementById('det_sr_number').textContent = discussion.sr_number;
+    document.getElementById('det_topic').textContent = discussion.topic;
+    document.getElementById('det_target').textContent = discussion.target;
+
+    // Fill Commitments
+    const body = document.getElementById('det_commitments_body');
+    body.innerHTML = '';
+    discussion.commitments.forEach(c => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        row.innerHTML = `
+            <td class="px-4 py-3 text-gray-700">${c.commitment}</td>
+            <td class="px-4 py-3 font-medium text-gray-500">${new Date(c.deadline).toLocaleDateString('id-ID')}</td>
+            <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded border ${c.status === 'Open' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-green-50 text-green-700 border-green-200'} font-bold">
+                    ${c.status}
+                </span>
+            </td>
+        `;
+        body.appendChild(row);
+    });
+
+    // Fetch Oracle Data
+    try {
+        const response = await fetch(`{{ route('admin.other-discussions.search-oracle') }}?number=${encodeURIComponent(discussion.sr_number)}`);
+        const result = await response.json();
+
+        const orangeBox = document.getElementById('oracle_data_box');
+        const orangeNotFound = document.getElementById('oracle_not_found');
+
+        if (result.success) {
+            const data = result.data;
+            document.getElementById('det_oracle_desc').textContent = data.DESCRIPTION || data.description || '-';
+            document.getElementById('det_oracle_status').textContent = data.STATUS || data.status || '-';
+            document.getElementById('det_oracle_date').textContent = data.REPORTDATE || data.reportdate || '-';
+            document.getElementById('det_oracle_location').textContent = data.LOCATION || data.location || '-';
+            
+            orangeBox.classList.remove('hidden');
+            orangeNotFound.classList.add('hidden');
+        } else {
+            orangeBox.classList.add('hidden');
+            orangeNotFound.classList.remove('hidden');
+        }
+    } catch (e) {
+        console.error('Oracle fetch error:', e);
+    } finally {
+        document.getElementById('modalLoader').classList.add('hidden');
+        document.getElementById('modalData').classList.remove('hidden');
+    }
+}
+
+function hideDiscussionDetail() {
+    discussionModal.classList.add('hidden');
+}
 </script>
 @endsection
 

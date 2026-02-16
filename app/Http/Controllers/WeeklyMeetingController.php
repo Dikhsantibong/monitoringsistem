@@ -202,10 +202,18 @@ class WeeklyMeetingController extends Controller
             })
             ->paginate(10, ['*'], 'plan_urgent_page');
 
+        // D. Daftar Pembahasan Weekly
+        $weeklyDiscussions = \App\Models\OtherDiscussion::with(['commitments'])
+            ->where('is_weekly', true)
+            ->where('status', 'Open')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('weekly-meeting.index', compact(
             'mode', 'lastWeekStart', 'lastWeekEnd', 'nextWeekStart', 'nextWeekEnd',
             'reviewCompletedWOs', 'reviewCreatedWOs', 'reviewCreatedSRs',
-            'planPMs', 'planBacklog', 'urgentWork', 'powerPlants', 'unitFilter'
+            'planPMs', 'planBacklog', 'urgentWork', 'powerPlants', 'unitFilter',
+            'weeklyDiscussions'
         ));
     }
 }

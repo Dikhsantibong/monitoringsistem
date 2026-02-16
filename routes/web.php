@@ -442,6 +442,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], 
         ->name('other-discussions.destroy');
     Route::post('/other-discussions/{id}/update-status', [OtherDiscussionController::class, 'updateStatus'])
         ->name('other-discussions.update-status');
+    Route::get('/other-discussions/search-oracle', [OtherDiscussionController::class, 'searchOracleData'])
+        ->name('other-discussions.search-oracle');
 });
 
 // Route untuk overdue discussions

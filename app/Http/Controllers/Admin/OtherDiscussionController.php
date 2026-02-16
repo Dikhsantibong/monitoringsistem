@@ -781,6 +781,58 @@ class OtherDiscussionController extends Controller
         return $departmentName . ' - ' . $sectionName;
     }
 
+    public function searchOracleData(Request $request)
+    {
+        try {
+            $number = $request->query('number');
+            if (!$number) {
+                return response()->json(['success' => false, 'message' => 'Number is required']);
+            }
+
+            // Search in WORKORDER
+            $workOrder = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'LOCATION', 'REPORTDATE', 'ASSETNUM')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', $number)
+                ->first();
+
+            if ($workOrder) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'WO',
+                    'data' => $workOrder
+                ]);
+            }
+
+            // Search in SR
+            $serviceRequest = DB::connection('oracle')->table('SR')
+                ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'LOCATION', 'REPORTDATE', 'REPORTEDBY')
+                ->where('SITEID', 'KD')
+                ->where('TICKETID', $number)
+                ->first();
+
+            if ($serviceRequest) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'SR',
+                    'data' => $serviceRequest
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Data not found in Oracle'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Oracle search error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error searching Oracle: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function generateNoPembahasan(Request $request)
     {
         try {

@@ -71,7 +71,7 @@
                         <!-- No SR (manual input) -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="sr_number">
-                                No SR <span class="text-red-500">*</span>
+                                No SR/WO <span class="text-red-500">*</span>
                             </label>
                             <div class="flex gap-2">
                                 <input type="text" 
@@ -83,6 +83,34 @@
                             @error('sr_number')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
+                        </div>
+
+                        <!-- Oracle Data Lookup Results -->
+                        <div id="oracle_lookup_container" class="mb-4 md:col-span-2 hidden">
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md shadow-sm">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-database text-blue-500 mr-2"></i>
+                                    <h4 class="text-blue-800 font-bold text-sm">Data Maximo (Oracle) Terdeteksi</h4>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-2">
+                                    <div>
+                                        <p class="text-gray-600 font-semibold text-xs">Deskripsi:</p>
+                                        <p id="oracle_description" class="text-gray-800 font-medium">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 font-semibold text-xs">Status Oracle:</p>
+                                        <p id="oracle_status" class="text-gray-800 font-medium">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 font-semibold text-xs">Lokasi:</p>
+                                        <p id="oracle_location" class="text-gray-800 font-medium">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 font-semibold text-xs">Tanggal Report:</p>
+                                        <p id="oracle_report_date" class="text-gray-800 font-medium">-</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- No Pembahasan dengan tombol generate -->
@@ -736,6 +764,55 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.status-select').forEach(select => {
         updateStatusStyle(select);
     });
+
+    // Oracle Lookup Logic
+    let lookupTimer;
+    const srNumberInput = document.getElementById('sr_number');
+    const isWeeklyCheckbox = document.getElementById('is_weekly');
+    const oracleContainer = document.getElementById('oracle_lookup_container');
+
+    function performOracleLookup() {
+        const srNumber = srNumberInput.value.trim();
+        const isWeekly = isWeeklyCheckbox.checked;
+
+        // Reset visibility if criteria not met
+        if (!isWeekly || srNumber.length < 3) {
+            oracleContainer.classList.add('hidden');
+            return;
+        }
+
+        clearTimeout(lookupTimer);
+        lookupTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`{{ route('admin.other-discussions.search-oracle') }}?number=${encodeURIComponent(srNumber)}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    document.getElementById('oracle_description').textContent = data.DESCRIPTION || data.description || '-';
+                    document.getElementById('oracle_status').textContent = data.STATUS || data.status || '-';
+                    document.getElementById('oracle_location').textContent = data.LOCATION || data.location || '-';
+                    document.getElementById('oracle_report_date').textContent = data.REPORTDATE || data.reportdate || '-';
+                    oracleContainer.classList.remove('hidden');
+                } else {
+                    oracleContainer.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Oracle lookup error:', error);
+                oracleContainer.classList.add('hidden');
+            }
+        }, 500); // Debounce 500ms
+    }
+
+    if (srNumberInput && isWeeklyCheckbox) {
+        srNumberInput.addEventListener('input', performOracleLookup);
+        isWeeklyCheckbox.addEventListener('change', performOracleLookup);
+        
+        // Check on initial load if pre-filled
+        if (srNumberInput.value) {
+            performOracleLookup();
+        }
+    }
 });
 
 // Tambahkan script untuk auto-generate nomor pembahasan
