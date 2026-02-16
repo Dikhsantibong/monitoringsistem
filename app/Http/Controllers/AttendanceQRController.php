@@ -257,7 +257,8 @@ class AttendanceQRController extends Controller
                 $isToday = true;
                 if (isset($item['time']) && !empty($item['time'])) {
                     try {
-                        $itemDate = Carbon::parse($item['time'])->toDateString();
+                        // SET TIMEZONE KE MAKASSAR SEBELUM AMBIL TANGGAL
+                        $itemDate = Carbon::parse($item['time'])->setTimezone('Asia/Makassar')->toDateString();
                         $isToday = $itemDate === $today;
                     } catch (\Exception $e) {
                         Log::warning('Invalid date format', ['time' => $item['time']]);
@@ -566,7 +567,8 @@ class AttendanceQRController extends Controller
                 $isToday = true;
                 if (isset($item['time']) && !empty($item['time'])) {
                     try {
-                        $itemDate = Carbon::parse($item['time'])->toDateString();
+                        // SET TIMEZONE KE MAKASSAR SEBELUM AMBIL TANGGAL
+                        $itemDate = Carbon::parse($item['time'])->setTimezone('Asia/Makassar')->toDateString();
                         $isToday = $itemDate === $today;
                     } catch (\Exception $e) {
                         Log::warning('Invalid date format', ['time' => $item['time']]);
