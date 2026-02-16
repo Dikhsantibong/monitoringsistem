@@ -19,6 +19,7 @@ class AttendanceToken extends Model
         'id',
         'token',
         'user_id',
+        'is_weekly',
         'expires_at',
         'unit_source'
 
@@ -68,6 +69,7 @@ class AttendanceToken extends Model
                 'token' => $attendanceToken->token,
                 'expires_at' => $attendanceToken->expires_at,
                 'user_id' => $attendanceToken->user_id,
+                'is_weekly' => $attendanceToken->is_weekly,
                 'unit_source' => session('unit'),
                 'created_at' => $attendanceToken->created_at,
                 'updated_at' => $attendanceToken->updated_at

@@ -23,6 +23,7 @@ class Attendance extends Model
         'token',
         'time',
         'signature',
+        'is_weekly',
         'unit_source'
     ];
 
@@ -79,6 +80,7 @@ class Attendance extends Model
                 'time' => $attendance->time,
                 'signature' => $attendance->signature,
                 'unit_source' => 'poasia',
+                'is_weekly' => $attendance->is_weekly,
                 'created_at' => $attendance->created_at,
                 'updated_at' => $attendance->updated_at
             ];

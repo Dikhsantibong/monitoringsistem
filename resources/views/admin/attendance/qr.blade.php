@@ -88,11 +88,27 @@
                                 Generate QR Code
                             </button>
 
+                            <!-- Tombol Generate QR Weekly (hanya untuk session mysql) -->
+                            @if(session('unit') === 'mysql')
+                            <button id="generateWeeklyQrBtn" onclick="generateWeeklyQR()" class="bg-teal-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-teal-700">
+                                <i class="fas fa-calendar-week mr-2"></i>
+                                Generate QR Weekly
+                            </button>
+                            @endif
+
                             <!-- Tombol Tarik Data -->
                             <button id="pullDataBtn" onclick="pullData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
                                 <i class="fas fa-download mr-2"></i>
                                 Tarik Data
                             </button>
+
+                            <!-- Tombol Tarik Data Weekly (hanya untuk session mysql) -->
+                            @if(session('unit') === 'mysql')
+                            <button id="pullWeeklyDataBtn" onclick="pullWeeklyData()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700">
+                                <i class="fas fa-download mr-2"></i>
+                                Tarik Data Weekly
+                            </button>
+                            @endif
 
                             <!-- Tombol Manage Kehadiran -->
                             <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700">
@@ -105,7 +121,7 @@
                         <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
                             <div class="bg-white p-8 rounded-lg shadow-lg">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-xl font-bold flex items-center">
+                                    <h3 class="text-xl font-bold flex items-center" id="qrModalTitle">
                                         <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
                                     </h3>
                                     <button onclick="closeQRModal()" class="text-gray-500 hover:text-gray-700">
@@ -124,7 +140,12 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Tabel Absensi Regular -->
                     <div class="overflow-x-auto">
+                        <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-users mr-2 text-blue-600"></i>
+                            Absensi Regular ({{ $attendances->count() }} orang)
+                        </h3>
                         <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
                             <thead class="bg-gray-100">
                                 <tr style="background-color: #0A749B; color: white;">
@@ -187,13 +208,91 @@
                                 @empty
                                     <tr>
                                         <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                            Belum ada data absensi untuk hari ini
+                                            Belum ada data absensi regular untuk hari ini
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Tabel Absensi Weekly (hanya tampil untuk session mysql) -->
+                    @if(session('unit') === 'mysql')
+                    <div class="overflow-x-auto mt-8">
+                        <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-calendar-week mr-2 text-teal-600"></i>
+                            Absensi Weekly Meeting ({{ $weeklyAttendances->count() }} orang)
+                        </h3>
+                        <table id="weekly-attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
+                            <thead class="bg-gray-100">
+                                <tr style="background-color: #0D9488; color: white;">
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        No
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        Nama
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        Divisi
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        Jabatan
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        Tanggal
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        Waktu Absensi
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
+                                        Tanda Tangan
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="weekly-attendance-body" class="divide-y divide-gray-300 border border-gray-300">
+                                @forelse ($weeklyAttendances as $index => $attendance)
+                                    <tr class="hover:bg-teal-50 border-b border-gray-300">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
+                                            {{ $index + 1 }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
+                                            {{ $attendance->name }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
+                                            {{ $attendance->division }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
+                                            {{ $attendance->position }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
+                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('d M Y') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
+                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('H:i:s') }} WITA
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">
+                                            @if($attendance->signature)
+                                                <img src="{{ $attendance->signature }}" 
+                                                     alt="Tanda tangan {{ $attendance->name }}"
+                                                     class="h-16 object-contain cursor-pointer"
+                                                     onclick="showSignatureModal(this.src, '{{ $attendance->name }}')"
+                                                >
+                                            @else
+                                                <span class="text-gray-400">Tidak ada tanda tangan</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                            Belum ada data absensi weekly untuk hari ini
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
                 </div>
             </main>
         </div>
@@ -234,11 +333,13 @@
             function generateQR() {
                 const container = document.getElementById('qrcode-container');
                 const errorContainer = document.getElementById('qr-error');
+                const modalTitle = document.getElementById('qrModalTitle');
                 
                 // Reset tampilan
                 container.innerHTML = '<div class="text-center">Generating QR Code...</div>';
                 errorContainer.classList.add('hidden');
                 errorContainer.textContent = '';
+                modalTitle.innerHTML = '<i class="fas fa-qrcode mr-2"></i>QR Code Absensi';
                 
                 // Tampilkan modal
                 document.getElementById('qrModal').classList.remove('hidden');
@@ -283,6 +384,60 @@
                 });
             }
 
+            function generateWeeklyQR() {
+                const container = document.getElementById('qrcode-container');
+                const errorContainer = document.getElementById('qr-error');
+                const modalTitle = document.getElementById('qrModalTitle');
+                
+                // Reset tampilan
+                container.innerHTML = '<div class="text-center">Generating Weekly QR Code...</div>';
+                errorContainer.classList.add('hidden');
+                errorContainer.textContent = '';
+                modalTitle.innerHTML = '<i class="fas fa-calendar-week mr-2"></i>QR Code Absensi Weekly';
+                
+                // Tampilkan modal
+                document.getElementById('qrModal').classList.remove('hidden');
+                
+                fetch('{{ route("admin.attendance.qr.generate-weekly") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Gagal generate QR Code Weekly');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.qr_url) {
+                        container.innerHTML = '';
+                        new QRCode(container, {
+                            text: data.qr_url,
+                            width: 256,
+                            height: 256,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } else {
+                        throw new Error(data.message || 'QR URL tidak tersedia');
+                    }
+                })
+                .catch(error => {
+                    console.error('Weekly QR Generation Error:', error);
+                    container.innerHTML = '<div class="text-red-500 text-center">Gagal membuat QR Code Weekly</div>';
+                    errorContainer.classList.remove('hidden');
+                    errorContainer.textContent = 'Error: ' + error.message;
+                    setTimeout(closeQRModal, 3000);
+                });
+            }
+
             function closeQRModal() {
                 document.getElementById('qrModal').classList.add('hidden');
             }
@@ -300,7 +455,7 @@
                 const btn = document.getElementById('pullDataBtn');
                 const originalText = btn.innerHTML;
                 
-                console.log('=== PULL DATA STARTED ===');
+                console.log('=== PULL DATA (NON-WEEKLY) STARTED ===');
                 console.log('Time:', new Date().toISOString());
                 
                 // Disable button dan show loading
@@ -384,7 +539,99 @@
                     // Restore button
                     btn.disabled = false;
                     btn.innerHTML = originalText;
-                    console.log('=== PULL DATA ENDED ===');
+                    console.log('=== PULL DATA (NON-WEEKLY) ENDED ===');
+                });
+            }
+
+            function pullWeeklyData() {
+                const btn = document.getElementById('pullWeeklyDataBtn');
+                const originalText = btn.innerHTML;
+                
+                console.log('=== PULL WEEKLY DATA STARTED ===');
+                console.log('Time:', new Date().toISOString());
+                
+                // Disable button dan show loading
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menarik Data Weekly...';
+                
+                fetch('{{ route("admin.attendance.qr.pull-weekly-data") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log('Response Status:', response.status);
+                    console.log('Response OK:', response.ok);
+                    return response.json().then(data => {
+                        console.log('Response Data:', data);
+                        return { status: response.status, ok: response.ok, data: data };
+                    });
+                })
+                .then(({ status, ok, data }) => {
+                    if (!ok) {
+                        // Show error modal with details
+                        let errorContent = 'Status: ' + status + '\n\n';
+                        errorContent += 'Message: ' + (data.message || 'Unknown error') + '\n\n';
+                        
+                        if (data.details) {
+                            errorContent += 'Details:\n' + JSON.stringify(data.details, null, 2);
+                        }
+                        
+                        showErrorModal('Error', errorContent);
+                        console.error('API Error:', data);
+                        return;
+                    }
+                    
+                    if (data.success) {
+                        console.log('Success! Weekly data imported:', data);
+                        
+                        let message = data.message;
+                        
+                        // Tambahkan detail jika ada errors
+                        if (data.errors && data.errors.length > 0) {
+                            console.warn('Errors during import:', data.errors);
+                            message += '\n\n⚠️ Warnings/Errors:\n' + data.errors.slice(0, 5).join('\n');
+                            if (data.errors.length > 5) {
+                                message += '\n... dan ' + (data.errors.length - 5) + ' error lainnya';
+                            }
+                        }
+                        
+                        alert(message);
+                        
+                        // Reload jika ada data yang diimport
+                        if (data.attendance_imported > 0 || data.token_imported > 0) {
+                            console.log('Reloading page...');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                    } else {
+                        let errorMsg = 'Gagal menarik data weekly: ' + (data.message || 'Unknown error');
+                        
+                        if (data.details) {
+                            showErrorModal('Error', JSON.stringify(data.details, null, 2));
+                        }
+                        
+                        alert(errorMsg);
+                        console.error('Pull weekly data failed:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('=== PULL WEEKLY DATA ERROR ===');
+                    console.error('Error:', error);
+                    console.error('Stack:', error.stack);
+                    
+                    showErrorModal('Network Error', error.toString() + '\n\n' + error.stack);
+                    alert('Gagal menarik data weekly. Silakan cek console untuk detail error.');
+                })
+                .finally(() => {
+                    // Restore button
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    console.log('=== PULL WEEKLY DATA ENDED ===');
                 });
             }
 

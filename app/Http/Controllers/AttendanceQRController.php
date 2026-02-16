@@ -18,14 +18,23 @@ class AttendanceQRController extends Controller
         // Ambil session unit yang aktif
         $connection = session('unit', 'mysql');
         
-        // Ambil data absensi hari ini dari database sesuai session
+        // Ambil data absensi NON-WEEKLY hari ini dari database sesuai session
         $attendances = DB::connection($connection)
             ->table('attendance')
             ->whereDate('time', Carbon::today())
+            ->where('is_weekly', 0)
+            ->orderBy('time', 'desc')
+            ->get();
+        
+        // Ambil data absensi WEEKLY hari ini dari database sesuai session
+        $weeklyAttendances = DB::connection($connection)
+            ->table('attendance')
+            ->whereDate('time', Carbon::today())
+            ->where('is_weekly', 1)
             ->orderBy('time', 'desc')
             ->get();
             
-        return view('admin.attendance.qr', compact('attendances'));
+        return view('admin.attendance.qr', compact('attendances', 'weeklyAttendances'));
     }
 
         public function generate()
@@ -80,6 +89,61 @@ class AttendanceQRController extends Controller
             ], 500);
         }
     }
+
+    public function generateWeekly()
+    {
+        try {
+            // Generate token
+            $token = 'ATT-WEEKLY-' . strtoupper(Str::random(8));
+            
+            // Gunakan koneksi sesuai session unit yang aktif
+            $connection = session('unit', 'mysql');
+            
+            // Insert token ke database sesuai session dengan flag is_weekly
+            DB::connection($connection)->table('attendance_tokens')->insert([
+                'token' => $token,
+                'user_id' => auth()->id(),
+                'expires_at' => now()->addMinutes(15),
+                'unit_source' => $connection,
+                'is_weekly' => 1, // Flag untuk weekly
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // URL untuk QR - TAMBAHKAN PARAMETER WEEKLY
+            $externalUrl = config('services.attendance_external.url');
+            if ($externalUrl) {
+                $qrUrl = rtrim($externalUrl, '/') . '/scan/' . $token . '?unit=' . $connection . '&weekly=1';
+            } else {
+                $qrUrl = url("/attendance/scan/{$token}?unit={$connection}&weekly=1");
+            }
+
+            Log::info('Weekly QR Code generated', [
+                'token' => $token,
+                'url' => $qrUrl,
+                'user_id' => auth()->id(),
+                'unit_source' => $connection,
+                'is_weekly' => true
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'qr_url' => $qrUrl,
+                'token' => $token
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Weekly QR Code generation error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat QR Code Weekly: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     public function pullData(Request $request)
     {
         try {
@@ -119,7 +183,8 @@ class AttendanceQRController extends Controller
                     'Accept' => 'application/json'
                 ])
                 ->get('https://absen-monday.online/api/attendance', [
-                    'unit_source' => $unitSource // Filter di API
+                    'unit_source' => $unitSource, // Filter di API
+                    'is_weekly' => 0 // Exclude weekly data
                 ]);
             
             if (!$response->successful()) {
@@ -379,6 +444,305 @@ class AttendanceQRController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function pullWeeklyData(Request $request)
+    {
+        try {
+            // Ambil session unit yang aktif - HARUS EXACT MATCH
+            $connection = session('unit', 'mysql');
+            
+            // PENTING: Mapping unit session ke unit_source yang benar
+            $unitSourceMap = [
+                'mysql' => 'mysql',
+                'mysql_wua_wua' => 'mysql_wua_wua',
+                'mysql_bau_bau' => 'mysql_bau_bau',
+                'mysql_kolaka' => 'mysql_kolaka',
+                'mysql_poasia' => 'mysql_poasia',
+            ];
+            
+            // Dapatkan unit_source yang sesuai
+            $unitSource = $unitSourceMap[$connection] ?? $connection;
+            
+            Log::info('=== START PULL WEEKLY DATA ===', [
+                'session_connection' => $connection,
+                'unit_source' => $unitSource,
+                'user_id' => auth()->id()
+            ]);
+            
+            // Panggil API dengan filter unit_source DAN is_weekly
+            $response = Http::timeout(90)
+                ->connectTimeout(30)
+                ->retry(3, 200)
+                ->withOptions([
+                    'verify' => false,
+                    'http_errors' => false,
+                ])
+                ->withHeaders([
+                    'Accept' => 'application/json'
+                ])
+                ->get('https://absen-monday.online/api/attendance', [
+                    'unit_source' => $unitSource, // Filter di API
+                    'is_weekly' => 1 // Only weekly data
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengambil data weekly dari API. Status: ' . $response->status()
+                ], 500);
+            }
+    
+            $responseData = $response->json();
+            Log::info('API Response received', [
+                'has_success' => isset($responseData['success']),
+                'has_data' => isset($responseData['data'])
+            ]);
+    
+            // Extract data array dari response
+            $data = [];
+            
+            if (isset($responseData['success']) && $responseData['success'] === true) {
+                if (isset($responseData['data']) && is_array($responseData['data'])) {
+                    $data = $responseData['data'];
+                }
+            } elseif (is_array($responseData)) {
+                if (isset($responseData['data']) && is_array($responseData['data'])) {
+                    $data = $responseData['data'];
+                } elseif (isset($responseData[0])) {
+                    $data = $responseData;
+                }
+            }
+    
+            Log::info('Weekly data extracted', ['count' => count($data)]);
+    
+            if (empty($data)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tidak ada data weekly untuk diimport',
+                    'attendance_imported' => 0,
+                    'token_imported' => 0,
+                    'unit_source' => $unitSource
+                ]);
+            }
+    
+            // **FILTER DATA - EXACT MATCH UNIT_SOURCE & WEEKLY & HARI INI**
+            $today = Carbon::today()->toDateString();
+            
+            $filteredData = array_filter($data, function($item) use ($unitSource, $today) {
+                if (!is_array($item)) {
+                    return false;
+                }
+                
+                // EXACT MATCH - unit_source harus sama persis
+                $unitMatch = isset($item['unit_source']) && 
+                            $item['unit_source'] === $unitSource;
+                
+                // MUST BE WEEKLY
+                $isWeekly = isset($item['is_weekly']) && $item['is_weekly'] == 1;
+                
+                // Cek apakah data adalah data hari ini
+                $isToday = true;
+                if (isset($item['time']) && !empty($item['time'])) {
+                    try {
+                        $itemDate = Carbon::parse($item['time'])->toDateString();
+                        $isToday = $itemDate === $today;
+                    } catch (\Exception $e) {
+                        Log::warning('Invalid date format', ['time' => $item['time']]);
+                        $isToday = false;
+                    }
+                }
+                
+                return $unitMatch && $isWeekly && $isToday;
+            });
+    
+            Log::info('Weekly data filtered', [
+                'unit_source' => $unitSource,
+                'date' => $today,
+                'total_from_api' => count($data),
+                'filtered_count' => count($filteredData)
+            ]);
+    
+            if (empty($filteredData)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Tidak ada data weekly untuk unit {$unitSource} pada hari ini",
+                    'attendance_imported' => 0,
+                    'token_imported' => 0,
+                    'unit_source' => $unitSource
+                ]);
+            }
+    
+            $importedCount = 0;
+            $tokenImportedCount = 0;
+            $skippedCount = 0;
+    
+            DB::connection($connection)->beginTransaction();
+    
+            try {
+                // Batch insert untuk performa
+                $attendanceRecords = [];
+                $tokenRecords = [];
+                
+                foreach ($filteredData as $index => $item) {
+                    try {
+                        if (!is_array($item)) {
+                            continue;
+                        }
+    
+                        // Import Attendance
+                        if (isset($item['name']) && !empty($item['name'])) {
+                            
+                            $timeValue = isset($item['time']) && !empty($item['time'])
+                                ? Carbon::parse($item['time'])->setTimezone('Asia/Makassar')
+                                : now();
+    
+                            // Cek duplikat - EXACT MATCH unit_source & is_weekly
+                            $exists = DB::connection($connection)
+                                ->table('attendance')
+                                ->where('name', $item['name'])
+                                ->where('time', $timeValue)
+                                ->where('unit_source', $unitSource)
+                                ->where('is_weekly', 1)
+                                ->exists();
+    
+                            if (!$exists) {
+                                $attendanceRecords[] = [
+                                    'name' => $item['name'],
+                                    'position' => $item['position'] ?? '',
+                                    'division' => $item['division'] ?? '',
+                                    'token' => $item['token'] ?? '',
+                                    'time' => $timeValue,
+                                    'signature' => $item['signature'] ?? null,
+                                    'unit_source' => $unitSource,
+                                    'is_weekly' => 1, // Mark as weekly
+                                    'is_backdate' => $item['is_backdate'] ?? 0,
+                                    'backdate_reason' => $item['backdate_reason'] ?? null,
+                                    'created_at' => now(),
+                                    'updated_at' => now()
+                                ];
+                                
+                                $importedCount++;
+                            } else {
+                                $skippedCount++;
+                            }
+                            
+                            // Batch insert per 100 record
+                            if (count($attendanceRecords) >= 100) {
+                                DB::connection($connection)->table('attendance')->insert($attendanceRecords);
+                                Log::info("✓ Batch inserted " . count($attendanceRecords) . " weekly attendance records");
+                                $attendanceRecords = [];
+                            }
+                        }
+                        
+                        // Import Token
+                        if (isset($item['token']) && !empty($item['token']) && !isset($item['name'])) {
+                            
+                            $exists = DB::connection($connection)
+                                ->table('attendance_tokens')
+                                ->where('token', $item['token'])
+                                ->where('unit_source', $unitSource)
+                                ->where('is_weekly', 1)
+                                ->exists();
+    
+                            if (!$exists) {
+                                $tokenRecords[] = [
+                                    'token' => $item['token'],
+                                    'user_id' => $item['user_id'] ?? auth()->id(),
+                                    'expires_at' => isset($item['expires_at']) && !empty($item['expires_at'])
+                                        ? Carbon::parse($item['expires_at'])
+                                        : now()->addMinutes(15),
+                                    'unit_source' => $unitSource,
+                                    'is_weekly' => 1, // Mark as weekly
+                                    'is_backdate' => $item['is_backdate'] ?? 0,
+                                    'backdate_data' => $item['backdate_data'] ?? null,
+                                    'created_at' => now(),
+                                    'updated_at' => now()
+                                ];
+                                
+                                $tokenImportedCount++;
+                            } else {
+                                $skippedCount++;
+                            }
+                            
+                            // Batch insert per 100 record
+                            if (count($tokenRecords) >= 100) {
+                                DB::connection($connection)->table('attendance_tokens')->insert($tokenRecords);
+                                Log::info("✓ Batch inserted " . count($tokenRecords) . " weekly token records");
+                                $tokenRecords = [];
+                            }
+                        }
+    
+                    } catch (\Exception $e) {
+                        Log::error("Error importing weekly item #{$index}", [
+                            'error' => $e->getMessage(),
+                            'item' => $item
+                        ]);
+                        continue;
+                    }
+                }
+    
+                // Insert sisa records
+                if (!empty($attendanceRecords)) {
+                    DB::connection($connection)->table('attendance')->insert($attendanceRecords);
+                    Log::info("✓ Final batch inserted " . count($attendanceRecords) . " weekly attendance records");
+                }
+                
+                if (!empty($tokenRecords)) {
+                    DB::connection($connection)->table('attendance_tokens')->insert($tokenRecords);
+                    Log::info("✓ Final batch inserted " . count($tokenRecords) . " weekly token records");
+                }
+    
+                DB::connection($connection)->commit();
+    
+                Log::info('=== PULL WEEKLY DATA COMPLETED ===', [
+                    'session' => $connection,
+                    'unit_source' => $unitSource,
+                    'date' => $today,
+                    'imported' => $importedCount,
+                    'tokens' => $tokenImportedCount,
+                    'skipped' => $skippedCount
+                ]);
+    
+                $message = "Data weekly berhasil diimport ke {$unitSource} untuk hari ini!\n";
+                $message .= "• Attendance: {$importedCount}\n";
+                $message .= "• Token: {$tokenImportedCount}\n";
+                $message .= "• Dilewati (duplikat): {$skippedCount}";
+    
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'attendance_imported' => $importedCount,
+                    'token_imported' => $tokenImportedCount,
+                    'skipped' => $skippedCount,
+                    'total_processed' => count($filteredData),
+                    'unit_source' => $unitSource,
+                    'date' => $today
+                ]);
+    
+            } catch (\Exception $e) {
+                DB::connection($connection)->rollBack();
+                Log::error('Transaction rolled back', [
+                    'error' => $e->getMessage()
+                ]);
+                throw $e;
+            }
+    
+        } catch (\Exception $e) {
+            Log::error('=== PULL WEEKLY DATA FAILED ===', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data weekly: ' . $e->getMessage()
             ], 500);
         }
     }
