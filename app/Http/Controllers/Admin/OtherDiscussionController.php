@@ -30,6 +30,7 @@ class OtherDiscussionController extends Controller
             $search = $request->search;
             $status = $request->status;
             $unit = $request->unit;
+            $isWeekly = $request->boolean('is_weekly');
             $allDiscussions = collect();
 
             // Daftar koneksi database dengan nama unit yang sesuai
@@ -69,6 +70,11 @@ class OtherDiscussionController extends Controller
                         // Filter berdasarkan status
                         if ($status) {
                             $query->where('status', $status);
+                        }
+
+                        // Filter berdasarkan weekly
+                        if ($isWeekly) {
+                            $query->where('is_weekly', true);
                         }
 
                         // Get discussions dengan commitments
@@ -121,6 +127,11 @@ class OtherDiscussionController extends Controller
                 // Filter berdasarkan status
                 if ($status) {
                     $query->where('status', $status);
+                }
+
+                // Filter berdasarkan weekly
+                if ($isWeekly) {
+                    $query->where('is_weekly', true);
                 }
 
                 $allDiscussions = $query->get()->map(function ($discussion) use ($unitName) {
@@ -965,6 +976,11 @@ class OtherDiscussionController extends Controller
                 $query->where('status', $request->status);
             }
 
+            // Filter berdasarkan weekly
+            if ($request->boolean('is_weekly')) {
+                $query->where('is_weekly', true);
+            }
+
             $format = $request->format ?? 'xlsx';
             $fileName = 'pembahasan_lain_' . date('Y-m-d_His');
 
@@ -1033,6 +1049,11 @@ class OtherDiscussionController extends Controller
             // Filter berdasarkan status
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
+            }
+
+            // Filter berdasarkan weekly
+            if ($request->boolean('is_weekly')) {
+                $query->where('is_weekly', true);
             }
 
             $discussions = $query->orderBy('created_at', 'desc')->get();
@@ -1124,6 +1145,9 @@ class OtherDiscussionController extends Controller
             }
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
+            }
+            if ($request->boolean('is_weekly')) {
+                $query->where('is_weekly', true);
             }
 
             $discussions = $query->orderBy('created_at', 'desc')->get();

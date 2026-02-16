@@ -81,6 +81,13 @@
                             <span class="text-sm">Maximo</span>
                         </a>
                         
+                        <!-- Pembahasan Weekly Button -->
+                        <a href="{{ route('admin.other-discussions.index', array_merge(request()->query(), ['is_weekly' => request('is_weekly') == '1' ? '0' : '1'])) }}" 
+                           class="inline-flex items-center px-3 py-1.5 {{ request('is_weekly') == '1' ? 'bg-blue-600' : 'bg-blue-100 text-blue-700' }} border border-transparent rounded text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                            <i class="fas fa-calendar-week text-sm mr-1.5"></i>
+                            <span class="text-sm">Pembahasan Weekly</span>
+                        </a>
+
                         <!-- Add Data Button - Simplified -->
                         <a href="{{ route('admin.other-discussions.create') }}" 
                            class="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -619,6 +626,9 @@
                                         @if($discussion->created_at->diffInHours(now()) < 24)
                                             <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">New</span>
                                         @endif
+                                        @if(isset($discussion->is_weekly) && $discussion->is_weekly)
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Weekly</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm">{{ $discussion->unit }}</td>
                                     <td class="px-4 py-3 text-sm">
@@ -867,6 +877,9 @@
                                         @if($discussion->created_at->diffInHours(now()) < 24)
                                             <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">New</span>
                                         @endif
+                                        @if(isset($discussion->is_weekly) && $discussion->is_weekly)
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Weekly</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm">{{ $discussion->unit }}</td>
                                     <td class="px-4 py-3 text-sm">
@@ -1077,6 +1090,9 @@
                                         {{ $discussion->no_pembahasan }}
                                         @if($discussion->created_at->diffInHours(now()) < 24)
                                             <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">New</span>
+                                        @endif
+                                        @if(isset($discussion->is_weekly) && $discussion->is_weekly)
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Weekly</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm">{{ $discussion->unit }}</td>
