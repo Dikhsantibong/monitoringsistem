@@ -26,6 +26,47 @@ class MaximoController extends Controller
             $statusUnitFilter = $request->input('status_unit');
             $woWorkTypeFilter = $request->input('wo_worktype');
 
+            // Summary Statistics from Oracle (Always filter by SITEID='KD' and PREFIX 'WO')
+            $stats = [
+                'total' => 0,
+                'appr' => 0,
+                'wmatl' => 0,
+                'inprg' => 0,
+                'closed' => 0,
+                'new_today' => 0,
+            ];
+
+            try {
+                $baseStatsQuery = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%');
+
+                $stats['total'] = (clone $baseStatsQuery)->count();
+                
+                $statusCountsRaw = (clone $baseStatsQuery)
+                    ->select('STATUS', DB::raw('count(*) as total'))
+                    ->groupBy('STATUS')
+                    ->get();
+
+                foreach ($statusCountsRaw as $sc) {
+                    $sc = (object) array_change_key_case((array) $sc, CASE_LOWER);
+                    $status = strtoupper(trim($sc->status ?? ''));
+                    
+                    if ($status === 'APPR') $stats['appr'] += $sc->total;
+                    elseif ($status === 'WMATL') $stats['wmatl'] += $sc->total;
+                    elseif (in_array($status, ['INPRG', 'IN PROGRESS'])) $stats['inprg'] += $sc->total;
+                    elseif (in_array($status, ['COMP', 'CLOSE', 'CLOSED'])) $stats['closed'] += $sc->total;
+                }
+
+                $stats['new_today'] = (clone $baseStatsQuery)
+                    ->whereRaw("TRUNC(REPORTDATE) = TRUNC(SYSDATE)")
+                    ->count();
+
+            } catch (\Exception $e) {
+                Log::error('Error getting Stats from Maximo in MaximoController: ' . $e->getMessage());
+            }
+
             /* ==========================
              * WORK ORDER (TETAP)
              * ========================== */
@@ -141,6 +182,8 @@ class MaximoController extends Controller
                 'search'          => $search,
                 'statusFilter'    => $woStatusFilter,
                 'statusUnitFilter'=> $statusUnitFilter,
+                'woWorkTypeFilter'=> $woWorkTypeFilter,
+                'stats'           => $stats,
                 'error'           => null,
                 'errorDetail'     => null,
             ]);
@@ -163,6 +206,9 @@ class MaximoController extends Controller
                 'statusFilter' => $woStatusFilter,
                 'statusUnitFilter' => $statusUnitFilter,
                 'woWorkTypeFilter' => $woWorkTypeFilter,
+                'stats' => [
+                    'total' => 0, 'appr' => 0, 'wmatl' => 0, 'inprg' => 0, 'closed' => 0, 'new_today' => 0
+                ],
                 'error' => 'Gagal mengambil data dari Maximo (Query Error)',
                 'errorDetail' => [
                     'oracle_code' => $e->errorInfo[1] ?? null,
@@ -187,6 +233,9 @@ class MaximoController extends Controller
                 'statusFilter' => $woStatusFilter,
                 'statusUnitFilter' => $statusUnitFilter,
                 'woWorkTypeFilter' => $woWorkTypeFilter,
+                'stats' => [
+                    'total' => 0, 'appr' => 0, 'wmatl' => 0, 'inprg' => 0, 'closed' => 0, 'new_today' => 0
+                ],
                 'error' => 'Gagal mengambil data dari Maximo (General Error)',
                 'errorDetail' => [
                     'message' => $e->getMessage(),

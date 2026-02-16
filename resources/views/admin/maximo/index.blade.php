@@ -54,7 +54,7 @@
         </header>
 
         <main class="px-6 mt-4">
-            {{-- Success Message (generate hanya simpan ke server, tidak auto buka editor) --}}
+            {{-- Success Message --}}
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
                     {{ session('success') }}
@@ -67,6 +67,70 @@
                     {{ session('error') }}
                 </div>
             @endif
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <!-- Total WO -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-clipboard-list text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider">Total WO</p>
+                        <h3 class="text-base font-bold text-gray-800">{{ $stats['total'] }}</h3>
+                    </div>
+                </div>
+                <!-- APPR -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider">APPR</p>
+                        <h3 class="text-base font-bold text-gray-800">{{ $stats['appr'] }}</h3>
+                    </div>
+                </div>
+                <!-- WMATL -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-yellow-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-box text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider">WMATL</p>
+                        <h3 class="text-base font-bold text-gray-800">{{ $stats['wmatl'] }}</h3>
+                    </div>
+                </div>
+                <!-- INPRG -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-purple-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-spinner text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider">INPRG</p>
+                        <h3 class="text-base font-bold text-gray-800">{{ $stats['inprg'] }}</h3>
+                    </div>
+                </div>
+                <!-- CLOSED -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center hover:shadow-md transition-shadow">
+                    <div class="h-10 w-10 bg-gray-50 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-lock text-gray-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider">CLOSED</p>
+                        <h3 class="text-base font-bold text-gray-800">{{ $stats['closed'] }}</h3>
+                    </div>
+                </div>
+                <!-- New Today -->
+                <div class="bg-white rounded-xl shadow-sm border border-blue-100 p-4 flex items-center hover:shadow-md transition-shadow bg-blue-50/30">
+                    <div class="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-calendar-day text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-medium text-blue-600 uppercase tracking-wider">New Today</p>
+                        <h3 class="text-base font-bold text-gray-800">{{ $stats['new_today'] }}</h3>
+                    </div>
+                </div>
+            </div>
 
             <div class="bg-white rounded-lg shadow p-6">
 
