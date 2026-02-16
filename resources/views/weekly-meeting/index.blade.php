@@ -874,7 +874,7 @@
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="hideDiscussionDetail()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100 bounce-in">
+        <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full border border-gray-100 bounce-in">
             <!-- Modal Header -->
             <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 flex justify-between items-center">
                 <h3 class="text-xl font-bold text-white flex items-center gap-3">
@@ -1154,8 +1154,8 @@ async function showDiscussionDetail(discussionId) {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50';
         row.innerHTML = `
-            <td class="px-4 py-3 text-gray-700">${c.commitment}</td>
-            <td class="px-4 py-3 font-medium text-gray-500">${new Date(c.deadline).toLocaleDateString('id-ID')}</td>
+            <td class="px-4 py-3 text-gray-700 font-medium">${c.description || '-'}</td>
+            <td class="px-4 py-3 font-medium text-gray-500">${c.deadline ? new Date(c.deadline).toLocaleDateString('id-ID') : '-'}</td>
             <td class="px-4 py-3">
                 <span class="px-2 py-0.5 rounded border ${c.status === 'Open' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-green-50 text-green-700 border-green-200'} font-bold">
                     ${c.status}

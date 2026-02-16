@@ -442,9 +442,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], 
         ->name('other-discussions.destroy');
     Route::post('/other-discussions/{id}/update-status', [OtherDiscussionController::class, 'updateStatus'])
         ->name('other-discussions.update-status');
-    Route::get('/other-discussions/search-oracle', [OtherDiscussionController::class, 'searchOracleData'])
-        ->name('other-discussions.search-oracle');
 });
+
+// Root route for Oracle data search (Public for dashboard)
+Route::get('/admin/other-discussions/search-oracle', [OtherDiscussionController::class, 'searchOracleData'])
+    ->name('admin.other-discussions.search-oracle');
 
 // Route untuk overdue discussions
 Route::delete('/admin/overdue-discussions/{discussion}', [OverdueDiscussionController::class, 'destroy'])
