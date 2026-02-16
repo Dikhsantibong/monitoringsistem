@@ -448,6 +448,7 @@ class OtherDiscussionController extends Controller
                 'machine_id' => 'nullable|exists:machines,id',
                 'machine_reference' => 'nullable|string',
                 'issue_active' => 'nullable|boolean',
+                'is_weekly' => 'nullable|boolean',
             ]);
 
             if ($request->hasFile('document')) {
@@ -500,6 +501,7 @@ class OtherDiscussionController extends Controller
                 'machine_id' => $validated['machine_id'] ?? null,
                 'machine_reference' => $validated['machine_reference'] ?? null,
                 'issue_active' => $validated['issue_active'] ?? false,
+                'is_weekly' => $request->has('is_weekly'),
             ]);
 
             // Log sebelum menyimpan commitments
@@ -629,6 +631,7 @@ class OtherDiscussionController extends Controller
                 // Tambahkan validasi untuk dokumen
                 'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // max 10MB
                 'document_description' => 'required|string|max:255',
+                'is_weekly' => 'nullable|boolean',
             ]);
 
             // Handle file upload
@@ -680,6 +683,7 @@ class OtherDiscussionController extends Controller
                 'priority_level' => $request->priority_level,
                 'status' => $request->status,
                 'unit_source' => session('unit', 'mysql'), // Tambahkan unit_source
+                'is_weekly' => $request->has('is_weekly'),
             ]);
 
             if ($request->status === 'Closed' && !$discussion->closed_at) {

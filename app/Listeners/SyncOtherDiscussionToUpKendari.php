@@ -29,6 +29,7 @@ class SyncOtherDiscussionToUpKendari
                 'closed_at' => $event->discussion->closed_at,
                 'document_path' => $event->discussion->document_path,
                 'document_description' => $event->discussion->document_description,
+                'is_weekly' => $event->discussion->is_weekly,
                 'created_at' => now(),
                 'updated_at' => now()
             ];

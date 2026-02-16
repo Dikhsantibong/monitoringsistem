@@ -318,6 +318,11 @@
                                                     New
                                                 </span>
                                             @endif
+                                            @if(isset($discussion->is_weekly) && $discussion->is_weekly)
+                                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    Weekly
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3 text-sm">{{ $discussion->unit }}</td>
                                         <td class="px-4 py-3 text-sm">

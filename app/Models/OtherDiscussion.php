@@ -86,6 +86,7 @@ class OtherDiscussion extends Model
         'machine_reference',
         'issue_active',
         'unit_asal',
+        'is_weekly',
     ];
 
     protected $dates = [
