@@ -546,16 +546,40 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="mt-4">
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <div>
-                                    Menampilkan {{ $activeDiscussions->firstItem() ?? 0 }} 
-                                    sampai {{ $activeDiscussions->lastItem() ?? 0 }} 
-                                    dari {{ $activeDiscussions->total() }} data
-                                </div>
-                                <div>
-                                    {{ $activeDiscussions->appends(request()->except('active_page'))->links('pagination::bootstrap-4') }}
-                                </div>
+                        <!-- Pagination -->
+                        <div class="p-2 mt-4 flex justify-between items-center">
+                            <div class="text-sm text-gray-700">
+                                Menampilkan 
+                                {{ ($activeDiscussions->currentPage() - 1) * $activeDiscussions->perPage() + 1 }} 
+                                hingga 
+                                {{ min($activeDiscussions->currentPage() * $activeDiscussions->perPage(), $activeDiscussions->total()) }} 
+                                dari 
+                                {{ $activeDiscussions->total() }} 
+                                data
+                            </div>
+                            <div class="flex items-center gap-1">
+                                @if (!$activeDiscussions->onFirstPage())
+                                    <a href="{{ $activeDiscussions->appends(request()->except('active_page'))->previousPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Sebelumnya</a>
+                                @endif
+
+                                @foreach ($activeDiscussions->appends(request()->except('active_page'))->getUrlRange(1, $activeDiscussions->lastPage()) as $page => $url)
+                                    @if ($page == $activeDiscussions->currentPage())
+                                        <span class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $url }}" 
+                                           class="px-3 py-1 rounded text-sm transition-colors {{ $page == $activeDiscussions->currentPage() 
+                                               ? 'bg-[#0A749B] text-white' 
+                                               : 'bg-white text-[#0A749B] border border-[#0A749B] hover:bg-[#0A749B] hover:text-white' }}">
+                                            {{ $page }}
+                                        </a>
+                                    @endif
+                                @endforeach
+
+                                @if ($activeDiscussions->hasMorePages())
+                                    <a href="{{ $activeDiscussions->appends(request()->except('active_page'))->nextPageUrl() }}" 
+                                       class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Selanjutnya</a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -800,16 +824,40 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Menampilkan {{ $targetOverdueDiscussions->firstItem() ?? 0 }} 
-                                sampai {{ $targetOverdueDiscussions->lastItem() ?? 0 }} 
-                                dari {{ $targetOverdueDiscussions->total() }} data
-                            </div>
-                            <div>
-                                {{ $targetOverdueDiscussions->appends(request()->except('target_page'))->links('pagination::bootstrap-4') }}
-                            </div>
+                    <!-- Pagination -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-sm text-gray-700">
+                            Menampilkan 
+                            {{ ($targetOverdueDiscussions->currentPage() - 1) * $targetOverdueDiscussions->perPage() + 1 }} 
+                            hingga 
+                            {{ min($targetOverdueDiscussions->currentPage() * $targetOverdueDiscussions->perPage(), $targetOverdueDiscussions->total()) }} 
+                            dari 
+                            {{ $targetOverdueDiscussions->total() }} 
+                            data
+                        </div>
+                        <div class="flex items-center gap-1">
+                            @if (!$targetOverdueDiscussions->onFirstPage())
+                                <a href="{{ $targetOverdueDiscussions->appends(request()->except('target_page'))->previousPageUrl() }}" 
+                                   class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Sebelumnya</a>
+                            @endif
+
+                            @foreach ($targetOverdueDiscussions->appends(request()->except('target_page'))->getUrlRange(1, $targetOverdueDiscussions->lastPage()) as $page => $url)
+                                @if ($page == $targetOverdueDiscussions->currentPage())
+                                    <span class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $url }}" 
+                                       class="px-3 py-1 rounded text-sm transition-colors {{ $page == $targetOverdueDiscussions->currentPage() 
+                                           ? 'bg-[#0A749B] text-white' 
+                                           : 'bg-white text-[#0A749B] border border-[#0A749B] hover:bg-[#0A749B] hover:text-white' }}">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+
+                            @if ($targetOverdueDiscussions->hasMorePages())
+                                <a href="{{ $targetOverdueDiscussions->appends(request()->except('target_page'))->nextPageUrl() }}" 
+                                   class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Selanjutnya</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -1012,16 +1060,39 @@
                         </table>
                     </div>
                     <!-- Pagination -->
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Menampilkan {{ $commitmentOverdueDiscussions->firstItem() ?? 0 }} 
-                                sampai {{ $commitmentOverdueDiscussions->lastItem() ?? 0 }} 
-                                dari {{ $commitmentOverdueDiscussions->total() }} data
-                            </div>
-                            <div>
-                                {{ $commitmentOverdueDiscussions->links('pagination::bootstrap-4') }}
-                            </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-sm text-gray-700">
+                            Menampilkan 
+                            {{ ($commitmentOverdueDiscussions->currentPage() - 1) * $commitmentOverdueDiscussions->perPage() + 1 }} 
+                            hingga 
+                            {{ min($commitmentOverdueDiscussions->currentPage() * $commitmentOverdueDiscussions->perPage(), $commitmentOverdueDiscussions->total()) }} 
+                            dari 
+                            {{ $commitmentOverdueDiscussions->total() }} 
+                            data
+                        </div>
+                        <div class="flex items-center gap-1">
+                            @if (!$commitmentOverdueDiscussions->onFirstPage())
+                                <a href="{{ $commitmentOverdueDiscussions->previousPageUrl() }}" 
+                                   class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Sebelumnya</a>
+                            @endif
+
+                            @foreach ($commitmentOverdueDiscussions->getUrlRange(1, $commitmentOverdueDiscussions->lastPage()) as $page => $url)
+                                @if ($page == $commitmentOverdueDiscussions->currentPage())
+                                    <span class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $url }}" 
+                                       class="px-3 py-1 rounded text-sm transition-colors {{ $page == $commitmentOverdueDiscussions->currentPage() 
+                                           ? 'bg-[#0A749B] text-white' 
+                                           : 'bg-white text-[#0A749B] border border-[#0A749B] hover:bg-[#0A749B] hover:text-white' }}">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+
+                            @if ($commitmentOverdueDiscussions->hasMorePages())
+                                <a href="{{ $commitmentOverdueDiscussions->nextPageUrl() }}" 
+                                   class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Selanjutnya</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -1263,16 +1334,40 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Menampilkan {{ $closedDiscussions->firstItem() ?? 0 }} 
-                                sampai {{ $closedDiscussions->lastItem() ?? 0 }} 
-                                dari {{ $closedDiscussions->total() }} data
-                            </div>
-                            <div>
-                                {{ $closedDiscussions->appends(request()->except('closed_page'))->links('pagination::bootstrap-4') }}
-                            </div>
+                    <!-- Pagination -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-sm text-gray-700">
+                            Menampilkan 
+                            {{ ($closedDiscussions->currentPage() - 1) * $closedDiscussions->perPage() + 1 }} 
+                            hingga 
+                            {{ min($closedDiscussions->currentPage() * $closedDiscussions->perPage(), $closedDiscussions->total()) }} 
+                            dari 
+                            {{ $closedDiscussions->total() }} 
+                            data
+                        </div>
+                        <div class="flex items-center gap-1">
+                            @if (!$closedDiscussions->onFirstPage())
+                                <a href="{{ $closedDiscussions->appends(request()->except('closed_page'))->previousPageUrl() }}" 
+                                   class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Sebelumnya</a>
+                            @endif
+
+                            @foreach ($closedDiscussions->appends(request()->except('closed_page'))->getUrlRange(1, $closedDiscussions->lastPage()) as $page => $url)
+                                @if ($page == $closedDiscussions->currentPage())
+                                    <span class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $url }}" 
+                                       class="px-3 py-1 rounded text-sm transition-colors {{ $page == $closedDiscussions->currentPage() 
+                                           ? 'bg-[#0A749B] text-white' 
+                                           : 'bg-white text-[#0A749B] border border-[#0A749B] hover:bg-[#0A749B] hover:text-white' }}">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+
+                            @if ($closedDiscussions->hasMorePages())
+                                <a href="{{ $closedDiscussions->appends(request()->except('closed_page'))->nextPageUrl() }}" 
+                                   class="px-3 py-1 bg-[#0A749B] text-white rounded text-sm transition-colors hover:bg-[#086282]">Selanjutnya</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -1418,6 +1513,48 @@
 .action-buttons button:hover,
 .action-buttons a:hover {
     transform: scale(1.1);
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 5px;
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-link {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #0A749B;
+    background-color: #fff;
+    border: 1px solid #0A749B;
+    border-radius: 0.25rem;
+    text-decoration: none;
+}
+
+.page-item.active .page-link {
+    background-color: #0A749B;
+    color: #fff;
+    border-color: #0A749B;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+.page-link:hover {
+    background-color: #0A749B;
+    color: #fff;
+    text-decoration: none;
 }
 </style>
 
