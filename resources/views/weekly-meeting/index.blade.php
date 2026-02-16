@@ -274,20 +274,27 @@
 @include('components.navbar')
 
 <div class="container mx-auto py-8 mt-24 fade-in px-4">
-    <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+    <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex-wrap gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Weekly Meeting</h1>
             <p class="text-sm text-gray-500">Dashboard Evaluasi & Perencanaan Mingguan</p>
         </div>
-        <div class="flex bg-slate-100 p-1 rounded-xl">
-            <a href="{{ route('weekly-meeting.index', ['mode' => 'list']) }}" 
-               class="view-toggle-btn flex items-center {{ $mode === 'list' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
-                <i class="fas fa-list-ul mr-2"></i> List View
-            </a>
-            <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar']) }}" 
-               class="view-toggle-btn flex items-center {{ $mode === 'calendar' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
-                <i class="fas fa-calendar-alt mr-2"></i> Calendar View
-            </a>
+        <div class="flex items-center gap-4">
+            <button onclick="handleWeeklyDiscussion()" 
+                    class="bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                Tambah Pembahasan Weekly
+            </button>
+            <div class="flex bg-slate-100 p-1 rounded-xl">
+                <a href="{{ route('weekly-meeting.index', ['mode' => 'list']) }}" 
+                   class="view-toggle-btn flex items-center {{ $mode === 'list' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
+                    <i class="fas fa-list-ul mr-2"></i> List View
+                </a>
+                <a href="{{ route('weekly-meeting.index', ['mode' => 'calendar']) }}" 
+                   class="view-toggle-btn flex items-center {{ $mode === 'calendar' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
+                    <i class="fas fa-calendar-alt mr-2"></i> Calendar View
+                </a>
+            </div>
         </div>
     </div>
 
@@ -798,7 +805,32 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+function handleWeeklyDiscussion() {
+    const targetUrl = '{{ route("admin.other-discussions.create", ["is_weekly" => 1]) }}';
+    
+    @auth
+        window.location.href = targetUrl;
+    @else
+        Swal.fire({
+            title: 'Login Diperlukan',
+            text: 'Anda harus login terlebih dahulu untuk menambah pembahasan weekly',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Login',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                sessionStorage.setItem('redirectAfterLogin', targetUrl);
+                window.location.href = '{{ route("login") }}';
+            }
+        });
+    @endauth
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const calendar = document.querySelector('.calendar-grid');
     if (!calendar) return;
