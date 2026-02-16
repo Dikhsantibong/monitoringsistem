@@ -52,6 +52,8 @@ class AttendanceQRController extends Controller
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addMinutes(15),
                 'unit_source' => $connection, // Simpan session unit
+                'is_backdate' => 0,
+                'is_weekly' => 0,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -105,6 +107,7 @@ class AttendanceQRController extends Controller
                 'user_id' => auth()->id(),
                 'expires_at' => now()->addMinutes(15),
                 'unit_source' => $connection,
+                'is_backdate' => 0,
                 'is_weekly' => 1, // Flag untuk weekly
                 'created_at' => now(),
                 'updated_at' => now()

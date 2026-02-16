@@ -81,216 +81,176 @@
 
                     <!-- Input Pencarian -->
                     <div class="mb-4 flex flex-col lg:flex-row gap-x-4 gap-y-3 justify-between items-center">
-                        <div class="flex items-center gap-x-4">
-                            <!-- Tombol Generate QR Code -->
-                            <button id="generateQrBtn" onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700">
-                                <i class="fas fa-qrcode mr-2"></i>
-                                Generate QR Code
+                    <!-- Tabs Navigation (Only for MySQL) -->
+                    @if(session('unit') === 'mysql')
+                    <div class="mb-6 border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button onclick="switchTab('daily')" id="tab-daily" class="border-b-2 border-blue-500 py-4 px-1 text-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                <i class="fas fa-users mr-2"></i>Absensi Daily
                             </button>
-
-                            <!-- Tombol Generate QR Weekly (hanya untuk session mysql) -->
-                            @if(session('unit') === 'mysql')
-                            <button id="generateWeeklyQrBtn" onclick="generateWeeklyQR()" class="bg-teal-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-teal-700">
-                                <i class="fas fa-calendar-week mr-2"></i>
-                                Generate QR Weekly
+                            <button onclick="switchTab('weekly')" id="tab-weekly" class="border-b-2 border-transparent py-4 px-1 text-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors duration-200">
+                                <i class="fas fa-calendar-week mr-2"></i>Absensi Weekly
                             </button>
-                            @endif
+                        </nav>
+                    </div>
+                    @endif
 
-                            <!-- Tombol Tarik Data -->
-                            <button id="pullDataBtn" onclick="pullData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
-                                <i class="fas fa-download mr-2"></i>
-                                Tarik Data
-                            </button>
+                    <!-- DAILY SECTION -->
+                    <div id="daily-section">
+                        <!-- Toolbar Daily -->
+                        <div class="mb-4 flex flex-col lg:flex-row gap-x-4 gap-y-3 justify-between items-center">
+                            <div class="flex items-center gap-x-4">
+                                <!-- Tombol Generate QR Code (Daily) -->
+                                <button id="generateQrBtn" onclick="generateQR()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-qrcode mr-2"></i>
+                                    Generate QR Daily
+                                </button>
 
-                            <!-- Tombol Tarik Data Weekly (hanya untuk session mysql) -->
-                            @if(session('unit') === 'mysql')
-                            <button id="pullWeeklyDataBtn" onclick="pullWeeklyData()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700">
-                                <i class="fas fa-download mr-2"></i>
-                                Tarik Data Weekly
-                            </button>
-                            @endif
+                                <!-- Tombol Tarik Data (Daily) -->
+                                <button id="pullDataBtn" onclick="pullData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700 transition-colors">
+                                    <i class="fas fa-download mr-2"></i>
+                                    Tarik Data Daily
+                                </button>
 
-                            <!-- Tombol Manage Kehadiran -->
-                            <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700">
-                                <i class="fas fa-tasks mr-2"></i>
-                                Manage Kehadiran
-                            </a>
-                        </div>
+                                <!-- Tombol Manage Kehadiran -->
+                                <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-tasks mr-2"></i>
+                                    Manage Kehadiran
+                                </a>
+                            </div>
 
-                        <!-- Modal QR Code -->
-                        <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-                            <div class="bg-white p-8 rounded-lg shadow-lg">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-xl font-bold flex items-center" id="qrModalTitle">
-                                        <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
-                                    </h3>
-                                    <button onclick="closeQRModal()" class="text-gray-500 hover:text-gray-700">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
-                                <div id="qr-error" class="mt-4 text-red-600 text-center hidden"></div>
-                                <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
-                                <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded p-3">
-                                    <p class="text-sm text-yellow-800 text-center">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        <span class="font-semibold">Jangan lupa:</span> Tekan tombol "Tarik Data" setelah absensi selesai
-                                    </p>
+                            <!-- Modal QR Code (Shared) -->
+                            <div id="qrModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+                                <div class="bg-white p-8 rounded-lg shadow-lg">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-xl font-bold flex items-center" id="qrModalTitle">
+                                            <i class="fas fa-qrcode mr-2"></i>QR Code Absensi
+                                        </h3>
+                                        <button onclick="closeQRModal()" class="text-gray-500 hover:text-gray-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
+                                    <div id="qr-error" class="mt-4 text-red-600 text-center hidden"></div>
+                                    <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
+                                    <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded p-3">
+                                        <p class="text-sm text-yellow-800 text-center">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            <span class="font-semibold">Jangan lupa:</span> Tekan tombol "Tarik Data" setelah absensi selesai
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Tabel Absensi Regular -->
-                    <div class="overflow-x-auto">
-                        <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
-                            <i class="fas fa-users mr-2 text-blue-600"></i>
-                            Absensi Regular ({{ $attendances->count() }} orang)
-                        </h3>
-                        <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
-                            <thead class="bg-gray-100">
-                                <tr style="background-color: #0A749B; color: white;">
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        No
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Nama
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Divisi
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Jabatan
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Tanggal
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Waktu Absensi
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Tanda Tangan
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendance-body" class="divide-y divide-gray-300 border border-gray-300">
-                                @forelse ($attendances as $index => $attendance)
-                                    <tr class="hover:bg-gray-100 border-b border-gray-300">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $index + 1 }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $attendance->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $attendance->division }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $attendance->position }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('d M Y') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('H:i:s') }} WITA
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">
-                                            @if($attendance->signature)
-                                                <img src="{{ $attendance->signature }}" 
-                                                     alt="Tanda tangan {{ $attendance->name }}"
-                                                     class="h-16 object-contain cursor-pointer"
-                                                     onclick="showSignatureModal(this.src, '{{ $attendance->name }}')"
-                                                >
-                                            @else
-                                                <span class="text-gray-400">Tidak ada tanda tangan</span>
-                                            @endif
-                                        </td>
+
+                        <!-- Tabel Absensi Daily -->
+                        <div class="overflow-x-auto">
+                            <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fas fa-users mr-2 text-blue-600"></i>
+                                Absensi Daily ({{ $attendances->count() }} orang)
+                            </h3>
+                            <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
+                                <thead class="bg-gray-100">
+                                    <tr style="background-color: #0A749B; color: white;">
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">No</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Nama</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Divisi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Jabatan</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Tanggal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Waktu Absensi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Tanda Tangan</th>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                            Belum ada data absensi regular untuk hari ini
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody id="attendance-body" class="divide-y divide-gray-300 border border-gray-300">
+                                    @forelse ($attendances as $index => $attendance)
+                                        <tr class="hover:bg-gray-100 border-b border-gray-300">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $index + 1 }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $attendance->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $attendance->division }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $attendance->position }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('d M Y') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('H:i:s') }} WITA</td>
+                                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">
+                                                @if($attendance->signature)
+                                                    <img src="{{ $attendance->signature }}" alt="Tanda tangan {{ $attendance->name }}" class="h-16 object-contain cursor-pointer" onclick="showSignatureModal(this.src, '{{ $attendance->name }}')">
+                                                @else
+                                                    <span class="text-gray-400">Tidak ada tanda tangan</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">Belum ada data absensi daily untuk hari ini</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    <!-- Tabel Absensi Weekly (hanya tampil untuk session mysql) -->
+                    <!-- WEEKLY SECTION (Hidden by Default) -->
                     @if(session('unit') === 'mysql')
-                    <div class="overflow-x-auto mt-8">
-                        <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
-                            <i class="fas fa-calendar-week mr-2 text-teal-600"></i>
-                            Absensi Weekly Meeting ({{ $weeklyAttendances->count() }} orang)
-                        </h3>
-                        <table id="weekly-attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
-                            <thead class="bg-gray-100">
-                                <tr style="background-color: #0D9488; color: white;">
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        No
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Nama
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Divisi
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Jabatan
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Tanggal
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Waktu Absensi
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">
-                                        Tanda Tangan
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="weekly-attendance-body" class="divide-y divide-gray-300 border border-gray-300">
-                                @forelse ($weeklyAttendances as $index => $attendance)
-                                    <tr class="hover:bg-teal-50 border-b border-gray-300">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $index + 1 }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $attendance->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $attendance->division }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ $attendance->position }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('d M Y') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">
-                                            {{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('H:i:s') }} WITA
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">
-                                            @if($attendance->signature)
-                                                <img src="{{ $attendance->signature }}" 
-                                                     alt="Tanda tangan {{ $attendance->name }}"
-                                                     class="h-16 object-contain cursor-pointer"
-                                                     onclick="showSignatureModal(this.src, '{{ $attendance->name }}')"
-                                                >
-                                            @else
-                                                <span class="text-gray-400">Tidak ada tanda tangan</span>
-                                            @endif
-                                        </td>
+                    <div id="weekly-section" style="display: none;">
+                        <!-- Toolbar Weekly -->
+                        <div class="mb-4 flex flex-col lg:flex-row gap-x-4 gap-y-3 justify-between items-center">
+                            <div class="flex items-center gap-x-4">
+                                <!-- Tombol Generate QR Code Weekly -->
+                                <button id="generateWeeklyQrBtn" onclick="generateWeeklyQR()" class="bg-teal-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-teal-700 transition-colors">
+                                    <i class="fas fa-calendar-week mr-2"></i>
+                                    Generate QR Weekly
+                                </button>
+
+                                <!-- Tombol Tarik Data Weekly -->
+                                <button id="pullWeeklyDataBtn" onclick="pullWeeklyData()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
+                                    <i class="fas fa-download mr-2"></i>
+                                    Tarik Data Weekly
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Absensi Weekly -->
+                        <div class="overflow-x-auto">
+                            <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fas fa-calendar-week mr-2 text-teal-600"></i>
+                                Absensi Weekly Meeting ({{ $weeklyAttendances->count() }} orang)
+                            </h3>
+                            <table id="weekly-attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
+                                <thead class="bg-gray-100">
+                                    <tr style="background-color: #0D9488; color: white;">
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">No</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Nama</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Divisi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Jabatan</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Tanggal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Waktu Absensi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-300">Tanda Tangan</th>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                            Belum ada data absensi weekly untuk hari ini
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody id="weekly-attendance-body" class="divide-y divide-gray-300 border border-gray-300">
+                                    @forelse ($weeklyAttendances as $index => $attendance)
+                                        <tr class="hover:bg-teal-50 border-b border-gray-300">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $index + 1 }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $attendance->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $attendance->division }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ $attendance->position }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('d M Y') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">{{ \Carbon\Carbon::parse($attendance->time)->setTimezone('Asia/Makassar')->format('H:i:s') }} WITA</td>
+                                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">
+                                                @if($attendance->signature)
+                                                    <img src="{{ $attendance->signature }}" alt="Tanda tangan {{ $attendance->name }}" class="h-16 object-contain cursor-pointer" onclick="showSignatureModal(this.src, '{{ $attendance->name }}')">
+                                                @else
+                                                    <span class="text-gray-400">Tidak ada tanda tangan</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">Belum ada data absensi weekly untuk hari ini</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     @endif
                 </div>
@@ -330,6 +290,37 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
         <script>
+            function switchTab(tab) {
+                const dailySection = document.getElementById('daily-section');
+                const weeklySection = document.getElementById('weekly-section');
+                const tabDaily = document.getElementById('tab-daily');
+                const tabWeekly = document.getElementById('tab-weekly');
+
+                if (tab === 'daily') {
+                    // Show Daily, Hide Weekly
+                    dailySection.style.display = 'block';
+                    weeklySection.style.display = 'none';
+                    
+                    // Update Tab Styles
+                    tabDaily.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    tabDaily.classList.add('border-blue-500', 'text-blue-600', 'hover:text-blue-800');
+                    
+                    tabWeekly.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    tabWeekly.classList.remove('border-teal-500', 'text-teal-600', 'hover:text-teal-800');
+                } else {
+                    // Show Weekly, Hide Daily
+                    dailySection.style.display = 'none';
+                    weeklySection.style.display = 'block';
+                    
+                    // Update Tab Styles
+                    tabDaily.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    tabDaily.classList.remove('border-blue-500', 'text-blue-600', 'hover:text-blue-800');
+                    
+                    tabWeekly.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    tabWeekly.classList.add('border-teal-500', 'text-teal-600', 'hover:text-teal-800');
+                }
+            }
+
             function generateQR() {
                 const container = document.getElementById('qrcode-container');
                 const errorContainer = document.getElementById('qr-error');
