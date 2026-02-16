@@ -235,7 +235,8 @@ class AttendanceQRController extends Controller
             }
     
             // **FILTER DATA - EXACT MATCH UNIT_SOURCE & HARI INI**
-            $today = Carbon::today()->toDateString();
+            // Gunakan timezone user (WITA) untuk perbandingan tanggal
+            $today = Carbon::now('Asia/Makassar')->toDateString();
             
             $filteredData = array_filter($data, function($item) use ($unitSource, $today) {
                 if (!is_array($item)) {
@@ -546,7 +547,8 @@ class AttendanceQRController extends Controller
             }
     
             // **FILTER DATA - EXACT MATCH UNIT_SOURCE & WEEKLY & HARI INI**
-            $today = Carbon::today()->toDateString();
+            // Gunakan timezone user (WITA) untuk perbandingan tanggal
+            $today = Carbon::now('Asia/Makassar')->toDateString();
             
             $filteredData = array_filter($data, function($item) use ($unitSource, $today) {
                 if (!is_array($item)) {
