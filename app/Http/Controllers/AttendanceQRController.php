@@ -246,6 +246,12 @@ class AttendanceQRController extends Controller
                 $unitMatch = isset($item['unit_source']) && 
                             $item['unit_source'] === $unitSource;
                 
+                // STRICT FILTER: is_weekly MUST be 0 (or null/false)
+                // Pastikan tidak ada data weekly yang masuk ke sini
+                $isNotWeekly = !isset($item['is_weekly']) || 
+                               $item['is_weekly'] == 0 || 
+                               $item['is_weekly'] === false;
+                
                 // Cek apakah data adalah data hari ini
                 $isToday = true;
                 if (isset($item['time']) && !empty($item['time'])) {
@@ -258,7 +264,7 @@ class AttendanceQRController extends Controller
                     }
                 }
                 
-                return $unitMatch && $isToday;
+                return $unitMatch && $isNotWeekly && $isToday;
             });
     
             Log::info('Data filtered', [
@@ -317,6 +323,7 @@ class AttendanceQRController extends Controller
                                 ->where('name', $item['name'])
                                 ->where('time', $timeValue)
                                 ->where('unit_source', $unitSource) // EXACT MATCH
+                                ->where('is_weekly', 0) // STRICT CHECK is_weekly = 0
                                 ->exists();
     
                             if (!$exists) {
@@ -328,6 +335,7 @@ class AttendanceQRController extends Controller
                                     'time' => $timeValue,
                                     'signature' => $item['signature'] ?? null,
                                     'unit_source' => $unitSource, // Simpan unit_source yang konsisten
+                                    'is_weekly' => 0, // EXPLICITLY SET 0 for regular attendance
                                     'is_backdate' => $item['is_backdate'] ?? 0,
                                     'backdate_reason' => $item['backdate_reason'] ?? null,
                                     'created_at' => now(),
@@ -354,6 +362,7 @@ class AttendanceQRController extends Controller
                                 ->table('attendance_tokens')
                                 ->where('token', $item['token'])
                                 ->where('unit_source', $unitSource) // EXACT MATCH
+                                ->where('is_weekly', 0) // STRICT CHECK is_weekly = 0
                                 ->exists();
     
                             if (!$exists) {
@@ -364,6 +373,7 @@ class AttendanceQRController extends Controller
                                         ? Carbon::parse($item['expires_at'])
                                         : now()->addMinutes(15),
                                     'unit_source' => $unitSource,
+                                    'is_weekly' => 0, // EXPLICITLY SET 0
                                     'is_backdate' => $item['is_backdate'] ?? 0,
                                     'backdate_data' => $item['backdate_data'] ?? null,
                                     'created_at' => now(),
