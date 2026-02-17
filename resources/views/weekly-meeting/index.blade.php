@@ -266,6 +266,18 @@
         .status-purple { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
         .status-red { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
         .status-gray { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+        /* Dropdown Detail Styles */
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 @endsection
 
@@ -598,7 +610,14 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse($reviewCompletedWOs as $wo)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-blue-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3 font-medium text-blue-600">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="toggleDetails('wo-comp-{{ $wo->wonum }}')" class="text-blue-600 hover:text-blue-800 focus:outline-none">
+                                            <i class="fas fa-chevron-down transition-transform duration-200" id="icon-wo-comp-{{ $wo->wonum }}"></i>
+                                        </button>
+                                        {{ $wo->wonum }}
+                                    </div>
+                                </td>
                                 <td class="px-6 py-3">
                                     <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
                                     <div class="text-xs text-gray-500">{{ $wo->location ?? $wo->assetnum }}</div>
@@ -606,6 +625,24 @@
                                 <td class="px-6 py-3">
                                     <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">{{ $wo->status }}</span>
                                     <div class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($wo->statusdate)->format('d/m') }}</div>
+                                </td>
+                            </tr>
+                            <tr id="wo-comp-{{ $wo->wonum }}" class="hidden bg-gray-50">
+                                <td colspan="3" class="px-6 py-4">
+                                    <div class="grid grid-cols-2 gap-4 text-xs">
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Asset Info</p>
+                                            <p class="text-gray-800">Asset: {{ $wo->assetnum ?? '-' }}</p>
+                                            <p class="text-gray-800">Location: {{ $wo->location ?? '-' }}</p>
+                                            <p class="text-gray-800">Type: {{ $wo->worktype ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Execution Details</p>
+                                            <p class="text-gray-800">Report Date: {{ $wo->reportdate ? \Carbon\Carbon::parse($wo->reportdate)->format('d/m/Y H:i') : '-' }}</p>
+                                            <p class="text-gray-800">Actual Finish: {{ $wo->actfinish ? \Carbon\Carbon::parse($wo->actfinish)->format('d/m/Y H:i') : '-' }}</p>
+                                            <p class="text-gray-800 font-medium text-blue-600">Status Date: {{ $wo->statusdate ? \Carbon\Carbon::parse($wo->statusdate)->format('d/m/Y H:i') : '-' }}</p>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -642,13 +679,37 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse($reviewCreatedWOs as $wo)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-purple-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3 font-medium text-purple-600">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="toggleDetails('wo-new-{{ $wo->wonum }}')" class="text-purple-600 hover:text-purple-800 focus:outline-none">
+                                            <i class="fas fa-chevron-down transition-transform duration-200" id="icon-wo-new-{{ $wo->wonum }}"></i>
+                                        </button>
+                                        {{ $wo->wonum }}
+                                    </div>
+                                </td>
                                 <td class="px-6 py-3">
                                     <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
                                     <div class="text-xs text-gray-500">{{ $wo->worktype }}</div>
                                 </td>
                                 <td class="px-6 py-3 text-center">
                                     <div class="text-sm font-bold text-gray-700">{{ $wo->wopriority }}</div>
+                                </td>
+                            </tr>
+                            <tr id="wo-new-{{ $wo->wonum }}" class="hidden bg-gray-50">
+                                <td colspan="3" class="px-6 py-4">
+                                    <div class="grid grid-cols-2 gap-4 text-xs">
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">General Info</p>
+                                            <p class="text-gray-800">Location: {{ $wo->location ?? '-' }}</p>
+                                            <p class="text-gray-800">Work Type: {{ $wo->worktype ?? '-' }}</p>
+                                            <p class="text-gray-800">Priority: <span class="font-bold">{{ $wo->wopriority ?? '-' }}</span></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Reporting</p>
+                                            <p class="text-gray-800">Report Date: {{ $wo->reportdate ? \Carbon\Carbon::parse($wo->reportdate)->format('d/m/Y H:i') : '-' }}</p>
+                                            <p class="text-gray-800">Status: <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-bold border border-blue-100">{{ $wo->status }}</span></p>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -697,7 +758,14 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse($planPMs as $wo)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-green-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3 font-medium text-green-600">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="toggleDetails('wo-pm-{{ $wo->wonum }}')" class="text-green-600 hover:text-green-800 focus:outline-none">
+                                            <i class="fas fa-chevron-down transition-transform duration-200" id="icon-wo-pm-{{ $wo->wonum }}"></i>
+                                        </button>
+                                        {{ $wo->wonum }}
+                                    </div>
+                                </td>
                                 <td class="px-6 py-3">
                                     <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
                                     <div class="text-xs text-gray-500">{{ $wo->location ?? $wo->assetnum }}</div>
@@ -709,6 +777,22 @@
                                 </td>
                                 <td class="px-6 py-3">
                                     <span class="text-xs font-bold text-gray-600 border border-gray-200 bg-gray-50 px-2 py-1 rounded">{{ $wo->status }}</span>
+                                </td>
+                            </tr>
+                            <tr id="wo-pm-{{ $wo->wonum }}" class="hidden bg-gray-50">
+                                <td colspan="4" class="px-6 py-4">
+                                    <div class="grid grid-cols-2 gap-4 text-xs">
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">PM Details</p>
+                                            <p class="text-gray-800">Asset: {{ $wo->assetnum ?? '-' }}</p>
+                                            <p class="text-gray-800">Location: {{ $wo->location ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Schedule</p>
+                                            <p class="text-gray-800">Start: {{ $wo->schedstart ? \Carbon\Carbon::parse($wo->schedstart)->format('d/m/Y H:i') : '-' }}</p>
+                                            <p class="text-gray-800">Finish: {{ $wo->schedfinish ? \Carbon\Carbon::parse($wo->schedfinish)->format('d/m/Y H:i') : '-' }}</p>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -788,7 +872,14 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse($planBacklog as $wo)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-gray-600">{{ $wo->wonum }}</td>
+                                <td class="px-6 py-3 font-medium text-gray-600">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="toggleDetails('wo-back-{{ $wo->wonum }}')" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                            <i class="fas fa-chevron-down transition-transform duration-200" id="icon-wo-back-{{ $wo->wonum }}"></i>
+                                        </button>
+                                        {{ $wo->wonum }}
+                                    </div>
+                                </td>
                                 <td class="px-6 py-3">
                                     <div class="font-medium text-gray-800 truncate w-48" title="{{ $wo->description }}">{{ $wo->description }}</div>
                                     <div class="text-xs text-gray-500">
@@ -800,6 +891,23 @@
                                     @if(isset($wo->reportdate))
                                         {{ round(\Carbon\Carbon::parse($wo->reportdate)->diffInDays(now())) }} Hari
                                     @else - @endif
+                                </td>
+                            </tr>
+                            <tr id="wo-back-{{ $wo->wonum }}" class="hidden bg-gray-50">
+                                <td colspan="3" class="px-6 py-4">
+                                    <div class="grid grid-cols-2 gap-4 text-xs">
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Asset & Type</p>
+                                            <p class="text-gray-800">Asset: {{ $wo->assetnum ?? '-' }}</p>
+                                            <p class="text-gray-800">Location: {{ $wo->location ?? '-' }}</p>
+                                            <p class="text-gray-800">Priority: <span class="font-bold">{{ $wo->wopriority ?? '-' }}</span></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Timeline</p>
+                                            <p class="text-gray-800">Report Date: {{ $wo->reportdate ? \Carbon\Carbon::parse($wo->reportdate)->format('d/m/Y') : '-' }}</p>
+                                            <p class="text-gray-800 text-red-600 font-bold">Age: {{ $wo->reportdate ? round(\Carbon\Carbon::parse($wo->reportdate)->diffInDays(now())) : '0' }} Days</p>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -815,7 +923,6 @@
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
                     {{ $planBacklog->appends(['unit' => $unitFilter, 'review_completed_page' => $reviewCompletedWOs->currentPage(), 'review_created_page' => $reviewCreatedWOs->currentPage(), 'plan_pm_page' => $planPMs->currentPage(), 'plan_urgent_page' => $urgentWork->currentPage()])->links() }}
-                </div>
                 </div>
             </div>
 
@@ -837,7 +944,14 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse($reviewCreatedSRs as $sr)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-orange-600">{{ $sr->ticketid }}</td>
+                                <td class="px-6 py-3 font-medium text-orange-600">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="toggleDetails('sr-{{ $sr->ticketid }}')" class="text-orange-600 hover:text-orange-800 focus:outline-none">
+                                            <i class="fas fa-chevron-down transition-transform duration-200" id="icon-sr-{{ $sr->ticketid }}"></i>
+                                        </button>
+                                        {{ $sr->ticketid }}
+                                    </div>
+                                </td>
                                 <td class="px-6 py-3">
                                     <div class="font-medium text-gray-800 truncate w-48" title="{{ $sr->description }}">{{ $sr->description }}</div>
                                     <div class="text-xs text-gray-500">{{ $sr->status }}</div>
@@ -845,6 +959,22 @@
                                 <td class="px-6 py-3 text-sm text-gray-600">
                                     {{ $sr->reportedby }}
                                     <div class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($sr->reportdate)->format('d/m/Y') }}</div>
+                                </td>
+                            </tr>
+                            <tr id="sr-{{ $sr->ticketid }}" class="hidden bg-gray-50">
+                                <td colspan="3" class="px-6 py-4">
+                                    <div class="grid grid-cols-2 gap-4 text-xs">
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Request Info</p>
+                                            <p class="text-gray-800">Ticket ID: {{ $sr->ticketid }}</p>
+                                            <p class="text-gray-800">Reported By: {{ $sr->reportedby ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500 font-bold uppercase mb-1">Details</p>
+                                            <p class="text-gray-800">Location: {{ $sr->location ?? '-' }}</p>
+                                            <p class="text-gray-800">Date: {{ $sr->reportdate ? \Carbon\Carbon::parse($sr->reportdate)->format('d/m/Y H:i') : '-' }}</p>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -865,7 +995,6 @@
 
         </div>
     </div>
-        </div>
     @endif
 </div>
 
@@ -1194,6 +1323,22 @@ async function showDiscussionDetail(discussionId) {
 
 function hideDiscussionDetail() {
     discussionModal.classList.add('hidden');
+}
+
+function toggleDetails(id) {
+    const detailRow = document.getElementById(id);
+    const icon = document.getElementById(`icon-${id}`);
+    
+    // Toggle visibility dengan animasi
+    if (detailRow.classList.contains('hidden')) {
+        detailRow.classList.remove('hidden');
+        detailRow.classList.add('animate-fade-in');
+        icon.classList.add('rotate-180');
+    } else {
+        detailRow.classList.add('hidden');
+        detailRow.classList.remove('animate-fade-in');
+        icon.classList.remove('rotate-180');
+    }
 }
 </script>
 @endsection

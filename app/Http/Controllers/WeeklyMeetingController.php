@@ -42,7 +42,7 @@ class WeeklyMeetingController extends Controller
 
             // Fetch Work Orders for the month
             $workOrders = DB::connection('oracle')->table('WORKORDER')
-                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'STATUSDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%')
                 ->when($unitFilter, function($q) use ($unitFilter) {
@@ -69,28 +69,33 @@ class WeeklyMeetingController extends Controller
             $events = collect();
             
             foreach ($workOrders as $wo) {
-                $date = Carbon::parse($wo->schedstart ?? $wo->reportdate)->format('Y-m-d');
-                if (!$events->has($date)) $events->put($date, collect());
-                $events->get($date)->push([
-                    'id' => $wo->wonum,
-                    'title' => $wo->wonum . ': ' . $wo->description,
-                    'type' => 'WO',
-                    'worktype' => $wo->worktype,
-                    'status' => $wo->status,
-                    'full_data' => $wo
-                ]);
+                $dateValue = $wo->schedstart ?? $wo->reportdate;
+                if ($dateValue) {
+                    $date = Carbon::parse($dateValue)->format('Y-m-d');
+                    if (!$events->has($date)) $events->put($date, collect());
+                    $events->get($date)->push([
+                        'id' => $wo->wonum,
+                        'title' => $wo->wonum . ': ' . $wo->description,
+                        'type' => 'WO',
+                        'worktype' => $wo->worktype,
+                        'status' => $wo->status,
+                        'full_data' => $wo
+                    ]);
+                }
             }
 
             foreach ($serviceRequests as $sr) {
-                $date = Carbon::parse($sr->reportdate)->format('Y-m-d');
-                if (!$events->has($date)) $events->put($date, collect());
-                $events->get($date)->push([
-                    'id' => $sr->ticketid,
-                    'title' => $sr->ticketid . ': ' . $sr->description,
-                    'type' => 'SR',
-                    'status' => $sr,
-                    'full_data' => $sr
-                ]);
+                if ($sr->reportdate) {
+                    $date = Carbon::parse($sr->reportdate)->format('Y-m-d');
+                    if (!$events->has($date)) $events->put($date, collect());
+                    $events->get($date)->push([
+                        'id' => $sr->ticketid,
+                        'title' => $sr->ticketid . ': ' . $sr->description,
+                        'type' => 'SR',
+                        'status' => $sr->status,
+                        'full_data' => $sr
+                    ]);
+                }
             }
 
             return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay', 'powerPlants', 'unitFilter'));
