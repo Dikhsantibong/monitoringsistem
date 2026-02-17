@@ -1200,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('table-search').value;
         
         try {
-            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&search=${encodeURIComponent(searchInput)}`;
+            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&status=Open&search=${encodeURIComponent(searchInput)}`;
             const response = await fetch(url);
             const result = await response.json();
 

@@ -1469,6 +1469,7 @@ class OtherDiscussionController extends Controller
         try {
             $search = $request->search;
             $unit = $request->unit;
+            $status = $request->status;
             $isWeekly = $request->has('is_weekly') ? $request->boolean('is_weekly') : null;
             
             $connections = [
@@ -1504,6 +1505,10 @@ class OtherDiscussionController extends Controller
                             $query->where('is_weekly', $isWeekly);
                         }
 
+                        if ($status) {
+                            $query->where('status', $status);
+                        }
+
                         $discussions = $query->orderBy('created_at', 'desc')->take(20)->get();
                         $allDiscussions = $allDiscussions->concat($discussions);
                     } catch (\Exception $e) {
@@ -1527,6 +1532,10 @@ class OtherDiscussionController extends Controller
 
                 if ($isWeekly !== null) {
                     $query->where('is_weekly', $isWeekly);
+                }
+
+                if ($status) {
+                    $query->where('status', $status);
                 }
 
                 $allDiscussions = $query->orderBy('created_at', 'desc')->take(20)->get();
