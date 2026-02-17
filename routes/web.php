@@ -58,6 +58,11 @@ use App\Http\Controllers\Admin\MaximoController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
+// Explicitly define this route to avoid collision in the messy web.php
+Route::get('/admin/other-discussions/api-list', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'apiIndex'])
+    ->name('admin.other-discussions.api-list')
+    ->middleware(['auth']);
+
 // Update notulen routes to use controller
 Route::get('/notulen', [NotulenController::class, 'form'])->name('notulen.form');
 Route::get('/notulen/search', [NotulenController::class, 'search'])->name('notulen.search');
@@ -434,23 +439,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 });
 
-// Other Discussions Routes
-Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth']], function () {
-    Route::get('/other-discussions', [OtherDiscussionController::class, 'index'])
-        ->name('other-discussions.index');
-    Route::get('/other-discussions/create', [OtherDiscussionController::class, 'create'])
-        ->name('other-discussions.create');
-    Route::post('/other-discussions', [OtherDiscussionController::class, 'store'])
-        ->name('other-discussions.store');
-    Route::get('/other-discussions/{id}/edit', [OtherDiscussionController::class, 'edit'])
-        ->name('other-discussions.edit');
-    Route::put('/other-discussions/{id}', [OtherDiscussionEditController::class, 'update'])
-        ->name('admin.other-discussions.update');
-    Route::delete('/other-discussions/{id}', [OtherDiscussionController::class, 'destroy'])
-        ->name('other-discussions.destroy');
-    Route::post('/other-discussions/{id}/update-status', [OtherDiscussionController::class, 'updateStatus'])
-        ->name('other-discussions.update-status');
-});
+// Oracle Data Search
+Route::get('/admin/other-discussions/search-oracle', [OtherDiscussionController::class, 'searchOracleData'])
+    ->name('admin.other-discussions.search-oracle');
 
 // Root route for Oracle data search (Public for dashboard)
 Route::get('/admin/other-discussions/search-oracle', [OtherDiscussionController::class, 'searchOracleData'])
@@ -635,13 +626,6 @@ Route::post('/admin/other-discussions/generate-no-pembahasan', [App\Http\Control
     ->name('admin.other-discussions.generate-no-pembahasan')
     ->middleware(['auth']);
 
-Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
-    // Other routes...
-    Route::post('/other-discussions/generate-no-pembahasan', [
-        App\Http\Controllers\Admin\OtherDiscussionController::class,
-        'generateNoPembahasan'
-    ])->name('admin.other-discussions.generate-no-pembahasan');
-});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/public/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])

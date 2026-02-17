@@ -1464,4 +1464,83 @@ class OtherDiscussionController extends Controller
             ], 500);
         }
     }
+    public function apiIndex(Request $request)
+    {
+        try {
+            $search = $request->search;
+            $unit = $request->unit;
+            $isWeekly = $request->has('is_weekly') ? $request->boolean('is_weekly') : null;
+            
+            $connections = [
+                'mysql' => 'UP Kendari',
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka',
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua'
+            ];
+
+            $allDiscussions = collect();
+
+            if (session('unit') === 'mysql') {
+                foreach ($connections as $connection => $unitName) {
+                    if ($unit && $unit !== $connection) continue;
+
+                    try {
+                        $query = DB::connection($connection)
+                            ->table('other_discussions')
+                            ->select('*')
+                            ->selectRaw("'$connection' as unit_source")
+                            ->selectRaw("'$unitName' as unit_name");
+
+                        if ($search) {
+                            $query->where(function($q) use ($search) {
+                                $q->where('topic', 'like', "%{$search}%")
+                                  ->orWhere('sr_number', 'like', "%{$search}%")
+                                  ->orWhere('pic', 'like', "%{$search}%");
+                            });
+                        }
+
+                        if ($isWeekly !== null) {
+                            $query->where('is_weekly', $isWeekly);
+                        }
+
+                        $discussions = $query->orderBy('created_at', 'desc')->take(20)->get();
+                        $allDiscussions = $allDiscussions->concat($discussions);
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+            } else {
+                $currentConnection = session('unit', 'mysql');
+                $query = DB::connection($currentConnection)
+                    ->table('other_discussions')
+                    ->select('*')
+                    ->selectRaw("'$currentConnection' as unit_source");
+
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('topic', 'like', "%{$search}%")
+                          ->orWhere('sr_number', 'like', "%{$search}%")
+                          ->orWhere('pic', 'like', "%{$search}%");
+                    });
+                }
+
+                if ($isWeekly !== null) {
+                    $query->where('is_weekly', $isWeekly);
+                }
+
+                $allDiscussions = $query->orderBy('created_at', 'desc')->take(20)->get();
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $allDiscussions->sortByDesc('created_at')->take(20)->values()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }   

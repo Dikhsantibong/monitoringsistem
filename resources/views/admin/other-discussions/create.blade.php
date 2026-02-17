@@ -42,9 +42,21 @@
 
         <!-- Konten utama -->
         <div class="container mx-auto px-6 py-8">
-            <h3 class="text-gray-700 text-3xl font-medium">Tambah Pembahasan Baru</h3>
+            <div class="flex items-center justify-between">
+                <h3 class="text-gray-700 text-3xl font-medium">Manajemen Pembahasan</h3>
+                
+                <!-- Tab Switching -->
+                <div class="flex bg-gray-200 rounded-lg p-1">
+                    <button onclick="switchTab('form')" id="tab-form" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm">
+                        <i class="fas fa-plus-circle mr-2"></i>Tambah Baru
+                    </button>
+                    <button onclick="switchTab('data')" id="tab-data" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-list mr-2"></i>Data Pembahasan
+                    </button>
+                </div>
+            </div>
 
-            <div class="mt-8">
+            <div id="form-container" class="mt-8">
                 @php
                     // Ambil default unit dari parameter atau fallback ke 'UP KENDARI'
                     $selectedUnit = $defaultMachineId ? 'UP KENDARI' : old('unit', $defaultUnit ?? null);
@@ -409,6 +421,46 @@
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Table View Container (Hidden by default) -->
+            <div id="data-container" class="mt-8 hidden animate-fade-in">
+                <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h4 class="text-lg font-semibold text-gray-800">Daftar Pembahasan Terakhir</h4>
+                        <div class="flex gap-2">
+                            <input type="text" id="table-search" placeholder="Cari topik/nomor..." 
+                                   class="px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            <button onclick="loadDiscussionsData()" class="bg-blue-50 text-blue-600 p-2 rounded-md hover:bg-blue-100 transition-colors">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Topik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Target</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">PIC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="discussions-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Data will be loaded via AJAX -->
+                                <tr>
+                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                                        <div class="flex flex-col items-center">
+                                            <i class="fas fa-spinner fa-spin text-3xl mb-2 text-blue-500"></i>
+                                            <p>Memuat data...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1114,4 +1166,99 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection     
+@push('scripts')
+<script>
+    function switchTab(tab) {
+        const formBtn = document.getElementById('tab-form');
+        const dataBtn = document.getElementById('tab-data');
+        const formCont = document.getElementById('form-container');
+        const dataCont = document.getElementById('data-container');
+
+        if (tab === 'form') {
+            formBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            formBtn.classList.remove('text-gray-600');
+            dataBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            dataBtn.classList.add('text-gray-600');
+            
+            formCont.classList.remove('hidden');
+            dataCont.classList.add('hidden');
+        } else {
+            dataBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            dataBtn.classList.remove('text-gray-600');
+            formBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            formBtn.classList.add('text-gray-600');
+            
+            dataCont.classList.remove('hidden');
+            formCont.classList.add('hidden');
+            
+            loadDiscussionsData();
+        }
+    }
+
+    async function loadDiscussionsData() {
+        const tbody = document.getElementById('discussions-table-body');
+        const searchInput = document.getElementById('table-search').value;
+        
+        try {
+            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&search=${encodeURIComponent(searchInput)}`;
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.success) {
+                if (result.data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">Tidak ada data ditemukan</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = result.data.map(item => `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-gray-900">${item.topic}</div>
+                            <div class="text-[10px] text-gray-500">${item.sr_number || '-'}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${item.unit}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-[11px] text-gray-800 line-clamp-2">${item.target}</div>
+                            <div class="text-[10px] text-blue-600 font-medium mt-1">Deadline: ${new Date(item.target_deadline).toLocaleDateString('id-ID')}</div>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-600">${item.pic}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.status === 'Open' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}">
+                                ${item.status}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Error loading data:', error);
+            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data</td></tr>`;
+        }
+    }
+
+    // Bind search input with debounce
+    let searchTimeout;
+    document.getElementById('table-search')?.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(loadDiscussionsData, 400);
+    });
+</script>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+@endpush
+@endsection
+     
