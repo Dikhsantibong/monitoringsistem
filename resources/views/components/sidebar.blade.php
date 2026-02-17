@@ -48,7 +48,7 @@
             <a href="{{ route('admin.other-discussions.index') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.other-discussions.*') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-comments w-6 h-6"></i>
-                <span class="ml-3 text-sm">Pembahasan Lain-lain dan Weekly</span>
+                <span class="ml-3 text-sm">Pembahasan Lain-lain{{ session('unit') === 'mysql' ? ' dan Weekly' : '' }}</span>
             </a>
 
             <!-- Data Master Dropdown Menu -->

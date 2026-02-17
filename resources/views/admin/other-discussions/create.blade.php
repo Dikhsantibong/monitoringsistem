@@ -185,6 +185,7 @@
                         </div>
 
                         <!-- Weekly Label -->
+                        @if(session('unit') === 'mysql')
                         <div class="mb-4 flex items-center h-full pt-6">
                             <label class="inline-flex items-center cursor-pointer">
                                 <span class="relative">
@@ -202,6 +203,9 @@
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
+                        @else
+                        <input type="hidden" name="is_weekly" value="0">
+                        @endif
 
                         <!-- Sasaran -->
                         <div class="mb-4 md:col-span-2">

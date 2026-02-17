@@ -512,7 +512,7 @@ class OtherDiscussionController extends Controller
                 'machine_id' => $validated['machine_id'] ?? null,
                 'machine_reference' => $validated['machine_reference'] ?? null,
                 'issue_active' => $validated['issue_active'] ?? false,
-                'is_weekly' => $request->has('is_weekly'),
+                'is_weekly' => $request->boolean('is_weekly'),
             ]);
 
             // Log sebelum menyimpan commitments
@@ -694,7 +694,7 @@ class OtherDiscussionController extends Controller
                 'priority_level' => $request->priority_level,
                 'status' => $request->status,
                 'unit_source' => session('unit', 'mysql'), // Tambahkan unit_source
-                'is_weekly' => $request->has('is_weekly'),
+                'is_weekly' => $request->boolean('is_weekly'),
             ]);
 
             if ($request->status === 'Closed' && !$discussion->closed_at) {

@@ -82,11 +82,13 @@
                         </a>
                         
                         <!-- Pembahasan Weekly Button -->
+                        @if(session('unit') === 'mysql')
                         <a href="{{ route('admin.other-discussions.index', array_merge(request()->query(), ['is_weekly' => request('is_weekly') == '1' ? '0' : '1'])) }}" 
                            class="inline-flex items-center px-3 py-1.5 {{ request('is_weekly') == '1' ? 'bg-blue-600' : 'bg-blue-100 text-blue-700' }} border border-transparent rounded text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                             <i class="fas fa-calendar-week text-sm mr-1.5"></i>
                             <span class="text-sm">Pembahasan Weekly</span>
                         </a>
+                        @endif
 
                         <!-- Add Data Button - Simplified -->
                         <a href="{{ route('admin.other-discussions.create') }}" 
