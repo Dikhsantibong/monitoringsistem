@@ -629,6 +629,10 @@
                             </tr>
                             <tr id="wo-comp-{{ $wo->wonum }}" class="hidden bg-gray-50">
                                 <td colspan="3" class="px-6 py-4">
+                                    <div class="mb-3">
+                                        <p class="text-gray-500 font-bold uppercase text-[10px] mb-1">Deskripsi Lengkap</p>
+                                        <p class="text-gray-800 text-sm whitespace-pre-line bg-white p-2 rounded border border-gray-100 shadow-sm">{{ $wo->description }}</p>
+                                    </div>
                                     <div class="grid grid-cols-2 gap-4 text-xs">
                                         <div>
                                             <p class="text-gray-500 font-bold uppercase mb-1">Asset Info</p>
@@ -697,6 +701,10 @@
                             </tr>
                             <tr id="wo-new-{{ $wo->wonum }}" class="hidden bg-gray-50">
                                 <td colspan="3" class="px-6 py-4">
+                                    <div class="mb-3">
+                                        <p class="text-gray-500 font-bold uppercase text-[10px] mb-1">Deskripsi Lengkap</p>
+                                        <p class="text-gray-800 text-sm whitespace-pre-line bg-white p-2 rounded border border-gray-100 shadow-sm">{{ $wo->description }}</p>
+                                    </div>
                                     <div class="grid grid-cols-2 gap-4 text-xs">
                                         <div>
                                             <p class="text-gray-500 font-bold uppercase mb-1">General Info</p>
@@ -781,6 +789,10 @@
                             </tr>
                             <tr id="wo-pm-{{ $wo->wonum }}" class="hidden bg-gray-50">
                                 <td colspan="4" class="px-6 py-4">
+                                    <div class="mb-3">
+                                        <p class="text-gray-500 font-bold uppercase text-[10px] mb-1">Deskripsi Lengkap</p>
+                                        <p class="text-gray-800 text-sm whitespace-pre-line bg-white p-2 rounded border border-gray-100 shadow-sm">{{ $wo->description }}</p>
+                                    </div>
                                     <div class="grid grid-cols-2 gap-4 text-xs">
                                         <div>
                                             <p class="text-gray-500 font-bold uppercase mb-1">PM Details</p>
@@ -895,6 +907,10 @@
                             </tr>
                             <tr id="wo-back-{{ $wo->wonum }}" class="hidden bg-gray-50">
                                 <td colspan="3" class="px-6 py-4">
+                                    <div class="mb-3">
+                                        <p class="text-gray-500 font-bold uppercase text-[10px] mb-1">Deskripsi Lengkap</p>
+                                        <p class="text-gray-800 text-sm whitespace-pre-line bg-white p-2 rounded border border-gray-100 shadow-sm">{{ $wo->description }}</p>
+                                    </div>
                                     <div class="grid grid-cols-2 gap-4 text-xs">
                                         <div>
                                             <p class="text-gray-500 font-bold uppercase mb-1">Asset & Type</p>
@@ -963,6 +979,10 @@
                             </tr>
                             <tr id="sr-{{ $sr->ticketid }}" class="hidden bg-gray-50">
                                 <td colspan="3" class="px-6 py-4">
+                                    <div class="mb-3">
+                                        <p class="text-gray-500 font-bold uppercase text-[10px] mb-1">Deskripsi Lengkap</p>
+                                        <p class="text-gray-800 text-sm whitespace-pre-line bg-white p-2 rounded border border-gray-100 shadow-sm">{{ $sr->description }}</p>
+                                    </div>
                                     <div class="grid grid-cols-2 gap-4 text-xs">
                                         <div>
                                             <p class="text-gray-500 font-bold uppercase mb-1">Request Info</p>
