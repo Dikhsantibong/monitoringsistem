@@ -131,7 +131,7 @@ class WeeklyMeetingController extends Controller
 
         // A. Pekerjaan Completed (WO Closed/Comp) di Minggu Lalu
         $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
+            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
             ->when($unitFilter, function($q) use ($unitFilter) {
