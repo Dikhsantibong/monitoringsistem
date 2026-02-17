@@ -98,7 +98,16 @@ class WeeklyMeetingController extends Controller
                 }
             }
 
-            return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay', 'powerPlants', 'unitFilter'));
+            // D. Daftar Pembahasan Weekly
+            $weeklyDiscussions = \App\Models\OtherDiscussion::with(['commitments' => function($q) {
+                    $q->with(['department', 'section']);
+                }, 'department', 'section', 'machine'])
+                ->where('is_weekly', true)
+                ->where('status', 'Open')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay', 'powerPlants', 'unitFilter', 'weeklyDiscussions'));
         }
 
         // --- EXISTING LIST LOGIC ---
