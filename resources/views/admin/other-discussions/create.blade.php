@@ -53,6 +53,9 @@
                     <button onclick="switchTab('data')" id="tab-data" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-800">
                         <i class="fas fa-list mr-2"></i>Data Pembahasan
                     </button>
+                    <button onclick="switchTab('weekly')" id="tab-weekly" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-calendar-alt mr-2"></i>Data Weekly
+                    </button>
                 </div>
             </div>
 
@@ -463,6 +466,150 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Data View Container (Hidden by default) -->
+            <div id="weekly-container" class="mt-8 hidden animate-fade-in">
+                <!-- Review Minggu Kemarin -->
+                <div class="mb-8">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
+                        <i class="fas fa-history text-blue-500 mr-2"></i>Review Minggu Kemarin ({{ $lastWeekStart->format('d M') }} - {{ $lastWeekEnd->format('d M Y') }})
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Completed WOs -->
+                        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                            <div class="px-4 py-3 bg-green-50 border-b border-green-100">
+                                <h5 class="font-semibold text-green-800">Pekerjaan Selesai (Completed)</h5>
+                            </div>
+                            <div class="overflow-x-auto max-h-96">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">WO</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Deskripsi</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        @forelse($reviewCompletedWOs as $wo)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-2 font-medium text-blue-600">{{ $wo->wonum }}</td>
+                                                <td class="px-4 py-2">{{ $wo->description }}</td>
+                                                <td class="px-4 py-2">
+                                                    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">{{ $wo->status }}</span>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Tidak ada data</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Created WOs -->
+                        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                            <div class="px-4 py-3 bg-blue-50 border-b border-blue-100">
+                                <h5 class="font-semibold text-blue-800">WO Terbit (Created)</h5>
+                            </div>
+                            <div class="overflow-x-auto max-h-96">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">WO</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Deskripsi</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Pelapor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        @forelse($reviewCreatedWOs as $wo)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-2 font-medium text-blue-600">{{ $wo->wonum }}</td>
+                                                <td class="px-4 py-2">{{ $wo->description }}</td>
+                                                <td class="px-4 py-2 text-gray-500">{{ $wo->worktype }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Tidak ada data</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planning Minggu Depan -->
+                <div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
+                        <i class="fas fa-calendar-check text-purple-500 mr-2"></i>Planning Minggu Depan ({{ $nextWeekStart->format('d M') }} - {{ $nextWeekEnd->format('d M Y') }})
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- PM -->
+                        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                            <div class="px-4 py-3 bg-purple-50 border-b border-purple-100">
+                                <h5 class="font-semibold text-purple-800">Rencana PM</h5>
+                            </div>
+                            <div class="overflow-x-auto max-h-96">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">WO</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Deskripsi</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Jadwal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        @forelse($planPMs as $wo)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-2 font-medium text-blue-600">{{ $wo->wonum }}</td>
+                                                <td class="px-4 py-2">{{ $wo->description }}</td>
+                                                <td class="px-4 py-2 text-xs">
+                                                    Start: {{ date('d-M', strtotime($wo->schedstart)) }}<br>
+                                                    Fin: {{ date('d-M', strtotime($wo->schedfinish)) }}
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Tidak ada data</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Backlog -->
+                        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                            <div class="px-4 py-3 bg-orange-50 border-b border-orange-100">
+                                <h5 class="font-semibold text-orange-800">Backlog / Corrective</h5>
+                            </div>
+                            <div class="overflow-x-auto max-h-96">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">WO</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Deskripsi</th>
+                                            <th class="px-4 py-2 text-left font-medium text-gray-500">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        @forelse($planBacklog as $wo)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-2 font-medium text-blue-600">{{ $wo->wonum }}</td>
+                                                <td class="px-4 py-2">{{ $wo->description }}</td>
+                                                <td class="px-4 py-2">
+                                                    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-orange-100 text-orange-800">{{ $wo->status }}</span>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Tidak ada data</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

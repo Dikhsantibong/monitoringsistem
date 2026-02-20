@@ -416,13 +416,95 @@ class OtherDiscussionController extends Controller
                     $defaultMachineName = $machine->name;
                 }
             }
+
+            // --- WEEKLY DATA LOGIC ---
+            $now = Carbon::now();
+            $currentWeekStart = $now->copy()->startOfWeek(Carbon::MONDAY);
+            $currentWeekEnd = $now->copy()->endOfWeek(Carbon::SUNDAY);
+            
+            // Minggu Lalu (Review)
+            $lastWeekStart = $currentWeekStart->copy()->subWeek();
+            $lastWeekEnd = $currentWeekStart->copy()->subDay();
+
+            // Minggu Depan (Planning)
+            $nextWeekStart = $currentWeekEnd->copy()->addDay();
+            $nextWeekEnd = $nextWeekStart->copy()->endOfWeek(Carbon::SUNDAY);
+
+            // Filter Unit for Oracle Data (Default to all if not specific)
+            // For now, let's show all KD site data or filter if needed. 
+            // The existing controller uses $defaultUnit which might be 'mysql' etc. 
+            // But Oracle data uses LOCATION like 'KLKA%', 'BBAU%', etc.
+            // Let's rely on the user to filter via UI if needed, or just show all for now.
+            // Actually, we can check if $defaultUnit maps to an Oracle Location prefix.
+            $oracleUnitFilter = null;
+            // You might want to map $defaultUnit to oracle prefix here if possible. 
+            // For simplicity, we'll fetch all for KD site.
+
+            // 1. Review Phase (Minggu Lalu)
+            // A. Pekerjaan Completed
+            $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->whereIn('STATUS', ['COMP', 'CLOSE'])
+                ->whereBetween('STATUSDATE', [$lastWeekStart, $lastWeekEnd])
+                ->orderBy('STATUSDATE', 'desc')
+                ->limit(50) // Limit to avoid overload
+                ->get();
+
+            // B. WO Created
+            $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
+                ->orderBy('REPORTDATE', 'desc')
+                ->limit(50)
+                ->get();
+
+            // 2. Planning Phase (Minggu Depan)
+            // A. PM
+            $planPMs = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'ASSETNUM', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->where('WORKTYPE', 'PM')
+                ->whereNotIn('STATUS', ['COMP', 'CLOSE', 'CAN'])
+                ->where(function($q) use ($nextWeekStart, $nextWeekEnd) {
+                    $q->whereBetween('SCHEDSTART', [$nextWeekStart, $nextWeekEnd])
+                      ->orWhereBetween('SCHEDFINISH', [$nextWeekStart, $nextWeekEnd]);
+                })
+                ->orderBy('SCHEDSTART', 'asc')
+                ->limit(50)
+                ->get();
+
+            // B. Backlog (Non-PM, Open)
+            $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
+            $planBacklog = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->where('WORKTYPE', '!=', 'PM')
+                ->whereIn('STATUS', $openStatuses)
+                ->orderBy('WOPRIORITY', 'asc')
+                ->orderBy('REPORTDATE', 'asc')
+                ->limit(50)
+                ->get();
             
             return view('admin.other-discussions.create', compact(
                 'units', 
                 'sections',
                 'defaultUnit',
                 'defaultMachineId',
-                'defaultMachineName'
+                'defaultMachineName',
+                'reviewCompletedWOs',
+                'reviewCreatedWOs',
+                'planPMs',
+                'planBacklog',
+                'lastWeekStart',
+                'lastWeekEnd',
+                'nextWeekStart',
+                'nextWeekEnd'
             ));
         } catch (\Exception $e) {
             \Log::error('Error in create method:', [
