@@ -597,7 +597,7 @@
                 </div>
             @else
                 <!-- List View (Same as Dashboard) -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex justify-between items-center fade-in">
+                <div class="mt-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex justify-between items-center fade-in">
                     <h2 class="text-lg font-bold text-gray-700">Filter Unit Evaluasi</h2>
                     <form action="{{ route('admin.other-discussions.create') }}" method="GET" class="flex items-center gap-2">
                         <input type="hidden" name="tab" value="weekly">
