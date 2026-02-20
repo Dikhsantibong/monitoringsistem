@@ -652,6 +652,12 @@
                                         </tr>
                                         <tr id="wo-comp-{{ $wo->wonum }}" class="hidden bg-gray-50/50 text-[10px]">
                                             <td colspan="3" class="px-6 py-4">
+                                                <div class="grid grid-cols-1 gap-4 mb-3">
+                                                    <div>
+                                                        <p class="text-gray-500 font-bold uppercase mb-1">Full Description</p>
+                                                        <p class="text-gray-800 text-xs">{{ $wo->description ?? '-' }}</p>
+                                                    </div>
+                                                </div>
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <p class="text-gray-500 font-bold uppercase mb-1">Asset & Location</p>
@@ -700,6 +706,12 @@
                                         </tr>
                                         <tr id="wo-new-{{ $wo->wonum }}" class="hidden bg-gray-50/50 text-[10px]">
                                             <td colspan="3" class="px-6 py-4">
+                                                <div class="grid grid-cols-1 gap-4 mb-3">
+                                                    <div>
+                                                        <p class="text-gray-500 font-bold uppercase mb-1">Full Description</p>
+                                                        <p class="text-gray-800 text-xs">{{ $wo->description ?? '-' }}</p>
+                                                    </div>
+                                                </div>
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <p class="text-gray-500 font-bold uppercase mb-1">Detail</p>
@@ -746,6 +758,12 @@
                                         </tr>
                                         <tr id="sr-{{ $sr->ticketid }}" class="hidden bg-gray-50/50 text-[10px]">
                                             <td colspan="3" class="px-6 py-4">
+                                                <div class="grid grid-cols-1 gap-4 mb-3">
+                                                    <div>
+                                                        <p class="text-gray-500 font-bold uppercase mb-1">Full Description</p>
+                                                        <p class="text-gray-800 text-xs">{{ $sr->description ?? '-' }}</p>
+                                                    </div>
+                                                </div>
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <p class="text-gray-500 font-bold uppercase mb-1">Reported By</p>
@@ -795,6 +813,12 @@
                                         </tr>
                                         <tr id="wo-pm-{{ $wo->wonum }}" class="hidden bg-gray-50/50 text-[10px]">
                                             <td colspan="3" class="px-6 py-4">
+                                                <div class="grid grid-cols-1 gap-4 mb-3">
+                                                    <div>
+                                                        <p class="text-gray-500 font-bold uppercase mb-1">Full Description</p>
+                                                        <p class="text-gray-800 text-xs">{{ $wo->description ?? '-' }}</p>
+                                                    </div>
+                                                </div>
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <p class="text-gray-500 font-bold uppercase mb-1">Asset Info</p>
@@ -843,6 +867,12 @@
                                         </tr>
                                         <tr id="wo-backlog-{{ $wo->wonum }}" class="hidden bg-gray-50/50 text-[10px]">
                                             <td colspan="3" class="px-6 py-4">
+                                                <div class="grid grid-cols-1 gap-4 mb-3">
+                                                    <div>
+                                                        <p class="text-gray-500 font-bold uppercase mb-1">Full Description</p>
+                                                        <p class="text-gray-800 text-xs">{{ $wo->description ?? '-' }}</p>
+                                                    </div>
+                                                </div>
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <p class="text-gray-500 font-bold uppercase mb-1">Asset Info</p>
@@ -897,6 +927,12 @@
                                         </tr>
                                         <tr id="wo-urg-{{ $wo->wonum }}" class="hidden bg-gray-50/50 text-[10px]">
                                             <td colspan="3" class="px-6 py-4">
+                                                <div class="grid grid-cols-1 gap-4 mb-3">
+                                                    <div>
+                                                        <p class="text-gray-500 font-bold uppercase mb-1">Full Description</p>
+                                                        <p class="text-gray-800 text-xs">{{ $wo->description ?? '-' }}</p>
+                                                    </div>
+                                                </div>
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <p class="text-gray-500 font-bold uppercase mb-1">Asset Info</p>
