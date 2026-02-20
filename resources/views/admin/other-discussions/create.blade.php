@@ -1155,11 +1155,7 @@ async function generateNoPembahasan() {
             throw new Error(data.message || 'Gagal generate nomor pembahasan');
         }
     } catch (error) {
-        // Log error yang aman
-        Log::channel('daily')->error('JavaScript Error', [
-            'message' => error.message,
-            'timestamp' => new Date().toISOString()
-        ]);
+        console.error('JavaScript Error:', error);
         alert('Gagal generate nomor pembahasan. Silakan coba lagi.');
     }
 }
@@ -1205,8 +1201,8 @@ document.getElementById('unit').addEventListener('change', function() {
     document.getElementById('no_pembahasan').value = '';
 });
 </script>
-@endpush
-
+@push('scripts')
+<script>
 // Fungsi untuk validasi status
 function validateStatus(select) {
     const hasOpenCommitments = Array.from(document.querySelectorAll('.status-select'))
@@ -1245,6 +1241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@endpush
 @push('scripts')
 @endpush
 
@@ -1322,27 +1319,39 @@ document.addEventListener('DOMContentLoaded', function() {
     function switchTab(tab) {
         const formBtn = document.getElementById('tab-form');
         const dataBtn = document.getElementById('tab-data');
+        const weeklyBtn = document.getElementById('tab-weekly');
+        
         const formCont = document.getElementById('form-container');
         const dataCont = document.getElementById('data-container');
+        const weeklyCont = document.getElementById('weekly-container');
 
+        // Hide all
+        formCont.classList.add('hidden');
+        dataCont.classList.add('hidden');
+        weeklyCont.classList.add('hidden');
+
+        // Reset buttons
+        [formBtn, dataBtn, weeklyBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                btn.classList.add('text-gray-600');
+            }
+        });
+
+        // Show selected
         if (tab === 'form') {
             formBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
             formBtn.classList.remove('text-gray-600');
-            dataBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-            dataBtn.classList.add('text-gray-600');
-            
             formCont.classList.remove('hidden');
-            dataCont.classList.add('hidden');
-        } else {
+        } else if (tab === 'data') {
             dataBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
             dataBtn.classList.remove('text-gray-600');
-            formBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-            formBtn.classList.add('text-gray-600');
-            
             dataCont.classList.remove('hidden');
-            formCont.classList.add('hidden');
-            
             loadDiscussionsData();
+        } else if (tab === 'weekly') {
+            weeklyBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            weeklyBtn.classList.remove('text-gray-600');
+            weeklyCont.classList.remove('hidden');
         }
     }
 
