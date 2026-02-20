@@ -472,25 +472,7 @@
 
             <!-- Weekly Data View Container (Hidden by default) -->
             <div id="weekly-container" class="{{ request('tab') === 'weekly' ? '' : 'hidden' }} space-y-6">
-            <!-- Weekly Dashboard (Replicated from weekly-meeting/index) -->
-            <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex-wrap gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Weekly Meeting Data</h1>
-                    <p class="text-sm text-gray-500">Evaluasi & Perencanaan Mingguan</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex bg-slate-100 p-1 rounded-xl">
-                        <a href="{{ route('admin.other-discussions.create', array_merge(request()->all(), ['weekly_mode' => 'list', 'tab' => 'weekly'])) }}" 
-                           class="view-toggle-btn flex items-center {{ $mode === 'list' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
-                            <i class="fas fa-list-ul mr-2"></i> List View
-                        </a>
-                        <a href="{{ route('admin.other-discussions.create', array_merge(request()->all(), ['weekly_mode' => 'calendar', 'tab' => 'weekly'])) }}" 
-                           class="view-toggle-btn flex items-center {{ $mode === 'calendar' ? 'view-toggle-active' : 'view-toggle-inactive' }}">
-                            <i class="fas fa-calendar-alt mr-2"></i> Calendar View
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <!-- Weekly Dashboard (Simplified) -->
 
             @if($mode === 'calendar')
                 <!-- Calendar Mode View -->
@@ -635,86 +617,7 @@
                     </form>
                 </div>
 
-                <div class="stats-grid fade-in">
-                    <div class="stat-card blue">
-                        <div class="stat-content">
-                            <div class="stat-label">Review Completed</div>
-                            <div class="stat-value">{{ $reviewCompletedWOs instanceof \Illuminate\Pagination\LengthAwarePaginator ? $reviewCompletedWOs->total() : 0 }}</div>
-                            <div class="stat-subtext">{{ $lastWeekStart->format('d M') }} - {{ $lastWeekEnd->format('d M') }}</div>
-                        </div>
-                        <div class="stat-icon-wrapper"><i class="fas fa-check-double"></i></div>
-                    </div>
-                    
-                    <div class="stat-card purple">
-                        <div class="stat-content">
-                            <div class="stat-label">New Work Orders</div>
-                            <div class="stat-value">{{ $reviewCreatedWOs instanceof \Illuminate\Pagination\LengthAwarePaginator ? $reviewCreatedWOs->total() : 0 }}</div>
-                            <div class="stat-subtext">Generated Last Week</div>
-                        </div>
-                        <div class="stat-icon-wrapper"><i class="fas fa-hammer"></i></div>
-                    </div>
-                    
-                    <div class="stat-card orange">
-                        <div class="stat-content">
-                            <div class="stat-label">New Service Requests</div>
-                            <div class="stat-value">{{ $reviewCreatedSRs instanceof \Illuminate\Pagination\LengthAwarePaginator ? $reviewCreatedSRs->total() : 0 }}</div>
-                            <div class="stat-subtext">Reported Last Week</div>
-                        </div>
-                        <div class="stat-icon-wrapper"><i class="fas fa-plus-circle"></i></div>
-                    </div>
-                    
-                    <div class="stat-card green">
-                        <div class="stat-content">
-                            <div class="stat-label">Next Week PM</div>
-                            <div class="stat-value">{{ $planPMs instanceof \Illuminate\Pagination\LengthAwarePaginator ? $planPMs->total() : 0 }}</div>
-                            <div class="stat-subtext">{{ $nextWeekStart->format('d M') }} - {{ $nextWeekEnd->format('d M') }}</div>
-                        </div>
-                        <div class="stat-icon-wrapper"><i class="fas fa-sync-alt"></i></div>
-                    </div>
-                </div>
 
-                <!-- Pembahasan Weekly Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 fade-in">
-                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center">
-                        <h3 class="font-bold text-white flex items-center gap-2">
-                            <i class="fas fa-list-alt"></i>
-                            Daftar Pembahasan Weekly
-                        </h3>
-                        <span class="text-xs font-bold bg-white text-blue-600 px-2.5 py-1 rounded-full shadow-sm">{{ count($weeklyDiscussions) }} Aktif</span>
-                    </div>
-                    <div class="overflow-x-auto text-[11px]">
-                        <table class="min-w-full text-left">
-                            <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-100">
-                                <tr>
-                                    <th class="px-6 py-4">NO PEMBAHASAN</th>
-                                    <th class="px-6 py-4">SR/WO</th>
-                                    <th class="px-6 py-4">TOPIK</th>
-                                    <th class="px-6 py-4">UNIT</th>
-                                    <th class="px-6 py-4">DEADLINE</th>
-                                    <th class="px-6 py-4">AKSI</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @forelse($weeklyDiscussions as $wd)
-                                <tr class="hover:bg-blue-50/50 transition-colors">
-                                    <td class="px-6 py-4 font-bold text-gray-800">{{ $wd->no_pembahasan }}</td>
-                                    <td class="px-6 py-4 font-medium text-blue-600">{{ $wd->sr_number }}</td>
-                                    <td class="px-6 py-4 font-medium text-gray-800">{{ $wd->topic }}</td>
-                                    <td class="px-6 py-4"><span class="bg-gray-100 px-2 py-1 rounded text-[10px]">{{ $wd->unit }}</span></td>
-                                    <td class="px-6 py-4 text-gray-600">{{ \Carbon\Carbon::parse($wd->target_deadline)->format('d/m/Y') }}</td>
-                                    <td class="px-6 py-4">
-                                        <button onclick="showDiscussionDetail({{ $wd->id }})" class="text-blue-600 hover:text-blue-800 font-bold">Detail</button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr class="bg-white">
-                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">Tidak ada pembahasan weekly yang ditemukan.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Evaluasi & Planning Sections -->
