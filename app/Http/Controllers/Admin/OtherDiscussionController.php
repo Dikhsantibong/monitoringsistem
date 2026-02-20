@@ -443,7 +443,12 @@ class OtherDiscussionController extends Controller
                 return (object)['id' => $prefix, 'name' => $name];
             });
 
-            if ($mode === 'calendar') {
+            // Initialize optional variables
+        $events = collect();
+        $firstDay = null;
+        $lastDay = null;
+
+        if ($mode === 'calendar') {
                 $firstDay = Carbon::create($year, $month, 1);
                 $lastDay = $firstDay->copy()->endOfMonth();
 

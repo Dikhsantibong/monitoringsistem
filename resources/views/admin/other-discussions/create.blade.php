@@ -207,7 +207,7 @@
                             @enderror
                         </div>
                         @else
-                        <input type="hidden" name="is_weekly" value="0">
+                        <input type="hidden" name="is_weekly" id="is_weekly" value="0">
                         @endif
 
                         <!-- Sasaran -->
@@ -1384,7 +1384,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function performOracleLookup() {
         const srNumber = srNumberInput.value.trim();
-        const isWeekly = isWeeklyCheckbox.checked;
+        const isWeekly = isWeeklyCheckbox ? (isWeeklyCheckbox.type === 'checkbox' ? isWeeklyCheckbox.checked : isWeeklyCheckbox.value == 1) : false;
 
         // Reset visibility if criteria not met
         if (!isWeekly || srNumber.length < 3) {
@@ -1415,9 +1415,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500); // Debounce 500ms
     }
 
-    if (srNumberInput && isWeeklyCheckbox) {
+    if (srNumberInput) {
         srNumberInput.addEventListener('input', performOracleLookup);
-        isWeeklyCheckbox.addEventListener('change', performOracleLookup);
+        if (isWeeklyCheckbox) {
+            isWeeklyCheckbox.addEventListener('change', performOracleLookup);
+        }
         
         // Check on initial load if pre-filled
         if (srNumberInput.value) {
@@ -1518,94 +1520,24 @@ function validateForm() {
 // Jika ada unit yang sudah terpilih saat halaman dimuat (misalnya karena old value)
 window.addEventListener('load', function() {
     const unitSelect = document.getElementById('unit');
-    if (unitSelect.value) {
+    if (unitSelect && unitSelect.value) {
         unitSelect.dispatchEvent(new Event('change'));
     }
 });
 </script>
 @endpush
 
-@push('scripts')
-<script>
-async function generateNoPembahasan() {
-    try {
-        const unit = document.getElementById('unit').value;
-        const generateUrl = "{{ route('admin.other-discussions.generate-no-pembahasan') }}";
-        
-        // Console log yang aman
-        if (window.location.hostname === 'localhost') {
-            console.log('Debug - Generate URL:', generateUrl);
-            console.log('Debug - Unit:', unit);
-        }
-
-        const response = await fetch(generateUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ unit: unit }),
-            credentials: 'same-origin'
-        });
-
-        // Log response status tanpa expose detail sensitif
-        if (!response.ok) {
-            throw new Error(`Request failed with status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (data.success) {
-            document.getElementById('no_pembahasan').value = data.number;
-        } else {
-            throw new Error(data.message || 'Gagal generate nomor pembahasan');
-        }
-    } catch (error) {
-        console.error('JavaScript Error:', error);
-        alert('Gagal generate nomor pembahasan. Silakan coba lagi.');
-    }
-}
-
-// Fungsi validasi form
-function validateForm() {
-    const noPembahasan = document.getElementById('no_pembahasan').value;
-    const unit = document.getElementById('unit').value;
-    const srNumber = document.getElementById('sr_number').value;
-
-    if (!unit) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan',
-            text: 'Silakan pilih unit terlebih dahulu'
-        });
-        return false;
-    }
-
-    if (!noPembahasan) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan',
-            text: 'Silakan generate nomor pembahasan terlebih dahulu'
-        });
-        return false;
-    }
-
-    if (!srNumber) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan',
-            text: 'Silakan isi nomor SR'
-        });
-        return false;
-    }
-
-    return true;
-}
+// Finalized scripts
 
 // Reset no_pembahasan saat unit berubah
-document.getElementById('unit').addEventListener('change', function() {
-    document.getElementById('no_pembahasan').value = '';
+document.addEventListener('DOMContentLoaded', function() {
+    const unitEl = document.getElementById('unit');
+    if (unitEl) {
+        unitEl.addEventListener('change', function() {
+            const noPembahasanEl = document.getElementById('no_pembahasan');
+            if (noPembahasanEl) noPembahasanEl.value = '';
+        });
+    }
 });
 </script>
 @push('scripts')
