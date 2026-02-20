@@ -435,9 +435,17 @@
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                         <h4 class="text-lg font-semibold text-gray-800">Daftar Pembahasan Terakhir</h4>
-                        <div class="flex gap-2">
-                            <input type="text" id="table-search" placeholder="Cari topik/nomor..." 
-                                   class="px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                        <div class="flex items-center gap-2">
+                            <select id="table-unit-filter" onchange="loadDiscussionsData()" 
+                                    class="px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                                <option value="">Semua Unit</option>
+                                <option value="mysql">UP Kendari</option>
+                                <option value="mysql_wua_wua">Wua Wua</option>
+                                <option value="mysql_poasia">Poasia</option>
+                                <option value="mysql_kolaka">Kolaka</option>
+                            </select>
+                            <input type="text" id="table-search" onkeyup="loadDiscussionsData()" placeholder="Cari topik/nomor..." 
+                                   class="px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none w-40">
                             <button onclick="loadDiscussionsData()" class="bg-blue-50 text-blue-600 p-2 rounded-md hover:bg-blue-100 transition-colors">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
@@ -447,11 +455,12 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Topik</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Target</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">PIC</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No Pembahasan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Topik</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Target</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">PIC</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="discussions-table-body" class="bg-white divide-y divide-gray-200">
@@ -1940,31 +1949,33 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = document.getElementById('discussions-table-body');
         if (!tbody) return;
         const searchInput = document.getElementById('table-search').value;
+        const unitFilter = document.getElementById('table-unit-filter').value;
         
         try {
-            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&status=Open&search=${encodeURIComponent(searchInput)}`;
+            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&status=Open&search=${encodeURIComponent(searchInput)}&unit=${encodeURIComponent(unitFilter)}`;
             const response = await fetch(url);
             const result = await response.json();
 
             if (result.success) {
                 if (result.data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">Tidak ada data ditemukan</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Tidak ada data ditemukan</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = result.data.map(item => `
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-bold text-gray-900">${item.topic}</div>
+                        <td class="px-4 py-4 text-sm font-medium text-gray-700">${item.no_pembahasan || '-'}</td>
+                        <td class="px-4 py-4">
+                            <div class="text-sm font-bold text-gray-900 line-clamp-2" title="${item.topic}">${item.topic}</div>
                             <div class="text-[10px] text-gray-500">${item.sr_number || '-'}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-600">${item.unit}</td>
-                        <td class="px-6 py-4">
-                            <div class="text-[11px] text-gray-800 line-clamp-2">${item.target}</div>
+                        <td class="px-4 py-4 text-xs text-gray-600">${item.unit}</td>
+                        <td class="px-4 py-4">
+                            <div class="text-[11px] text-gray-800 line-clamp-2" title="${item.target}">${item.target}</div>
                             <div class="text-[10px] text-blue-600 font-medium mt-1">Deadline: ${item.target_deadline}</div>
                         </td>
-                        <td class="px-6 py-4 text-xs text-gray-600">${item.pic}</td>
-                        <td class="px-6 py-4 text-sm">
+                        <td class="px-4 py-4 text-xs text-gray-600">${item.pic}</td>
+                        <td class="px-4 py-4 text-sm">
                             <span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.status === 'Open' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}">
                                 ${item.status}
                             </span>
