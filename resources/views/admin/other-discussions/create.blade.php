@@ -437,7 +437,7 @@
                         <h4 class="text-lg font-semibold text-gray-800">Daftar Pembahasan Terakhir</h4>
                         <div class="flex items-center gap-2">
                             <select id="table-unit-filter" onchange="loadDiscussionsData()" 
-                                    class="px-2 py-3 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                                    class="px-4 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
                                 <option value="">Semua Unit</option>
                                 <option value="mysql">UP Kendari</option>
                                 <option value="mysql_wua_wua">Wua Wua</option>
