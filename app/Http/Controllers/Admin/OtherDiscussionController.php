@@ -417,80 +417,215 @@ class OtherDiscussionController extends Controller
                 }
             }
 
-            // --- WEEKLY DATA LOGIC ---
-            $now = Carbon::now();
-            $currentWeekStart = $now->copy()->startOfWeek(Carbon::MONDAY);
-            $currentWeekEnd = $now->copy()->endOfWeek(Carbon::SUNDAY);
-            
-            // Minggu Lalu (Review)
-            $lastWeekStart = $currentWeekStart->copy()->subWeek();
-            $lastWeekEnd = $currentWeekStart->copy()->subDay();
+            // --- WEEKLY DATA LOGIC (Synced with WeeklyMeetingController) ---
+            $mode = $request->input('weekly_mode', 'list');
+            $month = $request->input('month', now()->month);
+            $year = $request->input('year', now()->year);
+            $unitFilter = $request->input('unit_filter');
 
-            // Minggu Depan (Planning)
-            $nextWeekStart = $currentWeekEnd->copy()->addDay();
-            $nextWeekEnd = $nextWeekStart->copy()->endOfWeek(Carbon::SUNDAY);
+            $unitMapping = [
+                'KLKA' => 'PLTD KOLAKA',
+                'LANI' => 'PLTD LANIPA NIPA',
+                'SABI' => 'PLTM SABILAMBO',
+                'MIKU' => 'PLTM MIKUASI',
+                'BBAU' => 'PLTD BAU BAU',
+                'WANG' => 'PLTD WANGI WANGI',
+                'RAHA' => 'PLTD RAHA',
+                'EREK' => 'PLTD EREKE',
+                'RONG' => 'PLTM RONGI',
+                'WINN' => 'PLTM WINNING',
+                'POAS' => 'PLTD POASIA',
+                'WUAW' => 'PLTD WUA WUA',
+            ];
 
-            // Filter Unit for Oracle Data (Default to all if not specific)
-            // For now, let's show all KD site data or filter if needed. 
-            // The existing controller uses $defaultUnit which might be 'mysql' etc. 
-            // But Oracle data uses LOCATION like 'KLKA%', 'BBAU%', etc.
-            // Let's rely on the user to filter via UI if needed, or just show all for now.
-            // Actually, we can check if $defaultUnit maps to an Oracle Location prefix.
-            $oracleUnitFilter = null;
-            // You might want to map $defaultUnit to oracle prefix here if possible. 
-            // For simplicity, we'll fetch all for KD site.
+            // Prepare powerPlants for the filter dropdown
+            $powerPlants = collect($unitMapping)->map(function($name, $prefix) {
+                return (object)['id' => $prefix, 'name' => $name];
+            });
 
-            // 1. Review Phase (Minggu Lalu)
-            // A. Pekerjaan Completed
-            $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
-                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->whereIn('STATUS', ['COMP', 'CLOSE'])
-                ->whereBetween('STATUSDATE', [$lastWeekStart, $lastWeekEnd])
-                ->orderBy('STATUSDATE', 'desc')
-                ->limit(50) // Limit to avoid overload
+            if ($mode === 'calendar') {
+                $firstDay = Carbon::create($year, $month, 1);
+                $lastDay = $firstDay->copy()->endOfMonth();
+
+                // Fetch Work Orders for the month
+                $workOrdersCount = DB::connection('oracle')->table('WORKORDER')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->where(function($q) use ($firstDay, $lastDay) {
+                        $q->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                          ->orWhereBetween('SCHEDSTART', [$firstDay, $lastDay])
+                          ->orWhereBetween('STATUSDATE', [$firstDay, $lastDay]);
+                    })
+                    ->count();
+
+                $workOrders = DB::connection('oracle')->table('WORKORDER')
+                    ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'STATUSDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->where(function($q) use ($firstDay, $lastDay) {
+                        $q->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                          ->orWhereBetween('SCHEDSTART', [$firstDay, $lastDay])
+                          ->orWhereBetween('STATUSDATE', [$firstDay, $lastDay]);
+                    })
+                    ->get();
+
+                // Fetch Service Requests for the month
+                $serviceRequests = DB::connection('oracle')->table('SR')
+                    ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                    ->get();
+
+                // Group data by date for the calendar
+                $events = collect();
+                
+                foreach ($workOrders as $wo) {
+                    $dateValue = $wo->schedstart ?? $wo->reportdate;
+                    if ($dateValue) {
+                        $date = Carbon::parse($dateValue)->format('Y-m-d');
+                        if (!$events->has($date)) $events->put($date, collect());
+                        $events->get($date)->push([
+                            'id' => $wo->wonum,
+                            'title' => $wo->wonum . ': ' . $wo->description,
+                            'type' => 'WO',
+                            'worktype' => $wo->worktype,
+                            'status' => $wo->status,
+                            'full_data' => $wo
+                        ]);
+                    }
+                }
+
+                foreach ($serviceRequests as $sr) {
+                    if ($sr->reportdate) {
+                        $date = Carbon::parse($sr->reportdate)->format('Y-m-d');
+                        if (!$events->has($date)) $events->put($date, collect());
+                        $events->get($date)->push([
+                            'id' => $sr->ticketid,
+                            'title' => $sr->ticketid . ': ' . $sr->description,
+                            'type' => 'SR',
+                            'status' => $sr->status,
+                            'full_data' => $sr
+                        ]);
+                    }
+                }
+
+                // Initial empty review/plan data for calendar view consistency
+                $reviewCompletedWOs = collect();
+                $reviewCreatedWOs = collect();
+                $reviewCreatedSRs = collect();
+                $planPMs = collect();
+                $planBacklog = collect();
+                $urgentWork = collect();
+                $lastWeekStart = $lastWeekEnd = $nextWeekStart = $nextWeekEnd = now();
+
+            } else {
+                // List View Logic
+                $now = Carbon::now();
+                $currentWeekStart = $now->copy()->startOfWeek(Carbon::MONDAY);
+                $currentWeekEnd = $now->copy()->endOfWeek(Carbon::SUNDAY);
+                $lastWeekStart = $currentWeekStart->copy()->subWeek();
+                $lastWeekEnd = $currentWeekStart->copy()->subDay();
+                $nextWeekStart = $currentWeekEnd->copy()->addDay();
+                $nextWeekEnd = $nextWeekStart->copy()->endOfWeek(Carbon::SUNDAY);
+
+                // --- 1. REVIEW PHASE (MINGGU LALU) ---
+                $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
+                    ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->whereIn('STATUS', ['COMP', 'CLOSE'])
+                    ->whereBetween('STATUSDATE', [$lastWeekStart, $lastWeekEnd])
+                    ->orderBy('STATUSDATE', 'desc')
+                    ->paginate(10, ['*'], 'review_completed_page');
+
+                $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
+                    ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
+                    ->orderBy('REPORTDATE', 'desc')
+                    ->paginate(10, ['*'], 'review_created_page');
+
+                $reviewCreatedSRs = DB::connection('oracle')->table('SR')
+                    ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
+                    ->orderBy('REPORTDATE', 'desc')
+                    ->paginate(10, ['*'], 'review_created_sr_page');
+
+                // --- 2. PLANNING PHASE (MINGGU DEPAN) ---
+                $planPMs = DB::connection('oracle')->table('WORKORDER')
+                    ->select('WONUM', 'DESCRIPTION', 'STATUS', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'ASSETNUM', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->where('WORKTYPE', 'PM')
+                    ->whereNotIn('STATUS', ['COMP', 'CLOSE', 'CAN'])
+                    ->where(function($q) use ($nextWeekStart, $nextWeekEnd) {
+                        $q->whereBetween('SCHEDSTART', [$nextWeekStart, $nextWeekEnd])
+                          ->orWhereBetween('SCHEDFINISH', [$nextWeekStart, $nextWeekEnd]);
+                    })
+                    ->orderBy('SCHEDSTART', 'asc')
+                    ->paginate(10, ['*'], 'plan_pm_page');
+
+                $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
+                $planBacklog = DB::connection('oracle')->table('WORKORDER')
+                    ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->where('WORKTYPE', '!=', 'PM')
+                    ->whereIn('STATUS', $openStatuses)
+                    ->orderBy('WOPRIORITY', 'asc')
+                    ->orderBy('REPORTDATE', 'asc')
+                    ->paginate(10, ['*'], 'plan_backlog_page');
+
+                $urgentWork = DB::connection('oracle')->table('WORKORDER')
+                    ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->whereIn('STATUS', $openStatuses)
+                    ->where(function($q) {
+                        $q->where('WOPRIORITY', 1)
+                          ->orWhere('WOPRIORITY', '1');
+                    })
+                    ->paginate(10, ['*'], 'plan_urgent_page');
+            }
+
+            // D. Daftar Pembahasan Weekly
+            $weeklyDiscussions = \App\Models\OtherDiscussion::with(['commitments' => function($q) {
+                    $q->with(['department', 'section']);
+                }, 'department', 'section', 'machine'])
+                ->where('is_weekly', true)
+                ->where('status', 'Open')
+                ->orderBy('created_at', 'desc')
                 ->get();
 
-            // B. WO Created
-            $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
-                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'LOCATION')
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
-                ->orderBy('REPORTDATE', 'desc')
-                ->limit(50)
-                ->get();
-
-            // 2. Planning Phase (Minggu Depan)
-            // A. PM
-            $planPMs = DB::connection('oracle')->table('WORKORDER')
-                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'ASSETNUM', 'LOCATION')
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->where('WORKTYPE', 'PM')
-                ->whereNotIn('STATUS', ['COMP', 'CLOSE', 'CAN'])
-                ->where(function($q) use ($nextWeekStart, $nextWeekEnd) {
-                    $q->whereBetween('SCHEDSTART', [$nextWeekStart, $nextWeekEnd])
-                      ->orWhereBetween('SCHEDFINISH', [$nextWeekStart, $nextWeekEnd]);
-                })
-                ->orderBy('SCHEDSTART', 'asc')
-                ->limit(50)
-                ->get();
-
-            // B. Backlog (Non-PM, Open)
-            $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
-            $planBacklog = DB::connection('oracle')->table('WORKORDER')
-                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->where('WORKTYPE', '!=', 'PM')
-                ->whereIn('STATUS', $openStatuses)
-                ->orderBy('WOPRIORITY', 'asc')
-                ->orderBy('REPORTDATE', 'asc')
-                ->limit(50)
-                ->get();
-            
             return view('admin.other-discussions.create', compact(
                 'units', 
                 'sections',
@@ -499,12 +634,23 @@ class OtherDiscussionController extends Controller
                 'defaultMachineName',
                 'reviewCompletedWOs',
                 'reviewCreatedWOs',
+                'reviewCreatedSRs',
                 'planPMs',
                 'planBacklog',
+                'urgentWork',
+                'powerPlants',
+                'unitFilter',
+                'weeklyDiscussions',
+                'mode',
                 'lastWeekStart',
                 'lastWeekEnd',
                 'nextWeekStart',
-                'nextWeekEnd'
+                'nextWeekEnd',
+                'month',
+                'year',
+                'events',
+                'firstDay',
+                'lastDay'
             ));
         } catch (\Exception $e) {
             \Log::error('Error in create method:', [
