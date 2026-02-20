@@ -318,9 +318,9 @@
                                     @forelse($activeDiscussions as $index => $discussion)
                                     <tr class="hover:bg-gray-50">
                                         <!-- Row Utama -->
-                                        <td class="px-4 py-3 text-sm">{{ $activeDiscussions->firstItem() + $index }}</td>
-                                        <td class="px-4 py-3 text-sm">{{ $discussion->sr_number }}</td>
-                                        <td class="px-4 py-3 text-sm">
+                                        <td class="border border-gray-200 px-4 py-3 text-sm">{{ $activeDiscussions->firstItem() + $index }}</td>
+                                        <td class="border border-gray-200 px-4 py-3 text-sm">{{ $discussion->sr_number }}</td>
+                                        <td class="border border-gray-200 px-4 py-3 text-sm">
                                             {{ $discussion->no_pembahasan }}
                                             @if($discussion->created_at->diffInHours(now()) < 24)
                                                 <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -333,17 +333,17 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-3 text-sm">{{ $discussion->unit }}</td>
-                                        <td class="px-4 py-3 text-sm">
+                                        <td class="border border-gray-200 px-4 py-3 text-sm">{{ $discussion->unit }}</td>
+                                        <td class="border border-gray-200 px-4 py-3 text-sm">
                                             <div class="line-clamp-2">{{ $discussion->topic }}</div>
                                         </td>
-                                        <td class="px-4 py-3 text-sm">
+                                        <td class="border border-gray-200 px-4 py-3 text-sm">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                                 {{ $discussion->status === 'Open' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                                                 {{ $discussion->status }}
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3">
+                                        <td class="border border-gray-200 px-4 py-3">
                                             @if($discussion->document_path)
                                                 @php
                                                     $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
@@ -381,7 +381,7 @@
                                                 <span class="text-gray-400 text-sm">Tidak ada dokumen</span>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-3 text-sm">
+                                        <td class="border border-gray-200 px-4 py-3 text-sm">
                                             <div class="flex items-center gap-2">
                                                 <!-- Tombol Expand -->
                                                 <button onclick="toggleDetails('discussion-{{ $discussion->id }}')" 
