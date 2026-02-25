@@ -307,11 +307,11 @@
             </div>
             <div class="kpi-footer">
                 <div class="stat-item">
-                    <span class="stat-label">Non-Tactical (Created)</span>
+                    <span class="stat-label">Non-Tactical Terbit (CM/EM)</span>
                     <span class="stat-val">{{ number_format($reactiveWork['non_tactical']) }}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Tactical (Closed)</span>
+                    <span class="stat-label">Tactical Close (PM/PDM/EJ/OH)</span>
                     <span class="stat-val">{{ number_format($reactiveWork['tactical_closed']) }}</span>
                 </div>
             </div>

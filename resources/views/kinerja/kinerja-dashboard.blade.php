@@ -440,7 +440,7 @@
             <div class="bg-white p-4 rounded shadow border">
                 <h4 class="font-bold text-sm mb-2">Reactive Work</h4>
                 <table class="w-full text-xs border">
-                    <tr class="bg-gray-100 font-semibold"><td>WO Non Taktikal</td><td>Jumlah Semua WO</td><td>%</td></tr>
+                    <tr class="bg-gray-100 font-semibold"><td>WO Non Taktikal Terbit (CM/EM)</td><td>Total (Tactical Close + Non-Tactical Terbit)</td><td>%</td></tr>
                     <tr>
                         <td class="p-1">
                             <a href="{{ route('kinerja.detail', ['type' => 'reactive_work_val', 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="hover:underline">

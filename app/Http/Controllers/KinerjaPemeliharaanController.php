@@ -111,18 +111,27 @@ class KinerjaPemeliharaanController extends Controller
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
             case 'reactive_work_total':
-                $title = "Detail Jumlah Semua WO (Reactive Basis)";
+                $title = "Detail Total WO (Tactical Close + Non-Tactical Terbit)";
                 $query = DB::connection('oracle')->table('WORKORDER')
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
-                    ->whereBetween('REPORTDATE', [$startDate, $endDate]);
+                    ->whereBetween('REPORTDATE', [$startDate, $endDate])
+                    ->where(function($q) {
+                        // Tactical (PM, PDM, EJ, OH) yang sudah CLOSE
+                        $q->where(function($q2) {
+                            $q2->whereIn('WORKTYPE', ['PM', 'PDM', 'EJ', 'OH'])
+                                ->whereIn('STATUS', ['COMP', 'CLOSE']);
+                        })
+                        // Non-Tactical (CM, EM) semua yang terbit
+                        ->orWhereIn('WORKTYPE', ['CM', 'EM']);
+                    });
                 break;
             case 'reactive_work_val':
-                $title = "Detail WO Non Taktikal (EM/CR)";
+                $title = "Detail WO Non Taktikal Terbit (CM/EM)";
                 $query = DB::connection('oracle')->table('WORKORDER')
                     ->where('SITEID', 'KD')
                     ->where('WONUM', 'LIKE', 'WO%')
-                    ->whereIn('WORKTYPE', ['EM', 'CR'])
+                    ->whereIn('WORKTYPE', ['CM', 'EM'])
                     ->whereBetween('REPORTDATE', [$startDate, $endDate]);
                 break;
             case 'ageing_site_total':
@@ -509,10 +518,12 @@ class KinerjaPemeliharaanController extends Controller
         $wrenchTime = 83.68;
 
         // 6. Reactive Work
-        // Logic: Non-Tactical / Total WO in Period
-        // Non-Tactical: EM, CR
-        $nonTactical = (clone $woQuery)->whereIn('WORKTYPE', ['EM', 'CR'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
-        $allWo = (clone $woQuery)->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+        // Logic: Non-Tactical Terbit / (Tactical Closed + Non-Tactical Terbit)
+        // Non-Tactical (CM, EM): dihitung berdasarkan WO yang terbit (semua status)
+        // Tactical (PM, PDM, EJ, OH): dihitung berdasarkan WO yang sudah CLOSE
+        $nonTactical = (clone $woQuery)->whereIn('WORKTYPE', ['CM', 'EM'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+        $tacticalClosed = (clone $woQuery)->whereIn('WORKTYPE', ['PM', 'PDM', 'EJ', 'OH'])->whereIn('STATUS', $closedStatuses)->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+        $allWo = $tacticalClosed + $nonTactical;
         $reactiveRate = $allWo > 0 ? round(($nonTactical / $allWo) * 100, 2) : 0;
 
         // 7. WO Ageing Site (> 365 days open) -- Snapshot
@@ -542,7 +553,7 @@ class KinerjaPemeliharaanController extends Controller
             'non_pm_approval' => ['val' => $nonPmFastAppr, 'total' => $nonPmApproved, 'rate' => $nonPmFastApprRate],
             'planned_backlog' => ['labor' => $backlogHrs, 'avail' => $availableHrs, 'weeks' => $backlogWeeks],
             'wrench_time' => $wrenchTime,
-            'reactive_work' => ['val' => $nonTactical, 'total' => $allWo, 'rate' => $reactiveRate],
+            'reactive_work' => ['val' => $nonTactical, 'total' => $allWo, 'tactical_closed' => $tacticalClosed, 'rate' => $reactiveRate],
             'mttr' => '-', // Placeholder
             'non_pm_jobplan' => ['val' => 0, 'total' => 56, 'rate' => 0], // Placeholder
             'non_pm_aptw' => ['val' => 45, 'total' => 53, 'rate' => 84.91], // Placeholder
@@ -770,23 +781,27 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.1 - Reactive Work
     private function calculateReactiveWork($startDate, $endDate)
     {
-        // 6. Reactive Work
-        // Logic: Non-Tactical / Total WO in Period
-        // Non-Tactical: EM, CR
+        // Reactive Work = Non-Tactical Terbit / (Tactical Closed + Non-Tactical Terbit)
+        // Non-Tactical (CM, EM): dihitung berdasarkan jumlah WO yang terbit (semua status)
+        // Tactical (PM, PDM, EJ, OH): dihitung berdasarkan jumlah WO yang sudah dikerjakan (CLOSE/COMP)
+        
         $nonTactical = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
-            ->whereIn('WORKTYPE', ['EM', 'CM'])
+            ->whereIn('WORKTYPE', ['CM', 'EM'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
-            
-        $allWo = DB::connection('oracle')->table('WORKORDER')
+        
+        $tacticalClosed = DB::connection('oracle')->table('WORKORDER')
             ->where('SITEID', 'KD')
             ->where('WONUM', 'LIKE', 'WO%')
+            ->whereIn('WORKTYPE', ['PM', 'PDM', 'EJ', 'OH'])
+            ->whereIn('STATUS', ['COMP', 'CLOSE'])
             ->whereBetween('REPORTDATE', [$startDate, $endDate])
             ->count();
             
-        $percentage = $allWo > 0 ? round(($nonTactical / $allWo) * 100, 2) : 0;
+        $total = $tacticalClosed + $nonTactical;
+        $percentage = $total > 0 ? round(($nonTactical / $total) * 100, 2) : 0;
         
         // Level
         $level = 1; 
@@ -797,7 +812,7 @@ class KinerjaPemeliharaanController extends Controller
         elseif ($percentage <= 20) { $level = 2; $desc = "15% < - 20%"; }
         
         return [
-            'tactical_closed' => 0, // Unused in new logic
+            'tactical_closed' => $tacticalClosed,
             'non_tactical' => $nonTactical,
             'percentage' => $percentage,
             'level' => $level,
