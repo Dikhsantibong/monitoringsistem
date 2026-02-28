@@ -17,10 +17,7 @@
 
         .dashboard-overlay {
             min-height: 100vh;
-            padding-bottom: 2rem;
-        }
-
-        .dashboard-container {
+            padding: 0 2rem 2rem;
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -543,7 +540,7 @@
 
 <div class="dashboard-overlay">
     {{-- Page Header --}}
-    <div class="px-4 page-header">
+    <div class="page-header">
         <h1 class="page-title">
             <i class="fas fa-heartbeat"></i>
             Peta Kesehatan Unit
