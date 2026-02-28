@@ -543,7 +543,7 @@
 
 <div class="dashboard-overlay">
     {{-- Page Header --}}
-    <div class="page-header">
+    <div class="px-4 page-header">
         <h1 class="page-title">
             <i class="fas fa-heartbeat"></i>
             Peta Kesehatan Unit
