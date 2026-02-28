@@ -1411,172 +1411,6 @@
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
 
-            <div class="container mx-auto px-4 py-6">
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200" style="background-color: rgba(17, 24, 39, 0.08);">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 px-2">MONITORING KESIAPAN PEMBANGKIT</h2>
-                        <!-- Tambahkan tombol switch periode -->
-                        <div class="flex flex-col md:flex-row gap-2">
-                            <button onclick="switchPeriod('daily')"
-                                    id="dailyBtn"
-                                    class="period-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-full md:w-auto">
-                                <i class="fas fa-calendar-day mr-2"></i>Harian
-                            </button>
-                            <button onclick="switchPeriod('weekly')"
-                                    id="weeklyBtn"
-                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
-                                <i class="fas fa-calendar-week mr-2"></i>Mingguan
-                            </button>
-                            <button onclick="switchPeriod('monthly')"
-                                    id="monthlyBtn"
-                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
-                                <i class="fas fa-calendar-alt mr-2"></i>Bulanan
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Grid untuk diagram circle berdampingan -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                        <!-- Ring Progress Kesiapan Mesin -->
-                        <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
-                            <div class="text-center mb-4">
-                                <h3 class="text-lg font-semibold text-gray-700">Kesiapan Mesin</h3>
-                                <p class="text-sm text-gray-500">Status operasional unit pembangkit</p>
-                            </div>
-                            <div id="machineReadinessChart" class="mx-auto" style="height: 200px;"></div>
-
-                            <!-- Detail status mesin -->
-                            <div class="mt-4 space-y-2 text-sm">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded hover:bg-green-100 transition-colors duration-200 cursor-help"
-                                         data-status="Operasi"
-                                         onmouseover="showMachineTooltip(event, 'Operasi')"
-                                         onmouseout="hideMachineTooltip()">
-                                        <span class="text-green-700 text-xs sm:text-sm">Operasi</span>
-                                        <span class="font-semibold text-green-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Operasi'] }} Unit</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors duration-200 cursor-help"
-                                         data-status="Standby"
-                                         onmouseover="showMachineTooltip(event, 'Standby')"
-                                         onmouseout="hideMachineTooltip()">
-                                        <span class="text-blue-700 text-xs sm:text-sm">Standby</span>
-                                        <span class="font-semibold text-blue-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Standby'] }} Unit</span>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded hover:bg-red-100 transition-colors duration-200 cursor-help"
-                                         data-status="Gangguan"
-                                         onmouseover="showMachineTooltip(event, 'Gangguan')"
-                                         onmouseout="hideMachineTooltip()">
-                                        <span class="text-red-700 text-xs sm:text-sm">Gangguan</span>
-                                        <span class="font-semibold text-red-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Gangguan'] }} Unit</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-yellow-50 rounded hover:bg-yellow-100 transition-colors duration-200 cursor-help"
-                                         data-status="Pemeliharaan"
-                                         onmouseover="showMachineTooltip(event, 'Pemeliharaan')"
-                                         onmouseout="hideMachineTooltip()">
-                                        <span class="text-yellow-700 text-xs sm:text-sm">Pemeliharaan</span>
-                                        <span class="font-semibold text-yellow-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Pemeliharaan'] }} Unit</span>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="flex justify-between items-center p-2 bg-purple-50 rounded hover:bg-purple-100 transition-colors duration-200 cursor-help"
-                                         data-status="Mothballed"
-                                         onmouseover="showMachineTooltip(event, 'Mothballed')"
-                                         onmouseout="hideMachineTooltip()">
-                                        <span class="text-purple-700 text-xs sm:text-sm">Mothballed</span>
-                                        <span class="font-semibold text-purple-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Mothballed'] }} Unit</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-orange-50 rounded hover:bg-orange-100 transition-colors duration-200 cursor-help"
-                                         data-status="Overhaul"
-                                         onmouseover="showMachineTooltip(event, 'Overhaul')"
-                                         onmouseout="hideMachineTooltip()">
-                                        <span class="text-orange-700 text-xs sm:text-sm">Overhaul</span>
-                                        <span class="font-semibold text-orange-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Overhaul'] }} Unit</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ring Progress Beban Tersalur -->
-                        <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
-                            <div class="text-center mb-4">
-                                <h3 class="text-lg font-semibold text-gray-700">Kesiapan Daya</h3>
-                                <p class="text-sm text-gray-500">Kapasitas daya yang tersedia</p>
-                            </div>
-                            <div id="powerDeliveryChart" class="mx-auto" style="height: 200px;"></div>
-
-                            <!-- Detail beban tersalur -->
-                            <div class="mt-4 space-y-2 text-sm">
-                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded overflow-hidden">
-                                        <span class="text-green-700 text-xs sm:text-sm truncate">Kesiapan Daya</span>
-                                        <span class="font-semibold text-green-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded overflow-hidden">
-                                        <span class="text-red-700 text-xs sm:text-sm truncate">Daya Tidak Siap</span>
-                                        <span class="font-semibold text-red-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded overflow-hidden sm:col-span-2">
-                                        <span class="text-blue-700 text-xs sm:text-sm truncate">Total Kapasitas</span>
-                                        <span class="font-semibold text-blue-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['total'], 1) }} MW</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Grafik Bar memanjang horizontal -->
-                    <div class="bg-gray-50 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-4 text-center">Ketidak Siapan Daya Mesin Per Unit</h3>
-                        <div id="unservedLoadChart-wrapper">
-                            <div id="unservedLoadChart"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tambahkan grafik kehadiran & scorecard -->
-            <div class="container mx-auto px-4 py-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Persentase Kehadiran Harian</h3>
-                        </div>
-                        <canvas id="attendanceChart" height="180"></canvas>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Score Daily Meeting</h3>
-                        </div>
-                        <canvas id="scoreChart" height="180"></canvas>
-                    </div>
-                </div>
-                <!-- Tambahkan grafik status SR, WO, WO Backlog -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status SR</h3>
-                        </div>
-                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['sr'] ?? '-' }}</p>
-                        <canvas id="srStatusChart" height="180"></canvas>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status WO</h3>
-                        </div>
-                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['wo'] ?? '-' }}</p>
-                        <canvas id="woStatusChart" height="180"></canvas>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">WO Backlog Status</h3>
-                        </div>
-                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['backlog'] ?? '-' }}</p>
-                        <canvas id="woBacklogStatusChart" height="180"></canvas>
-                    </div>
-                </div>
-            </div>
             <!-- Live Data Unit Operasional -->
             <div class="flex justify-center items-center mt-10 mb-4 gap-4">
                 <h3 class="text-xl font-semibold">Kinerja Pemeliharaan</h3>
@@ -1806,9 +1640,172 @@
             </div>
             {{-- </div> --}}
 
+            <div class="container mx-auto px-4 py-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200" style="background-color: rgba(17, 24, 39, 0.08);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 px-2">MONITORING KESIAPAN PEMBANGKIT</h2>
+                        <!-- Tambahkan tombol switch periode -->
+                        <div class="flex flex-col md:flex-row gap-2">
+                            <button onclick="switchPeriod('daily')"
+                                    id="dailyBtn"
+                                    class="period-btn bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-full md:w-auto">
+                                <i class="fas fa-calendar-day mr-2"></i>Harian
+                            </button>
+                            <button onclick="switchPeriod('weekly')"
+                                    id="weeklyBtn"
+                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
+                                <i class="fas fa-calendar-week mr-2"></i>Mingguan
+                            </button>
+                            <button onclick="switchPeriod('monthly')"
+                                    id="monthlyBtn"
+                                    class="period-btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full md:w-auto">
+                                <i class="fas fa-calendar-alt mr-2"></i>Bulanan
+                            </button>
+                        </div>
+                    </div>
 
+                    <!-- Grid untuk diagram circle berdampingan -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <!-- Ring Progress Kesiapan Mesin -->
+                        <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
+                            <div class="text-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Kesiapan Mesin</h3>
+                                <p class="text-sm text-gray-500">Status operasional unit pembangkit</p>
+                            </div>
+                            <div id="machineReadinessChart" class="mx-auto" style="height: 200px;"></div>
 
-    
+                            <!-- Detail status mesin -->
+                            <div class="mt-4 space-y-2 text-sm">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded hover:bg-green-100 transition-colors duration-200 cursor-help"
+                                         data-status="Operasi"
+                                         onmouseover="showMachineTooltip(event, 'Operasi')"
+                                         onmouseout="hideMachineTooltip()">
+                                        <span class="text-green-700 text-xs sm:text-sm">Operasi</span>
+                                        <span class="font-semibold text-green-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Operasi'] }} Unit</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors duration-200 cursor-help"
+                                         data-status="Standby"
+                                         onmouseover="showMachineTooltip(event, 'Standby')"
+                                         onmouseout="hideMachineTooltip()">
+                                        <span class="text-blue-700 text-xs sm:text-sm">Standby</span>
+                                        <span class="font-semibold text-blue-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Standby'] }} Unit</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded hover:bg-red-100 transition-colors duration-200 cursor-help"
+                                         data-status="Gangguan"
+                                         onmouseover="showMachineTooltip(event, 'Gangguan')"
+                                         onmouseout="hideMachineTooltip()">
+                                        <span class="text-red-700 text-xs sm:text-sm">Gangguan</span>
+                                        <span class="font-semibold text-red-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Gangguan'] }} Unit</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-yellow-50 rounded hover:bg-yellow-100 transition-colors duration-200 cursor-help"
+                                         data-status="Pemeliharaan"
+                                         onmouseover="showMachineTooltip(event, 'Pemeliharaan')"
+                                         onmouseout="hideMachineTooltip()">
+                                        <span class="text-yellow-700 text-xs sm:text-sm">Pemeliharaan</span>
+                                        <span class="font-semibold text-yellow-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Pemeliharaan'] }} Unit</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center p-2 bg-purple-50 rounded hover:bg-purple-100 transition-colors duration-200 cursor-help"
+                                         data-status="Mothballed"
+                                         onmouseover="showMachineTooltip(event, 'Mothballed')"
+                                         onmouseout="hideMachineTooltip()">
+                                        <span class="text-purple-700 text-xs sm:text-sm">Mothballed</span>
+                                        <span class="font-semibold text-purple-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Mothballed'] }} Unit</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-orange-50 rounded hover:bg-orange-100 transition-colors duration-200 cursor-help"
+                                         data-status="Overhaul"
+                                         onmouseover="showMachineTooltip(event, 'Overhaul')"
+                                         onmouseout="hideMachineTooltip()">
+                                        <span class="text-orange-700 text-xs sm:text-sm">Overhaul</span>
+                                        <span class="font-semibold text-orange-800 text-xs sm:text-sm">{{ $chartData['statusDetails']['breakdown']['Overhaul'] }} Unit</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ring Progress Beban Tersalur -->
+                        <div class="bg-gray-50 rounded-xl p-5 shadow-sm border border-gray-100">
+                            <div class="text-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Kesiapan Daya</h3>
+                                <p class="text-sm text-gray-500">Kapasitas daya yang tersedia</p>
+                            </div>
+                            <div id="powerDeliveryChart" class="mx-auto" style="height: 200px;"></div>
+
+                            <!-- Detail beban tersalur -->
+                            <div class="mt-4 space-y-2 text-sm">
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded overflow-hidden">
+                                        <span class="text-green-700 text-xs sm:text-sm truncate">Kesiapan Daya</span>
+                                        <span class="font-semibold text-green-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['delivered'], 1) }} MW</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-red-50 rounded overflow-hidden">
+                                        <span class="text-red-700 text-xs sm:text-sm truncate">Daya Tidak Siap</span>
+                                        <span class="font-semibold text-red-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['undelivered'], 1) }} MW</span>
+                                    </div>
+                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded overflow-hidden sm:col-span-2">
+                                        <span class="text-blue-700 text-xs sm:text-sm truncate">Total Kapasitas</span>
+                                        <span class="font-semibold text-blue-800 text-xs sm:text-sm ml-2 shrink-0">{{ number_format($chartData['powerDeliveryDetails']['total'], 1) }} MW</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grafik Bar memanjang horizontal -->
+                    <div class="bg-gray-50 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-4 text-center">Ketidak Siapan Daya Mesin Per Unit</h3>
+                        <div id="unservedLoadChart-wrapper">
+                            <div id="unservedLoadChart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tambahkan grafik kehadiran & scorecard -->
+            <div class="container mx-auto px-4 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Persentase Kehadiran Harian</h3>
+                        </div>
+                        <canvas id="attendanceChart" height="180"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Score Daily Meeting</h3>
+                        </div>
+                        <canvas id="scoreChart" height="180"></canvas>
+                    </div>
+                </div>
+                <!-- Tambahkan grafik status SR, WO, WO Backlog -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status SR</h3>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['sr'] ?? '-' }}</p>
+                        <canvas id="srStatusChart" height="180"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Presentasi Status WO</h3>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['wo'] ?? '-' }}</p>
+                        <canvas id="woStatusChart" height="180"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">WO Backlog Status</h3>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">Last update: {{ $maximoLastUpdate['backlog'] ?? '-' }}</p>
+                        <canvas id="woBacklogStatusChart" height="180"></canvas>
+                    </div>
+                </div>
+            </div>
 <style>
     .table {
         font-size: 14px;
