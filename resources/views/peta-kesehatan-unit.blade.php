@@ -649,14 +649,14 @@
     </div>
 
     {{-- ==================== TAB 1: ASET SERING CM ==================== --}}
-    <div id="cm-tab" class="tab-pane active fade-in">
+    <div id="cm-tab" class="tab-pane {{ request()->has('cm_page') || (!request()->has('pm_page') && !request()->has('recurring_page')) ? 'active' : '' }} fade-in">
         <div class="table-card">
             <div class="chart-header">
                 <div class="chart-title">
                     <i class="fas fa-fire"></i>
                     Aset Paling Sering Mengalami Gangguan (CM)
                 </div>
-                <div class="chart-subtitle">Frekuensi Corrective Maintenance tertinggi per ASSETNUM — Total {{ $cmAssets->count() }} aset</div>
+                <div class="chart-subtitle">Frekuensi Corrective Maintenance tertinggi per ASSETNUM — Halaman {{ $cmAssetsPaginator->currentPage() }} dari {{ $cmAssetsPaginator->lastPage() }}</div>
             </div>
             <div class="table-wrapper">
                 <table class="data-table">
@@ -676,7 +676,7 @@
                                 $rowClass = $asset['cm_count'] >= 5 ? 'row-critical' : ($asset['cm_count'] >= 3 ? 'row-warning' : '');
                             @endphp
                             <tr class="{{ $rowClass }}">
-                                <td class="text-center" style="color: #868e96;">{{ $i + 1 }}</td>
+                                <td class="text-center" style="color: #868e96;">{{ ($cmAssetsPaginator->currentPage() - 1) * $cmAssetsPaginator->perPage() + $i + 1 }}</td>
                                 <td style="font-weight: 600;">{{ $asset['assetnum'] }}</td>
                                 <td><span class="badge-neutral">{{ $asset['location'] }}</span></td>
                                 <td class="text-center">
@@ -711,33 +711,23 @@
                             </tr>
                         @endforelse
                     </tbody>
-                    @if($cmAssets->count() > 0)
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" style="font-weight: 700;">TOTAL</td>
-                            <td class="text-center" style="font-weight: 700;">{{ $summary['total_cm_wo'] }} WO</td>
-                            <td class="text-center" style="font-size: 0.8rem;">
-                                <span class="status-covered">{{ $summary['assets_with_pm'] }} ter-cover</span>
-                                &nbsp;|&nbsp;
-                                <span class="status-not-covered">{{ $summary['assets_without_pm'] }} belum</span>
-                            </td>
-                        </tr>
-                    </tfoot>
-                    @endif
                 </table>
+            </div>
+            <div class="mt-4">
+                {{ $cmAssetsPaginator->appends(request()->except('cm_page'))->links() }}
             </div>
         </div>
     </div>
 
     {{-- ==================== TAB 2: ANTISIPASI PM ==================== --}}
-    <div id="pm-tab" class="tab-pane">
+    <div id="pm-tab" class="tab-pane {{ request()->has('pm_page') ? 'active' : '' }}">
         <div class="table-card">
             <div class="chart-header">
                 <div class="chart-title">
                     <i class="fas fa-shield-alt"></i>
                     Antisipasi PM untuk Aset yang Sering CM
                 </div>
-                <div class="chart-subtitle">Detail PM coverage untuk setiap aset yang sering gangguan</div>
+                <div class="chart-subtitle">Detail PM coverage untuk setiap aset yang sering gangguan (Tersinkronisasi dengan Tab 1)</div>
             </div>
             <div class="table-wrapper">
                 <table class="data-table">
@@ -754,14 +744,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php $pmIdx = 0; @endphp
-                        @forelse($cmAssets as $asset)
+                        @forelse($cmAssets as $i => $asset)
                             @php
                                 $pm = $pmCoverage[$asset['assetnum']] ?? null;
-                                $pmIdx++;
                             @endphp
                             <tr>
-                                <td class="text-center" style="color: #868e96;">{{ $pmIdx }}</td>
+                                <td class="text-center" style="color: #868e96;">{{ ($cmAssetsPaginator->currentPage() - 1) * $cmAssetsPaginator->perPage() + $i + 1 }}</td>
                                 <td style="font-weight: 600;">{{ $asset['assetnum'] }}</td>
                                 <td><span class="badge-neutral">{{ $asset['location'] }}</span></td>
                                 <td class="text-center">
@@ -814,23 +802,28 @@
                     </tbody>
                 </table>
             </div>
+            <div class="mt-4">
+                {{ $cmAssetsPaginator->appends(request()->except('cm_page'))->links() }}
+            </div>
         </div>
     </div>
 
     {{-- ==================== TAB 3: GANGGUAN BERULANG ==================== --}}
-    <div id="recurring-tab" class="tab-pane">
+    <div id="recurring-tab" class="tab-pane {{ request()->has('recurring_page') ? 'active' : '' }}">
         <div class="table-card">
             <div class="chart-header">
                 <div class="chart-title">
                     <i class="fas fa-redo-alt"></i>
                     Aset Gangguan Berulang (≥ 2× CM)
                 </div>
-                <div class="chart-subtitle">Detail riwayat WO gangguan berulang per ASSETNUM — {{ $recurringAssets->count() }} aset</div>
+                <div class="chart-subtitle">Detail riwayat WO gangguan berulang per ASSETNUM — Halaman {{ $recurringAssetsPaginator->currentPage() }} dari {{ $recurringAssetsPaginator->lastPage() }}</div>
             </div>
 
             @forelse($recurringAssets as $assetNum => $woList)
                 @php
-                    $cmCount = $cmAssets->firstWhere('assetnum', $assetNum)['cm_count'] ?? 0;
+                    // Optimization: we already have cm_count in the paginator items if we wanted, 
+                    // but since details are separate, we'll use a count from the list
+                    $cmCount = count($woList);
                     $hasPm = isset($pmCoverage[$assetNum]);
                 @endphp
                 <div class="asset-group">
@@ -902,6 +895,10 @@
                     <p>Semua aset hanya memiliki 1 atau 0 CM dalam periode ini</p>
                 </div>
             @endforelse
+
+            <div class="mt-4">
+                {{ $recurringAssetsPaginator->appends(request()->except('recurring_page'))->links() }}
+            </div>
         </div>
     </div>
 </div>
@@ -923,6 +920,33 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById(targetTab).classList.add('active');
         });
     });
+
+    // If there's a specific page in URL, make sure the right tab is active
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('pm_page')) {
+        setActiveTab('pm-tab');
+    } else if (urlParams.has('recurring_page')) {
+        setActiveTab('recurring-tab');
+    } else if (urlParams.has('cm_page')) {
+        setActiveTab('cm-tab');
+    }
+
+    function setActiveTab(tabId) {
+        tabButtons.forEach(btn => {
+            if (btn.getAttribute('data-tab') === tabId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        tabPanes.forEach(pane => {
+            if (pane.id === tabId) {
+                pane.classList.add('active');
+            } else {
+                pane.classList.remove('active');
+            }
+        });
+    }
 });
 </script>
 @endsection
