@@ -839,6 +839,8 @@ Route::post('/api/notulen-paste-image', [NotulenController::class, 'uploadPasted
 Route::get('/kinerja-pemeliharaan', [KinerjaPemeliharaanController::class, 'index'])->name('kinerja.pemeliharaan');
 Route::get('/kinerja-pemeliharaan/detail', [KinerjaPemeliharaanController::class, 'detail'])->name('kinerja.detail');
 
+Route::get('/peta-kesehatan-unit', [\App\Http\Controllers\PetaKesehatanUnitController::class, 'index'])->name('peta-kesehatan-unit');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/dashboard', [\App\Http\Controllers\PemeliharaanDashboardController::class, 'index'])->name('pemeliharaan.dashboard');
     Route::get('/pemeliharaan/labor-saya', [LaborSayaController::class, 'index'])->name('pemeliharaan.labor-saya');

@@ -17,7 +17,7 @@
                         <li><a href="{{ route('weekly-meeting.index') }}" class="nav-link">Weekly Meeting</a></li>
                         <li><a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link">Kinerja Pemeliharaan</a></li>
                         <li><a href="{{ route('calendar.index') }}" class="nav-link">Kalender Pemeliharaan</a></li>
-                        <li><a href="https://sites.google.com/view/pemeliharaan-upkendari" class="nav-link" target="_blank">Bid. Pemeliharaan</a></li>
+                        <li><a href="{{ route('peta-kesehatan-unit') }}" class="nav-link">Peta Kesehatan Unit</a></li>
                         <li><a href="{{ route('notulen.form') }}" class="nav-link">Notulen</a></li>
                         <!-- Dropdown Menu Lainnya -->
                         {{-- <li class="relative group">
@@ -76,10 +76,9 @@
                     </li>
 
                     <li>
-                        <a href="https://sites.google.com/view/pemeliharaan-upkendari"
-                        target="_blank"
+                        <a href="{{ route('peta-kesehatan-unit') }}"
                         class="nav-link-mobile">
-                            Bid. Pemeliharaan
+                            Peta Kesehatan Unit
                         </a>
                     </li>
 
