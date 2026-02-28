@@ -694,5 +694,18 @@
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active');
         }
+
+        // Show page content after loader
+        (function() {
+            const loader = document.getElementById('loader');
+            const pageContent = document.getElementById('page-content');
+
+            window.addEventListener('load', function() {
+                setTimeout(() => {
+                    if (loader) loader.classList.add('loader-hidden');
+                    if (pageContent) pageContent.classList.add('page-visible');
+                }, 500);
+            });
+        })();
     </script>
 @endsection

@@ -12,7 +12,7 @@
 
                 <!-- Menu Desktop -->
                 <div class="hidden md:flex items-center ">
-                    <ul class="flex space-x-8">
+                    <ul class="flex space-x-4">
                         <li><a href="{{ route('homepage') }}" class="nav-link">Home</a></li>
                         <li><a href="{{ route('weekly-meeting.index') }}" class="nav-link">Weekly Meeting</a></li>
                         <li><a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link">Kinerja Pemeliharaan</a></li>
