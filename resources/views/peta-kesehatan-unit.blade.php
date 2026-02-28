@@ -17,7 +17,7 @@
 
         .dashboard-overlay {
             min-height: 100vh;
-            padding: 0 2rem 2rem;
+            padding: 0 2rem 1rem;
             max-width: 1400px;
             margin: 0 auto;
         }
