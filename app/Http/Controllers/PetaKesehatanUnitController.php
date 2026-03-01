@@ -198,9 +198,11 @@ class PetaKesehatanUnitController extends Controller
             Log::error('Peta Kesehatan Unit Error: ' . $e->getMessage());
 
             return view('peta-kesehatan-unit', [
-                'cmAssets'        => collect(),
-                'pmCoverage'      => collect(),
-                'recurringAssets' => collect(),
+                'cmAssets'                 => collect(),
+                'cmAssetsPaginator'        => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15),
+                'pmCoverage'               => collect(),
+                'recurringAssets'          => collect(),
+                'recurringAssetsPaginator' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10),
                 'summary'         => [
                     'total_cm_wo'          => 0,
                     'total_assets_with_cm' => 0,
