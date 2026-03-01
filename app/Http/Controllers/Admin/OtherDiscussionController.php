@@ -1730,6 +1730,7 @@ class OtherDiscussionController extends Controller
                             $query->where(function($q) use ($search) {
                                 $q->where('topic', 'like', "%{$search}%")
                                   ->orWhere('sr_number', 'like', "%{$search}%")
+                                  ->orWhere('no_pembahasan', 'like', "%{$search}%")
                                   ->orWhere('pic', 'like', "%{$search}%");
                             });
                         }
@@ -1759,8 +1760,13 @@ class OtherDiscussionController extends Controller
                     $query->where(function($q) use ($search) {
                         $q->where('topic', 'like', "%{$search}%")
                           ->orWhere('sr_number', 'like', "%{$search}%")
+                          ->orWhere('no_pembahasan', 'like', "%{$search}%")
                           ->orWhere('pic', 'like', "%{$search}%");
                     });
+                }
+
+                if ($unit) {
+                    $query->where('unit', 'like', "%{$unit}%");
                 }
 
                 if ($isWeekly !== null) {

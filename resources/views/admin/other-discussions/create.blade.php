@@ -436,16 +436,8 @@
                     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                         <h4 class="text-lg font-semibold text-gray-800">Daftar Pembahasan Terakhir</h4>
                         <div class="flex items-center gap-2">
-                            <select id="table-unit-filter" onchange="loadDiscussionsData()" 
-                                    class="px-4 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
-                                <option value="">Semua Unit</option>
-                                <option value="mysql">UP Kendari</option>
-                                <option value="mysql_wua_wua">Wua Wua</option>
-                                <option value="mysql_poasia">Poasia</option>
-                                <option value="mysql_kolaka">Kolaka</option>
-                            </select>
                             <input type="text" id="table-search" onkeyup="loadDiscussionsData()" placeholder="Cari topik/nomor..." 
-                                   class="px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none w-40">
+                                   class="px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none w-48">
                             <button onclick="loadDiscussionsData()" class="bg-blue-50 text-blue-600 p-2 rounded-md hover:bg-blue-100 transition-colors">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
@@ -456,17 +448,40 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No Pembahasan</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Topik</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-[30%]">Topik</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                        <div class="flex flex-col gap-2">
+                                            <span>Unit</span>
+                                            <select id="table-unit-filter" onchange="loadDiscussionsData()" 
+                                                    class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="">Semua Unit</option>
+                                                <option value="mysql">UP Kendari</option>
+                                                <option value="mysql_wua_wua">Wua Wua</option>
+                                                <option value="mysql_poasia">Poasia</option>
+                                                <option value="mysql_kolaka">Kolaka</option>
+                                                <option value="mysql_bau_bau">Bau Bau</option>
+                                            </select>
+                                        </div>
+                                    </th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Target</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">PIC</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                        <div class="flex flex-col gap-2">
+                                            <span>Status</span>
+                                            <select id="table-status-filter" onchange="loadDiscussionsData()" 
+                                                    class="w-full px-2 py-1 text-gray-700 bg-white border border-gray-300 rounded-md text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="">Semua Status</option>
+                                                <option value="Open" selected>Open</option>
+                                                <option value="Closed">Closed</option>
+                                            </select>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="discussions-table-body" class="bg-white divide-y divide-gray-200">
                                 <!-- Data will be loaded via AJAX -->
                                 <tr>
-                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">
                                         <div class="flex flex-col items-center">
                                             <i class="fas fa-spinner fa-spin text-3xl mb-2 text-blue-500"></i>
                                             <p>Memuat data...</p>
@@ -1950,9 +1965,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!tbody) return;
         const searchInput = document.getElementById('table-search').value;
         const unitFilter = document.getElementById('table-unit-filter').value;
+        const statusFilter = document.getElementById('table-status-filter').value;
         
         try {
-            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&status=Open&search=${encodeURIComponent(searchInput)}&unit=${encodeURIComponent(unitFilter)}`;
+            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&status=${encodeURIComponent(statusFilter)}&search=${encodeURIComponent(searchInput)}&unit=${encodeURIComponent(unitFilter)}`;
             const response = await fetch(url);
             const result = await response.json();
 
