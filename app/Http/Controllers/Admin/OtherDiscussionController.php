@@ -1743,7 +1743,13 @@ class OtherDiscussionController extends Controller
                             $query->where('status', $status);
                         }
 
-                        $discussions = $query->orderBy('created_at', 'desc')->take(20)->get();
+                        $discussions = $query->orderBy('created_at', 'desc')->get()->map(function($discussion) use ($connection) {
+                            $discussion->commitments = DB::connection($connection)
+                                ->table('commitments')
+                                ->where('other_discussion_id', $discussion->id)
+                                ->get();
+                            return $discussion;
+                        });
                         $allDiscussions = $allDiscussions->concat($discussions);
                     } catch (\Exception $e) {
                         continue;
@@ -1777,12 +1783,32 @@ class OtherDiscussionController extends Controller
                     $query->where('status', $status);
                 }
 
-                $allDiscussions = $query->orderBy('created_at', 'desc')->take(20)->get();
+                $allDiscussions = $query->orderBy('created_at', 'desc')->get()->map(function($discussion) use ($currentConnection) {
+                    $discussion->commitments = DB::connection($currentConnection)
+                        ->table('commitments')
+                        ->where('other_discussion_id', $discussion->id)
+                        ->get();
+                    return $discussion;
+                });
             }
+
+            // Pagination logic
+            $perPage = 10;
+            $page = $request->input('page', 1);
+            $offset = ($page - 1) * $perPage;
+            
+            $sortedDiscussions = $allDiscussions->sortByDesc('created_at');
+            $pagedDiscussions = $sortedDiscussions->slice($offset, $perPage)->values();
 
             return response()->json([
                 'success' => true,
-                'data' => $allDiscussions->sortByDesc('created_at')->take(20)->values()
+                'data' => $pagedDiscussions,
+                'meta' => [
+                    'current_page' => (int)$page,
+                    'last_page' => ceil($allDiscussions->count() / $perPage),
+                    'per_page' => $perPage,
+                    'total' => $allDiscussions->count()
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

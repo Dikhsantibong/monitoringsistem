@@ -476,12 +476,13 @@
                                             </select>
                                         </div>
                                     </th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="discussions-table-body" class="bg-white divide-y divide-gray-200">
                                 <!-- Data will be loaded via AJAX -->
                                 <tr>
-                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                                    <td colspan="7" class="px-6 py-10 text-center text-gray-500">
                                         <div class="flex flex-col items-center">
                                             <i class="fas fa-spinner fa-spin text-3xl mb-2 text-blue-500"></i>
                                             <p>Memuat data...</p>
@@ -490,6 +491,9 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div id="table-pagination" class="px-6 py-4 bg-gray-50 border-t border-gray-200 text-xs flex justify-between items-center">
+                        <!-- Pagination controls will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -1960,48 +1964,133 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    async function loadDiscussionsData() {
+    async function loadDiscussionsData(page = 1) {
         const tbody = document.getElementById('discussions-table-body');
+        const paginationContainer = document.getElementById('table-pagination');
         if (!tbody) return;
+        
         const searchInput = document.getElementById('table-search').value;
         const unitFilter = document.getElementById('table-unit-filter').value;
         const statusFilter = document.getElementById('table-status-filter').value;
         
         try {
-            const url = `{{ route('admin.other-discussions.api-list') }}?is_weekly=1&status=${encodeURIComponent(statusFilter)}&search=${encodeURIComponent(searchInput)}&unit=${encodeURIComponent(unitFilter)}`;
+            const url = `{{ route('admin.other-discussions.api-list') }}?page=${page}&is_weekly=1&status=${encodeURIComponent(statusFilter)}&search=${encodeURIComponent(searchInput)}&unit=${encodeURIComponent(unitFilter)}`;
             const response = await fetch(url);
             const result = await response.json();
 
             if (result.success) {
                 if (result.data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Tidak ada data ditemukan</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Tidak ada data ditemukan</td></tr>`;
+                    paginationContainer.innerHTML = '';
                     return;
                 }
 
-                tbody.innerHTML = result.data.map(item => `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-4 text-sm font-medium text-gray-700">${item.no_pembahasan || '-'}</td>
-                        <td class="px-4 py-4">
-                            <div class="text-sm font-bold text-gray-900 line-clamp-2" title="${item.topic}">${item.topic}</div>
-                            <div class="text-[10px] text-gray-500">${item.sr_number || '-'}</div>
-                        </td>
-                        <td class="px-4 py-4 text-xs text-gray-600">${item.unit}</td>
-                        <td class="px-4 py-4">
-                            <div class="text-[11px] text-gray-800 line-clamp-2" title="${item.target}">${item.target}</div>
-                            <div class="text-[10px] text-blue-600 font-medium mt-1">Deadline: ${item.target_deadline}</div>
-                        </td>
-                        <td class="px-4 py-4 text-xs text-gray-600">${item.pic}</td>
-                        <td class="px-4 py-4 text-sm">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.status === 'Open' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}">
-                                ${item.status}
-                            </span>
-                        </td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = result.data.map((item, index) => {
+                    const rowId = `item-${item.id}`;
+                    const detailId = `details-${item.id}`;
+                    const iconId = `icon-details-${item.id}`;
+                    
+                    let commitmentsHtml = '';
+                    if (item.commitments && item.commitments.length > 0) {
+                        commitmentsHtml = `
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                <h5 class="text-xs font-bold text-gray-700 mb-3 border-b pb-2 flex items-center">
+                                    <i class="fas fa-list-check mr-2 text-blue-500"></i>
+                                    Daftar Komitmen (${item.commitments.length})
+                                </h5>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 bg-white shadow-sm rounded-md overflow-hidden">
+                                        <thead class="bg-gray-100 text-[10px] text-gray-600 font-bold uppercase uppercase text-xs uppercase tracking-wider">
+                                            <tr>
+                                                <th class="px-3 py-2 text-left">Komitmen</th>
+                                                <th class="px-3 py-2 text-left">PIC</th>
+                                                <th class="px-3 py-2 text-left">Deadline</th>
+                                                <th class="px-3 py-2 text-left">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100 text-[11px]">
+                                            ${item.commitments.map(c => `
+                                                <tr>
+                                                    <td class="px-3 py-2 font-medium text-gray-800">${c.commitment || '-'}</td>
+                                                    <td class="px-3 py-2 text-gray-600">${c.pic || '-'}</td>
+                                                    <td class="px-3 py-2 text-gray-600">${c.deadline || '-'}</td>
+                                                    <td class="px-3 py-2">
+                                                        <span class="px-2 py-0.5 rounded-full ${c.status === 'Open' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'} font-semibold border">
+                                                            ${c.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        commitmentsHtml = `<p class="text-xs text-gray-500 text-center py-4 bg-gray-50 rounded-md border border-gray-100">Tidak ada komitmen untuk pembahasan ini</p>`;
+                    }
+
+                    return `
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-4 text-sm font-medium text-gray-700">${item.no_pembahasan || '-'}</td>
+                            <td class="px-4 py-4">
+                                <div class="text-sm font-bold text-gray-900 line-clamp-2" title="${item.topic}">${item.topic}</div>
+                                <div class="text-[10px] text-gray-500">${item.sr_number || '-'}</div>
+                            </td>
+                            <td class="px-4 py-4 text-xs text-gray-600">${item.unit}</td>
+                            <td class="px-4 py-4">
+                                <div class="text-[11px] text-gray-800 line-clamp-2" title="${item.target}">${item.target}</div>
+                                <div class="text-[10px] text-blue-600 font-medium mt-1">Deadline: ${item.target_deadline || '-'}</div>
+                            </td>
+                            <td class="px-4 py-4 text-xs text-gray-600">${item.pic || '-'}</td>
+                            <td class="px-4 py-4 text-sm">
+                                <span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.status === 'Open' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}">
+                                    ${item.status}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <button onclick="toggleDetails('${detailId}')" class="p-2 transition-colors rounded-full hover:bg-blue-50 text-blue-600">
+                                    <i class="fas fa-chevron-down transition-transform duration-300" id="icon-${detailId}"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr id="${detailId}" class="hidden bg-gray-50/50">
+                            <td colspan="7" class="px-6 py-4">
+                                ${commitmentsHtml}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                // Render pagination
+                if (result.meta) {
+                    const { current_page, last_page, total } = result.meta;
+                    let paginationHtml = `
+                        <div class="text-gray-500">Menampilkan <b>${result.data.length}</b> dari <b>${total}</b> data</div>
+                        <div class="flex gap-2">
+                            <button onclick="loadDiscussionsData(${current_page - 1})" ${current_page === 1 ? 'disabled' : ''} 
+                                    class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            ${Array.from({length: last_page}, (_, i) => i + 1).map(p => `
+                                <button onclick="loadDiscussionsData(${p})" 
+                                        class="px-3 py-1 border ${p === current_page ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-100'} rounded">
+                                    ${p}
+                                </button>
+                            `).join('')}
+                            <button onclick="loadDiscussionsData(${current_page + 1})" ${current_page === last_page ? 'disabled' : ''} 
+                                    class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    `;
+                    paginationContainer.innerHTML = paginationHtml;
+                }
             }
         } catch (error) {
             console.error('Error loading data:', error);
-            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-4 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data</td></tr>`;
+            paginationContainer.innerHTML = '';
         }
     }
 </script>
