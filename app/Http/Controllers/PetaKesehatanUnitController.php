@@ -60,10 +60,19 @@ class PetaKesehatanUnitController extends Controller
             });
 
             // ============================================
-            // 2. ANTISIPASI PM - Fetch only for assets on current page
+            // 2. ANTISIPASI PM - Fetch for assets on both CM and Recurring current pages
             // ============================================
             $pmCoverage = collect();
-            $assetsOnPage = $cmAssets->pluck('assetnum')->filter(fn($v) => $v !== '-')->unique()->values()->toArray();
+            
+            // Assets from CM Tab (Page 1 by default or specific page)
+            $cmPageAssets = $cmAssets->pluck('assetnum')->filter(fn($v) => $v !== '-')->unique()->values()->toArray();
+            
+            // Assets from Recurring Tab (Page 1 by default or specific page)
+            $recurringPageAssets = collect($recurringAssetsPaginator->items())->pluck('assetnum')->toArray() 
+                                 ?: collect($recurringAssetsPaginator->items())->pluck('ASSETNUM')->toArray();
+                                 
+            // Combine both to fetch PM coverage once
+            $assetsOnPage = array_unique(array_merge($cmPageAssets, $recurringPageAssets));
             
             if (!empty($assetsOnPage)) {
                 $pmCoverage = (clone $woQuery)
@@ -123,7 +132,7 @@ class PetaKesehatanUnitController extends Controller
 
             $recurringAssetDetails = collect();
             if (!empty($recurringAssetNums)) {
-                $recurringAssetDetails = (clone $woQuery)
+                $rawDetails = (clone $woQuery)
                     ->select([
                         'ASSETNUM',
                         'LOCATION',
@@ -137,8 +146,7 @@ class PetaKesehatanUnitController extends Controller
                     ->where('WORKTYPE', 'CM')
                     ->whereIn('ASSETNUM', $recurringAssetNums)
                     ->whereBetween('REPORTDATE', [$startDate, $endDate])
-                    ->orderBy('ASSETNUM')
-                    ->orderBy('REPORTDATE', 'desc')
+                    ->orderBy('REPORTDATE', 'desc') // Keep history in individual asset descending
                     ->get()
                     ->map(function ($item) {
                         return [
@@ -150,8 +158,18 @@ class PetaKesehatanUnitController extends Controller
                             'reportdate'  => isset($item->reportdate) && $item->reportdate ? Carbon::parse($item->reportdate)->format('d-m-Y') : '-',
                             'statusdate'  => isset($item->statusdate) && $item->statusdate ? Carbon::parse($item->statusdate)->format('d-m-Y') : '-',
                         ];
-                    })
-                    ->groupBy('assetnum');
+                    });
+
+                // Group by assetnum
+                $grouped = $rawDetails->groupBy('assetnum');
+
+                // Reorder the grouped collection to match the recurringAssetNums order (Sorted by CM count)
+                $recurringAssetDetails = collect();
+                foreach ($recurringAssetNums as $anum) {
+                    if (isset($grouped[$anum])) {
+                        $recurringAssetDetails[$anum] = $grouped[$anum];
+                    }
+                }
             }
 
             // Summary stats
