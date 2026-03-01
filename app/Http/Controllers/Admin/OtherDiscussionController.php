@@ -1717,16 +1717,6 @@ class OtherDiscussionController extends Controller
 
             if (session('unit') === 'mysql') {
                 foreach ($connections as $connection => $unitName) {
-                    // Mapping prefix to connection
-                    $prefixMap = [
-                        'mysql' => 'UPKD',
-                        'mysql_wua_wua' => 'WUAS',
-                        'mysql_poasia' => 'POAS',
-                        'mysql_kolaka' => 'KOLA',
-                        'mysql_bau_bau' => 'BAUS'
-                    ];
-
-                    // If unit filter is specific, skip other connections
                     if ($unit && $unit !== $connection) continue;
 
                     try {
@@ -1745,13 +1735,6 @@ class OtherDiscussionController extends Controller
                             });
                         }
 
-                        // Add prefix-based prefix filter if we are searching within a specific unit
-                        // OR if no unit is selected, we rely on the prefix map to identify the source
-                        $prefix = $prefixMap[$connection] ?? null;
-                        if ($prefix) {
-                            $query->where('no_pembahasan', 'like', "{$prefix}%");
-                        }
-
                         if ($isWeekly !== null) {
                             $query->where('is_weekly', $isWeekly);
                         }
@@ -1768,14 +1751,6 @@ class OtherDiscussionController extends Controller
                 }
             } else {
                 $currentConnection = session('unit', 'mysql');
-                $prefixMap = [
-                    'mysql' => 'UPKD',
-                    'mysql_wua_wua' => 'WUAS',
-                    'mysql_poasia' => 'POAS',
-                    'mysql_kolaka' => 'KOLA',
-                    'mysql_bau_bau' => 'BAUS'
-                ];
-
                 $query = DB::connection($currentConnection)
                     ->table('other_discussions')
                     ->select('*')
@@ -1792,11 +1767,6 @@ class OtherDiscussionController extends Controller
 
                 if ($unit) {
                     $query->where('unit', 'like', "%{$unit}%");
-                }
-
-                $prefix = $prefixMap[$currentConnection] ?? null;
-                if ($prefix) {
-                    $query->where('no_pembahasan', 'like', "{$prefix}%");
                 }
 
                 if ($isWeekly !== null) {
