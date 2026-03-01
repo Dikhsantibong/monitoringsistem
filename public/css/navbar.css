@@ -102,7 +102,7 @@ h3 {
 /* Hexagon styles */
 /* Background for the hexagon section */
 .hexagon-background {
-    background-image: url('{{ asset('background/backgorund.jpg') }}');
+    background-image: url('/background/backgorund.jpg');
     background-size: cover;
     background-position: center;
 }
@@ -254,12 +254,14 @@ main {
 .nav-link {
     color: #ffffff;
     text-decoration: none;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.6rem;
     transition: all 0.3s ease;
     position: relative;
     font-weight: 500;
-    white-space: nowrap;
+    white-space: normal;
     font-size: 0.875rem;
+    line-height: 1.2;
+    text-align: center;
 }
 
 .nav-link:hover {
