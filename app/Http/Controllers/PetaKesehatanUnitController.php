@@ -16,6 +16,10 @@ class PetaKesehatanUnitController extends Controller
         $endDate = Carbon::now()->endOfDay();
 
         try {
+            // Initialize paginators with empty values to prevent "Undefined variable" in the catch block
+            $cmAssetsPaginator = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
+            $recurringAssetsPaginator = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
+
             // Base query builder
             $woQuery = DB::connection('oracle')->table('WORKORDER')
                 ->where('SITEID', 'KD')
