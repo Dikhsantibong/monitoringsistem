@@ -73,28 +73,21 @@ class DashboardController extends Controller
                 return round($group->avg('total_score'), 2);
             });
 
-        // Dummy Data ScoreCardDaily untuk ketepatan waktu (Scorecard: 85-95)
-        $formattedScoreCard = $dates->mapWithKeys(function($date) {
+        // Siapkan data untuk chart ketepatan waktu
+        $formattedScoreCard = $dates->mapWithKeys(function($date) use ($scoreCardData) {
             return [
-                $date => rand(85, 95)
+                $date => isset($scoreCardData[$date]) 
+                    ? round($scoreCardData[$date]->avg('skor'), 2) 
+                    : 0
             ];
         })->sortKeys();
 
-        // Dummy Data Attendance untuk total score peserta (Scorecard: 85-95), Kosong saat weekend
-        $formattedAttendance = $dates->mapWithKeys(function($date) {
-            $isWeekend = \Carbon\Carbon::parse($date)->isWeekend();
+        // Siapkan data untuk chart total score peserta
+        $formattedAttendance = $dates->mapWithKeys(function($date) use ($attendanceData) {
             return [
-                $date => $isWeekend ? 0 : rand(85, 95)
+                $date => $attendanceData[$date] ?? 0
             ];
         })->sortKeys();
-
-        // Ambil data untuk ScoreCard / Ketepatan Waktu (unused in chartData but defined)
-        $formattedScoreCard = $dates->mapWithKeys(function($date) {
-            $isWeekend = \Carbon\Carbon::parse($date)->isWeekend();
-             return [
-                 $date => $isWeekend ? 0 : rand(85, 95)
-             ];
-         })->sortKeys();
 
         // Debug: Tampilkan data di log
         \Log::info('Dates:', ['dates' => $dates->toArray()]);
@@ -158,45 +151,53 @@ class DashboardController extends Controller
             'closed' => $closedCommitments
         ]);
 
-        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari) - DUMMY DATA per Unit
-        // Unit: mysql (Kendari), mysql_bau_bau, mysql_kolaka, mysql_poasia, mysql_wua_wua
-        // Range per unit: 5-8 orang. Total Admin: Sum of all units.
+        // Ambil data kehadiran untuk satu bulan (jumlah peserta hadir per hari)
         $attendanceCounts = collect();
         $currentUnit = session('unit') ?? 'mysql';
-        
-        // Define units and their dummy ranges (min, max)
-        $units = [
-             'mysql' => [5, 8],          // UP KENDARI
-             'mysql_bau_bau' => [5, 8],  // ULPLTD BAU-BAU
-             'mysql_kolaka' => [5, 8],   // ULPLTD KOLAKA
-             'mysql_poasia' => [5, 8],   // ULPLTD POASIA
-             'mysql_wua_wua' => [5, 8]   // ULPLTD WUA-WUA
-        ];
-
-        foreach ($dates as $dateStr) {
-             $isWeekend = \Carbon\Carbon::parse($dateStr)->isWeekend();
-             $count = 0;
-
-             if (!$isWeekend) {
-                 if ($currentUnit === 'mysql') {
-                     // Admin: Sum of all units
-                     foreach ($units as $range) {
-                         $count += rand($range[0], $range[1]);
-                     }
-                 } elseif (isset($units[$currentUnit])) {
-                     // Specific Unit
-                     $range = $units[$currentUnit];
-                     $count = rand($range[0], $range[1]);
-                 } else {
-                     // Fallback
-                     $count = rand(5, 8);
-                 }
-             }
-
-             $attendanceCounts->push([
-                'date' => $dateStr,
-                'count' => $count
-            ]);
+        if ($currentUnit === 'mysql') {
+            // Admin: akumulasi seluruh unit
+            $unitConnections = [
+                'mysql',
+                'mysql_bau_bau',
+                'mysql_kolaka',
+                'mysql_poasia',
+                'mysql_wua_wua',
+                // tambahkan koneksi lain jika ada
+            ];
+            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+                $dateStr = $date->format('Y-m-d');
+                $totalCount = 0;
+                foreach ($unitConnections as $conn) {
+                    try {
+                        $totalCount += \App\Models\Attendance::on($conn)
+                            ->whereDate('time', $dateStr)
+                            ->count();
+                    } catch (\Exception $e) {
+                        \Log::warning("Gagal mengambil data attendance dari $conn: " . $e->getMessage());
+                    }
+                }
+                $attendanceCounts->push([
+                    'date' => $dateStr,
+                    'count' => $totalCount
+                ]);
+            }
+        } else {
+            // User unit: hanya data unit sendiri
+            for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+                $dateStr = $date->format('Y-m-d');
+                $count = 0;
+                try {
+                    $count = \App\Models\Attendance::on($currentUnit)
+                        ->whereDate('time', $dateStr)
+                        ->count();
+                } catch (\Exception $e) {
+                    \Log::warning("Gagal mengambil data attendance dari $currentUnit: " . $e->getMessage());
+                }
+                $attendanceCounts->push([
+                    'date' => $dateStr,
+                    'count' => $count
+                ]);
+            }
         }
 
         // Format data untuk chart
