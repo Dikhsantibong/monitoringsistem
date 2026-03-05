@@ -557,7 +557,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'edit' => 'other-discussions.edit',
             'update' => 'other-discussions.update',
             'destroy' => 'other-discussions.destroy'
-        ]);
+        ])->except(['edit', 'update']);
 
     // Tambahkan route untuk print dan export
     Route::get('other-discussions/print', [OtherDiscussionController::class, 'print'])
@@ -704,7 +704,7 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/verify-password', [PasswordVerificationController::class, 'verify'])
             ->name('verify-password');       
-        Route::resource('other-discussions', OtherDiscussionController::class);
+        Route::resource('other-discussions', OtherDiscussionController::class)->except(['edit', 'update']);
     });
 });
 

@@ -102,7 +102,7 @@ h3 {
 /* Hexagon styles */
 /* Background for the hexagon section */
 .hexagon-background {
-    background-image: url('/background/backgorund.jpg');
+    background-image: url('{{ asset('background/backgorund.jpg') }}');
     background-size: cover;
     background-position: center;
 }

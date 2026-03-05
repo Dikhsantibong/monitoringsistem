@@ -874,9 +874,29 @@ class OtherDiscussionController extends Controller
                 'status' => 'required|in:Open,Closed',
                 // Tambahkan validasi untuk dokumen
                 'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // max 10MB
-                'document_description' => 'required|string|max:255',
+                'document_description' => 'nullable|string|max:255',
                 'is_weekly' => 'nullable|boolean',
             ]);
+
+            // Server-side check: jika status atau komitmen ditutup, harus ada dokumen
+            $isClosingStatus = ($request->status === 'Closed');
+            $hasClosedCommitments = false;
+            if ($request->has('commitment_status')) {
+                foreach ($request->commitment_status as $cStatus) {
+                    if ($cStatus === 'Closed') {
+                        $hasClosedCommitments = true;
+                        break;
+                    }
+                }
+            }
+
+            $hasExistingDocument = !empty($discussion->document_path);
+            $hasNewDocument = $request->hasFile('document');
+
+            if (($isClosingStatus || $hasClosedCommitments) && !$hasExistingDocument && !$hasNewDocument) {
+                return back()->withInput()
+                    ->with('error', 'Gagal memperbarui data: silahkan masukan document terlebih dahulu');
+            }
 
             // Handle file upload
             if ($request->hasFile('document')) {

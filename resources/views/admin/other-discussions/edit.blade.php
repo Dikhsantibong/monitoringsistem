@@ -108,7 +108,7 @@
                         @if($discussion->document_path)
                         <div class="mt-4">
                             <h5 class="text-sm font-semibold mb-2">Dokumen Saat Ini:</h5>
-                            <div class="space-y-2">
+                            <div id="existing-documents-list" class="space-y-2">
                                 @php
                                     $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
                                     $names = json_decode($discussion->document_description) ?? [$discussion->document_description];
@@ -713,13 +713,31 @@ function removeCommitment(button) {
 // Submit handler yang dioptimasi
 document.getElementById('editDiscussionForm').addEventListener('submit', function(e) {
     const status = document.getElementById('status').value;
-    if (status === 'Closed' && !validateStatus(document.getElementById('status'))) {
-        e.preventDefault();
-    }
-
     const fileInput = document.getElementById('documents');
     const files = fileInput.files;
     
+    // Check if status is being closed or commitments are being closed
+    const isClosingSubject = status === 'Closed';
+    const hasClosedCommitments = Array.from(document.querySelectorAll('.status-select'))
+        .some(statusSelect => statusSelect.value === 'Closed');
+    const hasClosedNewCommitments = Array.from(document.querySelectorAll('select[name^="new_commitment_status"]'))
+        .some(statusSelect => statusSelect.value === 'Closed');
+    
+    // Check if there are any documents (existing or new)
+    const existingDocsCount = document.querySelectorAll('#existing-documents-list > div').length;
+    const newDocsCount = files.length;
+    
+    if ((isClosingSubject || hasClosedCommitments || hasClosedNewCommitments) && (existingDocsCount + newDocsCount === 0)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan!',
+            text: 'silahkan masukan document terlebih dahulu',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
     // Validasi ukuran file (5MB per file)
     const maxSize = 5 * 1024 * 1024; // 5MB dalam bytes
     for (const file of files) {

@@ -45,6 +45,36 @@ class OtherDiscussionEditController extends Controller
             // Validasi request menggunakan method validateDiscussion
             $validated = $this->validateDiscussion($request);
             
+            // Server-side check: jika status atau komitmen ditutup, harus ada dokumen
+            $isClosingStatus = ($validated['status'] === 'Closed');
+            
+            $hasClosedCommitments = false;
+            if ($request->has('commitment_status')) {
+                foreach ($request->commitment_status as $cStatus) {
+                    if ($cStatus === 'Closed') {
+                        $hasClosedCommitments = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!$hasClosedCommitments && $request->has('new_commitment_status')) {
+                foreach ($request->new_commitment_status as $nCStatus) {
+                    if ($nCStatus === 'Closed') {
+                        $hasClosedCommitments = true;
+                        break;
+                    }
+                }
+            }
+
+            $hasExistingDocuments = !empty($discussion->document_path) && $discussion->document_path !== '[]' && $discussion->document_path !== 'null';
+            $hasNewDocuments = $request->hasFile('documents');
+
+            if (($isClosingStatus || $hasClosedCommitments) && !$hasExistingDocuments && !$hasNewDocuments) {
+                return back()->withInput()
+                    ->with('error', 'Gagal memperbarui data: silahkan masukan document terlebih dahulu');
+            }
+            
             // Generate PIC
             $pic = $this->picGenerator->generate(
                 $validated['department_id'],
@@ -124,7 +154,9 @@ class OtherDiscussionEditController extends Controller
             // Validasi file
             $request->validate([
                 'documents.*' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120',
-                'document_descriptions.*' => 'required|string|max:255',
+                'document_descriptions.*' => 'nullable|string|max:255',
+            ], [
+                'document_descriptions.*.required' => 'silahkan masukan document terlebih dahulu',
             ]);
 
             // Ambil data dokumen yang sudah ada
