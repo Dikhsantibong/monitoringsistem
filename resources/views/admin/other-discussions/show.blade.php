@@ -62,7 +62,7 @@
         <!-- Filter Info -->
         <div class="p-6">
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h2 class="text-lg font-semibold text-blue-800 mb-2">Filter yang Digunakan:</h2>
+                <h2 class="text-lg font-semibold text-blue-800 mb-2">Filter yang Digunaka:</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <span class="font-medium">Tanggal Mulai:</span>
