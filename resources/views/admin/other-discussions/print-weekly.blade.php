@@ -7,13 +7,12 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.4;
+            line-height: 1.6;
             margin: 20px;
-            font-size: 12px;
         }
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         .logo {
             max-width: 100px;
@@ -26,12 +25,12 @@
         }
         
         th, td {
-            border: 1px solid #000;
-            padding: 6px;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #f4f4f4;
             text-align: center;
         }
         .footer {
@@ -40,14 +39,6 @@
         }
         .page-break {
             page-break-before: always;
-        }
-        .section-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 5px;
         }
         @media print {
             .no-print {
@@ -63,47 +54,57 @@
 <body>
     <div class="header">
         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo">
-        <h1 style="margin: 0; font-size: 18px;">LAPORAN MINGGUAN PEMBAHASAN LAIN-LAIN</h1>
-        <p style="margin: 5px 0;">Periode: {{ $filters['start_date'] ?? 'Semua' }} s/d {{ $filters['end_date'] ?? 'Semua' }}</p>
+        <h2>Laporan Mingguan Pembahasan Lain-lain</h2>
+        <p>Periode: {{ $filters['start_date'] ?? 'Semua' }} - {{ $filters['end_date'] ?? 'Semua' }}</p>
     </div>
 
-    <div class="section-title">Data Pembahasan</div>
     <table>
         <thead>
             <tr>
-                <th style="width: 30px;">No</th>
-                <th style="width: 80px;">Unit</th>
-                <th style="width: 100px;">No Pembahasan</th>
-                <th>Topik & Komitmen</th>
-                <th style="width: 100px;">PIC</th>
-                <th style="width: 80px;">Deadline</th>
-                <th style="width: 60px;">Status</th>
+                <th>No</th>
+                <th>No SR</th>
+                <th>No Pembahasan</th>
+                <th>Unit</th>
+                <th>Topik</th>
+                <th>Target</th>
+                <th>PIC</th>
+                <th>Status</th>
+                <th>Deadline</th>
             </tr>
         </thead>
         <tbody>
             @forelse($discussions as $index => $discussion)
                 <tr>
-                    <td rowspan="{{ $discussion->commitments->count() > 0 ? $discussion->commitments->count() + 1 : 1 }}" style="text-align: center; vertical-align: top;">{{ $index + 1 }}</td>
-                    <td rowspan="{{ $discussion->commitments->count() > 0 ? $discussion->commitments->count() + 1 : 1 }}" style="vertical-align: top;">{{ $discussion->unit_name ?? $discussion->unit }}</td>
-                    <td rowspan="{{ $discussion->commitments->count() > 0 ? $discussion->commitments->count() + 1 : 1 }}" style="vertical-align: top;">{{ $discussion->no_pembahasan }}</td>
-                    <td style="font-weight: bold; background-color: #fafafa;">{{ $discussion->topic }}</td>
-                    <td style="background-color: #fafafa;">{{ $discussion->pic }}</td>
-                    <td style="text-align: center; background-color: #fafafa;">{{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}</td>
-                    <td style="text-align: center; background-color: #fafafa;">{{ $discussion->status }}</td>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $discussion->sr_number }}</td>
+                    <td>{{ $discussion->no_pembahasan }}</td>
+                    <td>{{ $discussion->unit_name ?? $discussion->unit }}</td>
+                    <td>{{ $discussion->topic }}</td>
+                    <td>{{ $discussion->target }}</td>
+                    <td>{{ $discussion->pic }}</td>
+                    <td>{{ $discussion->status }}</td>
+                    <td>{{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}</td>
                 </tr>
-                @foreach($discussion->commitments as $commitment)
+                @if(isset($discussion->commitments) && count($discussion->commitments) > 0)
                     <tr>
-                        <td style="padding-left: 20px;">
-                            • {{ $commitment->description }}
+                        <td colspan="9">
+                            <strong>Commitments:</strong>
+                            <ul>
+                                @foreach($discussion->commitments as $commitment)
+                                    <li>
+                                        {{ $commitment->description }} 
+                                        (PIC: {{ $commitment->pic }}, 
+                                        Deadline: {{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }}, 
+                                        Status: {{ $commitment->status }})
+                                    </li>
+                                @endforeach
+                            </ul>
                         </td>
-                        <td>{{ $commitment->pic }}</td>
-                        <td style="text-align: center;">{{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }}</td>
-                        <td style="text-align: center;">{{ $commitment->status }}</td>
                     </tr>
-                @endforeach
+                @endif
             @empty
                 <tr>
-                    <td colspan="7" style="text-align: center;">Tidak ada data pembahasan untuk periode ini.</td>
+                    <td colspan="9" style="text-align: center;">Tidak ada data pembahasan yang tersedia.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -112,8 +113,9 @@
     <div class="page-break"></div>
 
     <div class="header">
-        <h1 style="margin: 0; font-size: 18px;">LAMPIRAN: DATA ABSENSI WEEKLY</h1>
-        <p style="margin: 5px 0;">Periode: {{ $filters['start_date'] ?? 'Semua' }} s/d {{ $filters['end_date'] ?? 'Semua' }}</p>
+        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo">
+        <h2>Lampiran: Data Absensi Weekly</h2>
+        <p>Periode: {{ $filters['start_date'] ?? 'Semua' }} - {{ $filters['end_date'] ?? 'Semua' }}</p>
     </div>
 
     <table>
@@ -155,18 +157,34 @@
         <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
     </div>
 
+    <!-- Tombol Print (hanya muncul di layar) -->
     <div class="no-print" style="position: fixed; bottom: 20px; right: 20px;">
-        <button onclick="window.print()" style="padding: 10px 20px; background-color: #009BB9; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-            <i class="fas fa-print"></i> CETAK LAPORAN
+        <button onclick="window.print()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Print
         </button>
     </div>
 
     <script>
+        // Jalankan print segera setelah DOM loaded
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
-                // window.print();
-            }, 1000);
+                // Sembunyikan tombol print sebelum print dialog muncul
+                document.querySelector('.no-print').style.display = 'none';
+                
+                // Trigger print dialog
+                window.print();
+            }, 500);
         });
+
+        // Tutup tab setelah print selesai atau dibatalkan
+        window.onafterprint = function() {
+            window.close();
+        };
+
+        // Fallback jika print dibatalkan
+        window.onbeforeunload = function() {
+            window.close();
+        };
     </script>
 </body>
 </html>
