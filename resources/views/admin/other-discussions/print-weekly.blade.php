@@ -254,16 +254,5 @@
             Print Dokumen
         </button>
     </div>
-
-    <script>
-        // Opsional: Jika ingin auto-print, bisa tambahkan kode auto-print di sini.
-        // Di print-single biasanya hanya mengklik Print manual.
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                // Trigger print dialog
-                // window.print();
-            }, 500);
-        });
-    </script>
 </body>
 </html>
