@@ -90,6 +90,15 @@
                         </a>
                         @endif
 
+                        @if(request('is_weekly') == '1')
+                        <a href="{{ route('admin.other-discussions.print-weekly', request()->query()) }}" 
+                           target="_blank"
+                           class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700">
+                            <i class="fas fa-print text-sm mr-1.5"></i>
+                            <span class="text-sm">Print Laporan Weekly</span>
+                        </a>
+                        @endif
+
                         <!-- Add Data Button - Simplified -->
                         <a href="{{ route('admin.other-discussions.create') }}" 
                            class="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600">

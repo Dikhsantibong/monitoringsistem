@@ -567,6 +567,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->name('other-discussions.export')
         ->where('format', 'xlsx|pdf');
 
+    Route::get('other-discussions/print-weekly', [OtherDiscussionController::class, 'printWeekly'])
+        ->name('other-discussions.print-weekly');
+
     Route::post('other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
         ->name('other-discussions.update-status');
 });

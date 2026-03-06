@@ -77,6 +77,14 @@ class OtherDiscussionController extends Controller
                             $query->where('is_weekly', true);
                         }
 
+                        // Filter berdasarkan rentang waktu created_at
+                        if ($request->start_date) {
+                            $query->whereDate('created_at', '>=', $request->start_date);
+                        }
+                        if ($request->end_date) {
+                            $query->whereDate('created_at', '<=', $request->end_date);
+                        }
+
                         // Get discussions dengan commitments
                         $discussions = $query->get()->map(function ($discussion) use ($connection) {
                             // Convert to object for consistency
@@ -132,6 +140,14 @@ class OtherDiscussionController extends Controller
                 // Filter berdasarkan weekly
                 if ($isWeekly) {
                     $query->where('is_weekly', true);
+                }
+
+                // Filter berdasarkan rentang waktu created_at
+                if ($request->start_date) {
+                    $query->whereDate('created_at', '>=', $request->start_date);
+                }
+                if ($request->end_date) {
+                    $query->whereDate('created_at', '<=', $request->end_date);
                 }
 
                 $allDiscussions = $query->get()->map(function ($discussion) use ($unitName) {
@@ -1835,6 +1851,107 @@ class OtherDiscussionController extends Controller
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+    public function printWeekly(Request $request)
+    {
+        try {
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+            $isWeekly = $request->boolean('is_weekly', true);
+            $currentConnection = session('unit', 'mysql');
+
+            $connections = [
+                'mysql' => 'UP Kendari',
+                'mysql_bau_bau' => 'Bau-Bau',
+                'mysql_kolaka' => 'Kolaka',
+                'mysql_poasia' => 'Poasia',
+                'mysql_wua_wua' => 'Wua-Wua'
+            ];
+
+            $allDiscussions = collect();
+            $allAttendances = collect();
+
+            if ($currentConnection === 'mysql') {
+                foreach ($connections as $connection => $unitName) {
+                    try {
+                        // Fetch Discussions
+                        $query = DB::connection($connection)
+                            ->table('other_discussions')
+                            ->where('is_weekly', 1);
+
+                        if ($startDate) $query->whereDate('created_at', '>=', $startDate);
+                        if ($endDate) $query->whereDate('created_at', '<=', $endDate);
+
+                        $discussions = $query->get()->map(function ($discussion) use ($connection, $unitName) {
+                            $discussion = (object) $discussion;
+                            $discussion->unit_name = $unitName;
+                            $discussion->commitments = DB::connection($connection)
+                                ->table('commitments')
+                                ->where('other_discussion_id', $discussion->id)
+                                ->get();
+                            return $discussion;
+                        });
+                        $allDiscussions = $allDiscussions->concat($discussions);
+
+                        // Fetch Attendance
+                        $attQuery = DB::connection($connection)
+                            ->table('attendance')
+                            ->where('is_weekly', 1);
+
+                        if ($startDate) $attQuery->whereDate('time', '>=', $startDate);
+                        if ($endDate) $attQuery->whereDate('time', '<=', $endDate);
+
+                        $attendances = $attQuery->get()->map(function($att) use ($unitName) {
+                            $att = (object) $att;
+                            $att->unit_name = $unitName;
+                            return $att;
+                        });
+                        $allAttendances = $allAttendances->concat($attendances);
+
+                    } catch (\Exception $e) {
+                        \Log::error("Error printing weekly for {$connection}: " . $e->getMessage());
+                    }
+                }
+            } else {
+                $unitName = $connections[$currentConnection] ?? 'Unknown Unit';
+                
+                // Discussions
+                $query = \App\Models\OtherDiscussion::with(['commitments'])
+                    ->where('is_weekly', 1);
+                
+                if ($startDate) $query->whereDate('created_at', '>=', $startDate);
+                if ($endDate) $query->whereDate('created_at', '<=', $endDate);
+
+                $allDiscussions = $query->get()->map(function($d) use ($unitName) {
+                    $d->unit_name = $unitName;
+                    return $d;
+                });
+
+                // Attendance
+                $attQuery = \App\Models\Attendance::where('is_weekly', 1);
+                
+                if ($startDate) $attQuery->whereDate('time', '>=', $startDate);
+                if ($endDate) $attQuery->whereDate('time', '<=', $endDate);
+
+                $allAttendances = $attQuery->get()->map(function($a) use ($unitName) {
+                    $a->unit_name = $unitName;
+                    return $a;
+                });
+            }
+
+            return view('admin.other-discussions.print-weekly', [
+                'discussions' => $allDiscussions,
+                'attendances' => $allAttendances,
+                'filters' => [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in printWeekly: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses print laporan weekly.');
         }
     }
 }   
