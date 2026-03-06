@@ -549,16 +549,6 @@ Route::delete('/admin/discussions/{id}', [OtherDiscussionController::class, 'des
     ->name('admin.discussions.destroy');
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('other-discussions', OtherDiscussionController::class)
-        ->names([
-            'index' => 'other-discussions.index',
-            'create' => 'other-discussions.create',
-            'store' => 'other-discussions.store',
-            'edit' => 'other-discussions.edit',
-            'update' => 'other-discussions.update',
-            'destroy' => 'other-discussions.destroy'
-        ])->except(['edit', 'update']);
-
     // Tambahkan route untuk print dan export
     Route::get('other-discussions/print', [OtherDiscussionController::class, 'print'])
         ->name('other-discussions.print');
@@ -572,6 +562,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::post('other-discussions/update-status', [OtherDiscussionController::class, 'updateStatus'])
         ->name('other-discussions.update-status');
+
+    Route::resource('other-discussions', OtherDiscussionController::class)
+        ->names([
+            'index' => 'other-discussions.index',
+            'create' => 'other-discussions.create',
+            'store' => 'other-discussions.store',
+            'edit' => 'other-discussions.edit',
+            'update' => 'other-discussions.update',
+            'destroy' => 'other-discussions.destroy'
+        ])->except(['edit', 'update']);
 });
 
 Route::delete('/admin/overdue-discussions/{id}', [OtherDiscussionController::class, 'destroyOverdue'])
