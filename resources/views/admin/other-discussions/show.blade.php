@@ -1,258 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Mingguan Pembahasan Lain-lain</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo {
-            width: 240px;
-            height: auto;
-            margin-bottom: 10px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
-        th, td {
-            border: 0.5px solid #000;
-            padding: 5px;
-            text-align: left;
-            font-size: 10px;
-        }
-        .info-table th {
-            width: 25%;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        .footer {
-            margin-top: 20px;
-            text-align: right;
-            font-size: 10px;
-        }
-        .commitment-table {
-            margin-top: 20px;
-        }
-        .commitment-table th {
-            background-color: #f4f4f4;
-        }
-        .section-title {
-            margin-top: 20px;
-            font-weight: bold;
-            font-size: 14px;
-            border-bottom: 1px solid #000;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
-        .page-break {
-            page-break-after: always;
-        }
-        .center-text {
-            text-align: center;
-        }
-        @media print {
-            body {
-                padding: 20px;
-            }
-            .no-print {
-                display: none;
-            }
-        }
-    </style>
-</head>
-<body>
+@extends('layouts.app')
 
-    @forelse($discussions as $discussion)
-        <div class="header">
-            <img src="{{ asset('logo/navlog1.png') }}" alt="Logo" class="logo">
-            <h2>PT PLN NP UP KENDARI</h2>
-            <h3>Detail Pembahasan Mingguan</h3>
+@section('content')
+<div class="flex h-screen bg-gray-50 overflow-auto">
+    <x-sidebar />
+
+    <div id="main-content" class="flex-1 overflow-auto">
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="flex justify-between items-center px-6 py-3">
+                <div class="flex items-center gap-x-3">
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-toggle"
+                        class="md:hidden relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-[#009BB9] hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+
+                    <!--  Menu Toggle Sidebar-->
+                    <button id="desktop-menu-toggle"
+                        class="hidden md:block relative items-center justify-center rounded-md text-gray-400 hover:bg-[#009BB9] p-2 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true" data-slot="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+
+                    <h1 class="text-xl font-semibold text-gray-800">Pembahasan Lainnya</h1>
+                </div>
+
+                <div class="relative">
+                    <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
+                        <img src="{{ Auth::user()->avatar ?? asset('foto_profile/admin1.png') }}"
+                            class="w-7 h-7 rounded-full mr-2">
+                        <span class="text-gray-700 text-sm">{{ Auth::user()->name }}</span>
+                        <i class="fas fa-caret-down ml-2 text-gray-600"></i>
+                    </button>
+                    <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+                        <a href="{{ route('logout') }}" 
+                           class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                           onclick="event.preventDefault(); 
+                                    document.getElementById('logout-form').submit();">Logout</a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                            @csrf
+                            <input type="hidden" name="redirect" value="{{ route('homepage') }}">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="flex items-center pt-2">
+            <x-admin-breadcrumb :breadcrumbs="[['name' => 'Pembahasan Lainnya', 'url' => null]]" />
         </div>
 
-        <!-- Main Discussion Details -->
-        <div class="section-title">Informasi Pembahasan</div>
-        <table class="info-table">
-            <tbody>
-                <tr>
-                    <th>No SR</th>
-                    <td>{{ $discussion->sr_number }}</td>
-                </tr>
-                <tr>
-                    <th>No Pembahasan</th>
-                    <td>{{ $discussion->no_pembahasan }}</td>
-                </tr>
-                <tr>
-                    <th>Unit</th>
-                    <td>{{ $discussion->unit_name ?? $discussion->unit }}</td>
-                </tr>
-                <tr>
-                    <th>Topic</th>
-                    <td>{{ $discussion->topic }}</td>
-                </tr>
-                <tr>
-                    <th>Target</th>
-                    <td>{{ $discussion->target }}</td>
-                </tr>
-                <tr>
-                    <th>PIC</th>
-                    <td>{{ $discussion->pic }}</td>
-                </tr>
-                <tr>
-                    <th>Risk Level</th>
-                    <td>{{ $discussion->risk_level }}</td>
-                </tr>
-                <tr>
-                    <th>Priority Level</th>
-                    <td>{{ $discussion->priority_level }}</td>
-                </tr>
-                <tr>
-                    <th>Status</th>
-                    <td>{{ $discussion->status }}</td>
-                </tr>
-                <tr>
-                    <th>Target Deadline</th>
-                    <td>{{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- Filter Info -->
+        <div class="p-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h2 class="text-lg font-semibold text-blue-800 mb-2">Filter yang Digunaka:</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <span class="font-medium">Tanggal Mulai:</span>
+                        <span>{{ $filters['start_date'] ?? 'Semua' }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Tanggal Akhir:</span>
+                        <span>{{ $filters['end_date'] ?? 'Semua' }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Pencarian:</span>
+                        <span>{{ $filters['search'] ?? 'Semua' }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Unit:</span>
+                        <span>{{ $filters['unit'] ?? 'Semua' }}</span>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Commitments Section -->
-        <div class="section-title">Daftar Komitmen</div>
-        <table class="commitment-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Deskripsi</th>
-                    <th>PIC</th>
-                    <th>Deadline</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if(isset($discussion->commitments) && count($discussion->commitments) > 0)
-                    @foreach($discussion->commitments as $index => $commitment)
+            <!-- Data Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $commitment->description }}</td>
-                            <td>{{ $commitment->pic }}</td>
-                            <td>{{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }}</td>
-                            <td>{{ $commitment->status }}</td>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No SR</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Pembahasan</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PIC</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deadline</th>
                         </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="5" style="text-align: center">Tidak ada komitmen yang tercatat</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-
-        <!-- Documents Section -->
-        @if($discussion->document_path)
-        <div class="section-title">Dokumen Pendukung</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nama Dokumen</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
-                    $descriptions = json_decode($discussion->document_description) ?? [$discussion->document_description];
-                @endphp
-                @foreach($paths as $index => $path)
-                    <tr>
-                        <td style="width: 5%">{{ $index + 1 }}</td>
-                        <td>{{ $descriptions[$index] ?? basename($path) }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @endif
-
-        <div class="footer">
-            <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($discussions as $index => $discussion)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $discussion->sr_number }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $discussion->no_pembahasan }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $discussion->unit }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900">{{ $discussion->topic }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900">{{ $discussion->target }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $discussion->pic }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {{ $discussion->status === 'Open' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                        {{ $discussion->status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}
+                                </td>
+                            </tr>
+                            @if($discussion->commitments->count() > 0)
+                                <tr class="bg-gray-50">
+                                    <td colspan="9" class="px-6 py-4">
+                                        <div class="ml-4">
+                                            <strong class="text-gray-700">Commitments:</strong>
+                                            <ul class="mt-2 space-y-2">
+                                                @foreach($discussion->commitments as $commitment)
+                                                    <li class="text-sm">
+                                                        <span class="font-medium">{{ $commitment->description }}</span>
+                                                        <br>
+                                                        <span class="text-gray-600">
+                                                            PIC: {{ $commitment->pic }} | 
+                                                            Deadline: {{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }} | 
+                                                            Status: 
+                                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                                {{ $commitment->status === 'Open' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                                                {{ $commitment->status }}
+                                                            </span>
+                                                        </span>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
+                        @empty
+                            <tr>
+                                <td colspan="9" class="px-6 py-4 text-center text-gray-500">
+                                    Tidak ada data yang tersedia
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <div class="page-break"></div>
-    @empty
-        <div class="header">
-            <img src="{{ asset('logo/navlog1.png') }}" alt="Logo" class="logo">
-            <h2>PT PLN NP UP KENDARI</h2>
-            <h3>Laporan Mingguan Pembahasan Lain-lain</h3>
-            <p>Periode: {{ $filters['start_date'] ?? 'Semua' }} - {{ $filters['end_date'] ?? 'Semua' }}</p>
-        </div>
-        <p style="text-align: center;">Tidak ada data pembahasan yang tersedia.</p>
-        <div class="page-break"></div>
-    @endforelse
-
-    <div class="header">
-        <img src="{{ asset('logo/navlog1.png') }}" alt="Logo" class="logo">
-        <h2>PT PLN NP UP KENDARI</h2>
-        <h3>Lampiran: Data Absensi Weekly</h3>
-        <p>Periode: {{ $filters['start_date'] ?? 'Semua' }} - {{ $filters['end_date'] ?? 'Semua' }}</p>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 40px; text-align: center;">No</th>
-                <th style="text-align: center;">Nama</th>
-                <th style="text-align: center;">Jabatan / Divisi</th>
-                <th style="text-align: center;">Unit Source</th>
-                <th style="text-align: center;">Waktu Absen</th>
-                <th style="width: 150px; text-align: center;">Tanda Tangan</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($attendances as $idx => $attendance)
-                <tr>
-                    <td class="center-text">{{ $idx + 1 }}</td>
-                    <td>{{ $attendance->name }}</td>
-                    <td>{{ $attendance->position }} <br> <small>{{ $attendance->division }}</small></td>
-                    <td class="center-text">{{ $attendance->unit_name ?? $attendance->unit_source }}</td>
-                    <td class="center-text">{{ \Carbon\Carbon::parse($attendance->time)->format('d/m/Y H:i') }}</td>
-                    <td class="center-text">
-                        @if($attendance->signature)
-                            <img src="{{ $attendance->signature }}" style="max-height: 40px; max-width: 120px;">
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6" class="center-text">Tidak ada data absensi untuk periode ini.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <div class="footer">
-        <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
-    </div>
-
-    <!-- Tombol Print (hanya muncul di layar) -->
-    <div class="no-print" style="text-align: center; margin-top: 20px;">
-        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">
-            Print Dokumen
-        </button>
-    </div>
-</body>
-</html>
+</div>
+@endsection 
