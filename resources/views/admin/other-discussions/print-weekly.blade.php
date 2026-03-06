@@ -7,137 +7,228 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
+            font-size: 12px;
+            line-height: 1.4;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .logo {
-            max-width: 100px;
+            width: 240px;
+            height: auto;
             margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 0.5px solid #000;
+            padding: 5px;
             text-align: left;
+            font-size: 10px;
+        }
+        .info-table th {
+            width: 25%;
         }
         th {
             background-color: #f4f4f4;
-            text-align: center;
         }
         .footer {
-            margin-top: 30px;
+            margin-top: 20px;
             text-align: right;
+            font-size: 10px;
+        }
+        .commitment-table {
+            margin-top: 20px;
+        }
+        .commitment-table th {
+            background-color: #f4f4f4;
+        }
+        .section-title {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
         }
         .page-break {
-            page-break-before: always;
+            page-break-after: always;
+        }
+        .center-text {
+            text-align: center;
         }
         @media print {
+            body {
+                padding: 20px;
+            }
             .no-print {
                 display: none;
-            }
-            @page {
-                size: landscape;
-                margin: 1cm;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo">
-        <h2>Laporan Mingguan Pembahasan Lain-lain</h2>
-        <p>Periode: {{ $filters['start_date'] ?? 'Semua' }} - {{ $filters['end_date'] ?? 'Semua' }}</p>
-    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>No SR</th>
-                <th>No Pembahasan</th>
-                <th>Unit</th>
-                <th>Topik</th>
-                <th>Target</th>
-                <th>PIC</th>
-                <th>Status</th>
-                <th>Deadline</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($discussions as $index => $discussion)
+    @forelse($discussions as $discussion)
+        <div class="header">
+            <img src="{{ asset('logo/navlog1.png') }}" alt="Logo" class="logo">
+            <h2>PT PLN NP UP KENDARI</h2>
+            <h3>Detail Pembahasan Mingguan</h3>
+        </div>
+
+        <!-- Main Discussion Details -->
+        <div class="section-title">Informasi Pembahasan</div>
+        <table class="info-table">
+            <tbody>
                 <tr>
-                    <td>{{ $index + 1 }}</td>
+                    <th>No SR</th>
                     <td>{{ $discussion->sr_number }}</td>
+                </tr>
+                <tr>
+                    <th>No Pembahasan</th>
                     <td>{{ $discussion->no_pembahasan }}</td>
+                </tr>
+                <tr>
+                    <th>Unit</th>
                     <td>{{ $discussion->unit_name ?? $discussion->unit }}</td>
+                </tr>
+                <tr>
+                    <th>Topic</th>
                     <td>{{ $discussion->topic }}</td>
+                </tr>
+                <tr>
+                    <th>Target</th>
                     <td>{{ $discussion->target }}</td>
+                </tr>
+                <tr>
+                    <th>PIC</th>
                     <td>{{ $discussion->pic }}</td>
+                </tr>
+                <tr>
+                    <th>Risk Level</th>
+                    <td>{{ $discussion->risk_level }}</td>
+                </tr>
+                <tr>
+                    <th>Priority Level</th>
+                    <td>{{ $discussion->priority_level }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
                     <td>{{ $discussion->status }}</td>
+                </tr>
+                <tr>
+                    <th>Target Deadline</th>
                     <td>{{ $discussion->target_deadline ? \Carbon\Carbon::parse($discussion->target_deadline)->format('d/m/Y') : '-' }}</td>
                 </tr>
+            </tbody>
+        </table>
+
+        <!-- Commitments Section -->
+        <div class="section-title">Daftar Komitmen</div>
+        <table class="commitment-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Deskripsi</th>
+                    <th>PIC</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
                 @if(isset($discussion->commitments) && count($discussion->commitments) > 0)
+                    @foreach($discussion->commitments as $index => $commitment)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $commitment->description }}</td>
+                            <td>{{ $commitment->pic }}</td>
+                            <td>{{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }}</td>
+                            <td>{{ $commitment->status }}</td>
+                        </tr>
+                    @endforeach
+                @else
                     <tr>
-                        <td colspan="9">
-                            <strong>Commitments:</strong>
-                            <ul>
-                                @foreach($discussion->commitments as $commitment)
-                                    <li>
-                                        {{ $commitment->description }} 
-                                        (PIC: {{ $commitment->pic }}, 
-                                        Deadline: {{ $commitment->deadline ? \Carbon\Carbon::parse($commitment->deadline)->format('d/m/Y') : '-' }}, 
-                                        Status: {{ $commitment->status }})
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </td>
+                        <td colspan="5" style="text-align: center">Tidak ada komitmen yang tercatat</td>
                     </tr>
                 @endif
-            @empty
-                <tr>
-                    <td colspan="9" style="text-align: center;">Tidak ada data pembahasan yang tersedia.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </tbody>
+        </table>
 
-    <div class="page-break"></div>
+        <!-- Documents Section -->
+        @if($discussion->document_path)
+        <div class="section-title">Dokumen Pendukung</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Dokumen</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $paths = json_decode($discussion->document_path) ?? [$discussion->document_path];
+                    $descriptions = json_decode($discussion->document_description) ?? [$discussion->document_description];
+                @endphp
+                @foreach($paths as $index => $path)
+                    <tr>
+                        <td style="width: 5%">{{ $index + 1 }}</td>
+                        <td>{{ $descriptions[$index] ?? basename($path) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+
+        <div class="footer">
+            <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
+        </div>
+
+        <div class="page-break"></div>
+    @empty
+        <div class="header">
+            <img src="{{ asset('logo/navlog1.png') }}" alt="Logo" class="logo">
+            <h2>PT PLN NP UP KENDARI</h2>
+            <h3>Laporan Mingguan Pembahasan Lain-lain</h3>
+            <p>Periode: {{ $filters['start_date'] ?? 'Semua' }} - {{ $filters['end_date'] ?? 'Semua' }}</p>
+        </div>
+        <p style="text-align: center;">Tidak ada data pembahasan yang tersedia.</p>
+        <div class="page-break"></div>
+    @endforelse
 
     <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo">
-        <h2>Lampiran: Data Absensi Weekly</h2>
+        <img src="{{ asset('logo/navlog1.png') }}" alt="Logo" class="logo">
+        <h2>PT PLN NP UP KENDARI</h2>
+        <h3>Lampiran: Data Absensi Weekly</h3>
         <p>Periode: {{ $filters['start_date'] ?? 'Semua' }} - {{ $filters['end_date'] ?? 'Semua' }}</p>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 40px;">No</th>
-                <th>Nama</th>
-                <th>Jabatan / Divisi</th>
-                <th>Unit Source</th>
-                <th>Waktu Absen</th>
-                <th style="width: 150px;">Tanda Tangan</th>
+                <th style="width: 40px; text-align: center;">No</th>
+                <th style="text-align: center;">Nama</th>
+                <th style="text-align: center;">Jabatan / Divisi</th>
+                <th style="text-align: center;">Unit Source</th>
+                <th style="text-align: center;">Waktu Absen</th>
+                <th style="width: 150px; text-align: center;">Tanda Tangan</th>
             </tr>
         </thead>
         <tbody>
             @forelse($attendances as $idx => $attendance)
                 <tr>
-                    <td style="text-align: center;">{{ $idx + 1 }}</td>
+                    <td class="center-text">{{ $idx + 1 }}</td>
                     <td>{{ $attendance->name }}</td>
                     <td>{{ $attendance->position }} <br> <small>{{ $attendance->division }}</small></td>
-                    <td>{{ $attendance->unit_name ?? $attendance->unit_source }}</td>
-                    <td style="text-align: center;">{{ \Carbon\Carbon::parse($attendance->time)->format('d/m/Y H:i') }}</td>
-                    <td style="text-align: center;">
+                    <td class="center-text">{{ $attendance->unit_name ?? $attendance->unit_source }}</td>
+                    <td class="center-text">{{ \Carbon\Carbon::parse($attendance->time)->format('d/m/Y H:i') }}</td>
+                    <td class="center-text">
                         @if($attendance->signature)
                             <img src="{{ $attendance->signature }}" style="max-height: 40px; max-width: 120px;">
                         @else
@@ -147,7 +238,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="text-align: center;">Tidak ada data absensi untuk periode ini.</td>
+                    <td colspan="6" class="center-text">Tidak ada data absensi untuk periode ini.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -158,33 +249,21 @@
     </div>
 
     <!-- Tombol Print (hanya muncul di layar) -->
-    <div class="no-print" style="position: fixed; bottom: 20px; right: 20px;">
-        <button onclick="window.print()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Print
+    <div class="no-print" style="text-align: center; margin-top: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">
+            Print Dokumen
         </button>
     </div>
 
     <script>
-        // Jalankan print segera setelah DOM loaded
+        // Opsional: Jika ingin auto-print, bisa tambahkan kode auto-print di sini.
+        // Di print-single biasanya hanya mengklik Print manual.
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
-                // Sembunyikan tombol print sebelum print dialog muncul
-                document.querySelector('.no-print').style.display = 'none';
-                
                 // Trigger print dialog
-                window.print();
+                // window.print();
             }, 500);
         });
-
-        // Tutup tab setelah print selesai atau dibatalkan
-        window.onafterprint = function() {
-            window.close();
-        };
-
-        // Fallback jika print dibatalkan
-        window.onbeforeunload = function() {
-            window.close();
-        };
     </script>
 </body>
 </html>
