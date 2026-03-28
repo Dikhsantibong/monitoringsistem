@@ -175,10 +175,25 @@ class CalendarController extends Controller
             3000 => 'P5',
         ];
         // Ambil log hingga akhir bulan untuk menghitung kumulatif
-        $logs = MachineStatusLog::with(['machine.powerPlant'])
+        $logsQuery = MachineStatusLog::with(['machine.powerPlant'])
             ->select('machine_id', 'tanggal', 'jsmo')
-            ->whereDate('tanggal', '<=', $lastDay)
-            ->orderBy('machine_id')
+            ->whereDate('tanggal', '<=', $lastDay);
+
+        if ($unitFilter) {
+            $unitSourceMapping = [
+                'UP_KENDARI' => 'mysql',
+                'ULPLTD_KOLAKA' => 'mysql_kolaka',
+                'ULPLTD_POASIA' => 'mysql_poasia',
+                'ULPLTD_WUA_WUA' => 'mysql_wua_Wua',
+                'ULPLTD_BAU_BAU' => 'mysql_bau_bau',
+            ];
+
+            if (isset($unitSourceMapping[$unitFilter])) {
+                $logsQuery->where('unit_source', $unitSourceMapping[$unitFilter]);
+            }
+        }
+
+        $logs = $logsQuery->orderBy('machine_id')
             ->orderBy('tanggal')
             ->get();
         $maintenanceEvents = collect();
@@ -245,6 +260,7 @@ class CalendarController extends Controller
         
         // Opsi filter Unit berdasarkan UL (Unit Layanan)
         $unitOptions = [
+            'UP_KENDARI' => 'UP KENDARI',
             'ULPLTD_KOLAKA' => 'ULPLTD KOLAKA',
             'ULPLTD_BAU_BAU' => 'ULPLTD BAU-BAU',
             'ULPLTD_POASIA' => 'ULPLTD POASIA',
