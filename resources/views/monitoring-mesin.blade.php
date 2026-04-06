@@ -2,239 +2,100 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
-    <!-- Load FontAwesome if not already globally loaded -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #f3f6f9;
-            --card: #ffffff;
-            --border: #e2e8f0;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --primary: #0ea5e9;
-            --green: #10b981;
-            --red: #ef4444;
-            --orange: #f59e0b;
-            --blue: #3b82f6;
-            --purple: #8b5cf6;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --bg: #f3f6f9; --card: #ffffff; --border: #e2e8f0;
+            --text-main: #1e293b; --text-muted: #64748b;
+            --primary: #0ea5e9; --green: #10b981; --red: #ef4444; --orange: #f59e0b;
+            --blue: #3b82f6; --purple: #8b5cf6;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
+        body { background-color: var(--bg) !important; color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
 
-        body {
-            background-color: var(--bg) !important;
-            color: var(--text-main);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Top Bar override */
+        /* Top Bar */
         .top-control-bar {
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 12px 24px; display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 20px;
         }
-        .top-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .top-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .top-title i { color: var(--primary); }
         .controls { display: flex; align-items: center; gap: 12px; }
-        .date-input {
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: var(--text-main);
-            font-size: 0.85rem;
-            outline: none;
-            transition: border 0.2s;
-        }
-        .date-input:focus { border-color: var(--primary); }
-        .btn-load {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
-            transition: all 0.2s;
-        }
-        .btn-load:hover { background: #0284c7; transform: translateY(-1px); }
+        .date-input { border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 0.85rem; outline: none; }
+        .btn-load { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-load:hover { background: #0284c7; }
 
-        .dashboard-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 0 20px 40px;
-        }
+        .dashboard-container { max-width: 1600px; margin: 0 auto; padding: 0 20px 40px; }
 
         /* KPI Cards */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .kpi-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            border-bottom: 3px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-        .kpi-card.b-blue { border-bottom-color: var(--blue); }
-        .kpi-card.b-green { border-bottom-color: var(--green); }
-        .kpi-card.b-red { border-bottom-color: var(--red); }
-        .kpi-card.b-orange { border-bottom-color: var(--orange); }
-        .kpi-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-        .kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .kpi-card { background: var(--card); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); border-bottom: 3px solid var(--border); }
+        .kpi-card.b-blue { border-bottom-color: var(--blue); } .kpi-card.b-green { border-bottom-color: var(--green); } .kpi-card.b-red { border-bottom-color: var(--red); } .kpi-card.b-orange { border-bottom-color: var(--orange); }
+        .kpi-title { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
+        .kpi-value { font-size: 1.6rem; font-weight: 800; color: var(--text-main); line-height: 1; }
 
         /* Charts Grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 24px;
-        }
+        .charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
         @media(max-width: 1200px) { .charts-grid { grid-template-columns: repeat(2, 1fr); } }
         @media(max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
-        
-        .chart-card {
-            background: var(--card);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 320px;
-        }
-        .chart-header {
-            font-size: 0.9rem; font-weight: 700; color: var(--text-main);
-            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
-        }
+        .chart-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; min-height: 320px; }
+        .chart-header { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .chart-header i { color: var(--primary); }
-        .chart-body {
-            flex: 1; position: relative; width: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center;
-        }
+        .chart-body { flex: 1; position: relative; width: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center; }
 
         /* AI Insights Card */
-        .ai-card {
-            grid-column: span 3;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            border: 1px solid #bae6fd;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            margin-bottom: 24px;
-        }
-        @media(max-width: 1200px) { .ai-card { grid-column: span 2; } }
-        @media(max-width: 768px) { .ai-card { grid-column: span 1; } }
-        
-        .ai-title {
-            font-size: 1.1rem; font-weight: 800; color: #0369a1;
-            margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-        }
-        .ai-title i { color: #0284c7; }
-        .ai-list {
-            margin: 0; padding: 0; list-style: none;
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;
-        }
-        .ai-item {
-            background: #ffffff; border: 1px solid #e0f2fe; border-radius: 8px; padding: 12px 16px;
-            font-size: 0.85rem; color: #0f172a; display: flex; gap: 10px; align-items: flex-start;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            line-height: 1.4;
-        }
-        .ai-item i { margin-top: 2px; }
-        .ai-normal { color: var(--green); }
-        .ai-warn { color: var(--orange); }
-        .ai-danger { color: var(--red); }
-        .ai-info { color: var(--blue); }
+        .ai-card { grid-column: span 3; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px; }
+        @media(max-width: 1200px) { .ai-card { grid-column: span 2; } } @media(max-width: 768px) { .ai-card { grid-column: span 1; } }
+        .ai-title { font-size: 1.1rem; font-weight: 800; color: #0369a1; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .ai-list { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+        .ai-item { background: #ffffff; border: 1px solid #e0f2fe; border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: #0f172a; display: flex; gap: 10px; align-items: flex-start; box-shadow: 0 1px 2px rgba(0,0,0,0.02); line-height: 1.4; }
+        .ai-normal { color: var(--green); } .ai-warn { color: var(--orange); } .ai-danger { color: var(--red); } .ai-info { color: var(--blue); }
 
-        /* Data Table (Screener) */
-        .data-card {
-            background: var(--card);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .table-wrap { overflow-x: auto; }
-        table.dt {
-            width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left;
-        }
-        table.dt th {
-            background: #f8fafc; padding: 12px 16px;
-            font-weight: 700; color: var(--text-muted);
-            border-bottom: 2px solid var(--border);
-            white-space: nowrap;
-        }
-        table.dt td {
-            padding: 10px 16px; border-bottom: 1px solid var(--border);
-            white-space: nowrap; color: var(--text-main);
-        }
-        table.dt tbody tr:hover { background: #f8fafc; }
-        .dt-group-row td {
-            background: #f1f5f9;
-            font-weight: 700;
-            color: #334155;
-            padding: 8px 16px;
-            border-bottom: 1px solid var(--border);
-        }
+        /* Data Tables & Toolbar */
+        .data-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; margin-bottom: 24px; }
+        .toolbar { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; border-bottom: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
+        .search-box { position: relative; width: 260px; }
+        .search-box i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; }
+        .search-input { width: 100%; padding: 8px 10px 8px 30px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; outline: none; transition: border 0.2s; }
+        .search-input:focus { border-color: var(--primary); }
+        .pagination { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+        .page-btn { padding: 4px 10px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; color: var(--text-main); }
+        .page-btn:hover:not(:disabled) { background: #f1f5f9; }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Status Badges */
-        .badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.72rem;
-        }
+        .table-wrap { overflow-x: auto; max-height: 500px; }
+        table.dt { width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; }
+        table.dt th { background: #f8fafc; padding: 10px 14px; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid var(--border); white-space: nowrap; position: sticky; top: 0; z-index: 10; }
+        table.dt td { padding: 8px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-main); }
+        table.dt tbody tr:hover td { background: #f1f5f9; }
+
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.72rem; }
         .badge::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; }
-        
         .bg-op { background: #dcfce7; color: #166534; } .bg-op::before { background: #10b981; }
         .bg-fo { background: #fee2e2; color: #991b1b; } .bg-fo::before { background: #ef4444; }
         .bg-sb { background: #dbeafe; color: #1e40af; } .bg-sb::before { background: #3b82f6; }
         .bg-mo { background: #fef3c7; color: #92400e; } .bg-mo::before { background: #f59e0b; }
         .bg-oth { background: #f3e8ff; color: #6b21a8; } .bg-oth::before { background: #a855f7; }
         .bg-def { background: #f1f5f9; color: #475569; } .bg-def::before { background: #94a3b8; }
-
-        .text-green { color: var(--green); font-weight: 700; }
-        .text-red { color: var(--red); font-weight: 700; }
         
-        /* Loading state */
-        .loading-msg { text-align: center; padding: 40px; color: var(--text-muted); font-weight: 500; }
+        .badge-patrol { display: inline-block; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; color: #fff; }
+        .badge-patrol.alarm { background: var(--red); } .badge-patrol.normal { background: var(--green); }
+
+        .text-green { color: var(--green); font-weight: 700; } .text-red { color: var(--red); font-weight: 700; }
+        
+        .loading-msg { text-align: center; padding: 40px; color: var(--text-muted); font-weight: 500; font-size: 0.85rem;}
         .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
     </style>
 @endsection
 
 @section('content')
-    <!-- Navbar overrides layout pushing content down, so we add padding here instead of body -->
     <div style="padding-top: 20px;"></div>
 
     <div class="top-control-bar">
-        <div class="top-title">
-            <i class="fas fa-chart-pie"></i> PERFORMANCE DASHBOARD MESIN
-        </div>
+        <div class="top-title"><i class="fas fa-chart-pie"></i> ENTERPRISE MONITORING DASHBOARD</div>
         <div class="controls">
             <input type="date" id="dash-date" class="date-input">
             <button class="btn-load" onclick="loadDashboard()"><i class="fas fa-sync-alt"></i> Load Data</button>
@@ -257,65 +118,57 @@
 
         <!-- AI Insights -->
         <div class="ai-card" id="ai-section" style="display: none;">
-            <div class="ai-title"><i class="fas fa-robot"></i> AI Diagnostic Insights</div>
-            <ul class="ai-list" id="ai-list">
-                <!-- Insights pushed via JS -->
-            </ul>
+            <div class="ai-title"><i class="fas fa-robot"></i> AI Smart Analysis & Insights</div>
+            <ul class="ai-list" id="ai-list"></ul>
         </div>
 
         <!-- Charts Grid -->
         <div class="charts-grid">
-            <!-- Beban Bar Chart -->
             <div class="chart-card" style="grid-column: span 2;">
-                <div class="chart-header"><i class="fas fa-bolt"></i> Total Beban (MW) per Pembangkit</div>
-                <div class="chart-body" id="cb-beban">
-                    <canvas id="chart-beban" style="display:none;"></canvas>
-                </div>
+                <div class="chart-header"><i class="fas fa-bolt"></i> Total Beban Aktual (MW) per Pembangkit</div>
+                <div class="chart-body" id="cb-beban"><canvas id="chart-beban" style="display:none;"></canvas></div>
             </div>
-
-            <!-- Status Doughnut -->
             <div class="chart-card">
-                <div class="chart-header"><i class="fas fa-heartbeat"></i> Distribusi Status Unit</div>
-                <div class="chart-body" id="cb-status">
-                    <canvas id="chart-status" style="display:none;"></canvas>
-                </div>
+                <div class="chart-header"><i class="fas fa-heartbeat"></i> Distribusi Status Unit Utama</div>
+                <div class="chart-body" id="cb-status"><canvas id="chart-status" style="display:none;"></canvas></div>
             </div>
-
-            <!-- Top 5 Mesin Bar Chart -->
             <div class="chart-card">
-                <div class="chart-header"><i class="fas fa-arrow-up"></i> Top 5 Unit Beban Tertinggi (MW)</div>
-                <div class="chart-body" id="cb-top5">
-                    <canvas id="chart-top5" style="display:none;"></canvas>
-                </div>
+                <div class="chart-header"><i class="fas fa-exclamation-triangle"></i> Top 5 Plant/Cabang Alarm (OMAMO)</div>
+                <div class="chart-body" id="cb-topalarm"><canvas id="chart-topalarm" style="display:none;"></canvas></div>
             </div>
-
-            <!-- Penyebab Gangguan / MO -->
             <div class="chart-card">
-                <div class="chart-header"><i class="fas fa-wrench"></i> Start Berhasil vs Gagal (Akumulasi)</div>
-                <div class="chart-body" id="cb-starts">
-                    <canvas id="chart-starts" style="display:none;"></canvas>
-                </div>
+                <div class="chart-header"><i class="fas fa-chart-bar"></i> Distribusi Alarm OMAMO Per Area (Top 5)</div>
+                <div class="chart-body" id="cb-omamo-area"><canvas id="chart-omamo-area" style="display:none;"></canvas></div>
             </div>
-
-            <!-- Patrol Doughnut -->
             <div class="chart-card">
-                <div class="chart-header"><i class="fas fa-clipboard-check"></i> Rasio Temuan Patrol</div>
-                <div class="chart-body" id="cb-patrol">
-                    <canvas id="chart-patrol" style="display:none;"></canvas>
-                </div>
+                <div class="chart-header"><i class="fas fa-clipboard-check"></i> Rasio Keseluruhan Temuan Patrol</div>
+                <div class="chart-body" id="cb-patrol"><canvas id="chart-patrol" style="display:none;"></canvas></div>
             </div>
         </div>
 
-        <!-- Screener Super Table -->
+        <!-- Navitas Table -->
         <div class="data-card">
-            <div class="chart-header" style="margin: 0; padding: 16px 20px; border-bottom: 1px solid var(--border); background: #fdfdfd;">
-                <i class="fas fa-table"></i> Data Lengkap Parameter Mesin
+            <div class="chart-header" style="margin: 0; padding: 16px 20px;">
+                <i class="fas fa-cogs"></i> Tabel Master Data Parameter Navitas
+            </div>
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-nav" class="search-input" placeholder="Cari plant, unit, status..." oninput="handleSearchNav()">
+                </div>
+                <div class="pagination" id="pag-nav">
+                    <span id="info-nav">Data: 0</span>
+                    <button class="page-btn" onclick="navitasPage(-1)" id="btn-prev-nav"><i class="fas fa-chevron-left"></i></button>
+                    <span id="page-txt-nav">1 / 1</span>
+                    <button class="page-btn" onclick="navitasPage(1)" id="btn-next-nav"><i class="fas fa-chevron-right"></i></button>
+                </div>
             </div>
             <div class="table-wrap">
                 <table class="dt">
                     <thead>
                         <tr>
-                            <th>Unit Pembangkit</th>
+                            <th>Cabang Pembangkit</th>
+                            <th>Nama Unit</th>
                             <th>Status Kinerja</th>
                             <th>Beban (MW)</th>
                             <th>MVAR</th>
@@ -323,8 +176,6 @@
                             <th>AGC</th>
                             <th>LFC</th>
                             <th>Penyebab</th>
-                            <th>Start B.</th>
-                            <th>Start G.</th>
                             <th>WO Status</th>
                             <th>Derate</th>
                             <th>SDOF</th>
@@ -332,9 +183,47 @@
                         </tr>
                     </thead>
                     <tbody id="dt-body">
+                        <tr><td colspan="13" class="loading-msg"><div class="spinner"></div> Menunggu data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Omamo Patrol Table -->
+        <div class="data-card">
+            <div class="chart-header" style="margin: 0; padding: 16px 20px;">
+                <i class="fas fa-shield-alt"></i> Tabel Lengkap Historis Patrol Pekerja (OMAMO)
+            </div>
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-patrol" class="search-input" placeholder="Cari instrumen, area, komentar..." oninput="handleSearchPatrol()">
+                </div>
+                <div class="pagination" id="pag-patrol">
+                    <span id="info-patrol">Data: 0</span>
+                    <button class="page-btn" onclick="patrolPage(-1)" id="btn-prev-patrol"><i class="fas fa-chevron-left"></i></button>
+                    <span id="page-txt-patrol">1 / 1</span>
+                    <button class="page-btn" onclick="patrolPage(1)" id="btn-next-patrol"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="dt">
+                    <thead>
                         <tr>
-                            <td colspan="15" class="loading-msg"><div class="spinner"></div> Pilih tanggal dan tekan Load Data</td>
+                            <th>Cabang / Pembangkit</th>
+                            <th>Unit</th>
+                            <th>Area Cek</th>
+                            <th>Instrumen</th>
+                            <th>Aturan Info</th>
+                            <th>Nilai</th>
+                            <th>Satuan</th>
+                            <th>Status</th>
+                            <th>Komentar Temuan</th>
+                            <th>Jam Patroli</th>
                         </tr>
+                    </thead>
+                    <tbody id="dt-patrol-body">
+                        <tr><td colspan="10" class="loading-msg"><div class="spinner"></div> Menunggu data OMAMO...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -347,13 +236,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (function(){
-    // Setup Chart Defaults for white theme
     Chart.defaults.color = '#64748b';
-    Chart.defaults.borderColor = '#f1f5f9';
+    Chart.defaults.borderColor = '#e2e8f0';
     Chart.defaults.font.family = "'Inter', sans-serif";
 
-    // Chart instances
-    let cStatus=null, cBeban=null, cPatrol=null, cTop5=null, cStarts=null;
+    let cStatus=null, cBeban=null, cPatrol=null, cTopAlarm=null, cAreaAlarm=null;
 
     const RK = { 'KDN':'NII TANASA','KDR':'RONGI','KDB':'BAU-BAU','KDM':'MIKUASI','KDI':'WINNING','KDS':'SABILAMBO','KDW':'WANGI-WANGI','KDE':'EREKE','KDK':'KOLAKA','KDH':'RAHA','KDL':'LADUMPI','KDA':'LANIPA NIPA','KDP':'POASIA','KDU':'WUA-WUA','KDG':'LANGARA','Z':'COMMON UPDK' };
     const RU = {
@@ -376,273 +263,273 @@
 
     const ST={NOH:{c:'op'},FOH:{c:'fo'},MOH:{c:'mo'},POH:{c:'mo'},RSH:{c:'sb'},SOH:{c:'sb'},MOTH:{c:'oth'},MB:{c:'oth'}};
     function sCls(cd){return 'bg-'+(ST[cd]||{c:'def'}).c;}
-
     const colors = { op:'#10b981', fo:'#ef4444', sb:'#3b82f6', mo:'#f59e0b', oth:'#8b5cf6', patAl:'#ef4444', patNm:'#10b981' };
 
-    // Date init
     const dateEl = document.getElementById('dash-date');
     dateEl.value = new Date().toISOString().split('T')[0];
 
-    function showLoading(id){
-        document.getElementById(id).innerHTML = `<div class="loading-msg"><div class="spinner"></div></div>`;
-    }
+    // Globals for Navitas Pagination
+    window.masterNavitas = [];
+    window.filteredNavitas = [];
+    window.currNavPage = 1;
+    const itemsPerPageNav = 15;
+
+    // Globals for Patrol OMAMO Pagination
+    window.masterPatrol = [];
+    window.filteredPatrol = [];
+    window.currPatPage = 1;
+    const itemsPerPagePat = 15;
+
+    function showLoading(id){ document.getElementById(id).innerHTML = `<div class="loading-msg"><div class="spinner"></div></div>`; }
 
     window.loadDashboard = async function(){
         const tgl = dateEl.value;
         if(!tgl) return alert('Pilih tanggal');
 
-        ['cb-status','cb-beban','cb-patrol','cb-top5','cb-starts'].forEach(id => showLoading(id));
-        document.getElementById('dt-body').innerHTML = `<tr><td colspan="15" class="loading-msg"><div class="spinner"></div> Memuat data parameter...</td></tr>`;
+        ['cb-status','cb-beban','cb-patrol','cb-topalarm','cb-omamo-area'].forEach(id => showLoading(id));
+        document.getElementById('dt-body').innerHTML = `<tr><td colspan="13" class="loading-msg"><div class="spinner"></div> Memuat Navitas...</td></tr>`;
+        document.getElementById('dt-patrol-body').innerHTML = `<tr><td colspan="10" class="loading-msg"><div class="spinner"></div> Memuat OMAMO...</td></tr>`;
         document.getElementById('ai-section').style.display = 'none';
 
-        const navUrl = 'http://192.168.1.203:8080/monday/navitas_status?tanggal=' + tgl;
-        const patUrl = 'https://omamo.plnnusantarapower.co.id/api/transaksi_patrol/monday?apikey=rYqzzcNVg5qM3Cer4l2eEvk5JrsLM8Th&tanggal=' + tgl;
+        const navStatusUrl = '/api/monitoring-mesin/navitas-status?tanggal=' + tgl;
+        const navBebanUrl  = '/api/monitoring-mesin/navitas-beban?tanggal=' + tgl;
+        const patUrl       = '/api/monitoring-mesin/patrol?tanggal=' + tgl;
 
-        let navData = [], patData = [];
+        let statusData = [], bebanData = [], patData = [];
 
-        try {
-            const r1 = await fetch(navUrl);
-            if(r1.ok) navData = (await r1.json()).entry || [];
-        } catch(e) { console.error('Navitas error', e); }
+        try { const r1 = await fetch(navStatusUrl); if(r1.ok) statusData = (await r1.json()).entry || []; } catch(e){}
+        try { const r2 = await fetch(navBebanUrl); if(r2.ok) bebanData = (await r2.json()).entry || []; } catch(e){}
+        try { const r3 = await fetch(patUrl); if(r3.ok) { const j3 = await r3.json(); if(j3.status!==false) patData = j3.data || []; } } catch(e){}
 
-        try {
-            const r2 = await fetch(patUrl);
-            if(r2.ok) {
-                const j2 = await r2.json();
-                if(j2.status!==false) patData = j2.data || [];
-            }
-        } catch(e) { console.error('Patrol error', e); }
-
-        processNavitas(navData);
-        processPatrol(patData);
-        generateAIInsights(navData, patData);
+        processNavitas(statusData, bebanData);
+        processPatrolData(patData);
+        generateAIInsights(patData, statusData);
     };
 
-    function processNavitas(entries){
-        if(!entries.length){
-            document.getElementById('dt-body').innerHTML = `<tr><td colspan="15" class="loading-msg">Data tidak tersedia untuk tanggal ini.</td></tr>`;
+    function processNavitas(statusData, bebanData){
+        if(!statusData.length && !bebanData.length){
+            document.getElementById('dt-body').innerHTML = `<tr><td colspan="13" class="loading-msg">Data kinerja & beban kosong.</td></tr>`;
+            ['k-total','k-mw','k-op','k-sb','k-fo','k-mo'].forEach(id=>document.getElementById(id).textContent='0');
             return;
         }
 
-        let c={tot:0,op:0,sb:0,fo:0,mo:0,mw:0, sGagal:0, sHasil:0};
-        let pBeban = {};
-        let screenMap = {}; 
-        
-        entries.forEach(e=>{
+        let map = {};
+        statusData.forEach(e => {
             if(!e.RKUNIT_KODE || !e.RUNIT_KODE) return;
-            const rk = e.RKUNIT_KODE;
-            const key = rk + '-' + e.RUNIT_KODE;
+            const rk = e.RKUNIT_KODE; const key = rk + '-' + e.RUNIT_KODE;
+            if(!map[key]) map[key] = { name: uName(rk, e.RUNIT_KODE), plant: pName(rk), rk: rk, stat: 'UKN', stDesc: '-', cause: '-', derate: '-', sdof: '-', est: '-', mw: null, mvar: '-', freegov: '-', agc: '-', lfc: '-', wo: '-' };
+            map[key].stat = e.KODE_STATUS || 'UKN'; map[key].stDesc = e.DESC_STATUS || '-'; map[key].cause = e.CAUSE_DESC || '-'; map[key].derate = e.TUKIN_DERATE != null ? e.TUKIN_DERATE : '-'; map[key].sdof = e.SDOF || '0'; map[key].wo = e.WORK_ORDER || '-'; map[key].est = e.TUKIN_EST_END_DATE ? (e.TUKIN_EST_END_DATE + (e.TUKIN_EST_END_TIME?' '+e.TUKIN_EST_END_TIME:'')) : '-';
+        });
+
+        bebanData.forEach(e => {
+            if(!e.RKUNIT_KODE || !e.RUNIT_KODE) return;
+            const rk = e.RKUNIT_KODE; const key = rk + '-' + e.RUNIT_KODE;
+            if(!map[key]) map[key] = { name: uName(rk, e.RUNIT_KODE), plant: pName(rk), rk: rk, stat: 'UKN', stDesc: '-', cause: '-', derate: '-', sdof: '-', est: '-', mw: null, mvar: '-', freegov: '-', agc: '-', lfc: '-', wo: '-' };
+            map[key].mw = e.TUBEBAN_MW !== null ? e.TUBEBAN_MW : null; map[key].mvar = e.TUBEBAN_MVAR != null ? e.TUBEBAN_MVAR : '-'; map[key].freegov = e.FREEGOV || '-'; map[key].agc = e.AGC || '-'; map[key].lfc = e.LFC || '-';
+        });
+
+        let c={tot:0,op:0,sb:0,fo:0,mo:0,mw:0};
+        let pBeban = {};
+        let statusCounts = {};
+
+        window.masterNavitas = Object.values(map).map(u => {
+            c.tot++; let w = parseFloat(u.mw) || 0; c.mw += w; pBeban[u.rk] = (pBeban[u.rk] || 0) + w;
+            const st = ST[u.stat]?.c; if(st==='op') c.op++; else if(st==='sb') c.sb++; else if(st==='fo') c.fo++; else if(st==='mo') c.mo++;
+            const gK = u.stat + " - " + u.stDesc; statusCounts[gK] = (statusCounts[gK] || 0) + 1;
             
-            if(!screenMap[key]) {
-                screenMap[key] = { 
-                    name: uName(rk, e.RUNIT_KODE), plant: pName(rk), rk: rk,
-                    stat: 'UKN', stDesc: '-', cause: '-', derate: '-', sdof: '-', est: '-',
-                    mw: null, mvar: '-', freegov: '-', agc: '-', lfc: '-',
-                    sBerhasil: '-', sGagal: '-', wo: '-'
-                };
-            }
-            // Status data
-            if(e.KODE_STATUS !== undefined || e.TUKIN_TGL !== undefined){
-                screenMap[key].stat = e.KODE_STATUS || 'UKN';
-                screenMap[key].stDesc = e.DESC_STATUS || '-';
-                screenMap[key].cause = e.CAUSE_DESC || '-';
-                screenMap[key].derate = e.TUKIN_DERATE != null ? e.TUKIN_DERATE : '-';
-                screenMap[key].sdof = e.SDOF || '0';
-                screenMap[key].sBerhasil = e.START_BERHASIL != null ? e.START_BERHASIL : '-';
-                screenMap[key].sGagal = e.START_GAGAL != null ? e.START_GAGAL : '-';
-                screenMap[key].wo = e.WORK_ORDER || '-';
-                screenMap[key].est = e.TUKIN_EST_END_DATE ? (e.TUKIN_EST_END_DATE + (e.TUKIN_EST_END_TIME?' '+e.TUKIN_EST_END_TIME:'')) : '-';
-            }
-            // Beban data
-            if(e.TUBEBAN_MW !== undefined || e.TUBEBAN_TGL !== undefined){
-                screenMap[key].mw = e.TUBEBAN_MW;
-                screenMap[key].mvar = e.TUBEBAN_MVAR != null ? e.TUBEBAN_MVAR : '-';
-                screenMap[key].freegov = e.FREEGOV || '-';
-                screenMap[key].agc = e.AGC || '-';
-                screenMap[key].lfc = e.LFC || '-';
-            }
-        });
+            // Search string indexer
+            u._search = (u.name + ' ' + u.plant + ' ' + u.stat + ' ' + u.stDesc + ' ' + u.cause).toLowerCase();
+            return u;
+        }).sort((a,b)=>a.plant.localeCompare(b.plant) || a.name.localeCompare(b.name));
 
-        let gScreen = {};
-        Object.values(screenMap).forEach(u => {
-            if(!gScreen[u.rk]) gScreen[u.rk] = [];
-            gScreen[u.rk].push(u);
-            
-            c.tot++;
-            let w = parseFloat(u.mw) || 0;
-            c.mw += w;
-            pBeban[u.rk] = (pBeban[u.rk] || 0) + w;
+        document.getElementById('k-total').textContent = c.tot; document.getElementById('k-mw').textContent = c.mw.toFixed(2);
+        document.getElementById('k-op').textContent = c.op; document.getElementById('k-sb').textContent = c.sb;
+        document.getElementById('k-fo').textContent = c.fo; document.getElementById('k-mo').textContent = c.mo;
 
-            const st = ST[u.stat]?.c;
-            if(st==='op') c.op++; else if(st==='sb') c.sb++; else if(st==='fo') c.fo++; else if(st==='mo') c.mo++;
-
-            c.sHasil += parseInt(u.sBerhasil) || 0;
-            c.sGagal += parseInt(u.sGagal) || 0;
-        });
-
-        // KPI
-        document.getElementById('k-total').textContent = c.tot;
-        document.getElementById('k-mw').textContent = c.mw.toFixed(2);
-        document.getElementById('k-op').textContent = c.op;
-        document.getElementById('k-sb').textContent = c.sb;
-        document.getElementById('k-fo').textContent = c.fo;
-        document.getElementById('k-mo').textContent = c.mo;
-
-        // TABLE
-        let dtHtml = '';
-        Object.keys(gScreen).sort((a,b)=>pName(a).localeCompare(pName(b))).forEach(rk => {
-            const list = gScreen[rk];
-            dtHtml += `<tr class="dt-group-row"><td colspan="15"><i class="fas fa-industry"></i> ${pName(rk)} (${list.length} Unit)</td></tr>`;
-            list.sort((a,b)=>a.name.localeCompare(b.name)).forEach(u => {
-                const bCls = sCls(u.stat);
-                const bg = `<span class="badge ${bCls}">${u.stDesc || u.stat}</span>`;
-                const mwv = u.mw !== null ? `<span class="text-green">${parseFloat(u.mw).toFixed(2)}</span>` : '-';
-                const foh = u.cause && u.cause !== '-' ? `<span class="text-red">${u.cause}</span>` : '-';
-                
-                dtHtml += `<tr>
-                    <td style="font-weight:600;">${u.name}</td>
-                    <td>${bg}</td>
-                    <td>${mwv}</td>
-                    <td>${u.mvar}</td>
-                    <td>${u.freegov}</td>
-                    <td>${u.agc}</td>
-                    <td>${u.lfc}</td>
-                    <td>${foh}</td>
-                    <td>${u.sBerhasil}</td>
-                    <td class="${parseInt(u.sGagal)>0?'text-red':''}">${u.sGagal}</td>
-                    <td>${u.wo}</td>
-                    <td class="text-orange">${u.derate !== '-' ? u.derate : '-'}</td>
-                    <td>${u.sdof}</td>
-                    <td>${u.est}</td>
-                </tr>`;
-            });
-        });
-        document.getElementById('dt-body').innerHTML = dtHtml;
-
-        // DRAW STATUS DOUGHNUT
+        // Charts
         document.getElementById('cb-status').innerHTML = '<canvas id="chart-status"></canvas>';
-        cStatus = new Chart(document.getElementById('chart-status'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Operasi', 'Standby', 'Gangguan', 'Pemeliharaan'],
-                datasets: [{ data: [c.op, c.sb, c.fo, c.mo], backgroundColor: [colors.op, colors.sb, colors.fo, colors.mo], borderWidth: 2 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
-        });
+        const sL=Object.keys(statusCounts), sD=sL.map(k=>statusCounts[k]), sC=sL.map(l=>colors[ST[l.split(' - ')[0]]?.c||'oth']);
+        cStatus = new Chart(document.getElementById('chart-status'), { type: 'doughnut', data: { labels: sL, datasets: [{ data: sD, backgroundColor: sC, borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } } });
 
-        // DRAW BEBAN BAR
         document.getElementById('cb-beban').innerHTML = '<canvas id="chart-beban"></canvas>';
-        const pKeys = Object.keys(pBeban).sort((a,b)=>pBeban[b]-pBeban[a]);
-        cBeban = new Chart(document.getElementById('chart-beban'), {
-            type: 'bar',
-            data: {
-                labels: pKeys.map(r=>pName(r)),
-                datasets: [{ label:' MW', data: pKeys.map(r=>pBeban[r]), backgroundColor: colors.op, borderRadius: 6 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } }
-            }
-        });
+        const pK = Object.keys(pBeban).filter(r=>pBeban[r]>0).sort((a,b)=>pBeban[b]-pBeban[a]);
+        cBeban = new Chart(document.getElementById('chart-beban'), { type: 'bar', data: { labels: pK.map(r=>pName(r)), datasets: [{ label:' MW', data: pK.map(r=>pBeban[r]), backgroundColor: colors.op, borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } });
 
-        // DRAW TOP 5 MESIN (Horizontal JS)
-        document.getElementById('cb-top5').innerHTML = '<canvas id="chart-top5"></canvas>';
-        const sortedU = Object.values(screenMap).filter(u=>parseFloat(u.mw)>0).sort((a,b)=>parseFloat(b.mw)-parseFloat(a.mw)).slice(0,5);
-        cTop5 = new Chart(document.getElementById('chart-top5'), {
-            type: 'bar',
-            data: {
-                labels: sortedU.map(u=>u.name),
-                datasets: [{ label:' MW', data: sortedU.map(u=>parseFloat(u.mw)), backgroundColor: '#0ea5e9', borderRadius: 4 }]
-            },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }
-        });
-
-        // DRAW STARTS vs FAILS
-        document.getElementById('cb-starts').innerHTML = '<canvas id="chart-starts"></canvas>';
-        cStarts = new Chart(document.getElementById('chart-starts'), {
-            type: 'pie',
-            data: {
-                labels: ['Start Berhasil', 'Start Gagal'],
-                datasets: [{ data: [c.sHasil, c.sGagal], backgroundColor: [colors.op, colors.fo], borderWidth: 2 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-        });
+        // Init Data Table
+        document.getElementById('search-nav').value = '';
+        window.filteredNavitas = [...window.masterNavitas];
+        navitasPage(0, true);
     }
 
-    function processPatrol(items){
+    function processPatrolData(items){
         if(!items.length){
-            document.getElementById('cb-patrol').innerHTML = '<div class="loading-msg">Tidak ada data patroli</div>';
+            document.getElementById('dt-patrol-body').innerHTML = '<tr><td colspan="10" class="loading-msg">Tidak ada temuan patroli OMAMO</td></tr>';
+            document.getElementById('k-alarm').textContent = 0; document.getElementById('k-normal').textContent = 0;
             return;
         }
 
         let al=0, nm=0;
-        items.forEach(i => { if(i.status==='ALARM') al++; else nm++; });
-        document.getElementById('k-alarm').textContent = al;
-        document.getElementById('k-normal').textContent = nm;
+        let alarmByCabang = {}, alarmByArea = {};
+        
+        window.masterPatrol = items.map(e => {
+            if(e.status==='ALARM') {
+                al++;
+                alarmByCabang[e.cabang] = (alarmByCabang[e.cabang]||0)+1;
+                alarmByArea[e.area] = (alarmByArea[e.area]||0)+1;
+            } else { nm++; }
+            e._search = (e.cabang+' '+e.unit+' '+e.area+' '+e.instrument+' '+e.komentar+' '+e.status).toLowerCase();
+            return e;
+        }).sort((a,b)=>(a.status==='ALARM'?-1:1)); // Alarm on top always
 
+        document.getElementById('k-alarm').textContent = al; document.getElementById('k-normal').textContent = nm;
+
+        // Chart OMAMO Doughnut
         document.getElementById('cb-patrol').innerHTML = '<canvas id="chart-patrol"></canvas>';
-        cPatrol = new Chart(document.getElementById('chart-patrol'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Alarm', 'Normal'],
-                datasets: [{ data: [al, nm], backgroundColor: [colors.patAl, colors.patNm], borderWidth: 2 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
-        });
+        cPatrol = new Chart(document.getElementById('chart-patrol'), { type: 'polarArea', data: { labels: ['Alarm', 'Normal'], datasets: [{ data: [al, nm], backgroundColor: [colors.patAl, colors.patNm], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });
+
+        // Chart OMAMO Alarm Bars
+        document.getElementById('cb-topalarm').innerHTML = '<canvas id="chart-topalarm"></canvas>';
+        const cbLabels = Object.keys(alarmByCabang).sort((a,b)=>alarmByCabang[b]-alarmByCabang[a]).slice(0,5);
+        cTopAlarm = new Chart(document.getElementById('chart-topalarm'), { type: 'bar', data: { labels: cbLabels, datasets: [{ label:' Alarm', data: cbLabels.map(l=>alarmByCabang[l]), backgroundColor: colors.fo, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales:{x:{grid:{display:false}}} } });
+
+        document.getElementById('cb-omamo-area').innerHTML = '<canvas id="chart-omamo-area"></canvas>';
+        const arLabels = Object.keys(alarmByArea).sort((a,b)=>alarmByArea[b]-alarmByArea[a]).slice(0,5);
+        cAreaAlarm = new Chart(document.getElementById('chart-omamo-area'), { type: 'bar', data: { labels: arLabels.map(a=>a.length>20?a.substring(0,20)+'..':a), datasets: [{ label:' Alarm Area', data: arLabels.map(a=>alarmByArea[a]), backgroundColor: colors.orange, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { title: ctx=>arLabels[ctx[0].dataIndex] }} }, scales:{x:{grid:{display:false}}} } });
+
+
+        document.getElementById('search-patrol').value = '';
+        window.filteredPatrol = [...window.masterPatrol];
+        patrolPage(0, true);
     }
 
-    function generateAIInsights(navData, patData) {
+    /* ==== PAGINATION LOGIC NAVITAS ==== */
+    window.handleSearchNav = function(){
+        const v = document.getElementById('search-nav').value.toLowerCase();
+        if(!v) window.filteredNavitas = [...window.masterNavitas];
+        else window.filteredNavitas = window.masterNavitas.filter(u => u._search.includes(v));
+        navitasPage(0, true);
+    };
+
+    window.navitasPage = function(step, reset=false){
+        if(reset) window.currNavPage = 1;
+        else window.currNavPage += step;
+        
+        const total = window.filteredNavitas.length;
+        const totalPages = Math.ceil(total / itemsPerPageNav) || 1;
+        if(window.currNavPage < 1) window.currNavPage = 1;
+        if(window.currNavPage > totalPages) window.currNavPage = totalPages;
+
+        document.getElementById('info-nav').textContent = `Total: ${total}`;
+        document.getElementById('page-txt-nav').textContent = `${window.currNavPage} / ${totalPages}`;
+        document.getElementById('btn-prev-nav').disabled = (window.currNavPage === 1);
+        document.getElementById('btn-next-nav').disabled = (window.currNavPage === totalPages);
+
+        const start = (window.currNavPage - 1) * itemsPerPageNav;
+        const pageData = window.filteredNavitas.slice(start, start + itemsPerPageNav);
+        
+        let html = '';
+        if(!pageData.length) html = '<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--text-muted)">Pencarian tidak ditemukan</td></tr>';
+        
+        pageData.forEach(u => {
+            const detailStatus = u.stat !== 'UKN' ? (u.stat + ' - ' + u.stDesc) : '-';
+            const bg = `<span class="badge ${sCls(u.stat)}">${detailStatus}</span>`;
+            const mwv = u.mw !== null ? `<span class="text-green">${parseFloat(u.mw).toFixed(2)}</span>` : '-';
+            const foh = u.cause && u.cause !== '-' ? `<span class="text-red">${u.cause}</span>` : '-';
+            html += `<tr>
+                <td style="font-weight:600;color:var(--text-muted);">${u.plant}</td>
+                <td style="font-weight:700;">${u.name}</td>
+                <td>${bg}</td>
+                <td>${mwv}</td>
+                <td>${u.mvar}</td>
+                <td>${u.freegov}</td>
+                <td>${u.agc}</td>
+                <td>${u.lfc}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${foh}">${foh}</td>
+                <td title="${u.wo}">${u.wo !== '-' && u.wo.length > 15 ? u.wo.substring(0,15)+'...' : u.wo}</td>
+                <td class="text-orange">${u.derate !== '-' ? u.derate : '-'}</td>
+                <td>${u.sdof}</td>
+                <td>${u.est}</td>
+            </tr>`;
+        });
+        document.getElementById('dt-body').innerHTML = html;
+    };
+
+    /* ==== PAGINATION LOGIC PATROL ==== */
+    window.handleSearchPatrol = function(){
+        const v = document.getElementById('search-patrol').value.toLowerCase();
+        if(!v) window.filteredPatrol = [...window.masterPatrol];
+        else window.filteredPatrol = window.masterPatrol.filter(u => u._search.includes(v));
+        patrolPage(0, true);
+    };
+
+    window.patrolPage = function(step, reset=false){
+        if(reset) window.currPatPage = 1;
+        else window.currPatPage += step;
+        
+        const total = window.filteredPatrol.length;
+        const totalPages = Math.ceil(total / itemsPerPagePat) || 1;
+        if(window.currPatPage < 1) window.currPatPage = 1;
+        if(window.currPatPage > totalPages) window.currPatPage = totalPages;
+
+        document.getElementById('info-patrol').textContent = `Total: ${total}`;
+        document.getElementById('page-txt-patrol').textContent = `${window.currPatPage} / ${totalPages}`;
+        document.getElementById('btn-prev-patrol').disabled = (window.currPatPage === 1);
+        document.getElementById('btn-next-patrol').disabled = (window.currPatPage === totalPages);
+
+        const start = (window.currPatPage - 1) * itemsPerPagePat;
+        const pageData = window.filteredPatrol.slice(start, start + itemsPerPagePat);
+        
+        let html = '';
+        if(!pageData.length) html = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-muted)">Pencarian tidak ditemukan</td></tr>';
+        
+        pageData.forEach(e => {
+            const bCls = e.status==='ALARM' ? 'alarm' : 'normal';
+            html += `<tr>
+                <td style="font-weight:600;color:var(--text-muted)">${e.cabang || '-'}</td>
+                <td style="font-weight:700;">${e.unit || '-'}</td>
+                <td title="${e.area}">${e.area && e.area.length>25 ? e.area.substring(0,25)+'...' : (e.area||'-')}</td>
+                <td>${e.instrument || '-'}</td>
+                <td title="${e.instrument_info}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${e.instrument_info || '-'}</td>
+                <td class="${e.status==='ALARM'?'text-red':'text-green'}">${e.nilai || '0'}</td>
+                <td>${e.instrument_unit || '-'}</td>
+                <td><span class="badge-patrol ${bCls}">${e.status}</span></td>
+                <td>${e.komentar || '-'}</td>
+                <td>${e.created_date ? e.created_date.substring(11,19) : '-'}</td>
+            </tr>`;
+        });
+        document.getElementById('dt-patrol-body').innerHTML = html;
+    };
+
+    function generateAIInsights(patData, statusData) {
         document.getElementById('ai-section').style.display = 'block';
         const list = document.getElementById('ai-list');
         list.innerHTML = '';
+        if(!statusData.length && !patData.length) return list.innerHTML = '<li>Data kosong</li>';
 
-        if(!navData.length) {
-            list.innerHTML = '<li class="ai-item ai-warn"><i class="fas fa-exclamation-triangle"></i> Data mesin belum tersedia untuk ditarik insight.</li>';
-            return;
-        }
-
-        let fohCount = 0, fohNames = [], totalMW = 0, topUnit = null;
         let alarms = patData.filter(i => i.status === 'ALARM');
+        let fohCount = statusData.filter(s => s.KODE_STATUS==='FOH').length;
 
-        navData.forEach(e => {
-            if(e.KODE_STATUS === 'FOH') {
-                fohCount++;
-                if(fohNames.length < 3) fohNames.push(uName(e.RKUNIT_KODE, e.RUNIT_KODE));
-            }
-            let mw = parseFloat(e.TUBEBAN_MW) || 0;
-            totalMW += mw;
-            if(mw > 0 && (!topUnit || mw > parseFloat(topUnit.TUBEBAN_MW))) topUnit = e;
-        });
+        // Insight Navitas FOH
+        if(fohCount > 0) list.innerHTML += `<li class="ai-item ai-danger"><i class="fas fa-exclamation-circle"></i> Terdapat <strong>${fohCount} mesin mengalami gangguan berat (FOH)</strong> hari ini pada seluruh area kendari.</li>`;
+        else list.innerHTML += `<li class="ai-item ai-normal"><i class="fas fa-check-circle"></i> Sangat baik: <strong>Tidak ada mesin FOH (0 Kasus)</strong>. Seluruh permesinan dalam status siap / beroperasi.</li>`;
 
-        // Insight 1: Peak Loader
-        if(topUnit) {
-            list.innerHTML += `<li class="ai-item ai-info"><i class="fas fa-arrow-trend-up"></i> Unit tulang punggung saat ini adalah <strong>${uName(topUnit.RKUNIT_KODE, topUnit.RUNIT_KODE)}</strong> dengan suppai beban tertinggi mencapai <strong>${parseFloat(topUnit.TUBEBAN_MW).toFixed(2)} MW</strong>.</li>`;
-        } else {
-            list.innerHTML += `<li class="ai-item ai-warn"><i class="fas fa-power-off"></i> Menunjukkan indikasi black-out atau seluruh unit sedang tidak memikul beban.</li>`;
-        }
-
-        // Insight 2: Breakdown status
-        if(fohCount > 0) {
-            let n = fohNames.join(', ') + (fohCount > 3 ? ` dan ${fohCount-3} lainnya` : '');
-            list.innerHTML += `<li class="ai-item ai-danger"><i class="fas fa-exclamation-circle"></i> Terdapat <strong>${fohCount} mesin mengalami gangguan (FOH)</strong> hari ini, di antaranya: ${n}. Perhatian khusus diperlukan pada WO perbaikan.</li>`;
-        } else {
-            list.innerHTML += `<li class="ai-item ai-normal"><i class="fas fa-check-circle"></i> Sangat baik: <strong>Tidak ada mesin yang FOH</strong>. Ketersediaan unit sedang optimal.</li>`;
-        }
-
-        // Insight 3: Patrol Alarm
+        // Insight OMAMO
         if(alarms.length > 0) {
-            let uniqAreas = [...new Set(alarms.map(a => a.cabang))];
-            list.innerHTML += `<li class="ai-item ai-warn"><i class="fas fa-bell"></i> Patrol (OMAMO) mendeteksi <strong>${alarms.length} parameter menyimpang (ALARM)</strong>. Prioritas pengecekan pada pembangkit: ${uniqAreas.join(', ')}.</li>`;
+            // Group alarms
+            let byCabang = {}; alarms.forEach(a=>{ byCabang[a.cabang]=(byCabang[a.cabang]||0)+1; });
+            const topCabang = Object.keys(byCabang).sort((a,b)=>byCabang[b]-byCabang[a])[0];
+            list.innerHTML += `<li class="ai-item ai-warn"><i class="fas fa-bell"></i> Patrol mencatat <strong>${alarms.length} Laporan Alarm</strong> di seluruh cabang. Area yang paling kritis dan harus segera dievaluasi pimpinannya hari ini adalah <strong>${topCabang} (${byCabang[topCabang]} Alarm)</strong>.</li>`;
+            
+            let byInstr = {}; alarms.forEach(a=>{ byInstr[a.instrument]=(byInstr[a.instrument]||0)+1; });
+            const topInstr = Object.keys(byInstr).sort((a,b)=>byInstr[b]-byInstr[a])[0];
+            list.innerHTML += `<li class="ai-item ai-warn"><i class="fas fa-exclamation-triangle"></i> Instrumen penyebab alarm paling banyak saat patroli berfokus pada <strong>${topInstr}</strong>. Teknisi perlu mempertimbangkan investigasi preventif pada sensor/area ini.</li>`;
         } else {
-            list.innerHTML += `<li class="ai-item ai-normal"><i class="fas fa-shield-alt"></i> Data Patrol OMAMO menunjukkan <strong>tidak ada anomali (0 ALARM)</strong> selama shift berjalan. Parameter dalam keadaan aman.</li>`;
+            list.innerHTML += `<li class="ai-item ai-normal"><i class="fas fa-shield-alt"></i> Luar biasa: Laporan patroli pekerja OMAMO menunjukkan <strong>tidak ada instrumen yang menyimpang di luar standar (0 Alarm)</strong>.</li>`;
         }
 
-        // Insight 4: Operational capacity
-        list.innerHTML += `<li class="ai-item ai-info"><i class="fas fa-industry"></i> Total energi yang dibangkitkan sistem mencapai <strong>${totalMW.toFixed(2)} MW</strong>. Status ini mencerminkan kapasitas suplai riil UP Kendari hari ini.</li>`;
+        list.innerHTML += `<li class="ai-item ai-info"><i class="fas fa-lightbulb"></i> Gunakan kotak pencarian (search box) di setiap tabel untuk melakukan filter kilat terhadap parameter yang Anda inginkan.</li>`;
     }
 
-    // Run on boot
     document.addEventListener('DOMContentLoaded', loadDashboard);
 })();
 </script>
