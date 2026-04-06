@@ -19,6 +19,7 @@
                         <li><a href="{{ route('peta-kesehatan-unit') }}" class="nav-link uppercase" style="white-space: normal; width: 150px; text-align: center; line-height: 1.1; display: flex; align-items: center; justify-content: center;">Peta Kesehatan Unit</a></li>
                         <li><a href="{{ route('calendar.index') }}" class="nav-link uppercase">Kalender Pemeliharaan</a></li>
                         <li><a href="{{ route('notulen.form') }}" class="nav-link uppercase">Notulen</a></li>
+                        <li><a href="{{ route('monitoring-mesin') }}" class="nav-link uppercase" style="white-space: normal; width: 150px; text-align: center; line-height: 1.1; display: flex; align-items: center; justify-content: center;">Monitoring Mesin</a></li>
                         <!-- Dropdown Menu Lainnya -->
                         {{-- <li class="relative group">
                             <button class="nav-link flex items-center focus:outline-none" id="menu-lainnya-btn">
@@ -85,6 +86,12 @@
                     <li>
                         <a href="{{ route('notulen.form') }}" class="nav-link-mobile">
                             Notulen
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('monitoring-mesin') }}" class="nav-link-mobile">
+                            Monitoring Mesin
                         </a>
                     </li>
 

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AdminController;
@@ -57,6 +58,32 @@ use App\Http\Controllers\AttendanceQRController;
 use App\Http\Controllers\Admin\MaximoController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
+
+// Monitoring Mesin
+Route::get('/monitoring-mesin', function () {
+    return view('monitoring-mesin');
+})->name('monitoring-mesin');
+
+// API Proxy for Navitas (avoid CORS)
+Route::get('/api/monitoring-mesin/navitas-beban', function (\Illuminate\Http\Request $request) {
+    $tanggal = $request->query('tanggal', date('Y-m-d'));
+    try {
+        $response = Http::timeout(15)->get('http://192.168.1.203:8080/monday/navitas_beban', ['tanggal' => $tanggal]);
+        return $response->json();
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage(), 'entry' => []], 500);
+    }
+});
+
+Route::get('/api/monitoring-mesin/navitas-status', function (\Illuminate\Http\Request $request) {
+    $tanggal = $request->query('tanggal', date('Y-m-d'));
+    try {
+        $response = Http::timeout(15)->get('http://192.168.1.203:8080/monday/navitas_status', ['tanggal' => $tanggal]);
+        return $response->json();
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage(), 'entry' => []], 500);
+    }
+});
 
 // Explicitly define this route to avoid collision in the messy web.php
 Route::get('/admin/other-discussions/api-list', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'apiIndex'])
