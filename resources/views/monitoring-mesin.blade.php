@@ -2,341 +2,228 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; padding-top: 64px; background: #f0f4f8; }
+        body { padding-top: 0; background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 
-        /* Page Header */
+        .mm-page { max-width: 1300px; margin: 0 auto; padding: 20px 16px 40px; padding-top: 90px; }
+
+        /* Header */
         .mm-header {
-            background: linear-gradient(135deg, #0a2540 0%, #0d4f6e 50%, #0095B7 100%);
-            padding: 2.5rem 1.5rem 2rem;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        .mm-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(168,214,0,0.15) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-        .mm-header-inner {
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
-        .mm-title {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 0.25rem;
-        }
-        .mm-subtitle {
-            font-size: 0.95rem;
-            color: rgba(255,255,255,0.75);
-            font-weight: 400;
-        }
-        .mm-controls {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 12px;
-            margin-top: 1.25rem;
-        }
-        .mm-date-input {
-            padding: 10px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.25);
-            background: rgba(255,255,255,0.12);
-            color: white;
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-            backdrop-filter: blur(6px);
-            outline: none;
-            transition: all 0.3s;
-        }
-        .mm-date-input:focus {
-            border-color: #A8D600;
-            background: rgba(255,255,255,0.2);
-        }
-        .mm-btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.25s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-family: 'Inter', sans-serif;
-        }
-        .mm-btn-primary {
-            background: #A8D600;
-            color: #0a2540;
-        }
-        .mm-btn-primary:hover { background: #bde630; transform: translateY(-1px); }
-        .mm-btn-secondary {
-            background: rgba(255,255,255,0.15);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .mm-btn-secondary:hover { background: rgba(255,255,255,0.25); }
-        .mm-btn-secondary.active { background: rgba(168,214,0,0.3); border-color: #A8D600; color: #A8D600; }
-        .mm-live-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: #A8D600;
-            animation: mm-pulse 1.5s infinite;
-            display: inline-block;
-        }
-        @keyframes mm-pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(168,214,0,0.5); }
-            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(168,214,0,0); }
-        }
-
-        /* Summary Cards */
-        .mm-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 14px;
-            max-width: 1400px;
-            margin: -28px auto 0;
-            padding: 0 1.5rem;
-            position: relative;
-            z-index: 3;
-        }
-        .mm-card {
-            background: white;
-            border-radius: 14px;
-            padding: 18px 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            transition: transform 0.25s, box-shadow 0.25s;
-            border-bottom: 3px solid transparent;
-        }
-        .mm-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
-        .mm-card-icon {
-            width: 42px; height: 42px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; margin-bottom: 10px;
-        }
-        .mm-card-value { font-size: 1.8rem; font-weight: 800; line-height: 1; }
-        .mm-card-label { font-size: 0.75rem; color: #64748b; font-weight: 500; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .mm-card.total { border-bottom-color: #0095B7; }
-        .mm-card.total .mm-card-icon { background: #e0f7fa; color: #0095B7; }
-        .mm-card.total .mm-card-value { color: #0095B7; }
-        .mm-card.operasi { border-bottom-color: #22c55e; }
-        .mm-card.operasi .mm-card-icon { background: #dcfce7; color: #22c55e; }
-        .mm-card.operasi .mm-card-value { color: #22c55e; }
-        .mm-card.standby { border-bottom-color: #3b82f6; }
-        .mm-card.standby .mm-card-icon { background: #dbeafe; color: #3b82f6; }
-        .mm-card.standby .mm-card-value { color: #3b82f6; }
-        .mm-card.gangguan { border-bottom-color: #ef4444; }
-        .mm-card.gangguan .mm-card-icon { background: #fee2e2; color: #ef4444; }
-        .mm-card.gangguan .mm-card-value { color: #ef4444; }
-        .mm-card.har { border-bottom-color: #f59e0b; }
-        .mm-card.har .mm-card-icon { background: #fef3c7; color: #f59e0b; }
-        .mm-card.har .mm-card-value { color: #f59e0b; }
-        .mm-card.mo { border-bottom-color: #8b5cf6; }
-        .mm-card.mo .mm-card-icon { background: #ede9fe; color: #8b5cf6; }
-        .mm-card.mo .mm-card-value { color: #8b5cf6; }
-
-        /* Tab Navigation */
-        .mm-tabs-wrap {
-            max-width: 1400px;
-            margin: 28px auto 0;
-            padding: 0 1.5rem;
-        }
-        .mm-tabs {
-            display: flex;
-            background: white;
-            border-radius: 14px;
-            padding: 5px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            gap: 4px;
-        }
-        .mm-tab {
-            flex: 1;
-            padding: 12px 20px;
-            border-radius: 10px;
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.25s;
-            color: #64748b;
-            font-family: 'Inter', sans-serif;
-        }
-        .mm-tab.active {
-            background: linear-gradient(135deg, #0095B7, #0d4f6e);
-            color: white;
-            box-shadow: 0 4px 12px rgba(0,149,183,0.3);
-        }
-        .mm-tab:hover:not(.active) { background: #f1f5f9; color: #0a2540; }
-
-        /* Content Area */
-        .mm-content {
-            max-width: 1400px;
-            margin: 20px auto;
-            padding: 0 1.5rem 2rem;
-        }
-        .mm-panel { display: none; animation: mmFadeIn 0.4s ease; }
-        .mm-panel.active { display: block; }
-        @keyframes mmFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Plant Group */
-        .mm-plant-group {
-            background: white;
-            border-radius: 14px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            overflow: hidden;
-        }
-        .mm-plant-header {
-            background: linear-gradient(135deg, #f8fafc, #eef2f7);
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            cursor: pointer;
-            border-bottom: 1px solid #e2e8f0;
-            transition: background 0.2s;
+            gap: 12px;
         }
-        .mm-plant-header:hover { background: linear-gradient(135deg, #eef6f9, #e8f0f5); }
-        .mm-plant-name {
+        .mm-header h1 {
+            font-size: 1.25rem;
             font-weight: 700;
-            font-size: 0.95rem;
-            color: #0a2540;
+            color: #1a1a1a;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .mm-plant-name i { color: #0095B7; }
-        .mm-plant-badge {
-            background: #0095B7;
-            color: white;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .mm-header h1 i { color: #0095B7; }
+        .mm-header-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
-        .mm-plant-body { padding: 0; }
-        .mm-plant-body.collapsed { display: none; }
+        .mm-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: #fff;
+            color: #333;
+            outline: none;
+        }
+        .mm-input:focus { border-color: #0095B7; }
+        .mm-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #333;
+            transition: background 0.15s;
+        }
+        .mm-btn:hover { background: #f0f0f0; }
+        .mm-btn-primary { background: #0095B7; color: #fff; border-color: #0095B7; }
+        .mm-btn-primary:hover { background: #007a96; }
+        .mm-status-msg {
+            font-size: 0.8rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .mm-status-msg .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #22c55e;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.3; } }
 
-        /* Table Styles */
+        /* Stats Row */
+        .mm-stats {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .mm-stat {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            flex: 1;
+            min-width: 100px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            text-align: center;
+            border-left: 3px solid #e5e5e5;
+        }
+        .mm-stat-val { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+        .mm-stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 4px; }
+        .mm-stat.s-total { border-left-color: #0095B7; }
+        .mm-stat.s-total .mm-stat-val { color: #0095B7; }
+        .mm-stat.s-op { border-left-color: #22c55e; }
+        .mm-stat.s-op .mm-stat-val { color: #22c55e; }
+        .mm-stat.s-sb { border-left-color: #3b82f6; }
+        .mm-stat.s-sb .mm-stat-val { color: #3b82f6; }
+        .mm-stat.s-fo { border-left-color: #ef4444; }
+        .mm-stat.s-fo .mm-stat-val { color: #ef4444; }
+        .mm-stat.s-mo { border-left-color: #f59e0b; }
+        .mm-stat.s-mo .mm-stat-val { color: #f59e0b; }
+
+        /* Table Container */
+        .mm-table-wrap {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .mm-table-title {
+            padding: 14px 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a1a1a;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mm-table-title i { color: #0095B7; font-size: 0.9rem; }
+        .mm-table-scroll { overflow-x: auto; }
+
+        /* Table */
         .mm-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
         .mm-table th {
-            background: #f8fafc;
+            background: #fafafa;
             padding: 10px 14px;
             text-align: left;
             font-weight: 600;
-            color: #475569;
-            font-size: 0.78rem;
+            color: #666;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #e2e8f0;
+            letter-spacing: 0.3px;
+            border-bottom: 1px solid #eee;
             white-space: nowrap;
         }
         .mm-table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #334155;
-        }
-        .mm-table tr:last-child td { border-bottom: none; }
-        .mm-table tr:hover td { background: #f8fafc; }
-
-        /* Status Badge */
-        .mm-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.78rem;
+            padding: 9px 14px;
+            border-bottom: 1px solid #f3f3f3;
+            color: #333;
             white-space: nowrap;
         }
-        .mm-status-dot { width: 7px; height: 7px; border-radius: 50%; }
-        .mm-status-noh { background: #dcfce7; color: #166534; }
-        .mm-status-noh .mm-status-dot { background: #22c55e; }
-        .mm-status-rsh, .mm-status-soh { background: #dbeafe; color: #1e40af; }
-        .mm-status-rsh .mm-status-dot, .mm-status-soh .mm-status-dot { background: #3b82f6; }
-        .mm-status-foh { background: #fee2e2; color: #991b1b; }
-        .mm-status-foh .mm-status-dot { background: #ef4444; }
-        .mm-status-poh, .mm-status-moh { background: #fef3c7; color: #92400e; }
-        .mm-status-poh .mm-status-dot, .mm-status-moh .mm-status-dot { background: #f59e0b; }
-        .mm-status-moth { background: #ede9fe; color: #5b21b6; }
-        .mm-status-moth .mm-status-dot { background: #8b5cf6; }
-        .mm-status-default { background: #f1f5f9; color: #475569; }
-        .mm-status-default .mm-status-dot { background: #94a3b8; }
+        .mm-table tbody tr:hover td { background: #f9fafb; }
+        .mm-table tbody tr:last-child td { border-bottom: none; }
 
-        /* Loading & Error */
-        .mm-loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-        }
-        .mm-spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #e2e8f0;
-            border-top: 4px solid #0095B7;
-            border-radius: 50%;
-            animation: mmSpin 0.8s linear infinite;
-            margin: 0 auto 16px;
-        }
-        @keyframes mmSpin { to { transform: rotate(360deg); } }
-        .mm-error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .mm-empty {
-            text-align: center;
-            padding: 50px 20px;
-            color: #94a3b8;
-        }
-        .mm-empty i { font-size: 2.5rem; margin-bottom: 12px; display: block; }
-
-        /* MW value highlight */
-        .mm-mw-val {
+        /* Plant group header row */
+        .mm-plant-row td {
+            background: #f0f7fa;
             font-weight: 700;
             color: #0095B7;
-            font-size: 0.95rem;
+            font-size: 0.82rem;
+            padding: 8px 14px;
+            border-bottom: 1px solid #d9eef4;
         }
+
+        /* Status badge */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        .badge-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .badge-noh { background: #ecfdf5; color: #166534; }
+        .badge-noh .dot { background: #22c55e; }
+        .badge-foh { background: #fef2f2; color: #991b1b; }
+        .badge-foh .dot { background: #ef4444; }
+        .badge-poh, .badge-moh { background: #fffbeb; color: #92400e; }
+        .badge-poh .dot, .badge-moh .dot { background: #f59e0b; }
+        .badge-rsh, .badge-soh { background: #eff6ff; color: #1e40af; }
+        .badge-rsh .dot, .badge-soh .dot { background: #3b82f6; }
+        .badge-moth, .badge-mb { background: #f5f3ff; color: #5b21b6; }
+        .badge-moth .dot, .badge-mb .dot { background: #8b5cf6; }
+        .badge-default { background: #f3f4f6; color: #555; }
+        .badge-default .dot { background: #999; }
+
+        /* MW highlight */
+        .mw-val { font-weight: 700; color: #0095B7; }
+
+        /* Loading / Error / Empty */
+        .mm-msg {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        .mm-msg i { font-size: 1.5rem; display: block; margin-bottom: 8px; }
+        .mm-msg.error { color: #dc2626; background: #fef2f2; border-radius: 8px; margin: 12px 16px; }
+        .mm-spinner {
+            width: 28px; height: 28px;
+            border: 3px solid #e5e5e5;
+            border-top-color: #0095B7;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .mm-header { padding: 1.5rem 1rem 1.5rem; }
-            .mm-title { font-size: 1.4rem; }
-            .mm-summary { grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 1rem; margin-top: -20px; }
-            .mm-card { padding: 12px 8px; }
-            .mm-card-value { font-size: 1.3rem; }
-            .mm-card-icon { width: 32px; height: 32px; font-size: 1rem; }
-            .mm-tabs-wrap, .mm-content { padding: 0 1rem; }
-            .mm-table { font-size: 0.78rem; }
-            .mm-table th, .mm-table td { padding: 8px 10px; }
-            .mm-plant-group { overflow-x: auto; }
+            .mm-page { padding: 12px 10px 30px; }
+            .mm-header { padding: 14px 16px; }
+            .mm-header h1 { font-size: 1.1rem; }
+            .mm-stats { gap: 6px; }
+            .mm-stat { padding: 10px 8px; min-width: 70px; }
+            .mm-stat-val { font-size: 1.2rem; }
+            .mm-table th, .mm-table td { padding: 7px 10px; }
         }
         @media (max-width: 480px) {
-            .mm-summary { grid-template-columns: repeat(2, 1fr); }
+            .mm-stats { flex-wrap: wrap; }
+            .mm-stat { flex: 0 0 calc(33.33% - 4px); }
         }
     </style>
 @endsection
@@ -344,325 +231,239 @@
 @section('content')
     @include('components.navbar')
 
-    <!-- Header -->
-    <div class="mm-header">
-        <div class="mm-header-inner">
-            <h1 class="mm-title"><i class="fas fa-cogs"></i> MONITORING MESIN</h1>
-            <p class="mm-subtitle">UP Kendari — Real-time Machine Monitoring System (Navitas)</p>
-            <div class="mm-controls">
-                <input type="date" id="mm-date" class="mm-date-input">
-                <button class="mm-btn mm-btn-primary" onclick="fetchAllData()">
-                    <i class="fas fa-sync-alt"></i> Refresh
+    <div class="mm-page">
+        <!-- Header -->
+        <div class="mm-header">
+            <h1><i class="fas fa-cogs"></i> Monitoring Mesin</h1>
+            <div class="mm-header-controls">
+                <input type="date" id="mm-date" class="mm-input" title="Pilih tanggal">
+                <button class="mm-btn mm-btn-primary" onclick="loadData()">
+                    <i class="fas fa-sync-alt"></i> Muat Data
                 </button>
-                <button class="mm-btn mm-btn-secondary" id="mm-auto-btn" onclick="toggleAutoRefresh()">
-                    <span class="mm-live-dot"></span> Auto Refresh: <span id="mm-auto-label">OFF</span>
-                </button>
+                <span class="mm-status-msg" id="mm-status-msg"></span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="mm-stats" id="mm-stats">
+            <div class="mm-stat s-total"><div class="mm-stat-val" id="s-total">-</div><div class="mm-stat-label">Total</div></div>
+            <div class="mm-stat s-op"><div class="mm-stat-val" id="s-op">-</div><div class="mm-stat-label">Operasi</div></div>
+            <div class="mm-stat s-sb"><div class="mm-stat-val" id="s-sb">-</div><div class="mm-stat-label">Standby</div></div>
+            <div class="mm-stat s-fo"><div class="mm-stat-val" id="s-fo">-</div><div class="mm-stat-label">Gangguan</div></div>
+            <div class="mm-stat s-mo"><div class="mm-stat-val" id="s-mo">-</div><div class="mm-stat-label">Har / Lainnya</div></div>
+        </div>
+
+        <!-- Status Kinerja Table -->
+        <div class="mm-table-wrap">
+            <div class="mm-table-title"><i class="fas fa-heartbeat"></i> Status Kinerja Mesin</div>
+            <div id="status-content">
+                <div class="mm-msg"><div class="mm-spinner"></div>Pilih tanggal lalu klik "Muat Data"</div>
+            </div>
+        </div>
+
+        <!-- Beban (Load) Table -->
+        <div class="mm-table-wrap">
+            <div class="mm-table-title"><i class="fas fa-bolt"></i> Data Beban (MW / MVAR)</div>
+            <div id="beban-content">
+                <div class="mm-msg"><div class="mm-spinner"></div>Pilih tanggal lalu klik "Muat Data"</div>
             </div>
         </div>
     </div>
-
-    <!-- Summary Cards -->
-    <div class="mm-summary" id="mm-summary">
-        <div class="mm-card total"><div class="mm-card-icon"><i class="fas fa-industry"></i></div><div class="mm-card-value" id="sum-total">-</div><div class="mm-card-label">Total Mesin</div></div>
-        <div class="mm-card operasi"><div class="mm-card-icon"><i class="fas fa-check-circle"></i></div><div class="mm-card-value" id="sum-operasi">-</div><div class="mm-card-label">Operasi</div></div>
-        <div class="mm-card standby"><div class="mm-card-icon"><i class="fas fa-pause-circle"></i></div><div class="mm-card-value" id="sum-standby">-</div><div class="mm-card-label">Standby</div></div>
-        <div class="mm-card gangguan"><div class="mm-card-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="mm-card-value" id="sum-gangguan">-</div><div class="mm-card-label">Gangguan</div></div>
-        <div class="mm-card har"><div class="mm-card-icon"><i class="fas fa-wrench"></i></div><div class="mm-card-value" id="sum-har">-</div><div class="mm-card-label">Pemeliharaan</div></div>
-        <div class="mm-card mo"><div class="mm-card-icon"><i class="fas fa-ban"></i></div><div class="mm-card-value" id="sum-mo">-</div><div class="mm-card-label">Mothball/Lainnya</div></div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="mm-tabs-wrap">
-        <div class="mm-tabs">
-            <button class="mm-tab active" data-tab="beban" onclick="switchTab('beban')"><i class="fas fa-bolt"></i> Beban (MW / MVAR)</button>
-            <button class="mm-tab" data-tab="status" onclick="switchTab('status')"><i class="fas fa-heartbeat"></i> Status Kinerja</button>
-        </div>
-    </div>
-
-    <!-- Content -->
-    <div class="mm-content">
-        <div class="mm-panel active" id="panel-beban">
-            <div class="mm-loading" id="loading-beban"><div class="mm-spinner"></div>Memuat data beban...</div>
-            <div id="content-beban"></div>
-        </div>
-        <div class="mm-panel" id="panel-status">
-            <div class="mm-loading" id="loading-status"><div class="mm-spinner"></div>Memuat status kinerja...</div>
-            <div id="content-status"></div>
-        </div>
-    </div>
-
 @endsection
 
 @section('scripts')
 <script>
 (function() {
-    // === MAPPING DATA ===
-    const RKUNIT_NAMES = {
+    const RKUNIT = {
         'KDN':'PLTU NII TANASA','KDR':'PLTM RONGI','KDB':'PLTD BAU-BAU','KDM':'PLTM MIKUASI',
         'KDI':'PLTM WINNING','KDS':'PLTM SABILAMBO','KDW':'PLTD WANGI-WANGI','KDE':'PLTD EREKE',
         'KDK':'PLTD KOLAKA','KDH':'PLTD RAHA','KDL':'PLTD LADUMPI','KDA':'PLTD LANIPA NIPA',
         'KDP':'PLTD POASIA','KDU':'PLTD WUA-WUA','KDG':'PLTD LANGARA','Z':'COMMON UPDK KENDARI'
     };
-
-    const RUNIT_NAMES = {
-        'KDA-02':'PLTD LANIPA NIPA #02 (DEUTZ)','KDA-03':'PLTD LANIPA NIPA #03 (DEUTZ)',
-        'KDA-04':'PLTD LANIPA NIPA #04 (DEUTZ)','KDA-09':'PLTD LANIPA NIPA #09 (MAN)',
-        'KDB-04':'PLTD BAU-BAU #04 (DAIHATSU)','KDB-05':'PLTD BAU-BAU #05 (DAIHATSU)',
-        'KDB-07':'PLTD BAU-BAU #07 (DEUTZ)','KDB-08':'PLTD BAU-BAU #08 (DEUTZ)',
-        'KDB-13':'PLTD BAU-BAU #13 (DEUTZ)','KDB-16':'PLTD BAU-BAU #16 (CUMMINS)',
-        'KDB-17':'PLTD BAU-BAU #17 (CUMMINS)','KDE-04':'PLTD EREKE #04 (DAIHATSU)',
-        'KDE-06':'PLTD EREKE #06 (DAIHATSU)','KDE-07':'PLTD EREKE #07 (DAIHATSU)',
-        'KDE-09':'PLTD EREKE #09 (DAIHATSU)','KDE-10':'PLTD EREKE #10 (CUMMINS)',
-        'KDE-11':'PLTD EREKE #11 (CUMMINS)','KDE-18':'PLTD EREKE EX BAU-BAU #18 (CUMMINS)',
-        'KDG-08':'PLTD LANGARA #08 (MAN)','KDG-09':'PLTD LANGARA #15 EX LADUMPI #09 (MITSUBISHI)',
-        'KDG-10':'PLTD LANGARA #10 (CATERPILLAR)','KDG-11':'PLTD LANGARA #11 (CUMMINS)',
-        'KDG-12':'PLTD LANGARA #12 (CUMMINS)','KDG-13':'PLTD LANGARA #13 (MAN)',
-        'KDG-14':'PLTD LANGARA #14 (MITSUBISHI) EX LAMBUYA #09',
-        'KDH-04':'PLTD RAHA #04 (DAIHATSU)','KDH-05':'PLTD RAHA #05 (MIRRLEES)',
-        'KDH-06':'PLTD RAHA #06 (DEUTZ)','KDH-07':'PLTD RAHA #07 (CUMMINS)',
-        'KDH-08':'PLTD RAHA #08 (CUMMINS)','KDH-09':'PLTD RAHA #09 (CUMMINS)',
-        'KDH-10':'PLTD RAHA #10 (CUMMINS)','KDH-11':'PLTD RAHA #11 (CUMMINS)',
-        'KDH-12':'PLTD RAHA #12 (MITSUBISHI)','KDH-13':'PLTD RAHA #13 (MITSUBISHI)',
-        'KDH-14':'PLTD RAHA #14 (MITSUBISHI)','KDH-15':'PLTD RAHA #15 (Mitsubishi) EX BAU-BAU #21',
-        'KDI-01':'PLTM WINNING #01','KDI-02':'PLTM WINNING #02',
-        'KDK-03':'PLTD KOLAKA #03 (DAIHATSU)','KDK-04':'PLTD KOLAKA #04 (DAIHATSU)',
-        'KDK-05':'PLTD KOLAKA #05 (DAIHATSU)','KDK-07':'PLTD KOLAKA #07 (NIIGATA)',
-        'KDK-08':'PLTD KOLAKA #08 (MAK)','KDK-09':'PLTD KOLAKA #09 (MAK)',
-        'KDL-01':'PLTD LADUMPI #01 (YANMAR)','KDL-02':'PLTD LADUMPI #02 (YANMAR)',
-        'KDL-06':'PLTD LADUMPI #06 (CUMMINS)',
-        'KDM-01':'PLTM MIKUASI #01','KDN-01':'PLTU NII TANASA #01','KDN-02':'PLTU NII TANASA #02',
-        'KDP-01':'PLTD POASIA #01 (MIRRLEES)','KDP-02':'PLTD POASIA #02 (MIRRLEES)',
-        'KDP-04':'PLTD POASIA #04 (MIRRLEES)','KDP-05':'PLTD POASIA #05 (MIRRLEES)',
-        'KDP-06':'PLTD POASIA #06 EX BAU-BAU #14 (CUMMINS)',
-        'KDP-07':'PLTD POASIA #07 EX BAU-BAU #15 (CUMMINS)',
-        'KDP-08':'PLTD POASIA #08 EX BAU-BAU #19 (CUMMINS)',
-        'KDR-01':'PLTM RONGI #01','KDR-02':'PLTM RONGI #02',
-        'KDS-01':'PLTM SABILAMBO #01','KDS-02':'PLTM SABILAMBO #02',
-        'KDU-01':'PLTD WUA-WUA #01 (MAK)','KDU-02':'PLTD WUA-WUA #02 (MAK)',
-        'KDU-03':'PLTD WUA-WUA #03 (MAK)','KDU-04':'PLTD WUA-WUA #04 (MAK)',
-        'KDU-05':'PLTD WUA-WUA #05 (MAK)',
-        'KDW-01':'PLTD WANGI-WANGI #01 (DAIHATSU)','KDW-02':'PLTD WANGI-WANGI #02 (DAIHATSU)',
-        'KDW-03':'PLTD WANGI-WANGI #03 (SWD)','KDW-04':'PLTD WANGI-WANGI #04 (SWD)',
-        'KDW-05':'PLTD WANGI-WANGI #05 (SWD)','KDW-07':'PLTD WANGI-WANGI #07 (CUMMINS)',
-        'KDW-08':'PLTD WANGI-WANGI #08 (MITSUBISHI) (EX GI TELLO)',
-        'KDW-09':'PLTD WANGI-WANGI #09 (MITSUBISHI) (EX GI TELLO)',
-        'KDW-10':'PLTD WANGI-WANGI #10 (Mitsubishi) EX BAU-BAU #23'
+    const RUNIT = {
+        'KDA-02':'LANIPA NIPA #02 (DEUTZ)','KDA-03':'LANIPA NIPA #03 (DEUTZ)','KDA-04':'LANIPA NIPA #04 (DEUTZ)','KDA-09':'LANIPA NIPA #09 (MAN)',
+        'KDB-04':'BAU-BAU #04 (DAIHATSU)','KDB-05':'BAU-BAU #05 (DAIHATSU)','KDB-07':'BAU-BAU #07 (DEUTZ)','KDB-08':'BAU-BAU #08 (DEUTZ)',
+        'KDB-13':'BAU-BAU #13 (DEUTZ)','KDB-16':'BAU-BAU #16 (CUMMINS)','KDB-17':'BAU-BAU #17 (CUMMINS)',
+        'KDE-04':'EREKE #04 (DAIHATSU)','KDE-06':'EREKE #06 (DAIHATSU)','KDE-07':'EREKE #07 (DAIHATSU)',
+        'KDE-09':'EREKE #09 (DAIHATSU)','KDE-10':'EREKE #10 (CUMMINS)','KDE-11':'EREKE #11 (CUMMINS)','KDE-18':'EREKE #18 (CUMMINS)',
+        'KDG-08':'LANGARA #08 (MAN)','KDG-09':'LANGARA #15 (MITSUBISHI)','KDG-10':'LANGARA #10 (CATERPILLAR)',
+        'KDG-11':'LANGARA #11 (CUMMINS)','KDG-12':'LANGARA #12 (CUMMINS)','KDG-13':'LANGARA #13 (MAN)','KDG-14':'LANGARA #14 (MITSUBISHI)',
+        'KDH-04':'RAHA #04 (DAIHATSU)','KDH-05':'RAHA #05 (MIRRLEES)','KDH-06':'RAHA #06 (DEUTZ)',
+        'KDH-07':'RAHA #07 (CUMMINS)','KDH-08':'RAHA #08 (CUMMINS)','KDH-09':'RAHA #09 (CUMMINS)',
+        'KDH-10':'RAHA #10 (CUMMINS)','KDH-11':'RAHA #11 (CUMMINS)','KDH-12':'RAHA #12 (MITSUBISHI)',
+        'KDH-13':'RAHA #13 (MITSUBISHI)','KDH-14':'RAHA #14 (MITSUBISHI)','KDH-15':'RAHA #15 (MITSUBISHI)',
+        'KDI-01':'WINNING #01','KDI-02':'WINNING #02',
+        'KDK-03':'KOLAKA #03 (DAIHATSU)','KDK-04':'KOLAKA #04 (DAIHATSU)','KDK-05':'KOLAKA #05 (DAIHATSU)',
+        'KDK-07':'KOLAKA #07 (NIIGATA)','KDK-08':'KOLAKA #08 (MAK)','KDK-09':'KOLAKA #09 (MAK)',
+        'KDL-01':'LADUMPI #01 (YANMAR)','KDL-02':'LADUMPI #02 (YANMAR)','KDL-06':'LADUMPI #06 (CUMMINS)',
+        'KDM-01':'MIKUASI #01','KDN-01':'NII TANASA #01','KDN-02':'NII TANASA #02',
+        'KDP-01':'POASIA #01 (MIRRLEES)','KDP-02':'POASIA #02 (MIRRLEES)','KDP-04':'POASIA #04 (MIRRLEES)',
+        'KDP-05':'POASIA #05 (MIRRLEES)','KDP-06':'POASIA #06 (CUMMINS)','KDP-07':'POASIA #07 (CUMMINS)','KDP-08':'POASIA #08 (CUMMINS)',
+        'KDR-01':'RONGI #01','KDR-02':'RONGI #02','KDS-01':'SABILAMBO #01','KDS-02':'SABILAMBO #02',
+        'KDU-01':'WUA-WUA #01 (MAK)','KDU-02':'WUA-WUA #02 (MAK)','KDU-03':'WUA-WUA #03 (MAK)',
+        'KDU-04':'WUA-WUA #04 (MAK)','KDU-05':'WUA-WUA #05 (MAK)',
+        'KDW-01':'WANGI-WANGI #01 (DAIHATSU)','KDW-02':'WANGI-WANGI #02 (DAIHATSU)',
+        'KDW-03':'WANGI-WANGI #03 (SWD)','KDW-04':'WANGI-WANGI #04 (SWD)','KDW-05':'WANGI-WANGI #05 (SWD)',
+        'KDW-07':'WANGI-WANGI #07 (CUMMINS)','KDW-08':'WANGI-WANGI #08 (MITSUBISHI)',
+        'KDW-09':'WANGI-WANGI #09 (MITSUBISHI)','KDW-10':'WANGI-WANGI #10 (MITSUBISHI)'
     };
 
-    function getUnitName(rkunit, runit) {
-        const key = rkunit + '-' + runit;
-        return RUNIT_NAMES[key] || (RKUNIT_NAMES[rkunit] || rkunit) + ' #' + runit;
-    }
-    function getPlantName(rkunit) {
-        return RKUNIT_NAMES[rkunit] || rkunit;
-    }
+    function unitName(rk, ru) { return RUNIT[rk+'-'+ru] || (RKUNIT[rk]||rk)+' #'+ru; }
+    function plantName(rk) { return RKUNIT[rk] || rk; }
 
-    // === STATUS HELPERS ===
-    const STATUS_MAP = {
-        'NOH': { label:'Operasi Normal', cls:'noh', group:'operasi' },
-        'FOH': { label:'Forced Outage', cls:'foh', group:'gangguan' },
-        'MOH': { label:'Maintenance Outage', cls:'moh', group:'har' },
-        'POH': { label:'Planned Outage', cls:'poh', group:'har' },
-        'RSH': { label:'Reserve Shutdown', cls:'rsh', group:'standby' },
-        'SOH': { label:'Standby', cls:'soh', group:'standby' },
-        'MOTH': { label:'Mothballed', cls:'moth', group:'mo' },
-        'MB':  { label:'Mothballed', cls:'moth', group:'mo' }
+    // Status mapping
+    const ST = {
+        'NOH':{ cls:'noh', grp:'op' }, 'FOH':{ cls:'foh', grp:'fo' },
+        'MOH':{ cls:'moh', grp:'mo' }, 'POH':{ cls:'poh', grp:'mo' },
+        'RSH':{ cls:'rsh', grp:'sb' }, 'SOH':{ cls:'soh', grp:'sb' },
+        'MOTH':{ cls:'moth', grp:'mo' }, 'MB':{ cls:'mb', grp:'mo' }
     };
-    function getStatusInfo(code) {
-        return STATUS_MAP[code] || { label: code || '-', cls:'default', group:'mo' };
+    function statusBadge(code, desc) {
+        const s = ST[code] || { cls:'default', grp:'mo' };
+        return '<span class="badge-status badge-'+s.cls+'"><span class="dot"></span>'+(desc||code||'-')+'</span>';
     }
-    function makeStatusBadge(code, desc) {
-        const info = getStatusInfo(code);
-        const lbl = desc || info.label;
-        return `<span class="mm-status mm-status-${info.cls}"><span class="mm-status-dot"></span>${lbl}</span>`;
+    function statusGroup(code) { return (ST[code]||{grp:'mo'}).grp; }
+
+    // Date
+    const dateEl = document.getElementById('mm-date');
+    dateEl.value = new Date().toISOString().split('T')[0];
+
+    // Group entries by RKUNIT_KODE
+    function group(arr) {
+        const m = {};
+        arr.forEach(e => {
+            const k = e.RKUNIT_KODE || '?';
+            (m[k] = m[k] || []).push(e);
+        });
+        return Object.entries(m).sort((a,b) => plantName(a[0]).localeCompare(plantName(b[0])));
     }
 
-    // === DATE ===
-    const dateInput = document.getElementById('mm-date');
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
-    dateInput.addEventListener('change', fetchAllData);
+    function setMsg(id, html) { document.getElementById(id).innerHTML = html; }
+    function showLoading(id) { setMsg(id, '<div class="mm-msg"><div class="mm-spinner"></div>Memuat data...</div>'); }
+    function showError(id, msg) { setMsg(id, '<div class="mm-msg error"><i class="fas fa-exclamation-circle"></i>'+msg+'</div>'); }
+    function showEmpty(id) { setMsg(id, '<div class="mm-msg"><i class="fas fa-inbox"></i>Tidak ada data untuk tanggal ini.</div>'); }
 
-    // === TAB SWITCHING ===
-    window.switchTab = function(tab) {
-        document.querySelectorAll('.mm-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-        document.querySelectorAll('.mm-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
-    };
+    window.loadData = function() {
+        const tgl = dateEl.value;
+        if (!tgl) { alert('Pilih tanggal terlebih dahulu'); return; }
 
-    // === AUTO REFRESH ===
-    let autoInterval = null;
-    window.toggleAutoRefresh = function() {
-        const btn = document.getElementById('mm-auto-btn');
-        const label = document.getElementById('mm-auto-label');
-        if (autoInterval) {
-            clearInterval(autoInterval);
-            autoInterval = null;
-            label.textContent = 'OFF';
-            btn.classList.remove('active');
-        } else {
-            autoInterval = setInterval(fetchAllData, 60000);
-            label.textContent = 'ON (60s)';
-            btn.classList.add('active');
-        }
-    };
+        showLoading('status-content');
+        showLoading('beban-content');
+        document.getElementById('mm-status-msg').innerHTML = '<span class="dot"></span> Memuat...';
 
-    // === DATA FETCHING ===
-    window.fetchAllData = function() {
-        fetchBeban();
-        fetchStatus();
-    };
+        const url = '/api/monitoring-mesin/navitas-status?tanggal=' + tgl;
 
-    function fetchBeban() {
-        const tanggal = dateInput.value;
-        const loadEl = document.getElementById('loading-beban');
-        const contentEl = document.getElementById('content-beban');
-        loadEl.style.display = 'block';
-        contentEl.innerHTML = '';
-
-        fetch(`/api/monitoring-mesin/navitas-beban?tanggal=${tanggal}`)
-            .then(r => r.json())
+        fetch(url)
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
             .then(data => {
-                loadEl.style.display = 'none';
-                if (data.error) { contentEl.innerHTML = `<div class="mm-error"><i class="fas fa-exclamation-circle"></i> ${data.error}</div>`; return; }
+                if (data.error) { throw new Error(data.error); }
                 const entries = data.entry || [];
-                if (!entries.length) { contentEl.innerHTML = '<div class="mm-empty"><i class="fas fa-database"></i>Tidak ada data beban untuk tanggal ini.</div>'; return; }
-                renderBeban(entries, contentEl);
+                if (!entries.length) {
+                    showEmpty('status-content');
+                    showEmpty('beban-content');
+                    resetStats();
+                    document.getElementById('mm-status-msg').innerHTML = 'Tidak ada data';
+                    return;
+                }
+
+                // Separate: entries with TUKIN fields → status, entries with TUBEBAN fields → beban
+                const statusEntries = entries.filter(e => e.KODE_STATUS !== undefined || e.TUKIN_TGL !== undefined);
+                const bebanEntries = entries.filter(e => e.TUBEBAN_MW !== undefined || e.TUBEBAN_TGL !== undefined);
+
+                if (statusEntries.length) renderStatus(statusEntries);
+                else showEmpty('status-content');
+
+                if (bebanEntries.length) renderBeban(bebanEntries);
+                else showEmpty('beban-content');
+
+                updateStats(statusEntries);
+                document.getElementById('mm-status-msg').innerHTML =
+                    '<span class="dot"></span> ' + entries.length + ' data · ' + new Date().toLocaleTimeString('id-ID');
             })
             .catch(err => {
-                loadEl.style.display = 'none';
-                contentEl.innerHTML = `<div class="mm-error"><i class="fas fa-exclamation-circle"></i> Gagal memuat data: ${err.message}</div>`;
+                showError('status-content', 'Gagal memuat: ' + err.message);
+                showError('beban-content', 'Gagal memuat: ' + err.message);
+                document.getElementById('mm-status-msg').innerHTML = '<span style="color:#dc2626">⚠ Error</span>';
             });
-    }
+    };
 
-    function fetchStatus() {
-        const tanggal = dateInput.value;
-        const loadEl = document.getElementById('loading-status');
-        const contentEl = document.getElementById('content-status');
-        loadEl.style.display = 'block';
-        contentEl.innerHTML = '';
-
-        fetch(`/api/monitoring-mesin/navitas-status?tanggal=${tanggal}`)
-            .then(r => r.json())
-            .then(data => {
-                loadEl.style.display = 'none';
-                if (data.error) { contentEl.innerHTML = `<div class="mm-error"><i class="fas fa-exclamation-circle"></i> ${data.error}</div>`; return; }
-                const entries = data.entry || [];
-                if (!entries.length) { contentEl.innerHTML = '<div class="mm-empty"><i class="fas fa-database"></i>Tidak ada data status untuk tanggal ini.</div>'; return; }
-                renderStatus(entries, contentEl);
-                updateSummary(entries);
-            })
-            .catch(err => {
-                loadEl.style.display = 'none';
-                contentEl.innerHTML = `<div class="mm-error"><i class="fas fa-exclamation-circle"></i> Gagal memuat data: ${err.message}</div>`;
-            });
-    }
-
-    // === RENDER BEBAN ===
-    function renderBeban(entries, container) {
-        const grouped = groupBy(entries, 'RKUNIT_KODE');
-        let html = '';
-        for (const [rkunit, items] of Object.entries(grouped)) {
-            html += `<div class="mm-plant-group">
-                <div class="mm-plant-header" onclick="this.nextElementSibling.classList.toggle('collapsed')">
-                    <div class="mm-plant-name"><i class="fas fa-industry"></i> ${getPlantName(rkunit)}</div>
-                    <span class="mm-plant-badge">${items.length} unit</span>
-                </div>
-                <div class="mm-plant-body">
-                    <table class="mm-table">
-                        <thead><tr>
-                            <th>Unit</th><th>Tanggal</th><th>Jam</th>
-                            <th>MW</th><th>MVAR</th>
-                            <th>Free Gov</th><th>AGC</th><th>LFC</th>
-                        </tr></thead>
-                        <tbody>`;
+    function renderStatus(entries) {
+        const groups = group(entries);
+        let h = '<div class="mm-table-scroll"><table class="mm-table"><thead><tr>';
+        h += '<th>No</th><th>Unit</th><th>Jam</th><th>Status</th><th>Penyebab</th><th>Derate</th><th>SDOF</th><th>Est. Selesai</th>';
+        h += '</tr></thead><tbody>';
+        let n = 0;
+        groups.forEach(([rk, items]) => {
+            h += '<tr class="mm-plant-row"><td colspan="8"><i class="fas fa-industry" style="margin-right:6px"></i>' + plantName(rk) + ' (' + items.length + ' unit)</td></tr>';
             items.forEach(e => {
-                const name = getUnitName(e.RKUNIT_KODE, e.RUNIT_KODE);
-                html += `<tr>
-                    <td><strong>${name}</strong></td>
-                    <td>${e.TUBEBAN_TGL || '-'}</td>
-                    <td>${e.TUBEBAN_JAM || '-'}</td>
-                    <td class="mm-mw-val">${e.TUBEBAN_MW !== null ? e.TUBEBAN_MW : '-'}</td>
-                    <td>${e.TUBEBAN_MVAR !== null ? e.TUBEBAN_MVAR : '-'}</td>
-                    <td>${e.FREEGOV || '-'}</td>
-                    <td>${e.AGC || '-'}</td>
-                    <td>${e.LFC || '-'}</td>
-                </tr>`;
+                n++;
+                const est = e.TUKIN_EST_END_DATE ? (e.TUKIN_EST_END_DATE + (e.TUKIN_EST_END_TIME ? ' '+e.TUKIN_EST_END_TIME : '')) : '-';
+                h += '<tr>';
+                h += '<td>'+n+'</td>';
+                h += '<td><strong>'+unitName(e.RKUNIT_KODE, e.RUNIT_KODE)+'</strong></td>';
+                h += '<td>'+(e.TUKIN_JAM||'-')+'</td>';
+                h += '<td>'+statusBadge(e.KODE_STATUS, e.DESC_STATUS)+'</td>';
+                h += '<td>'+(e.CAUSE_DESC||'-')+'</td>';
+                h += '<td>'+(e.TUKIN_DERATE!=null?e.TUKIN_DERATE:'-')+'</td>';
+                h += '<td>'+(e.SDOF||'-')+'</td>';
+                h += '<td>'+est+'</td>';
+                h += '</tr>';
             });
-            html += '</tbody></table></div></div>';
-        }
-        container.innerHTML = html;
+        });
+        h += '</tbody></table></div>';
+        setMsg('status-content', h);
     }
 
-    // === RENDER STATUS ===
-    function renderStatus(entries, container) {
-        const grouped = groupBy(entries, 'RKUNIT_KODE');
-        let html = '';
-        for (const [rkunit, items] of Object.entries(grouped)) {
-            html += `<div class="mm-plant-group">
-                <div class="mm-plant-header" onclick="this.nextElementSibling.classList.toggle('collapsed')">
-                    <div class="mm-plant-name"><i class="fas fa-industry"></i> ${getPlantName(rkunit)}</div>
-                    <span class="mm-plant-badge">${items.length} unit</span>
-                </div>
-                <div class="mm-plant-body">
-                    <table class="mm-table">
-                        <thead><tr>
-                            <th>Unit</th><th>Tanggal</th><th>Jam</th>
-                            <th>Status</th><th>Penyebab</th>
-                            <th>Derate (MW)</th><th>SDOF</th>
-                            <th>Est. Selesai</th>
-                        </tr></thead>
-                        <tbody>`;
+    function renderBeban(entries) {
+        const groups = group(entries);
+        let h = '<div class="mm-table-scroll"><table class="mm-table"><thead><tr>';
+        h += '<th>No</th><th>Unit</th><th>Jam</th><th>MW</th><th>MVAR</th><th>Free Gov</th><th>AGC</th><th>LFC</th>';
+        h += '</tr></thead><tbody>';
+        let n = 0;
+        groups.forEach(([rk, items]) => {
+            h += '<tr class="mm-plant-row"><td colspan="8"><i class="fas fa-industry" style="margin-right:6px"></i>' + plantName(rk) + ' (' + items.length + ' unit)</td></tr>';
             items.forEach(e => {
-                const name = getUnitName(e.RKUNIT_KODE, e.RUNIT_KODE);
-                const estEnd = (e.TUKIN_EST_END_DATE && e.TUKIN_EST_END_TIME)
-                    ? e.TUKIN_EST_END_DATE + ' ' + e.TUKIN_EST_END_TIME
-                    : (e.TUKIN_EST_END_DATE || '-');
-                html += `<tr>
-                    <td><strong>${name}</strong></td>
-                    <td>${e.TUKIN_TGL || '-'}</td>
-                    <td>${e.TUKIN_JAM || '-'}</td>
-                    <td>${makeStatusBadge(e.KODE_STATUS, e.DESC_STATUS)}</td>
-                    <td>${e.CAUSE_DESC || '-'}</td>
-                    <td>${e.TUKIN_DERATE !== null ? e.TUKIN_DERATE : '-'}</td>
-                    <td>${e.SDOF || '-'}</td>
-                    <td>${estEnd}</td>
-                </tr>`;
+                n++;
+                h += '<tr>';
+                h += '<td>'+n+'</td>';
+                h += '<td><strong>'+unitName(e.RKUNIT_KODE, e.RUNIT_KODE)+'</strong></td>';
+                h += '<td>'+(e.TUBEBAN_JAM||'-')+'</td>';
+                h += '<td class="mw-val">'+(e.TUBEBAN_MW!=null?e.TUBEBAN_MW:'-')+'</td>';
+                h += '<td>'+(e.TUBEBAN_MVAR!=null?e.TUBEBAN_MVAR:'-')+'</td>';
+                h += '<td>'+(e.FREEGOV||'-')+'</td>';
+                h += '<td>'+(e.AGC||'-')+'</td>';
+                h += '<td>'+(e.LFC||'-')+'</td>';
+                h += '</tr>';
             });
-            html += '</tbody></table></div></div>';
-        }
-        container.innerHTML = html;
+        });
+        h += '</tbody></table></div>';
+        setMsg('beban-content', h);
     }
 
-    // === UPDATE SUMMARY CARDS ===
-    function updateSummary(entries) {
-        let counts = { total:0, operasi:0, standby:0, gangguan:0, har:0, mo:0 };
+    function updateStats(entries) {
+        let c = { total:0, op:0, sb:0, fo:0, mo:0 };
         entries.forEach(e => {
-            counts.total++;
-            const info = getStatusInfo(e.KODE_STATUS);
-            if (counts[info.group] !== undefined) counts[info.group]++;
+            c.total++;
+            const g = statusGroup(e.KODE_STATUS);
+            if (c[g] !== undefined) c[g]++;
         });
-        document.getElementById('sum-total').textContent = counts.total;
-        document.getElementById('sum-operasi').textContent = counts.operasi;
-        document.getElementById('sum-standby').textContent = counts.standby;
-        document.getElementById('sum-gangguan').textContent = counts.gangguan;
-        document.getElementById('sum-har').textContent = counts.har;
-        document.getElementById('sum-mo').textContent = counts.mo;
+        document.getElementById('s-total').textContent = c.total;
+        document.getElementById('s-op').textContent = c.op;
+        document.getElementById('s-sb').textContent = c.sb;
+        document.getElementById('s-fo').textContent = c.fo;
+        document.getElementById('s-mo').textContent = c.mo;
+    }
+    function resetStats() {
+        ['s-total','s-op','s-sb','s-fo','s-mo'].forEach(id => document.getElementById(id).textContent = '-');
     }
 
-    // === UTILS ===
-    function groupBy(arr, key) {
-        const map = {};
-        arr.forEach(item => {
-            const k = item[key] || 'UNKNOWN';
-            if (!map[k]) map[k] = [];
-            map[k].push(item);
-        });
-        // Sort by plant name
-        return Object.fromEntries(Object.entries(map).sort((a,b) => getPlantName(a[0]).localeCompare(getPlantName(b[0]))));
-    }
-
-    // === INIT ===
-    document.addEventListener('DOMContentLoaded', fetchAllData);
+    // Auto-load on page ready
+    document.addEventListener('DOMContentLoaded', function() {
+        loadData();
+    });
 })();
 </script>
 @endsection

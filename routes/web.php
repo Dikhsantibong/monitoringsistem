@@ -65,21 +65,14 @@ Route::get('/monitoring-mesin', function () {
 })->name('monitoring-mesin');
 
 // API Proxy for Navitas (avoid CORS)
-Route::get('/api/monitoring-mesin/navitas-beban', function (\Illuminate\Http\Request $request) {
-    $tanggal = $request->query('tanggal', date('Y-m-d'));
-    try {
-        $response = Http::timeout(15)->get('http://192.168.1.203:8080/monday/navitas_beban', ['tanggal' => $tanggal]);
-        return $response->json();
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage(), 'entry' => []], 500);
-    }
-});
-
 Route::get('/api/monitoring-mesin/navitas-status', function (\Illuminate\Http\Request $request) {
     $tanggal = $request->query('tanggal', date('Y-m-d'));
     try {
-        $response = Http::timeout(15)->get('http://192.168.1.203:8080/monday/navitas_status', ['tanggal' => $tanggal]);
-        return $response->json();
+        $response = Http::withoutVerifying()
+            ->timeout(30)
+            ->connectTimeout(10)
+            ->get('http://192.168.1.203:8080/monday/navitas_status', ['tanggal' => $tanggal]);
+        return response()->json($response->json());
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage(), 'entry' => []], 500);
     }
