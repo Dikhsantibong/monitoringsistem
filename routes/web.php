@@ -78,6 +78,23 @@ Route::get('/api/monitoring-mesin/navitas-status', function (\Illuminate\Http\Re
     }
 });
 
+// API Proxy for OMAMO Patrol
+Route::get('/api/monitoring-mesin/patrol', function (\Illuminate\Http\Request $request) {
+    $tanggal = $request->query('tanggal', date('Y-m-d'));
+    try {
+        $response = Http::withoutVerifying()
+            ->timeout(30)
+            ->connectTimeout(10)
+            ->get('https://omamo.plnnusantarapower.co.id/api/transaksi_patrol/monday', [
+                'apikey' => 'rYqzzcNVg5qM3Cer4l2eEvk5JrsLM8Th',
+                'tanggal' => $tanggal,
+            ]);
+        return response()->json($response->json());
+    } catch (\Exception $e) {
+        return response()->json(['status' => false, 'message' => $e->getMessage(), 'data' => []], 500);
+    }
+});
+
 // Explicitly define this route to avoid collision in the messy web.php
 Route::get('/admin/other-discussions/api-list', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'apiIndex'])
     ->name('admin.other-discussions.api-list')
