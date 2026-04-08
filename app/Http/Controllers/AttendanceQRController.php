@@ -763,4 +763,82 @@ class AttendanceQRController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Fetch daily attendance data as JSON (for AJAX polling).
+     */
+    public function fetchDailyData(Request $request)
+    {
+        try {
+            $connection = session('unit', 'mysql');
+
+            $attendances = DB::connection($connection)
+                ->table('attendance')
+                ->whereDate('time', Carbon::today())
+                ->where('is_weekly', 0)
+                ->orderBy('time', 'desc')
+                ->get();
+
+            // Format times for display
+            $formatted = $attendances->map(function ($att, $index) {
+                return [
+                    'no'        => $index + 1,
+                    'name'      => $att->name,
+                    'division'  => $att->division,
+                    'position'  => $att->position,
+                    'date'      => Carbon::parse($att->time)->setTimezone('Asia/Makassar')->format('d M Y'),
+                    'time'      => Carbon::parse($att->time)->setTimezone('Asia/Makassar')->format('H:i:s') . ' WITA',
+                    'signature' => $att->signature ?? null,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'count'   => $attendances->count(),
+                'data'    => $formatted->values(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Fetch daily data error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Fetch weekly attendance data as JSON (for AJAX polling).
+     */
+    public function fetchWeeklyData(Request $request)
+    {
+        try {
+            $connection = session('unit', 'mysql');
+
+            $attendances = DB::connection($connection)
+                ->table('attendance')
+                ->whereDate('time', Carbon::today())
+                ->where('is_weekly', 1)
+                ->orderBy('time', 'desc')
+                ->get();
+
+            // Format times for display
+            $formatted = $attendances->map(function ($att, $index) {
+                return [
+                    'no'        => $index + 1,
+                    'name'      => $att->name,
+                    'division'  => $att->division,
+                    'position'  => $att->position,
+                    'date'      => Carbon::parse($att->time)->setTimezone('Asia/Makassar')->format('d M Y'),
+                    'time'      => Carbon::parse($att->time)->setTimezone('Asia/Makassar')->format('H:i:s') . ' WITA',
+                    'signature' => $att->signature ?? null,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'count'   => $attendances->count(),
+                'data'    => $formatted->values(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Fetch weekly data error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }

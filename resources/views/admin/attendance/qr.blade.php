@@ -57,16 +57,25 @@
                 <x-admin-breadcrumb :breadcrumbs="[['name' => 'QR Code Daftar Hadir', 'url' => null]]" />
             </div>
             <main class="px-6">
-                <!-- Static Warning Banner -->
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+                <!-- Auto-Sync Status Banner -->
+                <div id="sync-banner" class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4 transition-all duration-300">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i id="sync-icon" class="fas fa-sync-alt text-blue-500 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-700">
+                                    <span class="font-semibold">Auto-Sync Aktif:</span> Data kehadiran diperbarui otomatis setiap <span class="font-bold">10 detik</span>.
+                                    <span id="sync-status" class="ml-2 text-xs text-blue-500"></span>
+                                </p>
+                            </div>
                         </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700">
-                                <span class="font-semibold">Pengingat:</span> Setelah selesai melakukan absensi, pastikan untuk menekan tombol <span class="font-bold">"Tarik Data"</span> untuk memperbarui data kehadiran.
-                            </p>
+                        <div class="flex items-center gap-2">
+                            <span id="last-sync-time" class="text-xs text-gray-500"></span>
+                            <button onclick="manualSync()" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1" title="Sinkronkan sekarang">
+                                <i class="fas fa-redo-alt"></i> Sync
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -105,11 +114,11 @@
                                     Generate QR Daily
                                 </button>
 
-                                <!-- Tombol Tarik Data (Daily) -->
-                                <button id="pullDataBtn" onclick="pullData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700 transition-colors">
-                                    <i class="fas fa-download mr-2"></i>
-                                    Tarik Data Daily
-                                </button>
+                                <!-- Auto-Sync Indicator (Daily) -->
+                                <div id="dailySyncIndicator" class="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg flex items-center border border-purple-200">
+                                    <i class="fas fa-check-circle mr-2 text-green-500" id="daily-sync-check"></i>
+                                    <span class="text-sm font-medium">Auto-Sync Aktif</span>
+                                </div>
 
                                 <!-- Tombol Manage Kehadiran -->
                                 <a href="{{ route('admin.daftar_hadir.rekapitulasi') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors">
@@ -123,7 +132,7 @@
                         <div class="overflow-x-auto">
                             <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
                                 <i class="fas fa-users mr-2 text-blue-600"></i>
-                                Absensi Daily ({{ $attendances->count() }} orang)
+                                Absensi Daily (<span id="daily-count">{{ $attendances->count() }}</span> orang)
                             </h3>
                             <table id="attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
                                 <thead class="bg-gray-100">
@@ -176,11 +185,11 @@
                                     Generate QR Weekly
                                 </button>
 
-                                <!-- Tombol Tarik Data Weekly -->
-                                <button id="pullWeeklyDataBtn" onclick="pullWeeklyData()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
-                                    <i class="fas fa-download mr-2"></i>
-                                    Tarik Data Weekly
-                                </button>
+                                <!-- Auto-Sync Indicator (Weekly) -->
+                                <div id="weeklySyncIndicator" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg flex items-center border border-indigo-200">
+                                    <i class="fas fa-check-circle mr-2 text-green-500" id="weekly-sync-check"></i>
+                                    <span class="text-sm font-medium">Auto-Sync Aktif</span>
+                                </div>
                             </div>
                         </div>
 
@@ -188,7 +197,7 @@
                         <div class="overflow-x-auto">
                             <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
                                 <i class="fas fa-calendar-week mr-2 text-teal-600"></i>
-                                Absensi Weekly Meeting ({{ $weeklyAttendances->count() }} orang)
+                                Absensi Weekly Meeting (<span id="weekly-count">{{ $weeklyAttendances->count() }}</span> orang)
                             </h3>
                             <table id="weekly-attendance-table" class="min-w-full bg-white border border-gray-300 rounded-lg">
                                 <thead class="bg-gray-100">
@@ -249,10 +258,10 @@
                 <div id="qrcode-container" class="flex justify-center min-h-[256px] min-w-[256px]"></div>
                 <div id="qr-error" class="mt-4 text-red-600 text-center hidden"></div>
                 <p class="mt-4 text-sm text-gray-600 text-center">QR Code ini hanya berlaku untuk hari ini</p>
-                <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded p-3">
-                    <p class="text-sm text-yellow-800 text-center">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        <span class="font-semibold">Jangan lupa:</span> Tekan tombol "Tarik Data" setelah absensi selesai
+                <div class="mt-3 bg-green-50 border border-green-200 rounded p-3">
+                    <p class="text-sm text-green-800 text-center">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        <span class="font-semibold">Auto-Sync:</span> Data akan otomatis tersinkronisasi setiap 10 detik
                     </p>
                 </div>
             </div>
@@ -289,6 +298,19 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
         <script>
+            // =============================================
+            // AUTO-SYNC CONFIGURATION
+            // =============================================
+            const PULL_INTERVAL   = 10000; // Pull data from external API every 10 seconds
+            const REFRESH_INTERVAL = 5000; // Refresh table from local DB every 5 seconds
+            let pullTimer   = null;
+            let refreshTimer = null;
+            let isSyncing   = false;
+            let lastSyncTime = null;
+
+            // =============================================
+            // TAB SWITCHING
+            // =============================================
             function switchTab(tab) {
                 const dailySection = document.getElementById('daily-section');
                 const weeklySection = document.getElementById('weekly-section');
@@ -296,44 +318,35 @@
                 const tabWeekly = document.getElementById('tab-weekly');
 
                 if (tab === 'daily') {
-                    // Show Daily, Hide Weekly
                     dailySection.style.display = 'block';
                     weeklySection.style.display = 'none';
-                    
-                    // Update Tab Styles
                     tabDaily.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
                     tabDaily.classList.add('border-blue-500', 'text-blue-600', 'hover:text-blue-800');
-                    
                     tabWeekly.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
                     tabWeekly.classList.remove('border-teal-500', 'text-teal-600', 'hover:text-teal-800');
                 } else {
-                    // Show Weekly, Hide Daily
                     dailySection.style.display = 'none';
                     weeklySection.style.display = 'block';
-                    
-                    // Update Tab Styles
                     tabDaily.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
                     tabDaily.classList.remove('border-blue-500', 'text-blue-600', 'hover:text-blue-800');
-                    
                     tabWeekly.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
                     tabWeekly.classList.add('border-teal-500', 'text-teal-600', 'hover:text-teal-800');
                 }
             }
 
+            // =============================================
+            // QR CODE GENERATION
+            // =============================================
             function generateQR() {
                 const container = document.getElementById('qrcode-container');
                 const errorContainer = document.getElementById('qr-error');
                 const modalTitle = document.getElementById('qrModalTitle');
-                
-                // Reset tampilan
                 container.innerHTML = '<div class="text-center">Generating QR Code...</div>';
                 errorContainer.classList.add('hidden');
                 errorContainer.textContent = '';
                 modalTitle.innerHTML = '<i class="fas fa-qrcode mr-2"></i>QR Code Absensi';
-                
-                // Tampilkan modal
                 document.getElementById('qrModal').classList.remove('hidden');
-                
+
                 fetch('{{ route("admin.attendance.qr.generate") }}', {
                     method: 'POST',
                     headers: {
@@ -343,22 +356,15 @@
                     }
                 })
                 .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(data.message || 'Gagal generate QR Code');
-                        });
-                    }
+                    if (!response.ok) return response.json().then(d => { throw new Error(d.message || 'Gagal generate QR Code'); });
                     return response.json();
                 })
                 .then(data => {
                     if (data.success && data.qr_url) {
                         container.innerHTML = '';
                         new QRCode(container, {
-                            text: data.qr_url,
-                            width: 256,
-                            height: 256,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
+                            text: data.qr_url, width: 256, height: 256,
+                            colorDark: "#000000", colorLight: "#ffffff",
                             correctLevel: QRCode.CorrectLevel.H
                         });
                     } else {
@@ -378,16 +384,12 @@
                 const container = document.getElementById('qrcode-container');
                 const errorContainer = document.getElementById('qr-error');
                 const modalTitle = document.getElementById('qrModalTitle');
-                
-                // Reset tampilan
                 container.innerHTML = '<div class="text-center">Generating Weekly QR Code...</div>';
                 errorContainer.classList.add('hidden');
                 errorContainer.textContent = '';
                 modalTitle.innerHTML = '<i class="fas fa-calendar-week mr-2"></i>QR Code Absensi Weekly';
-                
-                // Tampilkan modal
                 document.getElementById('qrModal').classList.remove('hidden');
-                
+
                 fetch('{{ route("admin.attendance.qr.generate-weekly") }}', {
                     method: 'POST',
                     headers: {
@@ -397,22 +399,15 @@
                     }
                 })
                 .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(data.message || 'Gagal generate QR Code Weekly');
-                        });
-                    }
+                    if (!response.ok) return response.json().then(d => { throw new Error(d.message || 'Gagal generate QR Code Weekly'); });
                     return response.json();
                 })
                 .then(data => {
                     if (data.success && data.qr_url) {
                         container.innerHTML = '';
                         new QRCode(container, {
-                            text: data.qr_url,
-                            width: 256,
-                            height: 256,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
+                            text: data.qr_url, width: 256, height: 256,
+                            colorDark: "#000000", colorLight: "#ffffff",
                             correctLevel: QRCode.CorrectLevel.H
                         });
                     } else {
@@ -432,6 +427,9 @@
                 document.getElementById('qrModal').classList.add('hidden');
             }
 
+            // =============================================
+            // ERROR MODAL
+            // =============================================
             function showErrorModal(title, content) {
                 document.getElementById('errorContent').textContent = content;
                 document.getElementById('errorModal').classList.remove('hidden');
@@ -441,231 +439,212 @@
                 document.getElementById('errorModal').classList.add('hidden');
             }
 
-            function pullData() {
-                const btn = document.getElementById('pullDataBtn');
-                const originalText = btn.innerHTML;
-                
-                console.log('=== PULL DATA (NON-WEEKLY) STARTED ===');
-                console.log('Time:', new Date().toISOString());
-                
-                // Disable button dan show loading
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menarik Data...';
-                
-                fetch('{{ route("admin.attendance.qr.pull-data") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => {
-                    console.log('Response Status:', response.status);
-                    console.log('Response OK:', response.ok);
-                    return response.json().then(data => {
-                        console.log('Response Data:', data);
-                        return { status: response.status, ok: response.ok, data: data };
-                    });
-                })
-                .then(({ status, ok, data }) => {
-                    if (!ok) {
-                        // Show error modal with details
-                        let errorContent = 'Status: ' + status + '\n\n';
-                        errorContent += 'Message: ' + (data.message || 'Unknown error') + '\n\n';
-                        
-                        if (data.details) {
-                            errorContent += 'Details:\n' + JSON.stringify(data.details, null, 2);
-                        }
-                        
-                        showErrorModal('Error', errorContent);
-                        console.error('API Error:', data);
-                        return;
-                    }
-                    
-                    if (data.success) {
-                        console.log('Success! Data imported:', data);
-                        
-                        let message = data.message;
-                        
-                        // Tambahkan detail jika ada errors
-                        if (data.errors && data.errors.length > 0) {
-                            console.warn('Errors during import:', data.errors);
-                            message += '\n\n⚠️ Warnings/Errors:\n' + data.errors.slice(0, 5).join('\n');
-                            if (data.errors.length > 5) {
-                                message += '\n... dan ' + (data.errors.length - 5) + ' error lainnya';
-                            }
-                        }
-                        
-                        alert(message);
-                        
-                        // Reload jika ada data yang diimport
-                        if (data.attendance_imported > 0 || data.token_imported > 0) {
-                            console.log('Reloading page...');
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
-                        }
-                    } else {
-                        let errorMsg = 'Gagal menarik data: ' + (data.message || 'Unknown error');
-                        
-                        if (data.details) {
-                            showErrorModal('Error', JSON.stringify(data.details, null, 2));
-                        }
-                        
-                        alert(errorMsg);
-                        console.error('Pull data failed:', data);
-                    }
-                })
-                .catch(error => {
-                    console.error('=== PULL DATA ERROR ===');
-                    console.error('Error:', error);
-                    console.error('Stack:', error.stack);
-                    
-                    showErrorModal('Network Error', error.toString() + '\n\n' + error.stack);
-                    alert('Gagal menarik data. Silakan cek console untuk detail error.');
-                })
-                .finally(() => {
-                    // Restore button
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    console.log('=== PULL DATA (NON-WEEKLY) ENDED ===');
-                });
-            }
-
-            function pullWeeklyData() {
-                const btn = document.getElementById('pullWeeklyDataBtn');
-                const originalText = btn.innerHTML;
-                
-                console.log('=== PULL WEEKLY DATA STARTED ===');
-                console.log('Time:', new Date().toISOString());
-                
-                // Disable button dan show loading
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menarik Data Weekly...';
-                
-                fetch('{{ route("admin.attendance.qr.pull-weekly-data") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => {
-                    console.log('Response Status:', response.status);
-                    console.log('Response OK:', response.ok);
-                    return response.json().then(data => {
-                        console.log('Response Data:', data);
-                        return { status: response.status, ok: response.ok, data: data };
-                    });
-                })
-                .then(({ status, ok, data }) => {
-                    if (!ok) {
-                        // Show error modal with details
-                        let errorContent = 'Status: ' + status + '\n\n';
-                        errorContent += 'Message: ' + (data.message || 'Unknown error') + '\n\n';
-                        
-                        if (data.details) {
-                            errorContent += 'Details:\n' + JSON.stringify(data.details, null, 2);
-                        }
-                        
-                        showErrorModal('Error', errorContent);
-                        console.error('API Error:', data);
-                        return;
-                    }
-                    
-                    if (data.success) {
-                        console.log('Success! Weekly data imported:', data);
-                        
-                        let message = data.message;
-                        
-                        // Tambahkan detail jika ada errors
-                        if (data.errors && data.errors.length > 0) {
-                            console.warn('Errors during import:', data.errors);
-                            message += '\n\n⚠️ Warnings/Errors:\n' + data.errors.slice(0, 5).join('\n');
-                            if (data.errors.length > 5) {
-                                message += '\n... dan ' + (data.errors.length - 5) + ' error lainnya';
-                            }
-                        }
-                        
-                        alert(message);
-                        
-                        // Reload jika ada data yang diimport
-                        if (data.attendance_imported > 0 || data.token_imported > 0) {
-                            console.log('Reloading page...');
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
-                        }
-                    } else {
-                        let errorMsg = 'Gagal menarik data weekly: ' + (data.message || 'Unknown error');
-                        
-                        if (data.details) {
-                            showErrorModal('Error', JSON.stringify(data.details, null, 2));
-                        }
-                        
-                        alert(errorMsg);
-                        console.error('Pull weekly data failed:', data);
-                    }
-                })
-                .catch(error => {
-                    console.error('=== PULL WEEKLY DATA ERROR ===');
-                    console.error('Error:', error);
-                    console.error('Stack:', error.stack);
-                    
-                    showErrorModal('Network Error', error.toString() + '\n\n' + error.stack);
-                    alert('Gagal menarik data weekly. Silakan cek console untuk detail error.');
-                })
-                .finally(() => {
-                    // Restore button
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    console.log('=== PULL WEEKLY DATA ENDED ===');
-                });
-            }
-
-            // Fungsi untuk menampilkan modal tanda tangan
+            // =============================================
+            // SIGNATURE MODAL
+            // =============================================
             function showSignatureModal(src, name) {
                 document.getElementById('signatureModal').classList.remove('hidden');
                 document.getElementById('modalTitle').textContent = `Tanda Tangan - ${name}`;
                 document.getElementById('modalSignature').src = src;
             }
 
-            // Fungsi untuk menutup modal tanda tangan
             function closeSignatureModal() {
                 document.getElementById('signatureModal').classList.add('hidden');
             }
 
-            // Tutup modal jika mengklik di luar modal
+            // =============================================
+            // AUTO PULL DATA FROM EXTERNAL API
+            // =============================================
+            function setSyncStatus(msg, type) {
+                const statusEl = document.getElementById('sync-status');
+                const iconEl   = document.getElementById('sync-icon');
+                const bannerEl = document.getElementById('sync-banner');
+                if (statusEl) statusEl.textContent = msg;
+                if (type === 'syncing') {
+                    iconEl.classList.add('fa-spin');
+                    bannerEl.className = 'bg-blue-50 border-l-4 border-blue-400 p-4 mb-4 transition-all duration-300';
+                } else if (type === 'success') {
+                    iconEl.classList.remove('fa-spin');
+                    bannerEl.className = 'bg-green-50 border-l-4 border-green-400 p-4 mb-4 transition-all duration-300';
+                } else if (type === 'error') {
+                    iconEl.classList.remove('fa-spin');
+                    bannerEl.className = 'bg-red-50 border-l-4 border-red-400 p-4 mb-4 transition-all duration-300';
+                }
+            }
+
+            function updateLastSyncTime() {
+                lastSyncTime = new Date();
+                const el = document.getElementById('last-sync-time');
+                if (el) {
+                    el.textContent = 'Terakhir: ' + lastSyncTime.toLocaleTimeString('id-ID');
+                }
+            }
+
+            async function autoPullData() {
+                if (isSyncing) return;
+                isSyncing = true;
+                setSyncStatus('Menarik data...', 'syncing');
+
+                try {
+                    // Pull daily data
+                    const dailyRes = await fetch('{{ route("admin.attendance.qr.pull-data") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const dailyData = await dailyRes.json();
+
+                    @if(session('unit') === 'mysql')
+                    // Pull weekly data (only for mysql unit)
+                    const weeklyRes = await fetch('{{ route("admin.attendance.qr.pull-weekly-data") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const weeklyData = await weeklyRes.json();
+                    @endif
+
+                    updateLastSyncTime();
+
+                    let importedTotal = (dailyData.attendance_imported || 0);
+                    @if(session('unit') === 'mysql')
+                    importedTotal += (weeklyData.attendance_imported || 0);
+                    @endif
+
+                    if (importedTotal > 0) {
+                        setSyncStatus(`✓ ${importedTotal} data baru diimport`, 'success');
+                        // Immediately refresh the table from local DB
+                        await refreshDailyTable();
+                        @if(session('unit') === 'mysql')
+                        await refreshWeeklyTable();
+                        @endif
+                    } else {
+                        setSyncStatus('✓ Data sudah up-to-date', 'success');
+                    }
+                } catch (error) {
+                    console.error('Auto-pull error:', error);
+                    setSyncStatus('✗ Gagal sinkronisasi', 'error');
+                } finally {
+                    isSyncing = false;
+                }
+            }
+
+            function manualSync() {
+                autoPullData();
+            }
+
+            // =============================================
+            // REFRESH TABLE FROM LOCAL DATABASE (NO RELOAD)
+            // =============================================
+            function buildAttendanceRow(item, hoverClass) {
+                const sigCell = item.signature
+                    ? `<img src="${item.signature}" alt="Tanda tangan ${item.name}" class="h-16 object-contain cursor-pointer" onclick="showSignatureModal(this.src, '${item.name.replace(/'/g, "\\'")}')">` 
+                    : '<span class="text-gray-400">Tidak ada tanda tangan</span>';
+
+                return `<tr class="${hoverClass} border-b border-gray-300">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${item.no}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${item.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${item.division}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${item.position}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${item.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${item.time}</td>
+                    <td class="px-6 py-4 whitespace-nowrap border-r border-gray-300">${sigCell}</td>
+                </tr>`;
+            }
+
+            async function refreshDailyTable() {
+                try {
+                    const res = await fetch('{{ route("admin.attendance.qr.fetch-daily-data") }}', {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    const json = await res.json();
+                    if (!json.success) return;
+
+                    const tbody = document.getElementById('attendance-body');
+                    const countEl = document.getElementById('daily-count');
+                    if (countEl) countEl.textContent = json.count;
+
+                    if (json.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Belum ada data absensi daily untuk hari ini</td></tr>';
+                    } else {
+                        tbody.innerHTML = json.data.map(item => buildAttendanceRow(item, 'hover:bg-gray-100')).join('');
+                    }
+                } catch (e) {
+                    console.error('Refresh daily table error:', e);
+                }
+            }
+
+            async function refreshWeeklyTable() {
+                try {
+                    const res = await fetch('{{ route("admin.attendance.qr.fetch-weekly-data") }}', {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    const json = await res.json();
+                    if (!json.success) return;
+
+                    const tbody = document.getElementById('weekly-attendance-body');
+                    const countEl = document.getElementById('weekly-count');
+                    if (tbody) {
+                        if (countEl) countEl.textContent = json.count;
+
+                        if (json.data.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Belum ada data absensi weekly untuk hari ini</td></tr>';
+                        } else {
+                            tbody.innerHTML = json.data.map(item => buildAttendanceRow(item, 'hover:bg-teal-50')).join('');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Refresh weekly table error:', e);
+                }
+            }
+
+            // =============================================
+            // INITIALIZATION
+            // =============================================
             document.addEventListener('DOMContentLoaded', function() {
-                const signatureModal = document.getElementById('signatureModal');
-                const qrModal = document.getElementById('qrModal');
-                const errorModal = document.getElementById('errorModal');
-                
-                if (signatureModal) {
-                    signatureModal.addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            closeSignatureModal();
-                        }
-                    });
-                }
+                // Close modals on backdrop click
+                ['signatureModal', 'qrModal', 'errorModal'].forEach(id => {
+                    const modal = document.getElementById(id);
+                    if (modal) {
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === this) {
+                                if (id === 'signatureModal') closeSignatureModal();
+                                else if (id === 'qrModal') closeQRModal();
+                                else if (id === 'errorModal') closeErrorModal();
+                            }
+                        });
+                    }
+                });
 
-                if (qrModal) {
-                    qrModal.addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            closeQRModal();
-                        }
-                    });
-                }
+                // Initial auto-pull on page load (with slight delay)
+                setTimeout(() => autoPullData(), 1500);
 
-                if (errorModal) {
-                    errorModal.addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            closeErrorModal();
-                        }
-                    });
-                }
+                // Start auto-pull timer (pull from external API every 10s)
+                pullTimer = setInterval(() => autoPullData(), PULL_INTERVAL);
+
+                // Start table refresh timer (refresh from local DB every 5s)
+                refreshTimer = setInterval(() => {
+                    if (!isSyncing) {
+                        refreshDailyTable();
+                        @if(session('unit') === 'mysql')
+                        refreshWeeklyTable();
+                        @endif
+                    }
+                }, REFRESH_INTERVAL);
+
+                console.log('✓ Auto-sync initialized: Pull every ' + (PULL_INTERVAL/1000) + 's, Refresh every ' + (REFRESH_INTERVAL/1000) + 's');
+            });
+
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', function() {
+                if (pullTimer) clearInterval(pullTimer);
+                if (refreshTimer) clearInterval(refreshTimer);
             });
         </script>
     @push('scripts')

@@ -157,6 +157,15 @@ Route::middleware(['auth'])->group(function () {
         [AttendanceQRController::class, 'pullWeeklyData']
     )->name('admin.attendance.qr.pull-weekly-data');
 
+    // AJAX Polling endpoints (no page refresh)
+    Route::get('/admin/attendance/qr/fetch-daily-data',
+        [AttendanceQRController::class, 'fetchDailyData']
+    )->name('admin.attendance.qr.fetch-daily-data');
+
+    Route::get('/admin/attendance/qr/fetch-weekly-data',
+        [AttendanceQRController::class, 'fetchWeeklyData']
+    )->name('admin.attendance.qr.fetch-weekly-data');
+
 });
 
 
