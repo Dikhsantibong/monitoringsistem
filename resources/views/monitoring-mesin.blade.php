@@ -42,7 +42,8 @@
         .chart-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; min-height: 320px; }
         .chart-header { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .chart-header i { color: var(--primary); }
-        .chart-body { flex: 1; position: relative; width: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center; }
+        .chart-body { flex: 1; position: relative; width: 100%; min-height: 240px; }
+        .chart-body canvas { max-height: 100%; margin: auto; display: block; }
 
         /* AI Insights Card */
         .ai-card { grid-column: span 3; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px; }
@@ -233,14 +234,20 @@
 @endsection
 
 @section('scripts')
+<!-- Chart.js untuk Donut/Pie (karena lightweight-charts tidak support Donut/Pie) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- TradingView Lightweight Charts -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script>
 (function(){
     Chart.defaults.color = '#64748b';
     Chart.defaults.borderColor = '#e2e8f0';
     Chart.defaults.font.family = "'Inter', sans-serif";
 
-    let cStatus=null, cBeban=null, cPatrol=null, cTopAlarm=null, cAreaAlarm=null;
+    // Referensi Chart.js (Donut/Pie)
+    let cStatus=null, cPatrol=null;
+    // Referensi Lightweight Charts
+    let lwBeban=null, lwTopAlarm=null, lwAreaAlarm=null;
 
     const RK = { 'KDN':'NII TANASA','KDR':'RONGI','KDB':'BAU-BAU','KDM':'MIKUASI','KDI':'WINNING','KDS':'SABILAMBO','KDW':'WANGI-WANGI','KDE':'EREKE','KDK':'KOLAKA','KDH':'RAHA','KDL':'LADUMPI','KDA':'LANIPA NIPA','KDP':'POASIA','KDU':'WUA-WUA','KDG':'LANGARA','Z':'COMMON UPDK' };
     const RU = {
@@ -346,14 +353,38 @@
         document.getElementById('k-op').textContent = c.op; document.getElementById('k-sb').textContent = c.sb;
         document.getElementById('k-fo').textContent = c.fo; document.getElementById('k-mo').textContent = c.mo;
 
-        // Charts
-        document.getElementById('cb-status').innerHTML = '<canvas id="chart-status"></canvas>';
+        // Pengecekan & Pembersihan Chart Lama
+        if(cStatus) cStatus.destroy();
+        if(lwBeban) { lwBeban.remove(); lwBeban = null; }
+
+        // Chart.js untuk Donut Status
+        document.getElementById('cb-status').innerHTML = '<canvas id="chart-status" style="max-height:240px; display:block; margin:auto;"></canvas>';
         const sL=Object.keys(statusCounts), sD=sL.map(k=>statusCounts[k]), sC=sL.map(l=>colors[ST[l.split(' - ')[0]]?.c||'oth']);
         cStatus = new Chart(document.getElementById('chart-status'), { type: 'doughnut', data: { labels: sL, datasets: [{ data: sD, backgroundColor: sC, borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } } });
 
-        document.getElementById('cb-beban').innerHTML = '<canvas id="chart-beban"></canvas>';
+        // Lightweight Chart (Tampilan Trading) untuk Beban MW per Pembangkit (Area Series)
+        const cbBebanContainer = document.getElementById('cb-beban');
+        cbBebanContainer.innerHTML = '';
         const pK = Object.keys(pBeban).filter(r=>pBeban[r]>0).sort((a,b)=>pBeban[b]-pBeban[a]);
-        cBeban = new Chart(document.getElementById('chart-beban'), { type: 'bar', data: { labels: pK.map(r=>pName(r)), datasets: [{ label:' MW', data: pK.map(r=>pBeban[r]), backgroundColor: colors.op, borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } });
+        
+        let catMapBeban = {};
+        let dataBebanLW = pK.map((r, i) => {
+            const t = 1600000000 + i * 86400; // time dummy untuk mapping kategori ke format waktu trading
+            catMapBeban[t] = pName(r);
+            return { time: t, value: pBeban[r] };
+        });
+
+        lwBeban = LightweightCharts.createChart(cbBebanContainer, {
+            autoSize: true, // Otomatis menyesuaikan ukuran
+            layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+            grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+            localization: { timeFormatter: t => catMapBeban[t] || '' },
+            timeScale: { tickMarkFormatter: t => (catMapBeban[t] || '').substring(0,8), fixLeftEdge: true, fixRightEdge: true },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        });
+        const areaSeries = lwBeban.addAreaSeries({ lineColor: '#0ea5e9', topColor: 'rgba(14, 165, 233, 0.4)', bottomColor: 'rgba(14, 165, 233, 0.0)', lineWidth: 2 });
+        areaSeries.setData(dataBebanLW);
+        lwBeban.timeScale().fitContent();
 
         // Init Data Table
         document.getElementById('search-nav').value = '';
@@ -383,19 +414,63 @@
 
         document.getElementById('k-alarm').textContent = al; document.getElementById('k-normal').textContent = nm;
 
-        // Chart OMAMO Doughnut
-        document.getElementById('cb-patrol').innerHTML = '<canvas id="chart-patrol"></canvas>';
+        // Bersihkan Chart Lama
+        if(cPatrol) cPatrol.destroy();
+        if(lwTopAlarm) { lwTopAlarm.remove(); lwTopAlarm = null; }
+        if(lwAreaAlarm) { lwAreaAlarm.remove(); lwAreaAlarm = null; }
+
+        // Chart OMAMO Doughnut (Polar Area dipertahankan dari ChartJS)
+        document.getElementById('cb-patrol').innerHTML = '<canvas id="chart-patrol" style="max-height:240px; display:block; margin:auto;"></canvas>';
         cPatrol = new Chart(document.getElementById('chart-patrol'), { type: 'polarArea', data: { labels: ['Alarm', 'Normal'], datasets: [{ data: [al, nm], backgroundColor: [colors.patAl, colors.patNm], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });
 
-        // Chart OMAMO Alarm Bars
-        document.getElementById('cb-topalarm').innerHTML = '<canvas id="chart-topalarm"></canvas>';
+        // Chart OMAMO Alarm Cabang - Lightweight Chart Histogram
+        const cbTopAlarmContainer = document.getElementById('cb-topalarm');
+        cbTopAlarmContainer.innerHTML = '';
         const cbLabels = Object.keys(alarmByCabang).sort((a,b)=>alarmByCabang[b]-alarmByCabang[a]).slice(0,5);
-        cTopAlarm = new Chart(document.getElementById('chart-topalarm'), { type: 'bar', data: { labels: cbLabels, datasets: [{ label:' Alarm', data: cbLabels.map(l=>alarmByCabang[l]), backgroundColor: colors.fo, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales:{x:{grid:{display:false}}} } });
+        
+        let catMapTA = {};
+        let taDataLW = cbLabels.map((l, i) => {
+            const t = 1600000000 + i * 86400;
+            catMapTA[t] = l;
+            return { time: t, value: alarmByCabang[l], color: colors.fo };
+        });
 
-        document.getElementById('cb-omamo-area').innerHTML = '<canvas id="chart-omamo-area"></canvas>';
+        lwTopAlarm = LightweightCharts.createChart(cbTopAlarmContainer, {
+            autoSize: true, // Otomatis menyesuaikan dengan container
+            layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+            grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+            localization: { timeFormatter: t => catMapTA[t] || '' },
+            timeScale: { tickMarkFormatter: t => (catMapTA[t] || '').substring(0,8), fixLeftEdge: true, fixRightEdge: true },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        });
+        const taSeries = lwTopAlarm.addHistogramSeries();
+        taSeries.setData(taDataLW);
+        lwTopAlarm.timeScale().fitContent();
+
+        // Chart OMAMO Alarm Area - Lightweight Chart Histogram
+        const cbAreaAlarmContainer = document.getElementById('cb-omamo-area');
+        cbAreaAlarmContainer.innerHTML = '';
         const arLabels = Object.keys(alarmByArea).sort((a,b)=>alarmByArea[b]-alarmByArea[a]).slice(0,5);
-        cAreaAlarm = new Chart(document.getElementById('chart-omamo-area'), { type: 'bar', data: { labels: arLabels.map(a=>a.length>20?a.substring(0,20)+'..':a), datasets: [{ label:' Alarm Area', data: arLabels.map(a=>alarmByArea[a]), backgroundColor: colors.orange, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { title: ctx=>arLabels[ctx[0].dataIndex] }} }, scales:{x:{grid:{display:false}}} } });
+        
+        let catMapAA = {};
+        let aaDataLW = arLabels.map((l, i) => {
+            const t = 1600000000 + i * 86400;
+            const title = l.length > 15 ? l.substring(0,15)+'..' : l;
+            catMapAA[t] = title;
+            return { time: t, value: alarmByArea[l], color: colors.orange };
+        });
 
+        lwAreaAlarm = LightweightCharts.createChart(cbAreaAlarmContainer, {
+            autoSize: true,
+            layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+            grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+            localization: { timeFormatter: t => catMapAA[t] || '' },
+            timeScale: { tickMarkFormatter: t => (catMapAA[t] || '').substring(0,8), fixLeftEdge: true, fixRightEdge: true },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        });
+        const aaSeries = lwAreaAlarm.addHistogramSeries();
+        aaSeries.setData(aaDataLW);
+        lwAreaAlarm.timeScale().fitContent();
 
         document.getElementById('search-patrol').value = '';
         window.filteredPatrol = [...window.masterPatrol];
