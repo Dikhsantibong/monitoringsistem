@@ -45,13 +45,30 @@
         .chart-body { flex: 1; position: relative; width: 100%; min-height: 240px; }
         .chart-body canvas { max-height: 100%; margin: auto; display: block; }
 
-        /* AI Insights Card */
-        .ai-card { grid-column: span 3; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px; }
+        /* AI Insights Card Graphical Layout */
+        .ai-card { grid-column: span 3; background: #ffffff; border: 1px solid #bae6fd; border-left: 4px solid #0ea5e9; border-radius: 12px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; display: flex; gap: 24px; flex-wrap: wrap; }
         @media(max-width: 1200px) { .ai-card { grid-column: span 2; } } @media(max-width: 768px) { .ai-card { grid-column: span 1; } }
-        .ai-title { font-size: 1.1rem; font-weight: 800; color: #0369a1; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .ai-list { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
-        .ai-item { background: #ffffff; border: 1px solid #e0f2fe; border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: #0f172a; display: flex; gap: 10px; align-items: flex-start; box-shadow: 0 1px 2px rgba(0,0,0,0.02); line-height: 1.4; }
-        .ai-normal { color: var(--green); } .ai-warn { color: var(--orange); } .ai-danger { color: var(--red); } .ai-info { color: var(--blue); }
+        .ai-left { flex: 0 0 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #e2e8f0; padding-right: 24px; }
+        .ai-right { flex: 1; min-width: 300px; display: flex; flex-direction: column; justify-content: center; }
+        
+        .ai-title { font-size: 1.1rem; font-weight: 800; color: #0369a1; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        
+        .health-ring { position: relative; width: 150px; height: 150px; }
+        .health-score { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; color: #0f172a; line-height: 1; }
+        .health-label { font-size: 0.65rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-top: 4px; letter-spacing: 1px; }
+        
+        .ai-metric-bar { width: 100%; background: #e2e8f0; height: 8px; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+        .ai-metric-fill { height: 100%; border-radius: 4px; transition: width 1s ease-out; }
+        .ai-metric-fill.bg-green { background: var(--green); } .ai-metric-fill.bg-orange { background: var(--orange); } .ai-metric-fill.bg-red { background: var(--red); }
+
+        .ai-insight-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; transition: all 0.2s; }
+        .ai-insight-box:hover { background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+        .ai-insight-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .ai-insight-title { font-weight: 700; font-size: 0.85rem; color: #1e293b; display: flex; align-items: center; gap: 8px;}
+        .ai-insight-badge { font-size: 0.65rem; padding: 4px 10px; border-radius: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bg-crit { background: #fee2e2; color: #991b1b; } .bg-warn { background: #fef3c7; color: #92400e; } .bg-safe { background: #dcfce7; color: #166534; }
+        .ai-insight-text { font-size: 0.8rem; color: #475569; line-height: 1.5; }
+        .text-blue { color: var(--blue); } .text-orange { color: var(--orange); }
 
         /* Data Tables & Toolbar */
         .data-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; margin-bottom: 24px; }
@@ -117,10 +134,19 @@
             <div class="kpi-card b-green"><div class="kpi-title">Patrol Normal</div><div class="kpi-value" id="k-normal">0</div></div>
         </div>
 
-        <!-- AI Insights -->
+        <!-- AI Insights Card (Graphical Layout) -->
         <div class="ai-card" id="ai-section" style="display: none;">
-            <div class="ai-title"><i class="fas fa-robot"></i> AI Smart Analysis & Insights</div>
-            <ul class="ai-list" id="ai-list"></ul>
+            <div class="ai-left">
+                <div class="ai-title" style="margin-bottom: 20px; text-align: center;"><i class="fas fa-robot"></i> AI Health Index</div>
+                <div class="health-ring">
+                    <canvas id="health-canvas"></canvas>
+                    <div class="health-score"><span id="ai-score-txt">0</span><span class="health-label">System Score</span></div>
+                </div>
+            </div>
+            <div class="ai-right">
+                <div class="ai-title" style="margin-bottom: 16px;"><i class="fas fa-brain"></i> AI Predictive Metrics & Analysis</div>
+                <div id="ai-list-wrap"></div>
+            </div>
         </div>
 
         <!-- Charts Grid -->
@@ -716,33 +742,86 @@
     };
 
     function generateAIInsights(patData, statusData) {
-        document.getElementById('ai-section').style.display = 'block';
-        const list = document.getElementById('ai-list');
+        document.getElementById('ai-section').style.display = 'flex';
+        const list = document.getElementById('ai-list-wrap');
         list.innerHTML = '';
-        if(!statusData.length && !patData.length) return list.innerHTML = '<li>Data kosong</li>';
-
-        let alarms = patData.filter(i => i.status === 'ALARM');
-        let fohCount = statusData.filter(s => s.KODE_STATUS==='FOH').length;
-
-        // Insight Navitas FOH
-        if(fohCount > 0) list.innerHTML += `<li class="ai-item ai-danger"><i class="fas fa-exclamation-circle"></i> Terdapat <strong>${fohCount} mesin mengalami gangguan berat (FOH)</strong> hari ini pada seluruh area kendari.</li>`;
-        else list.innerHTML += `<li class="ai-item ai-normal"><i class="fas fa-check-circle"></i> Sangat baik: <strong>Tidak ada mesin FOH (0 Kasus)</strong>. Seluruh permesinan dalam status siap / beroperasi.</li>`;
-
-        // Insight OMAMO
-        if(alarms.length > 0) {
-            // Group alarms
-            let byCabang = {}; alarms.forEach(a=>{ byCabang[a.cabang]=(byCabang[a.cabang]||0)+1; });
-            const topCabang = Object.keys(byCabang).sort((a,b)=>byCabang[b]-byCabang[a])[0];
-            list.innerHTML += `<li class="ai-item ai-warn"><i class="fas fa-bell"></i> Patrol mencatat <strong>${alarms.length} Laporan Alarm</strong> di seluruh cabang. Area yang paling kritis dan harus segera dievaluasi pimpinannya hari ini adalah <strong>${topCabang} (${byCabang[topCabang]} Alarm)</strong>.</li>`;
-            
-            let byInstr = {}; alarms.forEach(a=>{ byInstr[a.instrument]=(byInstr[a.instrument]||0)+1; });
-            const topInstr = Object.keys(byInstr).sort((a,b)=>byInstr[b]-byInstr[a])[0];
-            list.innerHTML += `<li class="ai-item ai-warn"><i class="fas fa-exclamation-triangle"></i> Instrumen penyebab alarm paling banyak saat patroli berfokus pada <strong>${topInstr}</strong>. Teknisi perlu mempertimbangkan investigasi preventif pada sensor/area ini.</li>`;
-        } else {
-            list.innerHTML += `<li class="ai-item ai-normal"><i class="fas fa-shield-alt"></i> Luar biasa: Laporan patroli pekerja OMAMO menunjukkan <strong>tidak ada instrumen yang menyimpang di luar standar (0 Alarm)</strong>.</li>`;
+        if(!statusData.length && !patData.length) {
+            list.innerHTML = '<div class="loading-msg">Data kosong, AI tidak dapat menganalisa secara prediktif.</div>';
+            return;
         }
 
-        list.innerHTML += `<li class="ai-item ai-info"><i class="fas fa-lightbulb"></i> Gunakan kotak pencarian (search box) di setiap tabel untuk melakukan filter kilat terhadap parameter yang Anda inginkan.</li>`;
+        let totalUnits = statusData.length || 1;
+        let fohCount = statusData.filter(s => s.KODE_STATUS === 'FOH').length;
+        let derateCount = statusData.filter(s => s.TUKIN_DERATE && parseFloat(s.TUKIN_DERATE) > 0).length;
+        
+        let alarms = patData.filter(i => i.status === 'ALARM');
+        let totalPatrol = patData.length || 1;
+
+        // --- 1. Kalkulasi Kesehatan Sistem AI ---
+        // Basis Skor 100, turun berdasarkan deviasi dan masalah di lapangan
+        let fohPenalty = (fohCount / totalUnits) * 60; // FOH Penalty sangat berbobot
+        let deratePenalty = (derateCount / totalUnits) * 20; 
+        let alarmPenalty = (alarms.length / totalPatrol) * 40;
+        
+        let score = 100 - fohPenalty - deratePenalty - alarmPenalty;
+        if(score < 0) score = 0; if(score > 100) score = 100;
+        let colorScore = score >= 80 ? colors.op : (score >= 50 ? colors.mo : colors.fo);
+
+        // Render Circular ChartJS untuk Score Gauge
+        if(window.aiHealthChart) window.aiHealthChart.destroy();
+        window.aiHealthChart = new Chart(document.getElementById('health-canvas'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [score, 100-score], backgroundColor: [colorScore, '#f1f5f9'], borderWidth: 0, borderRadius: 8 }] },
+            options: { cutout: '82%', responsive: true, maintainAspectRatio: false, animation: { animateScale: true }, plugins: { tooltip: {enabled: false}, legend: {display:false} } }
+        });
+        document.getElementById('ai-score-txt').textContent = Math.round(score);
+        document.getElementById('ai-score-txt').style.color = colorScore;
+
+        // --- 2. Menyematkan Metric Bar ke Panel Kanan ---
+        let htmlList = '';
+
+        // Insight A: Indeks Keandalan Mesin Utama (Reliability)
+        let fohRatio = (fohCount / totalUnits) * 100;
+        let relState = fohCount > 0 ? 'Kritis (FOH)' : 'Optimal';
+        let relBg = fohCount > 0 ? 'bg-crit' : 'bg-safe';
+        let relFill = fohCount > 0 ? 'bg-red' : 'bg-green';
+        htmlList += `<div class="ai-insight-box">
+            <div class="ai-insight-top">
+                <span class="ai-insight-title"><i class="fas fa-heartbeat text-blue"></i> Indeks Keandalan Mesin (Reliability Rate)</span>
+                <span class="ai-insight-badge ${relBg}">${relState}</span>
+            </div>
+            <div class="ai-insight-text">Sistem AI mengidentifikasi adanya <strong>${fohCount} interupsi mesin utama (FOH)</strong> melawan total pasokan. Tingkat ketersediaan sistem jaringan diperkirakan <strong>${Math.round(100 - fohRatio)}%</strong> dari total ${totalUnits} pembangkit.</div>
+            <div class="ai-metric-bar"><div class="ai-metric-fill ${relFill}" style="width: ${100 - fohRatio}%"></div></div>
+        </div>`;
+
+        // Insight B: Prediksi Deviasi Alarm Sensor OMAMO
+        let patRatio = (alarms.length / totalPatrol) * 100;
+        let patState = patRatio > 10 ? 'Risiko Kesalahan' : (patRatio > 0 ? 'Investigasi Rutin' : 'Integrasi Normal');
+        let patBg = patRatio > 10 ? 'bg-crit' : (patRatio > 0 ? 'bg-warn' : 'bg-safe');
+        let patFill = patRatio > 10 ? 'bg-red' : (patRatio > 0 ? 'bg-orange' : 'bg-green');
+        htmlList += `<div class="ai-insight-box">
+            <div class="ai-insight-top">
+                <span class="ai-insight-title"><i class="fas fa-shield-alt text-orange"></i> Analisis Deviasi Kesalahan Instrumen (OMAMO)</span>
+                <span class="ai-insight-badge ${patBg}">${patState}</span>
+            </div>
+            <div class="ai-insight-text">Mesin kalkulasi menemukan <strong>${alarms.length} persentase kerusakan titik sensor lokal</strong>. Rasio keparahan cacat komponen bernilai ${patRatio.toFixed(1)}%. Sangat direkomendasikan pengiriman teknisi pada puncak histogram sebelah kiri.</div>
+            <div class="ai-metric-bar"><div class="ai-metric-fill ${patFill}" style="width: ${100 - patRatio}%"></div></div>
+        </div>`;
+
+        // Insight C: Kinerja Parsial (Derating)
+        let derateBg = derateCount > 3 ? 'bg-crit' : (derateCount > 0 ? 'bg-warn' : 'bg-safe');
+        let derateFill = derateCount > 3 ? 'bg-red' : (derateCount > 0 ? 'bg-orange' : 'bg-green');
+        let derateRatio = (derateCount / totalUnits) * 100;
+        htmlList += `<div class="ai-insight-box">
+            <div class="ai-insight-top">
+                <span class="ai-insight-title"><i class="fas fa-arrow-down" style="color: var(--red);"></i> Kerentanan Penurunan Daya (Derating)</span>
+                <span class="ai-insight-badge ${derateBg}">${derateCount>3?'Penurunan Mayor':(derateCount>0?'Waspada Rantai Beban':'Kapasitas Murni')}</span>
+            </div>
+            <div class="ai-insight-text">Algoritma pencegahan AI mendeteksi <strong>${derateCount} unit mesin kehilangan daya output maksimalnya</strong>. Disarankan memeriksa siklus kalori batubara, filter intake, maupun sistem injeksi bahan bakar untuk menghindari eskalasi trip.</div>
+            <div class="ai-metric-bar"><div class="ai-metric-fill ${derateFill}" style="width: ${100 - derateRatio}%"></div></div>
+        </div>`;
+
+        list.innerHTML = htmlList;
     }
 
     document.addEventListener('DOMContentLoaded', loadDashboard);
