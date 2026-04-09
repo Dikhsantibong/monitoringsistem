@@ -145,6 +145,21 @@
                 <div class="chart-header"><i class="fas fa-clipboard-check"></i> Rasio Keseluruhan Temuan Patrol</div>
                 <div class="chart-body" id="cb-patrol"><canvas id="chart-patrol" style="display:none;"></canvas></div>
             </div>
+            
+            <!-- Ekstra Charts Tambahan -->
+            <div class="chart-card" style="grid-column: span 2;">
+                <div class="chart-header"><i class="fas fa-bolt"></i> Total MVAR Aktual per Pembangkit</div>
+                <div class="chart-body" id="cb-mvar"><canvas id="chart-mvar" style="display:none;"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header"><i class="fas fa-microchip"></i> Unit dengan Freegov / AGC / LFC</div>
+                <div class="chart-body" id="cb-nav-feat"><canvas id="chart-nav-feat" style="display:none;"></canvas></div>
+            </div>
+            <div class="chart-card" style="grid-column: span 3;">
+                <div class="chart-header"><i class="fas fa-wrench"></i> Top 10 Instrumen Pemicu Alarm OMAMO (Akar Masalah)</div>
+                <div class="chart-body" id="cb-instr-alarm"><canvas id="chart-instr-alarm" style="display:none;"></canvas></div>
+            </div>
+
         </div>
 
         <!-- Navitas Table -->
@@ -245,9 +260,9 @@
     Chart.defaults.font.family = "'Inter', sans-serif";
 
     // Referensi Chart.js (Donut/Pie)
-    let cStatus=null, cPatrol=null;
+    let cStatus=null, cPatrol=null, cNavFeat=null;
     // Referensi Lightweight Charts
-    let lwBeban=null, lwTopAlarm=null, lwAreaAlarm=null;
+    let lwBeban=null, lwTopAlarm=null, lwAreaAlarm=null, lwMvar=null, lwInstrAlarm=null;
 
     const RK = { 'KDN':'NII TANASA','KDR':'RONGI','KDB':'BAU-BAU','KDM':'MIKUASI','KDI':'WINNING','KDS':'SABILAMBO','KDW':'WANGI-WANGI','KDE':'EREKE','KDK':'KOLAKA','KDH':'RAHA','KDL':'LADUMPI','KDA':'LANIPA NIPA','KDP':'POASIA','KDU':'WUA-WUA','KDG':'LANGARA','Z':'COMMON UPDK' };
     const RU = {
@@ -309,7 +324,7 @@
         const tgl = dateEl.value;
         if(!tgl) return alert('Pilih tanggal');
 
-        ['cb-status','cb-beban','cb-patrol','cb-topalarm','cb-omamo-area'].forEach(id => showLoading(id));
+        ['cb-status','cb-beban','cb-patrol','cb-topalarm','cb-omamo-area', 'cb-mvar', 'cb-nav-feat', 'cb-instr-alarm'].forEach(id => showLoading(id));
         document.getElementById('dt-body').innerHTML = `<tr><td colspan="13" class="loading-msg"><div class="spinner"></div> Memuat Navitas...</td></tr>`;
         document.getElementById('dt-patrol-body').innerHTML = `<tr><td colspan="10" class="loading-msg"><div class="spinner"></div> Memuat OMAMO...</td></tr>`;
         document.getElementById('ai-section').style.display = 'none';
@@ -353,10 +368,18 @@
 
         let c={tot:0,op:0,sb:0,fo:0,mo:0,mw:0};
         let pBeban = {};
+        let pMvar = {};
+        let featCount = { Freegov: 0, AGC: 0, LFC: 0 };
         let statusCounts = {};
 
         window.masterNavitas = Object.values(map).map(u => {
             c.tot++; let w = parseFloat(u.mw) || 0; c.mw += w; pBeban[u.rk] = (pBeban[u.rk] || 0) + w;
+            
+            let m = parseFloat(u.mvar); if(!isNaN(m)) pMvar[u.rk] = (pMvar[u.rk] || 0) + m;
+            let fg = (u.freegov||'').toString().toUpperCase(); if(fg !== '-' && fg !== '0' && fg !== '' && fg !== 'FALSE') featCount.Freegov++;
+            let ag = (u.agc||'').toString().toUpperCase(); if(ag !== '-' && ag !== '0' && ag !== '' && ag !== 'FALSE') featCount.AGC++;
+            let lf = (u.lfc||'').toString().toUpperCase(); if(lf !== '-' && lf !== '0' && lf !== '' && lf !== 'FALSE') featCount.LFC++;
+
             const st = ST[u.stat]?.c; if(st==='op') c.op++; else if(st==='sb') c.sb++; else if(st==='fo') c.fo++; else if(st==='mo') c.mo++;
             const gK = u.stat + " - " + u.stDesc; statusCounts[gK] = (statusCounts[gK] || 0) + 1;
             
@@ -412,6 +435,55 @@
             cbBebanContainer.innerHTML = '<div class="loading-msg">Tidak ada beban mesin saat ini (0 MW).</div>';
         }
 
+        // --- NEW: MVAR Aktual Per Pembangkit (Histogram) ---
+        if(lwMvar) { lwMvar.remove(); lwMvar = null; }
+        const cbMvarContainer = document.getElementById('cb-mvar');
+        cbMvarContainer.innerHTML = '';
+        const pKmvar = Object.keys(pMvar).sort((a,b)=>Math.abs(pMvar[b])-Math.abs(pMvar[a]));
+        
+        let catMapMvar = {};
+        let dataMvarLW = [];
+        pKmvar.forEach((r, i) => {
+            const tStr = createDummyTime(dataMvarLW.length);
+            catMapMvar[tStr] = pName(r);
+            dataMvarLW.push({ time: tStr, value: pMvar[r], color: pMvar[r] < 0 ? '#ef4444' : '#8b5cf6' });
+        });
+
+        if(dataMvarLW.length > 0) {
+            lwMvar = LightweightCharts.createChart(cbMvarContainer, {
+                autoSize: true, 
+                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+                localization: { timeFormatter: t => formatTimeLabel(t, catMapMvar) },
+                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapMvar), fixLeftEdge: true, fixRightEdge: true },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+            });
+            const mvarSeries = lwMvar.addHistogramSeries({ title: 'MVAR' });
+            mvarSeries.setData(dataMvarLW);
+            lwMvar.timeScale().fitContent();
+        } else {
+            cbMvarContainer.innerHTML = '<div class="loading-msg">Tidak ada data MVAR saat ini.</div>';
+        }
+
+        // --- NEW: Chart.js untuk FREEGOV / AGC / LFC (Pie) ---
+        if(cNavFeat) cNavFeat.destroy();
+        document.getElementById('cb-nav-feat').innerHTML = '<canvas id="chart-nav-feat" style="max-height:240px; display:block; margin:auto;"></canvas>';
+        cNavFeat = new Chart(document.getElementById('chart-nav-feat'), { 
+            type: 'pie', 
+            data: { 
+                labels: ['Freegov', 'AGC', 'LFC'], 
+                datasets: [{ 
+                    data: [featCount.Freegov, featCount.AGC, featCount.LFC], 
+                    backgroundColor: [colors.sb, colors.op, colors.mo], 
+                    borderWidth: 2 
+                }] 
+            }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { position: 'bottom' } } 
+            } 
+        });
+
         // Init Data Table
         document.getElementById('search-nav').value = '';
         window.filteredNavitas = [...window.masterNavitas];
@@ -426,13 +498,14 @@
         }
 
         let al=0, nm=0;
-        let alarmByCabang = {}, alarmByArea = {};
+        let alarmByCabang = {}, alarmByArea = {}, alarmByInstr = {};
         
         window.masterPatrol = items.map(e => {
             if(e.status==='ALARM') {
                 al++;
                 alarmByCabang[e.cabang] = (alarmByCabang[e.cabang]||0)+1;
                 alarmByArea[e.area] = (alarmByArea[e.area]||0)+1;
+                alarmByInstr[e.instrument] = (alarmByInstr[e.instrument]||0)+1;
             } else { nm++; }
             e._search = (e.cabang+' '+e.unit+' '+e.area+' '+e.instrument+' '+e.komentar+' '+e.status).toLowerCase();
             return e;
@@ -506,6 +579,37 @@
             lwAreaAlarm.timeScale().fitContent();
         } else {
             cbAreaAlarmContainer.innerHTML = '<div class="loading-msg">Aman, tidak ada temuan Alarm Area.</div>';
+        }
+
+        // --- NEW: Top 10 Instrumen Alarm ---
+        if(lwInstrAlarm) { lwInstrAlarm.remove(); lwInstrAlarm = null; }
+        const cbInstrContainer = document.getElementById('cb-instr-alarm');
+        cbInstrContainer.innerHTML = '';
+        const inLabels = Object.keys(alarmByInstr).sort((a,b)=>alarmByInstr[b]-alarmByInstr[a]).slice(0, 10);
+        
+        let catMapInstr = {};
+        let inDataLW = [];
+        inLabels.forEach((l, i) => {
+            const tStr = createDummyTime(i);
+            const title = l.length > 35 ? l.substring(0,35)+'..' : l;
+            catMapInstr[tStr] = title;
+            inDataLW.push({ time: tStr, value: alarmByInstr[l], color: '#ef4444' });
+        });
+
+        if(inDataLW.length > 0) {
+            lwInstrAlarm = LightweightCharts.createChart(cbInstrContainer, {
+                autoSize: true,
+                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+                localization: { timeFormatter: t => formatTimeLabel(t, catMapInstr) },
+                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapInstr), fixLeftEdge: true, fixRightEdge: true },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+            });
+            const inSeries = lwInstrAlarm.addHistogramSeries({ title: 'Total Freq Error' });
+            inSeries.setData(inDataLW);
+            lwInstrAlarm.timeScale().fitContent();
+        } else {
+            cbInstrContainer.innerHTML = '<div class="loading-msg">Aman, tidak ada temuan sensor bermasalah.</div>';
         }
 
         document.getElementById('search-patrol').value = '';
