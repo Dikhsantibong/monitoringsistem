@@ -275,6 +275,22 @@
     const dateEl = document.getElementById('dash-date');
     dateEl.value = new Date().toISOString().split('T')[0];
 
+    function createDummyTime(index) {
+        const d = new Date(2024, 0, index + 1);
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function formatTimeLabel(time, map) {
+        if(!time) return '';
+        let key = '';
+        if(typeof time === 'string') key = time;
+        else if(time.year) key = time.year + '-' + String(time.month).padStart(2,'0') + '-' + String(time.day).padStart(2,'0');
+        else if(typeof time === 'number') {
+            const d = new Date(time*1000);
+            key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+        return map[key] || key;
+    }
+
     // Globals for Navitas Pagination
     window.masterNavitas = [];
     window.filteredNavitas = [];
@@ -365,26 +381,36 @@
         // Lightweight Chart (Tampilan Trading) untuk Beban MW per Pembangkit (Area Series)
         const cbBebanContainer = document.getElementById('cb-beban');
         cbBebanContainer.innerHTML = '';
-        const pK = Object.keys(pBeban).filter(r=>pBeban[r]>0).sort((a,b)=>pBeban[b]-pBeban[a]);
+        const pK = Object.keys(pBeban).sort((a,b)=>pBeban[b]-pBeban[a]);
         
         let catMapBeban = {};
-        let dataBebanLW = pK.map((r, i) => {
-            const t = 1600000000 + i * 86400; // time dummy untuk mapping kategori ke format waktu trading
-            catMapBeban[t] = pName(r);
-            return { time: t, value: pBeban[r] };
+        let dataBebanLW = [];
+        pK.forEach((r, i) => {
+            if(pBeban[r] > 0) {
+                const tStr = createDummyTime(dataBebanLW.length);
+                catMapBeban[tStr] = pName(r);
+                dataBebanLW.push({ time: tStr, value: pBeban[r] });
+            }
         });
 
-        lwBeban = LightweightCharts.createChart(cbBebanContainer, {
-            autoSize: true, // Otomatis menyesuaikan ukuran
-            layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-            grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-            localization: { timeFormatter: t => catMapBeban[t] || '' },
-            timeScale: { tickMarkFormatter: t => (catMapBeban[t] || '').substring(0,8), fixLeftEdge: true, fixRightEdge: true },
-            crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
-        });
-        const areaSeries = lwBeban.addAreaSeries({ lineColor: '#0ea5e9', topColor: 'rgba(14, 165, 233, 0.4)', bottomColor: 'rgba(14, 165, 233, 0.0)', lineWidth: 2 });
-        areaSeries.setData(dataBebanLW);
-        lwBeban.timeScale().fitContent();
+        if(dataBebanLW.length > 0) {
+            lwBeban = LightweightCharts.createChart(cbBebanContainer, {
+                autoSize: true, // Otomatis menyesuaikan ukuran
+                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+                localization: { timeFormatter: t => formatTimeLabel(t, catMapBeban) },
+                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapBeban), fixLeftEdge: true, fixRightEdge: true },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+            });
+            const areaSeries = lwBeban.addAreaSeries({ 
+                title: 'Beban (MW)',
+                lineColor: '#0ea5e9', topColor: 'rgba(14, 165, 233, 0.4)', bottomColor: 'rgba(14, 165, 233, 0.0)', lineWidth: 2 
+            });
+            areaSeries.setData(dataBebanLW);
+            lwBeban.timeScale().fitContent();
+        } else {
+            cbBebanContainer.innerHTML = '<div class="loading-msg">Tidak ada beban mesin saat ini (0 MW).</div>';
+        }
 
         // Init Data Table
         document.getElementById('search-nav').value = '';
@@ -429,23 +455,28 @@
         const cbLabels = Object.keys(alarmByCabang).sort((a,b)=>alarmByCabang[b]-alarmByCabang[a]).slice(0,5);
         
         let catMapTA = {};
-        let taDataLW = cbLabels.map((l, i) => {
-            const t = 1600000000 + i * 86400;
-            catMapTA[t] = l;
-            return { time: t, value: alarmByCabang[l], color: colors.fo };
+        let taDataLW = [];
+        cbLabels.forEach((l, i) => {
+            const tStr = createDummyTime(i);
+            catMapTA[tStr] = l;
+            taDataLW.push({ time: tStr, value: alarmByCabang[l], color: colors.fo });
         });
 
-        lwTopAlarm = LightweightCharts.createChart(cbTopAlarmContainer, {
-            autoSize: true, // Otomatis menyesuaikan dengan container
-            layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-            grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-            localization: { timeFormatter: t => catMapTA[t] || '' },
-            timeScale: { tickMarkFormatter: t => (catMapTA[t] || '').substring(0,8), fixLeftEdge: true, fixRightEdge: true },
-            crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
-        });
-        const taSeries = lwTopAlarm.addHistogramSeries();
-        taSeries.setData(taDataLW);
-        lwTopAlarm.timeScale().fitContent();
+        if(taDataLW.length > 0) {
+            lwTopAlarm = LightweightCharts.createChart(cbTopAlarmContainer, {
+                autoSize: true, // Otomatis menyesuaikan dengan container
+                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+                localization: { timeFormatter: t => formatTimeLabel(t, catMapTA) },
+                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapTA), fixLeftEdge: true, fixRightEdge: true },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+            });
+            const taSeries = lwTopAlarm.addHistogramSeries({ title: 'Kasus Alarm' });
+            taSeries.setData(taDataLW);
+            lwTopAlarm.timeScale().fitContent();
+        } else {
+            cbTopAlarmContainer.innerHTML = '<div class="loading-msg">Aman, tidak ada Alarm.</div>';
+        }
 
         // Chart OMAMO Alarm Area - Lightweight Chart Histogram
         const cbAreaAlarmContainer = document.getElementById('cb-omamo-area');
@@ -453,24 +484,29 @@
         const arLabels = Object.keys(alarmByArea).sort((a,b)=>alarmByArea[b]-alarmByArea[a]).slice(0,5);
         
         let catMapAA = {};
-        let aaDataLW = arLabels.map((l, i) => {
-            const t = 1600000000 + i * 86400;
-            const title = l.length > 15 ? l.substring(0,15)+'..' : l;
-            catMapAA[t] = title;
-            return { time: t, value: alarmByArea[l], color: colors.orange };
+        let aaDataLW = [];
+        arLabels.forEach((l, i) => {
+            const tStr = createDummyTime(i);
+            const title = l.length > 20 ? l.substring(0,20)+'..' : l;
+            catMapAA[tStr] = title;
+            aaDataLW.push({ time: tStr, value: alarmByArea[l], color: colors.orange });
         });
 
-        lwAreaAlarm = LightweightCharts.createChart(cbAreaAlarmContainer, {
-            autoSize: true,
-            layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-            grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-            localization: { timeFormatter: t => catMapAA[t] || '' },
-            timeScale: { tickMarkFormatter: t => (catMapAA[t] || '').substring(0,8), fixLeftEdge: true, fixRightEdge: true },
-            crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
-        });
-        const aaSeries = lwAreaAlarm.addHistogramSeries();
-        aaSeries.setData(aaDataLW);
-        lwAreaAlarm.timeScale().fitContent();
+        if(aaDataLW.length > 0) {
+            lwAreaAlarm = LightweightCharts.createChart(cbAreaAlarmContainer, {
+                autoSize: true,
+                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
+                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
+                localization: { timeFormatter: t => formatTimeLabel(t, catMapAA) },
+                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapAA), fixLeftEdge: true, fixRightEdge: true },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+            });
+            const aaSeries = lwAreaAlarm.addHistogramSeries({ title: 'Alarm Lokasi' });
+            aaSeries.setData(aaDataLW);
+            lwAreaAlarm.timeScale().fitContent();
+        } else {
+            cbAreaAlarmContainer.innerHTML = '<div class="loading-msg">Aman, tidak ada temuan Alarm Area.</div>';
+        }
 
         document.getElementById('search-patrol').value = '';
         window.filteredPatrol = [...window.masterPatrol];
