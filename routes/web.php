@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AdminController;
@@ -67,43 +68,50 @@ Route::get('/monitoring-mesin', function () {
 // API Proxy for Navitas Status
 Route::get('/api/monitoring-mesin/navitas-status', function (\Illuminate\Http\Request $request) {
     $tanggal = $request->query('tanggal', date('Y-m-d'));
-    try {
-        $response = Http::withoutVerifying()
-            ->timeout(30)->connectTimeout(10)
-            ->get('http://192.168.1.203:8080/monday/navitas_status', ['tanggal' => $tanggal]);
-        return response()->json($response->json());
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage(), 'entry' => []], 500);
-    }
+    return Cache::remember("navitas_status_$tanggal", 300, function() use ($tanggal) {
+        try {
+            $response = Http::withoutVerifying()
+                ->timeout(30)->connectTimeout(10)
+                ->get('http://192.168.1.203:8080/monday/navitas_status', ['tanggal' => $tanggal]);
+            return $response->json();
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage(), 'entry' => []];
+        }
+    });
 });
 
 // API Proxy for Navitas Beban
 Route::get('/api/monitoring-mesin/navitas-beban', function (\Illuminate\Http\Request $request) {
     $tanggal = $request->query('tanggal', date('Y-m-d'));
-    try {
-        $response = Http::withoutVerifying()
-            ->timeout(30)->connectTimeout(10)
-            ->get('http://192.168.1.203:8080/monday/navitas_beban', ['tanggal' => $tanggal]);
-        return response()->json($response->json());
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage(), 'entry' => []], 500);
-    }
+    return Cache::remember("navitas_beban_$tanggal", 300, function() use ($tanggal) {
+        try {
+            $response = Http::withoutVerifying()
+                ->timeout(30)->connectTimeout(10)
+                ->get('http://192.168.1.203:8080/monday/navitas_beban', ['tanggal' => $tanggal]);
+            return $response->json();
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage(), 'entry' => []];
+        }
+    });
 });
 
 // API Proxy for OMAMO Patrol
 Route::get('/api/monitoring-mesin/patrol', function (\Illuminate\Http\Request $request) {
     $tanggal = $request->query('tanggal', date('Y-m-d'));
-    try {
-        $response = Http::withoutVerifying()
-            ->timeout(30)->connectTimeout(10)
-            ->get('https://omamo.plnnusantarapower.co.id/api/transaksi_patrol/monday', [
-                'apikey' => 'rYqzzcNVg5qM3Cer4l2eEvk5JrsLM8Th',
-                'tanggal' => $tanggal,
-            ]);
-        return response()->json($response->json());
-    } catch (\Exception $e) {
-        return response()->json(['status' => false, 'message' => $e->getMessage(), 'data' => []], 500);
-    }
+    // OMAMO API tends to be slow, so we cache it longer (10 minutes)
+    return Cache::remember("patrol_status_$tanggal", 600, function() use ($tanggal) {
+        try {
+            $response = Http::withoutVerifying()
+                ->timeout(30)->connectTimeout(10)
+                ->get('https://omamo.plnnusantarapower.co.id/api/transaksi_patrol/monday', [
+                    'apikey' => 'rYqzzcNVg5qM3Cer4l2eEvk5JrsLM8Th',
+                    'tanggal' => $tanggal,
+                ]);
+            return $response->json();
+        } catch (\Exception $e) {
+            return ['status' => false, 'message' => $e->getMessage(), 'data' => []];
+        }
+    });
 });
 
 // Explicitly define this route to avoid collision in the messy web.php

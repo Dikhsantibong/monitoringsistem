@@ -361,13 +361,31 @@
 
         let statusData = [], bebanData = [], patData = [];
 
-        try { const r1 = await fetch(navStatusUrl); if(r1.ok) statusData = (await r1.json()).entry || []; } catch(e){}
-        try { const r2 = await fetch(navBebanUrl); if(r2.ok) bebanData = (await r2.json()).entry || []; } catch(e){}
-        try { const r3 = await fetch(patUrl); if(r3.ok) { const j3 = await r3.json(); if(j3.status!==false) patData = j3.data || []; } } catch(e){}
+        // 1. Trigger all fetches in parallel
+        const fStatus = fetch(navStatusUrl).then(r => r.ok ? r.json() : null).catch(() => null);
+        const fBeban  = fetch(navBebanUrl).then(r => r.ok ? r.json() : null).catch(() => null);
+        const fPatrol = fetch(patUrl).then(r => r.ok ? r.json() : null).catch(() => null);
 
-        processNavitas(statusData, bebanData);
-        processPatrolData(patData);
-        generateAIInsights(patData, statusData);
+        // 2. Process Navitas (Faster) as soon as ready
+        Promise.all([fStatus, fBeban]).then(([s, b]) => {
+            statusData = s ? s.entry || [] : [];
+            bebanData = b ? b.entry || [] : [];
+            processNavitas(statusData, bebanData);
+            if (patData.length > 0 || patFetched) generateAIInsights(patData, statusData);
+        });
+
+        // 3. Process OMAMO (Slower) as soon as ready
+        let patFetched = false;
+        fPatrol.then(p => {
+            patFetched = true;
+            patData = p ? (p.status !== false ? p.data || [] : []) : [];
+            processPatrolData(patData);
+            if (statusData.length > 0) generateAIInsights(patData, statusData);
+        }).catch(e => {
+            patFetched = true;
+            console.error("OMAMO Fetch Error:", e);
+            document.getElementById('dt-patrol-body').innerHTML = '<tr><td colspan="10" class="loading-msg">Gagal memuat data OMAMO</td></tr>';
+        });
     };
 
     function processNavitas(statusData, bebanData){
